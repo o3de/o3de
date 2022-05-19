@@ -23,6 +23,8 @@ class QHBoxLayout;
 
 namespace AzToolsFramework
 {
+    class DocumentPropertyEditor;
+
     class DPERowWidget : public QWidget
     {
         Q_OBJECT
@@ -38,16 +40,18 @@ namespace AzToolsFramework
         void SetValueFromDom(const AZ::Dom::Value& domArray);
 
         //! handles a patch operation at the given path, or delegates to a child that will
-        void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex);
+        void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
     protected:
+        DocumentPropertyEditor* GetDPE();
+
         QVBoxLayout* m_mainLayout = nullptr;
         QHBoxLayout* m_columnLayout = nullptr;
         QVBoxLayout* m_childRowLayout = nullptr;
 
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
-        // <apm> fix Clear(), it will blow away these widgets, which will cause a double deletion
+        // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
@@ -63,6 +67,7 @@ namespace AzToolsFramework
 
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
+        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter() { return m_adapter; }
 
     protected:
         QVBoxLayout* GetVerticalLayout();

@@ -66,6 +66,7 @@ namespace ScriptCanvas
 
         void MarkVersion();
         const VersionData& GetVersion() const;
+        bool HasDeprecatedNode() const;
 
         void Parse(ValidationResults& validationResults);
 

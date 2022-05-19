@@ -1220,6 +1220,83 @@ AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
     return AZStd::make_pair(countX, countY);
 }
 
+//! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
+int32_t TerrainSystem::CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    // Determine the maximum number of jobs available to split the work across for async calls.
+    const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
+    const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
+    const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
+
+    return numJobsMax;
+}
+
+void TerrainSystem::SubdivideRegionForJobs(
+    int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob, int32_t& subdivisionsX, int32_t& subdivisionsY)
+{
+    // This method will try to determine the best way to distribute the number of X and Y samples in our region across as many jobs
+    // as possible to meet the following constraints:
+    //   subdivisionsX * subdivisionsY <= maxNumJobs
+    //   (numSamplesX / subdivisionsX) * (numSamplesY / subdivisionsY) >= minPointsPerJob
+    // Basically, the goal is to use the maximum number of jobs, as long as we're processing at least the minimum points per job.
+    // We also try to keep the subdivisions of X as low as possible because it's generally more efficient to process
+    // consecutive X values than consecutive Y values.
+
+    // Start by initializing to a single job that processes the entire region.
+    subdivisionsX = 1;
+    subdivisionsY = 1;
+    int32_t bestJobUsage = 1;
+
+    // If the entire region is less than the minimum points, just return.
+    if ((numSamplesX * numSamplesY) < minPointsPerJob)
+    {
+        return;
+    }
+
+    // Clamp the maximum number of jobs to whichever is smaller - the maximum number of jobs that have minPointsPerJob, or the
+    // requested maxNumJobs. We can't have a solution that violates either constraint.
+    int32_t clampedMaxNumJobs = AZStd::clamp(aznumeric_cast<int32_t>((numSamplesX * numSamplesY) / minPointsPerJob), 1, maxNumJobs);
+
+    // MaxNumJobs will generally be a small value, so we can just brute-force the problem and try every solution to see what will
+    // produce the most optimal results. We stop early if we find a solution that uses the maximum number of jobs.
+    // We loop on X subdivisions first so that we bias towards solutions with a lower number of X subdivisions.
+    for (int32_t xChoice = 1; xChoice <= clampedMaxNumJobs; xChoice++)
+    {
+        // For a given number of X subdivisions, find the maximum number of Y subdivisions that produces at least the
+        // minimum number of points per job.
+        int32_t xSamplesPerSubdivision = numSamplesX / xChoice;
+
+        // This is how many rows of X we need to produce minPointsPerJob.
+        int32_t minXRowsNeeded = aznumeric_cast<int32_t>(AZStd::ceil(aznumeric_cast<float>(minPointsPerJob) / xSamplesPerSubdivision));
+
+        // Get the maximum number of subdivisions for Y that will produce minPointsPerJob (numSamplesY / minXRowsNeeded), but
+        // also clamp it by the maximum number of jobs that we're allowed to produce (maxNumJobs / xChoice).
+        int32_t yChoice = AZStd::min(numSamplesY / minXRowsNeeded, clampedMaxNumJobs / xChoice);
+
+        // The maximum number of subdivisions in Y will decrease with increasing X subdivisions. If we've reached the point
+        // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions. 
+        if (yChoice == 0)
+        {
+            return;
+        }
+
+        // If this combination is better than a previous solution, save it as our new best solution.
+        int32_t jobUsage = xChoice * yChoice;
+        if (jobUsage > bestJobUsage)
+        {
+            subdivisionsX = xChoice;
+            subdivisionsY = yChoice;
+            bestJobUsage = jobUsage;
+
+            // If we've found an optimal solution, early-out and return.
+            if (jobUsage == clampedMaxNumJobs)
+            {
+                return;
+            }
+        }
+    }
+}
+
 void TerrainSystem::ProcessHeightsFromRegion(
     const AZ::Aabb& inRegion,
     const AZ::Vector2& stepSize,

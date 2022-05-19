@@ -22,6 +22,15 @@ namespace AZ::Dom::Utils
 
     AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
 
+    struct ComparisonParameters
+    {
+        //! If set, opaque values will only be compared by type and not contents
+        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitue a
+        //! comparison failure (e.g. comparing callbacks)
+        bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
+    };
+
+    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     Value TypeIdToDomValue(const AZ::TypeId& typeId);
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
@@ -45,7 +54,6 @@ namespace AZ::Dom::Utils
         return StoreViaJsonSerialization(&object, &defaultObject, azrtti_typeid<T>(), output, settings);
     }
 
-    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs);
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
     template<typename T>

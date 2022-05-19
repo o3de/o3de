@@ -49,6 +49,14 @@ namespace AzToolsFramework
 
     void DPERowWidget::Clear()
     {
+        // propertyHandlers own their widgets, so don't destroy them here. Set them free!
+        for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
+             propertyWidgetIter != endIter; ++propertyWidgetIter)
+        {
+            m_columnLayout->removeWidget(propertyWidgetIter->first);
+        }
+        m_widgetToPropertyHandler.clear();
+
         DestroyLayoutContents(m_columnLayout);
         DestroyLayoutContents(m_childRowLayout);
         m_domOrderedChildren.clear();
@@ -87,10 +95,10 @@ namespace AzToolsFramework
             }
 
             // store, then reference the unique_ptr that will manage the handler's lifetime
-            m_widgetToPropertyHandler[addedWidget] = dpeSystem->CreateHandlerInstance(handlerId);
-            auto& handler = m_widgetToPropertyHandler[addedWidget];
+            auto handler = dpeSystem->CreateHandlerInstance(handlerId);
             handler->SetValueFromDom(childValue);
             addedWidget = handler->GetWidget();
+            m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
             layoutForWidget = m_columnLayout;
         }
         else
@@ -194,9 +202,29 @@ namespace AzToolsFramework
             }
             else // child must be a label or a PropertyEditor
             {
-                // todo: handle this when PropertyHandlerWidgets are done, note that a PropertyEditor could theoretically be a QLabel too...
+                // pare down the path to this node, then look up and set the value from the DOM
+                auto subPath = fullPath;
+                for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
+                {
+                    subPath.Pop();
+                }
+                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+                m_widgetToPropertyHandler[childWidget]->SetValueFromDom(valueAtSubPath);
             }
         }
+    }
+
+    DocumentPropertyEditor* DPERowWidget::GetDPE()
+    {
+        DocumentPropertyEditor* theDPE = nullptr;
+        QWidget* ancestorWidget = parentWidget();
+        while (ancestorWidget && !theDPE)
+        {
+            theDPE = qobject_cast<DocumentPropertyEditor*>(ancestorWidget);
+            ancestorWidget = ancestorWidget->parentWidget();
+        }
+        AZ_Assert(theDPE, "the top level widget in any DPE hierarchy must be the DocumentPropertyEditor itself!");
+        return theDPE;
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
@@ -281,8 +309,8 @@ namespace AzToolsFramework
                     (rowIndex <= rowLayout->count() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
                 "received a patch for a row that doesn't exist");
 
-            // if there's only one path entry, this operation is for the top level layout
-            if (patchPath.size() == 1)
+            // if the patch points at our root, this operation is for the top level layout
+            if (patchPath.IsEmpty())
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
@@ -309,8 +337,8 @@ namespace AzToolsFramework
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
 
-                constexpr size_t pathIndex = 1; // tell the rowWidget to use the next index into the path, which is 1
-                rowWidget->HandleOperationAtPath(*operationIterator, pathIndex);
+                constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
+                rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
     }

@@ -23,6 +23,7 @@ namespace AzToolsFramework
 
             virtual void OnPrefabInstancePropagationBegin() {}
             virtual void OnPrefabInstancePropagationEnd() {}
+            virtual void OnRootPrefabInstanceLoaded() {}
 
             virtual void OnPrefabTemplateDirtyFlagUpdated(
                 [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status) {}

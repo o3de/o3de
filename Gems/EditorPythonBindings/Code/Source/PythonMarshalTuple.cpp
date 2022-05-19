@@ -60,7 +60,7 @@ namespace EditorPythonBindings
         void* newTuple)
     {
         pybind11::object pyObj{ pybind11::reinterpret_borrow<pybind11::object>(pyItem) };
-        AZ::BehaviorValueParameter behaviorItem;
+        AZ::BehaviorArgument behaviorItem;
         auto behaviorResult = Container::ProcessPythonObject(traits, pyObj, itemElement->m_typeId, behaviorItem);
         if (behaviorResult && behaviorResult.value().first)
         {
@@ -86,7 +86,7 @@ namespace EditorPythonBindings
 
     // Convert a Python list / Python tuple / ProxyObject tuple to a C++ tuple.
     AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> TypeConverterTuple::PythonToBehaviorValueParameter(
-        PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorValueParameter& outValue)
+        PythonMarshalTypeRequests::BehaviorTraits traits, pybind11::object pyObj, AZ::BehaviorArgument& outValue)
     {
         if (!CanConvertPythonToBehaviorValue(traits, pyObj))
         {
@@ -252,7 +252,7 @@ namespace EditorPythonBindings
 
     // Convert a C++ tuple into a Python list.
     AZStd::optional<PythonMarshalTypeRequests::PythonValueResult> TypeConverterTuple::BehaviorValueParameterToPython(
-        AZ::BehaviorValueParameter& behaviorValue)
+        AZ::BehaviorArgument& behaviorValue)
     {
         // the class data must have a container interface
         AZ::SerializeContext::IDataContainer* containerInterface = m_classData->m_container;

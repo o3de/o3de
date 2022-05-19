@@ -59,7 +59,10 @@ TEST_O3DE_REPO_WITH_OBJECTS_JSON_PAYLOAD = '''
 {
     "repo_name": "Test Repo",
     "origin": "",
-    "gems": ["http://o3derepo.org/TestGem", "C:/localrepo/TestLocalGem"]
+    "gems": ["http://o3derepo.org/TestGem", "C:/localrepo/TestLocalGem"],
+    "projects": ["http://o3derepo.org/TestProject"],
+    "engines": ["http://o3derepo.org/TestEngine"],
+    "templates": ["http://o3derepo.org/TestTemplate"]
 }
 '''
 
@@ -71,6 +74,7 @@ TEST_O3DE_REPO_GEM_JSON_PAYLOAD = '''
     "origin": "Test Creator",
     "origin_uri": "http://o3derepo.org/TestGem/gem.zip",
     "repo_uri": "http://o3derepo.org",
+    "last_updated": "2022-01-01 11:00:00",
     "type": "Tool",
     "summary": "A test downloadable gem.",
     "canonical_tags": [
@@ -113,10 +117,73 @@ TEST_O3DE_LOCAL_REPO_GEM_JSON_PAYLOAD = '''
     "origin": "Test Creator",
     "origin_uri": "C:/localrepo/TestLocalGem/gem.zip",
     "repo_uri": "http://o3derepo.org",
+    "last_updated": "Jan-2022",
     "type": "Tool",
     "summary": "A test downloadable gem.",
     "canonical_tags": [
         "Gem"
+    ],
+    "user_tags": [],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": []
+}
+'''
+
+TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD = '''
+{
+    "project_name": "TestProject",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Test Creator",
+    "origin_uri": "http://o3derepo.org/TestProject/project.zip",
+    "repo_uri": "http://o3derepo.org",
+    "last_updated": "2022-01-01 11:00:00",
+    "type": "Tool",
+    "summary": "A test downloadable gem.",
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": []
+}
+'''
+
+TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "TestEngine",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Test Creator",
+    "origin_uri": "http://o3derepo.org/TestEngine/engine.zip",
+    "repo_uri": "http://o3derepo.org",
+    "last_updated": "2021-12-01",
+    "type": "Tool",
+    "summary": "A test downloadable gem.",
+    "canonical_tags": [
+        "Engine"
+    ],
+    "user_tags": [],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": []
+}
+'''
+
+TEST_O3DE_REPO_TEMPLATE_JSON_PAYLOAD = '''
+{
+    "template_name": "TestTemplate",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Test Creator",
+    "origin_uri": "http://o3derepo.org/TestTemplate/template.zip",
+    "repo_uri": "http://o3derepo.org",
+    "type": "Tool",
+    "summary": "A test downloadable gem.",
+    "canonical_tags": [
+        "Template"
     ],
     "user_tags": [],
     "icon_path": "preview.png",
@@ -255,3 +322,42 @@ class TestObjectDownload:
 
             assert (len(matches) != 0) == registration_expected
 
+    @pytest.mark.parametrize("update_function, object_name, object_data, existing_time, update_available", [
+                                 # Repo gem is newer
+                                 pytest.param(download.is_o3de_gem_update_available, 'TestGem', TEST_O3DE_REPO_GEM_JSON_PAYLOAD, "2021-12-01", True),
+                                 # Repo engine is not newer
+                                 pytest.param(download.is_o3de_engine_update_available, 'TestEngine', TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD, "2021-12-01", False),
+                                 # Repo project has a last_updated field, local does not
+                                 pytest.param(download.is_o3de_project_update_available, 'TestProject', TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD, "", True),
+                                 # Repo template does not have a last_updated field
+                                 pytest.param(download.is_o3de_template_update_available, 'TestTemplate', TEST_O3DE_REPO_TEMPLATE_JSON_PAYLOAD, "", False),
+                                 # Repo object does not exist
+                                 pytest.param(download.is_o3de_gem_update_available, 'NonExistingObject', "", "", False),
+                                 # Incorrect repo datetime format
+                                 pytest.param(download.is_o3de_gem_update_available, 'TestLocalGem', TEST_O3DE_LOCAL_REPO_GEM_JSON_PAYLOAD, "2021-12-01", False),
+                             ])
+    def test_check_updates(self, update_function, object_name, object_data, existing_time, update_available):
+        self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            return copy.deepcopy(self.o3de_manifest_data)
+
+        def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            self.o3de_manifest_data = manifest_data
+            return True
+
+        def mocked_open(path, mode, *args, **kwargs):
+            file_data = bytes(0)
+            if pathlib.Path(path).name == TEST_O3DE_REPO_FILE_NAME:
+                file_data = TEST_O3DE_REPO_WITH_OBJECTS_JSON_PAYLOAD
+            else:
+                file_data = object_data
+            mockedopen = mock_open(mock=MagicMock(), read_data=file_data)
+            return mockedopen(self, *args, **kwargs)
+
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2, \
+                patch('pathlib.Path.open', mocked_open) as _3, \
+                patch('pathlib.Path.is_file', return_value=True) as _4:
+
+            assert update_function(object_name, existing_time) == update_available

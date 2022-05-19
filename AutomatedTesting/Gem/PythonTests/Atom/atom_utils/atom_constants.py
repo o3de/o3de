@@ -113,7 +113,7 @@ LUT_RESOLUTION = {
     '64x64x64': 2,
 }
 
-# Shaper Type options for the HDR Color Grading component.
+# Shaper Type options for the HDR Color Grading & Look Modification components.
 SHAPER_TYPE = {
     'None': 0,
     'linear_custom': 1,
@@ -675,6 +675,9 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Enable look modification' Toggle active state of the component True/False
           - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
+          - 'Shaper Type' Shaper type used for scene look modification from atom_constants.py SHAPER_TYPE.
+          - 'LUT Intensity' Overall influence of the LUT on the scene. (0.0, 1.0)
+          - 'LUT Override' Blend intensity of the LUT (for use with multiple Look Modification entities). (0.0, 1.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -683,6 +686,9 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable look modification': 'Controller|Configuration|Enable look modification',
             'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
+            'Shaper Type': 'Controller|Configuration|Shaper Type',
+            'LUT Intensity': 'Controller|Configuration|LUT Intensity',
+            'LUT Override': 'Controller|Configuration|LUT Override',
         }
         return properties[property]
 
@@ -724,7 +730,6 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
-          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -741,7 +746,6 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
-            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
