@@ -386,10 +386,10 @@ namespace AzToolsFramework
             AZ_UNUSED(point);
 
             auto selectedAssets = GetSelectedAssets();
-            if (selectedAssets.size() != 1)
-            {
-                return;
-            }
+            //if (selectedAssets.size() != 1)
+            //{
+            //    return;
+            //}
 
             QMenu menu(this);
             AssetBrowserInteractionNotificationBus::Broadcast(
