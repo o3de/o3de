@@ -3177,6 +3177,12 @@ namespace ScriptCanvasEditor
             }
         }
 
+#if defined (AZ_PLATFORM_LINUX)
+        // Work-around for a crash on Linux caused by the MainWindow::OnSystemTick not being handled before the ReflectedPropertyEditor's DoRefresh.
+        // This will force the pending actions that were setup by this call to occur before exiting this function. This issue only occurs on Linux.
+        AZ::SystemTickBus::Broadcast(&AZ::SystemTickBus::Events::OnSystemTick);
+#endif // defined (AZ_PLATFORM_LINUX)
+
         return true;
     }
 
