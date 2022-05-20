@@ -51,6 +51,8 @@ set(FILES
     Source/Editor/QtMetaTypes.h
     Source/Editor/ReselectingTreeView.cpp
     Source/Editor/ReselectingTreeView.h
+    Source/Editor/SaveDirtyFilesCallbacks.h
+    Source/Editor/SaveDirtyFilesCallbacks.cpp
     Source/Editor/SelectionProxyModel.h
     Source/Editor/SelectionProxyModel.cpp
     Source/Editor/SimulatedObjectBus.h

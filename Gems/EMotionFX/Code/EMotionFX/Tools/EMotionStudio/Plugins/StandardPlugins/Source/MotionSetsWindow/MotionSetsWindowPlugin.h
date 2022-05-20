@@ -28,17 +28,12 @@
 #include <QDialog>
 #endif
 
-
 namespace EMStudio
 {
-    // forward declarations
-    class SaveDirtyMotionSetFilesCallback;
-
-
     class MotionSetsWindowPlugin
         : public EMStudio::DockWidgetPlugin
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionSetsWindowPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
@@ -67,7 +62,6 @@ namespace EMStudio
         EMotionFX::MotionSet* GetSelectedSet() const;
 
         void SetSelectedSet(EMotionFX::MotionSet* motionSet);
-        int SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
         MotionSetManagementWindow*  GetManagementWindow()                                                       { return m_motionSetManagementWindow; }
         MotionSetWindow*            GetMotionSetWindow()                                                        { return m_motionSetWindow; }
@@ -97,7 +91,5 @@ namespace EMStudio
         MysticQt::DialogStack*                  m_dialogStack;
 
         EMotionFX::MotionSet*                   m_selectedSet;
-
-        SaveDirtyMotionSetFilesCallback*        m_dirtyFilesCallback;
     };
 } // namespace EMStudio
