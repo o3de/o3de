@@ -38,7 +38,8 @@ namespace PhysX
         class DisplayCallback
         {
         public:
-            virtual void Display(AzFramework::DebugDisplayRequests& debugDisplayRequests) const = 0;
+            virtual void Display(const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) const = 0;
         protected:
             ~DisplayCallback() = default;
         };

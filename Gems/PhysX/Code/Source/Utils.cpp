@@ -1360,7 +1360,8 @@ namespace PhysX
                 }
             }
 
-            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, [[maybe_unused]] AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds)
+            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices,
+                [[maybe_unused]] AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds)
             {
                 int minX = 0;
                 int minY = 0;

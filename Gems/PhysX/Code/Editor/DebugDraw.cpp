@@ -785,8 +785,7 @@ namespace PhysX
         }
 
         // AzFramework::EntityDebugDisplayEventBus
-        void Collider::DisplayEntityViewport(
-            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        void Collider::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
             if (!m_displayCallback)
@@ -819,7 +818,7 @@ namespace PhysX
                     || (proximityVisualization.m_enabled && colliderIsInRange))
                 {
                     debugDisplay.PushMatrix(entityWorldTransformWithoutScale);
-                    m_displayCallback->Display(debugDisplay);
+                    m_displayCallback->Display(viewportInfo, debugDisplay);
                     debugDisplay.PopMatrix();
                 }
             }
