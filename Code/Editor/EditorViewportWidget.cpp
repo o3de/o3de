@@ -119,7 +119,7 @@ namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
 
-    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler 
     {
     public:
         EditorEntityNotifications(EditorViewportWidget& editorViewportWidget)
@@ -147,11 +147,6 @@ namespace AZ::ViewportHelpers
         void OnStartPlayInEditorBegin() override
         {
             m_editorViewportWidget.OnStartPlayInEditorBegin();
-        }
-
-        void OnEntityStreamLoadSuccess() override
-        {
-            m_editorViewportWidget.OnEntityStreamLoadSuccess();
         }
 
     private:
@@ -198,6 +193,8 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     m_editorEntityNotifications = AZStd::make_unique<AZ::ViewportHelpers::EditorEntityNotifications>(*this);
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
     if (!m_pPrimaryViewport)
     {
@@ -212,6 +209,8 @@ EditorViewportWidget::~EditorViewportWidget()
     {
         m_pPrimaryViewport = nullptr;
     }
+
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
 
     m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
@@ -1939,7 +1938,7 @@ void EditorViewportWidget::SetDefaultCamera()
     {
         m_defaultViewTM.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
         m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
-            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetY())))));
+            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
     }
     else
     {
@@ -2139,7 +2138,7 @@ void EditorViewportWidget::OnStartPlayInEditorBegin()
     m_playInEditorState = PlayInEditorState::Starting;
 }
 
-void EditorViewportWidget::OnEntityStreamLoadSuccess()
+void EditorViewportWidget::OnRootPrefabInstanceLoaded()
 {
     SetDefaultCamera();
 }

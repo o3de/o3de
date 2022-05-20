@@ -22,7 +22,7 @@ namespace AzToolsFramework
     class LocalViewBookmarkLoader final
         : public ViewBookmarkLoaderInterface
         , private Prefab::PrefabTemplateNotificationBus::Handler
-        , private EditorEntityContextNotificationBus::Handler
+        , private Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
@@ -49,8 +49,8 @@ namespace AzToolsFramework
         // PrefabTemplateNotificationBus overrides ...
         void OnPrefabTemplateSaved() override;
 
-        // EditorEntityContextNotificationBus overrides ...
-        void OnEntityStreamLoadSuccess() override;
+        // PrefabPublicNotificationBus overrides ...
+        void OnRootPrefabInstanceLoaded() override;
 
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
 

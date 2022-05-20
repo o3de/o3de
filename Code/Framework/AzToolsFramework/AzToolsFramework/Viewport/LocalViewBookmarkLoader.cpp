@@ -12,9 +12,9 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Viewport/LocalViewBookmarkLoader.h>
@@ -66,12 +66,12 @@ namespace AzToolsFramework
     {
         AZ::Interface<ViewBookmarkLoaderInterface>::Register(this);
 
-        EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     void LocalViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
     {
-        EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         Prefab::PrefabTemplateNotificationBus::Handler::BusDisconnect();
 
         AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
@@ -514,13 +514,17 @@ namespace AzToolsFramework
         return success;
     }
 
-    void LocalViewBookmarkLoader::OnEntityStreamLoadSuccess()
+    void LocalViewBookmarkLoader::OnRootPrefabInstanceLoaded()
     {
         auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
         AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
-        Prefab::PrefabTemplateNotificationBus::Handler::BusDisconnect();
+        if (Prefab::PrefabTemplateNotificationBus::Handler::BusIsConnected())
+        {
+            Prefab::PrefabTemplateNotificationBus::Handler::BusDisconnect();
+        }
+
         Prefab::PrefabTemplateNotificationBus::Handler::BusConnect(rootPrefabTemplateId);
     }
 
@@ -530,12 +534,17 @@ namespace AzToolsFramework
         AzFramework::CameraState cameraState;
         Camera::EditorCameraRequestBus::BroadcastResult(found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
 
+        const auto radToDeg3 = [](const AZ::Vector3& radians)
+        {
+            return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
+        };
+
         if (found)
         {
             ViewBookmark bookmark;
             bookmark.m_position = cameraState.m_position;
-            bookmark.m_rotation =
-                AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
+            bookmark.m_rotation = radToDeg3(
+                AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up)));
 
             SaveLastKnownLocation(bookmark);
         }
