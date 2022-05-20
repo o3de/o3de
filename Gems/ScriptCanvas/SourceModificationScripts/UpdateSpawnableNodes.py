@@ -1,6 +1,7 @@
 import sys
 import shutil
 from pathlib import Path
+import json
 
 fullPath = sys.argv[1]
 
@@ -12,10 +13,20 @@ extension = path.suffix
 fileNameBackup = fileName + "_bckup"
 fullBackupPath = (path.parent).joinpath(fileNameBackup).with_suffix(extension)
 
-shutil.copy(fullPath, fullBackupPath)
+# shutil.copy(fullPath, fullBackupPath)
+#print("Backup saved to \'%s\'" % fullBackupPath)
 
-print("Backup saved to \'%s\'" % fullBackupPath)
+with open(fullPath, 'r') as file :
+  filedata = file.read()
+  
+prefab_dom = json.loads(filedata)
+# inspect DOM, do fixup - it'll be stored as a python dict
 
+filedata = json.dumps(prefab_dom, indent=4)
+
+
+
+'''
 with open(fullPath, 'r') as file :
   filedata = file.read()
 
@@ -23,8 +34,10 @@ filedata = filedata.replace('"$type": "SpawnTicketInstance"', '"$type": "AzFrame
 filedata = filedata.replace('"$type": "SpawnableAsset"', '"$type": "AzFramework::Scripts::SpawnableScriptAssetRef"')
 filedata = filedata.replace('\"Asset\"', '\"asset\"')
 filedata = filedata.replace('{2B5EB938-8962-4A43-A97B-112F398C604B}', '{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}')
+'''
 
-with open(fullPath, 'w') as file:
+with open(fullBackupPath, 'w') as file:
   file.write(filedata)
+
 
 print("Asset successfully updated")
