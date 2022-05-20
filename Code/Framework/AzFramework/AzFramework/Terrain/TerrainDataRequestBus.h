@@ -241,26 +241,19 @@ namespace AzFramework
             //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
             struct ProcessAsyncParams
             {
-                //! The default minimum  number ofpositions per async terrain request job.
+                //! The default minimum number of positions per async terrain request job.
                 static constexpr int32_t MinPositionsPerJobDefault = 8;
-
-                //! The default number of jobs which async terrain requests will be split into.
-                static constexpr int32_t NumJobsDefault = 1;
 
                 //! The maximum number of jobs which async terrain requests will be split into.
                 //! This is not the value itself, rather a constant that can be used to request
                 //! the work be split into the maximum number of job manager threads available.
                 static constexpr int32_t NumJobsMax = -1;
 
+                //! The default number of jobs which async terrain requests will be split into.
+                static constexpr int32_t NumJobsDefault = 1;
+
                 //! The desired number of jobs to split async terrain requests into.
                 //! The actual value used will be clamped to the number of available job manager threads.
-                //!
-                //! Note: Currently, splitting the work over multiple threads causes contention when
-                //! locking various mutexes, resulting in slower overall wall time for async
-                //! requests split over multiple threads vs one where all the work is done on
-                //! a single thread. The latter is still preferable over a regular synchronous
-                //! call because it is just as quick and prevents the main thread from blocking.
-                //! This note should be removed once the mutex contention issues have been addressed.
                 int32_t m_desiredNumberOfJobs = NumJobsDefault;
 
                 //! The minimum number of positions per async terrain request job.
@@ -337,70 +330,6 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-
-        private:
-            // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
-            // using an "out" parameter. The "out" parameter is useful for reusing memory allocated in SurfacePoint when
-            // using the public API, but can't easily be used from Script Canvas.
-            SurfaceData::SurfacePoint BehaviorContextGetSurfacePoint(
-                const AZ::Vector3& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT) const
-            {
-                SurfaceData::SurfacePoint result;
-                    GetSurfacePoint(inPosition, result, sampleFilter);
-                return result;
-            }
-            SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
-                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const
-            {
-                SurfaceData::SurfacePoint result;
-                GetSurfacePointFromVector2(inPosition, result, sampleFilter);
-                return result;
-            }
-            // Private variations of the GetHeight.., GetNormal..., GetMaxSurfaceWeight..., GetSurfaceWeights... APIs
-            // exposed to BehaviorContext that does not use the terrainExists "out" parameter.
-            float BehaviorContextGetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR)
-            {
-                return GetHeight(position, sampler, nullptr);
-            }
-            float BehaviorContextGetHeightFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR)
-            {
-                return GetHeightFromVector2(position, sampler, nullptr);
-            }
-            float BehaviorContextGetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR)
-            {
-                return GetHeightFromFloats(x, y, sampler, nullptr);
-            }
-            AZ::Vector3 BehaviorContextGetNormal(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
-            {
-                return GetNormal(position, sampleFilter, nullptr);
-            }
-            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeight(
-                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
-            {
-                return GetMaxSurfaceWeight(position, sampleFilter, nullptr);
-            }
-            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeightFromVector2(
-                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT)
-            {
-                return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
-            }
-            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeights(
-                const AZ::Vector3& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT)
-            {
-                SurfaceData::SurfaceTagWeightList list;
-                GetSurfaceWeights(inPosition, list, sampleFilter, nullptr);
-                return list;
-            }
-            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeightsFromVector2(
-                const AZ::Vector2& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT)
-            {
-                SurfaceData::SurfaceTagWeightList list;
-                GetSurfaceWeightsFromVector2(inPosition, list, sampleFilter, nullptr);
-                return list;
-            }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 

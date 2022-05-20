@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -80,6 +81,7 @@ namespace AZ
         class RenderPipeline
         {
             friend class Pass;
+            friend class PassSystem;
             friend class Scene;
 
         public:
@@ -136,6 +138,9 @@ namespace AZ
             RenderPipelineId GetId() const;
 
             const Ptr<ParentPass>& GetRootPass() const;
+
+            //! Processes passes in the pipeline that are queued for build, initialization or removal
+            void ProcessQueuedPassChanges();
 
             //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
             void SetPassModified();
@@ -240,6 +245,12 @@ namespace AZ
             // Build pipeline views from the pipeline pass tree. It's usually called when pass tree changed.
             void BuildPipelineViews();
 
+            // Called by Pass System at the start of rendering the frame
+            void PassSystemFrameBegin(Pass::FramePrepareParams params);
+
+            // Called by Pass System at the end of rendering the frame
+            void PassSystemFrameEnd();
+
             //////////////////////////////////////////////////
             // Functions accessed by Scene class
             
@@ -261,14 +272,13 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
             // The Scene this pipeline was added to.
             Scene* m_scene = nullptr;
 
-            // Pass tree which contains all the passes in this render pipeline.
-            Ptr<ParentPass> m_rootPass;
+            // Holds the passes belonging to the pipeline
+            PassTree m_passTree;
 
             // Attachment bindings/connections that can be referenced from any pass in the pipeline in a global manner
             AZStd::vector<PipelineGlobalBinding> m_pipelineGlobalConnections;

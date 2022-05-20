@@ -77,7 +77,7 @@ namespace AzToolsFramework
             auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
 
             // invoke the actual change on the Dom, it will come back to us as an update
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue());
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue(), AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
         }
         return succeeded;
     }
@@ -158,6 +158,11 @@ namespace AzToolsFramework
 
     void DPEModelNode::SetValue(const AZ::Dom::Value& domVal, bool notifyView)
     {
+        if (!domVal.IsNode())
+        {
+            AZ_Warning("DPE", false, "Received a non-node value");
+            return;
+        }
         auto domName = domVal.GetNodeName().GetStringView();
 
         // these will only be used if we're notifying the view
@@ -381,11 +386,8 @@ namespace AzToolsFramework
 
     DPEModelNode* DPEDebugModel::GetNodeFromPath(const AZ::Dom::Path& thePath) const
     {
-        auto pathIter = thePath.begin();
-        AZ_Assert(pathIter->IsIndex() && pathIter->GetIndex() == 0, "start of the path should always be the one and only adapter");
-        ++pathIter;
         DPEModelNode* returnedNode = m_rootNode;
-        for (auto endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
+        for (auto pathIter = thePath.begin(), endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
         {
             // non-index subpaths are for properties not nodes, so only handle the index paths
             if (pathIter->IsIndex())

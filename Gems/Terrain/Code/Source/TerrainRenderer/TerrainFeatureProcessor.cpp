@@ -169,12 +169,12 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
     {
-        CacheForwardPass();
+        CachePasses();
     }
 
     void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
     {
-        CacheForwardPass();
+        CachePasses();
     }
 
     void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
@@ -387,28 +387,25 @@ namespace Terrain
         if (m_materialInstance && m_materialInstance->CanCompile())
         {
             AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+            AZ::RPI::ViewPtr mainView;
             for (auto& view : process.m_views)
             {
                 if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
                 {
+                    mainView = view;
                     cameraPosition = view->GetCameraTransform().GetTranslation();
                     break;
                 }
             }
 
-            if (m_meshManager.IsInitialized())
-            {
-                bool surfacesRebuilt = false;
-                surfacesRebuilt = m_meshManager.CheckRebuildSurfaces(m_materialInstance, *GetParentScene());
-                if (m_forceRebuildDrawPackets && !surfacesRebuilt)
-                {   
-                    m_meshManager.RebuildDrawPackets(*GetParentScene());
-                }
-                m_forceRebuildDrawPackets = false;
-            }
-
             if (m_terrainSrg)
             {
+                if (m_meshManager.IsInitialized())
+                {
+                    m_meshManager.Update(mainView, m_terrainSrg, m_materialInstance, *GetParentScene(), m_forceRebuildDrawPackets);
+                    m_forceRebuildDrawPackets = false;
+                }
+
                 if (m_macroMaterialManager.IsInitialized())
                 {
                     m_macroMaterialManager.Update(m_terrainSrg);
@@ -436,11 +433,11 @@ namespace Terrain
                 bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
-        }
-        
-        if (m_meshManager.IsInitialized())
-        {
-            m_meshManager.DrawMeshes(process);
+
+            if (m_meshManager.IsInitialized())
+            {
+                m_meshManager.DrawMeshes(process, mainView);
+            }
         }
 
         if (m_heightmapImage && m_imageBindingsNeedUpdate)
@@ -461,10 +458,13 @@ namespace Terrain
             m_materialInstance->Compile();
         }
 
-        if (m_terrainSrg && m_forwardPass)
+        if (m_terrainSrg && m_passes.size() > 0)
         {
             m_terrainSrg->Compile();
-            m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
+            for (auto* pass : m_passes)
+            {
+                pass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
+            }
         }
     }
 
@@ -480,27 +480,34 @@ namespace Terrain
         m_detailMaterialManager.SetDetailMaterialConfiguration(config);
     }
     
-    void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
+    void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
-        // This will control the max rendering size. Actual terrain size can be much
-        // larger but this will limit how much is rendered.
+        m_meshManager.SetConfiguration(config);
     }
     
-    void TerrainFeatureProcessor::CacheForwardPass()
+    void TerrainFeatureProcessor::CachePasses()
     {
+        m_passes.clear();
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-        AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        const AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        const AZ::RHI::DrawListTag depthTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("depth"));
+        const AZ::RHI::DrawListTag shadowTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("shadow"));
+
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(rasterPassFilter,
             [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
                 auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
 
-                if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
+                if (rasterPass)
                 {
-                    m_forwardPass = rasterPass;
-                    return AZ::RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    if (rasterPass->GetDrawListTag() == forwardTag ||
+                        rasterPass->GetDrawListTag() == depthTag ||
+                        rasterPass->GetDrawListTag() == shadowTag)
+                    {
+                        m_passes.push_back(rasterPass);
+                    }
                 }
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             }

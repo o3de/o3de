@@ -59,7 +59,7 @@ namespace AZ::Dom::Utils
         return AZ::Success(AZStd::move(value));
     }
 
-    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs)
+    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters)
     {
         const Value::ValueType& lhsValue = lhs.GetInternalValue();
         const Value::ValueType& rhsValue = rhs.GetInternalValue();
@@ -103,7 +103,7 @@ namespace AZ::Dom::Utils
                     {
                         const Object::EntryType& lhsChild = ourValues[i];
                         auto rhsIt = rhs.FindMember(lhsChild.first);
-                        if (rhsIt == rhs.MemberEnd() || !DeepCompareIsEqual(lhsChild.second, rhsIt->second))
+                        if (rhsIt == rhs.MemberEnd() || !DeepCompareIsEqual(lhsChild.second, rhsIt->second, parameters))
                         {
                             return false;
                         }
@@ -135,7 +135,7 @@ namespace AZ::Dom::Utils
                     {
                         const Value& lhsChild = ourValues[i];
                         const Value& rhsChild = theirValues[i];
-                        if (!DeepCompareIsEqual(lhsChild, rhsChild))
+                        if (!DeepCompareIsEqual(lhsChild, rhsChild, parameters))
                         {
                             return false;
                         }
@@ -170,7 +170,7 @@ namespace AZ::Dom::Utils
                     {
                         const Object::EntryType& lhsChild = ourProperties[i];
                         auto rhsIt = rhs.FindMember(lhsChild.first);
-                        if (rhsIt == rhs.MemberEnd() || !DeepCompareIsEqual(lhsChild.second, rhsIt->second))
+                        if (rhsIt == rhs.MemberEnd() || !DeepCompareIsEqual(lhsChild.second, rhsIt->second, parameters))
                         {
                             return false;
                         }
@@ -183,13 +183,30 @@ namespace AZ::Dom::Utils
                     {
                         const Value& lhsChild = ourChildren[i];
                         const Value& rhsChild = theirChildren[i];
-                        if (!DeepCompareIsEqual(lhsChild, rhsChild))
+                        if (!DeepCompareIsEqual(lhsChild, rhsChild, parameters))
                         {
                             return false;
                         }
                     }
 
                     return true;
+                }
+                else if constexpr (AZStd::is_same_v<Alternative, Value::OpaqueStorageType>)
+                {
+                    if (!rhs.IsOpaqueValue())
+                    {
+                        return false;
+                    }
+
+                    const Value::OpaqueStorageType& theirValue = AZStd::get<Value::OpaqueStorageType>(rhsValue);
+                    if (parameters.m_treatOpaqueValuesOfSameTypeAsEqual)
+                    {
+                        return ourValue->type() == theirValue->type();
+                    }
+                    else
+                    {
+                        return ourValue == theirValue;
+                    }
                 }
                 else
                 {
@@ -205,5 +222,29 @@ namespace AZ::Dom::Utils
         AZStd::unique_ptr<Visitor> writer = copiedValue.GetWriteHandler();
         value.Accept(*writer, copyStrings);
         return copiedValue;
+    }
+
+    const AZ::TypeId& GetValueTypeId(const Dom::Value& value)
+    {
+        switch (value.GetType())
+        {
+        case Type::Bool:
+            return azrtti_typeid<bool>();
+        case Type::Double:
+            return azrtti_typeid<double>();
+        case Type::Int64:
+            return azrtti_typeid<int64_t>();
+        case Type::Uint64:
+            return azrtti_typeid<uint64_t>();
+        case Type::String:
+            return azrtti_typeid<AZStd::string_view>();
+        // For compound types, just treat the stored type as Value
+        case Type::Array:
+        case Type::Object:
+        case Type::Node:
+            return azrtti_typeid<Value>();
+        default:
+            return azrtti_typeid<void>();
+        }
     }
 } // namespace AZ::Dom::Utils

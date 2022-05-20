@@ -128,7 +128,8 @@ namespace Physics
             SurfaceData = (1 << 2),
             DestroyBegin = (1 << 3),
             DestroyEnd = (1 << 4),
-            CreateEnd = (1 << 5)
+            CreateEnd = (1 << 5),
+            SurfaceMapping = (1 << 6)
         };
 
         //! Called whenever the heightfield data changes.

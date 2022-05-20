@@ -12,14 +12,6 @@ set(FILES
     Source/ActionHistory/ActionHistoryCallback.h
     Source/ActionHistory/ActionHistoryPlugin.cpp
     Source/ActionHistory/ActionHistoryPlugin.h
-    Source/Attachments/AttachmentNodesWindow.cpp
-    Source/Attachments/AttachmentNodesWindow.h
-    Source/Attachments/AttachmentsHierarchyWindow.cpp
-    Source/Attachments/AttachmentsHierarchyWindow.h
-    Source/Attachments/AttachmentsPlugin.cpp
-    Source/Attachments/AttachmentsPlugin.h
-    Source/Attachments/AttachmentsWindow.cpp
-    Source/Attachments/AttachmentsWindow.h
     Source/AnimGraph/AnimGraphActionManager.cpp
     Source/AnimGraph/AnimGraphActionManager.h
     Source/AnimGraph/AnimGraphEditor.cpp
@@ -58,10 +50,6 @@ set(FILES
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/GameController.cpp
-    Source/AnimGraph/GameController.h
-    Source/AnimGraph/GameControllerWindow.cpp
-    Source/AnimGraph/GameControllerWindow.h
     Source/AnimGraph/GraphNode.cpp
     Source/AnimGraph/GraphNode.h
     Source/AnimGraph/GraphNodeFactory.cpp

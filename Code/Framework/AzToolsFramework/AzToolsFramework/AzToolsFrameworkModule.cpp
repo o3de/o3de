@@ -11,6 +11,7 @@
  // Component includes
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
@@ -69,6 +70,7 @@ namespace AzToolsFramework
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
+            ActionManagerSystemComponent::CreateDescriptor(),
             Components::TransformComponent::CreateDescriptor(),
             Components::EditorNonUniformScaleComponent::CreateDescriptor(),
             Components::SelectionComponent::CreateDescriptor(),
