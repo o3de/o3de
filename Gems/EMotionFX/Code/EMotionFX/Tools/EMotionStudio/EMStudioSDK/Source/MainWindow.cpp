@@ -20,6 +20,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -75,89 +76,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace EMStudio
 {
-    class SaveDirtyWorkspaceCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyWorkspaceCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
-    public:
-        SaveDirtyWorkspaceCallback()
-            : SaveDirtyFilesCallback()                                                              {}
-        ~SaveDirtyWorkspaceCallback()                                                               {}
-
-        enum
-        {
-            TYPE_ID = 0x000002345
-        };
-        uint32 GetType() const override                                                             { return TYPE_ID; }
-        uint32 GetPriority() const override                                                         { return 0; }
-        bool GetIsPostProcessed() const override                                                    { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            Workspace* workspace = GetManager()->GetWorkspace();
-            if (workspace->GetDirtyFlag())
-            {
-                // add the filename to the dirty filenames array
-                outFileNames->push_back(workspace->GetFilename());
-
-                // add the link to the actual object
-                ObjectPointer objPointer;
-                objPointer.m_workspace = workspace;
-                outObjects->push_back(objPointer);
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.m_workspace == nullptr)
-                {
-                    continue;
-                }
-
-                Workspace* workspace = objPointer.m_workspace;
-
-                // has the workspace been saved already or is it a new one?
-                if (workspace->GetFilenameString().empty())
-                {
-                    // open up save as dialog so that we can choose a filename
-                    const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveWorkspaceFileDialog(GetMainWindow());
-                    if (filename.empty())
-                    {
-                        return DirtyFileManager::CANCELED;
-                    }
-
-                    // save the workspace using the newly selected filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", filename.c_str());
-                    commandGroup->AddCommandString(command);
-                }
-                else
-                {
-                    // save workspace using its filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", workspace->GetFilename());
-                    commandGroup->AddCommandString(command);
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "emfxworkspace"; }
-        const char* GetFileType() const override        { return "workspace"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMStudio::Workspace>();
-        }
-
-    };
-
     class UndoMenuCallback
         : public MCore::CommandManagerCallback
     {
@@ -497,6 +415,10 @@ namespace EMStudio
 
         // Create the dirty file manager and register the workspace callback.
         m_dirtyFileManager = new DirtyFileManager;
+        m_dirtyFileManager->AddCallback(new SaveDirtyActorFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionSetFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyAnimGraphFilesCallback());
         m_dirtyFileManager->AddCallback(new SaveDirtyWorkspaceCallback);
 
         // init the file manager
