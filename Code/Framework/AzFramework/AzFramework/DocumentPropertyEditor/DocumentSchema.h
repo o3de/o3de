@@ -214,10 +214,10 @@ namespace AZ::DocumentPropertyEditor
     };
 
     //! Represents an attribute that should resolve to an AZ::TypeId with a string representation.
-    class TypeIdAttributeDefinition : public AttributeDefinition<AZ::TypeId>
+    class TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
     {
     public:
-        inline constexpr TypeIdAttributeDefinition(AZStd::string_view name)
+        inline explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
             : AttributeDefinition<AZ::TypeId>(name)
         {
         }

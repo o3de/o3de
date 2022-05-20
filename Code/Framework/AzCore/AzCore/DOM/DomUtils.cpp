@@ -74,7 +74,7 @@ namespace AZ::Dom::Utils
         if (value.IsString())
         {
             rapidjson::Value buffer;
-            buffer.SetString(value.GetString().data(), aznumeric_cast<rapidjson::SizeType>(value.GetStringLength()));
+            buffer.SetString(value.GetString().data(), aznumeric_caster(value.GetStringLength()));
             JsonSerialization::LoadTypeId(result, buffer, baseClassId);
         }
         return result;

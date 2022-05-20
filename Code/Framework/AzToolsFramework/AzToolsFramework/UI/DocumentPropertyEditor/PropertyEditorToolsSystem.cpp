@@ -36,11 +36,11 @@ namespace AzToolsFramework
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");
         if (typeName.empty())
         {
-            for (auto handlerIt = m_defaultHandlers.begin(); handlerIt != m_defaultHandlers.end(); ++handlerIt)
+            for (PropertyHandlerId handler : m_defaultHandlers)
             {
-                if ((*handlerIt)->m_shouldHandleNode(node))
+                if (handler->m_shouldHandleNode(node))
                 {
-                    return *handlerIt;
+                    return handler;
                 }
             }
             return InvalidHandlerId;
