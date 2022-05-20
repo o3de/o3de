@@ -16,7 +16,6 @@
 #include <QMenu>
 #include <QObject>
 #include <QString>
-#include <QtWidgets/QMessageBox>
 
 // AzCore
 #include <AzCore/std/string/wildcard.h>
@@ -32,6 +31,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -294,6 +294,12 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 {
     using namespace AzToolsFramework::AssetBrowser;
 
+    AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*> (caller);
+    if (!treeView)
+    {
+        return;
+    }
+
     AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
     if (!entry)
     {
@@ -424,78 +430,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             }
         }
 
-        // Create the callback to pass to the SourceControlAPI
-        AzToolsFramework::SourceControlResponseCallback callback =
-            [](bool success, const AzToolsFramework::SourceControlFileInfo& info)
-        {
-            const char* fullFilePathStr = info.m_filePath.c_str();
-            if (!success)
-            {
-                // Be more specific with errors so as to give the user the best chance at fixing them
-                if (!info.HasFlag(AzToolsFramework::SCF_OpenByUser))
-                {
-                    if (info.HasFlag(AzToolsFramework::SourceControlFlags::SCF_OutOfDate))
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - You do not have latest changes from source control for file\n%1")
-                                .arg(fullFilePathStr));
-                    }
-                    else if (info.IsLockedByOther())
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - File exclusively opened by another user %1 ->\n%2")
-                                .arg(info.m_StatusUser.c_str(), fullFilePathStr));
-                    }
-                    else if (
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderIsDown ||
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_CertificateInvalid ||
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderError)
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - Failed to remove file from source control, check your connection to your "
-                                    "source control service.\n%1")
-                                .arg(fullFilePathStr));
-                    }
-                    else
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Unknown Issue with source control.\n%1").arg(fullFilePathStr));
-                    }
-                }
-                else
-                {
-                    QMessageBox::information(
-                        AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                        QObject::tr("Source Control Issue - File marked as 'Open By User' but still failed.\n%1").arg(fullFilePathStr));
-                }
-            }
-        };
         // Add Delete option
-        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [entries, numOfEntries, callback]()
+        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [treeView]()
         {
-            QMessageBox box;
-            box.setIcon(QMessageBox::Warning);
-            box.setWindowTitle(numOfEntries > 1 ? QObject::tr("Delete selected assets?") : QObject::tr("Delete selected asset?"));
-            box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-            QAbstractButton* okButton = box.button(QMessageBox::Ok);
-            okButton->setText("Delete");
-            box.setText(numOfEntries > 1 ?
-                 QObject::tr("Are you sure you want to delete these assets?\nYou cannot undo this action.")
-                    : QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.").arg(entries.front()->GetFullPath().c_str()));
-            int ret = box.exec();
-            if (ret == QMessageBox::Ok)
-            {
-                using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-                for (auto entry : entries)
-                {
-                    SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, entry->GetFullPath().c_str(), callback);
-                }
-            }
-        });
+            treeView->DeleteEntries();
+        })->setShortcut(QKeySequence::Delete);
 
         if (numOfEntries == 1)
         {

@@ -58,6 +58,8 @@ namespace AzToolsFramework
 
             void SelectFolder(AZStd::string_view folderPath);
 
+            void DeleteEntries();
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
