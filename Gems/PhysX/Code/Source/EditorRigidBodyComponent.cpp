@@ -199,8 +199,8 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
                         "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "") // end previous group by starting new unnamed expanded group
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
                         "Maximum angular velocity", "Clamp angular velocities to this maximum value. "
                         "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")

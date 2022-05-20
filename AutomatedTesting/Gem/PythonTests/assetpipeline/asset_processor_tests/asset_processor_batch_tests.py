@@ -136,12 +136,13 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1571827')
-    @pytest.mark.skip(
-        reason="Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's "
-               "recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete"
-               "before the shutdown completes and the failure doesn't end up counting")
+    @pytest.mark.SUITE_sandbox
     def test_ProcessAssets_IncludeTwoAssetsWithSameProduct_FailingOnSecondAsset(self, asset_processor, ap_setup_fixture):
         """
+        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
+        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
+        before the shutdown completes and the failure doesn't end up counting
+
         Tests processing two source assets with the same product file and validates that the second source will error
 
         Test Steps:
@@ -337,12 +338,13 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
-    @pytest.mark.skip(
-        reason="Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's "
-               "recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete"
-               "before the shutdown completes and the failure doesn't end up counting")
+    @pytest.mark.SUITE_sandbox
     def test_AddTwoTexturesWithSameName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
+        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
+        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
+        before the shutdown completes and the failure doesn't end up counting
+
         Tests processing of two textures with the same name then verifies that AP will successfully process after
         renaming one of the textures
 
@@ -674,9 +676,12 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to a different type to test preload cyclical dependencies")
+    @pytest.mark.SUITE_sandbox
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
+        Sandboxed: GHI 8,365 - Update assets from .prefab to a different type that allows for preload cyclical
+        dependencies
+
         Tests processing an asset with a circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
@@ -699,9 +704,12 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="GHI: 8,365 Update assets from .prefab to an asset type that can have nested preload dependencies")
+    @pytest.mark.SUITE_sandbox
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
+        Sandboxed: GHI 8,365 - Update assets from .prefab to a different type that allows for nested preload
+        dependencies
+
         Tests processing of a nested preload circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 

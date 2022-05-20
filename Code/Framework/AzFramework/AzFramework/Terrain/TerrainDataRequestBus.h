@@ -241,26 +241,19 @@ namespace AzFramework
             //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
             struct ProcessAsyncParams
             {
-                //! The default minimum  number ofpositions per async terrain request job.
+                //! The default minimum number of positions per async terrain request job.
                 static constexpr int32_t MinPositionsPerJobDefault = 8;
-
-                //! The default number of jobs which async terrain requests will be split into.
-                static constexpr int32_t NumJobsDefault = 1;
 
                 //! The maximum number of jobs which async terrain requests will be split into.
                 //! This is not the value itself, rather a constant that can be used to request
                 //! the work be split into the maximum number of job manager threads available.
                 static constexpr int32_t NumJobsMax = -1;
 
+                //! The default number of jobs which async terrain requests will be split into.
+                static constexpr int32_t NumJobsDefault = 1;
+
                 //! The desired number of jobs to split async terrain requests into.
                 //! The actual value used will be clamped to the number of available job manager threads.
-                //!
-                //! Note: Currently, splitting the work over multiple threads causes contention when
-                //! locking various mutexes, resulting in slower overall wall time for async
-                //! requests split over multiple threads vs one where all the work is done on
-                //! a single thread. The latter is still preferable over a regular synchronous
-                //! call because it is just as quick and prevents the main thread from blocking.
-                //! This note should be removed once the mutex contention issues have been addressed.
                 int32_t m_desiredNumberOfJobs = NumJobsDefault;
 
                 //! The minimum number of positions per async terrain request job.
