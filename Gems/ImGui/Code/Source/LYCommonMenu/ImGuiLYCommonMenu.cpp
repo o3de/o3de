@@ -17,6 +17,7 @@
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
+#include "AzCore/StringFunc/StringFunc.h"
 
 namespace ImGui
 {
@@ -275,12 +276,22 @@ namespace ImGui
 
                         AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
                         AZStd::vector<AZStd::string> levelNames;
+                        AZStd::set<AZStd::string> networkedLevelNames;
                         auto enumerateCB =
-                            [levelAssetType, &levelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                            [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                         {
                             if (assetInfo.m_assetType == levelAssetType)
                             {
-                                levelNames.emplace_back(assetInfo.m_relativePath);
+                                if (assetInfo.m_relativePath.ends_with(".network.spawnable"))
+                                {   
+                                    AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                    AZ::StringFunc::Replace(spawnablePath, ".network", "");
+                                    networkedLevelNames.emplace(spawnablePath);
+                                }
+                                else
+                                {
+                                    levelNames.emplace_back(assetInfo.m_relativePath);
+                                }
                             }
                         };
 
@@ -294,7 +305,8 @@ namespace ImGui
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
                         for (int i = 0; i < levelNames.size(); i++)
                         {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, levelNames[i].c_str()).c_str()))
+                            bool isNetworked = networkedLevelNames.contains(levelNames[i]);
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Networked)":"").c_str()))
                             {
                                 AZ::TickBus::QueueFunction(
                                     [lvlSystem, levelNames, i]()
