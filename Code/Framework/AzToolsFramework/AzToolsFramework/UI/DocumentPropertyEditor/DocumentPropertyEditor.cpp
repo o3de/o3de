@@ -13,11 +13,12 @@
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework
 {
     // helper method used by both the view and row widgets to empty layouts
-    static void destroyLayoutContents(QLayout* layout)
+    static void DestroyLayoutContents(QLayout* layout)
     {
         while (auto layoutItem = layout->takeAt(0))
         {
@@ -48,41 +49,56 @@ namespace AzToolsFramework
 
     void DPERowWidget::Clear()
     {
-        destroyLayoutContents(m_columnLayout);
-        destroyLayoutContents(m_childRowLayout);
+        // propertyHandlers own their widgets, so don't destroy them here. Set them free!
+        for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
+             propertyWidgetIter != endIter; ++propertyWidgetIter)
+        {
+            m_columnLayout->removeWidget(propertyWidgetIter->first);
+        }
+        m_widgetToPropertyHandler.clear();
+
+        DestroyLayoutContents(m_columnLayout);
+        DestroyLayoutContents(m_childRowLayout);
         m_domOrderedChildren.clear();
     }
 
     void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex)
     {
-        auto childType = childValue.GetNodeName().GetStringView();
+        auto childType = childValue.GetNodeName();
 
         // create a child widget from the given DOM value and add it to the correct layout
         QBoxLayout* layoutForWidget = nullptr;
         QWidget* addedWidget = nullptr;
-        if (childType == AZ::DocumentPropertyEditor::Nodes::Row::Name)
+        if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
             // if it's a row, recursively populate the children from the DOM array in the passed value
             auto newRow = new DPERowWidget(this);
-            newRow->SetChildrenFromDomArray(childValue);
+            newRow->SetValueFromDom(childValue);
             addedWidget = newRow;
             layoutForWidget = m_childRowLayout;
         }
-        else if (childType == AZ::DocumentPropertyEditor::Nodes::Label::Name)
+        else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
         {
             auto labelString = childValue[AZ::DocumentPropertyEditor::Nodes::Label::Value.GetName()].GetString();
             addedWidget = new QLabel(QString::fromUtf8(labelString.data(), static_cast<int>(labelString.size())), this);
             layoutForWidget = m_columnLayout;
         }
-        else if (childType == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name)
+        else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
         {
-            // todo: use line edits with the dom text for now. Replace this with actual handler widgets, once they are done
-            AZ::Dom::JsonBackend<AZ::Dom::Json::ParseFlags::ParseComments, AZ::Dom::Json::OutputFormatting::MinifiedJson> jsonBackend;
-            AZStd::string stringBuffer;
-            AZ::Dom::Utils::ValueToSerializedString(
-                jsonBackend, childValue[AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.GetName()], stringBuffer);
+            auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
+            auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
 
-            addedWidget = new QLineEdit(QString::fromUtf8(stringBuffer.data(), static_cast<int>(stringBuffer.size())), this);
+            // <apm> this shouldn't happen once everything is implemented, but bail for now on a null handlerId
+            if (!handlerId)
+            {
+                return;
+            }
+
+            // store, then reference the unique_ptr that will manage the handler's lifetime
+            auto handler = dpeSystem->CreateHandlerInstance(handlerId);
+            handler->SetValueFromDom(childValue);
+            addedWidget = handler->GetWidget();
+            m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
             layoutForWidget = m_columnLayout;
         }
         else
@@ -117,7 +133,7 @@ namespace AzToolsFramework
         }
     }
 
-    void DPERowWidget::SetChildrenFromDomArray(const AZ::Dom::Value& domArray)
+    void DPERowWidget::SetValueFromDom(const AZ::Dom::Value& domArray)
     {
         Clear();
 
@@ -186,9 +202,29 @@ namespace AzToolsFramework
             }
             else // child must be a label or a PropertyEditor
             {
-                // todo: handle this when PropertyHandlerWidgets are done, note that a PropertyEditor could theoretically be a QLabel too...
+                // pare down the path to this node, then look up and set the value from the DOM
+                auto subPath = fullPath;
+                for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
+                {
+                    subPath.Pop();
+                }
+                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+                m_widgetToPropertyHandler[childWidget]->SetValueFromDom(valueAtSubPath);
             }
         }
+    }
+
+    DocumentPropertyEditor* DPERowWidget::GetDPE()
+    {
+        DocumentPropertyEditor* theDPE = nullptr;
+        QWidget* ancestorWidget = parentWidget();
+        while (ancestorWidget && !theDPE)
+        {
+            theDPE = qobject_cast<DocumentPropertyEditor*>(ancestorWidget);
+            ancestorWidget = ancestorWidget->parentWidget();
+        }
+        AZ_Assert(theDPE, "the top level widget in any DPE hierarchy must be the DocumentPropertyEditor itself!");
+        return theDPE;
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
@@ -199,7 +235,7 @@ namespace AzToolsFramework
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
     {
-        destroyLayoutContents(GetVerticalLayout());
+        DestroyLayoutContents(GetVerticalLayout());
     }
 
     void DocumentPropertyEditor::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
@@ -228,17 +264,17 @@ namespace AzToolsFramework
         return static_cast<QVBoxLayout*>(layout());
     }
 
-    void DocumentPropertyEditor::addRowFromValue(const AZ::Dom::Value& domValue, int rowIndex)
+    void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex)
     {
         auto newRow = new DPERowWidget(this);
-        newRow->SetChildrenFromDomArray(domValue);
+        newRow->SetValueFromDom(domValue);
         GetVerticalLayout()->insertWidget(rowIndex, newRow);
     }
 
     void DocumentPropertyEditor::HandleReset()
     {
         // clear any pre-existing DPERowWidgets
-        destroyLayoutContents(GetVerticalLayout());
+        DestroyLayoutContents(GetVerticalLayout());
 
         auto topContents = m_adapter->GetContents();
 
@@ -251,7 +287,7 @@ namespace AzToolsFramework
 
             if (isRow)
             {
-                addRowFromValue(rowValue, static_cast<int>(arrayIndex));
+                AddRowFromValue(rowValue, static_cast<int>(arrayIndex));
             }
         }
     }
@@ -278,7 +314,7 @@ namespace AzToolsFramework
             {
                 if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
-                    addRowFromValue(operationIterator->GetValue(), static_cast<int>(rowIndex));
+                    AddRowFromValue(operationIterator->GetValue(), static_cast<int>(rowIndex));
                 }
                 else
                 {
@@ -286,7 +322,7 @@ namespace AzToolsFramework
                         static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
                     if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
                     {
-                        rowWidget->SetChildrenFromDomArray(operationIterator->GetValue());
+                        rowWidget->SetValueFromDom(operationIterator->GetValue());
                     }
                     else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                     {
@@ -301,7 +337,8 @@ namespace AzToolsFramework
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
 
-                rowWidget->HandleOperationAtPath(*operationIterator);
+                constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
+                rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
     }
