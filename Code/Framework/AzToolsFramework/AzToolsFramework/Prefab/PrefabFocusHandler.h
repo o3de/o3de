@@ -76,7 +76,7 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
-        enum FocusChangeBehavior
+        enum class FocusChangeBehavior
         {
             CloseCurrentlyFocusedItems,
             IgnoreCurrentlyFocusedItems
