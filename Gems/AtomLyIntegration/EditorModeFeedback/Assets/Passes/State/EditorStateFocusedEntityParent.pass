@@ -17,12 +17,30 @@
                     "Name": "InputEntityMask",
                     "SlotType": "Input"
                 },
-                // Existing swapchain data
                 {
-                    "Name": "ColorInputOutput",
-                    "SlotType": "InputOutput"
+                    "Name": "InputColor",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output"
                 }
             ], 
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "TintPass",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
             "PassRequests": [
                 // Applied the desaturation effect to entities not of interest
                 {
@@ -47,7 +65,7 @@
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "ColorInputOutput"
+                                "Attachment": "InputColor"
                             }
                         }
                     ]
@@ -79,35 +97,35 @@
                             }
                         }
                     ]
-                },
+                }//,
                 // Applied the box blur effect to entities not of interest
-                {
-                    "Name": "BlurPass",
-                    "TemplateName": "EditorModeBlurParentTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "InputDepth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputEntityMask",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "InputEntityMask"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputColor",
-                            "AttachmentRef": {
-                                "Pass": "TintPass",
-                                "Attachment": "OutputColor"
-                            }
-                        }
-                    ]
-                }
+                //{
+                //    "Name": "BlurPassParent",
+                //    "TemplateName": "EditorModeBlurParentTemplate",
+                //    "Connections": [
+                //        {
+                //            "LocalSlot": "InputDepth",
+                //            "AttachmentRef": {
+                //                "Pass": "Parent",
+                //                "Attachment": "InputDepth"
+                //            }
+                //        },
+                //        {
+                //            "LocalSlot": "InputEntityMask",
+                //            "AttachmentRef": {
+                //                "Pass": "Parent",
+                //                "Attachment": "InputEntityMask"
+                //            }
+                //        },
+                //        {
+                //            "LocalSlot": "InputColor",
+                //            "AttachmentRef": {
+                //                "Pass": "TintPass",
+                //                "Attachment": "OutputColor"
+                //            }
+                //        }
+                //    ]
+                //}
             ]
         }
     }
