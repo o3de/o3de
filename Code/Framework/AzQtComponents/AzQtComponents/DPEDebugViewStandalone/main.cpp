@@ -203,7 +203,7 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
-#if 0 // change this to test with a reflection adapter instead
+#if 1 // change this to test with a reflection adapter instead
     // create a default cvar adapter to expose the local CVar settings to edit
     AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
 #else
