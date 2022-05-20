@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
 
 class QAction;
@@ -45,11 +46,7 @@ namespace AzToolsFramework
 
             MenuItemType m_type;
 
-            union
-            {
-                QAction* m_action;
-                QMenu* m_submenu;
-            };
+            AZStd::variant<QAction*, QMenu*> m_value;
         };
 
         QMenu* m_menu = nullptr;

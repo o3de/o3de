@@ -45,7 +45,7 @@ namespace AzToolsFramework
         virtual MenuManagerOperationResult AddSeparatorToMenu(
             const AZStd::string& menuIdentifier, int sortIndex) = 0;
 
-        //! Add a separator to a menu.
+        //! Add a sub-menu to a menu.
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 

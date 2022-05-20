@@ -55,12 +55,12 @@ namespace AzToolsFramework
             {
             case MenuItemType::Action:
                 {
-                    m_menu->addAction(elem.second.m_action);
+                    m_menu->addAction(AZStd::get<QAction*>(elem.second.m_value));
                     break;
                 }
             case MenuItemType::SubMenu:
                 {
-                    m_menu->addMenu(elem.second.m_submenu);
+                    m_menu->addMenu(AZStd::get<QMenu*>(elem.second.m_value));
                     break;
                 }
             case MenuItemType::Separator:
@@ -81,13 +81,13 @@ namespace AzToolsFramework
 
     EditorMenu::MenuItem::MenuItem(QAction* action)
         : m_type(MenuItemType::Action)
-        , m_action(action)
+        , m_value(action)
     {
     }
 
     EditorMenu::MenuItem::MenuItem(QMenu* menu)
         : m_type(MenuItemType::SubMenu)
-        , m_submenu(menu)
+        , m_value(menu)
     {
     }
 
