@@ -1349,16 +1349,6 @@ namespace ScriptCanvasEditor
         return nullptr;
     }
 
-    void EditorGraph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
-    {
-        m_owner = &owner;
-    }
-
-    ScriptCanvas::DataPtr EditorGraph::GetOwnership() const
-    {
-        return const_cast<EditorGraph*>(this)->m_owner;
-    }
-
     bool EditorGraph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
     {
         if (!sourcePoint.IsValid() || !targetPoint.IsValid())

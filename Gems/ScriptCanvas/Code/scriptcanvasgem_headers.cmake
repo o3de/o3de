@@ -37,6 +37,7 @@ set(FILES
     Include/ScriptCanvas/Core/Endpoint.h
     Include/ScriptCanvas/Core/Graph.h
     Include/ScriptCanvas/Core/GraphData.h
+    Include/ScriptCanvas/Core/GraphSerialization.h
     Include/ScriptCanvas/Core/GraphScopedTypes.h
     Include/ScriptCanvas/Core/MethodConfiguration.h
     Include/ScriptCanvas/Core/ModifiableDatumView.h

@@ -17,6 +17,8 @@
 
 namespace ScannerCpp
 {
+    using namespace ScriptCanvas;
+
     void TraverseTree
         ( QModelIndex index
         , AzToolsFramework::AssetBrowser::AssetBrowserFilterModel& model
@@ -37,7 +39,7 @@ namespace ScannerCpp
             AzFramework::StringFunc::Path::Normalize(fullPath);
 
             result.m_catalogAssets.push_back(
-                ScriptCanvasEditor::SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
+                SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
         }
 
         const int rowCount = model.rowCount(index);
@@ -52,6 +54,8 @@ namespace ScannerCpp
 
 namespace ScriptCanvasEditor
 {
+    using namespace ScriptCanvas;
+
     namespace VersionExplorer
     {
         Scanner::Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete)
@@ -102,10 +106,10 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
-            if (fileOutcome.IsSuccess())
+            auto result = LoadFromFile(ModCurrentAsset().Path().c_str());
+            if (result)
             {
-                return fileOutcome.GetValue().handle;
+                return result.m_handle;
             }
             else
             {

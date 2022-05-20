@@ -41,7 +41,10 @@ namespace ScriptEvents
         virtual const FundamentalTypes* GetFundamentalTypes() = 0;
 
         virtual AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> LoadDefinitionSource(const AZ::IO::Path& path) = 0;
-        virtual AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile(const ScriptEvents::ScriptEvent& events, const AZ::IO::Path& path) = 0;
+        virtual AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile
+            ( const ScriptEvents::ScriptEvent& events
+            , AZStd::string_view scriptCanvasJSON
+            , const AZ::IO::Path& path) = 0;
     };
 
     using ScriptEventBus = AZ::EBus<ScriptEventRequests>;

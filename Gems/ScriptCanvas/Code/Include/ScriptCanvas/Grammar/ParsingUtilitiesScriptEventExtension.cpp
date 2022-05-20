@@ -21,6 +21,8 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
 
     AZ::Outcome<ScriptEvents::Method, AZStd::string> TranslateToScriptEventMethod(const FunctionDefinitionNode& node)
     {
+        // this is how return values could be implemented, so manage that
+
         if (!node.IsExecutionEntry())
         {
             return AZ::Failure(AZStd::string("Only User-In nodes (not User-Out nodes) are allowed for ScriptEvents."));
@@ -51,11 +53,6 @@ namespace ScriptCanvas::ScriptEventGrammar
 {
     using namespace ScriptCanvas;
     using namespace ParsingUtilitiesScriptEventExtensionCpp;
-
-    AZ::Outcome<void, AZStd::string> CreateGraphArtifactsFromScriptEvents(const ScriptEvents::ScriptEvent& /*definition*/, Graph& /*graph*/)
-    {
-        return AZ::Success();
-    }
 
     GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph)
     {

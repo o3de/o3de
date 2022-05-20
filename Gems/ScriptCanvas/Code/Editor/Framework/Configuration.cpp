@@ -23,6 +23,8 @@
 
 namespace ScriptCanvasEditor
 {
+    using namespace ScriptCanvas;
+
     class OnScopeEnd
     {
     public:

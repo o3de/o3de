@@ -131,7 +131,10 @@ namespace ScriptEvents
         return AZ::Success(definition);
     }
 
-    AZ::Outcome<void, AZStd::string> ScriptEventsSystemComponentImpl::SaveDefinitionSourceFile([[maybe_unused]] const ScriptEvents::ScriptEvent& events, [[maybe_unused]] const AZ::IO::Path& path)
+    AZ::Outcome<void, AZStd::string> ScriptEventsSystemComponentImpl::SaveDefinitionSourceFile
+        ( const ScriptEvents::ScriptEvent& events
+        , AZStd::string_view scriptCanvasJSON
+        , const AZ::IO::Path& path)
     {
         using namespace ScriptEvents;
 
@@ -144,6 +147,7 @@ namespace ScriptEvents
         }
 
         ScriptEvents::ScriptEventsAsset assetData;
+        assetData.m_scriptCanvasSerializedData = scriptCanvasJSON;
         assetData.m_definition = events;
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(&assetData, AZ::Data::AssetLoadBehavior::Default);
         if (!assetHandler.SaveAssetData(asset, &outFileStream))

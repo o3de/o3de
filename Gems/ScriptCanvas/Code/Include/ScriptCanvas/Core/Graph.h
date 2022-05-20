@@ -154,6 +154,9 @@ namespace ScriptCanvas
             return nodes;
         }
 
+        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
+        ScriptCanvas::DataPtr GetOwnership() const;
+
     protected:
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
@@ -230,6 +233,10 @@ namespace ScriptCanvas
 
         void OnEntityActivated(const AZ::EntityId&) override;
         class GraphEventHandler;
+            
+    protected:
+        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
+        ScriptCanvas::ScriptCanvasData* m_owner;
 
     public:
         void MarkScriptEventExtension();

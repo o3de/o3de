@@ -23,13 +23,11 @@ namespace ScriptCanvas
         struct GraphToScriptEventsResult
         {
             bool m_isScriptEvents = false;
-            ScriptCanvasEditor::SourceHandle m_graph;
+            SourceHandle m_graph;
             AZStd::vector<AZStd::string> m_parseErrors;
             AZStd::vector<FunctionNodeToScriptEventResult> m_nodeResults;
             ScriptEvents::ScriptEvent m_event;
         };
-
-        AZ::Outcome<void, AZStd::string> CreateGraphArtifactsFromScriptEvents(const ScriptEvents::ScriptEvent& definition, Graph& graph);
 
         GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph);
 

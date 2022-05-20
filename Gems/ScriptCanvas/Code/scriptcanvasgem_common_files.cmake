@@ -27,6 +27,7 @@ set(FILES
     Include/ScriptCanvas/Core/Endpoint.cpp
     Include/ScriptCanvas/Core/Graph.cpp
     Include/ScriptCanvas/Core/GraphData.cpp
+    Include/ScriptCanvas/Core/GraphSerialization.cpp
     Include/ScriptCanvas/Core/MethodConfiguration.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.cpp
     Include/ScriptCanvas/Core/Node.cpp

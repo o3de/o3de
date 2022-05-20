@@ -13,6 +13,8 @@
 
 namespace AZ
 {
+    using namespace ScriptCanvas;
+
     AZ_CLASS_ALLOCATOR_IMPL(EditorScriptCanvasComponentSerializer, SystemAllocator, 0);
 
     JsonSerializationResult::Result EditorScriptCanvasComponentSerializer::Load
@@ -62,7 +64,7 @@ namespace AZ
                     result.Combine(ContinueLoading(&overrides, azrtti_typeid(overrides), overridesMember->value, context));
                 }
 
-                ScriptCanvasEditor::SourceHandle sourceHandle;
+                SourceHandle sourceHandle;
                 if (auto sourceHandleMember = inputValue.FindMember("sourceHandle"); sourceHandleMember != inputValue.MemberEnd())
                 {
                     // file was saved with SourceHandle data
@@ -89,7 +91,7 @@ namespace AZ
                             result.Combine(ContinueLoading(&path, azrtti_typeid(path), pathMember->value, context));
                         }
 
-                        sourceHandle = ScriptCanvasEditor::SourceHandle(nullptr, assetId.m_guid, path);
+                        sourceHandle = SourceHandle(nullptr, assetId.m_guid, path);
                     }
                 }
 

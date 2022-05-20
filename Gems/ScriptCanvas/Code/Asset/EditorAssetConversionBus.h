@@ -21,11 +21,14 @@ namespace AZ
 namespace ScriptCanvas
 {
     class RuntimeAsset;
+    class SourceHandle;
     class SubgraphInterfaceAsset;
 }
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = SourceHandle;
+
     class EditorAssetConversionBusTraits
         : public AZ::EBusTraits
     {

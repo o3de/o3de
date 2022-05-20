@@ -1036,14 +1036,21 @@ namespace ScriptCanvasEditor
 
                 if (!fileName.isEmpty())
                 {
+                    // this is where to call the SC graph to json string function
+                    // auto jsonResult = ScriptCanvasEditor::SaveToString(graph)
+
+                    AZStd::string jsonStrong = "FINISH ME!";
+
+                    AZ::IO::Path path(fileName.toUtf8().constData());
+
                     // use the ScriptEventBus, also to get fundamental types(?)
-                    // ScriptEventsEditor::SaveDefinitionSourceFile(result.m_event, fileName.toUtf8().constData());
                     AZ::Outcome<void, AZStd::string> saveOutcome = AZ::Failure(AZStd::string("failed to save"));
                     ScriptEvents::ScriptEventBus::BroadcastResult
                         ( saveOutcome
                         , &ScriptEvents::ScriptEventRequests::SaveDefinitionSourceFile
                         , result.m_event
-                        , fileName.toUtf8().constData());
+                        , jsonStrong.c_str()
+                        , path);
 
                     if (!saveOutcome.IsSuccess())
                     {
@@ -1142,15 +1149,15 @@ namespace ScriptCanvasEditor
                     // maybe embed the data in ScriptEvents ?
                     // and load it from that handle? it could be easier for all we know
                     // loadOutcome.GetValue().Flatten();
-                    auto graphOutcome = CreateGraphArtifactsFromScriptEvents(loadOutcome.GetValue(), *graph);
-                    if (graphOutcome.IsSuccess())
-                    {
-                        // I don't know make sure it all ... rendered appropriately, I guess...if it has not already
-                    }
-                    else
-                    {
-                        errorMessage = "Failed to generate ScriptCanvas artifacts from ScriptEvent nodes";
-                    }
+//                     auto graphOutcome = CreateGraphArtifactsFromScriptEvents(loadOutcome.GetValue(), *graph);
+//                     if (graphOutcome.IsSuccess())
+//                     {
+//                         // I don't know make sure it all ... rendered appropriately, I guess...if it has not already
+//                     }
+//                     else
+//                     {
+//                         errorMessage = "Failed to generate ScriptCanvas artifacts from ScriptEvent nodes";
+//                     }
                 }
                 else
                 {

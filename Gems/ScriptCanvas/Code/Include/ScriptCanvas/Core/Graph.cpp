@@ -1209,6 +1209,16 @@ namespace ScriptCanvas
         scriptCanvasNode.SignalSlotRemoved(slotId);
     }
 
+    void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
+    {
+        m_owner = &owner;
+    }
+
+    ScriptCanvas::DataPtr Graph::GetOwnership() const
+    {
+        return const_cast<Graph*>(this)->m_owner;
+    }
+
     void Graph::MarkScriptEventExtension()
     {
         m_isScriptEventExtension = true;

@@ -310,11 +310,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
-
-        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
-        ScriptCanvas::DataPtr GetOwnership() const;
-
-
+        
     protected:
         void PostRestore(const UndoData& restoredData) override;
 
@@ -433,8 +429,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        ScriptCanvasEditor::SourceHandle m_assetId;
-        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
-        ScriptCanvas::ScriptCanvasData* m_owner;
+        SourceHandle m_assetId;
     };
 }

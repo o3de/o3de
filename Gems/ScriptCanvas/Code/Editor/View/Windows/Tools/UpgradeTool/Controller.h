@@ -30,6 +30,11 @@ namespace Ui
     class View;
 }
 
+namespace ScriptCanvas
+{
+    class SourceHandle;
+}
+
 namespace AzQtComponents
 {
     class StyledBusyLabel;
@@ -37,6 +42,8 @@ namespace AzQtComponents
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = SourceHandle;
+
     namespace VersionExplorer
     {
         //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
