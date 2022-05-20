@@ -27,14 +27,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, AddActionToUnregisteredMenu)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         EXPECT_FALSE(outcome.IsSuccess());
@@ -43,15 +36,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, AddActionToMenu)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
-
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
@@ -81,13 +66,7 @@ namespace UnitTest
 
         // Register a new action and add it to the menu.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
         // Verify the action is now in the menu.
@@ -103,13 +82,7 @@ namespace UnitTest
 
         // Register a new action and add it to the menu twice.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
@@ -127,20 +100,8 @@ namespace UnitTest
 
         // Register a new action and add it to the menu.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test1", {},
-            []()
-            {
-                ;
-            }
-        );
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test2", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 1);
 
@@ -165,20 +126,8 @@ namespace UnitTest
 
         // Register a new action and add it to the menu.
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test1", {},
-            []()
-            {
-                ;
-            }
-        );
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test2", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 42);
 
@@ -236,20 +185,8 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
 
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test1", {},
-            []()
-            {
-                ;
-            }
-        );
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test2", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
 
         // Create a menu with this setup. Order of addition is intentionally scrambled to verify sortKeys.
         // - Test 1 Action
