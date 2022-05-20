@@ -64,20 +64,28 @@ namespace AZ::Dom::Utils
     {
         rapidjson::Document buffer;
         JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId);
+        if (!buffer.IsString())
+        {
+            return ValueFromType(typeId);
+        }
         AZ_Assert(buffer.IsString(), "TypeId should be stored as a string");
         return Value(AZStd::string_view(buffer.GetString(), buffer.GetStringLength()), true);
     }
 
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId)
     {
-        AZ::TypeId result = AZ::TypeId::CreateNull();
         if (value.IsString())
         {
+            AZ::TypeId result = AZ::TypeId::CreateNull();
             rapidjson::Value buffer;
             buffer.SetString(value.GetString().data(), aznumeric_caster(value.GetStringLength()));
             JsonSerialization::LoadTypeId(result, buffer, baseClassId);
+            return result;
         }
-        return result;
+        else
+        {
+            return ValueToType<AZ::TypeId>(value).value_or(AZ::TypeId::CreateNull());
+        }
     }
 
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
