@@ -156,8 +156,19 @@ namespace Terrain
             int16_t m_gridSize;
         };
 
+        struct CachedDrawData
+        {
+            AZ::Data::Instance<AZ::RPI::Shader> m_shader;
+            AZ::RPI::ShaderOptionGroup m_shaderOptions;
+            const AZ::RHI::PipelineState* m_pipelineState;
+            AZ::RHI::DrawListTag m_drawListTag;
+        };
+
         using HeightDataType = uint16_t;
         using NormalDataType = AZStd::pair<int16_t, int16_t>;
+        static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
+        static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
+        static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;
@@ -185,7 +196,7 @@ namespace Terrain
         AZ::RPI::Scene* m_parentScene;
 
         MaterialInstance m_materialInstance;
-        AZStd::vector<AZ::Data::Instance<AZ::RPI::Shader>> m_shaderList; // Holds references to shaders so they don't go out of scope.
+        AZStd::vector<CachedDrawData> m_cachedDrawData; // Holds common parts of draw packets
 
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
@@ -206,7 +217,7 @@ namespace Terrain
 
         bool m_isInitialized{ false };
         bool m_rebuildSectors{ true };
-        bool m_forceRebuildDrawPackets{ false };
+        bool m_rebuildDrawPackets{ false };
 
     };
 }

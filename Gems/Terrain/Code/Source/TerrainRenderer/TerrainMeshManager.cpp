@@ -51,7 +51,7 @@ namespace Terrain
 
         m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
         {
-            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
+            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_rebuildDrawPackets = true; }
         };
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
 
@@ -85,7 +85,7 @@ namespace Terrain
                 }
             }
 
-            m_forceRebuildDrawPackets = true;
+            m_rebuildDrawPackets = true;
         }
     }
 
@@ -102,16 +102,18 @@ namespace Terrain
 
     void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
+        if (m_rebuildDrawPackets)
+        {
+            // Rebuild the draw packets when the mateiral or shaders change.
+            RebuildDrawPackets();
+            m_rebuildDrawPackets = false;
+        }
+
         if (m_rebuildSectors)
         {
+            // Rebuild the sectors when the configuration or terrain world changes
             RebuildSectors();
             m_rebuildSectors = false;
-            m_forceRebuildDrawPackets = false;
-        }
-        else if (m_forceRebuildDrawPackets)
-        {
-            // The draw packets may need to be forcibly rebuilt in cases like a shader reload.
-            RebuildDrawPackets();
         }
 
         ShaderMeshData meshData;
@@ -189,9 +191,6 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(StackSectorData& sector)
     {
-        //const auto& materialAsset = m_materialInstance->GetAsset();
-        //const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, m_indexBuffer->GetBufferViewDescriptor().m_elementCount, 0));
@@ -200,83 +199,6 @@ namespace Terrain
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
         sector.m_perDrawSrgs.clear();
-
-        auto appendShader = [&](const AZ::RPI::ShaderCollection::Item& shaderItem)
-        {
-            // Skip the shader item without creating the shader instance
-            // if the mesh is not going to be rendered based on the draw tag
-            AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            AZ::RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
-
-            // Use the explicit draw list override if exists.
-            AZ::RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
-
-            if (drawListTag.IsNull())
-            {
-                drawListTag = drawListTagRegistry->FindTag(shaderItem.GetShaderAsset()->GetDrawListName());
-            }
-
-            if (!m_parentScene->HasOutputForPipelineState(drawListTag))
-            {
-                // drawListTag not found in this scene, so don't render this item
-                return;
-            }
-
-            AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
-
-            // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
-            // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
-            // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
-            AZ::RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
-            shaderOptions.SetUnspecifiedToDefaultValues();
-
-            const AZ::RPI::ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
-            const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
-
-            AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-            variant.ConfigurePipelineState(pipelineStateDescriptor);
-
-            AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, m_xyPositionsBuffer->GetBufferViewDescriptor().m_elementFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, sector.m_heightsBuffer->GetBufferViewDescriptor().m_elementFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL" }, sector.m_normalsBuffer->GetBufferViewDescriptor().m_elementFormat);
-            pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
-
-            auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg;
-            if (drawSrgLayout)
-            {
-                // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-                if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
-                {
-                    drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
-                }
-                drawSrg->Compile();
-            }
-
-            m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
-
-            const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            if (!pipelineState)
-            {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
-                return;
-            }
-
-            AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
-            drawRequest.m_listTag = drawListTag;
-            drawRequest.m_pipelineState = pipelineState;
-            drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
-            drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
-
-            if (drawSrg)
-            {
-                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
-                sector.m_perDrawSrgs.push_back(drawSrg);
-            }
-            drawPacketBuilder.AddDrawItem(drawRequest);
-        };
 
         // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
         // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
@@ -291,12 +213,38 @@ namespace Terrain
             }
         }
 
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        for (CachedDrawData& drawData : m_cachedDrawData)
         {
-            if (shaderItem.IsEnabled())
+            AZ::Data::Instance<AZ::RPI::Shader>& shader = drawData.m_shader;
+
+            AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            drawRequest.m_listTag = drawData.m_drawListTag;
+            drawRequest.m_pipelineState = drawData.m_pipelineState;
+            drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
+            drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
+
+            const AZ::RPI::ShaderVariantId finalVariantId = drawData.m_shaderOptions.GetShaderVariantId();
+            const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
+
+            auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg;
+            if (drawSrgLayout)
             {
-                appendShader(shaderItem);
+                // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
+                drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
+                if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                {
+                    drawSrg->SetShaderVariantKeyFallbackValue(drawData.m_shaderOptions.GetShaderVariantKeyFallbackValue());
+                }
+                drawSrg->Compile();
             }
+
+            if (drawSrg)
+            {
+                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                sector.m_perDrawSrgs.push_back(drawSrg);
+            }
+            drawPacketBuilder.AddDrawItem(drawRequest);
         }
 
         sector.m_rhiDrawPacket = drawPacketBuilder.End();
@@ -309,20 +257,6 @@ namespace Terrain
 
         const auto& materialAsset = m_materialInstance->GetAsset();
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-
-        m_shaderList.clear();
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
-        {
-            // Force load and cache shader instances.
-            AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
-
-            if (!shader)
-            {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
-                continue;
-            }
-            m_shaderList.emplace_back(AZStd::move(shader));
-        }
 
         // Calculate the largest potential number of sectors needed per dimension at any stack level.
         m_1dSectorCount = aznumeric_cast<uint32_t>(AZStd::ceilf((m_config.m_firstLodDistance + gridMeters) / gridMeters));
@@ -350,8 +284,8 @@ namespace Terrain
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
                 uint32_t vertexCount = (GridSize + 1) * (GridSize + 1);
-                sector.m_heightsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16_UNORM, vertexCount);
-                sector.m_normalsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16G16_SNORM, vertexCount);
+                sector.m_heightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
+                sector.m_normalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
 
                 sector.m_indexBufferView =
                 {
@@ -418,6 +352,74 @@ namespace Terrain
 
     void TerrainMeshManager::RebuildDrawPackets()
     {
+        m_cachedDrawData.clear();
+
+        // Rebuild common draw packet data
+        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        {
+            if (!shaderItem.IsEnabled())
+            {
+                continue;
+            }
+
+            // Force load and cache shader instances.
+            AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
+            if (!shader)
+            {
+                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                continue;
+            }
+
+            // Skip the shader item without creating the shader instance
+            // if the mesh is not going to be rendered based on the draw tag
+            AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+            AZ::RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
+
+            // Use the explicit draw list override if exists.
+            AZ::RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
+
+            if (drawListTag.IsNull())
+            {
+                drawListTag = drawListTagRegistry->FindTag(shaderItem.GetShaderAsset()->GetDrawListName());
+            }
+
+            if (!m_parentScene->HasOutputForPipelineState(drawListTag))
+            {
+                // drawListTag not found in this scene, so don't render this item
+                return;
+            }
+
+            // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
+            // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
+            // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
+            AZ::RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
+            shaderOptions.SetUnspecifiedToDefaultValues();
+
+            const AZ::RPI::ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
+            const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
+
+            AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
+            variant.ConfigurePipelineState(pipelineStateDescriptor);
+
+            AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, XYPositionFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, HeightFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL" }, NormalFormat);
+            pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
+
+            m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
+
+            const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+            if (!pipelineState)
+            {
+                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                return;
+            }
+
+            m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState, drawListTag });
+        }
+
+        // Rebuild the draw packets themselves
         for (auto& stackData : m_sectorStack)
         {
             for (auto& sector [[maybe_unused]] : stackData.m_sectors)
@@ -542,7 +544,7 @@ namespace Terrain
         PatchData patchData;
         InitializeTerrainPatch(GridSize, patchData);
 
-        m_xyPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32_FLOAT, patchData.m_xyPositions.size(), patchData.m_xyPositions.data());
+        m_xyPositionsBuffer = CreateMeshBufferInstance(XYPositionFormat, patchData.m_xyPositions.size(), patchData.m_xyPositions.data());
         m_indexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16_UINT, patchData.m_indices.size(), patchData.m_indices.data());
     }
 
