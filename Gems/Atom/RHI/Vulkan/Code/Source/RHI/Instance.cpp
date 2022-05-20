@@ -118,7 +118,6 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-          
             if (vkCreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
@@ -139,10 +138,10 @@ namespace AZ
 
         void Instance::Shutdown() 
         {
-            //Only destroy VkInstance if created locally and not passed in my a XR module
+            //Only destroy VkInstance if created locally and not passed in by XR module
             if (!m_isXRInstanceCreated)
             {
-                ShutdownInstance();
+                ShutdownNativeInstance();
             }
             
             if (m_functionLoader)
@@ -152,7 +151,7 @@ namespace AZ
             m_functionLoader = nullptr;
         }
 
-        void Instance::ShutdownInstance()
+        void Instance::ShutdownNativeInstance()
         {
             if (m_instance != VK_NULL_HANDLE)
             {
@@ -318,11 +317,11 @@ namespace AZ
 
             // Init the new native instance for XR
             AZ::RHI::ResultCode result = xrSystem->InitNativeInstance(xrInstanceDescriptor.get());
-            AZ_Warning("Vulkan", result == RHI::ResultCode::Success, "Xr instance creation was not successfull");
+            AZ_Warning("Vulkan", result == RHI::ResultCode::Success, "Xr instance creation was not successful");
             if (result == RHI::ResultCode::Success)
             {
                 //Delete existing VkInstance
-                ShutdownInstance();
+                ShutdownNativeInstance();
 
                 //Update the native object from the passed by the XR module
                 m_instance = xrInstanceDescriptor->m_outputData.m_xrVkInstance;
@@ -335,6 +334,7 @@ namespace AZ
                     
                 //Clear any existing physical devices
                 m_supportedDevices.clear();
+                m_supportedDevices.reserve(numPhysicalDevices);
 
                 //Re-populate physical devices from XR module
                 for (uint32_t i = 0; i < numPhysicalDevices; i++)

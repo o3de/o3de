@@ -36,7 +36,7 @@ namespace AZ
             : public AZ::Component
             , public AZ::SystemTickBus::Handler
             , public AZ::RHI::RHISystemNotificationBus::Handler
-            , public IXRRegisterInterface
+            , public XRRegisterInterface::Registrar
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -44,6 +44,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
             RPISystemComponent();
             ~RPISystemComponent() override;
@@ -52,7 +53,7 @@ namespace AZ
             void Deactivate() override;
 
             ///////////////////////////////////////////////////////////////////
-            //! IXRRegisterInterface
+            // IXRRegisterInterface overrides
             void RegisterXRInterface(XRRenderingInterface* xrSystemInterface) override;
             void UnRegisterXRInterface() override;
             ///////////////////////////////////////////////////////////////////

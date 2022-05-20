@@ -83,11 +83,8 @@ namespace AZ
             //If xr system is registered with RPI init xr instance
             if (m_xrSystem)
             {
-                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                if (resultCode != AZ::RHI::ResultCode::Success)
-                {
-                    AZ_Warning("RPISystem", false, "Unable to initialize XR System");
-                }
+                [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
             }
 
             //Init RHI device

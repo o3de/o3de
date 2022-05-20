@@ -62,7 +62,7 @@ namespace AZ::RHI
         virtual AZ::RHI::ResultCode InitNativeInstance(AZ::RHI::XRInstanceDescriptor* instanceDescriptor) = 0;
 
         //! Rendering api to get the number of physical devices
-        virtual uint32_t GetNumPhysicalDevices() = 0;
+        virtual AZ::u32 GetNumPhysicalDevices() = 0;
 
         //! Rendering api to get the physical devices associated with a specific index
         virtual AZ::RHI::ResultCode GetXRPhysicalDevice(

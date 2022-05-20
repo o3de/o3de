@@ -49,12 +49,12 @@ namespace AZ
             AZ::RHI::ValidationMode GetValidationMode() const;
 
             //! Since the native instance is created when the RHI::Vulkan module was initialized
-            //! this method allows us to re-update it if XR is support is requested
+            //! this method allows us to re-update it if XR support is requested by XR module.
             void UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem);
 
         private:
             RHI::PhysicalDeviceList EnumerateSupportedDevices() const;
-            void ShutdownInstance();
+            void ShutdownNativeInstance();
             void CreateDebugMessenger();
 
             Descriptor m_descriptor;

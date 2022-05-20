@@ -67,6 +67,11 @@ namespace AZ
             provided.push_back(AZ_CRC("RPISystem", 0xf2add773));
         }
 
+        void RPISystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        {
+            dependent.push_back(AZ_CRC_CE("XRSystemService"));
+        }
+
         RPISystemComponent::RPISystemComponent()
         {
         #ifdef RPI_EDITOR
@@ -75,8 +80,6 @@ namespace AZ
             m_materialFunctorRegistration = aznew MaterialFunctorSourceDataRegistration;
             m_materialFunctorRegistration->Init();
         #endif
-
-            XRRegisterInterface::Register(this);
         }
 
         RPISystemComponent::~RPISystemComponent()
@@ -88,8 +91,6 @@ namespace AZ
                 delete m_materialFunctorRegistration;
             }
         #endif
-
-            XRRegisterInterface::Unregister(this);
         }
 
         void RPISystemComponent::Activate()

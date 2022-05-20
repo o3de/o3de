@@ -251,7 +251,7 @@ namespace AZ
                 RHI::Ptr<XRDeviceDescriptor> xrDevicDescriptor = aznew XRDeviceDescriptor();
                 xrDevicDescriptor->m_inputData.m_deviceCreateInfo = &deviceInfo;
                 AZ::RHI::ResultCode result = xrSystem->CreateDevice(xrDevicDescriptor.get());
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successfull");
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
                 m_nativeDevice = xrDevicDescriptor->m_outputData.m_xrVkDevice;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
@@ -551,7 +551,7 @@ namespace AZ
             m_bufferMemoryRequirementsCache.Clear();
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
-            bool isXrDeviceActive = RHI::RHISystemInterface::Get()->GetXRSystem();
+            bool isXrDeviceActive = RHI::RHISystemInterface::Get()->GetXRSystem() != nullptr;
             if (!isXrDeviceActive)
             {
                 if (m_nativeDevice != VK_NULL_HANDLE)
