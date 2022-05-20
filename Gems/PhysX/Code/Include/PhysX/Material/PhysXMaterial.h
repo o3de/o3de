@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
+#include <AzCore/Math/Color.h>
 
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
@@ -23,6 +24,16 @@ namespace Physics
 
 namespace PhysX
 {
+    //! Enumeration that determines how two materials properties are combined when
+    //! processing collisions.
+    enum class CombineMode : AZ::u8
+    {
+        Average,
+        Minimum,
+        Maximum,
+        Multiply
+    };
+
     //! Runtime PhysX material instance.
     //! It handles the reloading of its data if the material asset it
     //! was created from is modified.
@@ -57,23 +68,35 @@ namespace PhysX
         //! @return Material instance created. It can return nullptr if the creation failed or if the asset passed is invalid.
         static AZStd::shared_ptr<Material> CreateMaterialWithRandomId(const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset);
 
+        static constexpr float MinDensityLimit = 0.01f; //!< Minimum possible value of density.
+        static constexpr float MaxDensityLimit = 100000.0f; //!< Maximum possible value of density.
+
         ~Material() override;
 
         // Physics::Material overrides ...
-        float GetDynamicFriction() const override;
-        void SetDynamicFriction(float dynamicFriction) override;
-        float GetStaticFriction() const override;
-        void SetStaticFriction(float staticFriction) override;
-        float GetRestitution() const override;
-        void SetRestitution(float restitution) override;
-        Physics::CombineMode GetFrictionCombineMode() const override;
-        void SetFrictionCombineMode(Physics::CombineMode mode) override;
-        Physics::CombineMode GetRestitutionCombineMode() const override;
-        void SetRestitutionCombineMode(Physics::CombineMode mode) override;
-        float GetDensity() const override;
-        void SetDensity(float density) override;
-        const AZ::Color& GetDebugColor() const override;
-        void SetDebugColor(const AZ::Color& debugColor) override;
+        float GetProperty(const AZStd::string& propertyName) const override;
+        void SetProperty(const AZStd::string& propertyName, float value) override;
+
+        float GetDynamicFriction() const;
+        void SetDynamicFriction(float dynamicFriction);
+
+        float GetStaticFriction() const;
+        void SetStaticFriction(float staticFriction);
+
+        float GetRestitution() const;
+        void SetRestitution(float restitution);
+
+        CombineMode GetFrictionCombineMode() const;
+        void SetFrictionCombineMode(CombineMode mode);
+
+        CombineMode GetRestitutionCombineMode() const;
+        void SetRestitutionCombineMode(CombineMode mode);
+
+        float GetDensity() const;
+        void SetDensity(float density);
+
+        const AZ::Color& GetDebugColor() const;
+        void SetDebugColor(const AZ::Color& debugColor);
 
         const physx::PxMaterial* GetPxMaterial() const;
 

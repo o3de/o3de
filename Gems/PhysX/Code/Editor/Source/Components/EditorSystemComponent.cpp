@@ -20,6 +20,7 @@
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
+#include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -31,17 +32,65 @@ namespace PhysX
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
 
+        EditorMaterialAsset::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorSystemComponent, AZ::Component>()
-                ->Version(1);
+                ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
+                ;
         }
+    }
+
+    void EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("PhysXEditorService"));
+    }
+
+    void EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("PhysXEditorService"));
+    }
+
+    void EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("PhysXService"));
+        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
+    }
+
+    void EditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void EditorSystemComponent::Activate()
     {
         Physics::EditorWorldBus::Handler::BusConnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
+
+        // Register PhysX Material Asset
+        auto* materialAsset = aznew AzFramework::GenericAssetHandler<PhysX::EditorMaterialAsset>("PhysX Material", Physics::MaterialAsset::AssetGroup, EditorMaterialAsset::FileExtension);
+        materialAsset->Register();
+        m_assetHandlers.emplace_back(materialAsset);
+
+        // Register PhysX Material Asset Builder
+        AssetBuilderSDK::AssetBuilderDesc materialAssetBuilderDescriptor;
+        materialAssetBuilderDescriptor.m_name = "PhysX Material Asset Builder";
+        materialAssetBuilderDescriptor.m_version = 1; // bump this to rebuild all physxmaterial files
+        materialAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", EditorMaterialAsset::FileExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+        materialAssetBuilderDescriptor.m_busId = azrtti_typeid<EditorMaterialAssetBuilder>();
+        materialAssetBuilderDescriptor.m_createJobFunction = [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+        {
+            m_materialAssetBuilder.CreateJobs(request, response);
+        };
+        materialAssetBuilderDescriptor.m_processJobFunction = [this](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+        {
+            m_materialAssetBuilder.ProcessJob(request, response);
+        };
+        m_materialAssetBuilder.BusConnect(materialAssetBuilderDescriptor.m_busId);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, materialAssetBuilderDescriptor);
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
@@ -68,6 +117,10 @@ namespace PhysX
             physicsSystem->RemoveScene(m_editorWorldSceneHandle);
         }
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        m_materialAssetBuilder.BusDisconnect();
+
+        m_assetHandlers.clear();
     }
 
     AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const

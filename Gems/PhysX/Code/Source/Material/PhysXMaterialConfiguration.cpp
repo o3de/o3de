@@ -8,17 +8,18 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Asset/AssetManager.h>
 
 #include <AzFramework/Physics/NameConstants.h>
-#include <AzFramework/Physics/Material/PhysicsMaterialConfiguration.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 
-namespace Physics
+namespace PhysX
 {
     void MaterialConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<Physics::MaterialConfiguration>()
+            serializeContext->Class<PhysX::MaterialConfiguration>()
                 ->Version(1)
                 ->Field("DynamicFriction", &MaterialConfiguration::m_dynamicFriction)
                 ->Field("StaticFriction", &MaterialConfiguration::m_staticFriction)
@@ -32,8 +33,8 @@ namespace Physics
             if (auto* editContext = serializeContext->GetEditContext())
             {
 
-                editContext->Class<Physics::MaterialConfiguration>("", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Physics Material")
+                editContext->Class<PhysX::MaterialConfiguration>("", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "PhysX Material")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, "Static friction", "Friction coefficient when object is still")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, "Dynamic friction", "Friction coefficient when object is moving")
@@ -52,12 +53,42 @@ namespace Physics
                         ->EnumAttribute(CombineMode::Maximum, "Maximum")
                         ->EnumAttribute(CombineMode::Multiply, "Multiply")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_density, "Density", "Material density")
-                        ->Attribute(AZ::Edit::Attributes::Min, MaterialConfiguration::MinDensityLimit)
-                        ->Attribute(AZ::Edit::Attributes::Max, MaterialConfiguration::MaxDensityLimit)
+                        ->Attribute(AZ::Edit::Attributes::Min, &MaterialConfiguration::GetMinDensityLimit)
+                        ->Attribute(AZ::Edit::Attributes::Max, &MaterialConfiguration::GetMaxDensityLimit)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetDensityUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Color, &MaterialConfiguration::m_debugColor, "Debug Color", "Debug color to use for this material")
                     ;
             }
         }
     }
-} // namespace Physics
+
+    AZ::Data::Asset<Physics::MaterialAsset> MaterialConfiguration::CreateMaterialAsset() const
+    {
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset =
+            AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
+                AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+
+        // TODO: Make this for generic types
+        const AZStd::unordered_map<AZStd::string, float> materialProperties =
+        {
+            {"DynamicFriction", m_dynamicFriction},
+            {"StaticFriction", m_staticFriction},
+            {"Restitution", m_restitution},
+            {"Density", m_density}
+        };
+
+        materialAsset->SetData(materialProperties);
+
+        return materialAsset;
+    }
+
+    float MaterialConfiguration::GetMinDensityLimit()
+    {
+        return Material::MinDensityLimit;
+    }
+
+    float MaterialConfiguration::GetMaxDensityLimit()
+    {
+        return Material::MaxDensityLimit;
+    }
+} // namespace PhysX

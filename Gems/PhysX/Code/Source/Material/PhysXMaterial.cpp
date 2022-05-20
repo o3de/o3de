@@ -15,34 +15,34 @@
 
 namespace PhysX
 {
-    static Physics::CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
+    static CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
     {
         switch (pxMode)
         {
         case physx::PxCombineMode::eAVERAGE:
-            return Physics::CombineMode::Average;
+            return CombineMode::Average;
         case physx::PxCombineMode::eMULTIPLY:
-            return Physics::CombineMode::Multiply;
+            return CombineMode::Multiply;
         case physx::PxCombineMode::eMAX:
-            return Physics::CombineMode::Maximum;
+            return CombineMode::Maximum;
         case physx::PxCombineMode::eMIN:
-            return Physics::CombineMode::Minimum;
+            return CombineMode::Minimum;
         default:
-            return Physics::CombineMode::Average;
+            return CombineMode::Average;
         }
     }
 
-    static physx::PxCombineMode::Enum ToPxCombineMode(Physics::CombineMode mode)
+    static physx::PxCombineMode::Enum ToPxCombineMode(CombineMode mode)
     {
         switch (mode)
         {
-        case Physics::CombineMode::Average:
+        case CombineMode::Average:
             return physx::PxCombineMode::eAVERAGE;
-        case Physics::CombineMode::Multiply:
+        case CombineMode::Multiply:
             return physx::PxCombineMode::eMULTIPLY;
-        case Physics::CombineMode::Maximum:
+        case CombineMode::Maximum:
             return physx::PxCombineMode::eMAX;
-        case Physics::CombineMode::Minimum:
+        case CombineMode::Minimum:
             return physx::PxCombineMode::eMIN;
         default:
             return physx::PxCombineMode::eAVERAGE;
@@ -105,11 +105,13 @@ namespace PhysX
         const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
         : Physics::Material(id, materialAsset)
     {
-        const Physics::MaterialConfiguration defaultMaterialConf;
+        const float defaultStaticFriction = 0.5f;
+        const float defaultDynamicFriction = 0.5f;
+        const float defaultRestitution = 0.5f;
 
         m_pxMaterial = PxMaterialUniquePtr(
             PxGetPhysics().createMaterial(
-                defaultMaterialConf.m_staticFriction, defaultMaterialConf.m_dynamicFriction, defaultMaterialConf.m_restitution),
+                defaultStaticFriction, defaultDynamicFriction, defaultRestitution),
             [](physx::PxMaterial* pxMaterial)
             {
                 pxMaterial->release();
@@ -118,15 +120,11 @@ namespace PhysX
         AZ_Assert(m_pxMaterial, "Failed to create physx material");
         m_pxMaterial->userData = this;
 
-        const auto& materialConfiguration = m_materialAsset->GetMaterialConfiguration();
-
-        SetStaticFriction(materialConfiguration.m_staticFriction);
-        SetDynamicFriction(materialConfiguration.m_dynamicFriction);
-        SetRestitution(materialConfiguration.m_restitution);
-        SetFrictionCombineMode(materialConfiguration.m_frictionCombine);
-        SetRestitutionCombineMode(materialConfiguration.m_restitutionCombine);
-        SetDensity(materialConfiguration.m_density);
-        SetDebugColor(materialConfiguration.m_debugColor);
+        // TODO: Validate GetMaterialProperties()
+        for (const auto& materialProperty : m_materialAsset->GetMaterialProperties())
+        {
+            SetProperty(materialProperty.first, materialProperty.second);
+        }
 
         // Connect to asset bus to listen to asset reloads notifications
         AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
@@ -135,6 +133,55 @@ namespace PhysX
     Material::~Material()
     {
         AZ::Data::AssetBus::Handler::BusDisconnect();
+    }
+
+    float Material::GetProperty(const AZStd::string& propertyName) const
+    {
+        if (propertyName == "DynamicFriction")
+        {
+            return GetDynamicFriction();
+        }
+        else if (propertyName == "StaticFriction")
+        {
+            return GetStaticFriction();
+        }
+        else if (propertyName == "Restitution")
+        {
+            return GetRestitution();
+        }
+        else if (propertyName == "Density")
+        {
+            return GetDensity();
+        }
+        else
+        {
+            AZ_Error("PhysX::Material", false, "Unknown property '%s'", propertyName.c_str());
+            return 0.0f;
+        }
+    }
+
+    void Material::SetProperty(const AZStd::string& propertyName, float value)
+    {
+        if (propertyName == "DynamicFriction")
+        {
+            SetDynamicFriction(value);
+        }
+        else if (propertyName == "StaticFriction")
+        {
+            SetStaticFriction(value);
+        }
+        else if (propertyName == "Restitution")
+        {
+            SetRestitution(value);
+        }
+        else if (propertyName == "Density")
+        {
+            SetDensity(value);
+        }
+        else
+        {
+            AZ_Error("PhysX::Material", false, "Unknown property '%s'", propertyName.c_str());
+        }
     }
 
     float Material::GetDynamicFriction() const
@@ -176,22 +223,22 @@ namespace PhysX
         m_pxMaterial->setRestitution(AZ::GetClamp(restitution, 0.0f, 1.0f));
     }
 
-    Physics::CombineMode Material::GetFrictionCombineMode() const
+    CombineMode Material::GetFrictionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getFrictionCombineMode());
     }
 
-    void Material::SetFrictionCombineMode(Physics::CombineMode mode)
+    void Material::SetFrictionCombineMode(CombineMode mode)
     {
         m_pxMaterial->setFrictionCombineMode(ToPxCombineMode(mode));
     }
 
-    Physics::CombineMode Material::GetRestitutionCombineMode() const
+    CombineMode Material::GetRestitutionCombineMode() const
     {
         return FromPxCombineMode(m_pxMaterial->getRestitutionCombineMode());
     }
 
-    void Material::SetRestitutionCombineMode(Physics::CombineMode mode)
+    void Material::SetRestitutionCombineMode(CombineMode mode)
     {
         m_pxMaterial->setRestitutionCombineMode(ToPxCombineMode(mode));
     }
@@ -204,11 +251,10 @@ namespace PhysX
     void Material::SetDensity(float density)
     {
         AZ_Warning(
-            "PhysX Material", density >= Physics::MaterialConfiguration::MinDensityLimit && density <= Physics::MaterialConfiguration::MaxDensityLimit,
-            "Density value %f will be clamped into range [%f, %f].", density, Physics::MaterialConfiguration::MinDensityLimit,
-            Physics::MaterialConfiguration::MaxDensityLimit);
+            "PhysX Material", density >= MinDensityLimit && density <= MaxDensityLimit,
+            "Density value %f will be clamped into range [%f, %f].", density, MinDensityLimit, MaxDensityLimit);
 
-        m_density = AZ::GetClamp(density, Physics::MaterialConfiguration::MinDensityLimit, Physics::MaterialConfiguration::MaxDensityLimit);
+        m_density = AZ::GetClamp(density, MinDensityLimit, MaxDensityLimit);
     }
 
     const AZ::Color& Material::GetDebugColor() const
@@ -230,14 +276,10 @@ namespace PhysX
     {
         m_materialAsset = asset;
 
-        const auto& materialConfiguration = m_materialAsset->GetMaterialConfiguration();
-
-        SetStaticFriction(materialConfiguration.m_staticFriction);
-        SetDynamicFriction(materialConfiguration.m_dynamicFriction);
-        SetRestitution(materialConfiguration.m_restitution);
-        SetFrictionCombineMode(materialConfiguration.m_frictionCombine);
-        SetRestitutionCombineMode(materialConfiguration.m_restitutionCombine);
-        SetDensity(materialConfiguration.m_density);
-        SetDebugColor(materialConfiguration.m_debugColor);
+        // TODO: Validate GetMaterialProperties()
+        for (const auto& materialProperty : m_materialAsset->GetMaterialProperties())
+        {
+            SetProperty(materialProperty.first, materialProperty.second);
+        }
     }
 } // namespace PhysX

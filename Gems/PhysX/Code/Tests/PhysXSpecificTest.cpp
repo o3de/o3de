@@ -32,6 +32,7 @@
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysX
@@ -1249,10 +1250,8 @@ namespace PhysX
             rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
         }
 
-        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset =
-            AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
-                AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-        defaultMaterialAsset->SetData(Physics::MaterialConfiguration{});
+        const PhysX::MaterialConfiguration defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset = defaultMaterialConfiguration.CreateMaterialAsset();
 
         // Create materials for each density
         AZStd::shared_ptr<PhysX::Material> boxMaterial = PhysX::Material::CreateMaterialWithRandomId(defaultMaterialAsset);
@@ -1306,36 +1305,31 @@ namespace PhysX
 
     TEST_P(DensityBoundariesTestFixture, Material_ExtremeDensityValues_ResultingDensityClampedToValidRange)
     {
-        AZ::Data::Asset<Physics::MaterialAsset> materialAsset =
-            AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
-                AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_density = GetParam();
 
-        Physics::MaterialConfiguration materialConf;
-        materialConf.m_density = GetParam();
-        materialAsset->SetData(materialConf);
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset = materialConfiguration.CreateMaterialAsset();
 
         AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::CreateMaterialWithRandomId(materialAsset);
 
         // Resulting density should be in the valid range
         float resultingDensity = material->GetDensity();
-        EXPECT_TRUE(resultingDensity >= Physics::MaterialConfiguration::MinDensityLimit
-            && resultingDensity <= Physics::MaterialConfiguration::MaxDensityLimit);
+        EXPECT_TRUE(resultingDensity >= PhysX::Material::MinDensityLimit
+            && resultingDensity <= PhysX::Material::MaxDensityLimit);
     }
 
     TEST_P(DensityBoundariesTestFixture, MaterialInstance_ExtremeDensityValues_ResultingDensityClampedToValidRange)
     {
-        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset =
-            AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
-                AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-        defaultMaterialAsset->SetData(Physics::MaterialConfiguration{});
+        const PhysX::MaterialConfiguration defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset = defaultMaterialConfiguration.CreateMaterialAsset();
 
         AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::CreateMaterialWithRandomId(defaultMaterialAsset);
         material->SetDensity(GetParam());
 
         // Resulting density should be in the valid range
         float resultingDensity = material->GetDensity();
-        EXPECT_TRUE(resultingDensity >= Physics::MaterialConfiguration::MinDensityLimit
-            && resultingDensity <= Physics::MaterialConfiguration::MaxDensityLimit);
+        EXPECT_TRUE(resultingDensity >= PhysX::Material::MinDensityLimit
+            && resultingDensity <= PhysX::Material::MaxDensityLimit);
     }
 
     // Valid material density values: [0.01f, 1e5f]

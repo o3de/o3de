@@ -10,17 +10,17 @@
 #include <AzCore/Asset/AssetManager.h>
 
 #include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 #include <Source/Material/PhysXMaterialManager.h>
 
 namespace PhysX
 {
     AZStd::shared_ptr<Physics::Material> MaterialManager::CreateDefaultMaterialInternal()
     {
-        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset =
-            AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
-                AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        const MaterialConfiguration defaultMaterialConfiguration;
 
-        defaultMaterialAsset->SetData(Physics::MaterialConfiguration{});
+        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset =
+            defaultMaterialConfiguration.CreateMaterialAsset();
 
         return CreateMaterialInternal(
             Physics::MaterialId::CreateFromAssetId(defaultMaterialAsset.GetId()),

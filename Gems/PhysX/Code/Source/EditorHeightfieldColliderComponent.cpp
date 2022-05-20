@@ -440,7 +440,7 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<Material>> materials =
             Material::FindOrCreateMaterials(updatedMaterialSlots);
 
-        physxShape->SetMaterials(materials);
+        physxShape->SetPhysXMaterials(materials);
 
         m_colliderConfig.m_materialSlots = updatedMaterialSlots;
     }

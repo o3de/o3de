@@ -129,11 +129,16 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
+    void Shape::SetPhysXMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
     {
         m_materials = materials;
 
         BindMaterialsWithPxShape();
+    }
+
+    const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& Shape::GetPhysXMaterials()
+    {
+        return m_materials;
     }
 
     void Shape::BindMaterialsWithPxShape()
@@ -191,11 +196,6 @@ namespace PhysX
 
             m_materials.push_back(physxMaterial);
         }
-    }
-
-    const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& Shape::GetMaterials()
-    {
-        return m_materials;
     }
 
     void Shape::SetCollisionLayer(const AzPhysics::CollisionLayer& layer)

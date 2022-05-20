@@ -255,7 +255,9 @@ namespace PhysX
             densities.reserve(m_shapes.size());
             for (const auto& shape : m_shapes)
             {
-                densities.emplace_back(shape->GetMaterial()->GetDensity());
+                const auto& physxMaterials = shape->GetPhysXMaterials();
+                AZ_Assert(!physxMaterials.empty(), "Shape with no materials");
+                densities.emplace_back(physxMaterials[0]->GetDensity());
             }
 
             // Compute Mass + Inertia

@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 
 namespace UnitTest
 {
@@ -30,16 +31,6 @@ namespace UnitTest
                 materialManager->DeleteAllMaterials();
             }
         }
-
-    protected:
-        AZ::Data::Asset<Physics::MaterialAsset> CreateMaterialAsset(const Physics::MaterialConfiguration& materialConfiguration)
-        {
-            AZ::Data::Asset<Physics::MaterialAsset> materialAsset =
-                AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
-                    AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-            materialAsset->SetData(materialConfiguration);
-            return materialAsset;
-        }
     };
 
     TEST_F(PhysXMaterialFixture, Material_FindOrCreateMaterial)
@@ -48,8 +39,8 @@ namespace UnitTest
 
         EXPECT_TRUE(materialNull.get() == nullptr);
 
-        Physics::MaterialConfiguration materialConfiguration;
-        const auto materialAsset = CreateMaterialAsset(materialConfiguration);
+        PhysX::MaterialConfiguration materialConfiguration;
+        const auto materialAsset = materialConfiguration.CreateMaterialAsset();
 
         AZStd::shared_ptr<PhysX::Material> material1 = PhysX::Material::FindOrCreateMaterial(materialAsset);
 
@@ -84,8 +75,10 @@ namespace UnitTest
             EXPECT_EQ(material->GetId(), defaultMaterial->GetId());
         }
 
-        const auto materialAsset1 = CreateMaterialAsset(Physics::MaterialConfiguration{});
-        const auto materialAsset2 = CreateMaterialAsset(Physics::MaterialConfiguration{});
+        PhysX::MaterialConfiguration materialConfiguration;
+
+        const auto materialAsset1 = materialConfiguration.CreateMaterialAsset();
+        const auto materialAsset2 = materialConfiguration.CreateMaterialAsset();
 
         Physics::MaterialSlots materialSlotsWithAssets;
         materialSlotsWithAssets.SetSlots({ "Slot1", "Slot2" });
@@ -105,8 +98,8 @@ namespace UnitTest
 
         EXPECT_TRUE(materialNull.get() == nullptr);
 
-        Physics::MaterialConfiguration materialConfiguration;
-        const auto materialAsset = CreateMaterialAsset(materialConfiguration);
+        PhysX::MaterialConfiguration materialConfiguration;
+        const auto materialAsset = materialConfiguration.CreateMaterialAsset();
 
         AZStd::shared_ptr<PhysX::Material> material1 = PhysX::Material::CreateMaterialWithRandomId(materialAsset);
 
@@ -121,10 +114,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_DynamicFriction)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_dynamicFriction = 68.6f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetDynamicFriction(), 68.6f, Tolerance);
 
@@ -134,10 +127,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_Clamps_DynamicFriction)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_dynamicFriction = -7.0f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetDynamicFriction(), 0.0f, Tolerance);
 
@@ -147,10 +140,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_StaticFriction)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_staticFriction = 68.6f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetStaticFriction(), 68.6f, Tolerance);
 
@@ -160,10 +153,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_Clamps_StaticFriction)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_staticFriction = -7.0f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetStaticFriction(), 0.0f, Tolerance);
 
@@ -173,10 +166,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_Restitution)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_restitution = 0.43f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetRestitution(), 0.43f, Tolerance);
 
@@ -186,10 +179,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_Clamps_Restitution)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_restitution = -13.0f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetRestitution(), 0.0f, Tolerance);
 
@@ -205,10 +198,10 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_Density)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_density = 245.0f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_NEAR(material->GetDensity(), 245.0f, Tolerance);
 
@@ -218,58 +211,58 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_Clamps_Density)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_density = -13.0f;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
-        EXPECT_NEAR(material->GetDensity(), Physics::MaterialConfiguration::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
 
         material->SetDensity(0.0f);
-        EXPECT_NEAR(material->GetDensity(), Physics::MaterialConfiguration::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
 
-        material->SetDensity(Physics::MaterialConfiguration::MinDensityLimit);
-        EXPECT_NEAR(material->GetDensity(), Physics::MaterialConfiguration::MinDensityLimit, Tolerance);
+        material->SetDensity(PhysX::Material::MinDensityLimit);
+        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
 
-        material->SetDensity(Physics::MaterialConfiguration::MaxDensityLimit);
-        EXPECT_NEAR(material->GetDensity(), Physics::MaterialConfiguration::MaxDensityLimit, Tolerance);
+        material->SetDensity(PhysX::Material::MaxDensityLimit);
+        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MaxDensityLimit, Tolerance);
 
         material->SetDensity(200000.0f);
-        EXPECT_NEAR(material->GetDensity(), Physics::MaterialConfiguration::MaxDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MaxDensityLimit, Tolerance);
     }
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_FrictionCombineMode)
     {
-        Physics::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_frictionCombine = Physics::CombineMode::Maximum;
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_frictionCombine = PhysX::CombineMode::Maximum;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
-        EXPECT_EQ(material->GetFrictionCombineMode(), Physics::CombineMode::Maximum);
+        EXPECT_EQ(material->GetFrictionCombineMode(), PhysX::CombineMode::Maximum);
 
-        material->SetFrictionCombineMode(Physics::CombineMode::Minimum);
-        EXPECT_EQ(material->GetFrictionCombineMode(), Physics::CombineMode::Minimum);
+        material->SetFrictionCombineMode(PhysX::CombineMode::Minimum);
+        EXPECT_EQ(material->GetFrictionCombineMode(), PhysX::CombineMode::Minimum);
     }
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_RestitutionCombineMode)
     {
-        Physics::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_restitutionCombine = Physics::CombineMode::Maximum;
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_restitutionCombine = PhysX::CombineMode::Maximum;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
-        EXPECT_EQ(material->GetRestitutionCombineMode(), Physics::CombineMode::Maximum);
+        EXPECT_EQ(material->GetRestitutionCombineMode(), PhysX::CombineMode::Maximum);
 
-        material->SetRestitutionCombineMode(Physics::CombineMode::Minimum);
-        EXPECT_EQ(material->GetRestitutionCombineMode(), Physics::CombineMode::Minimum);
+        material->SetRestitutionCombineMode(PhysX::CombineMode::Minimum);
+        EXPECT_EQ(material->GetRestitutionCombineMode(), PhysX::CombineMode::Minimum);
     }
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_DebugColor)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_debugColor = AZ::Colors::Lavender;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_THAT(material->GetDebugColor(), IsClose(AZ::Colors::Lavender));
 
@@ -279,9 +272,9 @@ namespace UnitTest
 
     TEST_F(PhysXMaterialFixture, Material_ReturnsValid_PxMaterial)
     {
-        Physics::MaterialConfiguration materialConfiguration;
+        PhysX::MaterialConfiguration materialConfiguration;
 
-        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(CreateMaterialAsset(materialConfiguration));
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
         EXPECT_TRUE(material->GetPxMaterial() != nullptr);
     }

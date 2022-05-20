@@ -118,16 +118,17 @@ namespace PhysX
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXService", 0x75beae2d));
+        provided.push_back(AZ_CRC_CE("PhysXService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXService", 0x75beae2d));
+        incompatible.push_back(AZ_CRC_CE("PhysXService"));
     }
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -194,11 +195,6 @@ namespace PhysX
         }
 
         m_defaultWorldComponent.Activate();
-
-        // TODO: This shouldn't be here in PhysX Gem, but in AzFramework.
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialAsset>("Physics Material", "Physics Material", "physmaterial");
-        materialAsset->Register();
-        m_assetHandlers.emplace_back(materialAsset);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         RegisterAsset<Pipeline::MeshAssetHandler, Pipeline::MeshAsset>(m_assetHandlers);

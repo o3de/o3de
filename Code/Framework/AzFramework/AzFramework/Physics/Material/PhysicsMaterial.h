@@ -23,26 +23,9 @@ namespace Physics
         Material(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);
         virtual ~Material() = default;
 
-        virtual float GetDynamicFriction() const = 0;
-        virtual void SetDynamicFriction(float dynamicFriction) = 0;
-
-        virtual float GetStaticFriction() const = 0;
-        virtual void SetStaticFriction(float staticFriction) = 0;
-
-        virtual float GetRestitution() const = 0;
-        virtual void SetRestitution(float restitution) = 0;
-
-        virtual CombineMode GetFrictionCombineMode() const = 0;
-        virtual void SetFrictionCombineMode(CombineMode mode) = 0;
-
-        virtual CombineMode GetRestitutionCombineMode() const = 0;
-        virtual void SetRestitutionCombineMode(CombineMode mode) = 0;
-
-        virtual float GetDensity() const = 0;
-        virtual void SetDensity(float density) = 0;
-
-        virtual const AZ::Color& GetDebugColor() const = 0;
-        virtual void SetDebugColor(const AZ::Color& debugColor) = 0;
+        // TODO: Make this for generic types
+        virtual float GetProperty(const AZStd::string& propertyName) const = 0;
+        virtual void SetProperty(const AZStd::string& propertyName, float value) = 0;
 
         MaterialId GetId() const;
 

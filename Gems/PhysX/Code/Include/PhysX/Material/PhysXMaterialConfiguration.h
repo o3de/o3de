@@ -12,27 +12,16 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/Math/Color.h>
 
-namespace Physics
-{
-    //! Enumeration that determines how two materials properties are combined when
-    //! processing collisions.
-    enum class CombineMode : AZ::u8
-    {
-        Average,
-        Minimum,
-        Maximum,
-        Multiply
-    };
+#include <PhysX/Material/PhysXMaterial.h>
 
-    //! Properties of a Physics material.
+namespace PhysX
+{
+    //! Properties of a PhysX material.
     struct MaterialConfiguration
     {
-        AZ_TYPE_INFO(Physics::MaterialConfiguration, "{675AF04D-CF51-479C-9D6A-4D7E264D1DBE}");
+        AZ_TYPE_INFO(PhysX::MaterialConfiguration, "{66213D20-9862-465D-AF4F-2D94317161F6}");
 
         static void Reflect(AZ::ReflectContext* context);
-
-        static constexpr float MinDensityLimit = 0.01f; //!< Minimum possible value of density.
-        static constexpr float MaxDensityLimit = 100000.0f; //!< Maximum possible value of density.
 
         float m_dynamicFriction = 0.5f;
         float m_staticFriction = 0.5f;
@@ -43,5 +32,13 @@ namespace Physics
         CombineMode m_frictionCombine = CombineMode::Average;
 
         AZ::Color m_debugColor = AZ::Colors::White;
+
+        //! Creates a Physics Material Asset with random Id from the
+        //! properties of material configuration.
+        AZ::Data::Asset<Physics::MaterialAsset> CreateMaterialAsset() const;
+
+    private:
+        static float GetMinDensityLimit();
+        static float GetMaxDensityLimit();
     };
-} // namespace Physics
+} // namespace PhysX

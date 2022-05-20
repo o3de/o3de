@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
@@ -18,32 +19,31 @@ namespace Physics
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Physics::MaterialAsset, AZ::Data::AssetData>()
-                ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
-                ->Field("MaterialConfiguration", &MaterialAsset::m_materialConfiguration)
+                ->Version(2)
+                ->Field("MaterialProperties", &MaterialAsset::m_materialProperties)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Physics::MaterialAsset>("", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &MaterialAsset::m_materialConfiguration, "Physics Material",
-                        "PhysX material properties")
-                        ->Attribute(AZ::Edit::Attributes::ForceAutoExpand, true);
+                editContext->Class<Physics::MaterialAsset>("Physics MaterialAsset", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Method("ReflectAssetPhysicsMaterialAsset", [](AZ::Data::Asset<MaterialAsset>) {});
         }
     }
 
-    void MaterialAsset::SetData(const MaterialConfiguration& materialConfiguraiton)
+    void MaterialAsset::SetData(const AZStd::unordered_map<AZStd::string, float>& materialProperties)
     {
-        m_materialConfiguration = materialConfiguraiton;
+        m_materialProperties = materialProperties;
         m_status = AZ::Data::AssetData::AssetStatus::Ready;
     }
 
-    const MaterialConfiguration& MaterialAsset::GetMaterialConfiguration() const
+    const AZStd::unordered_map<AZStd::string, float>& MaterialAsset::GetMaterialProperties() const
     {
-        return m_materialConfiguration;
+        return m_materialProperties;
     }
 } // namespace Physics

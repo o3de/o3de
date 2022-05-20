@@ -457,12 +457,6 @@
                     "params": "copy",
                     "productAssetType": "{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}"
                 },
-                "RC physmaterial": {
-                    "glob": "*.physmaterial",
-                    "params": "copy",
-                    "critical": true,
-                    "productAssetType": "{E4EF58EE-B1D1-46C8-BE48-BB62B8247386}"
-                },
                 "RC ocm": {
                     "glob": "*.ocm",
                     "params": "copy"

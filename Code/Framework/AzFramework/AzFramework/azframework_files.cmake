@@ -247,12 +247,12 @@ set(FILES
     Physics/Material/PhysicsMaterialId.cpp
     Physics/Material/PhysicsMaterialAsset.h
     Physics/Material/PhysicsMaterialAsset.cpp
-    Physics/Material/PhysicsMaterialConfiguration.h
-    Physics/Material/PhysicsMaterialConfiguration.cpp
     Physics/Material/PhysicsMaterialSlots.h
     Physics/Material/PhysicsMaterialSlots.cpp
     Physics/Material/PhysicsMaterialManager.h
     Physics/Material/PhysicsMaterialManager.cpp
+    Physics/Material/PhysicsMaterialSystemComponent.h
+    Physics/Material/PhysicsMaterialSystemComponent.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h

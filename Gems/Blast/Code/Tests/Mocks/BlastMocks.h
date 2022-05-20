@@ -245,20 +245,8 @@ namespace Blast
         }
 
         // Physics::Material overrides ...
-        float GetDynamicFriction() const override { return 0.0f; }
-        void SetDynamicFriction(float) override {}
-        float GetStaticFriction() const override { return 0.0f; }
-        void SetStaticFriction(float) override {}
-        float GetRestitution() const override { return 0.0f; }
-        void SetRestitution(float) override {}
-        Physics::CombineMode GetFrictionCombineMode() const override { return Physics::CombineMode::Average; }
-        void SetFrictionCombineMode(Physics::CombineMode) override {}
-        Physics::CombineMode GetRestitutionCombineMode() const override { return Physics::CombineMode::Average; }
-        void SetRestitutionCombineMode(Physics::CombineMode) override {}
-        float GetDensity() const override { return 0.0f; }
-        void SetDensity(float) override {}
-        const AZ::Color& GetDebugColor() const override { return AZ::Colors::White; }
-        void SetDebugColor(const AZ::Color&) override {}
+        float GetProperty(const AZStd::string&) const override { return 0.0f; }
+        void SetProperty(const AZStd::string&, float) override {}
     };
 
     class DummyPhysicsMaterialManager : public AZ::Interface<Physics::MaterialManager>::Registrar

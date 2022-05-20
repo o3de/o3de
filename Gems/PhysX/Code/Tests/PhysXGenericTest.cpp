@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysX/ColliderComponentBus.h>
+#include <PhysX/Material/PhysXMaterial.h>
 
 #include <Tests/PhysXGenericTestFixture.h>
 #include <Tests/PhysXTestCommon.h>
@@ -442,7 +443,7 @@ namespace PhysX
         AzPhysics::RigidBody* boxB = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(1.0f, 0.0f, 10.0f));
         AzPhysics::RigidBody* boxC = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(-1.0f, 0.0f, 10.0f));
 
-        auto material = boxC->GetShape(0)->GetMaterial();
+        auto material = AZStd::rtti_pointer_cast<PhysX::Material>(boxC->GetShape(0)->GetMaterial());
         const float prevRestitution = material->GetRestitution();
         material->SetRestitution(1.0f);
 
