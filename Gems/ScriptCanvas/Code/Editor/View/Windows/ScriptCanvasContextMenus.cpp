@@ -46,6 +46,7 @@
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <ScriptCanvas/Core/GraphBus.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
@@ -1036,11 +1037,10 @@ namespace ScriptCanvasEditor
 
                 if (!fileName.isEmpty())
                 {
-                    // this is where to call the SC graph to json string function
-                    // auto jsonResult = ScriptCanvasEditor::SaveToString(graph)
-
-                    AZStd::string jsonStrong = "FINISH ME!";
-
+                    AZStd::string jsonString;
+                    AZ::IO::ByteContainerStream stream(&jsonString);
+                    auto graphSerializationResult = ScriptCanvas::Serialize(*graph->GetOwnership(), stream);
+                    
                     AZ::IO::Path path(fileName.toUtf8().constData());
 
                     // use the ScriptEventBus, also to get fundamental types(?)
@@ -1049,7 +1049,7 @@ namespace ScriptCanvasEditor
                         ( saveOutcome
                         , &ScriptEvents::ScriptEventRequests::SaveDefinitionSourceFile
                         , result.m_event
-                        , jsonStrong.c_str()
+                        , jsonString.c_str()
                         , path);
 
                     if (!saveOutcome.IsSuccess())
@@ -1121,7 +1121,7 @@ namespace ScriptCanvasEditor
 
         AZStd::string errorMessage;
 
-        const QStringList nameFilters = { "All ScriptEvent Files (*.scriptevents)" };
+        const QStringList nameFilters = { "ScriptEvent Files Saved from the ScriptCanvas Editor (*.scriptevents)" };
         QFileDialog dialog(nullptr, tr("Open a single file..."), resolvedProjectRoot.c_str());
         dialog.setFileMode(QFileDialog::ExistingFiles);
         dialog.setNameFilters(nameFilters);
@@ -1142,6 +1142,8 @@ namespace ScriptCanvasEditor
                 GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
                 ScriptCanvas::Graph* graph = nullptr;
                 ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
+
+                // now open create and open a scriptcanvas graph from the script event
 
                 if (graph)
                 {

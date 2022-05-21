@@ -127,7 +127,6 @@ namespace ScriptCanvas
         , MakeInternalGraphEntitiesUnique makeUniqueEntities)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
-        using namespace ScriptCanvas;
         using namespace GraphSerializationCpp;
 
         DeserializeResult result;
@@ -221,44 +220,35 @@ namespace ScriptCanvas
         return result;
     }
 
-    SerializationResult Serialize(const ScriptCanvasData& /*graphData*/, AZ::IO::GenericStream& /*stream*/)
+    SerializationResult Serialize(const ScriptCanvasData& source, AZ::IO::GenericStream& stream)
     {
+        namespace JSRU = AZ::JsonSerializationUtils;
         using namespace GraphSerializationCpp;
 
         SerializationResult result;
-        result.m_isSuccessful = false;
-        return result;
 
-        /*
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         if (!serializeContext)
         {
-            return AZ::Failure(AZStd::string("no serialize context available to properly save source file"));
+            result.m_isSuccessful = false;
+            result.m_errors = "no serialize context available to properly save source file";
+            return result;
         }
 
-        auto graphData = source.Get()->GetOwnership();
-        if (!graphData)
+        auto saveTarget = source.GetGraph();
+        if (!saveTarget || !saveTarget->GetGraphDataConst())
         {
-            return AZ::Failure(AZStd::string("source is missing save container"));
-        }
-
-        if (graphData->GetEditorGraph() != source.Get())
-        {
-            return AZ::Failure(AZStd::string("source save container refers to incorrect graph"));
-        }
-
-        auto saveTarget = graphData->ModGraph();
-        if (!saveTarget || !saveTarget->GetGraphData())
-        {
-            return AZ::Failure(AZStd::string("source save container failed to return serializable graph data"));
+            result.m_isSuccessful = false;
+            result.m_errors = "source save container failed to return serializable graph data";
+            return result;
         }
 
         AZ::JsonSerializerSettings settings;
         settings.m_metadata.Create<ScriptCanvas::SerializationListeners>();
         auto listeners = settings.m_metadata.Find<ScriptCanvas::SerializationListeners>();
         AZ_Assert(listeners, "Failed to create SerializationListeners");
-        CollectNodes(saveTarget->GetGraphData()->m_nodes, *listeners);
+        CollectNodes(saveTarget->GetGraphDataConst()->m_nodes, *listeners);
         settings.m_keepDefaults = false;
         settings.m_serializeContext = serializeContext;
 
@@ -267,12 +257,15 @@ namespace ScriptCanvas
             listener->OnSerialize();
         }
 
-        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData.get(), stream, nullptr, &settings);
+        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(&source, stream, nullptr, &settings);
         if (!saveOutcome.IsSuccess())
         {
-            return AZ::Failure(AZStd::string::format("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));
+            result.m_isSuccessful = false;
+            result.m_errors = AZStd::string::format("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str());
+            return result;
         }
-        */
-    }
 
+        result.m_isSuccessful = true;
+        return result;
+    }
 }
