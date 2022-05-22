@@ -46,7 +46,6 @@ namespace Multiplayer
     NetworkPrefabProcessor::NetworkPrefabProcessor()
         : m_postProcessHandler([this](const AZStd::string& prefabName, AzFramework::Spawnable& spawnable){ this->PostProcessSpawnable(prefabName, spawnable); })
     {
-
     }
 
     void NetworkPrefabProcessor::Process(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context)

@@ -99,7 +99,7 @@ namespace Multiplayer
     )
     {
         // Editor Server Init is intended for non-release targets
-        m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+        m_byteStream.Write(packet.GetAssetData().GetSize(), packet.ModifyAssetData().GetBuffer());
 
         // In case if this is the last update, process the byteStream buffer. Otherwise more packets are expected
         if (!packet.GetLastUpdate())
@@ -124,8 +124,8 @@ namespace Multiplayer
             AZ::Data::AssetId assetId;
             uint32_t hintSize;
             AZStd::string assetHint;
-            m_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-            m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            m_byteStream.Read(sizeof(AZ::Data::AssetId), &assetId);
+            m_byteStream.Read(sizeof(uint32_t), &hintSize);
             assetHint.resize(hintSize);
             m_byteStream.Read(hintSize, assetHint.data());
             size_t assetSize = m_byteStream.GetCurPos();
