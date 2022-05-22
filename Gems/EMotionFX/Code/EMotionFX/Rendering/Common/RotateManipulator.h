@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/BoundingSphere.h>
 #include <MCore/Source/Ray.h>
 #include "MCommonConfig.h"
 #include "RenderUtil.h"
 #include "TransformationManipulator.h"
+#include <AzCore/Math/Aabb.h>
 
 
 namespace MCommon
@@ -96,12 +96,12 @@ namespace MCommon
         // bounding volumes for the axes
         MCore::BoundingSphere   m_innerBoundingSphere;
         MCore::BoundingSphere   m_outerBoundingSphere;
-        MCore::AABB             m_xAxisAabb;
-        MCore::AABB             m_yAxisAabb;
-        MCore::AABB             m_zAxisAabb;
-        MCore::AABB             m_xAxisInnerAabb;
-        MCore::AABB             m_yAxisInnerAabb;
-        MCore::AABB             m_zAxisInnerAabb;
+        AZ::Aabb                m_xAxisAabb;
+        AZ::Aabb                m_yAxisAabb;
+        AZ::Aabb                m_zAxisAabb;
+        AZ::Aabb                m_xAxisInnerAabb;
+        AZ::Aabb                m_yAxisInnerAabb;
+        AZ::Aabb                m_zAxisInnerAabb;
 
         // the proportions of the rotation manipulator
         float                   m_size;

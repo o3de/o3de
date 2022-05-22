@@ -7,6 +7,7 @@
  */
 
 #include "TranslateManipulator.h"
+#include <AzCore/Math/IntersectSegment.h>
 #include <MCore/Source/PlaneEq.h>
 
 namespace MCommon
@@ -94,10 +95,15 @@ namespace MCommon
 
         // shoot ray ar the mouse position
         MCore::Ray mouseRay = camera->Unproject(mousePosX, mousePosY);
+        AZ::Vector3 rayReciprocal = mouseRay.GetDirection().GetReciprocal();
 
         // check if one of the AABBs is hit
-        if (mouseRay.Intersects(m_xAxisAabb) || mouseRay.Intersects(m_yAxisAabb) || mouseRay.Intersects(m_zAxisAabb) ||
-            mouseRay.Intersects(m_xyPlaneAabb) || mouseRay.Intersects(m_xzPlaneAabb) || mouseRay.Intersects(m_yzPlaneAabb))
+        if (AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE || 
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_yAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE || 
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_zAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xyPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE || 
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE || 
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_yzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE)
         {
             return true;
         }
@@ -254,38 +260,40 @@ namespace MCommon
                 m_callback->UpdateOldValues();
             }
 
+            AZ::Vector3 rayReciprocal = mousePosRay.GetDirection().GetReciprocal();
+
             // handle different translation modes
-            if (mousePosRay.Intersects(m_xyPlaneAabb) && m_xAxisVisible && m_yAxisVisible)
+            if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_xyPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible && m_yAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(1.0f, 1.0f, 0.0f);
                 m_movementPlaneNormal = AZ::Vector3(0.0f, 0.0f, 1.0f);
                 m_mode = TRANSLATE_XY;
             }
-            else if (mousePosRay.Intersects(m_xzPlaneAabb) && m_xAxisVisible && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_xzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible && m_zAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(1.0f, 0.0f, 1.0f);
                 m_movementPlaneNormal = AZ::Vector3(0.0f, 1.0f, 0.0f);
                 m_mode = TRANSLATE_XZ;
             }
-            else if (mousePosRay.Intersects(m_yzPlaneAabb) && m_yAxisVisible && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_yzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_yAxisVisible && m_zAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(0.0f, 1.0f, 1.0f);
                 m_movementPlaneNormal = AZ::Vector3(1.0f, 0.0f, 0.0f);
                 m_mode = TRANSLATE_YZ;
             }
-            else if (mousePosRay.Intersects(m_xAxisAabb) && m_xAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_xAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(1.0f, 0.0f, 0.0f);
                 m_movementPlaneNormal = AZ::Vector3(0.0f, 1.0f, 1.0f).GetNormalized();
                 m_mode = TRANSLATE_X;
             }
-            else if (mousePosRay.Intersects(m_yAxisAabb) && m_yAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_yAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_yAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(0.0f, 1.0f, 0.0f);
                 m_movementPlaneNormal = AZ::Vector3(1.0f, 0.0f, 1.0f).GetNormalized();
                 m_mode = TRANSLATE_Y;
             }
-            else if (mousePosRay.Intersects(m_zAxisAabb) && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_zAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_zAxisVisible)
             {
                 m_movementDirection = AZ::Vector3(0.0f, 0.0f, 1.0f);
                 m_movementPlaneNormal = AZ::Vector3(1.0f, 1.0f, 0.0f).GetNormalized();

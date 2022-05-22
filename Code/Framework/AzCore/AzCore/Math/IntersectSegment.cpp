@@ -406,6 +406,13 @@ namespace AZ
         return ISECT_RAY_AABB_ISECT;
     }
 
+    Intersect::RayAABBIsectTypes Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb)  
+    {
+        float start, end;
+        return IntersectRayAABB2(rayStart, dirRCP, aabb, start, end);
+    }
+
+
     //=========================================================================
     // IntersectRayAABB2
     // [2/18/2011]

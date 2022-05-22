@@ -176,6 +176,15 @@ namespace AZ
         //! ISECT_RAY_AABB_ISECT. You can check yourself for that case.
         RayAABBIsectTypes IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end);
 
+
+        //! Intersect ray against AABB.
+        //! @param rayStart Ray starting point.
+        //! @param dir Ray reciprocal direction.
+        //! @param aabb Axis aligned bounding box to intersect against.
+        //! @return \ref RayAABBIsectTypes In this faster version than IntersectRayAABB we return only ISECT_RAY_AABB_NONE and
+        //! ISECT_RAY_AABB_ISECT. You can check yourself for that case.
+        RayAABBIsectTypes IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb);
+
         //! Clip a ray to an aabb. return true if ray was clipped. The ray
         //! can be inside so don't use the result if the ray intersect the box.
         //! @param aabb Bounds to test against.

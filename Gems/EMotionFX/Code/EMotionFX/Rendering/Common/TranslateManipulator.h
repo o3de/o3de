@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
+#include <AzCore/Math/Aabb.h>
 #include "MCommonConfig.h"
 #include "RenderUtil.h"
 #include "TransformationManipulator.h"
@@ -90,12 +90,12 @@ namespace MCommon
 
     protected:
         // bounding volumes for the axes
-        MCore::AABB             m_xAxisAabb;
-        MCore::AABB             m_yAxisAabb;
-        MCore::AABB             m_zAxisAabb;
-        MCore::AABB             m_xyPlaneAabb;
-        MCore::AABB             m_xzPlaneAabb;
-        MCore::AABB             m_yzPlaneAabb;
+        AZ::Aabb             m_xAxisAabb;
+        AZ::Aabb             m_yAxisAabb;
+        AZ::Aabb             m_zAxisAabb;
+        AZ::Aabb             m_xyPlaneAabb;
+        AZ::Aabb             m_xzPlaneAabb;
+        AZ::Aabb             m_yzPlaneAabb;
 
         // the scaling factors for the translate manipulator
         float                   m_size;

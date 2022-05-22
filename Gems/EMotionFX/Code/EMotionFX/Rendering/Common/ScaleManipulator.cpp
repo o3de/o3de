@@ -8,6 +8,7 @@
 
 #include "ScaleManipulator.h"
 #include <MCore/Source/PlaneEq.h>
+#include <AzCore/Math/IntersectSegment.h>
 
 namespace MCommon
 {
@@ -114,15 +115,16 @@ namespace MCommon
 
         // shoot mousePosRay ar the mouse position
         MCore::Ray mouseRay = camera->Unproject(mousePosX, mousePosY);
+        AZ::Vector3 rayReciprocal = mouseRay.GetDirection().GetReciprocal();
 
         // check if one of the AABBs is hit
-        if (mouseRay.Intersects(m_xAxisAabb) ||
-            mouseRay.Intersects(m_yAxisAabb) ||
-            mouseRay.Intersects(m_zAxisAabb) ||
-            mouseRay.Intersects(m_xyPlaneAabb) ||
-            mouseRay.Intersects(m_xzPlaneAabb) ||
-            mouseRay.Intersects(m_yzPlaneAabb) ||
-            mouseRay.Intersects(m_xyzBoxAabb))
+        if (AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_yAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_zAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xyPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_yzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE ||
+            AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xyzBoxAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE)
         {
             return true;
         }
@@ -311,38 +313,40 @@ namespace MCommon
                 m_callback->UpdateOldValues();
             }
 
+            AZ::Vector3 rayReciprocal = mousePosRay.GetDirection().GetReciprocal();
+
             // handle different scale cases depending on the bounding volumes
-            if (mousePosRay.Intersects(m_xyzBoxAabb))
+            if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_xyzBoxAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE)
             {
                 m_mode   = SCALE_XYZ;
                 m_scaleDirection = AZ::Vector3(m_signX, m_signY, m_signZ);
             }
-            else if (mousePosRay.Intersects(m_xyPlaneAabb) && m_xAxisVisible && m_yAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_xyPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible && m_yAxisVisible)
             {
                 m_mode = SCALE_XY;
                 m_scaleDirection = AZ::Vector3(m_signX, m_signY, 0.0f);
             }
-            else if (mousePosRay.Intersects(m_xzPlaneAabb) && m_xAxisVisible && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_xzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible && m_zAxisVisible)
             {
                 m_mode = SCALE_XZ;
                 m_scaleDirection = AZ::Vector3(m_signX, 0.0f, m_signZ);
             }
-            else if (mousePosRay.Intersects(m_yzPlaneAabb) && m_yAxisVisible && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_yzPlaneAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_yAxisVisible && m_zAxisVisible)
             {
                 m_mode = SCALE_YZ;
                 m_scaleDirection = AZ::Vector3(0.0f, m_signY, m_signZ);
             }
-            else if (mousePosRay.Intersects(m_xAxisAabb) && m_xAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_xAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_xAxisVisible)
             {
                 m_mode = SCALE_X;
                 m_scaleDirection = AZ::Vector3(m_signX, 0.0f, 0.0f);
             }
-            else if (mousePosRay.Intersects(m_yAxisAabb) && m_yAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_yAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_yAxisVisible)
             {
                 m_mode = SCALE_Y;
                 m_scaleDirection = AZ::Vector3(0.0f, m_signY, 0.0f);
             }
-            else if (mousePosRay.Intersects(m_zAxisAabb) && m_zAxisVisible)
+            else if (AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_zAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE && m_zAxisVisible)
             {
                 m_mode = SCALE_Z;
                 m_scaleDirection = AZ::Vector3(0.0f, 0.0f, m_signZ);
