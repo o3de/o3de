@@ -447,7 +447,7 @@ namespace AzToolsFramework
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            // Focus on the parent, but don't close the parent as Qt is doing that anyway.
+            // Focus on the parent, close this prefab if required.
             m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId, Prefab::FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
         }
     }
