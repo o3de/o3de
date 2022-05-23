@@ -24,9 +24,6 @@ namespace AZ::RPI
 
         //! This api is use to create a XRInstance
         virtual AZ::RHI::ResultCode InitInstance() = 0;
-
-        //! This api is use to create a XRInstance
-        virtual AZ::RHI::ResultCode InitSession() = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI

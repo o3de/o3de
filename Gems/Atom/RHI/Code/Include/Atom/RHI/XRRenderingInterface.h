@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Interface/Interface.h>
-#include <Atom/RHI.Reflect/base.h>
+#include <Atom/RHI.Reflect/Base.h>
 
 namespace AZ::RHI
 {
