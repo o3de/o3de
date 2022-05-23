@@ -178,7 +178,6 @@ namespace EMotionFX
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
             ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
-            bool m_addMaterialComponentFlag = false;                        ///< Flag used for button placement
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.

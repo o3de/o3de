@@ -43,6 +43,7 @@ void LevelThree::Reflect(AZ::ReflectContext* context)
         {
             edit->Class<LevelThree>("Level 3", "A deeply nested component")
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &LevelThree::m_bool, "Horizontal limit", "A deeply nested CheckBox")
+                ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Nested UIElement", "A deeply nested UIElement with no data element")
                 ;
         }
     }
@@ -222,6 +223,9 @@ void GalleryComponent::Reflect(AZ::ReflectContext* context)
                 ->DataElement(AZ::Edit::UIHandlers::Vector4, &GalleryComponent::m_vector4, "Vector4", "An AZ::Edit::UIHandlers::Vector4 example")
                 ->DataElement(AZ::Edit::UIHandlers::Vector4, &GalleryComponent::m_vector4Suffix, "Vector4 (suffix)", "An AZ::Edit::UIHandlers::Vector4 with suffix example")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                ->UIElement(AZ::Edit::UIHandlers::Button, "ButtonWithNoDataElement", "Test having a UIElement Button with no serialized data element")
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Button without element")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &GalleryComponent::m_levelOne, "Level 1", "The first level in deeply nested tree")
                 ->ClassElement(AZ::Edit::ClassElements::Group, "Collision")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

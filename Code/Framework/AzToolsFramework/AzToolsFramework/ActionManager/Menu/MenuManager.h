@@ -26,10 +26,13 @@ namespace AzToolsFramework
 
     private:
         // MenuManagerInterface overrides ...
-        MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const AZStd::string& name) override;
+        MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) override;
         MenuManagerOperationResult AddActionToMenu(
-            const AZStd::string& actionIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
+        MenuManagerOperationResult AddSubMenuToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
 

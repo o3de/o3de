@@ -17,6 +17,16 @@ namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
+    struct MenuProperties
+    {
+        AZ_RTTI(MenuProperties, "{E46CF861-2A19-43EC-8CD7-42E4C03AD6CF}");
+
+        MenuProperties() = default;
+        virtual ~MenuProperties() = default;
+
+        AZStd::string m_name = "";
+    };
+
     //! MenuManagerInterface
     //! Interface to register and manage menus in the Editor.
     class MenuManagerInterface
@@ -25,12 +35,19 @@ namespace AzToolsFramework
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
 
         //! Register a new Menu to the Menu Manager.
-        virtual MenuManagerOperationResult RegisterMenu(
-            const AZStd::string& identifier, const AZStd::string& name) = 0;
+        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) = 0;
 
         //! Bind an action to a menu.
         virtual MenuManagerOperationResult AddActionToMenu(
-            const AZStd::string& actionIdentifier, const AZStd::string& menuIdentifier, int sortIndex) = 0;
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
+
+        //! Add a separator to a menu.
+        virtual MenuManagerOperationResult AddSeparatorToMenu(
+            const AZStd::string& menuIdentifier, int sortIndex) = 0;
+
+        //! Add a sub-menu to a menu.
+        virtual MenuManagerOperationResult AddSubMenuToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 
         //! Retrieve a QMenu from its identifier.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;

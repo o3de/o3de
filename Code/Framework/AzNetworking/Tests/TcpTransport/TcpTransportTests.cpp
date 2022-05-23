@@ -136,7 +136,7 @@ namespace UnitTest
         for (;;)
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            m_networkingSystemComponent->OnSystemTick();
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
             bool canTerminate = (testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == 1)
                              && (testClient.m_clientNetworkInterface->GetConnectionSet().GetConnectionCount() == 1);
@@ -172,7 +172,7 @@ namespace UnitTest
         for (;;)
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(25));
-            m_networkingSystemComponent->OnTick(0.0f, AZ::ScriptTimePoint());
+            m_networkingSystemComponent->OnSystemTick();
             bool timeExpired = (AZ::GetElapsedTimeMs() - startTimeMs > TotalIterationTimeMs);
             bool canTerminate = testServer.m_serverNetworkInterface->GetConnectionSet().GetConnectionCount() == NumTestClients;
             for (uint32_t i = 0; i < NumTestClients; ++i)

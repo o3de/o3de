@@ -195,7 +195,7 @@ def _check_log_errors_warnings(log_path: str) -> bool:
         logger.warning(f"Could not find path {log_path} during asset log collection.")
         return False
     log_regex = "(\\d+) errors, (\\d+) warnings"
-    with open(log_path, 'r') as opened_asset_log:
+    with open(log_path, 'r', encoding='UTF-8', errors='ignore') as opened_asset_log:
         for log_line in opened_asset_log:
             regex_match = re.search(log_regex, log_line)
             if regex_match is not None:

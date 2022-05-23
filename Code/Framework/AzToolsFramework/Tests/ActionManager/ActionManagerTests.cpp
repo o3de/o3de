@@ -14,59 +14,37 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, RegisterActionContextWithoutWidget)
     {
         auto outcome =
-            m_actionManagerInterface->RegisterActionContext(nullptr, "o3de.context.editor.test", "Test", "");
+            m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, nullptr);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterActionContext)
     {
-        auto outcome = m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        auto outcome =
+            m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterActionToUnregisteredContext)
     {
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
-            []()
-            {
-                ;
-            });
-
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterAction)
     {
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
-            []()
-            {
-                ;
-            });
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, RegisterActionTwice)
     {
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
-
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
-            []()
-            {
-                ;
-            });
-
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
-            []()
-            {
-                ;
-            });
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_FALSE(outcome.IsSuccess());
     }
@@ -79,14 +57,8 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetAction)
     {
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
         EXPECT_TRUE(action != nullptr);
@@ -96,9 +68,9 @@ namespace UnitTest
     {
         bool actionTriggered = false;
 
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            "o3de.context.test", "o3de.action.test", {},
             [&actionTriggered]()
             {
                 actionTriggered = true;
@@ -121,9 +93,9 @@ namespace UnitTest
     {
         bool actionTriggered = false;
 
-        m_actionManagerInterface->RegisterActionContext(m_widget, "o3de.context.test", "Test", "");
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", "Test Action", "Executes Test Action", "Test", "",
+            "o3de.context.test", "o3de.action.test", {},
             [&actionTriggered]()
             {
                 actionTriggered = true;

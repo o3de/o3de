@@ -21,7 +21,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     //! Node for despawning entities
     class DespawnNodeable
         : public Nodeable
-        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler
+        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler
     {
         SCRIPTCANVAS_NODE(DespawnNodeable);
     public:

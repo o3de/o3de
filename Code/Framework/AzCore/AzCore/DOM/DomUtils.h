@@ -21,7 +21,15 @@ namespace AZ::Dom::Utils
 
     AZ::Outcome<Value, AZStd::string> WriteToValue(const Backend::WriteCallback& writeCallback);
 
-    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs);
+    struct ComparisonParameters
+    {
+        //! If set, opaque values will only be compared by type and not contents
+        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitue a
+        //! comparison failure (e.g. comparing callbacks)
+        bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
+    };
+
+    bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
     template<typename T>
