@@ -19,8 +19,7 @@
         ->Args({ 50, 20 })                                                                                                                 \
         ->Args({ 50, 200 })                                                                                                                \
         ->ArgNames({ "DepthOfNesting", "EntitiesInEachPrefab" })                                                                           \
-        ->Unit(benchmark::kMillisecond)                                                                                                    \
-        ->Complexity();
+        ->Unit(benchmark::kMillisecond);
 
 namespace Benchmark
 {

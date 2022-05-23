@@ -13,8 +13,7 @@
     BENCHMARK_REGISTER_F(BaseClass, Method)                                                                                                \
         ->RangeMultiplier(10)                                                                                                              \
         ->Range(100, 10000)                                                                                                                \
-        ->Unit(benchmark::kMillisecond)                                                                                                    \
-        ->Complexity();
+        ->Unit(benchmark::kMillisecond);
 
 namespace Benchmark
 {

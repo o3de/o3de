@@ -35,8 +35,6 @@ namespace Benchmark
 
             m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::AddComponent(benchmark::State& state)
@@ -56,8 +54,6 @@ namespace Benchmark
             delete inspectorComponent;
             inspectorComponent = nullptr;
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::RemoveComponent(benchmark::State& state)
@@ -79,8 +75,6 @@ namespace Benchmark
             // zero components to one component.
             m_entityToModify->CreateComponent(AZ::TransformComponentTypeId);
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::AddEntity(benchmark::State& state)
@@ -99,15 +93,13 @@ namespace Benchmark
             // 'n' entities to 'n+1' entities.
             newEntity = m_instanceToModify->DetachEntity(newEntityId);
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::RemoveEntity(benchmark::State& state)
     {
         for (auto _ : state)
         {
-            // Add an entity and update the template.
+            // Remove an entity and update the template.
             AZStd::unique_ptr<AZ::Entity> detachedEntity = m_instanceToModify->DetachEntity(m_entityToModify->GetId());
             UpdateTemplate();
 
@@ -117,15 +109,13 @@ namespace Benchmark
             // 'n' entities to 'n-1' entities.
             m_instanceToModify->AddEntity(AZStd::move(detachedEntity));
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::AddNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId)
     {
         for (auto _ : state)
         {
-            // Add an entity and update the template.
+            // Add a nested instance and update the template.
             AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>("Added nested instance");
             Instance& addedInstance =
                 m_instanceToModify->AddInstance(AZStd::move(m_prefabSystemComponent->InstantiatePrefab(nestedPrefabTemplateId)));
@@ -138,8 +128,6 @@ namespace Benchmark
             // 'n' nested prefabs to 'n+1' nested prefabs.
             nestedInstance = m_instanceToModify->DetachNestedInstance(instanceAlias);
         }
-
-        state.SetComplexityN(state.range());
     }
 
     void PropagationBenchmarkFixture::RemoveNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId)
@@ -159,7 +147,6 @@ namespace Benchmark
 
         // After the last iteration, the template should be updated to avoid link deletion failures.
         UpdateTemplate();
-        state.SetComplexityN(state.range());
     }
 } // namespace Benchmark
 

@@ -19,8 +19,7 @@
         ->Args({ 1, 10000 })                                                                                                               \
         ->Args({ 10000, 1 })                                                                                                               \
         ->ArgNames({ "NestedPrefabs", "EntitiesInEachNestedPrefab" })                                                                      \
-        ->Unit(benchmark::kMillisecond)                                                                                                    \
-        ->Complexity();
+        ->Unit(benchmark::kMillisecond);
 
 namespace Benchmark
 {
