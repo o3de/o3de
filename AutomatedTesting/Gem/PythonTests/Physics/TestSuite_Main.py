@@ -14,7 +14,9 @@ from ly_test_tools import LAUNCHERS
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorBatchedTest, EditorTestSuite
 from .utils.FileManagement import FileManagement as fm
 
+
 # Custom test spec, it provides functionality to override files
+@pytest.mark.skip(reason="GHI #9722: Refactor/Reimplement Phyiscs AR Tests")
 class EditorSingleTest_WithFileOverrides(EditorSingleTest):
     # Specify here what files to override, [(original, override), ...]
     files_to_override = [()]
@@ -53,6 +55,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
         for f in original_file_list:
             fm._restore_file(f, file_list[f])
 
+@pytest.mark.skip(reason="GHI #9722: Refactor/Reimplement Phyiscs AR Tests")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
