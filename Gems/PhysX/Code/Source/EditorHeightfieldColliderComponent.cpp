@@ -28,10 +28,12 @@
 
 #include <utility>
 
-
 namespace PhysX
 {
-    AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
+    AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr,
+        AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
+    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, true,
+        nullptr, AZ::ConsoleFunctorFlags::Null, "Draw the bounding box used for heightfield debug visualization.");
 
     void EditorHeightfieldColliderComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -369,36 +371,23 @@ namespace PhysX
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         const AZ::Vector3 boundsAabbCenter = cameraState.m_position + cameraState.m_forward * physx_heightfieldDebugDrawDistance * 0.5f;
 
+        const AZ::Vector3 bodyPosition = staticRigidBody->GetPosition();
+        const AZ::Vector3 aabbCenterLocalBody = boundsAabbCenter - bodyPosition;
+
         const AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
         for (AZ::u32 shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
         {
-            // Shape::GetGeometry expects the bounding box in the local space
             const AZStd::shared_ptr<Physics::Shape> shape = staticRigidBody->GetShape(shapeIndex);
-            const AZ::Vector3 bodyPosition = staticRigidBody->GetPosition();
-            const AZ::Vector3 shapeOffset = shape->GetLocalPose().first;
-            const AZ::Vector3 aabbCenterLocal = boundsAabbCenter - bodyPosition - shapeOffset;
+            m_colliderDebugDraw.DrawHeightfield(debugDisplay, aabbCenterLocalBody,
+                physx_heightfieldDebugDrawDistance, shape);
+        }
 
-            // Create the bounds box of the required size
-            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocal, physx_heightfieldDebugDrawDistance);
-            if (!boundsAabb.IsValid())
+        if (physx_heightfieldDebugDrawBoundingBox)
+        {
+            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocalBody, physx_heightfieldDebugDrawDistance);
+            if (boundsAabb.IsValid())
             {
-                return;
-            }
-
-            // Extract the heightfield geometry within the bounds
-            AZStd::vector<AZ::Vector3> vertices;
-            AZStd::vector<AZ::u32> indices;
-            shape->GetGeometry(vertices, indices, &boundsAabb);
-
-            if (!vertices.empty())
-            {
-                // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
-                const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
-                debugDisplay.PushMatrix(shapeOffsetTransform);
-
-                debugDisplay.DrawLines(vertices, AZ::Colors::White);
-
-                debugDisplay.PopMatrix();
+                debugDisplay.DrawWireBox(boundsAabb.GetMin(), boundsAabb.GetMax());
             }
         }
     }

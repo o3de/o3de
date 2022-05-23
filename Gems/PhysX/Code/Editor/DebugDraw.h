@@ -109,10 +109,9 @@ namespace PhysX
 
             void DrawHeightfield(
                 AzFramework::DebugDisplayRequests& debugDisplay,
-                const Physics::ColliderConfiguration& colliderConfig,
-                const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& aabbCenterLocalBody,
+                float drawDistance,
+                const AZStd::shared_ptr<Physics::Shape>& shape) const;
 
             void DrawPolygonPrism(
                 AzFramework::DebugDisplayRequests& debugDisplay,
