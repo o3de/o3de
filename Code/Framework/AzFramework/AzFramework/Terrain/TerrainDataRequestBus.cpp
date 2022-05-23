@@ -45,7 +45,10 @@ namespace AzFramework::Terrain
             queryRegion.m_numPointsX = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetX() / stepSize.GetX()));
             queryRegion.m_numPointsY = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetY() / stepSize.GetY()));
 
-            // If the region is > 0 but smaller than stepSize, make sure we still process at least the start point.
+            // If the region is smaller than stepSize, make sure we still process at least the start point ("min-inclusive").
+            // However, when an extent is zero-size (i.e. min == max), we need to choose whether to follow the "min-inclusive" rule
+            // and include the start/end point, or the "max-exclusive" rule and exclude the start/end point. We're choosing to go
+            // with "max-exclusive", since it seems likely that a 0-length extent wasn't intended to include any points.
             if ((regionExtents.GetX() > 0.0f) && (queryRegion.m_numPointsX == 0))
             {
                 queryRegion.m_numPointsX = 1;
