@@ -10,6 +10,7 @@ from collections import Counter
 from collections import deque
 from os import path
 from pathlib import Path
+from typing import List
 
 from PySide2 import QtWidgets
 
