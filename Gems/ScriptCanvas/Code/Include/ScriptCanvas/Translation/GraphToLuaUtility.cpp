@@ -56,7 +56,7 @@ namespace GraphToLuaUtilityCpp
 
     AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
     {
-        size_t numEqualSignsRequired = 1;
+        size_t numEqualSignsRequired = 0;
 
         for (;;)
         {
