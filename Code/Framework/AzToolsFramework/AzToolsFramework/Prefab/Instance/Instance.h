@@ -73,8 +73,8 @@ namespace AzToolsFramework
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
             explicit Instance(InstanceOptionalReference parent);
-            explicit Instance(InstanceOptionalReference parent, InstanceAlias alias);
-            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
+            Instance(InstanceOptionalReference parent, InstanceAlias alias);
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
             explicit Instance(InstanceAlias alias);
             explicit Instance(EntityIdInstanceRelationship entityIdInstanceRelationship);
             Instance(InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship);
