@@ -6,25 +6,23 @@
  *
  */
 
-#include "AzFramework/Spawnable/InMemorySpawnableAssetContainer.h"
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzNetworking/ConnectionLayer/IConnection.h>
+#include <AzNetworking/Framework/INetworking.h>
 
+#include <Editor/MultiplayerEditorConnection.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/MultiplayerEditorServerBus.h>
-#include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
-
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <AzNetworking/Framework/INetworking.h>
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
-#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
 
 namespace Multiplayer
 {
@@ -140,7 +138,7 @@ namespace Multiplayer
             }
 
             // We only care about Root.spawnable and Root.network.spawnable
-            if (!assetHint.starts_with("Root"))
+            if (!assetHint.starts_with(AzFramework::Spawnable::DefaultMainSpawnableName))
             {
                 AZ_Assert(false, "Editor sent the server more than just the root (level) spawnable. Ensure the editor code only sends Root.");
             }
@@ -187,7 +185,8 @@ namespace Multiplayer
 
         // Load the level via the root spawnable that was registered
         const auto console = AZ::Interface<AZ::IConsole>::Get();
-        console->PerformCommand("LoadLevel Root.spawnable");
+        AZStd::string loadRootSpawnableCommand = AZStd::string::format("LoadLevel %s%s", AzFramework::Spawnable::DefaultMainSpawnableName, AzFramework::Spawnable::DotFileExtension);
+        console->PerformCommand(loadRootSpawnableCommand.c_str());
 
         uint16_t sv_port = DefaultServerPort;
         if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)

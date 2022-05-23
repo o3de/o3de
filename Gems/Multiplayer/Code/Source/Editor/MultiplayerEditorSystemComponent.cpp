@@ -434,7 +434,7 @@ namespace Multiplayer
         // Only grab the level (Root.spawnable or Root.network.spawnable)
         // We'll receive OnPreparingSpawnable for other spawnables that are referenced by components in the level,
         // but these spawnables are already available for the server inside the asset cache.
-        if (assetHint != "Root.spawnable" && assetHint != "Root.network.spawnable")
+        if (!assetHint.starts_with(AzFramework::Spawnable::DefaultMainSpawnableName))
         {
             return;
         }

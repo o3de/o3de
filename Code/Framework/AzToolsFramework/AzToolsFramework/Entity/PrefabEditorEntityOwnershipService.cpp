@@ -452,7 +452,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateInMemorySpawnableAsset(m_rootInstance->GetTemplateId(), DefaultMainSpawnableName, true);
+            auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateInMemorySpawnableAsset(m_rootInstance->GetTemplateId(), AzFramework::Spawnable::DefaultMainSpawnableName, true);
             if (createRootSpawnableResult.IsSuccess())
             {
                 // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
