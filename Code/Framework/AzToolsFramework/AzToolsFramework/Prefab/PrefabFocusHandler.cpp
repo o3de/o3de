@@ -151,14 +151,7 @@ namespace AzToolsFramework::Prefab
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
 
-            if (focusBehavior == FocusChangeBehavior::CloseCurrentlyFocusedItems)
-            {
-                FocusOnPrefabInstanceOwningEntityId(entityId);
-            }
-            else
-            {
-                FocusOnPrefabInstanceOwningEntityId(entityId, FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
-            }
+            FocusOnPrefabInstanceOwningEntityId(entityId, focusBehavior);
         }
 
         return AZ::Success();
@@ -193,30 +186,6 @@ namespace AzToolsFramework::Prefab
         }
 
         return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
-    }
-
-    bool PrefabFocusHandler::FindFocusedInstance(AZ::EntityId entityId, InstanceOptionalReference& outFocusedInstance)
-    {
-        InstanceOptionalReference focusedInstance;
-
-        if (!entityId.IsValid())
-        {
-            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-            if (!prefabEditorEntityOwnershipInterface)
-            {
-                return false;
-            }
-
-            outFocusedInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-        }
-        else
-        {
-            outFocusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-        }
-
-        return true;
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId, FocusChangeBehavior focusChangeBehavior)

@@ -80,8 +80,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, FocusChangeBehavior focusChangeBehavior);
         void RefreshInstanceFocusPath();
 
-        bool FindFocusedInstance(AZ::EntityId entityId, InstanceOptionalReference& outFocusedInstance);
-
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
