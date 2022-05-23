@@ -357,14 +357,20 @@ namespace PhysX
         }
 
         AzPhysics::StaticRigidBody* staticRigidBody = azrtti_cast<AzPhysics::StaticRigidBody*>(simulatedBody);
-        if (staticRigidBody->GetShapeCount() == 1)
+        if (!staticRigidBody)
         {
-            // Calculate the center of a box in front of the camera - this will be the area to draw
-            const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-            const AZ::Vector3 boundsAabbCenter = cameraState.m_position + cameraState.m_forward * physx_heightfieldDebugDrawDistance * 0.5f;
+            return;
+        }
 
+        // Calculate the center of a box in front of the camera - this will be the area to draw
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        const AZ::Vector3 boundsAabbCenter = cameraState.m_position + cameraState.m_forward * physx_heightfieldDebugDrawDistance * 0.5f;
+
+        AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
+        for (AZ::u32 shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
+        {
             // Shape::GetGeometry expects the bounding box in the local space
-            const AZStd::shared_ptr<Physics::Shape> shape = staticRigidBody->GetShape(0);
+            const AZStd::shared_ptr<Physics::Shape> shape = staticRigidBody->GetShape(shapeIndex);
             const AZ::Vector3 bodyPosition = staticRigidBody->GetPosition();
             const AZ::Vector3 shapeOffset = shape->GetLocalPose().first;
             const AZ::Vector3 aabbCenterLocal = boundsAabbCenter - bodyPosition - shapeOffset;
@@ -384,7 +390,7 @@ namespace PhysX
             if (!vertices.empty())
             {
                 // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
-                AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
+                const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
                 debugDisplay.PushMatrix(shapeOffsetTransform);
 
                 debugDisplay.DrawLines(vertices, AZ::Colors::White);
