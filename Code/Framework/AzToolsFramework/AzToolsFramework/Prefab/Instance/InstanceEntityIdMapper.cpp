@@ -6,10 +6,8 @@
  *
  */
 
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Sfmt.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/TypeHash.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>

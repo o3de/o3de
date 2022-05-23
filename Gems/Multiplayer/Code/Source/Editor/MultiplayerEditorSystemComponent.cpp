@@ -446,6 +446,7 @@ namespace Multiplayer
 
         // Store a clone of this spawnable for the server; we make a clone now before the spawnable is modified by aliasing.
         // Aliasing for this editor (client) is different from aliasing that will happen on the server.
+        // For example, resolving alias on the client disables auto-spawning of network entities, and will instead wait for a message from the server before updating the net-entities.
         AZStd::unique_ptr<AzFramework::Spawnable> preAliasedSpawnableClone(serializeContext->CloneObject(&spawnable));
         m_preAliasedSpawnablesForServer.push_back({ AZStd::move(preAliasedSpawnableClone), assetHint, spawnable.GetId() });
     }
