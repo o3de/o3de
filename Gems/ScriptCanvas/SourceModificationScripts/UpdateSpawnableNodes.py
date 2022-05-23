@@ -53,7 +53,7 @@ filedata = json.dumps(prefab_dom, indent=4)
 
 # finally replace all matching type Uuids and type names
 # SpawnTicketInstance -> EntitySpawnTicket
-filedata = filedata.replace('"$type": "SpawnTicketInstance"', '"$type": "AzFramework::EntitySpawnTicket"')
+filedata = filedata.replace(r'"$type":\s*"SpawnTicketInstance"', '"$type": "AzFramework::EntitySpawnTicket"')
 filedata = filedata.replace('{2B5EB938-8962-4A43-A97B-112F398C604B}', '{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}')
 # TicketArray
 filedata = filedata.replace('{0F155764-DFEF-50FB-9B6E-E0EE9223A683}', '{7541F631-BA89-54F3-A6B8-33FF75B60192}')
@@ -63,7 +63,7 @@ filedata = filedata.replace('{C63B2684-DC8D-5C8F-B635-ABC248EEEF05}', '{1D4D0809
 filedata = filedata.replace('{C11E8C62-060A-5EC0-9370-412E43A66FED}', '{E7D8B6D5-ABF2-5067-86BA-B25CE38421C3}')
 
 # SpawnableAsset -> SpawnableScriptAssetRef (no need to replace Uuids, since this is only class rename)
-filedata = filedata.replace('"$type": "SpawnableAsset"', '"$type": "AzFramework::Scripts::SpawnableScriptAssetRef"')
+filedata = filedata.replace(r'"$type":\s*"SpawnableAsset"', '"$type": "AzFramework::Scripts::SpawnableScriptAssetRef"')
 
 with open(fullPath, 'w') as file:
     file.write(filedata)

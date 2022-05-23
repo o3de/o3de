@@ -307,7 +307,7 @@ namespace ScriptCanvasEditor
                 {
                     return AZ::Failure(AZStd::string::format(
                         "Script Canvas source asset is using legacy Spawnable nodes and needs to be updated by running the update script: "
-                        R"("py o3de\Gems\ScriptCanvas\SourceModificationScripts\UpdateSpawnableNodes.py %s")",
+                        R"("python o3de\Gems\ScriptCanvas\SourceModificationScripts\UpdateSpawnableNodes.py %s")",
                         path.data()));
                 }
                 return AZ::Failure(AZStd::string::format("XML and JSON load attempts failed: %s", jsonResult.GetError().c_str()));
