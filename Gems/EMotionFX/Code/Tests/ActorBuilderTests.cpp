@@ -217,7 +217,7 @@ namespace EMotionFX
         // root_joint
         //     |____TransformData
         using SceneGraph = AZ::SceneAPI::Containers::SceneGraph;
-        using namespace AZ::SceneData::GraphData;
+        using RootBoneData = AZ::SceneData::GraphData::RootBoneData;
         using GraphTransformData = AZ::SceneData::GraphData::TransformData;
         SceneGraph& graph = m_scene->GetGraph();
 
@@ -236,7 +236,7 @@ namespace EMotionFX
         const EMotionFX::Pose* pose = m_actor->GetBindPose();
         AZ::Transform emfxLocal = pose->GetLocalSpaceTransform(0).ToAZTransform();
         AZ::Transform builderLocal = AZ::Transform::CreateFromMatrix3x4(globalTransform);
-        EXPECT_EQ(emfxLocal, builderLocal);
+        EXPECT_TRUE(emfxLocal.IsClose(builderLocal));
     }
 
     INSTANTIATE_TEST_CASE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
