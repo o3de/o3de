@@ -83,7 +83,7 @@ namespace PhysX
         }
     }
 
-    AZStd::shared_ptr<Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index)
+    AZStd::shared_ptr<Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index) const
     {
         if (index >= m_shapes.size())
         {
@@ -92,7 +92,7 @@ namespace PhysX
         return m_shapes[index];
     }
 
-    AZ::u32 StaticRigidBody::GetShapeCount()
+    AZ::u32 StaticRigidBody::GetShapeCount() const
     {
         return static_cast<AZ::u32>(m_shapes.size());
     }

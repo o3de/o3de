@@ -292,12 +292,12 @@ namespace PhysX
         }
     }
 
-    AZ::u32 RigidBody::GetShapeCount()
+    AZ::u32 RigidBody::GetShapeCount() const 
     {
         return static_cast<AZ::u32>(m_shapes.size());
     }
 
-    AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index)
+    AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
     {
         if (index >= m_shapes.size())
         {

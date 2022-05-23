@@ -76,7 +76,8 @@ namespace PhysX
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-        AzPhysics::SimulatedBody* GetSimulatedBody() const;
+
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
         // Physics::HeightfieldProviderNotificationBus
         void OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 

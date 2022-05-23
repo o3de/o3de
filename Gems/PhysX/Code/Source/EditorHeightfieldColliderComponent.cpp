@@ -26,6 +26,9 @@
 #include <Source/Utils.h>
 #include <System/PhysXSystem.h>
 
+#include <utility>
+
+
 namespace PhysX
 {
     AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
@@ -350,13 +353,13 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::Display(const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        AzPhysics::SimulatedBody* simulatedBody = GetSimulatedBody();
+        const AzPhysics::SimulatedBody* simulatedBody = GetSimulatedBody();
         if (!simulatedBody)
         {
             return;
         }
 
-        AzPhysics::StaticRigidBody* staticRigidBody = azrtti_cast<AzPhysics::StaticRigidBody*>(simulatedBody);
+        const AzPhysics::StaticRigidBody* staticRigidBody = azrtti_cast<const AzPhysics::StaticRigidBody*>(simulatedBody);
         if (!staticRigidBody)
         {
             return;
@@ -366,7 +369,7 @@ namespace PhysX
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         const AZ::Vector3 boundsAabbCenter = cameraState.m_position + cameraState.m_forward * physx_heightfieldDebugDrawDistance * 0.5f;
 
-        AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
+        const AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
         for (AZ::u32 shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
         {
             // Shape::GetGeometry expects the bounding box in the local space
@@ -440,10 +443,10 @@ namespace PhysX
     // SimulatedBodyComponentRequestsBus
     AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody()
     {
-        return const_cast<const EditorHeightfieldColliderComponent*>(this)->GetSimulatedBody();
+        return const_cast<AzPhysics::SimulatedBody*>(std::as_const(*this).GetSimulatedBody());
     }
 
-    AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody() const
+    const AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody() const
     {
         if (m_sceneInterface && m_staticRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
