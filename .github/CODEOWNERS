@@ -125,4 +125,4 @@
 /Gems/Terrain/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
 
 # SIG-Release (Approval of internal version incrementation)
-/engine.json @o3de/sig-release-reviewers
+/engine.json @o3de/sig-release
