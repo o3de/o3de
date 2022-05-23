@@ -8,10 +8,10 @@
 #
 #
 # -------------------------------------------------------------------------
-"""This module is for use in boostrapping the DccScriptingInterface Gem
-with O3DE. Note: this boostrap is only designed fo be py3 compatible.
+"""This module is for use in bootstrapping the DccScriptingInterface Gem
+with O3DE. Note: this bootstrap is only designed to be py3 compatible.
 If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
-to implement your own boostrapper module. Currently this is boostrapped
+to implement your own bootstrapper module. Currently this is bootstrapped
 from add_dccsi.py, as a temporty measure related to this Jira:
 SPEC-2581"""
 # standard imports
@@ -90,7 +90,7 @@ def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG):
 # bootstrap in AssetProcessor
 def bootstrap_Editor(test_config=_DCCSI_GDEBUG,
                      test_pyside2=_DCCSI_GDEBUG):
-    '''Put boostrapping code here to execute in O3DE Editor.exe'''
+    """Put bootstrapping code here to execute in O3DE Editor.exe"""
     
     _settings = None
 
@@ -113,7 +113,7 @@ def bootstrap_Editor(test_config=_DCCSI_GDEBUG,
 # -------------------------------------------------------------------------
 # bootstrap in AssetProcessor
 def bootstrap_MaterialEditor():
-    '''Put boostrapping code here to execute in O3DE MaterialEdito.exe'''
+    """Put bootstrapping code here to execute in O3DE MaterialEdito.exe"""
     pass
     return None
 # -------------------------------------------------------------------------
@@ -122,7 +122,7 @@ def bootstrap_MaterialEditor():
 # -------------------------------------------------------------------------
 # bootstrap in AssetProcessor
 def bootstrap_AssetProcessor():
-    '''Put boostrapping code here to execute in O3DE AssetProcessor.exe'''
+    """Put boostrapping code here to execute in O3DE AssetProcessor.exe"""
     pass
     return None
 # -------------------------------------------------------------------------
@@ -131,7 +131,7 @@ def bootstrap_AssetProcessor():
 # -------------------------------------------------------------------------
 # bootstrap in AssetProcessor
 def bootstrap_AssetBuilder():
-    '''Put boostrapping code here to execute in O3DE AssetBuilder.exe'''
+    """Put boostrapping code here to execute in O3DE AssetBuilder.exe"""
     pass
     return None
 # -------------------------------------------------------------------------
