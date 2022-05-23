@@ -56,12 +56,13 @@ namespace Benchmark
             nestedInstances.emplace_back(AZStd::move(m_prefabSystemComponent->InstantiatePrefab(m_nestedPrefabTemplateId)));
         }
 
-        m_entityModify = CreateEntity("Entity", AZ::EntityId());
-        entitiesInParentInstance.emplace_back(m_entityModify);
+        m_entityToModify = CreateEntity("Entity", AZ::EntityId());
+        entitiesInParentInstance.emplace_back(m_entityToModify);
 
         m_instanceCreated =
             m_prefabSystemComponent->CreatePrefab(entitiesInParentInstance, AZStd::move(nestedInstances), parentTemplatePath);
         TemplateId templateToInstantiateId = m_instanceCreated->GetTemplateId();
+        m_instanceToModify = m_instanceCreated.get();
 
         // We need 2 prefab instances: One to make the original change to; And one to propagate that change to.
         m_instanceToUseForPropagation = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
