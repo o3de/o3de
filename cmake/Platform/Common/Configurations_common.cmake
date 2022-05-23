@@ -44,6 +44,7 @@ ly_append_configurations_options(
     DEFINES_RELEASE
         _RELEASE
         RELEASE
+        AZ_RELEASE_BUILD=1
         NDEBUG
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
