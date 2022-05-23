@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#define AZ_TRAIT_ATOM_SHADERBUILDER_DXC "Builders/DirectXShaderCompilerAz/bin/dxc"
+#define AZ_TRAIT_ATOM_SHADERBUILDER_DXC "Builders/DirectXShaderCompiler/bin/dxc"
 #define AZ_TRAIT_ATOM_VULKAN_DISABLE_DUAL_SOURCE_BLENDING 0
 #define AZ_TRAIT_ATOM_VULKAN_DLL ""
 #define AZ_TRAIT_ATOM_VULKAN_DLL_1 ""

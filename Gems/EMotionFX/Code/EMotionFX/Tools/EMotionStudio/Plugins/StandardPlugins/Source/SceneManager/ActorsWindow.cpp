@@ -22,7 +22,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QToolBar>
-
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 namespace EMStudio
 {
@@ -275,7 +275,7 @@ namespace EMStudio
         // Ask the user if he wants to save the actor in case it got modified and is about to be removed.
         for (EMotionFX::Actor* actor : toBeRemovedActors)
         {
-            m_plugin->SaveDirtyActor(actor, &commandGroup, true, false);
+            SaveDirtyActorFilesCallback::SaveDirtyActor(actor, &commandGroup, true, false);
         }
 
         AZStd::string result;

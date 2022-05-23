@@ -67,6 +67,8 @@ namespace AZ
 
         SceneProcessingConfigSystemComponent::~SceneProcessingConfigSystemComponent()
         {
+            Clear();
+
             DeactivateSceneModule(SceneProcessing::s_sceneBuilderModule);
             DeactivateSceneModule(SceneProcessing::s_sceneDataModule);
             DeactivateSceneModule(SceneProcessing::s_sceneCoreModule);
@@ -74,6 +76,10 @@ namespace AZ
 
         void SceneProcessingConfigSystemComponent::Clear()
         {
+            for (auto* softName : m_softNames)
+            {
+                delete softName;
+            }
             m_softNames.clear();
             m_softNames.shrink_to_fit();
             m_UseCustomNormals = true;
