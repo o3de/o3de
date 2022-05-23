@@ -27,16 +27,28 @@ namespace AZ
 
         PipelineLayout* PipelineState::GetPipelineLayout() const
         {
+            if (m_pipeline == nullptr)
+            {
+                return nullptr;
+            }
             return m_pipeline->GetPipelineLayout();
         }
 
         Pipeline* PipelineState::GetPipeline() const
         {
+            if (m_pipeline == nullptr)
+            {
+                return nullptr;
+            }
             return m_pipeline.get();
         }
 
         PipelineLibrary* PipelineState::GetPipelineLibrary() const
         {
+            if (m_pipeline == nullptr)
+            {
+                return nullptr;
+            }
             return m_pipeline->GetPipelineLibrary();
         }
 
