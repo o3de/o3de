@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
+#include <AzToolsFramework/UI/Prefab/PrefabFocusChangeBehavior.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -447,7 +448,7 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             // Focus on the parent, but don't close the parent as Qt is doing that anyway.
-            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefabWithoutClosingCurrent(s_editorEntityContextId);
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId, Prefab::FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
         }
     }
 
