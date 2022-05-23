@@ -77,3 +77,18 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_SC_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
         from .tests.spawnables import SC_Spawnables_DespawnOnEntityDeactivate as test_module
+        
+    class test_Lua_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_SimpleSpawnAndDespawn as test_module
+
+    class test_Lua_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_EntityClearedOnGameModeExit as test_module
+
+    class test_Lua_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    class test_Lua_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_NestedSpawn as test_module
+
+    class test_Lua_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_DespawnOnEntityDeactivate as test_module
