@@ -128,20 +128,33 @@ namespace Terrain
 
         for (uint32_t i = 0; i < m_sectorStack.size(); ++i)
         {
-            const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
-            const float gridMeters = (GridSize * m_sampleSpacing) * (1 << i);
-            const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
-            const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
-
-            // If the start coord for the stack is different, then some of the sectors will need to be updated.
             StackData& stackData = m_sectorStack.at(i);
-            if (stackData.m_startCoordX != startCoordX || stackData.m_startCoordY != startCoordY)
-            {
-                stackData.m_startCoordX = startCoordX;
-                stackData.m_startCoordY = startCoordY;
 
-                const uint32_t firstSectorIndexX = (m_1dSectorCount + (startCoordX % m_1dSectorCount)) % m_1dSectorCount;
-                const uint32_t firstSectorIndexY = (m_1dSectorCount + (startCoordY % m_1dSectorCount)) % m_1dSectorCount;
+            auto [newStartCoordX, newStartCoordY] = [&]()
+            {
+                const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
+                const float gridMeters = (GridSize * m_sampleSpacing) * (1 << i);
+                const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
+                const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
+
+                // If the start coord for the stack is different, then some of the sectors will need to be updated.
+                // There's 1 sector of wiggle room, so make sure we've moving the lod's start coord by as little as possible.
+
+                const int32_t newStartCoordX = startCoordX > stackData.m_startCoordX + 1 ? startCoordX - 1 :
+                    (startCoordX < stackData.m_startCoordX ? startCoordX : stackData.m_startCoordX);
+                const int32_t newStartCoordY = startCoordY > stackData.m_startCoordY + 1 ? startCoordY - 1 :
+                    (startCoordY < stackData.m_startCoordY ? startCoordY : stackData.m_startCoordY);
+
+                return AZStd::pair(newStartCoordX, newStartCoordY);
+            }();
+
+            if (stackData.m_startCoordX != newStartCoordX || stackData.m_startCoordY != newStartCoordY)
+            {
+                stackData.m_startCoordX = newStartCoordX;
+                stackData.m_startCoordY = newStartCoordY;
+
+                const uint32_t firstSectorIndexX = (m_1dSectorCount + (newStartCoordX % m_1dSectorCount)) % m_1dSectorCount;
+                const uint32_t firstSectorIndexY = (m_1dSectorCount + (newStartCoordY % m_1dSectorCount)) % m_1dSectorCount;
 
                 for (uint32_t xOffset = 0; xOffset < m_1dSectorCount; ++xOffset)
                 {
@@ -153,8 +166,8 @@ namespace Terrain
                         const uint32_t sectorIndexY = (firstSectorIndexY + yOffset) % m_1dSectorCount;
                         const uint32_t sectorIndex = sectorIndexY * m_1dSectorCount + sectorIndexX;
 
-                        const int32_t worldX = startCoordX + xOffset;
-                        const int32_t worldY = startCoordY + yOffset;
+                        const int32_t worldX = newStartCoordX + xOffset;
+                        const int32_t worldY = newStartCoordY + yOffset;
 
                         StackSectorData& sector = stackData.m_sectors.at(sectorIndex);
 
@@ -259,9 +272,13 @@ namespace Terrain
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 
         // Calculate the largest potential number of sectors needed per dimension at any stack level.
-        m_1dSectorCount = aznumeric_cast<uint32_t>(AZStd::ceilf((m_config.m_firstLodDistance + gridMeters) / gridMeters));
-        m_1dSectorCount += 1; // Add one sector of wiggle room.
-        m_1dSectorCount *= 2; // Lod Distance is radius, but we need diameter.
+        const float firstLodDiameter = m_config.m_firstLodDistance * 2.0f;
+        m_1dSectorCount = aznumeric_cast<uint32_t>(AZStd::ceilf(firstLodDiameter / gridMeters));
+        // If the sector grid doesn't line up perfectly with the camera, it will cover part of a sector
+        // along each boundary, so we need an extra sector to cover in those cases.
+        m_1dSectorCount += 1;
+        // Add one sector of wiggle room so to avoid thrashing updates when going back and forth over a boundary.
+        m_1dSectorCount += 1;
 
         m_sectorStack.clear();
 
@@ -338,7 +355,6 @@ namespace Terrain
                     const float aabbMaxDistanceSq = sector.m_aabb.GetMaxDistanceSq(mainCameraPosition);
                     if (aabbMaxDistanceSq > minDistanceSq && aabbMinDistanceSq <= maxDistanceSq)
                     {
-                        //view->AddDrawPacket(sector.m_drawPacket.GetRHIDrawPacket());
                         view->AddDrawPacket(sector.m_rhiDrawPacket.get());
                     }
                 }
@@ -555,7 +571,7 @@ namespace Terrain
 
         // expand the bounds in order to calculate normals.
         AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(request.m_vertexSpacing);
-        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(request.m_vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
+        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(request.m_vertexSpacing * 2.0f); // extra padding to catch the last vertex
 
         // pad the max by half a sample spacing to make sure it's inclusive of the last point.
         AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);

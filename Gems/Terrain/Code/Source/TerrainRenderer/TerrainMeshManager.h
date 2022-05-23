@@ -117,8 +117,6 @@ namespace Terrain
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
-
-            AZStd::vector<AZ::Data::Instance<AZ::RPI::Shader>> m_shaderList; //why?
         };
 
         struct StackData
