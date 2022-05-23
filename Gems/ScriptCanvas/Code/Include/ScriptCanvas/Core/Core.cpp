@@ -181,6 +181,12 @@ namespace ScriptCanvasEditor
         : m_id(AZ::Uuid::CreateNull())
     {}
 
+    SourceHandle::SourceHandle(const AZ::IO::Path& path)
+        : m_absolutePath(path)
+    {
+        SanitizePaths();
+    }
+
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(data.m_data)
         , m_id(id)
@@ -307,6 +313,20 @@ namespace ScriptCanvasEditor
                 ->Version(1)
                 ->Field("id", &SourceHandle::m_id)
                 ->Field("path", &SourceHandle::m_relativePath)
+                ;
+        }
+        else if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SourceHandle>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ;
+
+            behaviorContext->Method("ScriptCanvas_SourceHandle_FromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return SourceHandle(AZ::IO::Path(pathStringView)); })
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
         }
     }

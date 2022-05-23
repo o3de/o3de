@@ -349,6 +349,11 @@ namespace ScriptCanvasEditor
 
         SourceHandle();
 
+        /// All input paths to constructors may be absolute or relative, and are assumed to be absolute.
+        /// The relative path will be generated from the absolute path. 
+        /// If the input path is relative, the methods Path() and RelativePath() will return the same value.
+        SourceHandle(const AZ::IO::Path& path);
+
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
