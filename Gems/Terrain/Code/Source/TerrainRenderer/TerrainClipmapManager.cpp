@@ -82,7 +82,6 @@ namespace Terrain
         m_macroClipmapStackSize = m_config.CalculateMacroClipmapStackSize();
         m_detailClipmapStackSize = m_config.CalculateDetailClipmapStackSize();
 
-        InitializeClipmapBounds();
         InitializeClipmapData();
         InitializeClipmapImages();
 
@@ -132,7 +131,7 @@ namespace Terrain
         frameGraph.UseShaderAttachment(desc, access);
     }
 
-    void TerrainClipmapManager::InitializeClipmapBounds()
+    void TerrainClipmapManager::InitializeClipmapBounds(const AZ::Vector2& center)
     {
         m_macroClipmapBounds.resize(m_macroClipmapStackSize);
         float clipToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
@@ -140,8 +139,8 @@ namespace Terrain
         {
             ClipmapBoundsDescriptor desc;
             desc.m_size = m_config.m_clipmapSize;
-            desc.m_worldSpaceCenter = AZ::Vector2::CreateZero();
-            desc.m_clipmapUpdateMultiple = 4;
+            desc.m_worldSpaceCenter = center;
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_clipToWorldScale = clipToWorldScale;
 
             m_macroClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
@@ -155,8 +154,8 @@ namespace Terrain
         {
             ClipmapBoundsDescriptor desc;
             desc.m_size = m_config.m_clipmapSize;
-            desc.m_worldSpaceCenter = AZ::Vector2::CreateZero();
-            desc.m_clipmapUpdateMultiple = 4;
+            desc.m_worldSpaceCenter = center;
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_clipToWorldScale = clipToWorldScale;
 
             m_detailClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
@@ -167,6 +166,9 @@ namespace Terrain
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
+        const AZStd::array<uint32_t, 4> zeroUint = { 0, 0, 0, 0 };
+        const AZStd::array<float, 4> zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
+
         AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_previousViewPosition.data());
         AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
@@ -188,22 +190,28 @@ namespace Terrain
         m_clipmapData.m_macroClipmapStackSize = m_macroClipmapStackSize;
         m_clipmapData.m_detailClipmapStackSize = m_detailClipmapStackSize;
 
-        m_clipmapData.m_clipmapSize = aznumeric_cast<float>(m_config.m_clipmapSize);
+        m_clipmapData.m_clipmapSizeFloat = aznumeric_cast<float>(m_config.m_clipmapSize);
+        m_clipmapData.m_clipmapSizeUint = m_config.m_clipmapSize;
+
+        m_clipmapData.m_clipmapScaleInv.fill(zeroFloat);
 
         float clipmapScaleInv = 1.0f;
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_macroClipmapCenters[clipmapIndex].data());
             m_clipmapData.m_clipmapScaleInv[clipmapIndex][0] = clipmapScaleInv;
             clipmapScaleInv /= m_config.m_macroClipmapScaleBase;
         }
         clipmapScaleInv = 1.0f;
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            AZ::Vector4(0.5f).StoreToFloat4(m_clipmapData.m_detailClipmapCenters[clipmapIndex].data());
             m_clipmapData.m_clipmapScaleInv[clipmapIndex][1] = clipmapScaleInv;
             clipmapScaleInv /= m_config.m_detailClipmapScaleBase;
         }
+
+        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
+        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
+        m_clipmapData.m_macroClipmapBoundsRegions.fill(zeroUint);
+        m_clipmapData.m_detailClipmapBoundsRegions.fill(zeroUint);
     }
 
     void TerrainClipmapManager::InitializeClipmapImages()
@@ -270,6 +278,8 @@ namespace Terrain
 
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
     {
+        const AZStd::array<uint32_t, 4> zero = { 0, 0, 0, 0 };
+
         // pass current to previous
         m_clipmapData.m_previousViewPosition[0] = m_clipmapData.m_currentViewPosition[0];
         m_clipmapData.m_previousViewPosition[1] = m_clipmapData.m_currentViewPosition[1];
@@ -278,28 +288,155 @@ namespace Terrain
         AZ::Vector2 currentViewPosition = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
         currentViewPosition.StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
-        auto UpdateCenter = [&](ClipmapBounds& clipmapBounds, AZStd::array<float, 4>& shaderData) -> void
+        auto UpdateCenter = [&](ClipmapBounds& clipmapBounds, AZStd::array<uint32_t, 4>& shaderData) -> ClipmapBoundsRegionList
         {
-            clipmapBounds.UpdateCenter(currentViewPosition);
+            ClipmapBoundsRegionList updateRegionList = clipmapBounds.UpdateCenter(currentViewPosition);
 
             // copy current to previous slot
             shaderData[0] = shaderData[2];
             shaderData[1] = shaderData[3];
 
             // write current center
-            clipmapBounds.GetNormalizedCenter().StoreToFloat2(&shaderData[2]);
+            Vector2i center = clipmapBounds.GetModCenter();
+            shaderData[2] = center.m_x;
+            shaderData[3] = center.m_y;
+
+            return updateRegionList;
         };
 
+        // First time update will run through the whole clipmap
+        if (m_firstTimeUpdate)
+        {
+            m_firstTimeUpdate = false;
+
+            InitializeClipmapBounds(currentViewPosition);
+
+            AZStd::array<uint32_t, 4> aabb = { 0, 0, m_config.m_clipmapSize, m_config.m_clipmapSize };
+
+            for (uint32_t clipmapIndex = 0; clipmapIndex < m_macroClipmapStackSize; ++clipmapIndex)
+            {
+                m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex] = aabb;
+
+                for (uint32_t i = 1; i < ClipmapBounds::MaxUpdateRegions; ++i)
+                {
+                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = zero;
+                }
+
+                Vector2i center = m_macroClipmapBounds[clipmapIndex].GetModCenter();
+                m_clipmapData.m_macroClipmapCenters[clipmapIndex][0] = center.m_x;
+                m_clipmapData.m_macroClipmapCenters[clipmapIndex][1] = center.m_y;
+                m_clipmapData.m_macroClipmapCenters[clipmapIndex][2] = center.m_x;
+                m_clipmapData.m_macroClipmapCenters[clipmapIndex][3] = center.m_y;
+            }
+
+            for (uint32_t clipmapIndex = 0; clipmapIndex < m_detailClipmapStackSize; ++clipmapIndex)
+            {
+                m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex] = aabb;
+
+                for (uint32_t i = 1; i < ClipmapBounds::MaxUpdateRegions; ++i)
+                {
+                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = zero;
+                }
+
+                Vector2i center = m_detailClipmapBounds[clipmapIndex].GetModCenter();
+                m_clipmapData.m_detailClipmapCenters[clipmapIndex][0] = center.m_x;
+                m_clipmapData.m_detailClipmapCenters[clipmapIndex][1] = center.m_y;
+                m_clipmapData.m_detailClipmapCenters[clipmapIndex][2] = center.m_x;
+                m_clipmapData.m_detailClipmapCenters[clipmapIndex][3] = center.m_y;
+            }
+
+            m_macroTotalDispatchThreadX = 1024;
+            m_macroTotalDispatchThreadY = 1024;
+            m_detailTotalDispatchThreadX = 1024;
+            m_detailTotalDispatchThreadY = 1024;
+
+            m_clipmapData.m_macroDispatchGroupCountX = m_macroTotalDispatchThreadX / MacroGroupThreadX;
+            m_clipmapData.m_macroDispatchGroupCountY = m_macroTotalDispatchThreadY / MacroGroupThreadY;
+
+            m_clipmapData.m_detailDispatchGroupCountX = m_detailTotalDispatchThreadX / DetailGroupThreadX;
+            m_clipmapData.m_detailDispatchGroupCountY = m_detailTotalDispatchThreadY / DetailGroupThreadY;
+
+            return;
+        }
+
         // macro clipmap data:
+        bool hasUpdate = false;
         for (uint32_t clipmapIndex = 0; clipmapIndex < m_macroClipmapStackSize; ++clipmapIndex)
         {
-            UpdateCenter(m_macroClipmapBounds[clipmapIndex], m_clipmapData.m_macroClipmapCenters[clipmapIndex]);
+            ClipmapBoundsRegionList updateRegionList = UpdateCenter(m_macroClipmapBounds[clipmapIndex], m_clipmapData.m_macroClipmapCenters[clipmapIndex]);
+
+            for (uint32_t i = 0; i < ClipmapBounds::MaxUpdateRegions; ++i)
+            {
+                if (updateRegionList.size() > i)
+                {
+                    AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
+                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = aabb;
+                }
+                else
+                {
+                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = zero;
+                }
+            }
+
+            hasUpdate = hasUpdate || updateRegionList.size() > 0;
+        }
+
+        if (hasUpdate)
+        {
+            m_macroTotalDispatchThreadX = 64;
+            m_macroTotalDispatchThreadY = 64;
+            m_clipmapData.m_macroDispatchGroupCountX = m_macroTotalDispatchThreadX / MacroGroupThreadX;
+            m_clipmapData.m_macroDispatchGroupCountY = m_macroTotalDispatchThreadY / MacroGroupThreadY;
+        }
+        else
+        {
+            m_macroTotalDispatchThreadX = 0;
+            m_macroTotalDispatchThreadY = 0;
+            m_clipmapData.m_macroDispatchGroupCountX = 1;
+            m_clipmapData.m_macroDispatchGroupCountY = 1;
         }
 
         // detail clipmap data:
-        for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
+        hasUpdate = false;
+        for (uint32_t clipmapIndex = 0; clipmapIndex < m_detailClipmapStackSize; ++clipmapIndex)
         {
-            UpdateCenter(m_detailClipmapBounds[clipmapIndex], m_clipmapData.m_detailClipmapCenters[clipmapIndex]);
+            ClipmapBoundsRegionList updateRegionList = UpdateCenter(m_detailClipmapBounds[clipmapIndex], m_clipmapData.m_detailClipmapCenters[clipmapIndex]);
+
+            for (uint32_t i = 0; i < ClipmapBounds::MaxUpdateRegions; ++i)
+            {
+                if (updateRegionList.size() > i)
+                {
+                    AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
+                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
+                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = aabb;
+                }
+                else
+                {
+                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = zero;
+                }
+            }
+
+            hasUpdate = hasUpdate || updateRegionList.size() > 0;
+        }
+
+        if (hasUpdate)
+        {
+            m_detailTotalDispatchThreadX = 64;
+            m_detailTotalDispatchThreadY = 64;
+            m_clipmapData.m_detailDispatchGroupCountX = m_detailTotalDispatchThreadX / DetailGroupThreadX;
+            m_clipmapData.m_detailDispatchGroupCountY = m_detailTotalDispatchThreadY / DetailGroupThreadY;
+        }
+        else
+        {
+            m_detailTotalDispatchThreadX = 0;
+            m_detailTotalDispatchThreadY = 0;
+            m_clipmapData.m_detailDispatchGroupCountX = 1;
+            m_clipmapData.m_detailDispatchGroupCountY = 1;
         }
     }
 
@@ -308,5 +445,29 @@ namespace Terrain
         AZ_Assert(clipmapName < ClipmapName::Count, "Must be a valid ClipmapName enum.");
 
         return m_clipmaps[clipmapName];
+    }
+
+    void TerrainClipmapManager::GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const
+    {
+        outThreadX = m_macroTotalDispatchThreadX;
+        outThreadY = m_macroTotalDispatchThreadY;
+        outThreadZ = 1;
+    }
+
+    void TerrainClipmapManager::GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const
+    {
+        outThreadX = m_detailTotalDispatchThreadX;
+        outThreadY = m_detailTotalDispatchThreadY;
+        outThreadZ = 1;
+    }
+
+    bool TerrainClipmapManager::HasMacroClipmapUpdate() const
+    {
+        return m_macroTotalDispatchThreadX != 0 && m_macroTotalDispatchThreadY != 0;
+    }
+
+    bool TerrainClipmapManager::HasDetailClipmapUpdate() const
+    {
+        return m_detailTotalDispatchThreadX != 0 && m_detailTotalDispatchThreadY != 0;
     }
 }

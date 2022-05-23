@@ -470,7 +470,18 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
-                SetRayTracingEnabled(meshHandle, visible);
+
+                if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                {
+                    // always remove from ray tracing first
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+
+                    // now add if it's visible
+                    if (visible)
+                    {
+                        meshHandle->SetRayTracingData();
+                    }
+                }
             }
         }
 
@@ -1074,8 +1085,8 @@ namespace AZ
                     {
                         AZ_Warning(
                             "MeshFeatureProcessor", false,
-                            "No irradiance.manualColor or irradiance.color field found. Defaulting to black.");
-                        subMesh.m_irradianceColor = AZ::Colors::Black;
+                            "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
+                        subMesh.m_irradianceColor = AZ::Colors::White;
                     }
                 }
             }
@@ -1153,8 +1164,8 @@ namespace AZ
             else
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
-                        "defaulting to black.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Colors::Black;
+                        "defaulting to 1.0f.", irradianceColorSource.GetCStr());
+                subMesh.m_irradianceColor = AZ::Colors::White;
             }
 
 

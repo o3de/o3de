@@ -16,6 +16,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/string/string.h>
@@ -39,6 +40,7 @@ namespace AZ
     //! - The fourth finger press on a touch screen.
     class DebugConsole : public AzFramework::InputChannelEventListener
                        , public AZ::RPI::ViewportContextNotificationBus::Handler
+                       , public AZ::Debug::TraceMessageBus::Handler
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The default maximum number of entries to display in the debug log.
@@ -67,6 +69,11 @@ namespace AZ
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
         ~DebugConsole() override;
+
+        //! AZ::Debug::TraceMessageBus
+        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPrintf(const char* window, const char* message) override;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! \ref AZ::RPI::ViewportContextRequestsInterface
@@ -111,11 +118,12 @@ namespace AZ
         void ToggleIsShowing();
 
     private:
+        void AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel);
+
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
         AZStd::deque<AZStd::pair<AZStd::string, AZ::Color>> m_debugLogEntires; //!< All debug logs.
         AZStd::deque<AZStd::string> m_textInputHistory; //!< History of input that has been entered.
-        AZ::ILogger::LogEvent::Handler m_logHandler; //!< Handler that receives log events to display.
         AzFramework::InputContext m_inputContext; //!< Input context used to open/close the console.
         char m_inputBuffer[1028] = {}; //!< The character buffer used to accept text input.
         AzFramework::SystemCursorState m_previousSystemCursorState; //! The last system cursor state.

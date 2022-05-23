@@ -17,15 +17,14 @@
 
 namespace AWSClientAuth
 {
-    //! Gem System Component. Responsible for instantiating and managing Authentication and Authroziation Controller
+    //! Gem System Component. Responsible for instantiating and managing Authentication and Authorization Controller
     class AWSClientAuthSystemComponent
         : public AZ::Component
         , public AWSCore::AWSCoreNotificationsBus::Handler
         , public AWSClientAuthRequestBus::Handler
     {
     public:
-
-        virtual ~AWSClientAuthSystemComponent() = default;
+        ~AWSClientAuthSystemComponent() override = default;
 
         AZ_COMPONENT(AWSClientAuthSystemComponent, "{0C2660C8-1B4A-4474-BE65-B487E2DE8649}");
 
@@ -49,6 +48,7 @@ namespace AWSClientAuth
         // AWSClientAuthRequests interface
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> GetCognitoIDPClient() override;
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> GetCognitoIdentityClient() override;
+        bool HasCognitoControllers() const override;
 
         AZStd::vector<ProviderNameEnum> m_enabledProviderNames;
         AZStd::unique_ptr<AuthenticationProviderManager> m_authenticationProviderManager;

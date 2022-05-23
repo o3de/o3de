@@ -83,7 +83,7 @@ namespace ScriptCanvas
         // populate all on initial load at run time
         AZStd::function<ExecutionState*(Execution::StateStorage&, ExecutionStateConfig&)> m_createExecution;
         AZStd::vector<Execution::CloneSource> m_cloneSources;
-        AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
+        AZStd::vector<AZ::BehaviorArgument> m_activationInputStorage;
         Execution::ActivationInputRange m_activationInputRange;
 
         // used to initialize statics only once, and not necessarily on the loading thread

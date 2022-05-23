@@ -175,7 +175,7 @@ class TestHelper:
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 
-            TestHelper.succeed_if_log_line_found("EditorServer", "Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+            TestHelper.succeed_if_log_line_found("EditorServer", "System: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
 

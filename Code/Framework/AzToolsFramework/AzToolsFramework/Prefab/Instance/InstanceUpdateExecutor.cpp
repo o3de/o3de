@@ -12,6 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -233,6 +234,13 @@ namespace AzToolsFramework
 
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+
+                            if (!m_isRootPrefabInstanceLoaded &&
+                                instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
+                            {
+                                PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnRootPrefabInstanceLoaded);
+                                m_isRootPrefabInstanceLoaded = true;
+                            }
                         }
                     }
                     for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
@@ -255,6 +263,16 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
+        }
+
+        void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()
+        {
+            m_isRootPrefabInstanceLoaded = false;
+
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            m_rootPrefabInstanceSourcePath =
+                prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
         }
     }
 }
