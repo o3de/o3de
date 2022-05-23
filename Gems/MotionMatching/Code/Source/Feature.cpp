@@ -28,6 +28,24 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
+    Feature::ExtractFeatureContext::ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
+        : m_featureMatrix(featureMatrix)
+        , m_posePool(posePool)
+    {
+    }
+
+    Feature::QueryVectorContext::QueryVectorContext(const Pose& currentPose, const TrajectoryQuery& trajectoryQuery)
+        : m_currentPose(currentPose)
+        , m_trajectoryQuery(trajectoryQuery)
+    {
+    }
+
+    Feature::FrameCostContext::FrameCostContext(const QueryVector& queryVector, const FeatureMatrix& featureMatrix)
+        : m_queryVector(queryVector)
+        , m_featureMatrix(featureMatrix)
+    {
+    }
+
     bool Feature::Init(const InitSettings& settings)
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
@@ -37,7 +55,7 @@ namespace EMotionFX::MotionMatching
         m_jointIndex = joint ? joint->GetNodeIndex() : InvalidIndex;
         if (m_jointIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
             return false;
         }
 
@@ -45,7 +63,7 @@ namespace EMotionFX::MotionMatching
         m_relativeToNodeIndex = relativeToJoint ? relativeToJoint->GetNodeIndex() : InvalidIndex;
         if (m_relativeToNodeIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
             return false;
         }
 

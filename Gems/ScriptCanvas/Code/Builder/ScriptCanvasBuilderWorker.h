@@ -65,6 +65,8 @@ namespace ScriptCanvasBuilder
         DistinguishEntityScriptFromScript,
         ExecutionStateAsLightUserdata,
         UpdateDependencyHandling,
+        AddExplicitDestructCallForMemberVariables,
+
         // add new entries above
         Current,
     };

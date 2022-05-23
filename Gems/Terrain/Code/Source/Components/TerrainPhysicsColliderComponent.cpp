@@ -82,7 +82,7 @@ namespace Terrain
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<TerrainPhysicsColliderConfig, AZ::ComponentConfig>()
+            serialize->Class<TerrainPhysicsColliderConfig>()
                 ->Version(3)
                 ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
                 ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
@@ -141,26 +141,6 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         Physics::HeightfieldProviderRequestsBus::Handler ::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-    }
-
-    bool TerrainPhysicsColliderComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
-    {
-        if (auto config = azrtti_cast<const TerrainPhysicsColliderConfig*>(baseConfig))
-        {
-            m_configuration = *config;
-            return true;
-        }
-        return false;
-    }
-
-    bool TerrainPhysicsColliderComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
-    {
-        if (auto config = azrtti_cast<TerrainPhysicsColliderConfig*>(outBaseConfig))
-        {
-            *config = m_configuration;
-            return true;
-        }
-        return false;
     }
 
     void TerrainPhysicsColliderComponent::NotifyListenersOfHeightfieldDataChange(
@@ -434,6 +414,14 @@ namespace Terrain
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
             region, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+    }
+
+    void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
+    {
+        m_configuration = newConfiguration;
+
+        NotifyListenersOfHeightfieldDataChange(
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping, AZ::Aabb::CreateNull());
     }
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
