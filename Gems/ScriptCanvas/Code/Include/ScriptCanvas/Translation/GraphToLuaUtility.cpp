@@ -56,11 +56,11 @@ namespace GraphToLuaUtilityCpp
 
     AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
     {
-        size_t numEqualSignsRequired = 0;
+        size_t numEqualSignsRequired = 1;
 
         for (;;)
         {
-            auto candidate = AZStd::string::format("]%s]", EqualSigns(numEqualSignsRequired).c_str());
+            auto candidate = AZStd::string::format("]%s", EqualSigns(numEqualSignsRequired).c_str());
 
             if (formattedString.find(candidate) == AZStd::string::npos)
             {
