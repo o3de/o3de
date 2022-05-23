@@ -258,7 +258,6 @@ namespace ScriptCanvasEditor
             jsonString.contains("{2B5EB938-8962-4A43-A97B-112F398C604B}");
     }
 
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path)
     AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
