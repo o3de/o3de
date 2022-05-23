@@ -48,10 +48,26 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! that can edit an associated value.
     struct PropertyEditor : NodeDefinition
     {
+        //! Specifies the type of value change specifeid in OnChanged.
+        //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack.
+        enum class ValueChangeType
+        {
+            //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
+            InProgressEdit,
+            //! This is a "final" edit provided by the user doing something to signal a decision
+            //! e.g. releasing the mouse or pressing enter.
+            FinishedEdit,
+        };
+
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
-        static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&)>("OnChanged");
+        static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
+        static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
+
+        static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
+        static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
+        static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
     };
 
     template<typename T = Dom::Value>
@@ -165,5 +181,20 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Vector4 : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Vector4";
+    };
+
+    struct FilePath : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "FilePath";
+    };
+
+    struct Asset : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "Asset";
+    };
+
+    struct AudioControl : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "AudioControl";
     };
 } // namespace AZ::DocumentPropertyEditor::Nodes

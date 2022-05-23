@@ -17,7 +17,27 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
+        
+    @pytest.mark.test_case_id("C36530722")
+    class Editor_levelLoad_Atom_hermanubis(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_hermanubis as test_module
 
-    @pytest.mark.test_case_id("C36529679")
-    class AtomLevelLoadTest_Editor(EditorBatchedTest):
-        from Atom.tests import hydra_Atom_LevelLoadTest as test_module
+    @pytest.mark.test_case_id("C36530724")
+    class Editor_levelLoad_Atom_hermanubis_high(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_hermanubis_high as test_module
+
+    @pytest.mark.test_case_id("C36530725")
+    class Editor_levelLoad_Atom_macbeth_shaderballs(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_macbeth_shaderballs as test_module
+
+    @pytest.mark.test_case_id("C36530726")
+    class Editor_levelLoad_Atom_PbrMaterialChart(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_PbrMaterialChart as test_module
+
+    @pytest.mark.test_case_id("C36530727")
+    class Editor_levelLoad_Atom_ShadowTest(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_ShadowTest as test_module
+
+    @pytest.mark.test_case_id("C36530728")
+    class Editor_levelLoad_Atom_Sponza(EditorBatchedTest):
+        from Atom.tests import levelLoad_Atom_Sponza as test_module
