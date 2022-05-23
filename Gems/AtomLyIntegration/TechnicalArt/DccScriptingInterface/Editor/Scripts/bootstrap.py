@@ -14,21 +14,18 @@ If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
 to implement your own boostrapper module. Currently this is boostrapped
 from add_dccsi.py, as a temporty measure related to this Jira:
 SPEC-2581"""
-
-# test bootstrap execution time
-import time
-_START = time.process_time() # start tracking
-
 # standard imports
 import sys
 import os
 import site
+import timeit
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
+_START = timeit.default_timer() # start tracking
 _MODULENAME = 'O3DE.DCCsi.bootstrap'
 
 # we don't use dynaconf setting here as we might not yet have access
@@ -51,29 +48,14 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
+from azpy.constants import STR_CROSSBAR
 
-from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-# default loglevel to info unless set
-_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
-    _DCCSI_LOGLEVEL = _logging.DEBUG
-    
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
-    
-# configure basic logger
-# note: not using a common logger to reduce cyclical imports
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                    format=FRMT_LOG_LONG,
-                    datefmt='%m-%d %H:%M')
-
 _LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug(STR_CROSSBAR)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------
 
@@ -191,6 +173,8 @@ elif _O3DE_Editor.stem.lower() == "python":
     
 else:
     _LOGGER.warning(f'No bootstrapping code for: {_O3DE_Editor}')
+    
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 # -------------------------------------------------------------------------
 
 
@@ -203,9 +187,26 @@ if __name__ == '__main__':
     # force enable debug settings manually
     _DCCSI_GDEBUG = False # enable here to force temporarily
     _DCCSI_DEV_MODE = False
+
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
     if _DCCSI_GDEBUG:
         # override loglevel if runnign debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
+        
+    # set up module logging
+    #for handler in _logging.root.handlers[:]:
+        #_logging.root.removeHandler(handler)
+        
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                        format=FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+            
+    # happy print
+    _LOGGER.info(STR_CROSSBAR)
+    _LOGGER.info('DCCsi: bootstrap.py ... Running script as __main__')
     # ---------------------------------------------------------------------
     
     
@@ -264,12 +265,6 @@ if __name__ == '__main__':
         if args.developer_mode or _DCCSI_DEV_MODE:
             _DCCSI_DEV_MODE = True
             foo = attach_debugger()  # attempts to start debugger
-            
-        # happy print
-        from azpy.constants import STR_CROSSBAR
-        _LOGGER.info(STR_CROSSBAR)
-        _LOGGER.info('~ DCCsi: bootstrap.py ... Running script as __main__')
-        _LOGGER.info(STR_CROSSBAR)
         
         _TEST_PYSIDE2 = False
         if args.test_pyside2:
@@ -299,10 +294,12 @@ if __name__ == '__main__':
             _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
             _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
     # ---------------------------------------------------------------------
+        
+    # -- DONE ----
+    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+    _LOGGER.info(STR_CROSSBAR)
     
     # custom prompt
-    sys.ps1 = "[azpy]>>"
+    sys.ps1 = "[{}]>>".format(_MODULENAME)
     
-_END_TIME = time.process_time() - _START
-_LOGGER.debug('~ DCCsi: bootstrap.py took: {_END_TIME} sec') 
 # --- END -----------------------------------------------------------------
