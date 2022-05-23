@@ -9,10 +9,9 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, out float3 macroNormal)
+void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal)
 {
     macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    macroNormal = float3(0.0, 0.0, 1.0);
 
     // ------- Macro Data -------
     uint2 macroGridResolution = TerrainSrg::GetMacroGridResolution();

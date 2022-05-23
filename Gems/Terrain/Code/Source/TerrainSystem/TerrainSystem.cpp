@@ -1195,28 +1195,11 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
 AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
     const AZ::Aabb& inRegion,
     const AZ::Vector2& stepSize,
-    Sampler sampler) const
+    [[maybe_unused]] Sampler sampler) const
 {
-    size_t countX = 0;
-    size_t countY = 0;
-    
-    switch (sampler)
-    {
-    case Sampler::CLAMP:
-    {
-        // Only consider points that line up with the query resolution
-        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
-        const int32_t lastSampleX = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetX() / stepSize.GetX()));
-        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
-        const int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
-        countX = lastSampleX - firstSampleX + 1;
-        countY = lastSampleY - firstSampleY + 1;
-    }
-    default:
-        countX = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetX() / stepSize.GetX()));
-        countY = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetY() / stepSize.GetY()));
-    }
-    
+    size_t countX = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetX() / stepSize.GetX()));
+    size_t countY = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetY() / stepSize.GetY()));
+
     return AZStd::make_pair(countX, countY);
 }
 

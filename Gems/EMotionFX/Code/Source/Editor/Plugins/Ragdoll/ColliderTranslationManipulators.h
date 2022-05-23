@@ -9,17 +9,21 @@
 #pragma once
 
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {
-    class PhysicsSetupColliderTranslationManipulators : public PhysicsSetupManipulatorsBase
+    //! Provides functionality for interactively editing character physics collider positions in the Animation Editor Viewport. 
+    class ColliderTranslationManipulators
+        : public PhysicsSetupManipulatorsBase
+        , private PhysicsSetupManipulatorRequestBus::Handler
     {
     public:
-        PhysicsSetupColliderTranslationManipulators();
-        ~PhysicsSetupColliderTranslationManipulators();
+        ColliderTranslationManipulators();
+        ~ColliderTranslationManipulators();
         void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
@@ -31,30 +35,12 @@ namespace EMotionFX
         void BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
         void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
 
+        // PhysicsSetupManipulatorRequestBus::Handler overrides ...
+        void OnUnderlyingPropertiesChanged() override;
+
         MCore::CommandGroup m_commandGroup;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         AzToolsFramework::TranslationManipulators m_translationManipulators;
-
-        class DEFINECOMMANDCALLBACK_API DataChangedCallback : public MCore::Command::Callback
-        {
-            MCORE_MEMORYOBJECTCATEGORY(DataChangedCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MCore::MCORE_MEMCATEGORY_COMMANDSYSTEM);
-
-        public:
-            explicit DataChangedCallback(
-                PhysicsSetupColliderTranslationManipulators* manipulators, bool executePreUndo, bool executePreCommand = false)
-                : MCore::Command::Callback(executePreUndo, executePreCommand)
-                , m_manipulators(manipulators)
-            {
-            }
-            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;
-
-        private:
-            PhysicsSetupColliderTranslationManipulators* m_manipulators{};
-        };
-
-        AZStd::unique_ptr<DataChangedCallback> m_adjustColliderCallback;
-
-        friend class DataChangedCallback;
+        AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
     };
 } // namespace EMotionFX
