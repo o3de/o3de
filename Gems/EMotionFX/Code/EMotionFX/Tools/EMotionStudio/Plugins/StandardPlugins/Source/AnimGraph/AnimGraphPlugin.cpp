@@ -34,6 +34,7 @@
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
 #include <Editor/AnimGraphEditorBus.h>
 #include <Editor/InspectorBus.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
@@ -85,91 +86,6 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphEventHandler, EMotionFX::EventHandlerAllocator, 0)
 
-
-    class SaveDirtyAnimGraphFilesCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyFilesCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
-    public:
-        SaveDirtyAnimGraphFilesCallback()
-            : SaveDirtyFilesCallback()                           {}
-        ~SaveDirtyAnimGraphFilesCallback()                                                     {}
-
-        enum
-        {
-            TYPE_ID = 0x00000004
-        };
-        uint32 GetType() const override                                                     { return TYPE_ID; }
-        uint32 GetPriority() const override                                                 { return 1; }
-        bool GetIsPostProcessed() const override                                            { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            // get the number of anim graphs and iterate through them
-            const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-            for (size_t i = 0; i < numAnimGraphs; ++i)
-            {
-                // return in case we found a dirty file
-                EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
-
-                if (animGraph->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
-
-                if (animGraph->GetDirtyFlag())
-                {
-                    // add the filename to the dirty filenames array
-                    outFileNames->push_back(animGraph->GetFileName());
-
-                    // add the link to the actual object
-                    ObjectPointer objPointer;
-                    objPointer.m_animGraph = animGraph;
-                    outObjects->push_back(objPointer);
-                }
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(AnimGraphPlugin::CLASS_ID);
-            AnimGraphPlugin* animGraphPlugin = (AnimGraphPlugin*)plugin;
-            if (plugin == nullptr)
-            {
-                return DirtyFileManager::FINISHED;
-            }
-
-            for (const SaveDirtyFilesCallback::ObjectPointer& objPointer : objects)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                if (objPointer.m_animGraph == nullptr)
-                {
-                    continue;
-                }
-
-                EMotionFX::AnimGraph* animGraph = objPointer.m_animGraph;
-                if (animGraphPlugin->SaveDirtyAnimGraph(animGraph, commandGroup, false) == DirtyFileManager::CANCELED)
-                {
-                    return DirtyFileManager::CANCELED;
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "animgraph"; }
-        const char* GetFileType() const override        { return "anim graph"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMotionFX::AnimGraph>();
-        }
-    };
-
-
-    // constructor
     AnimGraphPlugin::AnimGraphPlugin()
         : EMStudio::DockWidgetPlugin()
         , m_eventHandler(this)
@@ -187,7 +103,6 @@ namespace EMStudio
         m_animGraphObjectFactory        = nullptr;
         m_graphNodeFactory               = nullptr;
         m_viewWidget                     = nullptr;
-        m_dirtyFilesCallback             = nullptr;
         m_navigationHistory             = nullptr;
 
         m_displayFlags                   = 0;
@@ -198,8 +113,6 @@ namespace EMStudio
         m_actionManager                 = nullptr;
     }
 
-
-    // destructor
     AnimGraphPlugin::~AnimGraphPlugin()
     {
         // destroy the event handler
@@ -210,10 +123,6 @@ namespace EMStudio
         {
             GetCommandManager()->RemoveCommandCallback(callback, true);
         }
-
-        // remove the dirty file manager callback
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
-        delete m_dirtyFilesCallback;
 
         delete m_animGraphObjectFactory;
 
@@ -529,10 +438,6 @@ namespace EMStudio
 
         // load options
         LoadOptions();
-
-        // initialize the dirty files callback
-        m_dirtyFilesCallback = new SaveDirtyAnimGraphFilesCallback();
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         // construct the event handler
         EMotionFX::GetEventManager().AddEventHandler(&m_eventHandler);
@@ -952,90 +857,6 @@ namespace EMStudio
         return false;
     }
 
-
-    void AnimGraphPlugin::SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup)
-    {
-        const AZStd::string command = AZStd::string::format("SaveAnimGraph -index %zu -filename \"%s\"", animGraphIndex, filename);
-
-        if (commandGroup == nullptr)
-        {
-            AZStd::string result;
-            if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
-            {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_ERROR,
-                    AZStd::string::format("AnimGraph <font color=red>failed</font> to save<br/><br/>%s", result.c_str()).c_str());
-            }
-            else
-            {
-                GetNotificationWindowManager()->CreateNotificationWindow(NotificationWindow::TYPE_SUCCESS,
-                    "AnimGraph <font color=green>successfully</font> saved");
-            }
-        }
-        else
-        {
-            commandGroup->AddCommandString(command);
-        }
-    }
-
-
-    void AnimGraphPlugin::SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
-    {
-        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == InvalidIndex)
-        {
-            return;
-        }
-
-        AZStd::string filename = animGraph->GetFileName();
-        if (filename.empty())
-        {
-            filename = GetMainWindow()->GetFileManager()->SaveAnimGraphFileDialog(GetViewWidget());
-            if (filename.empty())
-            {
-                return;
-            }
-        }
-
-        SaveAnimGraph(filename.c_str(), animGraphIndex, commandGroup);
-    }
-
-
-    void AnimGraphPlugin::SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
-    {
-        const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveAnimGraphFileDialog(m_viewWidget);
-        if (filename.empty())
-        {
-            return;
-        }
-
-        AZStd::string assetFilename = filename;
-        GetMainWindow()->GetFileManager()->RelocateToAssetCacheFolder(assetFilename);
-        AZStd::string sourceFilename = filename;
-        GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(sourceFilename);
-
-        // Are we about to overwrite an already opened anim graph?
-        const EMotionFX::AnimGraph* sourceAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByFileName(sourceFilename.c_str(), /*isTool*/ true);
-        const EMotionFX::AnimGraph* cacheAnimGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByFileName(assetFilename.c_str(), /*isTool*/ true);
-        const EMotionFX::AnimGraph* focusedAnimGraph = m_animGraphModel->GetFocusedAnimGraph();
-        if (QFile::exists(sourceFilename.c_str()) &&
-            (sourceAnimGraph || cacheAnimGraph) &&
-            (sourceAnimGraph != focusedAnimGraph && cacheAnimGraph != focusedAnimGraph))
-        {
-            QMessageBox::warning(m_dock, "Cannot overwrite anim graph", "Anim graph is already opened and cannot be overwritten.", QMessageBox::Ok);
-            return;
-        }
-
-        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == InvalidIndex)
-        {
-            MCore::LogError("Cannot save anim graph. Anim graph index invalid.");
-            return;
-        }
-
-        SaveAnimGraph(filename.c_str(), animGraphIndex, commandGroup);
-    }
-
-
     void AnimGraphPlugin::OnFileOpen()
     {
         AZStd::string filename = GetMainWindow()->GetFileManager()->LoadAnimGraphFileDialog(m_viewWidget);
@@ -1124,7 +945,6 @@ namespace EMStudio
         GetCommandManager()->ClearHistory();
     }
 
-
     void AnimGraphPlugin::OnFileSave()
     {
         EMotionFX::AnimGraph* animGraph = m_animGraphModel->GetFocusedAnimGraph();
@@ -1143,10 +963,9 @@ namespace EMStudio
         }
         else
         {
-            SaveAnimGraph(filename.c_str(), animGraphIndex);
+            GetMainWindow()->GetFileManager()->SaveAnimGraph(filename.c_str(), animGraphIndex);
         }
     }
-
 
     void AnimGraphPlugin::OnFileSaveAs()
     {
@@ -1156,7 +975,8 @@ namespace EMStudio
             return;
         }
 
-        SaveAnimGraphAs(animGraph);
+        const EMotionFX::AnimGraph* focusedAnimGraph = m_animGraphModel->GetFocusedAnimGraph();
+        GetMainWindow()->GetFileManager()->SaveAnimGraphAs(m_viewWidget, animGraph, focusedAnimGraph);
     }
 
 
@@ -1197,82 +1017,6 @@ namespace EMStudio
 
         m_graphWidget->ProcessFrame(redraw);
     }
-
-
-    int AnimGraphPlugin::SaveDirtyAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton)
-    {
-        // make sure the anim graph is valid
-        if (animGraph == nullptr)
-        {
-            return QMessageBox::Discard;
-        }
-
-        // only process changed files
-        if (animGraph->GetDirtyFlag() == false)
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        if (askBeforeSaving)
-        {
-            EMStudio::GetApp()->setOverrideCursor(QCursor(Qt::ArrowCursor));
-
-            QMessageBox msgBox(GetMainWindow());
-            AZStd::string text;
-
-            if (!animGraph->GetFileNameString().empty())
-            {
-                text = AZStd::string::format("Save changes to '%s'?", animGraph->GetFileName());
-            }
-            else
-            {
-                text = "Save changes to untitled anim graph?";
-            }
-
-            msgBox.setText(text.c_str());
-            msgBox.setWindowTitle("Save Changes");
-
-            if (showCancelButton)
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            }
-            else
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
-            }
-
-            msgBox.setDefaultButton(QMessageBox::Save);
-            msgBox.setIcon(QMessageBox::Question);
-
-            int messageBoxResult = msgBox.exec();
-            switch (messageBoxResult)
-            {
-            case QMessageBox::Save:
-            {
-                SaveAnimGraph(animGraph, commandGroup);
-                break;
-            }
-            case QMessageBox::Discard:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::FINISHED;
-            }
-            case QMessageBox::Cancel:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::CANCELED;
-            }
-            }
-        }
-        else
-        {
-            // save without asking first
-            SaveAnimGraph(animGraph, commandGroup);
-        }
-
-        return DirtyFileManager::FINISHED;
-    }
-
 
     int AnimGraphPlugin::OnSaveDirtyAnimGraphs()
     {

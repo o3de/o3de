@@ -20,7 +20,9 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/is_abstract.h>
+#include <AzCore/std/typetraits/is_destructible.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
@@ -193,12 +195,18 @@ namespace AZ
         bool StoreResult(T&& result);
 
         /// Used internally to store values in the temp data
-        template<typename T>
+        template<typename T, typename = AZStd::enable_if_t<AZStd::is_trivially_destructible_v<AZStd::decay_t<T>>>>
         void StoreInTempData(T&& value);
 
         void* m_value;  ///< Pointer to value, keep it mind to check the traits as if the value is pointer, this will be pointer to pointer and use \ref GetValueAddress to get the actual value address
         AZStd::function<void()> m_onAssignedResult;
         BehaviorParameter::TempValueParameterAllocator m_tempData; ///< Temp data for conversion, etc. while preparing the parameter for a call (POD only)
+
+    private:
+        friend class BehaviorDefaultValue;
+
+        template<typename T>
+        void StoreInTempDataEvenIfNonTrivial(T&& value);
     };
 
     AZ_TYPE_INFO_SPECIALIZE(AZ::BehaviorArgument, "{B1680AE9-4DBE-4803-B12F-1E99A32990B7}")
@@ -212,6 +220,11 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(BehaviorDefaultValue, AZ::SystemAllocator, 0);
 
+        BehaviorDefaultValue(const BehaviorDefaultValue&) = delete;
+        BehaviorDefaultValue(BehaviorDefaultValue&&) = delete;
+        BehaviorDefaultValue& operator=(const BehaviorDefaultValue&) = delete;
+        BehaviorDefaultValue& operator=(BehaviorDefaultValue&&) = delete;
+
         /**
         * Create a default value for a specific method parameter. The Default values is stored by value
         * in a temp storage, so currently there is limit the \ref BehaviorArgument temp storage, we
@@ -220,7 +233,31 @@ namespace AZ
         template<typename Value>
         BehaviorDefaultValue(Value&& value)
         {
-            m_value.StoreInTempData(AZStd::forward<Value>(value));
+            m_value.StoreInTempDataEvenIfNonTrivial(AZStd::forward<Value>(value));
+            if constexpr (!AZStd::is_trivially_destructible_v<AZStd::decay_t<Value>>)
+            {
+                // BehaviorArgument does not destroy instances of types set
+                // with StoreInTempData(). It does not take ownership of that
+                // instance, because it is designed to reference existing
+                // values on the stack. For a parameter's default value,
+                // however, that instance must be owned by something, so that
+                // ownership is the responsibility of the BehaviorDefaultValue
+                // type. If the type of the default value has a non-trivial
+                // destructor, this class will invoke that destructor when it
+                // itself is destroyed.
+                m_destructor = [](void* valueAddress)
+                {
+                    AZStd::destroy_at(reinterpret_cast<AZStd::decay_t<Value>*>(valueAddress));
+                };
+            }
+        }
+
+        ~BehaviorDefaultValue() override
+        {
+            if (m_value.m_value && m_destructor)
+            {
+                m_destructor(m_value.m_value);
+            }
         }
 
         const BehaviorArgument& GetValue() const
@@ -229,8 +266,10 @@ namespace AZ
         }
 
         BehaviorArgument m_value;
+    private:
+        using DestructorFunc = void(*)(void*);
+        DestructorFunc m_destructor = nullptr;
     };
-
 
     /**
      * Base class that handles default values. Values types are verified to match exactly the function signature.
@@ -2325,8 +2364,14 @@ namespace AZ
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<typename T>
+    template<typename T, typename>
     inline void BehaviorArgument::StoreInTempData(T&& value)
+    {
+        StoreInTempDataEvenIfNonTrivial(AZStd::forward<T>(value));
+    }
+
+    template<typename T>
+    inline void BehaviorArgument::StoreInTempDataEvenIfNonTrivial(T&& value)
     {
         AZ::Internal::SetParameters<T>(this);
         m_value = m_tempData.allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);

@@ -8,7 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/Transform.h>
-#include <QWidget>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 
 namespace Physics
 {
@@ -24,6 +24,8 @@ namespace EMotionFX
 
     struct PhysicsSetupManipulatorData
     {
+        bool HasColliders() const;
+
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
         Actor* m_actor = nullptr;
@@ -50,5 +52,9 @@ namespace EMotionFX
         //! Called when reset hot key is pressed.
         //! Should reset values in the manipulator mode to sensible defaults.
         virtual void ResetValues() = 0;
+
+        void SetViewportId(AZ::s32 viewportId);
+    protected:
+        AZ::s32 m_viewportId;
     };
 } // namespace EMotionFX

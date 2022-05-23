@@ -18,6 +18,18 @@ namespace EMStudio
     InspectorWindow::~InspectorWindow()
     {
         InspectorRequestBus::Handler::BusDisconnect();
+
+        if (m_scrollArea)
+        {
+            m_scrollArea->takeWidget();
+
+            delete m_contentWidget;
+            m_contentWidget = nullptr;
+
+            delete m_noSelectionWidget;
+            m_noSelectionWidget = nullptr;
+        }
+
     }
 
     bool InspectorWindow::Init()

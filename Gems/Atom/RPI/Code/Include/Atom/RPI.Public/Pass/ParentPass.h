@@ -67,6 +67,9 @@ namespace AZ
             bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
             bool InsertChild(const Ptr<Pass>& child, uint32_t index);
 
+            //! Called when a pass is added as a child pass to this parent
+            void OnChildAdded(const Ptr<Pass>& child);
+
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;
 
