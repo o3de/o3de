@@ -60,6 +60,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
+    class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
 
