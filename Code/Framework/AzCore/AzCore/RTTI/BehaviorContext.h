@@ -20,7 +20,9 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/is_abstract.h>
+#include <AzCore/std/typetraits/is_destructible.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
@@ -193,12 +195,18 @@ namespace AZ
         bool StoreResult(T&& result);
 
         /// Used internally to store values in the temp data
-        template<typename T>
+        template<typename T, typename = AZStd::enable_if_t<AZStd::is_trivially_destructible_v<AZStd::decay_t<T>>>>
         void StoreInTempData(T&& value);
 
         void* m_value;  ///< Pointer to value, keep it mind to check the traits as if the value is pointer, this will be pointer to pointer and use \ref GetValueAddress to get the actual value address
         AZStd::function<void()> m_onAssignedResult;
         BehaviorParameter::TempValueParameterAllocator m_tempData; ///< Temp data for conversion, etc. while preparing the parameter for a call (POD only)
+
+    private:
+        friend class BehaviorDefaultValue;
+
+        template<typename T>
+        void StoreInTempDataEvenIfNonTrivial(T&& value);
     };
 
     AZ_TYPE_INFO_SPECIALIZE(AZ::BehaviorArgument, "{B1680AE9-4DBE-4803-B12F-1E99A32990B7}")
@@ -212,6 +220,11 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(BehaviorDefaultValue, AZ::SystemAllocator, 0);
 
+        BehaviorDefaultValue(const BehaviorDefaultValue&) = delete;
+        BehaviorDefaultValue(BehaviorDefaultValue&&) = delete;
+        BehaviorDefaultValue& operator=(const BehaviorDefaultValue&) = delete;
+        BehaviorDefaultValue& operator=(BehaviorDefaultValue&&) = delete;
+
         /**
         * Create a default value for a specific method parameter. The Default values is stored by value
         * in a temp storage, so currently there is limit the \ref BehaviorArgument temp storage, we
@@ -220,7 +233,31 @@ namespace AZ
         template<typename Value>
         BehaviorDefaultValue(Value&& value)
         {
-            m_value.StoreInTempData(AZStd::forward<Value>(value));
+            m_value.StoreInTempDataEvenIfNonTrivial(AZStd::forward<Value>(value));
+            if constexpr (!AZStd::is_trivially_destructible_v<AZStd::decay_t<Value>>)
+            {
+                // BehaviorArgument does not destroy instances of types set
+                // with StoreInTempData(). It does not take ownership of that
+                // instance, because it is designed to reference existing
+                // values on the stack. For a parameter's default value,
+                // however, that instance must be owned by something, so that
+                // ownership is the responsibility of the BehaviorDefaultValue
+                // type. If the type of the default value has a non-trivial
+                // destructor, this class will invoke that destructor when it
+                // itself is destroyed.
+                m_destructor = [](void* valueAddress)
+                {
+                    AZStd::destroy_at(reinterpret_cast<AZStd::decay_t<Value>*>(valueAddress));
+                };
+            }
+        }
+
+        ~BehaviorDefaultValue() override
+        {
+            if (m_value.m_value && m_destructor)
+            {
+                m_destructor(m_value.m_value);
+            }
         }
 
         const BehaviorArgument& GetValue() const
@@ -229,8 +266,10 @@ namespace AZ
         }
 
         BehaviorArgument m_value;
+    private:
+        using DestructorFunc = void(*)(void*);
+        DestructorFunc m_destructor = nullptr;
     };
-
 
     /**
      * Base class that handles default values. Values types are verified to match exactly the function signature.
@@ -724,6 +763,63 @@ namespace AZ
 
         template<class EBus, BehaviorEventType EventType, class Function>
         class BehaviorEBusEvent;
+
+        template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
+        class BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)> : public BehaviorMethod
+        {
+        public:
+            using FunctionPointer = R(*)(BusType*, Args...);
+
+            static constexpr int s_isBusIdParameter = (EventType == BE_EVENT_ID || EventType == BE_QUEUE_EVENT_ID) ? 1 : 0;
+            static const int s_startArgumentIndex = 1; // +1 for result type
+            static const int s_startNamedArgumentIndex =
+                s_startArgumentIndex + s_isBusIdParameter; // +1 for result type, +1 (optional for busID)
+
+            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator, 0);
+
+            BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
+
+            bool Call(BehaviorArgument* arguments, unsigned int numArguments, BehaviorArgument* result) const override;
+            bool HasResult() const override;
+            bool IsMember() const override;
+            bool HasBusId() const override;
+
+            const BehaviorParameter* GetBusIdArgument() const override;
+
+            size_t GetNumArguments() const override;
+            size_t GetMinNumberOfArguments() const override;
+
+            const BehaviorParameter* GetArgument(size_t index) const override;
+            const AZStd::string* GetArgumentName(size_t index) const override;
+            void SetArgumentName(size_t index, const AZStd::string& name) override;
+            const AZStd::string* GetArgumentToolTip(size_t index) const override;
+            void SetArgumentToolTip(size_t index, const AZStd::string& name) override;
+            void SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue) override;
+            BehaviorDefaultValuePtr GetDefaultValue(size_t index) const override;
+            const BehaviorParameter* GetResult() const override;
+
+            void OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits) override;
+
+            FunctionPointer m_functionPtr;
+            BehaviorParameter m_parameters[sizeof...(Args) + s_startNamedArgumentIndex];
+            AZStd::array<BehaviorParameterMetadata, sizeof...(Args) + s_startNamedArgumentIndex>
+                m_metadataParameters; ///< Stores the per parameter metadata which is used to add names, tooltips, trait, default values,
+                                      ///< etc... to the parameters
+        };
+
+#if __cpp_noexcept_function_type
+        // C++17 makes exception specifications as part of the type in paper P0012R1
+        // Therefore noexcept overloads must be distinguished from non-noexcept overloads
+        template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
+        class BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...) noexcept> : public BehaviorEBusEvent<EBus, EventType, R(BusType, Args...)>
+        {
+            using base_type = BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>;
+
+        public:
+            using base_type::base_type;
+            using FunctionPointer = R(*)(BusType*, Args...) noexcept;
+        };
+#endif
 
         template<class EBus, BehaviorEventType EventType, class R, class C, class... Args>
         class BehaviorEBusEvent<EBus, EventType, R(C::*)(Args...)> : public BehaviorMethod
@@ -2268,8 +2364,14 @@ namespace AZ
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<typename T>
+    template<typename T, typename>
     inline void BehaviorArgument::StoreInTempData(T&& value)
+    {
+        StoreInTempDataEvenIfNonTrivial(AZStd::forward<T>(value));
+    }
+
+    template<typename T>
+    inline void BehaviorArgument::StoreInTempDataEvenIfNonTrivial(T&& value)
     {
         AZ::Internal::SetParameters<T>(this);
         m_value = m_tempData.allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
@@ -4943,6 +5045,9 @@ namespace AZ
 
     } // namespace Internal
 } // namespace AZ
+
+// Add definitions to allow lambdas to be used with EBus Events on the Behavior Context
+#include <AzCore/RTTI/BehaviorContextEBusEventRawSignature.inl>
 
 // pull AzStd on demand reflection
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
