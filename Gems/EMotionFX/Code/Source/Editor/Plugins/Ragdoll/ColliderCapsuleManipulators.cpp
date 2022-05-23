@@ -38,7 +38,6 @@ namespace EMotionFX
     }
 
     ColliderCapsuleManipulators::ColliderCapsuleManipulators()
-    // initialize manipulators
     {
         m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
