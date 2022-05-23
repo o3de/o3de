@@ -82,7 +82,7 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
         script_canvas_component = test_entity3.get_components_of_type(["Script Canvas"])[0]
         property_tree = EditorComponent.get_property_tree(script_canvas_component)
         path = "Configuration|Source File"
-        path2 = "Configuration|Properties|Unused Variables|varname|Scope".__str__().lower()
+        path2 = "Configuration|Properties|Unused Variables|varname|Scope"
         print(path2)
 
         #value = EditorComponent.get_component_property_value(path)
