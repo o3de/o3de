@@ -153,8 +153,12 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
+
+        // Create an empty shapeConfig, it will get filled out at runtime as everything initializes.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig{ new Physics::HeightfieldShapeConfiguration() };
+
         heightfieldColliderComponent->SetShapeConfiguration(
-            { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig });
+            { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig });
     }
 
     void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
@@ -181,6 +185,13 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::InitStaticRigidBody()
     {
+        const AZ::Transform baseTransform = GetWorldTM();
+        AzPhysics::StaticRigidBodyConfiguration configuration;
+        configuration.m_orientation = baseTransform.GetRotation();
+        configuration.m_position = baseTransform.GetTranslation();
+        configuration.m_entityId = GetEntityId();
+        configuration.m_debugName = GetEntity()->GetName();
+
         // Get the transform from the HeightfieldProvider.  Because rotation and scale can indirectly affect how the heightfield itself
         // is computed and the size of the heightfield, it's possible that the HeightfieldProvider will provide a different transform
         // back to us than the one that's directly on that entity.
@@ -188,11 +199,11 @@ namespace PhysX
         Physics::HeightfieldProviderRequestsBus::EventResult(
             transform, GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldTransform);
 
-        AzPhysics::StaticRigidBodyConfiguration configuration;
-        configuration.m_orientation = transform.GetRotation();
-        configuration.m_position = transform.GetTranslation();
-        configuration.m_entityId = GetEntityId();
-        configuration.m_debugName = GetEntity()->GetName();
+        // Because the heightfield's transform may not match the entity's transform, use the heightfield transform
+        // to generate an offset rotation/position from the entity's transform for the collider configuration.
+        m_colliderConfig.m_rotation = transform.GetRotation() * baseTransform.GetRotation().GetInverseFull();
+        m_colliderConfig.m_position =
+            m_colliderConfig.m_rotation.TransformVector(transform.GetTranslation() - baseTransform.GetTranslation());
 
         // Update material selection from the mapping
         Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), m_colliderConfig.m_materialSelection);
@@ -271,8 +282,8 @@ namespace PhysX
         if (!shouldRecreateHeightfield)
         {
             Physics::HeightfieldShapeConfiguration baseConfiguration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
-            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRows() != m_shapeConfig->GetNumRows());
-            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumns() != m_shapeConfig->GetNumColumns());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRowVertices() != m_shapeConfig->GetNumRowVertices());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumnVertices() != m_shapeConfig->GetNumColumnVertices());
             shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMinHeightBounds() != m_shapeConfig->GetMinHeightBounds());
             shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMaxHeightBounds() != m_shapeConfig->GetMaxHeightBounds());
         }

@@ -698,20 +698,27 @@ namespace PhysX
                 return;
             }
 
-            const int numColumns = heightfieldShapeConfig.GetNumColumns();
-            const int numRows = heightfieldShapeConfig.GetNumRows();
+            debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig, colliderScale));
+            debugDisplay.SetColor(AZ::Color::CreateOne());
 
-            const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
-            const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
+            const int numColumnVertices = heightfieldShapeConfig.GetNumColumnVertices();
+            const int numRowVertices = heightfieldShapeConfig.GetNumRowVertices();
 
-            for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
+            const int numColumnSquares = heightfieldShapeConfig.GetNumColumnSquares();
+            const int numRowSquares = heightfieldShapeConfig.GetNumRowSquares();
+
+            // Offset from the center of the heightfield to the corner to start drawing the grid.
+            const float minXBounds = -(numColumnSquares * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
+            const float minYBounds = -(numRowSquares * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
+
+            for (int xIndex = 0; xIndex < numColumnVertices - 1; xIndex++)
             {
-                for (int yIndex = 0; yIndex < numRows - 1; yIndex++)
+                for (int yIndex = 0; yIndex < numRowVertices - 1; yIndex++)
                 {
-                    const int index0 = yIndex * numColumns + xIndex;
-                    const int index1 = yIndex * numColumns + xIndex + 1;
-                    const int index2 = (yIndex + 1) * numColumns + xIndex;
-                    const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
+                    const int index0 = yIndex * numColumnVertices + xIndex;
+                    const int index1 = yIndex * numColumnVertices + xIndex + 1;
+                    const int index2 = (yIndex + 1) * numColumnVertices + xIndex;
+                    const int index3 = (yIndex + 1) * numColumnVertices + xIndex + 1;
 
                     const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
                     const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
@@ -727,7 +734,7 @@ namespace PhysX
                         AZ::Vector3(x0, y1, heights[index2].m_height));
 
                     // Draw bottom line in last row
-                    if (yIndex == numRows - 2)
+                    if (yIndex == numRowVertices - 2)
                     {
                         debugDisplay.DrawLine(
                             AZ::Vector3(x1, y1, heights[index3].m_height),
@@ -735,7 +742,7 @@ namespace PhysX
                     }
 
                     // Draw right line in last column
-                    if (xIndex == numColumns - 2)
+                    if (xIndex == numColumnVertices - 2)
                     {
                         debugDisplay.DrawLine(
                             AZ::Vector3(x1, y0, heights[index1].m_height),
@@ -743,6 +750,8 @@ namespace PhysX
                     }
                 }
             }
+
+            debugDisplay.PopMatrix();
         }
 
         AZ::Transform Collider::GetColliderLocalTransform(
