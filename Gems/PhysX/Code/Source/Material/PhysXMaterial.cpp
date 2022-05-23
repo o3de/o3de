@@ -12,6 +12,7 @@
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 
 namespace PhysX
 {
@@ -105,13 +106,11 @@ namespace PhysX
         const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
         : Physics::Material(id, materialAsset)
     {
-        const float defaultStaticFriction = 0.5f;
-        const float defaultDynamicFriction = 0.5f;
-        const float defaultRestitution = 0.5f;
+        const MaterialConfiguration defaultMaterialConfiguration;
 
         m_pxMaterial = PxMaterialUniquePtr(
             PxGetPhysics().createMaterial(
-                defaultStaticFriction, defaultDynamicFriction, defaultRestitution),
+                defaultMaterialConfiguration.m_staticFriction, defaultMaterialConfiguration.m_dynamicFriction, defaultMaterialConfiguration.m_restitution),
             [](physx::PxMaterial* pxMaterial)
             {
                 pxMaterial->release();
@@ -120,7 +119,8 @@ namespace PhysX
         AZ_Assert(m_pxMaterial, "Failed to create physx material");
         m_pxMaterial->userData = this;
 
-        // TODO: Validate GetMaterialProperties()
+        MaterialConfiguration::ValidateMaterialAsset(m_materialAsset);
+
         for (const auto& materialProperty : m_materialAsset->GetMaterialProperties())
         {
             SetProperty(materialProperty.first, materialProperty.second);
@@ -135,52 +135,76 @@ namespace PhysX
         AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
-    float Material::GetProperty(const AZStd::string& propertyName) const
+    Physics::MaterialPropertyValue Material::GetProperty(AZStd::string_view propertyName) const
     {
-        if (propertyName == "DynamicFriction")
+        if (propertyName == MaterialConstants::DynamicFrictionName)
         {
             return GetDynamicFriction();
         }
-        else if (propertyName == "StaticFriction")
+        else if (propertyName == MaterialConstants::StaticFrictionName)
         {
             return GetStaticFriction();
         }
-        else if (propertyName == "Restitution")
+        else if (propertyName == MaterialConstants::RestitutionName)
         {
             return GetRestitution();
         }
-        else if (propertyName == "Density")
+        else if (propertyName == MaterialConstants::DensityName)
         {
             return GetDensity();
         }
+        else if (propertyName == MaterialConstants::RestitutionCombineModeName)
+        {
+            return static_cast<AZ::u32>(GetRestitutionCombineMode());
+        }
+        else if (propertyName == MaterialConstants::FrictionCombineModeName)
+        {
+            return static_cast<AZ::u32>(GetFrictionCombineMode());
+        }
+        else if (propertyName == MaterialConstants::DebugColorName)
+        {
+            return GetDebugColor();
+        }
         else
         {
-            AZ_Error("PhysX::Material", false, "Unknown property '%s'", propertyName.c_str());
+            AZ_Error("PhysX::Material", false, "Unknown property '%.*s'", AZ_STRING_ARG(propertyName));
             return 0.0f;
         }
     }
 
-    void Material::SetProperty(const AZStd::string& propertyName, float value)
+    void Material::SetProperty(AZStd::string_view propertyName, Physics::MaterialPropertyValue value)
     {
-        if (propertyName == "DynamicFriction")
+        if (propertyName == MaterialConstants::DynamicFrictionName)
         {
-            SetDynamicFriction(value);
+            SetDynamicFriction(value.GetValue<float>());
         }
-        else if (propertyName == "StaticFriction")
+        else if (propertyName == MaterialConstants::StaticFrictionName)
         {
-            SetStaticFriction(value);
+            SetStaticFriction(value.GetValue<float>());
         }
-        else if (propertyName == "Restitution")
+        else if (propertyName == MaterialConstants::RestitutionName)
         {
-            SetRestitution(value);
+            SetRestitution(value.GetValue<float>());
         }
-        else if (propertyName == "Density")
+        else if (propertyName == MaterialConstants::DensityName)
         {
-            SetDensity(value);
+            SetDensity(value.GetValue<float>());
+        }
+        else if (propertyName == MaterialConstants::RestitutionCombineModeName)
+        {
+            SetRestitutionCombineMode(static_cast<CombineMode>(value.GetValue<AZ::u32>()));
+        }
+        else if (propertyName == MaterialConstants::FrictionCombineModeName)
+        {
+            SetFrictionCombineMode(static_cast<CombineMode>(value.GetValue<AZ::u32>()));
+        }
+        else if (propertyName == MaterialConstants::DebugColorName)
+        {
+            SetDebugColor(value.GetValue<AZ::Color>());
         }
         else
         {
-            AZ_Error("PhysX::Material", false, "Unknown property '%s'", propertyName.c_str());
+            AZ_Error("PhysX::Material", false, "Unknown property '%.*s'", AZ_STRING_ARG(propertyName));
         }
     }
 
@@ -251,10 +275,10 @@ namespace PhysX
     void Material::SetDensity(float density)
     {
         AZ_Warning(
-            "PhysX Material", density >= MinDensityLimit && density <= MaxDensityLimit,
-            "Density value %f will be clamped into range [%f, %f].", density, MinDensityLimit, MaxDensityLimit);
+            "PhysX Material", density >= MaterialConstants::MinDensityLimit && density <= MaterialConstants::MaxDensityLimit,
+            "Density value %f will be clamped into range [%f, %f].", density, MaterialConstants::MinDensityLimit, MaterialConstants::MaxDensityLimit);
 
-        m_density = AZ::GetClamp(density, MinDensityLimit, MaxDensityLimit);
+        m_density = AZ::GetClamp(density, MaterialConstants::MinDensityLimit, MaterialConstants::MaxDensityLimit);
     }
 
     const AZ::Color& Material::GetDebugColor() const
@@ -276,7 +300,8 @@ namespace PhysX
     {
         m_materialAsset = asset;
 
-        // TODO: Validate GetMaterialProperties()
+        MaterialConfiguration::ValidateMaterialAsset(m_materialAsset);
+
         for (const auto& materialProperty : m_materialAsset->GetMaterialProperties())
         {
             SetProperty(materialProperty.first, materialProperty.second);

@@ -48,19 +48,19 @@ namespace PhysXEditorTests
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{EC976D51-2C26-4C1E-BBF2-75BAAAFA162C}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset1->SetData({});
+        materialAsset1->SetData("", 0, {});
 
         AZ::Data::Asset<Physics::MaterialAsset> materialAsset2 =
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{B9836F51-A235-4781-95E3-A6302BEE9EFF}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset2->SetData({});
+        materialAsset2->SetData("", 0, {});
 
         AZ::Data::Asset<Physics::MaterialAsset> materialAsset3 =
             AZ::Data::AssetManager::Instance().FindOrCreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateString("{7E060707-BB03-47EB-B046-4503C7145B6E}")),
                 AZ::Data::AssetLoadBehavior::Default);
-        materialAsset3->SetData({});
+        materialAsset3->SetData("", 0, {});
 
         return {
             materialAsset1,

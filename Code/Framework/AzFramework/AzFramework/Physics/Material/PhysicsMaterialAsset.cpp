@@ -19,7 +19,9 @@ namespace Physics
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Physics::MaterialAsset, AZ::Data::AssetData>()
-                ->Version(2)
+                ->Version(4)
+                ->Field("MaterialType", &MaterialAsset::m_materialType)
+                ->Field("Version", &MaterialAsset::m_version)
                 ->Field("MaterialProperties", &MaterialAsset::m_materialProperties)
                 ;
 
@@ -36,13 +38,28 @@ namespace Physics
         }
     }
 
-    void MaterialAsset::SetData(const AZStd::unordered_map<AZStd::string, float>& materialProperties)
+    void MaterialAsset::SetData(
+        const AZStd::string& materialType,
+        AZ::u32 version,
+        const MaterialProperties& materialProperties)
     {
+        m_materialType = materialType;
+        m_version = version;
         m_materialProperties = materialProperties;
         m_status = AZ::Data::AssetData::AssetStatus::Ready;
     }
 
-    const AZStd::unordered_map<AZStd::string, float>& MaterialAsset::GetMaterialProperties() const
+    const AZStd::string& MaterialAsset::GetMaterialType() const
+    {
+        return m_materialType;
+    }
+
+    AZ::u32 MaterialAsset::GetVersion() const
+    {
+        return m_version;
+    }
+
+    const MaterialAsset::MaterialProperties& MaterialAsset::GetMaterialProperties() const
     {
         return m_materialProperties;
     }

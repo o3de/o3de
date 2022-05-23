@@ -37,6 +37,8 @@ namespace PhysX
         //! properties of material configuration.
         AZ::Data::Asset<Physics::MaterialAsset> CreateMaterialAsset() const;
 
+        static void ValidateMaterialAsset(AZ::Data::Asset<Physics::MaterialAsset> materialAsset);
+
     private:
         static float GetMinDensityLimit();
         static float GetMaxDensityLimit();

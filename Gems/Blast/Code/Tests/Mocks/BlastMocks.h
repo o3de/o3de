@@ -245,8 +245,8 @@ namespace Blast
         }
 
         // Physics::Material overrides ...
-        float GetProperty(const AZStd::string&) const override { return 0.0f; }
-        void SetProperty(const AZStd::string&, float) override {}
+        Physics::MaterialPropertyValue GetProperty(AZStd::string_view) const override { return 0.0f; }
+        void SetProperty(AZStd::string_view, Physics::MaterialPropertyValue) override {}
     };
 
     class DummyPhysicsMaterialManager : public AZ::Interface<Physics::MaterialManager>::Registrar

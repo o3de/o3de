@@ -68,27 +68,72 @@ namespace PhysX
             AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(
                 AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
 
-        // TODO: Make this for generic types
-        const AZStd::unordered_map<AZStd::string, float> materialProperties =
+        const Physics::MaterialAsset::MaterialProperties materialProperties =
         {
-            {"DynamicFriction", m_dynamicFriction},
-            {"StaticFriction", m_staticFriction},
-            {"Restitution", m_restitution},
-            {"Density", m_density}
+            {MaterialConstants::DynamicFrictionName, m_dynamicFriction},
+            {MaterialConstants::StaticFrictionName, m_staticFriction},
+            {MaterialConstants::RestitutionName, m_restitution},
+            {MaterialConstants::DensityName, m_density},
+            {MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(m_restitutionCombine)},
+            {MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(m_frictionCombine)},
+            {MaterialConstants::DebugColorName, m_debugColor}
         };
 
-        materialAsset->SetData(materialProperties);
+        materialAsset->SetData(
+            MaterialConstants::MaterialAssetType,
+            MaterialConstants::MaterialAssetVersion,
+            materialProperties);
 
         return materialAsset;
     }
 
+    void MaterialConfiguration::ValidateMaterialAsset(
+        [[maybe_unused]] AZ::Data::Asset<Physics::MaterialAsset> materialAsset)
+    {
+#if !defined(_RELEASE)
+        if (!materialAsset)
+        {
+            AZ_Error("MaterialConfiguration", false, "Invalid material asset");
+            return;
+        }
+
+        AZ_Error("MaterialConfiguration", materialAsset->GetMaterialType() == MaterialConstants::MaterialAssetType,
+            "Material asset '%s' has unexpected material type ('%s'). Expected type is '%.*s'.",
+            materialAsset.GetHint().c_str(), materialAsset->GetMaterialType().c_str(), AZ_STRING_ARG(MaterialConstants::MaterialAssetType));
+
+        AZ_Error("MaterialConfiguration", materialAsset->GetVersion() == MaterialConstants::MaterialAssetVersion,
+            "Material asset '%s' has unexpected material version (%u). Expected version is '%u'.",
+            materialAsset.GetHint().c_str(), materialAsset->GetVersion(), MaterialConstants::MaterialAssetVersion);
+
+        const AZStd::fixed_vector materialPropertyNames =
+        {
+            MaterialConstants::DynamicFrictionName,
+            MaterialConstants::StaticFrictionName,
+            MaterialConstants::RestitutionName,
+            MaterialConstants::DensityName,
+            MaterialConstants::RestitutionCombineModeName,
+            MaterialConstants::FrictionCombineModeName,
+            MaterialConstants::DebugColorName
+        };
+
+        const auto& materialProperties = materialAsset->GetMaterialProperties();
+
+        for (const auto& materialPropertyName : materialPropertyNames)
+        {
+            AZ_Error("MaterialConfiguration", materialProperties.find(materialPropertyName) != materialProperties.end(),
+                "Material asset '%s' does not have property '%.*s'.",
+                materialAsset.GetHint().c_str(), AZ_STRING_ARG(materialPropertyName));
+        }
+#endif
+    }
+
     float MaterialConfiguration::GetMinDensityLimit()
     {
-        return Material::MinDensityLimit;
+        return MaterialConstants::MinDensityLimit;
     }
 
     float MaterialConfiguration::GetMaxDensityLimit()
     {
-        return Material::MaxDensityLimit;
+        return MaterialConstants::MaxDensityLimit;
     }
 } // namespace PhysX

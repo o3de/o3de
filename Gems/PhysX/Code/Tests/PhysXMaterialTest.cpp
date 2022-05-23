@@ -216,19 +216,19 @@ namespace UnitTest
 
         AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
 
-        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::MaterialConstants::MinDensityLimit, Tolerance);
 
         material->SetDensity(0.0f);
-        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::MaterialConstants::MinDensityLimit, Tolerance);
 
-        material->SetDensity(PhysX::Material::MinDensityLimit);
-        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MinDensityLimit, Tolerance);
+        material->SetDensity(PhysX::MaterialConstants::MinDensityLimit);
+        EXPECT_NEAR(material->GetDensity(), PhysX::MaterialConstants::MinDensityLimit, Tolerance);
 
-        material->SetDensity(PhysX::Material::MaxDensityLimit);
-        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MaxDensityLimit, Tolerance);
+        material->SetDensity(PhysX::MaterialConstants::MaxDensityLimit);
+        EXPECT_NEAR(material->GetDensity(), PhysX::MaterialConstants::MaxDensityLimit, Tolerance);
 
         material->SetDensity(200000.0f);
-        EXPECT_NEAR(material->GetDensity(), PhysX::Material::MaxDensityLimit, Tolerance);
+        EXPECT_NEAR(material->GetDensity(), PhysX::MaterialConstants::MaxDensityLimit, Tolerance);
     }
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_FrictionCombineMode)

@@ -1314,8 +1314,8 @@ namespace PhysX
 
         // Resulting density should be in the valid range
         float resultingDensity = material->GetDensity();
-        EXPECT_TRUE(resultingDensity >= PhysX::Material::MinDensityLimit
-            && resultingDensity <= PhysX::Material::MaxDensityLimit);
+        EXPECT_TRUE(resultingDensity >= PhysX::MaterialConstants::MinDensityLimit
+            && resultingDensity <= PhysX::MaterialConstants::MaxDensityLimit);
     }
 
     TEST_P(DensityBoundariesTestFixture, MaterialInstance_ExtremeDensityValues_ResultingDensityClampedToValidRange)
@@ -1328,8 +1328,8 @@ namespace PhysX
 
         // Resulting density should be in the valid range
         float resultingDensity = material->GetDensity();
-        EXPECT_TRUE(resultingDensity >= PhysX::Material::MinDensityLimit
-            && resultingDensity <= PhysX::Material::MaxDensityLimit);
+        EXPECT_TRUE(resultingDensity >= PhysX::MaterialConstants::MinDensityLimit
+            && resultingDensity <= PhysX::MaterialConstants::MaxDensityLimit);
     }
 
     // Valid material density values: [0.01f, 1e5f]

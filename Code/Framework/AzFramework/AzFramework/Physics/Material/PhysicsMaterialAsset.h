@@ -10,6 +10,8 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <AzFramework/Physics/Material/PhysicsMaterialPropertyValue.h>
+
 namespace Physics
 {
     //! MaterialAsset defines a single material, which includes all the properties to create a Material instance to use at runtime.
@@ -30,14 +32,29 @@ namespace Physics
         MaterialAsset() = default;
         virtual ~MaterialAsset() = default;
 
+        using MaterialProperties = AZStd::unordered_map<AZStd::string, MaterialPropertyValue>;
+
         //! Sets the data for this material asset and marks it as ready.
         //! This is necessary to be called when creating an in-memory material asset.
-        void SetData(const AZStd::unordered_map<AZStd::string, float>& materialProperties);
+        void SetData(
+            const AZStd::string& materialType,
+            AZ::u32 version,
+            const MaterialProperties& materialProperties);
 
-        const AZStd::unordered_map<AZStd::string, float>& GetMaterialProperties() const;
+        const AZStd::string& GetMaterialType() const;
+        AZ::u32 GetVersion() const;
+        const MaterialProperties& GetMaterialProperties() const;
 
     protected:
-        // TODO: Make this for generic types
-        AZStd::unordered_map<AZStd::string, float> m_materialProperties;
+        //! String that identifies the type of the material.
+        //! Each physics backend must provide a different one.
+        AZStd::string m_materialType;
+
+        //! Version number of the material.
+        //! Used to identify changes in the properties.
+        AZ::u32 m_version = 0;
+
+        //! List of material properties.
+        MaterialProperties m_materialProperties;
     };
 } // namespace Physics

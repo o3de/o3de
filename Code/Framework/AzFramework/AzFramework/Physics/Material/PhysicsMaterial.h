@@ -10,6 +10,7 @@
 
 #include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialPropertyValue.h>
 
 namespace Physics
 {
@@ -23,9 +24,8 @@ namespace Physics
         Material(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);
         virtual ~Material() = default;
 
-        // TODO: Make this for generic types
-        virtual float GetProperty(const AZStd::string& propertyName) const = 0;
-        virtual void SetProperty(const AZStd::string& propertyName, float value) = 0;
+        virtual MaterialPropertyValue GetProperty(AZStd::string_view propertyName) const = 0;
+        virtual void SetProperty(AZStd::string_view propertyName, MaterialPropertyValue value) = 0;
 
         MaterialId GetId() const;
 

@@ -247,6 +247,8 @@ set(FILES
     Physics/Material/PhysicsMaterialId.cpp
     Physics/Material/PhysicsMaterialAsset.h
     Physics/Material/PhysicsMaterialAsset.cpp
+    Physics/Material/PhysicsMaterialPropertyValue.h
+    Physics/Material/PhysicsMaterialPropertyValue.cpp
     Physics/Material/PhysicsMaterialSlots.h
     Physics/Material/PhysicsMaterialSlots.cpp
     Physics/Material/PhysicsMaterialManager.h

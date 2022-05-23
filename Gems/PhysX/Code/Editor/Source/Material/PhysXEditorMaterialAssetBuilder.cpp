@@ -125,7 +125,7 @@ namespace PhysX
         AZStd::string physicsMaterialAssetOutputPath;
         AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), physicsMaterialFilename.c_str(), physicsMaterialAssetOutputPath, true);
 
-        if (!AZ::Utils::SaveObjectToFile(physicsMaterialAssetOutputPath, AZ::DataStream::ST_JSON, physicsMaterialAsset.Get()))
+        if (!AZ::Utils::SaveObjectToFile(physicsMaterialAssetOutputPath, AZ::DataStream::ST_XML, physicsMaterialAsset.Get()))
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "Failed to save physics material asset to file: %s", physicsMaterialAssetOutputPath.c_str());
             return false;
