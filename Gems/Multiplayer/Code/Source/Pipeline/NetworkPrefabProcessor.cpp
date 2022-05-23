@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
@@ -94,12 +95,12 @@ namespace Multiplayer
         const AZStd::string& prefabName,
         const AZStd::string& uniqueName,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context,
-        AzFramework::Spawnable* networkSpawnable)
+        const AZ::Data::AssetId& networkSpawnableAssetId)
     {
         using AzToolsFramework::Prefab::PrefabConversionUtils::ProcessedObjectStore;
         using namespace AzToolsFramework::Prefab;
 
-        sourceInstance->GetEntities([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnable](AZStd::unique_ptr<AZ::Entity>& sourceEntity)
+        sourceInstance->GetEntities([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnableAssetId](AZStd::unique_ptr<AZ::Entity>& sourceEntity)
         { 
             if (sourceEntity->FindComponent<NetBindComponent>())
             {
@@ -125,13 +126,13 @@ namespace Multiplayer
 
                 Multiplayer::PrefabEntityId prefabEntityId;
                 prefabEntityId.m_prefabName = sourceEntity->GetName();
-                netEntity->FindComponent<NetBindComponent>()->SetPrefabAssetId(networkSpawnable->GetId());
+                netEntity->FindComponent<NetBindComponent>()->SetPrefabAssetId(networkSpawnableAssetId);
                 netEntity->FindComponent<NetBindComponent>()->SetPrefabEntityId(prefabEntityId);
             }
             return true;
         });
 
-        sourceInstance->GetNestedInstances([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnable](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& sourceNestedInstance)
+        sourceInstance->GetNestedInstances([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnableAssetId](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& sourceNestedInstance)
         {
             // Make a new nested instance for the network prefab instance
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> networkNestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AzToolsFramework::Prefab::InstanceOptionalReference(*rootNetworkInstance), sourceNestedInstance->GetInstanceAlias());
@@ -145,7 +146,7 @@ namespace Multiplayer
                 prefabName,
                 uniqueName,
                 context,
-                networkSpawnable);
+                networkSpawnableAssetId);
         });
     }
 
@@ -162,18 +163,10 @@ namespace Multiplayer
         prefabName += NetworkFileExtension;
 
         PrefabConversionUtils::PrefabDocument networkPrefab(prefabName, prefab.GetInstance().GetInstanceAlias());
-
-        auto serializer = [](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
-            AZ::IO::ByteContainerStream stream(&output);
-            auto& asset = object.GetAsset();
-            return AZ::Utils::SaveObjectToStream(stream, AZ::ObjectStream::ST_BINARY, &asset, asset.GetType());
-        };
-
-        auto&& [object, networkSpawnable] =
-            ProcessedObjectStore::Create<AzFramework::Spawnable>(uniqueName, context.GetSourceUuid(), AZStd::move(serializer));
-
         Instance& sourceInstance = prefab.GetInstance();
         Instance& networkInstance = networkPrefab.GetInstance();
+        AZ::Data::AssetId networkSpawnableAssetId(context.GetSourceUuid(), AzFramework::SpawnableAssetHandler::BuildSubId(uniqueName));
+
         // Grab all net entities with their corresponding Instances to handle nested prefabs correctly
         PopulateNetworkInstance(
             &sourceInstance,
@@ -183,7 +176,7 @@ namespace Multiplayer
             prefab.GetName(),
             prefabName,
             context,
-            networkSpawnable);
+            networkSpawnableAssetId);
 
         context.AddPrefab(AZStd::move(networkPrefab));
 
