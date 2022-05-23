@@ -59,14 +59,13 @@ namespace AzToolsFramework
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
-            int m_instanceCountToUpdateInBatch = 0;
-            bool m_isRootPrefabInstanceLoaded = false;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             AZ::Event<GameModeState>::Handler m_GameModeEventHandler;
             int m_instanceCountToUpdateInBatch = 0;
-            bool m_updatingTemplateInstancesInQueue { false };
+            bool m_isRootPrefabInstanceLoaded = false;
             bool m_shouldPausePropagation = false;
+            bool m_updatingTemplateInstancesInQueue { false };
         };
     }
 }
