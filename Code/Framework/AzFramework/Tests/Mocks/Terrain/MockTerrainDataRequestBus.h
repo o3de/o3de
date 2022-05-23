@@ -97,27 +97,27 @@ namespace UnitTest
             GetClosestIntersection, AzFramework::RenderGeometry::RayResult(const AzFramework::RenderGeometry::RayRequest&));
         MOCK_CONST_METHOD5(
             QueryListAsync,
-            AZStd::shared_ptr<TerrainJobContext>(
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
                 const AZStd::span<const AZ::Vector3>&,
                 TerrainDataMask,
                 AzFramework::Terrain::SurfacePointListFillCallback,
                 Sampler,
-                AZStd::shared_ptr<QueryAsyncParams>));
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
         MOCK_CONST_METHOD5(
             QueryListOfVector2Async,
-            AZStd::shared_ptr<TerrainJobContext>(
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
                 const AZStd::span<const AZ::Vector2>&,
                 TerrainDataMask,
                 AzFramework::Terrain::SurfacePointListFillCallback,
                 Sampler,
-                AZStd::shared_ptr<QueryAsyncParams>));
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
         MOCK_CONST_METHOD5(
             QueryRegionAsync,
-            AZStd::shared_ptr<TerrainJobContext>(
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>(
                 const AzFramework::Terrain::TerrainQueryRegion&,
                 TerrainDataMask,
                 AzFramework::Terrain::SurfacePointRegionFillCallback,
                 Sampler,
-                AZStd::shared_ptr<QueryAsyncParams>));
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams>));
     };
 } // namespace UnitTest
