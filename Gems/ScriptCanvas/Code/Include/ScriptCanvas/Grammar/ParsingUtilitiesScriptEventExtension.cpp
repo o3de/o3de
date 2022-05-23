@@ -7,11 +7,12 @@
  */
 
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 #include <ScriptEvents/ScriptEventsMethod.h>
-#include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 
 namespace ParsingUtilitiesScriptEventExtensionCpp
 {
@@ -154,6 +155,14 @@ namespace ScriptCanvas::ScriptEventGrammar
         if (auto eventOutcome = result.m_event.Validate(); !eventOutcome.IsSuccess())
         {
             result.m_parseErrors.push_back(eventOutcome.GetError());
+        }
+
+        AZ::IO::ByteContainerStream stream(&result.m_event.ModScriptCanvasSerializationData());
+        auto graphSerializationResult = ScriptCanvas::Serialize(*graph.GetOwnership(), stream);
+
+        if (!graphSerializationResult.m_isSuccessful)
+        {
+            result.m_parseErrors.push_back(graphSerializationResult.m_errors);
         }
 
         result.m_isScriptEvents = result.m_parseErrors.empty();

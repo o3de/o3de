@@ -167,8 +167,8 @@ namespace ScriptCanvas
             }
         }
 
-        auto graphData = result.m_graphDataPtr->ModGraph();
-        if (!graphData)
+        auto graph = result.m_graphDataPtr->ModGraph();
+        if (!graph)
         {
             result.m_isSuccessful = false;
             result.m_errors = "Failed to find graph data after loading source";
@@ -177,7 +177,7 @@ namespace ScriptCanvas
 
         auto listeners = settings.m_metadata.Find<SerializationListeners>();
         AZ_Assert(listeners, "Failed to find SerializationListeners");
-        CollectNodes(graphData->GetGraphData()->m_nodes, *listeners);
+        CollectNodes(graph->GetGraphData()->m_nodes, *listeners);
         for (auto listener : *listeners)
         {
             listener->OnDeserialize();
@@ -191,18 +191,11 @@ namespace ScriptCanvas
             result.m_errors = "Loaded script canvas file was missing a necessary Entity.";
             return result;
         }
-        else if (entity->GetState() != AZ::Entity::State::Constructed)
+
+        if (entity->GetState() != AZ::Entity::State::Constructed)
         {
             result.m_isSuccessful = false;
             result.m_errors = "Entity loaded in bad state";
-            return result;
-        }
-
-        auto graph = entity->FindComponent<ScriptCanvas::Graph>();
-        if (!graph || graph != graphData)
-        {
-            result.m_isSuccessful = false;
-            result.m_errors = "Entity loaded without required EditorGraph component.";
             return result;
         }
 

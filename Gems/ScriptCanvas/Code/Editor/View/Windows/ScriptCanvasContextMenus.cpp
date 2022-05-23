@@ -1037,19 +1037,13 @@ namespace ScriptCanvasEditor
 
                 if (!fileName.isEmpty())
                 {
-                    AZStd::string jsonString;
-                    AZ::IO::ByteContainerStream stream(&jsonString);
-                    auto graphSerializationResult = ScriptCanvas::Serialize(*graph->GetOwnership(), stream);
-                    
                     AZ::IO::Path path(fileName.toUtf8().constData());
-
                     // use the ScriptEventBus, also to get fundamental types(?)
                     AZ::Outcome<void, AZStd::string> saveOutcome = AZ::Failure(AZStd::string("failed to save"));
                     ScriptEvents::ScriptEventBus::BroadcastResult
                         ( saveOutcome
                         , &ScriptEvents::ScriptEventRequests::SaveDefinitionSourceFile
                         , result.m_event
-                        , jsonString.c_str()
                         , path);
 
                     if (!saveOutcome.IsSuccess())
@@ -1116,6 +1110,8 @@ namespace ScriptCanvasEditor
         ( [[maybe_unused]] const GraphCanvas::GraphId& graphId
         , [[maybe_unused]] const AZ::Vector2&)
     {
+        using namespace ScriptCanvas;
+
         AZ::IO::FixedMaxPath resolvedProjectRoot;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
 
@@ -1143,29 +1139,13 @@ namespace ScriptCanvasEditor
                 ScriptCanvas::Graph* graph = nullptr;
                 ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
 
-                // now open create and open a scriptcanvas graph from the script event
+                auto deserializeResult = Deserialize(loadOutcome.GetValue().GetScriptCanvasSerializationData(), MakeInternalGraphEntitiesUnique::Yes);
+                if (!deserializeResult.m_isSuccessful)
+                {
+                    errorMessage = "failed to deserialize script canvas source data";
+                }
+                // now open create an open a scriptcanvas graph from the script event
 
-                if (graph)
-                {
-                    // try and and load script canvas data
-                    // maybe embed the data in ScriptEvents ?
-                    // and load it from that handle? it could be easier for all we know
-                    // loadOutcome.GetValue().Flatten();
-//                     auto graphOutcome = CreateGraphArtifactsFromScriptEvents(loadOutcome.GetValue(), *graph);
-//                     if (graphOutcome.IsSuccess())
-//                     {
-//                         // I don't know make sure it all ... rendered appropriately, I guess...if it has not already
-//                     }
-//                     else
-//                     {
-//                         errorMessage = "Failed to generate ScriptCanvas artifacts from ScriptEvent nodes";
-//                     }
-                }
-                else
-                {
-                    errorMessage = "Failed to find graph from Id: ";
-                    errorMessage += graphId.ToString();
-                }
             }
             else
             {

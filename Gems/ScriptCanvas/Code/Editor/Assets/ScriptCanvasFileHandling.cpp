@@ -59,7 +59,7 @@ namespace ScriptCanvas
                     , handle.ToString().c_str(), loadResult.ToString().c_str()));
             }
 
-            handle = loadResult.m_handle;
+            handle = SourceHandle(loadResult.m_handle.Data(), handle.Id(), handle.Path().c_str());
         }
 
         AZStd::vector<SourceHandle> dependentAssets;

@@ -42,7 +42,6 @@ namespace ScriptEvents
         AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> LoadDefinitionSource(const AZ::IO::Path& path) override;
         AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile
             ( const ScriptEvents::ScriptEvent& events
-            , AZStd::string_view scriptCanvasJSON
             , const AZ::IO::Path& path) override;
         ////////////////////////////////////////////////////////////////////////
 

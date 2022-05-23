@@ -133,7 +133,6 @@ namespace ScriptEvents
 
     AZ::Outcome<void, AZStd::string> ScriptEventsSystemComponentImpl::SaveDefinitionSourceFile
         ( const ScriptEvents::ScriptEvent& events
-        , AZStd::string_view scriptCanvasJSON
         , const AZ::IO::Path& path)
     {
         using namespace ScriptEvents;
@@ -146,15 +145,21 @@ namespace ScriptEvents
             return AZ::Failure(AZStd::string::format("Failed to open output file %s", path.c_str()));
         }
 
-        ScriptEvents::ScriptEventsAsset assetData;
-        assetData.m_scriptCanvasSerializedData = scriptCanvasJSON;
-        assetData.m_definition = events;
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(&assetData, AZ::Data::AssetLoadBehavior::Default);
-        if (!assetHandler.SaveAssetData(asset, &outFileStream))
+        auto saveFunction = [&]()->bool
+        {
+            ScriptEvents::ScriptEventsAsset* assetData = aznew ScriptEvents::ScriptEventsAsset();
+            assetData->m_definition = events;
+            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset(assetData, AZ::Data::AssetLoadBehavior::Default);
+            return assetHandler.SaveAssetData(asset, &outFileStream);
+        };
+
+        if (!saveFunction())
         {
             return AZ::Failure(AZStd::string::format("Failed to save output file %s", path.c_str()));
         }
-        
-        return AZ::Success();
+        else
+        {
+            return AZ::Success();
+        }
     }
 }

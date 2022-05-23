@@ -55,10 +55,9 @@ namespace ScriptEvents
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ScriptEventsAsset>()
-                    ->Version(2)
+                    ->Version(1)
                     ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                     ->Field("m_definition", &ScriptEventsAsset::m_definition)
-                    ->Field("scriptCanvasSerializedData", &ScriptEventsAsset::m_scriptCanvasSerializedData)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -72,7 +71,6 @@ namespace ScriptEvents
         }
 
         ScriptEvents::ScriptEvent m_definition;
-        AZStd::string m_scriptCanvasSerializedData;
     };
 
     class ScriptEventsAssetPtr
