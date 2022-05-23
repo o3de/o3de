@@ -46,11 +46,11 @@ namespace EMotionFX
     public:
         ColliderPropertyNotify(ColliderWidget* colliderWidget);
 
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
+        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* node) override;
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* node) override;
 
-        void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
-        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
+        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {}
+        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* node) override;
 
         void SealUndoStack() override {}
 

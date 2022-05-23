@@ -36,6 +36,11 @@ namespace AzToolsFramework
             //! The first registered handler that returns true for this will be provided when calling
             //! GetPropertyHandlerForNode.
             AZStd::function<bool(const AZ::Dom::Value&)> m_shouldHandleNode;
+            //! Determines whether this handler should be in the "default" pool and match against editors
+            //! with no "Type" attribute explicitly specified. The first default handler that returns true
+            //! from m_shouldHandleNode will be selected (if any).
+            //! Care should be taken to not provide overly general handlers as default handlers.
+            bool m_isDefaultHandler;
         };
         //! A persistent ID for a given property handler.
         using PropertyHandlerId = HandlerData*;
@@ -71,6 +76,7 @@ namespace AzToolsFramework
             {
                 return AZStd::make_unique<HandlerType>();
             };
+            handlerData.m_isDefaultHandler = HandlerType::IsDefaultHander();
             RegisterHandler(AZStd::move(handlerData));
         }
     };

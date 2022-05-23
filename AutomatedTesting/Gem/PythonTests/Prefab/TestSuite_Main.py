@@ -46,6 +46,10 @@ class TestAutomation(TestAutomationBase):
         from Prefab.tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
+    def test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(self, request, workspace, editor, launcher_platform):
+        from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
     def test_ReparentPrefab_UnderPrefabAndEntityHierarchies(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

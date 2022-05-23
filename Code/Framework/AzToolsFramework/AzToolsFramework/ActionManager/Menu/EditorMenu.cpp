@@ -22,9 +22,21 @@ namespace AzToolsFramework
     {
     }
 
-    void EditorMenu::AddMenuItem(int sortKey, QAction* action)
+    void EditorMenu::AddAction(int sortKey, QAction* action)
     {
-        m_menuItems.insert({ sortKey, action });
+        m_menuItems.insert({ sortKey, MenuItem(action) });
+        RefreshMenu();
+    }
+
+    void EditorMenu::AddSeparator(int sortKey)
+    {
+        m_menuItems.insert({ sortKey, MenuItem() });
+        RefreshMenu();
+    }
+
+    void EditorMenu::AddSubMenu(int sortKey, QMenu* submenu)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(submenu) });
         RefreshMenu();
     }
 
@@ -37,10 +49,46 @@ namespace AzToolsFramework
     {
         m_menu->clear();
 
-        for (auto elem : m_menuItems)
+        for (const auto& elem : m_menuItems)
         {
-            m_menu->addAction(elem.second);
+            switch (elem.second.m_type)
+            {
+            case MenuItemType::Action:
+                {
+                    m_menu->addAction(AZStd::get<QAction*>(elem.second.m_value));
+                    break;
+                }
+            case MenuItemType::SubMenu:
+                {
+                    m_menu->addMenu(AZStd::get<QMenu*>(elem.second.m_value));
+                    break;
+                }
+            case MenuItemType::Separator:
+                {
+                    m_menu->addSeparator();
+                    break;
+                }
+            default:
+                break;
+            }
         }
+    }
+
+    EditorMenu::MenuItem::MenuItem()
+        : m_type(MenuItemType::Separator)
+    {
+    }
+
+    EditorMenu::MenuItem::MenuItem(QAction* action)
+        : m_type(MenuItemType::Action)
+        , m_value(action)
+    {
+    }
+
+    EditorMenu::MenuItem::MenuItem(QMenu* menu)
+        : m_type(MenuItemType::SubMenu)
+        , m_value(menu)
+    {
     }
 
 } // namespace AzToolsFramework

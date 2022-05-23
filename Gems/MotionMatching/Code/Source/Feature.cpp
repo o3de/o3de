@@ -55,7 +55,7 @@ namespace EMotionFX::MotionMatching
         m_jointIndex = joint ? joint->GetNodeIndex() : InvalidIndex;
         if (m_jointIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace EMotionFX::MotionMatching
         m_relativeToNodeIndex = relativeToJoint ? relativeToJoint->GetNodeIndex() : InvalidIndex;
         if (m_relativeToNodeIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
             return false;
         }
 
