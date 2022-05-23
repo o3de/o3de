@@ -462,7 +462,7 @@ namespace Terrain
 
         // expand the bounds in order to calculate normals.
         AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(vertexSpacing);
-        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(vertexSpacing) + AZ::Vector3(m_sampleSpacing * 0.5f); // extra padding to catch the last vertex
+        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(2.0f * vertexSpacing); // extra padding to catch the last vertex
 
         // pad the max by half a sample spacing to make sure it's inclusive of the last point.
         AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);
