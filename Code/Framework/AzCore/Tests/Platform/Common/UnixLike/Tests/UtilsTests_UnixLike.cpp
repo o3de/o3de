@@ -36,4 +36,11 @@ namespace UnitTest
         ASSERT_TRUE(absolutePath);
         EXPECT_STRCASEEQ(executableDirectory, absolutePath->c_str());
     }
+
+    TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnNonExistentPath_Succeeds)
+    {
+        AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath(
+            "_PathWhichShouldNotExistButIsOkIfItDoesExist");
+        ASSERT_TRUE(absolutePath);
+    }
 }
