@@ -329,27 +329,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
-        // Add Delete option
-        menu->addAction(
-                QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
-                [treeView]()
-                {
-                    treeView->DeleteEntries();
-                })
-            ->setShortcut(QKeySequence::Delete);
-
+        // Context menu entries that only make sense when there is only one selection should go in here
+        // For example, open and rename
         if (numOfEntries == 1)
         {
-            // Add Rename option
-            menu->addAction(
-                    QObject::tr("Rename asset"),
-                    [treeView]()
-                    {
-                        treeView->RenameEntry();
-                    })
-                ->setShortcut(Qt::Key_F2);
-
-
             // Add the "Open" menu item.
             // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't
             // openable! for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the
@@ -439,17 +422,22 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
             }
 
-            if (products.empty())
+            if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
-                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                {
-                    CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
-                }
-                return;
+                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
+            // Add Rename option
+            menu->addAction(QObject::tr("Rename asset"), [treeView]()
+            {
+                treeView->RenameEntry();
+            })->setShortcut(Qt::Key_F2);
         }
 
-        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+        // Add Delete option
+        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [treeView]()
+        {
+            treeView->DeleteEntries();
+        })->setShortcut(QKeySequence::Delete);
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
