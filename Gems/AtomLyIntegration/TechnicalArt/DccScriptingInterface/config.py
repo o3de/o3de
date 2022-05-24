@@ -852,7 +852,7 @@ if __name__ == '__main__':
                         type=str,
                         required=False,
                         default='WING',
-                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
+                        help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
     
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,

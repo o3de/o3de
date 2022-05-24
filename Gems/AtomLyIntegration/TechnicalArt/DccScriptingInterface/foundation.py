@@ -53,19 +53,23 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 # Local access
 _MODULE_PATH = Path(__file__)            # this script
-_PATH_DCCSIG = Path(_MODULE_PATH.parent) # dcsi/tools/dcc/blender
+_PATH_DCCSIG = Path(_MODULE_PATH.parent) # dccsi
 os.environ['PATH_DCCSIG'] = _PATH_DCCSIG.as_posix()
 site.addsitedir(_PATH_DCCSIG.as_posix()) # python path
+os.chdir(_PATH_DCCSIG.as_posix())
 
 # the path we want to install packages into
 STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
 
+# these are just defaults and are meant to be replaced by info for the target python.exe
+_SYS_VER_MAJOR = sys.version_info.major
+_SYS_VER_MINOR = sys.version_info.minor
 # the default will be based on the python executable running this module    
 # this value should be replaced with the sys,version of the target python
 # for example mayapy, or blenders python, etc.
 _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                               sys.version_info.major,
-                                                               sys.version_info.minor))
+                                                               _SYS_VER_MAJOR,
+                                                               _SYS_VER_MINOR))
 
 # this is the shared default requirements.txt file to install for python 3.6.x+
 _DCCSI_PYTHON_REQUIREMENTS = Path(_PATH_DCCSIG, 'requirements.txt')
@@ -88,7 +92,7 @@ def check_pip(python_exe=_PYTHON_EXE):
         return result
     else:
         _LOGGER.error(f'python_exe does not exist: {python_exe}')
-        return 0
+        return 1
 # -------------------------------------------------------------------------
 
 
@@ -131,15 +135,28 @@ if sys.version_info.major >= 3 and sys.version_info.minor >= 7:
 elif sys.version_info.major < 3:
     DL_URL = _GET_PIP_PY27_URL
     
-# default location to store it:
-PIP_DL_LOC = Path(_PATH_DCCSIG, '.tmp', 'get-pip.py').as_posix()
+# temp dir to store in:
+_PIP_DL_LOC = Path(_PATH_DCCSIG) / '__tmp__'
+if not _PIP_DL_LOC.exists():
+    try:
+        _PIP_DL_LOC.mkdir(parents=True)
+    except Exception as e:
+        _LOGGER.error(f'error: {e}, could not .mkdir(): {PIP_DL_LOC.as_posix()}')
+    
+# default file location to store it:
+_PIP_DL_LOC = _PIP_DL_LOC / 'get-pip.py'
+try:
+    _PIP_DL_LOC.touch(mode=0o666, exist_ok=True)  
+except Exception as e:
+    _LOGGER.error(f'error: {e}, could not .touch(): {PIP_DL_LOC.as_posix()}')
 
-def download_getpip(url=DL_URL, file_store=PIP_DL_LOC):
+def download_getpip(url=DL_URL, file_store=_PIP_DL_LOC):
     """Attempts to download the get-pip.py script"""
     import requests
     
     # ensure what is passed in is a Path object
     file_store = Path(file_store)
+    file_store = Path.joinpath(file_store)
 
     try:
         file_store.exists()
@@ -159,16 +176,19 @@ def download_getpip(url=DL_URL, file_store=PIP_DL_LOC):
         return file
     except IOError as e:
         _LOGGER.error(f'could not write: {file_store.as_posix()}')
+        return None
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def install_pip(python_exe=_PYTHON_EXE, download=True, upgrade=True, getpip=PIP_DL_LOC):
+def install_pip(python_exe=_PYTHON_EXE, download=True, upgrade=True, getpip=_PIP_DL_LOC):
     """Installs pip via get-pip.py"""
     result = 0
     
     if download:
         getpip = download_getpip()
+        if not getpip:
+            return result
     
     python_exe = Path(python_exe)
     
@@ -185,6 +205,7 @@ def install_pip(python_exe=_PYTHON_EXE, download=True, upgrade=True, getpip=PIP_
         result = subprocess.call( [python_exe, "-m", "pip", "install", "--upgrade", "pip"] )
         _LOGGER.info(f'result: {result}')
         return result
+
     return result
 # -------------------------------------------------------------------------
 
@@ -253,6 +274,55 @@ def run_command() -> 'subprocess.CompletedProcess[str]':
 # -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
+def arg_bool(bool_arg, desc='arg desc not set'):
+    """cast a arg bool to a python bool"""
+
+    _LOGGER.info(f"Checking '{desc}': {bool_arg}")
+
+    if bool_arg in ('True', 'true', '1'):
+        return True
+    elif bool_arg in ('False', 'false', '0'):
+        return False
+    else:
+        return bool_arg
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def set_version(ver_major=sys.version_info.major, ver_minor=sys.version_info.minor):
+    global _SYS_VER_MAJOR
+    global _SYS_VER_MINOR
+    global _PATH_DCCSI_PYTHON_LIB
+    
+    _SYS_VER_MAJOR = ver_major
+    _SYS_VER_MINOR = ver_minor
+    _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
+                                                                   _SYS_VER_MAJOR,
+                                                                   _SYS_VER_MINOR))
+    return _PATH_DCCSI_PYTHON_LIB
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_version(_PYTHON_EXE):
+    _PYTHON_EXE = Path(_PYTHON_EXE)
+    if _PYTHON_EXE.exists():
+        # this will switch to run the specified dcc tools python exe and determine version
+        _COMMAND = [_PYTHON_EXE.as_posix(), "--version"]
+        _process = subprocess.Popen(_COMMAND, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        _out, _err = _process.communicate()
+        _out = _out.decode("utf-8")  # decodes byte string to string
+        _out = _out.replace("\r\n", "")  # clean
+        _LOGGER.info(f'Python Version is: {_out}')
+        _ver = _out.split(" ")[-1]  # split by space, take version
+        _ver = _ver.split('.')  # splity by . to list
+        return _ver
+    else:
+        _LOGGER.error(f'Python exe does not exist: {_PYTHON_EXE.as_posix()}')
+        return None
+# -------------------------------------------------------------------------
+
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
@@ -301,31 +371,39 @@ if __name__ == '__main__':
                         required=False,
                         help='Enables global debug flag.')
     
+    parser.add_argument('-dm', '--developer-mode',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='(NOT IMPLEMENTED) Enables dev mode for early auto attaching debugger.')
+    
+    parser.add_argument('-sd', '--set-debugger',
+                        type=str,
+                        required=False,
+                        default='WING',
+                        help='(NOT IMPLEMENTED) Default debugger: WING, others: PYCHARM and VSCODE.')
+    
     parser.add_argument('-py', '--python_exe',
                         type=str,
                         required=False,
                         help='The python interpretter you want to run in the subprocess')
-    
+
     parser.add_argument('-cp', '--check_pip',
-                        type=bool,
                         required=False,
                         default=True,
                         help='Checks for pip')
     
     parser.add_argument('-ep', '--ensurepip',
-                        type=bool,
                         required=False,
                         default=False,
                         help='Uses ensurepip, to make sure pip is installed')
     
     parser.add_argument('-ip', '--install_pip',
-                        type=bool,
                         required=False,
                         default=False,
                         help='Attempts install pip via download of get-pip.py')
     
     parser.add_argument('-ir', '--install_requirements',
-                        type=bool,
                         required=False,
                         default=True,
                         help='Exits python')
@@ -348,46 +426,48 @@ if __name__ == '__main__':
         
     if args.python_exe:
         _PYTHON_EXE = Path(args.python_exe)
-        _COMMAND = [_PYTHON_EXE.as_posix(), "--version"]
-        _process = subprocess.Popen(_COMMAND, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        _out, _err = _process.communicate()
-        _out = _out.decode("utf-8")  # decodes byte string to string
-        _out = _out.replace("\r\n", "")  # clean
-        _LOGGER.info(f'Python Version is: {_out}')
+        _LOGGER.info(f'Target py exe is: {_PYTHON_EXE}')
+
+        if _PYTHON_EXE.exists():            
+            _py_version = get_version(_PYTHON_EXE)
         
-        _ver = _out.split(" ")[1]  # split by space, take version
-        _ver = _ver.split('.')  # splity by . to list
-        
-        _PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                                       _ver[0],
-                                                                       _ver[1]))
-        if _PATH_DCCSI_PYTHON_LIB.exists():
-            _LOGGER.info(f'Requirements, install target: {_PATH_DCCSI_PYTHON_LIB}')
+            # then we can change the version dependant target folder for pkg install
+            _PATH_DCCSI_PYTHON_LIB = set_version(_py_version[0], _py_version[1]) 
+            
+            if _PATH_DCCSI_PYTHON_LIB.exists():
+                _LOGGER.info(f'Requirements, install target: {_PATH_DCCSI_PYTHON_LIB}')
+            else:
+                _PATH_DCCSI_PYTHON_LIB.touch()
+                _LOGGER.info(f'.touch(): {_PATH_DCCSI_PYTHON_LIB}')
         else:
-            _PATH_DCCSI_PYTHON_LIB.touch()
-            _LOGGER.info(f'.touch(): {_PATH_DCCSI_PYTHON_LIB}')
+            _LOGGER.error(f'This py exe does not exist:{_PYTHON_EXE}')
+            sys.exit()
 
     # this will verify pip is installed for the target python interpretter/env
-    if args.check_pip:
+    if arg_bool(args.check_pip, desc='args.check_pip'):
         _LOGGER.info(f'calling foundation.check_pip()')
-        check_pip(_PYTHON_EXE)
+        result = check_pip(_PYTHON_EXE)
 
-    if args.ensurepip:
+        if result != 0:
+            _LOGGER.warning( f'check_pip(), Invalid result: { result }' )
+
+    if arg_bool(args.ensurepip, desc='args.ensurepip'):
         _LOGGER.info(f'calling foundation.ensurepip()')
         ensurepip(_PYTHON_EXE)
     
-    if args.install_pip:    
+    if arg_bool(args.install_pip, desc='args.install_pip'):    
         _LOGGER.info(f'calling foundation.install_pip()')
         install_pip(_PYTHON_EXE)
     
-    if args.install_requirements:    
-        _LOGGER.info(f'calling foundation.install_requirements()')
+    # installing the requirments.txt is enabled by default
+    if arg_bool(args.install_requirements, desc='args.check_pip'):    
+        _LOGGER.info(f'calling foundation.install_requirements( {_PYTHON_EXE}, target_loc = {_PATH_DCCSI_PYTHON_LIB.as_posix()} )')
         install_requirements(_PYTHON_EXE, target_loc = _PATH_DCCSI_PYTHON_LIB.as_posix())
         
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)
     
-    _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+    _LOGGER.info('O3DE DCCsi {0}.py took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 
     if args.exit:
         import sys
