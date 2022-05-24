@@ -234,6 +234,11 @@ namespace AZ
 
             return true;
         }
+        
+        bool ShaderOptionGroup::IsEmpty() const
+        {
+            return m_id.IsEmpty();
+        }
 
         ShaderVariantKey ShaderOptionGroup::GetShaderVariantKeyFallbackValue() const
         {
