@@ -62,6 +62,7 @@ namespace Terrain
 
     class TerrainMeshManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , private AZ::RPI::SceneNotificationBus::Handler
     {
     private:
         
@@ -167,6 +168,10 @@ namespace Terrain
         static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
+
+        // AZ::RPI::SceneNotificationBus overrides...
+        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
+        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;

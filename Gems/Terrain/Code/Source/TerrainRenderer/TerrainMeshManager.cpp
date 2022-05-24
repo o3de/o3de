@@ -8,6 +8,7 @@
 
 #include <TerrainRenderer/TerrainMeshManager.h>
 
+#include <AzCore/Console/Console.h>
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -32,6 +33,17 @@ namespace Terrain
     {
         [[maybe_unused]] static const char* TerrainMeshManagerName = "TerrainMeshManager";
     }
+
+    AZ_CVAR(bool,
+        r_debugTerrainLodLevels,
+        false,
+        [](const bool& value)
+        {
+            AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_debugTerrainLodLevels" }, AZ::RPI::ShaderOptionValue{ value });
+        },
+        AZ::ConsoleFunctorFlags::Null,
+            "Turns on debug coloring for terrain mesh lods."
+            );
 
     TerrainMeshManager::TerrainMeshManager()
     {   
@@ -98,6 +110,16 @@ namespace Terrain
     {
         m_sectorStack.clear();
         m_rebuildSectors = true;
+    }
+
+    void TerrainMeshManager::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
+    {
+        m_rebuildDrawPackets = true;
+    }
+
+    void TerrainMeshManager::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        m_rebuildDrawPackets = true;
     }
 
     void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
@@ -212,19 +234,6 @@ namespace Terrain
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
         sector.m_perDrawSrgs.clear();
-
-        // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
-        // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
-        AZ::RPI::ShaderSystemInterface* shaderSystem = AZ::RPI::ShaderSystemInterface::Get();
-        for (auto iter : shaderSystem->GetGlobalShaderOptions())
-        {
-            const AZ::Name& shaderOptionName = iter.first;
-            AZ::RPI::ShaderOptionValue value = iter.second;
-            if (!m_materialInstance->SetSystemShaderOption(shaderOptionName, value).IsSuccess())
-            {
-                AZ_Warning("TerrainMeshManager", false, "Shader option '%s' is owned by this this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
-            }
-        }
 
         for (CachedDrawData& drawData : m_cachedDrawData)
         {
@@ -368,6 +377,19 @@ namespace Terrain
 
     void TerrainMeshManager::RebuildDrawPackets()
     {
+        // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
+        // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
+        AZ::RPI::ShaderSystemInterface* shaderSystem = AZ::RPI::ShaderSystemInterface::Get();
+        for (auto iter : shaderSystem->GetGlobalShaderOptions())
+        {
+            const AZ::Name& shaderOptionName = iter.first;
+            AZ::RPI::ShaderOptionValue value = iter.second;
+            if (!m_materialInstance->SetSystemShaderOption(shaderOptionName, value).IsSuccess())
+            {
+                AZ_Warning("TerrainMeshManager", false, "Shader option '%s' is owned by this this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
+            }
+        }
+
         m_cachedDrawData.clear();
 
         // Rebuild common draw packet data
