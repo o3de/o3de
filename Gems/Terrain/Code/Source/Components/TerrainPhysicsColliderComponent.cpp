@@ -139,24 +139,6 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::Activate()
     {
-        // Check to see if this component is on an entity that also contains a "TerrainAreaService" provider.
-        // If it is, we'll change our update patterns when other components on this entity change to avoid redundant data updates.
-        m_entityContainsTerrainSpawner = false;
-        auto components = GetEntity()->GetComponents();
-        for (AZ::Component* component : components)
-        {
-            AZ::ComponentDescriptor* subComponentDescriptor = nullptr;
-            AZ::ComponentDescriptorBus::EventResult(
-                subComponentDescriptor, component->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
-            AZ::ComponentDescriptor::DependencyArrayType provided;
-            subComponentDescriptor->GetProvidedServices(provided, component);
-            if (AZStd::find(provided.begin(), provided.end(), AZ_CRC_CE("TerrainAreaService")) != provided.end())
-            {
-                m_entityContainsTerrainSpawner = true;
-                break;
-            }
-        }
-
         const auto entityId = GetEntityId();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(entityId);
@@ -180,10 +162,6 @@ namespace Terrain
 
         AZ::Aabb colliderBounds = GetHeightfieldAabb();
 
-        // If we've cached a change mask due to a shape change, merge it with whatever other notifications we're processing now.
-        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask = heightfieldChangeMask | m_changeMask;
-        m_changeMask = Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::None;
-
         if (dirtyRegion.IsValid())
         {
             // If we have a dirty region, only update this collider if the dirty region overlaps the collider bounds.
@@ -193,14 +171,14 @@ namespace Terrain
                 AZ::Aabb dirtyBounds = colliderBounds.GetClamped(dirtyRegion);
 
                 Physics::HeightfieldProviderNotificationBus::Broadcast(
-                    &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, dirtyBounds, changeMask);
+                    &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, dirtyBounds, heightfieldChangeMask);
             }
         }
         else
         {
             // No valid dirty region, so update the entire collider bounds.
             Physics::HeightfieldProviderNotificationBus::Broadcast(
-                &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, colliderBounds, changeMask);
+                &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, colliderBounds, heightfieldChangeMask);
         }
     }
 
@@ -209,14 +187,11 @@ namespace Terrain
         // This will notify us of both shape changes and transform changes.
         // It's important to use this event for transform changes instead of listening to OnTransformChanged, because we need to guarantee
         // the shape has received the transform change message and updated its internal state before passing it along to us.
-        m_changeMask =
+        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask =
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings |
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::HeightData;
 
-        if (!m_entityContainsTerrainSpawner)
-        {
-            NotifyListenersOfHeightfieldDataChange(m_changeMask, AZ::Aabb::CreateNull());
-        }
+        NotifyListenersOfHeightfieldDataChange(changeMask, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()

@@ -126,9 +126,6 @@ namespace Terrain
     private:
         TerrainPhysicsColliderConfig m_configuration;
         bool m_terrainDataActive = false;
-        bool m_entityContainsTerrainSpawner = false;
-        Physics::HeightfieldProviderNotifications::HeightfieldChangeMask m_changeMask =
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::None;
         AzFramework::Terrain::TerrainQueryRegion m_heightfieldRegion;
     };
 }
