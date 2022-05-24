@@ -27,7 +27,7 @@ namespace AZ
 
         PipelineLayout* PipelineState::GetPipelineLayout() const
         {
-            if (m_pipeline == nullptr)
+            if (!m_pipeline)
             {
                 return nullptr;
             }
@@ -36,16 +36,12 @@ namespace AZ
 
         Pipeline* PipelineState::GetPipeline() const
         {
-            if (m_pipeline == nullptr)
-            {
-                return nullptr;
-            }
             return m_pipeline.get();
         }
 
         PipelineLibrary* PipelineState::GetPipelineLibrary() const
         {
-            if (m_pipeline == nullptr)
+            if (!m_pipeline)
             {
                 return nullptr;
             }
