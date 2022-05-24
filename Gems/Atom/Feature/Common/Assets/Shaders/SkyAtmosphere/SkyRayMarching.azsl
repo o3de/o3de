@@ -35,23 +35,29 @@ float3 GetSunLuminance(float3 worldPos, float3 worldDir, float planetRadius)
             if (t < 0.0f) // no intersection with surface
             {
                 const float d = (1.0 - angle) / (1.0 - sunAngle) ;
-				const float falloff = pow(1.0 - d, PassSrg::m_constants.m_sunFalloffFactor);
-				if(PassSrg::m_constants.m_sunFalloffFactor <= 1.0)
-				{
-					// crisp sun disk
-                	return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff);
-				}
-				else
-				{
-					// soft sun disk
-                	return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff) * falloff;
-				}
+                const float falloff = pow(1.0 - d, PassSrg::m_constants.m_sunFalloffFactor);
+                if(PassSrg::m_constants.m_sunFalloffFactor <= 1.0)
+                {
+                    // crisp sun disk
+                    return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff);
+                }
+                else
+                {
+                    // soft sun disk
+                    return lerp(PassSrg::m_constants.m_sunLimbColor, PassSrg::m_constants.m_sunColor, falloff) * falloff;
+                }
             }
         }
     }
     return 0;
 }
 
+// For each pixel in the screen we get the sky atmosphere color from a LUT (SkyViewLUT) or by tracing
+// from the camera into the scene. The SkyViewLUT is only used on pixels where just the sky is visible. 
+// For every pixel that has a depth value within the far-plane we trace using the IntegrateScatteredLuminance() function.
+// IntegrateScatteredLuminance() can use a variable number of samples by changing
+// PassSrg::m_constants.m_minSamples and PassSrg::m_constants.m_maxSamples. Using more samples will increase quality
+// but decrease performance
 RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV_SampleIndex)
 {
     RayMarchPixelOutputStruct output = (RayMarchPixelOutputStruct)0;
@@ -63,7 +69,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     const float exposure = 20.0;
     float3 luminance = 0;
 
-    // see ReflectionScreenSpaceComposite.azsl for example of reconstructing coords
+    // re-construct the world space coords
     float2 screenCoords = Input.m_position.xy;
     float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
 
@@ -87,6 +93,8 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
         if(o_enableFastSky)
         {
+            // fast path that uses the SkyViewLUT when inside the atmosphere and the pixel only contains sky
+
             float viewHeight = length(cameraPlanetPosKm);
             if(viewHeight < Atmosphere.TopRadius)
             {
