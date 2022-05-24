@@ -410,13 +410,13 @@ namespace Physics
 
     int32_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
     {
-        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 squares but 2 vertices)
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
         return AZStd::max(0, m_numColumns - 1);
     }
 
     int32_t HeightfieldShapeConfiguration::GetNumRowSquares() const
     {
-        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 squares but 2 vertices)
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
         return AZStd::max(0, m_numRows - 1);
     }
 
