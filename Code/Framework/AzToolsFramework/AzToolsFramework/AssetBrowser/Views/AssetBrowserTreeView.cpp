@@ -23,6 +23,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
@@ -35,6 +36,9 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QPen>
 #include <QPainter>
 #include <QTimer>
+#include <QtWidgets/QMessageBox>
+#include <QAbstractButton>
+
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -59,6 +63,14 @@ namespace AzToolsFramework
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+            QAction* deleteAction = new QAction("Delete Action", this);
+            deleteAction->setShortcut(QKeySequence::Delete);
+            connect(
+                deleteAction, &QAction::triggered, this, [this]
+                    {
+                        DeleteEntries();
+                    });
         }
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
@@ -386,10 +398,6 @@ namespace AzToolsFramework
             AZ_UNUSED(point);
 
             auto selectedAssets = GetSelectedAssets();
-            if (selectedAssets.size() != 1)
-            {
-                return;
-            }
 
             QMenu menu(this);
             AssetBrowserInteractionNotificationBus::Broadcast(
@@ -433,6 +441,38 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::Update()
         {
             update();
+        }
+
+        void AssetBrowserTreeView::DeleteEntries()
+        {
+            auto entries = GetSelectedAssets();
+
+            // Create the callback to pass to the SourceControlAPI
+            AzToolsFramework::SourceControlResponseCallback callback =
+                []([[maybe_unused]] bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+            {
+            };
+
+            size_t numOfEntries = entries.size();
+            QMessageBox box;
+            box.setIcon(QMessageBox::Warning);
+            box.setWindowTitle(numOfEntries > 1 ? QObject::tr("Delete selected assets?") : QObject::tr("Delete selected asset?"));
+            box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            QAbstractButton* okButton = box.button(QMessageBox::Ok);
+            okButton->setText("Delete");
+            box.setText(
+                numOfEntries > 1 ? QObject::tr("Are you sure you want to delete these assets?\nYou cannot undo this action.")
+                                 : QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.")
+                                       .arg(entries.front()->GetFullPath().c_str()));
+            int ret = box.exec();
+            if (ret == QMessageBox::Ok)
+            {
+                using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+                for (auto entry : entries)
+                {
+                    SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, entry->GetFullPath().c_str(), callback);
+                }
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

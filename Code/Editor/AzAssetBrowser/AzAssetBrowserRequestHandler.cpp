@@ -16,7 +16,6 @@
 #include <QMenu>
 #include <QObject>
 #include <QString>
-#include <QtWidgets/QMessageBox>
 
 // AzCore
 #include <AzCore/std/string/wildcard.h>
@@ -32,6 +31,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -294,11 +294,19 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 {
     using namespace AzToolsFramework::AssetBrowser;
 
+    AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*> (caller);
+    if (!treeView)
+    {
+        return;
+    }
+
     AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
     if (!entry)
     {
         return;
     }
+
+    size_t numOfEntries = entries.size();
 
     AZStd::string fullFilePath;
     AZStd::string extension;
@@ -321,167 +329,110 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
-        // Add the "Open" menu item.
-        // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't openable!
-        // for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the operating system to view them.
-        // If the only opener that can open that file has no m_opener, then it is not openable.
-        SourceFileOpenerList openers;
-        AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowserInteractionNotificationBus::Events::AddSourceFileOpeners, fullFilePath.c_str(), sourceID, openers);
-        bool validOpenersFound = false;
-        bool vetoOpenerFound = false;
-        for (const SourceFileOpenerDetails& openerDetails : openers)
+        // Context menu entries that only make sense when there is only one selection should go in here
+        // For example, open and rename
+        if (numOfEntries == 1)
         {
-            if (openerDetails.m_opener) 
-            {
-                // we found a valid opener (non-null).  This means that the system is saying that it knows how to internally
-                // edit this source file and has a custom editor for it.
-                validOpenersFound = true;
-            }
-            else
-            {
-                // if we get here it means someone intentionally registered a callback with a null function pointer
-                // the API treats this as a 'veto' opener - meaning that the system wants us NOT to allow the operating system
-                // to open this source file as a default fallback.
-                vetoOpenerFound = true;
-            }
-        }
-
-        if (validOpenersFound)
-        {
-            // if we get here then there is an opener installed for this kind of asset
-            // and it is not null, meaning that it is not vetoing our ability to open the file.
+            // Add the "Open" menu item.
+            // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't
+            // openable! for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the
+            // operating system to view them. If the only opener that can open that file has no m_opener, then it is not openable.
+            SourceFileOpenerList openers;
+            AssetBrowserInteractionNotificationBus::Broadcast(
+                &AssetBrowserInteractionNotificationBus::Events::AddSourceFileOpeners, fullFilePath.c_str(), sourceID, openers);
+            bool validOpenersFound = false;
+            bool vetoOpenerFound = false;
             for (const SourceFileOpenerDetails& openerDetails : openers)
             {
-                // bind that function to the current loop element.
-                if (openerDetails.m_opener) // only VALID openers with an actual callback.
+                if (openerDetails.m_opener)
                 {
-                    menu->addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), [sourceID, fullFilePath, openerDetails]()
-                    {
-                        openerDetails.m_opener(fullFilePath.c_str(), sourceID);
-                    });
-                }
-            }
-        }
-        
-        // we always add the default "open with your operating system" unless a veto opener is found
-        if (!vetoOpenerFound)
-        {
-            // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
-            menu->addAction(QObject::tr("Open with associated application..."), [fullFilePath]()
-            {
-                OpenWithOS(fullFilePath);
-            });
-        }
-
-        AZStd::vector<const ProductAssetBrowserEntry*> products;
-        entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-        // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
-        if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
-        {
-            AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
-
-            // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
-            if (!products.empty())
-            {
-                const ProductAssetBrowserEntry* productEntry = products[0];
-                menu->addAction("Open in Slice Relationship View", [productEntry]()
-                {
-                    QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-
-                    const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
-
-                    AzToolsFramework::SliceRelationshipRequestBus::Broadcast(&AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
-                });
-            }
-        }
-        else if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
-        {
-            QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
-            AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
-        }
-
-        // Create the callback to pass to the SourceControlAPI
-        AzToolsFramework::SourceControlResponseCallback callback =
-            [fullFilePath](bool success, const AzToolsFramework::SourceControlFileInfo& info)
-        {
-            if (success)
-            {
-                QMessageBox::information(AzToolsFramework::GetActiveWindow(), "Asset deleted", "Asset name %s", fullFilePath.c_str());
-            }
-            else
-            {
-                // Be more specific with errors so as to give the user the best chance at fixing them
-                if (!info.HasFlag(AzToolsFramework::SCF_OpenByUser))
-                {
-                    if (info.HasFlag(AzToolsFramework::SourceControlFlags::SCF_OutOfDate))
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - You do not have latest changes from source control for file\n%1")
-                                .arg(fullFilePath.c_str()));
-                    }
-                    else if (info.IsLockedByOther())
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - File exclusively opened by another user %1 ->\n%2")
-                                .arg(info.m_StatusUser.c_str(), fullFilePath.c_str()));
-                    }
-                    else if (
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderIsDown ||
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_CertificateInvalid ||
-                        info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderError)
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Source Control Issue - Failed to remove file from source control, check your connection to your "
-                                    "source control service.\n%1")
-                                .arg(fullFilePath.c_str()));
-                    }
-                    else
-                    {
-                        QMessageBox::information(
-                            AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                            QObject::tr("Unknown Issue with source control.\n%1").arg(fullFilePath.c_str()));
-                    }
+                    // we found a valid opener (non-null).  This means that the system is saying that it knows how to internally
+                    // edit this source file and has a custom editor for it.
+                    validOpenersFound = true;
                 }
                 else
                 {
-                    QMessageBox::information(
-                        AzToolsFramework::GetActiveWindow(), QObject::tr("Asset not deleted"),
-                        QObject::tr("Source Control Issue - File marked as 'Open By User' but still failed.\n%1").arg(fullFilePath.c_str()));
+                    // if we get here it means someone intentionally registered a callback with a null function pointer
+                    // the API treats this as a 'veto' opener - meaning that the system wants us NOT to allow the operating system
+                    // to open this source file as a default fallback.
+                    vetoOpenerFound = true;
                 }
             }
-        };
-        // Add Delete option
-        menu->addAction("Delete asset", [fullFilePath, callback]()
-        {
-            QMessageBox box;
-            box.setIcon(QMessageBox::Warning);
-            box.setWindowTitle(QObject::tr("Delete selected asset?"));
-            box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-            QAbstractButton* okButton = box.button(QMessageBox::Ok);
-            okButton->setText("Delete");
-            box.setText(QObject::tr("Are you sure you want to delete\n%1?\nYou cannot undo this action.").arg(fullFilePath.c_str()));
-            int ret = box.exec();
-            if (ret == QMessageBox::Ok)
-            {
-                using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-                SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, fullFilePath.c_str(), callback);
-            }
-        });
 
-        if (products.empty())
-        {
-            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+            if (validOpenersFound)
+            {
+                // if we get here then there is an opener installed for this kind of asset
+                // and it is not null, meaning that it is not vetoing our ability to open the file.
+                for (const SourceFileOpenerDetails& openerDetails : openers)
+                {
+                    // bind that function to the current loop element.
+                    if (openerDetails.m_opener) // only VALID openers with an actual callback.
+                    {
+                        menu->addAction(
+                            openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()),
+                            [sourceID, fullFilePath, openerDetails]()
+                            {
+                                openerDetails.m_opener(fullFilePath.c_str(), sourceID);
+                            });
+                    }
+                }
+            }
+
+            // we always add the default "open with your operating system" unless a veto opener is found
+            if (!vetoOpenerFound)
+            {
+                // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
+                menu->addAction(
+                    QObject::tr("Open with associated application..."),
+                    [fullFilePath]()
+                    {
+                        OpenWithOS(fullFilePath);
+                    });
+            }
+
+            AZStd::vector<const ProductAssetBrowserEntry*> products;
+            entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
+
+            // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
+            if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
+            {
+                AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
+
+                // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
+                if (!products.empty())
+                {
+                    const ProductAssetBrowserEntry* productEntry = products[0];
+                    menu->addAction(
+                        "Open in Slice Relationship View",
+                        [productEntry]()
+                        {
+                            QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
+
+                            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
+
+                            AzToolsFramework::SliceRelationshipRequestBus::Broadcast(
+                                &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
+                        });
+                }
+            }
+            else if (AzFramework::StringFunc::Equal(
+                         extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
+            {
+                QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
+                AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
+            }
+
+            if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
-            return;
         }
-      
-        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+
+        // Add Delete option
+        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [treeView]()
+        {
+            treeView->DeleteEntries();
+        })->setShortcut(QKeySequence::Delete);
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
