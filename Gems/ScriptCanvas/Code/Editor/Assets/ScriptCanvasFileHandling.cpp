@@ -249,7 +249,7 @@ namespace ScriptCanvasEditor
         result.m_asset = AZStd::move(handle);
         return AZ::Success(result);
     }
-    
+
     AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
