@@ -4,23 +4,17 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/parallel/thread.h>
+
 #include <AzCore/Component/TickBus.h>
 
 #include <AtomCore/Instance/Instance.h>
-
-#include <Atom/RPI.Public/Image/StreamingImage.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-#include <SharedBuffer.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 
+#include <SharedBuffer.h>
 #include <MultiDispatchComputePass.h>
 #include <MeshletsRenderPass.h>
-
-namespace Render
-{
-    class MeshFeatureProcessorInterface;
-}
 
 namespace RPI
 {
@@ -29,12 +23,17 @@ namespace RPI
 
 namespace AZ
 {
-    class MeshletsRenderObject;
-
     namespace Meshlets
     {
         class MeshletsRenderObject;
 
+
+        // Not used yet - should be developed to support instancing
+        struct RenderObjectInstanceData
+        {
+            Render::TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            MeshletsRenderObject* meshletsRenderObject;
+        };
 
         class MeshletsFeatureProcessor final
             : public RPI::FeatureProcessor
@@ -72,7 +71,11 @@ namespace AZ
             void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
-            void AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
+            void SetTransform(
+                const Render::TransformServiceFeatureProcessorInterface::ObjectId objectId,
+                const AZ::Transform& transform);
+            Render::TransformServiceFeatureProcessorInterface::ObjectId AddMeshletsRenderObject(
+                MeshletsRenderObject* meshletsRenderObject);
             void RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject);
 
             Data::Instance<RPI::Shader> GetComputeShader() { return m_computeShader; }
@@ -110,6 +113,8 @@ namespace AZ
             //! might still be a problem.  If needed, it can be resolved using a map for each
             //! pass name per pipeline.
             RPI::RenderPipeline* m_renderPipeline = nullptr;
+
+            Render::TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
 
             Data::Instance<RPI::Shader> m_renderShader;
             Data::Instance<RPI::Shader> m_computeShader;

@@ -52,14 +52,13 @@ namespace AZ
             Interface<SharedBufferInterface>::Register(this);
         }
 
-        SharedBuffer::SharedBuffer(AZStd::string bufferName, uint32_t sharedBufferSize, uint32_t maxRequiredAlignment)
+        SharedBuffer::SharedBuffer(
+            AZStd::string bufferName, uint32_t sharedBufferSize,
+            AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
         {
             m_sizeInBytes = sharedBufferSize;
-            m_alignment = AZStd::max(maxRequiredAlignment, MinAllowedAlignment) +
-                (maxRequiredAlignment % MinAllowedAlignment) ?
-                (MinAllowedAlignment - maxRequiredAlignment % MinAllowedAlignment) : 0;
             m_bufferName = bufferName;
-            Init(bufferName);
+            Init(bufferName, buffersDescriptors);
         }
 
         SharedBuffer::~SharedBuffer()
@@ -91,7 +90,7 @@ namespace AZ
             m_freeListAllocator.Init(allocatorDescriptor);
         }
 
-        void SharedBuffer::Init(AZStd::string bufferName)
+        void SharedBuffer::Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
         {
             m_bufferName = bufferName;
             AZStd::string sufferNameInShader = "m_" + bufferName;
@@ -112,7 +111,7 @@ namespace AZ
             // be changed to support a pool that supports this type or else a buffer view
             // validation test will fail.
             // The change should be done in 'BufferSystem::CreateCommonBufferPool'.
-            SrgBufferDescriptor  bufferDesc = SrgBufferDescriptor(
+            SrgBufferDescriptor  sharedBufferDesc = SrgBufferDescriptor(
                 RPI::CommonBufferPoolType::ReadWrite, 
                 RHI::Format::Unknown,
                 RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite,
@@ -121,11 +120,11 @@ namespace AZ
             );
 
             // Use the following method to calculate alignment given a list of descriptors
-    //        CalculateAlignment(buffersDescriptors);
+            CalculateAlignment(buffersDescriptors);
 
             InitAllocator();
 
-            CreateSharedBuffer(bufferDesc);
+            CreateSharedBuffer(sharedBufferDesc);
 
             SystemTickBus::Handler::BusConnect();
         }

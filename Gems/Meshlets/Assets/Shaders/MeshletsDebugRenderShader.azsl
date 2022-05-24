@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 //ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 ShaderResourceGroup PassSrg : SRG_PerPass
-{   // [Adi] No needto use StructuredBuffer - change to buffer
+{   // [Adi] No need for StructuredBuffer - change to buffer across all
     StructuredBuffer<int>     m_MeshletsSharedBuffer;
 }
 
@@ -58,9 +58,17 @@ struct MeshletsPassOutputWithDepth
 #include <viewsrg.srgi>
 #include <MeshletsPerObjectRenderSrg.azsli>
 
-// Math
 #include <Atom/RPI/Math.azsli>
-#include <Atom/RPI/TangentSpace.azsli>
+
+//! Utility function for vertex shaders to transform vertex tangent, bitangent, and normal vectors into world space.
+void ConstructTBN(float3 vertexNormal, float4 vertexTangent, float3 vertexBitangent, 
+    float4x4 localToWorld, float3x3 localToWorldInverseTranspose, 
+    out float3 normalWS, out float3 tangentWS, out float3 bitangentWS)
+{
+    normalWS = normalize(mul(localToWorldInverseTranspose, vertexNormal));
+    tangentWS = normalize(mul(localToWorld, float4(vertexTangent.xyz, 0)).xyz);
+    bitangentWS = normalize(mul(localToWorld, float4(vertexBitangent, 0)).xyz);
+}
 
 //! @param skipShadowCoords can be useful for example when PixelDepthOffset is enable, because the pixel shader will have to run before the final world position is known
 void VertexHelper(uint vertexIndex, inout VSOutput OUT, float3 worldPosition)
@@ -68,7 +76,7 @@ void VertexHelper(uint vertexIndex, inout VSOutput OUT, float3 worldPosition)
     OUT.m_worldPosition = worldPosition;
 
     // This paragraph is temporary to force the shader to include the Srg.
-    float dummyVariableToForceSrg = 0.00001 * (float)PassSrg::m_MeshletsSharedBuffer[0];
+    float dummyVariableToForceSrg = 0.00001 * (float)PassSrg::m_MeshletsSharedBuffer[vertexIndex];
     OUT.m_worldPosition.z += (abs(dummyVariableToForceSrg) < 0.001) ? dummyVariableToForceSrg : 0;
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));

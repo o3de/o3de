@@ -40,6 +40,12 @@ struct MeshletDescriptor
 //------------------------------------------------------------------------------
 ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
 {
+    // Shared buffer offset in uint to be used when using the shared buffer when 
+    // addressing the properties 
+    uint m_indicesOffset;   
+    uint m_texCoordsOffset;
+    uint2 padding;
+
     // For the next array review the structuee 'MeshletDescriptor'.
     // The array holds the offsets and amount of vertices and triangles per 
     // meshlet.
@@ -69,11 +75,6 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
     // Mesh texture coordinates - will be used for debug purposes to color meshlets
     RWBuffer<float2> m_uvs;
 
-    // Shared buffer ofsset in uint to be used when using the shared buffer in order 
-    // to address the properties 
-    uint m_indicesOffset;   
-    uint m_texCoordsOffset;
-
     //--------------------------------------------------------------------------
     uint GetVertexIndex(uint index)
     {
@@ -93,8 +94,9 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
         PassSrg::m_MeshletsSharedBuffer[indexOffset+2] = triIndices.z;
     }
 
-    void debugUVs(uint index, float2 texCoords)
+    void SetUVs(uint index, float2 texCoords)
     {
+        // index multiplied by 2 since we have two coordinates 
         uint texCoordIndex = m_texCoordsOffset + (index << 1);
         PassSrg::m_MeshletsSharedBuffer[texCoordIndex] = asint(texCoords.x);    
         PassSrg::m_MeshletsSharedBuffer[texCoordIndex+1] = asint(texCoords.y);    
@@ -109,23 +111,56 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
 uint4 GetGlobalVertexIndicesAndTriOffset(MeshletDescriptor meshlet, uint localTriangleIdx)
 {
     uint globalTriangleIndex = meshlet.triangleOffset + localTriangleIdx;
-    uint localTriangle = MeshletsDataSrg::m_meshletsTriangles[globalTriangleIndex];
+    uint encodedTri = MeshletsDataSrg::m_meshletsTriangles[globalTriangleIndex];
     uint3 localIndices = uint3(
-        (localTriangle) & 0xff,
-        (localTriangle >> 8) & 0xff,
-        (localTriangle >> 16) & 0xff
+        (encodedTri) & 0xff,
+        (encodedTri >> 8) & 0xff,
+        (encodedTri >> 16) & 0xff
     );
 
     uint3 globalIndirection = meshlet.vertexOffset + localIndices;
-    uint4 globalIndicesAndTriOffset = uint4(
+    uint4 globalVertexIndicesAndTriOffset = uint4(
         MeshletsDataSrg::m_meshletsIndicesLookup[globalIndirection.x],
         MeshletsDataSrg::m_meshletsIndicesLookup[globalIndirection.y],
         MeshletsDataSrg::m_meshletsIndicesLookup[globalIndirection.z],
         globalTriangleIndex * 3
     );
 
-    return globalIndicesAndTriOffset;
+    return globalVertexIndicesAndTriOffset;
 }
+
+/*
+void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
+{
+    for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
+    {
+        meshopt_Meshlet& meshlet = m_meshletsData.Descriptors[meshletId];
+        float tx = (meshletId % 3) * 0.5f;
+        float ty = ((meshletId / 3) % 3) * 0.5f;
+        for (uint32_t localTriangleIdx = 0 ; localTriangleIdx < meshlet.triangle_count; ++localTriangleIdx)
+        {
+            uint32_t globalTriangleIndex = meshlet.triangle_offset + localTriangleIdx;
+            uint32_t encodedTri = m_meshletsData.EncodedTriangles[globalTriangleIndex];
+            // Next bring decode the uint32_t and separate into three elements.
+            uint8_t vtxIndirectIndex[3] = {
+                (encodedTri >> 0) & 0xff,
+                (encodedTri >> 8) & 0xff,
+                (encodedTri >> 16) & 0xff
+            }; 
+
+            for (uint32_t vtx = 0; vtx < 3; ++vtx)
+            {
+                uint32_t globalIndirection = meshlet.vertex_offset + vtxIndirectIndex[vtx];
+                uint32_t vtxIndex = m_meshletsData.IndicesIndirection[globalIndirection];
+
+                mesh.vertices[vtxIndex].tx = tx;
+                mesh.vertices[vtxIndex].ty = ty;
+            }
+        } 
+    }
+}
+*/
+
 
 //------------------------------------------------------------------------------
 //! The group's threads count should match either Meshlets::maxVerticesPerMeshlet
@@ -143,10 +178,55 @@ void ComputeMeshletsIndexBuffer(
     uint meshletId = groupId.x;
     MeshletDescriptor meshlet = MeshletsDataSrg::m_meshletsDescriptors[meshletId];
 
-    float2 debugUVs= float2( (meshletId % 3), ((meshletId / 3) % 3) ) * 0.5;
+    float2 debugUVs = float2( (meshletId % 3), ((meshletId / 3) % 3) ) * 0.5;
 
-    if (PassSrg::m_MeshletsSharedBuffer[0] == groupIndex)
-    {   // [Adi] temporary dummy usage to indicate that the Srg is in use!
+#ifdef _DEBUG_TEST_CONTENT_
+    ///////////////////////// Start - Test Debug Only ////////////////////////////
+    // Simple ark the first 4 entries of each meshlet 
+    if ((groupIndex < meshlet.triangleCount) && (groupIndex < 4))
+    {
+        uint4 vtxGlobalVerticesAndTriOffset = GetGlobalVertexIndicesAndTriOffset(meshlet, groupIndex);
+
+        // Both method work!!!
+        if (groupIndex < 2)
+        {
+            // Sub-Buffers address
+            // Tested OK
+            MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w] = 555;
+            MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 1] = meshletId;
+            MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 2] = groupIndex;
+
+            // Tested OK - notice that writing to address is writing float2! (not a single element)
+            MeshletsDataSrg::m_uvs[vtxGlobalVerticesAndTriOffset.w] = 555;
+            MeshletsDataSrg::m_uvs[vtxGlobalVerticesAndTriOffset.w + 1] = groupIndex;
+
+            // This is the indirection in into the vertex pointed by the Index Buffer but since it
+            // can be located anywhere, we'll postpone this
+//            MeshletsDataSrg::m_uvs[2 * MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w]] = 555;
+//            MeshletsDataSrg::m_uvs[2 * MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 1]] = meshletId;
+//            MeshletsDataSrg::m_uvs[2 * MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 2]] = debugUVs;
+        }
+        else
+        {
+            // Shared Buffer using offsets
+            uint3 testIndex = uint3(22,meshletId,groupIndex);
+
+            // Tested OK
+            MeshletsDataSrg::SetTriangleIndices(vtxGlobalVerticesAndTriOffset.w, testIndex);
+
+            // Tested OK
+            MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.w, groupIndex);
+            MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.w + 1, groupIndex);
+            MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.w + 2, groupIndex);
+        }
+        return;
+    }
+    ///////////////////////// End - Test Debug Only ////////////////////////////
+#endif
+
+    // Leave the first 10 indices and vertices data intact
+    if (groupIndex < 2)
+    {
         return;
     }
 
@@ -154,6 +234,17 @@ void ComputeMeshletsIndexBuffer(
     {   // groupIndex is used here as the index of the trianlge we process
         uint4 vtxGlobalVerticesAndTriOffset = GetGlobalVertexIndicesAndTriOffset(meshlet, groupIndex);
 
+//#define _USE_SHARED_BUFFER_OFFSET_
+#ifdef _USE_SHARED_BUFFER_OFFSET_
+        //// Setting the various properties via usage of the shared buffer with offsets
+        // Construct the triangles using the meshlets data
+        MeshletsDataSrg::SetTriangleIndices(vtxGlobalVerticesAndTriOffset.w, vtxGlobalVerticesAndTriOffset.xyz);
+
+        // Mark the triangles based on the meshlets Id.
+        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.x, debugUVs);
+        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.y, debugUVs);
+        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.z, debugUVs);
+#else
         //// Setting the properties directly through the buffer views that represent areas 
         //// in the memory of the shared buffer. 
         // The following will not work since RW buffers are used indirectly and although they are 
@@ -165,20 +256,10 @@ void ComputeMeshletsIndexBuffer(
         MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 2] = vtxGlobalVerticesAndTriOffset.z;
 
         // Set the vertices UV according to the meshlet Id as a debug indication
-        MeshletsDataSrg::m_uvs[MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w]] = debugUVs;
-        MeshletsDataSrg::m_uvs[MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 1]] = debugUVs;
-        MeshletsDataSrg::m_uvs[MeshletsDataSrg::m_indices[vtxGlobalVerticesAndTriOffset.w + 2]] = debugUVs;
-
-        //// Setting the various properties via usage of the shared buffer with offsets
-        /*
-         // Construct the triangles using the meshlets data
-        MeshletsDataSrg::SetTriangleIndices(vtxGlobalVerticesAndTriOffset.w, vtxGlobalVerticesAndTriOffset.xyz);
-
-        // Mark the triangles based on the meshlets Id.
-        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.x, debugUVs);
-        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.y, debugUVs);
-        MeshletsDataSrg::SetUVs(vtxGlobalVerticesAndTriOffset.z, debugUVs);
-        */
+        MeshletsDataSrg::m_uvs[vtxGlobalVerticesAndTriOffset.x] = debugUVs;
+        MeshletsDataSrg::m_uvs[vtxGlobalVerticesAndTriOffset.y] = debugUVs;        
+        MeshletsDataSrg::m_uvs[vtxGlobalVerticesAndTriOffset.z] = debugUVs;
+#endif
     }
 
 //    GroupMemoryBarrierWithGroupSync();

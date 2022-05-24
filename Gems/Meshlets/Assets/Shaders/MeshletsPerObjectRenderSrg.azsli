@@ -10,17 +10,12 @@
 
 #include <scenesrg.srgi>
 
-ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
+/*
+// Utilize the following PerDraw srg for instancing - currently not used yet.
+ShaderResourceGroup MeshletsInstanceRenderSrg : SRG_PerDraw
 {
-    // used for instancing and matrix retrieval
+    //! used object Id for instancing and matrix retrieval
     uint m_objectId;
-
-    // vertex streams 
-    Buffer<float3> m_positions;
-    Buffer<float3> m_normals;
-    Buffer<float4> m_tangents; 
-    Buffer<float3> m_bitangents; 
-    Buffer<float2> m_uvs;
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
@@ -34,6 +29,38 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
     {
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
+}
+*/
+
+ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
+{
+    //--------------------------------------------------
+    // This part should be moved outside the PerObject srg and used in the PerDraw 
+    // srg that represents the instance frequency.
+    // object Id is used as an index for instancing and matrix retrieval in the 
+    // SceneSrg matrices arrays.
+    uint m_objectId;
+
+    //! Returns the matrix for transforming points from Object Space to World Space.
+    float4x4 GetWorldMatrix()
+    {
+        return SceneSrg::GetObjectToWorldMatrix(m_objectId);
+    }
+
+    //! Returns the inverse-transpose of the world matrix.
+    //! Commonly used to transform normals while supporting non-uniform scale.
+    float3x3 GetWorldMatrixInverseTranspose()
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
+    }
+
+    //---------------------------------------------------
+    // vertex streams 
+    Buffer<float3> m_positions;
+    Buffer<float3> m_normals;
+    Buffer<float4> m_tangents; 
+    Buffer<float3> m_bitangents; 
+    Buffer<float2> m_uvs;
 
     float3 GetPosition(uint vertexIndex)
     {

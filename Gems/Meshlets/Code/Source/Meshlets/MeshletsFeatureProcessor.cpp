@@ -46,9 +46,13 @@ namespace AZ
             {   // Since there can be several pipelines, allocate the shared buffer only for the
                 // first one and from that moment on it will be used through its interface
                 AZStd::string sharedBufferName = "MeshletsSharedBuffer";
-                uint32_t bufferMaxAlignment = 16;
                 uint32_t bufferSize = 256 * 1024 * 1024;
-                m_sharedBuffer = AZStd::make_unique<Meshlets::SharedBuffer>(sharedBufferName, bufferSize, bufferMaxAlignment);
+
+                // Prepare Render Srg descriptors for calculating the required alignment for the shared buffer
+                MeshRenderData tempRenderData;
+                MeshletsRenderObject::PrepareRenderSrgDescriptors(tempRenderData, 1, 1);
+
+                m_sharedBuffer = AZStd::make_unique<Meshlets::SharedBuffer>(sharedBufferName, bufferSize, tempRenderData.RenderBuffersDescriptors);
             }
         }
 
@@ -81,6 +85,9 @@ namespace AZ
 
         void MeshletsFeatureProcessor::Activate()
         {
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessor>();
+            AZ_Assert(m_transformServiceFeatureProcessor, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
+
             EnableSceneNotification();
             TickBus::Handler::BusConnect();
         }
@@ -181,18 +188,46 @@ namespace AZ
             return success;
         }
 
-        void MeshletsFeatureProcessor::AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
+        void MeshletsFeatureProcessor::SetTransform(
+            const Render::TransformServiceFeatureProcessorInterface::ObjectId objectId, 
+            const AZ::Transform& transform)
         {
-            m_meshletsRenderObjects.push_back(meshletsRenderObject);
+            m_transformServiceFeatureProcessor->SetTransformForId(objectId, transform);
+        }
+
+        // Notice that currently this does not support object instancing.  Each object is assumed to
+        // have a single ObjectId and PerObject srg.
+        // To enhance this, create an ObjectInstanceData and per instance srg rather than per object
+        // and create a new instance every time this method is invoked.
+        // This will also require to split the srg from the srg with the meshlets buffers.
+        Render::TransformServiceFeatureProcessorInterface::ObjectId
+            MeshletsFeatureProcessor::AddMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
+        {
+            Render::TransformServiceFeatureProcessorInterface::ObjectId objectId = m_transformServiceFeatureProcessor->ReserveObjectId();
+
             if (m_renderPass)
             {
-                m_renderPass->BuildDrawPacket(meshletsRenderObject->GetMeshletsRenderData());
+                m_renderPass->BuildDrawPacket(meshletsRenderObject->GetMeshletsRenderData(), objectId);
             }
+
+            m_meshletsRenderObjects.push_back(meshletsRenderObject);
+
             AZ_Error("Meshlets", m_renderPass, "Meshlets object did not build DrawItem due to missing render pass");
+
+            return objectId;
         }
 
         void MeshletsFeatureProcessor::RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
         {
+            ModelLodDataArray& modelLodArray = meshletsRenderObject->GetMeshletsRenderData(0);
+            for (auto& renderData : modelLodArray)
+            {
+                if (m_transformServiceFeatureProcessor && renderData)
+                {
+                    m_transformServiceFeatureProcessor->ReleaseObjectId(renderData->ObjectId);
+                    break;  //same instance / object Id
+                }
+            }
             m_meshletsRenderObjects.remove(meshletsRenderObject);
         }
 
@@ -231,8 +266,15 @@ namespace AZ
                 {
                     if (renderData)
                     {
-                        dispatchItems.push_back(renderData->m_dispatchItem.GetDispatchItem());
-                        drawPackets.push_back(renderData->m_drawPacket);
+                        // the following is for testing only
+                        Render::TransformServiceFeatureProcessorInterface::ObjectId objectId = renderData->ObjectId;
+                        [[maybe_unused]] Transform transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
+
+                        if (MeshletsRenderObject::CreateAndBindComputeSrgAndDispatch(m_computeShader, *renderData))
+                        {
+                            dispatchItems.push_back(renderData->MeshDispatchItem.GetDispatchItem());
+                        }
+                        drawPackets.push_back(renderData->MeshDrawPacket);
                     }
                     AZ_Error("Meshlets", renderData, "Render data is NULL");
                 }

@@ -220,25 +220,52 @@
                         }
                     ]
                 },
+
+                //================================================
                 {
                     "Name": "MeshletsComputePass",
-                    "TemplateName": "MeshletsComputePassTemplate"
-//                    "Connections": [
-//                        {
-//                            "LocalSlot": "MeshletsSharedBuffer",
-//                            "AttachmentRef": {
-//                                "Pass": "This",
-//                                "Attachment": "MeshletsSharedBuffer"
-//                            }
-//                        }
-//                    ],
-//                    "PassData": {
-//                        "$type": "ComputePassData",
-//                        "ShaderAsset": {
-//                            "FilePath": "Shaders/MeshletsCompute.shader"
-//                        }
-//                    }
+                    "TemplateName": "MeshletsComputePassTemplate",
+                    "Connections": [
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/MeshletsCompute.shader"
+                        }
+                    }
                 },
+                {
+                    "Name": "MeshletsRenderPass",
+                    "TemplateName": "MeshletsRenderPassTemplate",
+                    "Connections": [
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                                //                                "Attachment": "DepthMSAA"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "MeshletsDrawList",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/MeshletsDebugRenderShader.shader"
+                        }
+                    }
+                },
+                //================================================
+
                 {
                     "Name": "TransparentPass",
                     "TemplateName": "TransparentParentTemplate",
@@ -295,15 +322,15 @@
                         {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
-                                "Pass": "DepthPrePass",
-                                "Attachment": "Depth"
+                                "Pass": "MeshletsRenderPass",
+                                "Attachment": "DepthStencilInputOutput"
                             }
                         },
                         {
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
-                                "Pass": "OpaquePass",
-                                "Attachment": "Output"
+                                "Pass": "MeshletsRenderPass",
+                                "Attachment": "RenderTargetInputOutput"
                             }
                         }
                     ]

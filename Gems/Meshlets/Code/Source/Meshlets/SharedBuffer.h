@@ -100,10 +100,12 @@ namespace AZ
             AZ_RTTI(AZ::Meshlets::SharedBuffer, "{6005990E-3BBF-4946-9F2B-6A7739912100}", AZ::Meshlets::SharedBufferInterface);
 
             SharedBuffer();
-            SharedBuffer(AZStd::string bufferName, uint32_t sharedBufferSize, uint32_t maxRequiredAlignment = 16);
+            SharedBuffer(
+                AZStd::string bufferName, uint32_t sharedBufferSize,
+                AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
 
             ~SharedBuffer();
-            void Init(AZStd::string bufferName);
+            void Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
 
             // SharedBufferInterface
             AZStd::intrusive_ptr<SharedBufferAllocation> Allocate(size_t byteCount) override;
@@ -137,7 +139,8 @@ namespace AZ
 
             RHI::FreeListAllocator m_freeListAllocator;
             AZStd::mutex m_allocatorMutex;
-            uint64_t m_alignment = 16;     // This will be overridden by the size of the largest allocated element
+            const uint32_t MinAllowedAlignment = 16;    // Due to Vulkan / DX12 various restrictions.
+            uint32_t m_alignment = 16;     // This will be overridden by the size of the largest allocated element
 
             //! Currently the shared buffer size is fixed. Going towards dynamic size can be a better
             //! solution but requires using re-allocations and proper synchronizing between all existing buffers.

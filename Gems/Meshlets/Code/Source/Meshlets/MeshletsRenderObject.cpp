@@ -85,7 +85,7 @@ namespace AZ
             m_meshletsData.meshlet_triangles.resize(last.triangle_offset + ((last.triangle_count * 3 + 3) & ~3));
             uint32_t meshletsCount = (uint32_t) m_meshletsData.meshlets.size();
             //----------------------------------------------------------------
-            */
+*/
 
             ////////////////////////////
             std::vector<meshopt_Meshlet> meshlets(max_meshlets);
@@ -494,8 +494,8 @@ namespace AZ
                 {   // upload the original streams data - skip indices and UVs copy : Compute will set them
                     if ((stream == uint8_t(RenderStreamsSemantics::UVs)) ||
                         (stream == uint8_t(RenderStreamsSemantics::Indices)))
-                    {
-                        continue;
+                    {   // Update the data so that we can compare with the Compute output 
+//                        continue;
                     }
 
                     Data::Instance<RPI::Buffer> buffer = meshRenderData.RenderBuffers[stream] ?
@@ -511,7 +511,8 @@ namespace AZ
             }
 
             // Final stage - compile the Srg
-            meshRenderData.RenderObjectSrg->Compile();
+            // Make sure to compile the Srg - when setting all parameter including ObjectId.
+//            meshRenderData.RenderObjectSrg->Compile();
 
             return success;
         }
@@ -557,6 +558,17 @@ namespace AZ
                     success &= UtilityClass::BindBufferViewToSrg(
                         "Meshlets", meshRenderData.ComputeBuffersViews[stream], bufferDesc,
                         meshRenderData.ComputeSrg);
+
+                    // And now for the second method - using offsets within the shared buffer
+                    AZ::Name constantName = (stream == uint8_t(ComputeStreamsSemantics::UVs)) ?
+                        Name("m_texCoordsOffset") : Name("m_indicesOffset");
+                    RHI::ShaderInputConstantIndex constantHandle = meshRenderData.ComputeSrg->FindShaderInputConstantIndex(constantName);
+                    uint32_t offsetInUint = bufferDesc.m_viewOffsetInBytes / sizeof(uint32_t);
+                    if (!meshRenderData.ComputeSrg->SetConstant(constantHandle, offsetInUint))
+                    {
+                        AZ_Error("Meshlets", false, "Failed to bind Constant [%s]", constantName.GetCStr());
+                        return false;
+                    }
                 }
                 else
                 {   // Regular buffers: since these buffers are read only and will not be altered there is no need to

@@ -16,6 +16,8 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+
 #include <MeshletsRenderObject.h>
 
 namespace AZ
@@ -45,7 +47,8 @@ namespace AZ
 
             // Adds the lod array of render data
             bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
-            bool BuildDrawPacket(ModelLodDataArray& lodRenderDataArray);
+            bool BuildDrawPacket(ModelLodDataArray& lodRenderDataArray,
+                Render::TransformServiceFeatureProcessorInterface::ObjectId objectId);
 
             //! The following will be called when an object was added or shader has been compiled
 //            void SchedulePacketBuild(HairRenderObject* hairObject);

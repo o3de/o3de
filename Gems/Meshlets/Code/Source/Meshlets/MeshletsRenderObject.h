@@ -15,6 +15,8 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+
 #include "../../External/meshoptimizer.h"
 //#include <meshoptimizer.h>
 
@@ -32,14 +34,25 @@ namespace AZ
     namespace Meshlets
     {
         const uint32_t maxVerticesPerMeshlet = 64;      // matching wave/warp groups size multiplier
-        const uint32_t maxTrianglesPerMeshlet = 124;    // NVidia-recommended 126, rounded down to a multiple of 4
+//        const uint32_t maxTrianglesPerMeshlet = 124;    // NVidia-recommended 126, rounded down to a multiple of 4
+        const uint32_t maxTrianglesPerMeshlet = 64;    // NVidia-recommended 126, rounded down to a multiple of 4
 
         class MeshletsFeatureProcessor;
 
+        // The following structure holds the per object data - currently with no support
+        // for instancing.
+        // To support instancing move the dispatch item, draw packet and object Id to
+        // a separate instance data structure.
+        // The data here should only represent the object render/compute data without
+        // having any instance data (matrices, Id, etc..)
         struct MeshRenderData
         {
+            Render::TransformServiceFeatureProcessorInterface::ObjectId ObjectId;   // should be per instance
+
             uint32_t MeshletsCount = 0;
-            uint32_t IndexCount = 0;  // temporary - used by the direct Draw stage only
+
+            // Used by the direct Draw stage only - should be changed for indirect culled render.
+            uint32_t IndexCount = 0;  
 
              //! Compute render data
             Data::Instance<RPI::ShaderResourceGroup> ComputeSrg;          // Per object Compute data - can be shared across instances
@@ -56,7 +69,8 @@ namespace AZ
             AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews;
 //            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators; 
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
-            const RHI::DrawPacket* MeshDrawPacket = nullptr;
+
+            const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
         };
         using ModelLodDataArray = AZStd::vector<MeshRenderData*>;    // MeshRenderData per mesh in the Lod
 
@@ -102,6 +116,9 @@ namespace AZ
 
             uint32_t GetMeshletsCount() { return m_meshletsCount; }
 
+            // The prep of this data should be used to create the shared buffer alignment 
+            static void PrepareRenderSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount);
+
         protected:
             bool ProcessBuffersData(float* position, uint32_t vtxNum);
 
@@ -131,7 +148,6 @@ namespace AZ
 
             bool BuildDrawPacket( RHI::DrawPacketBuilder::DrawRequest& drawRequest, MeshRenderData& meshRenderData);
 
-            void PrepareRenderSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indicesCount);
             bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 
             void PrepareComputeSrgDescriptors(MeshRenderData &meshRenderData, uint32_t vertexCount, uint32_t indexCount);
