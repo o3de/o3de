@@ -71,6 +71,8 @@ set(FILES
     Source/Editor/Nodes/Gradients/ConstantGradientNode.h
     Source/Editor/Nodes/Gradients/FastNoiseGradientNode.cpp
     Source/Editor/Nodes/Gradients/FastNoiseGradientNode.h
+    Source/Editor/Nodes/Gradients/GradientBakerNode.cpp
+    Source/Editor/Nodes/Gradients/GradientBakerNode.h
     Source/Editor/Nodes/Gradients/ImageGradientNode.cpp
     Source/Editor/Nodes/Gradients/ImageGradientNode.h
     Source/Editor/Nodes/Gradients/PerlinNoiseGradientNode.cpp
