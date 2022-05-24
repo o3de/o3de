@@ -329,8 +329,27 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
+        // Add Delete option
+        menu->addAction(
+                QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
+                [treeView]()
+                {
+                    treeView->DeleteEntries();
+                })
+            ->setShortcut(QKeySequence::Delete);
+
         if (numOfEntries == 1)
         {
+            // Add Rename option
+            menu->addAction(
+                    QObject::tr("Rename asset"),
+                    [treeView]()
+                    {
+                        treeView->RenameEntry();
+                    })
+                ->setShortcut(Qt::Key_F2);
+
+
             // Add the "Open" menu item.
             // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't
             // openable! for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the
@@ -430,16 +449,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             }
         }
 
-        // Add Delete option
-        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [treeView]()
-        {
-            treeView->DeleteEntries();
-        })->setShortcut(QKeySequence::Delete);
-
-        if (numOfEntries == 1)
-        {
-            CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
-        }
+        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:

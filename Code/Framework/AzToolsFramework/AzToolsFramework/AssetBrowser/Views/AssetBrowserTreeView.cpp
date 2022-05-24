@@ -40,7 +40,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QAbstractButton>
 
 AZ_POP_DISABLE_WARNING
-
+#pragma optimize("",off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -64,15 +64,29 @@ namespace AzToolsFramework
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
 
-            QAction* deleteAction = new QAction("Delete Action", this);
+            QAction* deleteAction = new QAction(tr("Delete Action"), this);
             deleteAction->setShortcut(QKeySequence::Delete);
             connect(
-                deleteAction, &QAction::triggered, this, [this]
+                deleteAction, &QAction::triggered, this,
+                [this]()
                     {
                         DeleteEntries();
                     });
-        }
+            addAction(deleteAction);
 
+            QAction* renameAction = new QAction("Rename Action", this);
+            renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                renameAction, &QAction::triggered, this,
+                [this]()
+                {
+                    RenameEntry();
+                });
+            addAction(renameAction);
+
+        }
+#pragma optimize("", on)
         AssetBrowserTreeView::~AssetBrowserTreeView()
         {
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
@@ -474,7 +488,17 @@ namespace AzToolsFramework
                 }
             }
         }
+
+        void AssetBrowserTreeView::RenameEntry()
+        {
+            auto entries = GetSelectedAssets();
+            if (entries.size() == 1)
+            {
+            }
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
 #include "AssetBrowser/Views/moc_AssetBrowserTreeView.cpp"
+
