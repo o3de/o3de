@@ -649,8 +649,8 @@ namespace AZ::Debug
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
 
-        // If the Raw output stream environment variable is set to a non-nullptr FILE* stream
-        // write to their, other write to the stdout C stream
+        // If the raw output stream environment variable is set to a non-nullptr FILE* stream
+        // write to that stream, otherwise write to the default `stdout` FILE* stream
         if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
         {
             fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
