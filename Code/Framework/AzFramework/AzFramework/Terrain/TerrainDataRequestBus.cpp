@@ -59,17 +59,6 @@ namespace AzFramework::Terrain
             }
         }
 
-        // TODO: What to do with "Clamp" logic?
-        /*
-        // Only consider points that line up with the query resolution
-        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
-        const int32_t lastSampleX = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetX() / stepSize.GetX()));
-        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
-        const int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
-        countX = lastSampleX - firstSampleX + 1;
-        countY = lastSampleY - firstSampleY + 1;
-        */
-
         return queryRegion;
     }
 

@@ -334,10 +334,11 @@ namespace Terrain
             heights.emplace_back(surfacePoint.m_position.GetZ() - worldCenterZ);
         };
 
+        // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegion, m_heightfieldRegion,
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
-            perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+            perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
     uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
@@ -446,10 +447,12 @@ namespace Terrain
         size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetX() - contractedAlignedStartGridPoint.GetX() + 1), m_heightfieldRegion.m_numPointsX);
         size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetY() - contractedAlignedStartGridPoint.GetY() + 1), m_heightfieldRegion.m_numPointsY);
         AzFramework::Terrain::TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
+
+        // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
             queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All,
-            perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
+            perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)

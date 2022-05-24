@@ -457,17 +457,6 @@ namespace Terrain
 
     AZ::Data::Instance<AZ::RPI::Model> TerrainMeshManager::InitializeSectorModel(uint16_t gridSize, const AZ::Vector2& worldStartPosition, float vertexSpacing, AZ::Aabb& modelAabb)
     {
-        AZ::Vector3 aabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
-        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing);
-
-        // expand the bounds in order to calculate normals.
-        AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(vertexSpacing);
-        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(2.0f * vertexSpacing); // extra padding to catch the last vertex
-
-        // pad the max by half a sample spacing to make sure it's inclusive of the last point.
-        AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);
-
-        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(vertexSpacing);
 
         uint16_t vertexCount1d = (gridSize + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
@@ -490,13 +479,15 @@ namespace Terrain
             heights.at(yIndex * paddedVertexCount1d + xIndex) = height;
         };
 
-        AzFramework::Terrain::TerrainQueryRegion queryRegion(queryAabbMin, paddedVertexCount1d, paddedVertexCount1d, stepSize);
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(
+            worldStartPosition - stepSize, paddedVertexCount1d, paddedVertexCount1d, stepSize);
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
             queryRegion,
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
-            perPositionCallback, samplerType);
+            perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP);
 
         const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         const float vertexSpacing2 = vertexSpacing * 2.0f;
@@ -567,6 +558,9 @@ namespace Terrain
             AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffers of normals for Terrain");
             return {};
         }
+
+        AZ::Vector3 aabbMin = AZ::Vector3(worldStartPosition.GetX(), worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
+        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(gridSize * vertexSpacing);
 
         aabbMin.SetZ(minHeight);
         aabbMax.SetZ(maxHeight);

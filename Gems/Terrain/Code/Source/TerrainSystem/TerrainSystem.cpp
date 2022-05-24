@@ -261,7 +261,7 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
 }
 
 AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
-    const AzFramework::Terrain::TerrainQueryRegion& queryRegion, [[maybe_unused]] Sampler sampler) const
+    const AzFramework::Terrain::TerrainQueryRegion& queryRegion) const
 {
     AZ_PROFILE_FUNCTION(Terrain);
 
@@ -269,18 +269,6 @@ AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     inPositions.reserve(queryRegion.m_numPointsX * queryRegion.m_numPointsY);
 
     AZ::Vector2 startPosition(queryRegion.m_startPoint);
-
-    // TODO: What to do with this?
-    /*
-    if (sampler == Sampler::CLAMP)
-    {
-        // Adjust the start position to be on a clamped position.
-        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(queryRegion.m_startPoint.GetX() / queryRegion.m_stepSize.GetX()));
-        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(queryRegion.m_startPoint.GetY() / queryRegion.m_stepSize.GetY()));
-        startPosition.SetX(firstSampleX * queryRegion.m_stepSize.GetX());
-        startPosition.SetY(firstSampleY * queryRegion.m_stepSize.GetY());
-    }
-    */
 
     for (size_t y = 0; y < queryRegion.m_numPointsY; y++)
     {
@@ -844,30 +832,25 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         // back to integers so that our regions are always in exact multiples of the number of samples to process.
         // This is important because we want the XY values for each point that we're processing to exactly align with
         // 'start + N * (step size)', or else we'll start to process point locations that weren't actually what was requested.
-        int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
-        int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
+        const int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
+        const int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
         const float inRegionMinY = queryRegion.m_startPoint.GetY() + (y0 * queryRegion.m_stepSize.GetY());
+        const int32_t numPointsY = AZStd::min(y1 - y0, aznumeric_cast<int32_t>(numSamplesY) - y0);
 
-        // For the last iteration, just set the end to the max to ensure that floating-point drift doesn't cause us to
-        // misalign and miss a point.
-        const float inRegionMaxY = queryRegion.m_startPoint.GetY() + (y1 * queryRegion.m_stepSize.GetY());
 
         for (int32_t xJob = 0; xJob < xJobs; xJob++)
         {
             // Same as above, calculate the start and end of the region, then convert back to integers and create the
             // region based on 'start + n * (step size)'.
-            int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
-            int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
+            const int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
+            const int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
             const float inRegionMinX = queryRegion.m_startPoint.GetX() + (x0 * queryRegion.m_stepSize.GetX());
-            const float inRegionMaxX = queryRegion.m_startPoint.GetX() + (x1 * queryRegion.m_stepSize.GetX());
+            const int32_t numPointsX = AZStd::min(x1 - x0, aznumeric_cast<int32_t>(numSamplesX) - x0);
 
             // Define the job function using the sub region of positions to process.
-            AZ::Aabb subRegion = AZ::Aabb::CreateFromMinMax(
-                AZ::Vector3(inRegionMinX, inRegionMinY, queryRegion.m_startPoint.GetZ()),
-                AZ::Vector3(inRegionMaxX, inRegionMaxY, queryRegion.m_startPoint.GetZ()));
+            AzFramework::Terrain::TerrainQueryRegion subQueryRegion(
+                AZ::Vector3(inRegionMinX, inRegionMinY, queryRegion.m_startPoint.GetZ()), numPointsX, numPointsY, queryRegion.m_stepSize);
 
-            AzFramework::Terrain::TerrainQueryRegion subQueryRegion =
-                AzFramework::Terrain::TerrainQueryRegion::CreateFromAabbAndStepSize(subRegion, queryRegion.m_stepSize);
             auto jobFunction = [this, subQueryRegion, x0, y0, requestedData, perPositionCallback, sampler, jobContext, params]()
             {
                 // Process the sub region of positions, unless the associated job context has been cancelled.
@@ -1213,7 +1196,7 @@ void TerrainSystem::QueryRegionInternal(
         return;
     }
 
-    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(queryRegion, sampler);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(queryRegion);
 
     if (inPositions.empty())
     {

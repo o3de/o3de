@@ -255,7 +255,7 @@ namespace Terrain
             AZStd::vector<AZ::Vector3>& outPositions,
             Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
-            const AzFramework::Terrain::TerrainQueryRegion& queryRegion, Sampler sampler) const;
+            const AzFramework::Terrain::TerrainQueryRegion& queryRegion) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromListOfVector2(
             const AZStd::span<const AZ::Vector2> inPositionsVec2) const;
 
