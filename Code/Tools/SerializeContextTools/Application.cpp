@@ -37,7 +37,7 @@ namespace AZ
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
             if (projectPath.empty())
             {
-                AZ_Error("Serialize Context Tools", false, "Unable to determine the project path . "
+                AZ_TracePrintf("Serialize Context Tools", "Unable to determine the project path . "
                     "Make sure project has been set or provide via the -project-path option on the command line. (See -help for more info.)");
                 return;
             }
@@ -71,9 +71,9 @@ namespace AZ
                         projectSpecializations.Append(m_commandLine.GetSwitchValue("specializations", specializationIndex));
                     }
                 }
-                // Otherwise, if a config file was passed in, auto-set the specialization based on the config file name.
                 else
                 {
+                    // Otherwise, if a config file was passed in, auto-set the specialization based on the config file name.
                     AZ::IO::PathView configFilenameStem = m_configFilePath.Stem();
                     if (AZ::StringFunc::Equal(configFilenameStem.Native(), "Editor"))
                     {
@@ -83,9 +83,16 @@ namespace AZ
                     {
                         projectSpecializations.Append(projectName + "_GameLauncher");
                     }
+
+                    // If the "dumptypes" or "createtype" supplied attempt to load the editor gem dependencies
+                    if (m_commandLine.GetNumMiscValues() > 0 &&
+                        (m_commandLine.GetMiscValue(0) == "dumptypes" || m_commandLine.GetMiscValue(0) == "createtype"))
+                    {
+                        projectSpecializations.Append("editor");
+                    }
                 }
 
-                // Used the project specializations to merge the build dependencies *.setreg files
+                // Used the project specializations to merge the gem modules dependencies *.setreg files
                 auto registry = AZ::SettingsRegistry::Get();
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(*registry,
                     AZ_TRAIT_OS_PLATFORM_CODENAME, projectSpecializations);
@@ -101,7 +108,7 @@ namespace AZ
         {
             appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
         }
- 
+
         void Application::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
         {
             AZ::ComponentApplication::SetSettingsRegistrySpecializations(specializations);
