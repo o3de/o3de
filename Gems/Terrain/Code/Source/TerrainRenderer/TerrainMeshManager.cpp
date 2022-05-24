@@ -229,7 +229,7 @@ namespace Terrain
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, m_indexBuffer->GetBufferViewDescriptor().m_elementCount, 0));
-        drawPacketBuilder.SetIndexBufferView(sector.m_indexBufferView);
+        drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
         drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
@@ -295,6 +295,13 @@ namespace Terrain
         m_sectorStack.reserve(stackCount);
 
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckStacksForUpdate().
+        m_indexBufferView =
+        {
+            *m_indexBuffer->GetRHIBuffer(),
+            0,
+            aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
+            AZ::RHI::IndexFormat::Uint16
+        };
 
         for (uint32_t j = 0; j < stackCount; ++j)
         {
@@ -312,15 +319,6 @@ namespace Terrain
                 uint32_t vertexCount = (GridSize + 1) * (GridSize + 1);
                 sector.m_heightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
                 sector.m_normalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
-
-                sector.m_indexBufferView =
-                {
-                    *m_indexBuffer->GetRHIBuffer(),
-                    0,
-                    aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
-                    AZ::RHI::IndexFormat::Uint16
-                };
-
                 sector.m_streamBufferViews[0] = CreateStreamBufferView(m_xyPositionsBuffer);
                 sector.m_streamBufferViews[1] = CreateStreamBufferView(sector.m_heightsBuffer);
                 sector.m_streamBufferViews[2] = CreateStreamBufferView(sector.m_normalsBuffer);

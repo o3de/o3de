@@ -113,7 +113,6 @@ namespace Terrain
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
-            AZ::RHI::IndexBufferView m_indexBufferView;
             AZStd::array<AZ::RHI::StreamBufferView, 3> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
@@ -208,6 +207,7 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::RHI::IndexBufferView m_indexBufferView;
 
         AZStd::vector<StackData> m_sectorStack;
         uint32_t m_1dSectorCount = 0;
