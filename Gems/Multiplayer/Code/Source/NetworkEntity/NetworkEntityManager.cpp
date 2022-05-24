@@ -417,6 +417,13 @@ namespace Multiplayer
         for (size_t i = 0; i < entitiesSize; ++i)
         {
             AZ::Entity* originalEntity = entities[i].get();
+
+            // Can't use NetworkEntityTracker to do the lookup since the entity has not activated yet
+            if (!originalEntity->FindComponent<NetBindComponent>())
+            {
+                continue;
+            }
+
             AZ::Entity* clone = serializeContext->CloneObject(originalEntity);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
 
@@ -424,16 +431,9 @@ namespace Multiplayer
 
             originalToCloneIdMap[originalEntity->GetId()] = clone->GetId();
 
-            // Can't use NetworkEntityTracker to do the lookup since the entity has not activated yet
-            NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
-            if (!netBindComponent)
-            {
-                delete clone;
-                continue;
-            }
-            
             // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
-            auto* cloneTransformComponent = clone->FindComponent<AzFramework::TransformComponent>();
+            auto cloneNetBindComponent = clone->FindComponent<NetBindComponent>();
+            auto cloneTransformComponent = clone->FindComponent<AzFramework::TransformComponent>();
             AZ::EntityId parentId = cloneTransformComponent->GetParentId();
             bool removeParent = false;
             if (parentId.IsValid())
@@ -458,7 +458,7 @@ namespace Multiplayer
             prefabEntityId.m_entityOffset = aznumeric_cast<uint32_t>(i);
 
             const NetEntityId netEntityId = NextId();
-            netBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
+            cloneNetBindComponent->PreInit(clone, prefabEntityId, netEntityId, netEntityRole);
             cloneTransformComponent->SetWorldTM(transform);
 
             if (autoActivate == AutoActivate::DoNotActivate)
@@ -474,7 +474,7 @@ namespace Multiplayer
                 cloneTransformComponent->SetParent(AZ::EntityId());
             }
             
-            returnList.push_back(netBindComponent->GetEntityHandle());
+            returnList.push_back(cloneNetBindComponent->GetEntityHandle());
         }
 
         return returnList;

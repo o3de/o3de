@@ -124,10 +124,11 @@ namespace Multiplayer
                 netEntity->InvalidateDependencies();
                 netEntity->EvaluateDependencies();
 
-                Multiplayer::PrefabEntityId prefabEntityId;
+                PrefabEntityId prefabEntityId;
                 prefabEntityId.m_prefabName = sourceEntity->GetName();
-                netEntity->FindComponent<NetBindComponent>()->SetPrefabAssetId(networkSpawnableAssetId);
-                netEntity->FindComponent<NetBindComponent>()->SetPrefabEntityId(prefabEntityId);
+                NetBindComponent* netBindComponent = netEntity->FindComponent<NetBindComponent>();
+                netBindComponent->SetPrefabAssetId(networkSpawnableAssetId);
+                netBindComponent->SetPrefabEntityId(prefabEntityId);
             }
             return true;
         });
