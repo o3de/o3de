@@ -383,7 +383,7 @@ namespace ScriptCanvas
             case Data::eType::String:
             {
                 const AZStd::string& formattedString = *datum.GetAs<Data::StringType>();
-                const AZStd::string bracketString = Translation::MakeLongBracketString(formattedString);
+                const AZStd::string bracketString = MakeLongBracketString(formattedString);
                 return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
             }
 
