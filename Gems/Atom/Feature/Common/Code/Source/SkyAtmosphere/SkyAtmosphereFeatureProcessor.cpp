@@ -7,16 +7,12 @@
  */
 
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
+#include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 
-#include <AzCore/Math/MatrixUtils.h>
-#include <Math/GaussianMathFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
-
 
 namespace AZ::Render
 {
@@ -40,23 +36,20 @@ namespace AZ::Render
     {
         DisableSceneNotification();
 
-        m_params.Clear();
-
+        m_atmospheres.Clear();
         m_skyAtmosphereParentPasses.clear();
     }
 
-    
     SkyAtmosphereFeatureProcessor::AtmosphereId SkyAtmosphereFeatureProcessor::CreateAtmosphere()
     {
-        size_t index = m_params.Reserve();
+        size_t index = m_atmospheres.Reserve();
         if (index >= std::numeric_limits<AtmosphereId::IndexType>::max())
         {
-            m_params.Release(index);
+            m_atmospheres.Release(index);
             return AtmosphereId::Null;
         }
 
         AtmosphereId id = AtmosphereId(aznumeric_cast<AtmosphereId::IndexType>(index));
-        m_atmosphereIds.insert(id);
         InitializeAtmosphere(id);
 
         return id;
@@ -66,185 +59,33 @@ namespace AZ::Render
     {
         if (id.IsValid())
         {
-            m_params.Release(id.GetIndex());
+            // because the sparse vector does not necessarily release the memory
+            // we set m_passNeedsUpdate to false to avoid updating released data
+            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+            atmosphere.m_passNeedsUpdate = false;
+
+            m_atmospheres.Release(id.GetIndex());
         }
-        m_atmosphereIds.erase(id);
 
         for (auto pass : m_skyAtmosphereParentPasses )
         {
             pass->ReleaseAtmospherePass(id);
         }
-
-        m_passNeedsUpdate = true;
     }
 
-    void SkyAtmosphereFeatureProcessor::Enable(AtmosphereId id, bool enable)
+    void SkyAtmosphereFeatureProcessor::SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params)
     {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_enabled = enable;
-        m_passNeedsUpdate = true;
-    }
-
-    bool SkyAtmosphereFeatureProcessor::IsEnabled(AtmosphereId id)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        return params.m_enabled;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetFastSkyEnabled(AtmosphereId id, bool enabled)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_fastSkyEnabled = enabled;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunDirection(AtmosphereId id, const Vector3& direction)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunDirection = direction;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetLuminanceFactor(AtmosphereId id, const AZ::Vector3& factor)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_luminanceFactor = factor;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetMinMaxSamples(AtmosphereId id, uint32_t minSamples, uint32_t maxSamples)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_minSamples = minSamples;
-        params.m_maxSamples = maxSamples;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_rayleighScattering = scattering;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetRayleighExpDistribution(AtmosphereId id, float distribution)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_rayleighExpDistribution = distribution;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_mieScattering = scattering;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetMieAbsorption(AtmosphereId id, const AZ::Vector3& absorption)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_mieAbsorption = absorption;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetMieExpDistribution(AtmosphereId id, float distribution)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_mieExpDistribution = distribution;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetAbsorption(AtmosphereId id, const AZ::Vector3& absorption)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_absorption = absorption;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetGroundAlbedo(AtmosphereId id, const AZ::Vector3& albedo)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_groundAlbedo = albedo;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_planetOrigin = planetOrigin;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetPlanetRadius(AtmosphereId id, float radius)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_planetRadius= radius;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetAtmosphereRadius(AtmosphereId id, float radius)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_atmosphereRadius = radius;
-        params.m_lutUpdateRequired = true;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetShadowsEnabled(AtmosphereId id, bool enabled)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_shadowsEnabled = enabled;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunEnabled(AtmosphereId id, bool enabled)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunEnabled = enabled;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunColor(AtmosphereId id, const Color& color)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunColor = color;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunLimbColor(AtmosphereId id, const Color& color)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunLimbColor = color;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunFalloffFactor(AtmosphereId id, float factor)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunFalloffFactor = factor;
-        m_passNeedsUpdate = true;
-    }
-
-    void SkyAtmosphereFeatureProcessor::SetSunRadiusFactor(AtmosphereId id, float factor)
-    {
-        auto& params = m_params.GetElement(id.GetIndex());
-        params.m_sunRadiusFactor = factor;
-        m_passNeedsUpdate = true;
+        auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+        atmosphere.m_params = params;
+        atmosphere.m_passNeedsUpdate = true;
     }
 
     void SkyAtmosphereFeatureProcessor::InitializeAtmosphere(AtmosphereId id)
     {
-        m_passNeedsUpdate = true;
+        auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+        atmosphere.m_id = id;
+        atmosphere.m_passNeedsUpdate = true;
+
         for (auto pass : m_skyAtmosphereParentPasses )
         {
             pass->CreateAtmospherePass(id);
@@ -281,44 +122,35 @@ namespace AZ::Render
             });
 
 
-        // make sure we update all the LUTS
-        for (auto id : m_atmosphereIds)
+        // make sure to update all the LUTS
+        for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
-            if (id.IsValid())
+            auto& atmosphere = m_atmospheres.GetElement(i);
+            if (atmosphere.m_id.IsValid())
             {
-                auto& params = m_params.GetElement(id.GetIndex());
-                params.m_lutUpdateRequired = true;
-
-                // make sure all removed atmosphere passes are restored
-                InitializeAtmosphere(id);
+                InitializeAtmosphere(atmosphere.m_id);
             }
         }
-
-        m_passNeedsUpdate = true;
     }
     
     void SkyAtmosphereFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
     {
         AZ_PROFILE_SCOPE(RPI, "SkyAtmosphereFeatureProcessor: Simulate");
 
-        if (m_passNeedsUpdate)
+        for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
-            for (auto pass : m_skyAtmosphereParentPasses)
+            auto& atmosphere = m_atmospheres.GetElement(i);
+            if (atmosphere.m_id.IsValid() && atmosphere.m_passNeedsUpdate)
             {
-                for (auto id : m_atmosphereIds)
+                // update every atmosphere parent pass (per-pipeline)
+                for (auto pass : m_skyAtmosphereParentPasses)
                 {
-                    if (id.IsValid())
-                    {
-                        auto& params = m_params.GetElement(id.GetIndex());
-                        pass->UpdateAtmospherePassSRG(id, params);
-
-                        // reset the lut update flag now that we've passed on the changes
-                        params.m_lutUpdateRequired = false;
-                    }
+                    pass->UpdateAtmospherePassSRG(atmosphere.m_id, atmosphere.m_params);
                 }
+
+                atmosphere.m_passNeedsUpdate = false;
             }
 
-            m_passNeedsUpdate = false;
         }
     }
 

@@ -9,13 +9,12 @@
 #pragma once
 
 #include <Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h>
-#include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/SparseVector.h>
-#include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 
 namespace AZ::Render
 {
+    class SkyAtmosphereParentPass;
+
     //! This feature processor manages drawing sky atmospheres.
     //! Use CreateAtmosphere() to create a new atmosphere
     class SkyAtmosphereFeatureProcessor final
@@ -38,29 +37,7 @@ namespace AZ::Render
         //! SkyAtmosphereFeatureProcessorInterface
         AtmosphereId CreateAtmosphere() override;
         void ReleaseAtmosphere(AtmosphereId id) override;
-
-        void Enable(AtmosphereId id, bool enable) override;
-        bool IsEnabled(AtmosphereId id) override;
-        void SetAbsorption(AtmosphereId id, const AZ::Vector3& absorption) override;
-        void SetAtmosphereRadius(AtmosphereId id, float radius) override;
-        void SetFastSkyEnabled(AtmosphereId id, bool enabled) override;
-        void SetGroundAlbedo(AtmosphereId id, const AZ::Vector3& albedo) override;
-        void SetLuminanceFactor(AtmosphereId id, const AZ::Vector3& factor) override;
-        void SetMieScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
-        void SetMieAbsorption(AtmosphereId id, const AZ::Vector3& absorption) override;
-        void SetMieExpDistribution(AtmosphereId id, float distribution) override;
-        void SetMinMaxSamples(AtmosphereId id, uint32_t minSamples, uint32_t maxSamples) override;
-        void SetPlanetOrigin(AtmosphereId id, const AZ::Vector3& planetOrigin) override;
-        void SetPlanetRadius(AtmosphereId id, float radius) override;
-        void SetRayleighScattering(AtmosphereId id, const AZ::Vector3& scattering) override;
-        void SetRayleighExpDistribution(AtmosphereId id, float distribution) override;
-        void SetShadowsEnabled(AtmosphereId id, bool enabled) override;
-        void SetSunEnabled(AtmosphereId id, bool enabled) override;
-        void SetSunDirection(AtmosphereId id, const Vector3& direction) override;
-        void SetSunColor(AtmosphereId id, const Color& color) override;
-        void SetSunLimbColor(AtmosphereId id, const Color& color) override;
-        void SetSunFalloffFactor(AtmosphereId id, float factor) override;
-        void SetSunRadiusFactor(AtmosphereId id, float factor) override;
+        void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) override;
 
     private:
 
@@ -74,10 +51,14 @@ namespace AZ::Render
             
         void CachePasses();
             
-        SparseVector<SkyAtmospherePass::AtmosphereParams> m_params;
-        AZStd::set<AtmosphereId> m_atmosphereIds;
-        AZStd::vector<SkyAtmosphereParentPass*> m_skyAtmosphereParentPasses;
+        struct SkyAtmosphere
+        {
+            AtmosphereId m_id;
+            SkyAtmosphereParams m_params;
+            bool m_passNeedsUpdate = false;
+        };
 
-        bool m_passNeedsUpdate = true;
+        SparseVector<SkyAtmosphere> m_atmospheres;
+        AZStd::vector<SkyAtmosphereParentPass*> m_skyAtmosphereParentPasses;
     };
 }

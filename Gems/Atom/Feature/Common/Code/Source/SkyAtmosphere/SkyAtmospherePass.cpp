@@ -250,7 +250,7 @@ namespace AZ::Render
         }
     }
 
-    void SkyAtmospherePass::UpdateRenderPassSRG(const AtmosphereParams& params)
+    void SkyAtmospherePass::UpdateRenderPassSRG(const SkyAtmosphereParams& params)
     {
         m_constants.m_bottomRadius = params.m_planetRadius;
         m_constants.m_topRadius = params.m_atmosphereRadius;

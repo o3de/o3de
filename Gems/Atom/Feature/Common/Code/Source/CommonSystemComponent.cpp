@@ -73,6 +73,7 @@
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
+#include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 #include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
@@ -219,11 +220,11 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<OcclusionCullingPlaneFeatureProcessor, OcclusionCullingPlaneFeatureProcessorInterface>();
 
-            // Add SkyBox pass
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
+
+            // Add Sky Atmosphere Parent pass
             passSystem->AddPassCreator(Name("SkyAtmosphereParentPass"), &SkyAtmosphereParentPass::Create);
-            //passSystem->AddPassCreator(Name("SkyAtmospherePass"), &SkyAtmospherePass::Create);
 
             // Add DisplayMapper pass
             passSystem->AddPassCreator(Name("AcesOutputTransformLutPass"), &AcesOutputTransformLutPass::Create);

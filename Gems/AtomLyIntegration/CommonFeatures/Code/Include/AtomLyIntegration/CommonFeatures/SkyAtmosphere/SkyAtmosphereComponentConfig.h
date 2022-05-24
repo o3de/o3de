@@ -64,8 +64,8 @@ namespace AZ::Render
         // advanced
         bool m_fastSkyEnabled = true;
         bool m_shadowsEnabled = false;
-        uint32_t m_minSamples = 4;
-        uint32_t m_maxSamples = 14;
+        uint8_t m_minSamples = 4;
+        uint8_t m_maxSamples = 14;
 
         // track when properties are changed that require LUT regeneration
         bool m_lutPropertyChanged = false;

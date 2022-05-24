@@ -37,6 +37,9 @@ namespace AZ::Render
         void SetConfiguration(const SkyAtmosphereComponentConfig& config);
         const SkyAtmosphereComponentConfig& GetConfiguration() const;
 
+    protected:
+        const SkyAtmosphereParams& GetUpdatedSkyAtmosphereParams();
+
     private:
         AZ_DISABLE_COPY(SkyAtmosphereComponentController);
 
@@ -46,12 +49,13 @@ namespace AZ::Render
         //! EntityBus
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
-        void UpdatePlanetOrigin();
+        void UpdateSkyAtmosphereParams(SkyAtmosphereParams& params);
 
         TransformInterface* m_transformInterface = nullptr;
         SkyAtmosphereFeatureProcessorInterface* m_featureProcessorInterface = nullptr;
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;
         SkyAtmosphereComponentConfig m_configuration;
+        SkyAtmosphereParams m_atmosphereParams;
         EntityId m_entityId;
     };
 } // namespace AZ::Render

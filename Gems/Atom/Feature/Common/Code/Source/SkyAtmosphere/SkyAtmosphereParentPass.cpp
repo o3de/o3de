@@ -45,7 +45,7 @@ namespace AZ::Render
         }
     }
 
-    void SkyAtmosphereParentPass::UpdateAtmospherePassSRG(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id, const SkyAtmospherePass::AtmosphereParams& params)
+    void SkyAtmosphereParentPass::UpdateAtmospherePassSRG(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id, const SkyAtmosphereParams& params)
     {
         if (auto pass = GetPass(id))
         {

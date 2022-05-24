@@ -167,41 +167,10 @@ namespace AZ::Render
     {
         if(auto featureProcessor = m_controller.m_featureProcessorInterface)
         {
-            auto id = m_controller.m_atmosphereId;
-            auto config = m_controller.m_configuration;
+            featureProcessor->SetAtmosphereParams(m_controller.m_atmosphereId, m_controller.GetUpdatedSkyAtmosphereParams());
 
-            if (config.m_lutPropertyChanged)
-            {
-                featureProcessor->SetAtmosphereRadius(id, config.m_groundRadius + config.m_atmosphereHeight);
-                featureProcessor->SetAbsorption(id, config.m_absorption * config.m_absorptionScale);
-                featureProcessor->SetGroundAlbedo(id, config.m_groundAlbedo);
-                featureProcessor->SetLuminanceFactor(id, config.m_luminanceFactor);
-                featureProcessor->SetMieScattering(id, config.m_mieScattering * config.m_mieScatteringScale);
-                featureProcessor->SetMieAbsorption(id, config.m_mieAbsorption * config.m_mieAbsorptionScale);
-                featureProcessor->SetMieExpDistribution(id, config.m_mieExponentialDistribution);
-                featureProcessor->SetPlanetRadius(id, config.m_groundRadius);
-                featureProcessor->SetRayleighScattering(id, config.m_rayleighScattering * config.m_rayleighScatteringScale);
-                featureProcessor->SetRayleighExpDistribution(id, config.m_rayleighExponentialDistribution);
-
-                config.m_lutPropertyChanged = false;
-            }
-
-            featureProcessor->SetFastSkyEnabled(id, config.m_fastSkyEnabled);
-            featureProcessor->SetShadowsEnabled(id, config.m_shadowsEnabled);
-            featureProcessor->SetSunEnabled(id, config.m_drawSun);
-            featureProcessor->SetSunColor(id, config.m_sunColor * config.m_sunLuminanceFactor);
-            featureProcessor->SetSunLimbColor(id, config.m_sunLimbColor * config.m_sunLuminanceFactor);
-            featureProcessor->SetSunRadiusFactor(id, config.m_sunRadiusFactor);
-            featureProcessor->SetSunFalloffFactor(id, config.m_sunFalloffFactor);
-            featureProcessor->SetMinMaxSamples(id, config.m_minSamples, config.m_maxSamples);
-            
-            // update the transform again in case the sun entity changed
-            const AZ::Transform& transform = m_controller.m_transformInterface ? m_controller.m_transformInterface->GetWorldTM() : Transform::Identity();
-            auto sunTransformInterface = TransformBus::FindFirstHandler(m_controller.m_configuration.m_sun);
-            AZ::Transform sunTransform = sunTransformInterface ? sunTransformInterface->GetWorldTM() : transform;
-            featureProcessor->SetSunDirection(id, -sunTransform.GetBasisY());
-
-            m_controller.UpdatePlanetOrigin();
+            // reset the LUT changed flag so the LUT is only regenerated when LUT params change
+            m_controller.m_configuration.m_lutPropertyChanged = false;
         }
 
         return Edit::PropertyRefreshLevels::AttributesAndValues;

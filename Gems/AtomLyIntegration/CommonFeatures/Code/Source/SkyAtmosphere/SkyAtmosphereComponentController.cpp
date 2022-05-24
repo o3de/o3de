@@ -48,6 +48,66 @@ namespace AZ::Render
     {
     }
 
+    const SkyAtmosphereParams& SkyAtmosphereComponentController::GetUpdatedSkyAtmosphereParams()
+    {
+        UpdateSkyAtmosphereParams(m_atmosphereParams);
+        return m_atmosphereParams;
+    }
+
+    void SkyAtmosphereComponentController::UpdateSkyAtmosphereParams(SkyAtmosphereParams& params)
+    {
+        // general params
+        params.m_absorption = m_configuration.m_absorption * m_configuration.m_absorptionScale;
+        params.m_atmosphereRadius = m_configuration.m_groundRadius + m_configuration.m_atmosphereHeight;
+        params.m_fastSkyEnabled = m_configuration.m_fastSkyEnabled;
+        params.m_groundAlbedo = m_configuration.m_groundAlbedo;
+        params.m_luminanceFactor = m_configuration.m_luminanceFactor;
+        params.m_lutUpdateRequired = m_configuration.m_lutPropertyChanged;
+        params.m_mieAbsorption = m_configuration.m_mieAbsorption * m_configuration.m_mieAbsorptionScale;
+        params.m_mieExpDistribution = m_configuration.m_mieExponentialDistribution;
+        params.m_mieScattering = m_configuration.m_mieScattering * m_configuration.m_mieScatteringScale;
+        params.m_minSamples = m_configuration.m_minSamples;
+        params.m_maxSamples = m_configuration.m_maxSamples;
+        params.m_planetRadius = m_configuration.m_groundRadius;
+        params.m_rayleighScattering = m_configuration.m_rayleighScattering * m_configuration.m_rayleighScatteringScale;
+        params.m_rayleighExpDistribution = m_configuration.m_rayleighExponentialDistribution;
+        params.m_shadowsEnabled = m_configuration.m_shadowsEnabled;
+
+        // sun params
+        params.m_sunEnabled = m_configuration.m_drawSun;
+        params.m_sunColor = m_configuration.m_sunColor * m_configuration.m_sunLuminanceFactor;
+        params.m_sunLimbColor = m_configuration.m_sunLimbColor * m_configuration.m_sunLuminanceFactor;
+        params.m_sunFalloffFactor = m_configuration.m_sunFalloffFactor;
+        params.m_sunRadiusFactor = m_configuration.m_sunRadiusFactor;
+
+        // sun direction using own transform or sun entity
+        const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
+        auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
+        AZ::Transform sunTransform = sunTransformInterface ? sunTransformInterface->GetWorldTM() : transform;
+        params.m_sunDirection = -sunTransform.GetBasisY();
+
+        if (m_transformInterface)
+        {
+            switch (m_configuration.m_originMode)
+            {
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::PlanetCenterAtLocalOrigin:
+                params.m_planetOrigin = m_transformInterface->GetWorldTranslation() * 0.001f;
+                break;
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtLocalOrigin:
+                params.m_planetOrigin = m_transformInterface->GetWorldTranslation() * 0.001f - AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
+                break;
+            default:
+            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtWorldOrigin:
+                params.m_planetOrigin = -AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
+                break;
+            }
+        }
+        else
+        {
+            params.m_planetOrigin = Vector3::CreateZero();
+        }
+    }
+
     void SkyAtmosphereComponentController::Activate(EntityId entityId)
     {
         m_featureProcessorInterface = RPI::Scene::GetFeatureProcessorForEntity<SkyAtmosphereFeatureProcessorInterface>(entityId);
@@ -57,41 +117,17 @@ namespace AZ::Render
             m_entityId = entityId;
 
             m_transformInterface = TransformBus::FindFirstHandler(m_entityId);
-            const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
-
-            auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
-            AZ::Transform sunTransform = sunTransformInterface ? sunTransformInterface->GetWorldTM() : transform;
-
             m_atmosphereId = m_featureProcessorInterface->CreateAtmosphere();
 
-            m_featureProcessorInterface->SetAbsorption(m_atmosphereId, m_configuration.m_absorption * m_configuration.m_absorptionScale);
-            m_featureProcessorInterface->SetAtmosphereRadius(m_atmosphereId, m_configuration.m_groundRadius + m_configuration.m_atmosphereHeight);
-            m_featureProcessorInterface->SetFastSkyEnabled(m_atmosphereId, m_configuration.m_fastSkyEnabled);
-            m_featureProcessorInterface->SetGroundAlbedo(m_atmosphereId, m_configuration.m_groundAlbedo);
-            m_featureProcessorInterface->SetLuminanceFactor(m_atmosphereId, m_configuration.m_luminanceFactor);
-            m_featureProcessorInterface->SetMieScattering(m_atmosphereId, m_configuration.m_mieScattering * m_configuration.m_mieScatteringScale);
-            m_featureProcessorInterface->SetMieAbsorption(m_atmosphereId, m_configuration.m_mieAbsorption * m_configuration.m_mieAbsorptionScale);
-            m_featureProcessorInterface->SetMieExpDistribution(m_atmosphereId, m_configuration.m_mieExponentialDistribution);
-            m_featureProcessorInterface->SetMinMaxSamples(m_atmosphereId, m_configuration.m_minSamples, m_configuration.m_maxSamples);
-            m_featureProcessorInterface->SetPlanetRadius(m_atmosphereId, m_configuration.m_groundRadius);
-            m_featureProcessorInterface->SetRayleighScattering(m_atmosphereId, m_configuration.m_rayleighScattering * m_configuration.m_rayleighScatteringScale);
-            m_featureProcessorInterface->SetRayleighExpDistribution(m_atmosphereId, m_configuration.m_rayleighExponentialDistribution);
-            m_featureProcessorInterface->SetShadowsEnabled(m_atmosphereId, m_configuration.m_shadowsEnabled);
-            m_featureProcessorInterface->SetSunEnabled(m_atmosphereId, m_configuration.m_drawSun);
-            m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -sunTransform.GetBasisY());
-            m_featureProcessorInterface->SetSunColor(m_atmosphereId, m_configuration.m_sunColor * m_configuration.m_sunLuminanceFactor);
-            m_featureProcessorInterface->SetSunLimbColor(m_atmosphereId, m_configuration.m_sunLimbColor * m_configuration.m_sunLuminanceFactor);
-            m_featureProcessorInterface->SetSunFalloffFactor(m_atmosphereId, m_configuration.m_sunFalloffFactor);
-            m_featureProcessorInterface->SetSunRadiusFactor(m_atmosphereId, m_configuration.m_sunRadiusFactor);
-
-            UpdatePlanetOrigin();
-
-            m_featureProcessorInterface->Enable(m_atmosphereId, true);
+            UpdateSkyAtmosphereParams(m_atmosphereParams);
+            m_atmosphereParams.m_lutUpdateRequired = true;
+            m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, m_atmosphereParams);
 
             AZ::TransformNotificationBus::MultiHandler::BusConnect(m_entityId);
             if (m_configuration.m_sun.IsValid())
             {
                 AZ::TransformNotificationBus::MultiHandler::BusConnect(m_configuration.m_sun);
+                auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
                 if (!sunTransformInterface)
                 {
                     AZ::EntityBus::Handler::BusConnect(m_configuration.m_sun);
@@ -125,53 +161,15 @@ namespace AZ::Render
         return m_configuration;
     }
 
-    void SkyAtmosphereComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
+    void SkyAtmosphereComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local,[[maybe_unused]] const AZ::Transform& world)
     {
-        const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
-        if (m_configuration.m_sun.IsValid() && entityId == m_configuration.m_sun)
-        {
-            m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -world.GetBasisY());
-        }
-        else
-        {
-            if (!m_configuration.m_sun.IsValid())
-            {
-                m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -world.GetBasisY());
-            }
-            UpdatePlanetOrigin();
-        }
+        m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
     }
 
-    void SkyAtmosphereComponentController::UpdatePlanetOrigin()
+    void SkyAtmosphereComponentController::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        if (m_transformInterface)
-        {
-            AZ::Vector3 originInKm;
-            switch (m_configuration.m_originMode)
-            {
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::PlanetCenterAtLocalOrigin:
-                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f;
-                break;
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtLocalOrigin:
-                originInKm = m_transformInterface->GetWorldTranslation() * 0.001f - AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
-                break;
-            default:
-            case SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtWorldOrigin:
-                originInKm = -AZ::Vector3(0.0, 0.0, m_configuration.m_groundRadius);
-                break;
-            }
+        m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
 
-            m_featureProcessorInterface->SetPlanetOrigin(m_atmosphereId, originInKm);
-        }
-    }
-
-    void SkyAtmosphereComponentController::OnEntityActivated(const AZ::EntityId& entityId)
-    {
-        auto sunTransformInterface = TransformBus::FindFirstHandler(entityId);
-        if (sunTransformInterface)
-        {
-            m_featureProcessorInterface->SetSunDirection(m_atmosphereId, -sunTransformInterface->GetWorldTM().GetBasisY());
-        }
         AZ::EntityBus::Handler::BusDisconnect(m_configuration.m_sun);
     }
 

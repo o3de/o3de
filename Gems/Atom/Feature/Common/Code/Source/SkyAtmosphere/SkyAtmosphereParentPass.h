@@ -33,7 +33,7 @@ namespace AZ::Render
 
         void CreateAtmospherePass(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);
         void ReleaseAtmospherePass(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);
-        void UpdateAtmospherePassSRG(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id, const SkyAtmospherePass::AtmosphereParams& params);
+        void UpdateAtmospherePassSRG(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id, const SkyAtmosphereParams& params);
 
     private:
         SkyAtmosphereParentPass() = delete;

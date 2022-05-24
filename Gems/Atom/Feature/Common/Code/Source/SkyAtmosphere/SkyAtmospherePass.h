@@ -38,34 +38,7 @@ namespace AZ::Render
 
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId GetAtmosphereId() const;
 
-        struct AtmosphereParams 
-        {
-            bool m_enabled = true;
-            bool m_sunEnabled = true;
-            bool m_fastSkyEnabled = true;
-            bool m_lutUpdateRequired = true;
-            AZ::Vector3 m_planetOrigin = AZ::Vector3(0,0,0);
-            AZ::Vector3 m_sunDirection = AZ::Vector3(0,0,-1);
-            AZ::Color m_sunColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
-            AZ::Color m_sunLimbColor = AZ::Color(1.f, 1.f, 1.f, 1.f);
-            float m_sunRadiusFactor = 1.f;
-            float m_sunFalloffFactor = 1.f;
-            AZ::Vector3 m_luminanceFactor = AZ::Vector3(1.f,1.f,1.f);
-            float m_planetRadius = 6360.0f;
-            float m_atmosphereRadius = 6460.0f;
-            uint32_t m_minSamples = 4;
-            uint32_t m_maxSamples = 14;
-            AZ::Vector3 m_rayleighScattering = AZ::Vector3(0.005802f, 0.013558f, 0.033100f);
-            float m_rayleighExpDistribution = 8.f;
-            AZ::Vector3 m_mieScattering = AZ::Vector3(0.003996f, 0.003996f, 0.003996f);
-            float m_mieExpDistribution = 1.2f;
-            AZ::Vector3 m_mieAbsorption = AZ::Vector3(0.004440f, 0.004440f, 0.004440f);
-            AZ::Vector3 m_absorption = AZ::Vector3(0.000650f, 0.001881f, 0.000085f);
-            AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
-            bool m_shadowsEnabled = false;
-        };
-
-        void UpdateRenderPassSRG(const AtmosphereParams& params);
+        void UpdateRenderPassSRG(const SkyAtmosphereParams& params);
 
     protected:
         void BuildInternal() override;
