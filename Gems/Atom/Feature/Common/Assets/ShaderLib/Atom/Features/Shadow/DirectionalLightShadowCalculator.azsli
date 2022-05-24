@@ -61,6 +61,8 @@ class DirectionalShadowCalculator
     }
 
     
+    bool IsShadowCoordInCascade(float3 shadowCoord, uint shadowMapSize);
+
     float GetVisibility();    
     float GetThickness();
     
@@ -92,6 +94,14 @@ class DirectionalShadowCalculator
     DebugInfo m_debugInfo;    
 };
 
+bool DirectionalShadowCalculator::IsShadowCoordInCascade(float3 shadowCoord, uint shadowMapSize)
+{
+    return (shadowCoord.x >= 0. && shadowCoord.x * shadowMapSize < shadowMapSize - PIXEL_MARGIN &&
+            shadowCoord.y >= 0. && shadowCoord.y * shadowMapSize < shadowMapSize - PIXEL_MARGIN &&
+            shadowCoord.z < (1. - DEPTH_MARGIN));       // Test the case where the shadowed pixel is nearer than the maximal depth
+                                                        // of the cascade.  Otherwise, escalate the next cascade.
+}
+
 float DirectionalShadowCalculator::GetThickness()
 {
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
@@ -106,9 +116,7 @@ float DirectionalShadowCalculator::GetThickness()
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {  
         float3 shadowCoord = m_shadowCoords[indexOfCascade];
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
-            shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN &&
-            shadowCoord.z < (1. - DEPTH_MARGIN))
+        if (IsShadowCoordInCascade(shadowCoord, size))
         {
             const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
             
@@ -161,18 +169,12 @@ bool2 DirectionalShadowCalculator::IsShadowed(const float3 shadowCoord, const ui
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
 
     [branch]
-    if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
-        shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN)
+    if (IsShadowCoordInCascade(shadowCoord, size))
     {
         const float3 coord = float3(shadowCoord.xy, indexOfCascade);
         const float depthInShadowmap = m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord).r;
-        // Test the case where the shadowed pixel is nearer than the maximal depth
-        // of the cascade.  Otherwise, escalate the next cascade.
-        if (shadowCoord.z < 1. - DEPTH_MARGIN)
-        {
-            const float depthDiff = shadowCoord.z - depthInShadowmap;
-            return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
-        }
+        const float depthDiff = shadowCoord.z - depthInShadowmap;
+        return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
     }
     return bool2(false, false);
 }
@@ -181,10 +183,6 @@ float DirectionalShadowCalculator::GetVisibility()
 {   
     ComputeShadowCoords();
 
-    // N.L early out
-    const float3 lightDirection = normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
-    float NdotL = dot(m_worldNormal, -lightDirection);    
-
     // Todo: slope bias exhibits noticeable artifacts, especially with sharp normal values derived from fullscreen
     // depth values which accentuate geometry polygons. Revisit the math and determine if this can be remedied or
     // whether it should be removed altogether. In the meantime, normal shadow bias is plenty capable.
@@ -192,6 +190,10 @@ float DirectionalShadowCalculator::GetVisibility()
 
     if(useSlopeBias)
     {
+        // N.L early out
+        const float3 lightDirection = normalize(SceneSrg::m_directionalLights[m_lightIndex].m_direction);
+        float NdotL = dot(m_worldNormal, -lightDirection);    
+
         if(NdotL <= -0.01)
         {
             return 0;
@@ -240,9 +242,8 @@ float DirectionalShadowCalculator::GetVisibilityFromLightNoFilter()
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
-        const bool2 checkedShadowed = IsShadowed(
-            m_shadowCoords[indexOfCascade],
-            indexOfCascade);
+        const bool2 checkedShadowed = IsShadowed(m_shadowCoords[indexOfCascade], indexOfCascade);
+
         if (checkedShadowed.x)
         {
             m_debugInfo.m_cascadeIndex = indexOfCascade;
@@ -294,10 +295,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
-        
-        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PIXEL_MARGIN &&
-            shadowCoord.y >= 0. && shadowCoord.y * size < size - PIXEL_MARGIN && 
-            shadowCoord.z < 1. - DEPTH_MARGIN)
+        if (IsShadowCoordInCascade(shadowCoord, size))
         {
             currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
             cascadeFound = true;

@@ -292,6 +292,13 @@
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
                     }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
+                    }
                 }
             ]
         }

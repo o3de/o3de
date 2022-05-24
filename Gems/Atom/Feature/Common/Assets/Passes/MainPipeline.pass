@@ -170,13 +170,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "FullscreenShadow",
-                            "AttachmentRef": {
-                                "Pass": "ShadowPass",
-                                "Attachment": "FullscreenShadow"
-                            }
-                        },                        
-                        {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",

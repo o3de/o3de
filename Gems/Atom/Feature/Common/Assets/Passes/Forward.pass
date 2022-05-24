@@ -15,6 +15,12 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },                 
+                {
                     "Name": "DirectionalLightShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "SlotType": "Input",
@@ -23,12 +29,6 @@
                         "IsArray": 1
                     }
                 },
-                {
-                    "Name": "FullscreenShadow",
-                    "ShaderInputName": "m_fullscreenShadow",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },                                              
                 {
                     "Name": "ExponentialShadowmapDirectional",
                     "ShaderInputName": "m_directionalLightExponentialShadowmap",
@@ -271,6 +271,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
                     }
                 }
             ]

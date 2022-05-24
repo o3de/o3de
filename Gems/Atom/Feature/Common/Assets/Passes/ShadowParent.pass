@@ -15,7 +15,7 @@
                 {
                     "Name": "Depth",
                     "SlotType": "Input"
-                },                
+                },
                 // Outputs...
                 {
                     "Name": "DirectionalShadowmap",
@@ -40,9 +40,18 @@
                 },
                 {
                     "Name": "FullscreenShadow",
-                    "SlotType": "Output"                
+                    "SlotType": "Output"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "FullscreenShadowBuffer",
+                        "Slot": "FullscreenShadow"
+                    }
+                ]
+            },
             "Connections": [
                 {
                     "LocalSlot": "DirectionalShadowmap",
@@ -72,12 +81,12 @@
                         "Attachment": "EsmShadowmaps"
                     }
                 },
-                { 
+                {
                     "LocalSlot": "FullscreenShadow",
                     "AttachmentRef": {
                         "Pass": "FullscreenShadowBlur",
                         "Attachment": "Output"
-                    } 
+                    }
                 }
             ],
             "PassRequests": [

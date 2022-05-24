@@ -157,6 +157,13 @@
                         "Pass": "This",
                         "Attachment": "ScatterDistanceImage"
                     }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
+                    }
                 }
             ]
         }

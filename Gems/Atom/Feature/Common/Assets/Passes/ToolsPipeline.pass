@@ -163,13 +163,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "FullscreenShadow",
-                            "AttachmentRef": {
-                                "Pass": "ShadowPass",
-                                "Attachment": "FullscreenShadow"
-                            }
-                        },                         
-                        {
                             "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {
                                 "Pass": "ShadowPass",
