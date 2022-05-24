@@ -372,6 +372,8 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
         const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
     {
+        using namespace AzFramework::Terrain;
+
         AZ_PROFILE_FUNCTION(Terrain);
 
         if (!m_terrainDataActive)
@@ -446,13 +448,15 @@ namespace Terrain
 
         size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetX() - contractedAlignedStartGridPoint.GetX() + 1), m_heightfieldRegion.m_numPointsX);
         size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetY() - contractedAlignedStartGridPoint.GetY() + 1), m_heightfieldRegion.m_numPointsY);
-        AzFramework::Terrain::TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
+        TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
-        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
-            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All,
-            perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        TerrainDataRequestBus::Broadcast(
+            &TerrainDataRequests::QueryRegion,
+            queryRegion,
+            static_cast<TerrainDataRequests::TerrainDataMask>(TerrainDataRequests::TerrainDataMask::Heights | TerrainDataRequests::TerrainDataMask::SurfaceData),
+            perPositionCallback,
+            TerrainDataRequests::Sampler::EXACT);
     }
 
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
