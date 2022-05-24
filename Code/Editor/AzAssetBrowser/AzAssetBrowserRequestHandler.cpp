@@ -329,6 +329,8 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
+        // Context menu entries that only make sense when there is only one selection should go in here
+        // For example, open and rename
         if (numOfEntries == 1)
         {
             // Add the "Open" menu item.
@@ -420,13 +422,9 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
             }
 
-            if (products.empty())
+            if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
-                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                {
-                    CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
-                }
-                return;
+                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
         }
 
@@ -435,11 +433,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         {
             treeView->DeleteEntries();
         })->setShortcut(QKeySequence::Delete);
-
-        if (numOfEntries == 1)
-        {
-            CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
-        }
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
