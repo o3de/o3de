@@ -27,8 +27,6 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
-
     class EditorAssetConversionBusTraits
         : public AZ::EBusTraits
     {

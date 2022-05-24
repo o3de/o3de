@@ -935,6 +935,7 @@ namespace ScriptCanvasEditor
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
 
+    /*
     MakeScriptEventHelpersAction::MakeScriptEventHelpersAction(QObject* parent)
         : NodeContextMenuAction("Make Script Event Helpers", parent)
     {}
@@ -1145,7 +1146,6 @@ namespace ScriptCanvasEditor
                     errorMessage = "failed to deserialize script canvas source data";
                 }
                 // now open create an open a scriptcanvas graph from the script event
-
             }
             else
             {
@@ -1166,7 +1166,7 @@ namespace ScriptCanvasEditor
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
-
+    */
     #include "Editor/View/Windows/moc_ScriptCanvasContextMenus.cpp"
 }
 

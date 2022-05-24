@@ -726,6 +726,11 @@ namespace ScriptCanvasEditor
         connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
         ui->action_Interpreter->setVisible(true);
 
+        connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
+        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
+        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
+        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
+
         // List of recent files.
         {
             QMenu* recentMenu = new QMenu("Open &Recent");
@@ -3703,9 +3708,9 @@ namespace ScriptCanvasEditor
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
             contextMenu.addSeparator();
-            contextMenu.AddMenuAction(aznew MakeScriptEventHelpersAction(&contextMenu));
-            contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
-            contextMenu.AddMenuAction(aznew OpenScriptEventAction(&contextMenu));
+//             contextMenu.AddMenuAction(aznew MakeScriptEventHelpersAction(&contextMenu));
+//             contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
+//             contextMenu.AddMenuAction(aznew OpenScriptEventAction(&contextMenu));
         }
 
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
@@ -4444,6 +4449,26 @@ namespace ScriptCanvasEditor
         AZStd::string key = handle.Path().Native();
         AZStd::to_lower(key.begin(), key.end());
         m_saves[key] = AZStd::chrono::system_clock::now();
+    }
+
+    void MainWindow::OnScriptEventAddHelpers()
+    {
+
+    }
+
+    void MainWindow::OnScriptEventOpen()
+    {
+
+    }
+
+    void MainWindow::OnScriptEventParseAs()
+    {
+
+    }
+
+    void MainWindow::OnScriptEventSaveAs()
+    {
+
     }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>

@@ -384,6 +384,12 @@ namespace ScriptCanvasEditor
         void OnViewPresetsEditor();
         void OnRestoreDefaultLayout();
 
+        // ScriptEvent Extension Actions
+        void OnScriptEventAddHelpers();
+        void OnScriptEventOpen();
+        void OnScriptEventParseAs();
+        void OnScriptEventSaveAs();
+
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////
 

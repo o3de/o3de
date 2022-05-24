@@ -266,6 +266,7 @@ namespace ScriptCanvasEditor
         NodeDescriptorComponent* m_descriptor;
     };
 
+    /*
     class MakeScriptEventHelpersAction
         : public GraphCanvas::NodeContextMenuAction
     {
@@ -311,4 +312,5 @@ namespace ScriptCanvasEditor
         using GraphCanvas::NodeContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2&) override;
     };
+    */
 }
