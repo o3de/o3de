@@ -249,15 +249,7 @@ namespace ScriptCanvasEditor
         result.m_asset = AZStd::move(handle);
         return AZ::Success(result);
     }
-
-    bool IsUsingLegacySpawnTypes(AZStd::string_view jsonString)
-    {
-        return
-            jsonString.contains(R"("$type": "SpawnTicketInstance")") ||
-            jsonString.contains(R"("$type": "SpawnableAsset")") ||
-            jsonString.contains("{2B5EB938-8962-4A43-A97B-112F398C604B}");
-    }
-
+    
     AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
@@ -303,14 +295,7 @@ namespace ScriptCanvasEditor
                 , serializeContext
                 , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
             {
-                if (IsUsingLegacySpawnTypes(asString))
-                {
-                    return AZ::Failure(AZStd::string::format(
-                        "Script Canvas source asset is using legacy Spawnable nodes and needs to be updated by running the update script: "
-                        R"("python o3de\Gems\ScriptCanvas\SourceModificationScripts\UpdateSpawnableNodes.py %s")",
-                        path.data()));
-                }
-                return AZ::Failure(AZStd::string::format("XML and JSON load attempts failed: %s", jsonResult.GetError().c_str()));
+                AZ::Failure(AZStd::string::format("XML and JSON load attempts failed: %s", jsonResult.GetError().c_str()));
             }
         }
 
