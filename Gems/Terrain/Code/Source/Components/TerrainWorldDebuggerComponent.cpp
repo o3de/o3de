@@ -429,6 +429,7 @@ namespace Terrain
         // Only allow one thread per sector because we'll likely have multiple sectors processing at once.
         asyncParams->m_desiredNumberOfJobs = 1;
 
+        // We can use an "EXACT" sampler here because our points are guaranteed to be aligned with terrain grid points.
         sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::semaphore>();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             sector.m_jobContext, &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,

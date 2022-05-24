@@ -960,7 +960,7 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegion, queryRegion,
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::SurfaceData, perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
