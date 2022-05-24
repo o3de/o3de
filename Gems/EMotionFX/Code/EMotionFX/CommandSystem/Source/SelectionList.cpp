@@ -10,6 +10,7 @@
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/MotionSystem.h>
 
 namespace CommandSystem
 {
@@ -371,5 +372,35 @@ namespace CommandSystem
     void SelectionList::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
     {
         RemoveActorInstance(actorInstance);
+    }
+
+    const AZStd::vector<EMotionFX::MotionInstance*>& SelectionList::GetSelectedMotionInstances()
+    {
+        const size_t numSelectedActorInstances = GetNumSelectedActorInstances();
+        const size_t numSelectedMotions = GetNumSelectedMotions();
+
+        m_cachedSelectedMotionInstances.clear();
+
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
+        {
+            EMotionFX::ActorInstance* actorInstance = GetActorInstance(i);
+            EMotionFX::MotionSystem* motionSystem = actorInstance->GetMotionSystem();
+            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+
+            for (size_t j = 0; j < numSelectedMotions; ++j)
+            {
+                EMotionFX::Motion* motion = GetMotion(j);
+                for (size_t k = 0; k < numMotionInstances; ++k)
+                {
+                    EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(k);
+                    if (motionInstance->GetMotion() == motion)
+                    {
+                        m_cachedSelectedMotionInstances.push_back(motionInstance);
+                    }
+                }
+            }
+        }
+
+        return m_cachedSelectedMotionInstances;
     }
 } // namespace CommandSystem
