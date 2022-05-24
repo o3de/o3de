@@ -237,7 +237,7 @@ namespace UnitTest
                 # Create the test fixture
                 test = azlmbr.object.create('PythonReflectionTupleTypes')
 
-                # Create a tuple with default values - note the odd naming syntax :(
+                # Create a tuple with default values
                 test_tuple = azlmbr.object.create('AZStd::tuple<bool, int, float>')
                 if (test_tuple):
                     print ('TupleTypeTest_ConstructWithDefaultValues')
