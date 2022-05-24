@@ -108,4 +108,11 @@ namespace CommandSystem
      * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Elsewise the command is directly executed as a single command.
      */
     AZStd::string COMMANDSYSTEM_API AddMotionSetEntry(uint32 motionSetId, const AZStd::string& defaultIdString, const AZStd::vector<AZStd::string>& idStrings, const AZStd::string& motionFilename, MCore::CommandGroup* commandGroup = nullptr);
+
+    /**
+     * Create default motion set.
+     * @param[in] forceCreate If false, the default motion set will only be created in case there is no motion set present yet. If true, it will be created either way.
+     * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Elsewise the command is directly executed as a single command.
+     */
+    void COMMANDSYSTEM_API CreateDefaultMotionSet(bool forceCreate = false, MCore::CommandGroup* commandGroup = nullptr);
 } // namespace CommandSystem
