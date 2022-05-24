@@ -26,7 +26,7 @@ namespace AzToolsFramework
         AZ::Interface<MenuManagerInterface>::Unregister(this);
     }
 
-    MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& identifier, const AZStd::string& name)
+    MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties)
     {
         if (m_menus.contains(identifier))
         {
@@ -37,7 +37,7 @@ namespace AzToolsFramework
         m_menus.insert(
             {
                 identifier,
-                EditorMenu(name)
+                EditorMenu(properties.m_name)
             }
         );
 
@@ -45,21 +45,58 @@ namespace AzToolsFramework
     }
 
     MenuManagerOperationResult MenuManager::AddActionToMenu(
-        const AZStd::string& actionIdentifier, const AZStd::string& menuIdentifier, int sortIndex)
+        const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex)
     {
         if(!m_menus.contains(menuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add action \"%s\" - menu \"%s\" has not been registered.", actionIdentifier.c_str(),
+                "Menu Manager - Could not add action \"%s\" to menu \"%s\" - menu has not been registered.", actionIdentifier.c_str(),
                 menuIdentifier.c_str()));
         }
 
         QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
-
-        if (action)
+        if (!action)
         {
-            m_menus[menuIdentifier].AddMenuItem(sortIndex, action);
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add action \"%s\" to menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
         }
+
+        m_menus[menuIdentifier].AddAction(sortIndex, action);
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex)
+    {
+        if (!m_menus.contains(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add separator - menu \"%s\" has not been registered.", menuIdentifier.c_str()));
+        }
+
+        m_menus[menuIdentifier].AddSeparator(sortIndex);
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::AddSubMenuToMenu(
+        const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex)
+    {
+        if (!m_menus.contains(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add submenu \"%s\" to menu \"%s\" - menu has not been registered.", subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        if (!m_menus.contains(subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add submenu \"%s\" to menu \"%s\" - submenu has not been registered.", subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        m_menus[menuIdentifier].AddSubMenu(sortIndex, m_menus[subMenuIdentifier].GetMenu());
 
         return AZ::Success();
     }
