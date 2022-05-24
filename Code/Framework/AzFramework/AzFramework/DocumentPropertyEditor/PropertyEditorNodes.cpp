@@ -40,10 +40,18 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<Adapter>();
         system->RegisterNode<Row>();
+
         system->RegisterNode<Label>();
+        system->RegisterNodeAttribute<Label>(Label::Value);
+
         system->RegisterNode<PropertyEditor>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
         system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);

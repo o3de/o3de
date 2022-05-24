@@ -23,7 +23,6 @@ namespace AZ
     Component::Component()
         : m_entity(nullptr)
         , m_id(InvalidComponentId)
-        , m_isDeleting(false)
     {
     }
 
@@ -33,7 +32,6 @@ namespace AZ
     //=========================================================================
     Component::~Component()
     {
-        m_isDeleting = true;
         if (m_entity)
         {
             m_entity->RemoveComponent(this);
@@ -46,30 +44,28 @@ namespace AZ
     //=========================================================================
     EntityId Component::GetEntityId() const
     {
-        if (!m_isDeleting)
+
+        if (m_entity)
         {
-            if (m_entity)
-            {
-                return m_entity->GetId();
-            }
-            else
-            {
-                AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
-            }
+            return m_entity->GetId();
         }
+        else
+        {
+            AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
+        }
+
         return EntityId();
     }
 
     NamedEntityId Component::GetNamedEntityId() const
     {
-        if (!m_isDeleting)
+
+        if (m_entity)
         {
-            if (m_entity)
-            {
-                return NamedEntityId(m_entity->GetId(), m_entity->GetName());
-            }
-            AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
+            return NamedEntityId(m_entity->GetId(), m_entity->GetName());
         }
+        AZ_Warning("System", false, "Can't get component (type: %s, addr: %p) entity ID as it is not attached to an entity yet!", RTTI_GetTypeName(), this);
+
         return NamedEntityId();
     }
 
