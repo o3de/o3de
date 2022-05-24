@@ -270,7 +270,7 @@ namespace AZStd
     };
 }
 
-// AZStd::apply implemenation helper block 
+// AZStd::apply implemenation helper block
 namespace AZStd
 {
     namespace Internal
@@ -345,5 +345,5 @@ namespace std
 // Adds typeinfo specialization for tuple type
 namespace AZ
 {
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 }
