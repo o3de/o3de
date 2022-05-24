@@ -250,7 +250,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(result);
     }
 
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path)
+    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool makeEntityIdsUnique)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -261,6 +261,7 @@ namespace ScriptCanvasEditor
         }
 
         const auto& asString = fileStringOutcome.GetValue();
+
         ScriptCanvas::DataPtr scriptCanvasData = aznew ScriptCanvas::ScriptCanvasData();
         if (!scriptCanvasData)
         {
@@ -314,7 +315,10 @@ namespace ScriptCanvasEditor
             return AZ::Failure(AZStd::string("Entity loaded without required EditorGraph component."));
         }
 
-        ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+        if (makeEntityIdsUnique)
+        {
+            ScriptCanvasFileHandlingCpp::MakeGraphComponentEntityIdsUnique(entity, serializeContext);
+        }
         graph->MarkOwnership(*scriptCanvasData);
         entity->Init();
         entity->Activate();

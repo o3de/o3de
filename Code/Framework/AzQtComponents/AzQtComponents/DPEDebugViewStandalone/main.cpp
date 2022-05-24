@@ -27,13 +27,18 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QTreeView>
+#include <QScrollArea>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
-#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
+
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace DPEDebugView
 {
@@ -93,6 +98,11 @@ namespace DPEDebugView
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
                     ->Field("entityId", &TestContainer::m_entityId);
+
+                serializeContext->Enum<EnumType>()
+                    ->Value("Value1", EnumType::Value1)
+                    ->Value("Value2", EnumType::Value2)
+                    ->Value("ValueZ", EnumType::ValueZ);
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
@@ -164,15 +174,11 @@ namespace DPEDebugView
         {
             AZ::NameDictionary::Create();
             AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
-
-            m_propertyEditorSystem = AZStd::make_unique<AZ::DocumentPropertyEditor::PropertyEditorSystem>();
         }
 
         virtual ~DPEDebugApplication()
         {
             AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
-
-            m_propertyEditorSystem.reset();
         }
 
         void Reflect(AZ::ReflectContext* context) override
@@ -181,9 +187,6 @@ namespace DPEDebugView
 
             TestContainer::Reflect(context);
         }
-
-    private:
-        AZStd::unique_ptr<AZ::DocumentPropertyEditor::PropertyEditorSystem> m_propertyEditorSystem;
     };
 } // namespace DPEDebugView
 
@@ -206,7 +209,7 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
-#if 0 // change this to test with a reflection adapter instead
+#if 1 // change this to test with a reflection adapter instead
     // create a default cvar adapter to expose the local CVar settings to edit
     AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
 #else
@@ -230,6 +233,13 @@ int main(int argc, char** argv)
         theWindow->m_treeView->resizeColumnToContents(columnIndex);
     }
     theWindow->show();
+
+    // create a real DPE on the same adapter as the debug adapter for testing purposes
+    AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->SetAdapter(adapter.get());
+    QScrollArea dpeScrollArea;
+    dpeScrollArea.setWidget(dpeInstance);
+    dpeScrollArea.show();
 
     return qtApp.exec();
 }

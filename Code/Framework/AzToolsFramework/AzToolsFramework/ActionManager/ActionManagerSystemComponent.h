@@ -13,10 +13,11 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 
 namespace AzToolsFramework
 {
-    //! System Component to handle the Action Manager system
+    //! System Component to handle the Action Manager system and subsystems.
     class ActionManagerSystemComponent final : public AZ::Component
     {
     public:
@@ -37,6 +38,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::unique_ptr<ActionManager> m_actionManager = nullptr;
+        AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
     };
 
 } // namespace AzToolsFramework

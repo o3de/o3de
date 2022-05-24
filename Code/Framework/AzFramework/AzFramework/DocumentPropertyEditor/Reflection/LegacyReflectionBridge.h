@@ -31,6 +31,9 @@ namespace AZ::Reflection
         extern const Name SerializedPath;
     } // namespace DescriptorAttributes
 
+    AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value);
+    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(void* instance, AZ::Attribute* attribute);
+
     void VisitLegacyInMemoryInstance(
         IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);
     void VisitLegacyInMemoryInstance(

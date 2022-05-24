@@ -721,22 +721,21 @@ namespace AzFramework
 
     void connect_target([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        AzNetworking::INetworkInterface* networkInterface =
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("TargetManagement"));
+        if (networkInterface)
         {
-            if (networkInterface.first == AZ::Name("TargetManagement"))
-            {
-                const uint16_t serverPort = target_port;
+            const uint16_t serverPort = target_port;
 
-                AzNetworking::ConnectionId connId = networkInterface.second->Connect(
-                    AzNetworking::IpAddress(TargetServerAddress, serverPort, AzNetworking::ProtocolType::Tcp));
-                if (connId != AzNetworking::InvalidConnectionId)
-                {
-                    AzFrameworkPackets::TargetConnect initPacket;
-                    initPacket.SetPersistentId(AZ::Crc32(Platform::GetPersistentName()));
-                    initPacket.SetCapabilities(Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
-                    initPacket.SetDisplayName(Platform::GetPersistentName());
-                    networkInterface.second->SendReliablePacket(connId, initPacket);
-                }
+            AzNetworking::ConnectionId connId =
+                networkInterface->Connect(AzNetworking::IpAddress(TargetServerAddress, serverPort, AzNetworking::ProtocolType::Tcp));
+            if (connId != AzNetworking::InvalidConnectionId)
+            {
+                AzFrameworkPackets::TargetConnect initPacket;
+                initPacket.SetPersistentId(AZ::Crc32(Platform::GetPersistentName()));
+                initPacket.SetCapabilities(Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
+                initPacket.SetDisplayName(Platform::GetPersistentName());
+                networkInterface->SendReliablePacket(connId, initPacket);
             }
         }
     }
@@ -757,14 +756,12 @@ namespace AzFramework
     void TargetJoinThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
     {
         connect_target(AZ::ConsoleCommandContainer());
-        for (auto& networkInterface : AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces())
+        AzNetworking::INetworkInterface* networkInterface =
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("TargetManagement"));
+        if (networkInterface && networkInterface->GetConnectionSet().GetActiveConnectionCount() > 0)
         {
-            if (networkInterface.first == AZ::Name("TargetManagement") &&
-                networkInterface.second->GetConnectionSet().GetActiveConnectionCount() > 0)
-            {
-                Stop();
-                Join();
-            }
+            Stop();
+            Join();
         }
     }
 }   // namespace AzFramework

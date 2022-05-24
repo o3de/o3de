@@ -169,7 +169,7 @@ void UiCanvasOnMeshComponent::OnCanvasLoadedIntoEntity(AZ::EntityId uiCanvasEnti
 {
     if (uiCanvasEntity.IsValid() && m_attachmentImageAssetOverride)
     {
-        UiCanvasBus::Event(GetEntityId(), &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
+        UiCanvasBus::Event(uiCanvasEntity, &UiCanvasInterface::SetAttachmentImageAsset, m_attachmentImageAssetOverride);
     }
 }
 
@@ -229,6 +229,15 @@ void UiCanvasOnMeshComponent::Activate()
     UiCanvasOnMeshBus::Handler::BusConnect(GetEntityId());
     UiCanvasAssetRefNotificationBus::Handler::BusConnect(GetEntityId());
     UiCanvasManagerNotificationBus::Handler::BusConnect();
+
+    // Check if a UI canvas has already been loaded into the entity
+    AZ::EntityId canvasEntityId;
+    UiCanvasRefBus::EventResult(
+        canvasEntityId, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
+    if (canvasEntityId.IsValid())
+    {
+        OnCanvasLoadedIntoEntity(canvasEntityId);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -319,6 +328,8 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
             (indexBuffer->GetBufferViewDescriptor().m_elementCount % 3) == 0,
             "index buffer not a multiple of 3");
 
+        AZ::Intersect::SegmentTriangleHitTester hitTester(rayOrigin, rayEnd);
+
         for (uint32_t index = 0; index < indexBuffer->GetBufferViewDescriptor().m_elementCount; index += 3)
         {
             uint32_t index1 = rawIndexBuffer[index];
@@ -334,7 +345,7 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
             AZ::Vector3 resultNormal;
 
             float resultDistance = 0.0f;
-            if (AZ::Intersect::IntersectSegmentTriangle(rayOrigin, rayEnd, vertex1, vertex2, vertex3, resultNormal, resultDistance))
+            if (hitTester.IntersectSegmentTriangle(vertex1, vertex2, vertex3, resultNormal, resultDistance))
             {
                 if (resultDistance < minResultDistance)
                 {

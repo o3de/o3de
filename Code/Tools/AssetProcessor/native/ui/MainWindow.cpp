@@ -1495,7 +1495,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
 
     menu.addAction(tr("Copy"), this, [&]()
     {
-        QGuiApplication::clipboard()->setText(FindAbsoluteFilePath(item));
+        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(FindAbsoluteFilePath(item)));
     });
 
     // Get the internal path to the log file
@@ -1657,7 +1657,7 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
         AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(*cachedAsset);
         if (pathToSource.IsSuccess())
         {
-            QGuiApplication::clipboard()->setText(pathToSource.GetValue());
+            QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(pathToSource.GetValue()));
         }
     });
 
@@ -1758,7 +1758,7 @@ void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)
         AZ::Outcome<QString> pathToProduct = GetAbsolutePathToProduct(*cachedAsset);
         if (pathToProduct.IsSuccess())
         {
-            QGuiApplication::clipboard()->setText(pathToProduct.GetValue());
+            QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(pathToProduct.GetValue()));
         }
     });
 

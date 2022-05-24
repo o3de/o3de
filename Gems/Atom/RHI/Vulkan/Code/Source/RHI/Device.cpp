@@ -264,7 +264,7 @@ namespace AZ
            
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
-                delete queueInfo.pQueuePriorities;
+                delete[] queueInfo.pQueuePriorities;
             }
 
             Instance& instance = Instance::GetInstance();

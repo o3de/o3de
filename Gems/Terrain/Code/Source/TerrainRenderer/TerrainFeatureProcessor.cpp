@@ -32,12 +32,10 @@ namespace Terrain
     namespace
     {
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
-        const char* TerrainHeightmapChars = "TerrainHeightmap";
     }
 
     namespace SceneSrgInputs
     {
-        static const char* const HeightmapImage("m_heightmapImage");
         static const char* const TerrainWorldData("m_terrainWorldData");
     }
 
@@ -62,12 +60,6 @@ namespace Terrain
 
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        
-        m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
-        {
-            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
-        };
-        AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -75,9 +67,6 @@ namespace Terrain
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
-        
-        m_heightmapPropertyIndex = sceneSrgLayout->FindShaderInputImageIndex(AZ::Name(SceneSrgInputs::HeightmapImage));
-        AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::HeightmapImage);
         
         m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
         AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
@@ -105,7 +94,7 @@ namespace Terrain
             }
         );
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
-
+        m_meshManager.Initialize(*GetParentScene());
     }
 
     void TerrainFeatureProcessor::Deactivate()
@@ -132,10 +121,8 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainDataDestroyBegin()
     {
-        m_heightmapImage = {};
         m_terrainBounds = AZ::Aabb::CreateNull();
         m_dirtyRegion = AZ::Aabb::CreateNull();
-        m_heightmapNeedsUpdate = false;
     }
     
     void TerrainFeatureProcessor::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
@@ -160,21 +147,23 @@ namespace Terrain
         float queryResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-        // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
 
-        m_terrainBounds = worldBounds;
-        m_sampleSpacing = queryResolution;
-        m_heightmapNeedsUpdate = true;
+        if (m_terrainBounds != worldBounds || m_sampleSpacing != queryResolution)
+        {
+            m_terrainBoundsNeedUpdate = true;
+            m_terrainBounds = worldBounds;
+            m_sampleSpacing = queryResolution;
+        }
     }
 
     void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
     {
-        CacheForwardPass();
+        CachePasses();
     }
 
     void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
     {
-        CacheForwardPass();
+        CachePasses();
     }
 
     void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
@@ -218,97 +207,6 @@ namespace Terrain
             AZ_Error("Terrain", false, "Add the terrain parent pass to render pipeline [%s] failed",
                 renderPipeline->GetId().GetCStr());
         }
-    }
-
-    void TerrainFeatureProcessor::UpdateHeightmapImage()
-    {
-        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
-        const AZ::Vector2 stepSize(m_sampleSpacing);
-        AZStd::pair<size_t, size_t> numSamples;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            m_terrainBounds, stepSize, samplerType);
-
-        const AZ::RHI::Size heightmapSize = AZ::RHI::Size(
-            aznumeric_cast<uint32_t>(numSamples.first),
-            aznumeric_cast<uint32_t>(numSamples.second),
-            1);
-
-        if (!m_heightmapImage || m_heightmapImage->GetDescriptor().m_size != heightmapSize)
-        {
-            const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-            AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
-                AZ::RHI::ImageBindFlags::ShaderRead, heightmapSize.m_width, heightmapSize.m_height, AZ::RHI::Format::R16_UNORM
-            );
-
-            const AZ::Name TerrainHeightmapName = AZ::Name(TerrainHeightmapChars);
-            m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainHeightmapName, nullptr, nullptr);
-            AZ_Error(TerrainFPName, m_heightmapImage, "Failed to initialize the heightmap image.");
-            
-            // World size changed, so the whole height map needs updating.
-            m_dirtyRegion = m_terrainBounds;
-            m_imageBindingsNeedUpdate = true;
-        }
-
-        if (!m_dirtyRegion.IsValid())
-        {
-            return;
-        }
-        
-        if (m_heightmapImage)
-        {
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-                m_dirtyRegion, stepSize, samplerType);
-        
-            const uint32_t updateWidth = aznumeric_cast<uint32_t>(numSamples.first);
-            const uint32_t updateHeight = aznumeric_cast<uint32_t>(numSamples.second);
-
-            // If there aren't any samples in the region, there's nothing to update, so just return.
-            if ((updateWidth == 0) || (updateHeight == 0))
-            {
-                m_dirtyRegion = AZ::Aabb::CreateNull();
-                return;
-            }
-
-            AZStd::vector<uint16_t> pixels;
-            pixels.reserve(updateWidth * updateHeight);
-
-            auto perPositionCallback = [this, &pixels]
-                ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-                [[maybe_unused]] bool terrainExists)
-            {
-                const float clampedHeight = AZ::GetClamp((surfacePoint.m_position.GetZ() - m_terrainBounds.GetMin().GetZ()) / m_terrainBounds.GetExtents().GetZ(), 0.0f, 1.0f);
-                const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
-                const uint16_t uint16Height = aznumeric_cast<uint16_t>(expandedHeight);
-
-                pixels.push_back(uint16Height);
-            };
-
-            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                m_dirtyRegion, stepSize, perPositionCallback, samplerType);
-
-            constexpr uint32_t BytesPerPixel = sizeof(uint16_t);
-            const float left = AZStd::floorf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing) - AZStd::floorf(m_terrainBounds.GetMin().GetX() / m_sampleSpacing);
-            const float top = AZStd::floorf(m_dirtyRegion.GetMin().GetY() / m_sampleSpacing) - AZStd::floorf(m_terrainBounds.GetMin().GetY() / m_sampleSpacing);
-
-            AZ::RHI::ImageUpdateRequest imageUpdateRequest;
-            imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
-            imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = updateWidth * BytesPerPixel;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = updateWidth * updateHeight * BytesPerPixel;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = updateHeight;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size = AZ::RHI::Size(updateWidth, updateHeight, 1);
-            imageUpdateRequest.m_sourceData = pixels.data();
-            imageUpdateRequest.m_image = m_heightmapImage->GetRHIImage();
-
-            [[maybe_unused]] AZ::RHI::ResultCode result = m_heightmapImage->UpdateImageContents(imageUpdateRequest);
-            AZ_Assert(result == AZ::RHI::ResultCode::Success, "TerrainFeatureProcessor failed to update heightmap image");
-        }
-        
-        m_dirtyRegion = AZ::Aabb::CreateNull();
     }
 
     void TerrainFeatureProcessor::PrepareMaterialData()
@@ -365,6 +263,7 @@ namespace Terrain
             {
                 m_clipmapManager.Initialize(m_terrainSrg);
             }
+            m_meshManager.SetMaterial(m_materialInstance);
         }
         else
         {
@@ -387,28 +286,24 @@ namespace Terrain
         if (m_materialInstance && m_materialInstance->CanCompile())
         {
             AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
+            AZ::RPI::ViewPtr mainView;
             for (auto& view : process.m_views)
             {
                 if ((view->GetUsageFlags() & AZ::RPI::View::UsageFlags::UsageCamera) > 0)
                 {
+                    mainView = view;
                     cameraPosition = view->GetCameraTransform().GetTranslation();
                     break;
                 }
             }
 
-            if (m_meshManager.IsInitialized())
-            {
-                bool surfacesRebuilt = false;
-                surfacesRebuilt = m_meshManager.CheckRebuildSurfaces(m_materialInstance, *GetParentScene());
-                if (m_forceRebuildDrawPackets && !surfacesRebuilt)
-                {   
-                    m_meshManager.RebuildDrawPackets(*GetParentScene());
-                }
-                m_forceRebuildDrawPackets = false;
-            }
-
             if (m_terrainSrg)
             {
+                if (m_meshManager.IsInitialized())
+                {
+                    m_meshManager.Update(mainView, m_terrainSrg);
+                }
+
                 if (m_macroMaterialManager.IsInitialized())
                 {
                     m_macroMaterialManager.Update(m_terrainSrg);
@@ -424,35 +319,27 @@ namespace Terrain
                     m_clipmapManager.Update(cameraPosition, m_terrainSrg);
                 }
             }
-
-            if (m_heightmapNeedsUpdate)
-            {
-                UpdateHeightmapImage();
-                m_heightmapNeedsUpdate = false;
-            }
-            
             if (m_imageArrayHandler->IsInitialized())
             {
                 bool result [[maybe_unused]] = m_imageArrayHandler->UpdateSrg(m_terrainSrg);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
             }
-        }
-        
-        if (m_meshManager.IsInitialized())
-        {
-            m_meshManager.DrawMeshes(process);
+
+            if (m_meshManager.IsInitialized())
+            {
+                m_meshManager.DrawMeshes(process, mainView);
+            }
         }
 
-        if (m_heightmapImage && m_imageBindingsNeedUpdate)
+        if (m_terrainBoundsNeedUpdate)
         {
+            m_terrainBoundsNeedUpdate = false;
+
             WorldShaderData worldData;
             m_terrainBounds.GetMin().StoreToFloat3(worldData.m_min.data());
             m_terrainBounds.GetMax().StoreToFloat3(worldData.m_max.data());
 
-            m_imageBindingsNeedUpdate = false;
-
             auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
-            sceneSrg->SetImage(m_heightmapPropertyIndex, m_heightmapImage);
             sceneSrg->SetConstant(m_worldDataIndex, worldData);
         }
 
@@ -461,10 +348,13 @@ namespace Terrain
             m_materialInstance->Compile();
         }
 
-        if (m_terrainSrg && m_forwardPass)
+        if (m_terrainSrg && m_passes.size() > 0)
         {
             m_terrainSrg->Compile();
-            m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
+            for (auto* pass : m_passes)
+            {
+                pass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
+            }
         }
     }
 
@@ -472,7 +362,7 @@ namespace Terrain
     {
         PrepareMaterialData();
         m_forceRebuildDrawPackets = true;
-        m_imageBindingsNeedUpdate = true;
+        m_terrainBoundsNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
@@ -480,27 +370,34 @@ namespace Terrain
         m_detailMaterialManager.SetDetailMaterialConfiguration(config);
     }
     
-    void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
+    void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
-        // This will control the max rendering size. Actual terrain size can be much
-        // larger but this will limit how much is rendered.
+        m_meshManager.SetConfiguration(config);
     }
     
-    void TerrainFeatureProcessor::CacheForwardPass()
+    void TerrainFeatureProcessor::CachePasses()
     {
+        m_passes.clear();
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-        AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        const AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        const AZ::RHI::DrawListTag depthTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("depth"));
+        const AZ::RHI::DrawListTag shadowTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("shadow"));
+
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(rasterPassFilter,
             [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
                 auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
 
-                if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
+                if (rasterPass && rasterPass->GetPassState() != AZ::RPI::PassState::Orphaned)
                 {
-                    m_forwardPass = rasterPass;
-                    return AZ::RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    if (rasterPass->GetDrawListTag() == forwardTag ||
+                        rasterPass->GetDrawListTag() == depthTag ||
+                        rasterPass->GetDrawListTag() == shadowTag)
+                    {
+                        m_passes.push_back(rasterPass);
+                    }
                 }
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             }

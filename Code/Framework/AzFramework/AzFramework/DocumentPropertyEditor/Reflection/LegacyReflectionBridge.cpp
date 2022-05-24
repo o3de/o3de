@@ -13,6 +13,8 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 
@@ -53,6 +55,7 @@ namespace AZ::Reflection
                 const SerializeContext::ClassElement* m_classElement = nullptr;
                 AZStd::vector<AttributeData> m_cachedAttributes;
                 AZStd::string m_path;
+                bool m_entryClosed = false;
             };
             AZStd::stack<StackEntry> m_stack;
 
@@ -122,10 +125,20 @@ namespace AZ::Reflection
                 m_stack.top().m_path = AZStd::move(path);
                 CacheAttributes();
 
+                const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
+                Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
+                auto enumTypeId = EnumTypeAttribute.DomToValue(enumTypeValue);
+
                 StackEntry& nodeData = m_stack.top();
 
-                if (auto handlerIt = m_handlers.find(nodeData.m_typeId); handlerIt != m_handlers.end())
+                const AZ::TypeId* typeIdForHandler = &nodeData.m_typeId;
+                if (enumTypeId.has_value())
                 {
+                    typeIdForHandler = &enumTypeId.value();
+                }
+                if (auto handlerIt = m_handlers.find(*typeIdForHandler); handlerIt != m_handlers.end())
+                {
+                    m_stack.top().m_entryClosed = true;
                     return handlerIt->second();
                 }
                 m_visitor->VisitObjectBegin(*this, *this);
@@ -137,12 +150,10 @@ namespace AZ::Reflection
             {
                 StackEntry nodeData = AZStd::move(m_stack.top());
                 m_stack.pop();
-                if (auto handlerIt = m_handlers.find(nodeData.m_typeId); handlerIt != m_handlers.end())
+                if (!nodeData.m_entryClosed)
                 {
-                    return true;
+                    m_visitor->VisitObjectEnd();
                 }
-
-                m_visitor->VisitObjectEnd();
                 return true;
             }
 
@@ -165,25 +176,6 @@ namespace AZ::Reflection
             const void* Get() const override
             {
                 return m_stack.top().m_instance;
-            }
-
-            template<typename T>
-            bool TryReadAttributeInternal(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
-            {
-                AZ::AttributeReader reader(instance, attribute);
-                T value;
-                if (reader.Read<T>(value))
-                {
-                    result = Dom::Utils::ValueFromType(value);
-                    return true;
-                }
-                return false;
-            }
-
-            template<typename... T>
-            bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result) const
-            {
-                return (TryReadAttributeInternal<T>(instance, attribute, result) || ...);
             }
 
             void CacheAttributes()
@@ -213,13 +205,10 @@ namespace AZ::Reflection
                             return;
                         }
                         visitedAttributes.insert(name);
-                        Dom::Value attributeValue;
-                        const bool readSucceeded = TryReadAttribute<
-                            bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, AZStd::string, float, double>(
-                            nodeData.m_instance, it->second, attributeValue);
-                        if (readSucceeded)
+                        AZStd::optional<Dom::Value> attributeValue = ReadGenericAttributeToDomValue(nodeData.m_instance, it->second);
+                        if (attributeValue.has_value())
                         {
-                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
+                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue.value()) });
                         }
                     }
                     else
@@ -289,7 +278,9 @@ namespace AZ::Reflection
                     }
                 }
 
-                nodeData.m_cachedAttributes.push_back({ group, AZ_NAME_LITERAL("Label"), Dom::Value(labelAttributeValue, true) });
+                nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::Label, Dom::Value(labelAttributeValue, true) });
+                nodeData.m_cachedAttributes.push_back({ group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueType.GetName(),
+                                                        AZ::Dom::Utils::TypeIdToDomValue(nodeData.m_typeId) });
             }
 
             AttributeDataType Find(Name name) const override
@@ -319,7 +310,60 @@ namespace AZ::Reflection
                 }
             }
         };
+
+        template<typename T>
+        bool TryReadAttributeInternal(void* instance, AZ::Attribute* attribute, Dom::Value& result)
+        {
+            AZ::AttributeReader reader(instance, attribute);
+            T value;
+            if (reader.Read<T>(value))
+            {
+                result = Dom::Utils::ValueFromType(value);
+                return true;
+            }
+            return false;
+        }
+
+        template<typename... T>
+        bool TryReadAttribute(void* instance, AZ::Attribute* attribute, Dom::Value& result)
+        {
+            return (TryReadAttributeInternal<T>(instance, attribute, result) || ...);
+        }
+
+        template<typename T>
+        AZStd::shared_ptr<AZ::Attribute> MakeAttribute(T&& value)
+        {
+            return AZStd::make_shared<AttributeData<T>>(AZStd::move(value));
+        }
     } // namespace LegacyReflectionInternal
+
+    AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value)
+    {
+        switch (value.GetType())
+        {
+        case AZ::Dom::Type::Bool:
+            return LegacyReflectionInternal::MakeAttribute(value.GetBool());
+        case AZ::Dom::Type::Int64:
+            return LegacyReflectionInternal::MakeAttribute(value.GetInt64());
+        case AZ::Dom::Type::Uint64:
+            return LegacyReflectionInternal::MakeAttribute(value.GetUint64());
+        case AZ::Dom::Type::Double:
+            return LegacyReflectionInternal::MakeAttribute(value.GetDouble());
+        case AZ::Dom::Type::String:
+            return LegacyReflectionInternal::MakeAttribute<AZStd::string>(value.GetString());
+        default:
+            return {};
+        }
+    }
+
+    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(void* instance, AZ::Attribute* attribute)
+    {
+        Dom::Value result;
+        const bool readSucceeded = LegacyReflectionInternal::TryReadAttribute<
+            bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, AZStd::string, float, double, AZ::Uuid>(
+            instance, attribute, result);
+        return readSucceeded ? result : AZStd::optional<AZ::Dom::Value>();
+    }
 
     void VisitLegacyInMemoryInstance(IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext)
     {

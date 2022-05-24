@@ -130,26 +130,26 @@ def Terrain_World_ConfigurationWorks():
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
 
         # 11) Check terrain exists at a known position in the world
-        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 10.0, 10.0, CLAMP)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(10.0, 10.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
-        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1100.0, 1100.0, CLAMP)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1100.0, 1100.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
         # 12) Check terrain does not exist at a known position outside the world
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 1101.0, 1101.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1101.0, 1101.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHoleFromFloats', 9.0, 9.0, CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(9.0, 9.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
         # 13) Check height value is the expected one when query resolution is changed
-        testpoint = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
+        height1, exists1 = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeight', azmath.Vector3(10.5, 10.5, 0.0), CLAMP)
         height_query_resolution = 0.5
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
         general.idle_wait_frames(1)
-        testpoint2 =  terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
-        Report.result(Tests.values_not_the_same, not math.isclose(testpoint, testpoint2, abs_tol = 0.000000001))
+        height2, exists2 = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeight', azmath.Vector3(10.5, 10.5, 0.0), CLAMP)
+        Report.result(Tests.values_not_the_same, not math.isclose(height1, height2, abs_tol = 0.000000001))
         
     helper.wait_for_condition(lambda: section_tracer.has_errors or section_tracer.has_asserts, 1.0)
     for error_info in section_tracer.errors:

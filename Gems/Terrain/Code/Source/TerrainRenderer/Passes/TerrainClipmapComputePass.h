@@ -12,12 +12,18 @@
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RPI.Reflect/Pass/ComputePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
 
+#include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+
 namespace Terrain
 {
+    //! The compute pass to generate macro texture clipmaps.
+    //! DetailClipmapGenerationPass has images depending on this pass.
+    //! It will gather all the data from the macro materials into a clipmap stack.
     class TerrainMacroClipmapGenerationPass
         : public AZ::RPI::ComputePass
     {
@@ -33,17 +39,25 @@ namespace Terrain
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
+        //! Besides the standard enable flag,
+        //! the pass can be disabled by the case that no update is triggered.
+        bool IsEnabled() const override;
     private:
         TerrainMacroClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
+        //! Macro clipmap only contains color and normal. Bound as RW.
         AZ::RHI::ShaderInputNameIndex m_macroColorClipmapsIndex =
             TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroColor];
         AZ::RHI::ShaderInputNameIndex m_macroNormalClipmapsIndex =
             TerrainClipmapManager::ClipmapImageShaderInput[TerrainClipmapManager::ClipmapName::MacroNormal];
 
+        //! Flag to rebind clipmap images.
         bool m_needsUpdate = true;
     };
 
+    //! The compute pass to generate macro texture clipmaps.
+    //! It depends on MacroClipmapGenerationPass the generate macro color clipmaps first.
+    //! It will gather all the data from the detail materials into a clipmap stack.
     class TerrainDetailClipmapGenerationPass
         : public AZ::RPI::ComputePass
     {
@@ -59,11 +73,16 @@ namespace Terrain
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
+        //! Besides the standard enable flag,
+        //! the pass can be disabled by the case that no update is triggered.
+        bool IsEnabled() const override;
     private:
         TerrainDetailClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 
+        //! It takes in all clipmaps including macro. Macro clipmaps are bound as RO and detail ones RW.
         AZ::RHI::ShaderInputNameIndex m_clipmapImageIndex[TerrainClipmapManager::ClipmapName::Count];
 
+        //! Flag to rebind clipmap images.
         bool m_needsUpdate = true;
     };
 } // namespace Terrain
