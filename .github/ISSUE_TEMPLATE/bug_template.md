@@ -10,7 +10,8 @@ labels: 'needs-triage,needs-sig,kind/bug'
 A clear and concise description of what the bug is. Try to isolate the issue to help the community to reproduce it easily and increase chances for a fast fix.
 
 **Assets required**
-[!Important!] Please provide sample assets needed to reproduce the issue as much as possible.
+[!Important!] Please provide sample assets needed to reproduce the issue, either as an [attachment](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) or as a link to a public asset in Github.
+
 
 **Steps to reproduce**
 Steps to reproduce the behavior:
