@@ -8,6 +8,7 @@
 
 if(NOT LY_MONOLITHIC_GAME) # Do not use OpenImageIO in monolithic game
     set(LY_RUNTIME_DEPENDENCIES
-        3rdParty::OpenImageIO
+        3rdParty::OpenImageIO::Tools::Binaries
+        3rdParty::OpenImageIO::Tools::PythonPlugins
     )
 endif()

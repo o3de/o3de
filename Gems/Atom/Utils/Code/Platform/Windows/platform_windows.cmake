@@ -8,5 +8,6 @@
 
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        3rdParty::OpenImageIO
+        3rdParty::OpenImageIO::Tools::Binaries
+        3rdParty::OpenImageIO::Tools::PythonPlugins
 )
