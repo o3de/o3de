@@ -27,6 +27,8 @@ namespace EMotionFX
     public:
         ColliderCapsuleManipulators();
         ~ColliderCapsuleManipulators();
+
+        // PhysicsSetupManipulatorsBase overrides ...
         void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;

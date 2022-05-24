@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    Physics::CapsuleShapeConfiguration* GetCapsuleShapeConfiguration(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    const Physics::CapsuleShapeConfiguration* GetCapsuleShapeConfiguration(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         if (!physicsSetupManipulatorData.HasCapsuleCollider())
         {
@@ -26,15 +26,10 @@ namespace EMotionFX
             physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].second.get());
     }
 
-    Physics::CapsuleShapeConfiguration* GetCapsuleShapeConfiguration(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    Physics::CapsuleShapeConfiguration* GetCapsuleShapeConfiguration(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
-        if (!physicsSetupManipulatorData.HasCapsuleCollider())
-        {
-            return nullptr;
-        }
-
-        return azdynamic_cast<Physics::CapsuleShapeConfiguration*>(
-            physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].second.get());
+        return const_cast<Physics::CapsuleShapeConfiguration*>(
+            GetCapsuleShapeConfiguration(const_cast<const PhysicsSetupManipulatorData&>(physicsSetupManipulatorData)));
     }
 
     ColliderCapsuleManipulators::ColliderCapsuleManipulators()
@@ -52,7 +47,7 @@ namespace EMotionFX
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
-        if (!m_physicsSetupManipulatorData.HasColliders())
+        if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
         {
             return;
         }
@@ -65,7 +60,7 @@ namespace EMotionFX
 
     void ColliderCapsuleManipulators::Refresh()
     {
-        if (m_physicsSetupManipulatorData.HasColliders())
+        if (m_physicsSetupManipulatorData.HasCapsuleCollider())
         {
             UpdateCapsuleManipulators();
         }
@@ -73,6 +68,11 @@ namespace EMotionFX
 
     void ColliderCapsuleManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
+        {
+            return;
+        }
+
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         TeardownCapsuleManipulators();
@@ -80,7 +80,7 @@ namespace EMotionFX
 
     void ColliderCapsuleManipulators::ResetValues()
     {
-        if (m_physicsSetupManipulatorData.HasColliders())
+        if (m_physicsSetupManipulatorData.HasCapsuleCollider())
         {
             BeginEditing();
             ResetCapsuleManipulators();
@@ -99,12 +99,12 @@ namespace EMotionFX
 
         const AZ::u32 actorId = m_physicsSetupManipulatorData.m_actor->GetID();
         const AZStd::string& nodeName = m_physicsSetupManipulatorData.m_node->GetNameString();
-        auto colliderType = PhysicsSetup::ColliderConfigType::Ragdoll;
+        const auto colliderType = PhysicsSetup::ColliderConfigType::Ragdoll;
         const size_t colliderIndex = 0;
         CommandAdjustCollider* command = aznew CommandAdjustCollider(actorId, nodeName, colliderType, colliderIndex);
         m_commandGroup.AddCommand(command);
 
-        if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+        if (const auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
         {
             command->SetOldHeight(capsuleShapeConfiguration->m_height);
             command->SetOldRadius(capsuleShapeConfiguration->m_radius);
@@ -120,7 +120,7 @@ namespace EMotionFX
 
         if (CommandAdjustCollider* command = azdynamic_cast<CommandAdjustCollider*>(m_commandGroup.GetCommand(0)))
         {
-            if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+            if (const auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
             {
                 command->SetHeight(capsuleShapeConfiguration->m_height);
                 command->SetRadius(capsuleShapeConfiguration->m_radius);
@@ -149,7 +149,7 @@ namespace EMotionFX
 
     AZ::Transform ColliderCapsuleManipulators::GetCapsuleLocalTransform() const
     {
-        if (!m_physicsSetupManipulatorData.HasColliders())
+        if (!m_physicsSetupManipulatorData.HasCapsuleCollider())
         {
             return AZ::Transform::CreateIdentity();
         }
@@ -172,19 +172,19 @@ namespace EMotionFX
             return capsuleShapeConfiguration->m_radius;
         }
 
-        return 0.25f;
+        return Physics::ShapeConstants::DefaultCapsuleRadius;
     }
 
     float ColliderCapsuleManipulators::GetCapsuleHeight() const
     {
-        if (auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
+        if (const auto* capsuleShapeConfiguration = GetCapsuleShapeConfiguration(m_physicsSetupManipulatorData))
         {
             // account for discrepancy between different ways of measuring capsules, depending on whether the full
             // height or just the height of the cylindrical section is used
             return capsuleShapeConfiguration->m_height + 2.0f * capsuleShapeConfiguration->m_radius;
         }
 
-        return 1.0f;
+        return Physics::ShapeConstants::DefaultCapsuleHeight;
     }
 
     void ColliderCapsuleManipulators::SetCapsuleRadius(float radius)
