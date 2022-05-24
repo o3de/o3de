@@ -82,7 +82,6 @@ namespace EMStudio
         MCORE_INLINE const char* GetDefaultNodeSelectionLabelText()                                 { return "Click to select node"; }
 
         int OnSaveDirtyMotions();
-        int SaveDirtyMotion(EMotionFX::Motion* motion, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
         void PlayMotions(const AZStd::vector<EMotionFX::Motion*>& motions);
         void PlayMotion(EMotionFX::Motion* motion);
@@ -115,8 +114,6 @@ namespace EMStudio
 
         MotionListWindow*                               m_motionListWindow;
         MotionPropertiesWindow*                         m_motionPropertiesWindow;
-
-        SaveDirtyMotionFilesCallback*                   m_dirtyFilesCallback;
 
         QAction*                                        m_addMotionsAction;
         QAction*                                        m_saveAction;
