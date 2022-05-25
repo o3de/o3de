@@ -48,7 +48,7 @@ namespace AZ
             }
         }
 
-        Data::Instance<Material> MeshDrawPacket::GetMaterial()
+        Data::Instance<Material> MeshDrawPacket::GetMaterial() const
         {
             return m_material;
         }
@@ -221,8 +221,8 @@ namespace AZ
                     }
                 }
 
-                const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
-                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(finalVariantId);
+                const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
+                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 variant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -296,8 +296,12 @@ namespace AZ
                     m_perDrawSrgs.push_back(drawSrg);
                 }
                 drawPacketBuilder.AddDrawItem(drawRequest);
-
-                shaderList.emplace_back(AZStd::move(shader));
+                
+                ShaderData shaderData;
+                shaderData.m_shader = AZStd::move(shader);
+                shaderData.m_requestedShaderVariantId = requestedVariantId;
+                shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
+                shaderList.emplace_back(AZStd::move(shaderData));
 
                 return true;
             };
