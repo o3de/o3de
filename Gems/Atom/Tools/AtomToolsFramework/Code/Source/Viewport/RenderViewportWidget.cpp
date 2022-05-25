@@ -223,6 +223,11 @@ namespace AtomToolsFramework
         {
             case QEvent::Resize:
             case QEvent::ShowToParent: //This event exists to capture the case where a resize event is missed "after" the underlying surface is modified by Qt (Seen during level load in Editor)
+#if defined(AZ_PLATFORM_LINUX)
+            // On Linux, Qt is sending this event as the final events after a viewport change. This even needs to trigger a resize at this point or else the 
+            // swapchain won't be resized to the correct viewport size(s)
+            case QEvent::UpdateLater:   
+#endif
             {
                 SendWindowResizeEvent();
                 break;
