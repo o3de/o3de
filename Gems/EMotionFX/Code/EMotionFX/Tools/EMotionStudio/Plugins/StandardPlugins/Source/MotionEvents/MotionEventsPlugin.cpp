@@ -33,8 +33,6 @@ namespace EMStudio
         , m_timeViewPlugin(nullptr)
         , m_trackHeaderWidget(nullptr)
         , m_trackDataWidget(nullptr)
-        , m_motionWindowPlugin(nullptr)
-        , m_motionListWindow(nullptr)
         , m_motion(nullptr)
     {
     }
@@ -63,11 +61,6 @@ namespace EMStudio
         if (classID == TimeViewPlugin::CLASS_ID)
         {
             m_timeViewPlugin = nullptr;
-        }
-
-        if (classID == MotionWindowPlugin::CLASS_ID)
-        {
-            m_motionWindowPlugin = nullptr;
         }
     }
 
@@ -117,18 +110,6 @@ namespace EMStudio
 
                 connect(m_trackDataWidget, &TrackDataWidget::MotionEventPresetsDropped, this, &MotionEventsPlugin::OnEventPresetDropped);
                 connect(this, &MotionEventsPlugin::OnColorChanged, m_timeViewPlugin, &TimeViewPlugin::ReInit);
-            }
-        }
-
-        if (!m_motionWindowPlugin)
-        {
-            EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-            if (motionBasePlugin)
-            {
-                m_motionWindowPlugin = (MotionWindowPlugin*)motionBasePlugin;
-                m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
-
-                connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &MotionEventsPlugin::MotionSelectionChanged);
             }
         }
     }

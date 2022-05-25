@@ -84,8 +84,6 @@ namespace EMStudio
         TimeViewPlugin*                 m_timeViewPlugin;
         TrackHeaderWidget*              m_trackHeaderWidget;
         TrackDataWidget*                m_trackDataWidget;
-        MotionWindowPlugin*             m_motionWindowPlugin;
-        MotionListWindow*               m_motionListWindow;
         EMotionFX::Motion*              m_motion;
     };
 } // namespace EMStudio
