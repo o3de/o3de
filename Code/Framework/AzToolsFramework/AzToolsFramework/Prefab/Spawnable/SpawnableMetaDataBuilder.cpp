@@ -17,12 +17,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return AddGeneric(key, value);
     }
 
-    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::Add(AZStd::string_view key, uint64_t value)
+    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::Add(AZStd::string_view key, AZ::u64 value)
     {
         return AddGeneric(key, value);
     }
 
-    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::Add(AZStd::string_view key, int64_t value)
+    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::Add(AZStd::string_view key, AZ::s64 value)
     {
         return AddGeneric(key, value);
     }
@@ -42,12 +42,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return AppendArrayGeneric(arrayKey, value);
     }
 
-    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::AppendArray(AZStd::string_view arrayKey, uint64_t value)
+    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::AppendArray(AZStd::string_view arrayKey, AZ::u64 value)
     {
         return AppendArrayGeneric(arrayKey, value);
     }
 
-    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::AppendArray(AZStd::string_view arrayKey, int64_t value)
+    SpawnableMetaDataBuilder& SpawnableMetaDataBuilder::AppendArray(AZStd::string_view arrayKey, AZ::s64 value)
     {
         return AppendArrayGeneric(arrayKey, value);
     }
