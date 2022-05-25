@@ -257,6 +257,7 @@ namespace ScriptCanvasEditor
         // UIRequestBus
         QMainWindow* GetMainWindow() override { return qobject_cast<QMainWindow*>(this); }
         void OpenValidationPanel() override;
+        void RefreshSelection() override;
         //
 
         // Undo Handlers
@@ -398,7 +399,6 @@ namespace ScriptCanvasEditor
 
         void SetDefaultLayout();
 
-        void RefreshSelection();
         void Clear();
 
         void OnTabCloseRequest(int index);
