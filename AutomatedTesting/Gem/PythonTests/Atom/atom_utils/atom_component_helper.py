@@ -51,7 +51,7 @@ def golden_images_directory():
     Uses this file location to return the valid location for golden image files.
     :return: The path to the golden_images directory, but raises an IOError if the golden_images directory is missing.
     """
-    current_file_directory = os.path.join(os.path.dirname(__file__)).lower()
+    current_file_directory = os.path.join(os.path.dirname(__file__))
     golden_images_dir = os.path.join(current_file_directory, '..', 'golden_images')
 
     if not os.path.exists(golden_images_dir):
