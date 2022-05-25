@@ -21,6 +21,7 @@
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
+#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetConversion.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -33,6 +34,7 @@ namespace PhysX
         EditorJointConfig::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
+        ReflectLegacyMaterialClasses(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

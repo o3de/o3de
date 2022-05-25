@@ -10,6 +10,25 @@
 
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
+namespace PhysicsLegacy
+{
+    // O3DE_DEPRECATION
+    // Legacy Physics material Id class used to identify the material in the collection of materials.
+    // Used when converting old material asset to new one.
+    class MaterialId
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(MaterialId, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(PhysicsLegacy::MaterialId, "{744CCE6C-9F69-4E2F-B950-DAB8514F870B}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::Uuid m_id = AZ::Uuid::CreateNull();
+    };
+
+    class MaterialFromAssetConfiguration;
+} // namespace PhysX
+
 namespace PhysX
 {
     //! EditorMaterialAsset defines a single PhysX material asset.
@@ -34,5 +53,10 @@ namespace PhysX
 
     protected:
         MaterialConfiguration m_materialConfiguration;
+
+        // Legacy Physics material Id is only used when converting from old physics material asset,
+        // which holds a library of materials, to the new physx material asset.
+        PhysicsLegacy::MaterialId m_legacyPhysicsMaterialId;
+        friend PhysicsLegacy::MaterialFromAssetConfiguration;
     };
 } // namespace PhysX

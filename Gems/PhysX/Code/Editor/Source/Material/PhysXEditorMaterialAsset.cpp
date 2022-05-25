@@ -11,16 +11,33 @@
 
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 
+namespace PhysicsLegacy
+{
+    void MaterialId::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PhysicsLegacy::MaterialId>()
+                ->Version(1)
+                ->Field("MaterialId", &PhysicsLegacy::MaterialId::m_id)
+                ;
+        }
+    }
+}
+
 namespace PhysX
 {
     void EditorMaterialAsset::Reflect(AZ::ReflectContext* context)
     {
+        PhysicsLegacy::MaterialId::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::EditorMaterialAsset, AZ::Data::AssetData>()
-                ->Version(1)
+                ->Version(2)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("MaterialConfiguration", &EditorMaterialAsset::m_materialConfiguration)
+                ->Field("LegacyPhysicsMaterialId", &EditorMaterialAsset::m_legacyPhysicsMaterialId)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
