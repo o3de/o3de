@@ -897,22 +897,21 @@ namespace AZ
                 {
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
-                
-                VkDescriptorSet vkDescriptorSet;
 
-                if (shaderResourceGroup)
-                {
-                    AZ_Assert(shaderResourceGroup, "Shader resource group in descriptor set index %d is null.", index);
-                    auto& compiledData = shaderResourceGroup->GetCompiledData();
-                    vkDescriptorSet = compiledData.GetNativeDescriptorSet();
-                }
-                else
+                VkDescriptorSet vkDescriptorSet = nullptr;
+
+                if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
                         srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     // TODO(BINDLESS): Come up with a better mechanism for this
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
+                }
+                else
+                {
+                    auto& compiledData = shaderResourceGroup->GetCompiledData();
+                    vkDescriptorSet = compiledData.GetNativeDescriptorSet();
                 }
 
                 if (bindings.m_descriptorSets[index] != vkDescriptorSet)
