@@ -34,11 +34,11 @@ class TestAutomation(EditorTestSuite):
         test_screenshots = []
         golden_images = []
         for screenshot in screenshot_names:
-            screenshot_path = os.path.join(screenshot_directory, screenshot)
+            screenshot_path = os.path.join(screenshot_directory, screenshot).lower()
             test_screenshots.append(screenshot_path)
         file_system.delete(test_screenshots, True, True)
         for golden_image in screenshot_names:
-            golden_image_path = os.path.join(golden_images_directory(), golden_image)
+            golden_image_path = os.path.join(golden_images_directory(), golden_image).lower()
             golden_images.append(golden_image_path)
         return test_screenshots, golden_images
 
@@ -50,13 +50,13 @@ class TestAutomation(EditorTestSuite):
 
         # Custom setup/teardown to remove old screenshots and establish paths to golden images
         def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH)
+            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH).lower()
             self.screenshot_names = [
-                "AreaLight_1.ppm",
-                "AreaLight_2.ppm",
-                "AreaLight_3.ppm",
-                "AreaLight_4.ppm",
-                "AreaLight_5.ppm",
+                "arealight_1.ppm",
+                "arealight_2.ppm",
+                "arealight_3.ppm",
+                "arealight_4.ppm",
+                "arealight_5.ppm",
             ]
             self.test_screenshots, self.golden_images = TestAutomation.screenshot_setup(
                 screenshot_directory=self.screenshot_directory,
@@ -77,13 +77,13 @@ class TestAutomation(EditorTestSuite):
 
         # Custom setup/teardown to remove old screenshots and establish paths to golden images
         def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH)
+            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH).lower()
             self.screenshot_names = [
-                "AreaLight_1.ppm",
-                "AreaLight_2.ppm",
-                "AreaLight_3.ppm",
-                "AreaLight_4.ppm",
-                "AreaLight_5.ppm",
+                "arealight_1.ppm",
+                "arealight_2.ppm",
+                "arealight_3.ppm",
+                "arealight_4.ppm",
+                "arealight_5.ppm",
             ]
             self.test_screenshots, self.golden_images = TestAutomation.screenshot_setup(
                 screenshot_directory=self.screenshot_directory,
@@ -104,14 +104,14 @@ class TestAutomation(EditorTestSuite):
 
         # Custom setup/teardown to remove old screenshots and establish paths to golden images
         def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH)
+            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH).lower()
             self.screenshot_names = [
-                "SpotLight_1.ppm",
-                "SpotLight_2.ppm",
-                "SpotLight_3.ppm",
-                "SpotLight_4.ppm",
-                "SpotLight_5.ppm",
-                "SpotLight_6.ppm",
+                "spotlight_1.ppm",
+                "spotlight_2.ppm",
+                "spotlight_3.ppm",
+                "spotlight_4.ppm",
+                "spotlight_5.ppm",
+                "spotlight_6.ppm",
             ]
             self.test_screenshots, self.golden_images = TestAutomation.screenshot_setup(
                 screenshot_directory=self.screenshot_directory,
@@ -132,14 +132,14 @@ class TestAutomation(EditorTestSuite):
 
         # Custom setup/teardown to remove old screenshots and establish paths to golden images
         def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
-            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH)
+            self.screenshot_directory = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH).lower()
             self.screenshot_names = [
-                "SpotLight_1.ppm",
-                "SpotLight_2.ppm",
-                "SpotLight_3.ppm",
-                "SpotLight_4.ppm",
-                "SpotLight_5.ppm",
-                "SpotLight_6.ppm",
+                "spotlight_1.ppm",
+                "spotlight_2.ppm",
+                "spotlight_3.ppm",
+                "spotlight_4.ppm",
+                "spotlight_5.ppm",
+                "spotlight_6.ppm",
             ]
             self.test_screenshots, self.golden_images = TestAutomation.screenshot_setup(
                 screenshot_directory=self.screenshot_directory,

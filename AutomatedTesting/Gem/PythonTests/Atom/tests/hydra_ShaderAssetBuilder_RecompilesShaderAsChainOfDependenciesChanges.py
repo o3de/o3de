@@ -46,8 +46,8 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         :param target_path: The target file's path
         :return: None
         """
-        target_file_path = os.path.join(target_path, target_file)
-        src_file_path = os.path.join(src_path, src_file)
+        target_file_path = os.path.join(target_path, target_file).lower()
+        src_file_path = os.path.join(src_path, src_file).lower()
         if os.path.exists(target_file_path):
             fs.unlock_file(target_file_path)
         shutil.copyfile(src_file_path, target_file_path)
@@ -61,9 +61,9 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         """
         for filename in file_list:
             src_name = f"{filename}.txt"
-            _copy_file(src_name, src_directory, filename, dst_directory)
+            _copy_file(src_name.lower(), src_directory.lower(), filename.lower(), dst_directory.lower())
             if wait_time_in_between > 0.0:
-                print(f"Created {filename} in {dst_directory}")
+                print(f"Created {filename.lower()} in {dst_directory.lower()}")
                 general.idle_wait(wait_time_in_between)
 
     def _remove_file(src_file, src_path):
@@ -74,7 +74,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
         :param src_path: The source file's path
         :return: None
         """
-        src_file_path = os.path.join(src_path, src_file)
+        src_file_path = os.path.join(src_path, src_file).lower()
         if os.path.exists(src_file_path):
             fs.unlock_file(src_file_path)
             os.remove(src_file_path)
@@ -91,11 +91,11 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
     # Required for automated tests
     helper.init_idle()
 
-    game_root_path = os.path.normpath(general.get_game_folder())
-    game_asset_path = os.path.join(game_root_path, "Assets")
+    game_root_path = os.path.normpath(general.get_game_folder()).lower()
+    game_asset_path = os.path.join(game_root_path, "assets")
 
-    base_dir = os.path.dirname(__file__)
-    src_assets_subdir = os.path.join(base_dir, "TestAssets", "ShaderAssetBuilder") 
+    base_dir = os.path.dirname(__file__).lower()
+    src_assets_subdir = os.path.join(base_dir, "testassets", "shaderassetbuilder")
 
     with Tracer() as error_tracer:
         # The script drives the execution of the test, to return the flow back to the editor,

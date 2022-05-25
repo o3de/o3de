@@ -11,7 +11,7 @@ import pytest
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 logger = logging.getLogger(__name__)
-TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
+TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests").lower()
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])

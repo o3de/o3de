@@ -221,7 +221,7 @@ class Timeout:
         return time.time() > self.die_after
 
 
-screenshotsFolder = os.path.join(azlmbr.paths.products, "Screenshots")
+screenshotsFolder = os.path.join(azlmbr.paths.products.lower(), "screenshots")
 
 
 class ScreenshotHelper:
@@ -280,5 +280,5 @@ class ScreenshotHelper:
 
 def capture_screenshot(file_path):
     return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(
-        os.path.join(file_path)
+        os.path.join(file_path.lower())
     )
