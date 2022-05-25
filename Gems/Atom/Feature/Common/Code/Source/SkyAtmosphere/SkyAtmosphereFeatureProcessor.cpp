@@ -122,7 +122,7 @@ namespace AZ::Render
             });
 
 
-        // make sure to update all the LUTS
+        // make sure atmospheres are created if needed
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
             auto& atmosphere = m_atmospheres.GetElement(i);

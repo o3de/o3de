@@ -66,9 +66,5 @@ namespace AZ::Render
         bool m_shadowsEnabled = false;
         uint8_t m_minSamples = 4;
         uint8_t m_maxSamples = 14;
-
-        // track when properties are changed that require LUT regeneration
-        bool m_lutPropertyChanged = false;
-        AZ::u32 OnLUTConfigurationChanged();
     };
 } // namespace AZ::Render

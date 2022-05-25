@@ -1,6 +1,6 @@
 {
     "Type": "JsonSerialization",
-    "Description" : "This is the group of passes that render the sky atmosphere.",
+    "Description" : "SkyAtmosphere passes will be added to this parent pass dynamically, to render atmospheres.",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
@@ -8,14 +8,6 @@
             "Name": "SkyAtmosphereParentTemplate",
             "PassClass": "SkyAtmosphereParentPass",
             "Slots": [
-                {
-                    "Name": "DirectionalShadowmap",
-                    "SlotType": "Input"
-                },
-                {
-                    "Name": "DirectionalESM",
-                    "SlotType": "Input"
-                },
                 {
                     "Name": "SpecularInputOutput",
                     "SlotType": "InputOutput",
@@ -35,6 +27,14 @@
                             "Depth"
                         ]
                     }
+                },
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
                 }
             ]
         }

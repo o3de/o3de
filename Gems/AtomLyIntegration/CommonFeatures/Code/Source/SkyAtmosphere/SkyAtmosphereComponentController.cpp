@@ -62,7 +62,6 @@ namespace AZ::Render
         params.m_fastSkyEnabled = m_configuration.m_fastSkyEnabled;
         params.m_groundAlbedo = m_configuration.m_groundAlbedo;
         params.m_luminanceFactor = m_configuration.m_luminanceFactor;
-        params.m_lutUpdateRequired = m_configuration.m_lutPropertyChanged;
         params.m_mieAbsorption = m_configuration.m_mieAbsorption * m_configuration.m_mieAbsorptionScale;
         params.m_mieExpDistribution = m_configuration.m_mieExponentialDistribution;
         params.m_mieScattering = m_configuration.m_mieScattering * m_configuration.m_mieScatteringScale;
@@ -118,10 +117,7 @@ namespace AZ::Render
 
             m_transformInterface = TransformBus::FindFirstHandler(m_entityId);
             m_atmosphereId = m_featureProcessorInterface->CreateAtmosphere();
-
-            UpdateSkyAtmosphereParams(m_atmosphereParams);
-            m_atmosphereParams.m_lutUpdateRequired = true;
-            m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, m_atmosphereParams);
+            m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
 
             AZ::TransformNotificationBus::MultiHandler::BusConnect(m_entityId);
             if (m_configuration.m_sun.IsValid())

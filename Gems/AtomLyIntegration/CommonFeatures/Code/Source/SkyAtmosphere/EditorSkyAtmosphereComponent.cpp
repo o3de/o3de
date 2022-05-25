@@ -11,12 +11,6 @@
 
 namespace AZ::Render
 {
-    AZ::u32 SkyAtmosphereComponentConfig::OnLUTConfigurationChanged()
-    {
-        m_lutPropertyChanged = true;
-        return Edit::PropertyRefreshLevels::AttributesAndValues;
-    }
-
     void EditorSkyAtmosphereComponent::Reflect(AZ::ReflectContext* context)
     {
         BaseClass::Reflect(context);
@@ -59,68 +53,50 @@ namespace AZ::Render
                             ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::GroundAtLocalOrigin, "Ground at Local Origin")
                             ->EnumAttribute(SkyAtmosphereComponentConfig::AtmosphereOrigin::PlanetCenterAtLocalOrigin, "Planet center at local origin")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_groundRadius, "Ground radius", "Ground radius")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " km")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
 
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_groundAlbedo, "Ground albedo", "Additional light from the surface of the ground")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                         ->EndGroup()
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Atmosphere")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_atmosphereHeight, "Atmosphere height", "Atmosphere height")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " km")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
-
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_luminanceFactor, "Illuminance factor", "An additional factor to brighten or darken the overall atmosphere.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
-
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScatteringScale, "Rayleigh scattering Scale", "Raleigh scattering scale")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_rayleighScattering, "Rayleigh scattering", "Raleigh scattering coefficients from air molecules at surface of the planet.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
-
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighExponentialDistribution, "Rayleigh exponential distribution", "Altitude at which Rayleigh scattering is reduced to roughly 40%.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " km")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 400.0f)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieScatteringScale, "Mie scattering Scale", "Mie scattering scale")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieScattering, "Mie scattering", "Mie scattering coefficients from aerosole molecules at surface of the planet.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieAbsorptionScale, "Mie absorption Scale", "Mie absorption scale")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieAbsorption, "Mie absorption", "Mie absorption coefficients from aerosole molecules at surface of the planet.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
-
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieExponentialDistribution, "Mie exponential distribution", "Altitude at which Mie scattering is reduced to roughly 40%.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " km")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 400.0f)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_absorptionScale, "Ozone Absorption Scale", "Ozone molecule absorption scale")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_absorption, "Ozone Absorption", "Absorption coefficients from ozone molecules in a layer most dense at roughly the middle height of the atmosphere.")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SkyAtmosphereComponentConfig::OnLUTConfigurationChanged)
                         ->EndGroup()
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Sun")
@@ -168,9 +144,6 @@ namespace AZ::Render
         if(auto featureProcessor = m_controller.m_featureProcessorInterface)
         {
             featureProcessor->SetAtmosphereParams(m_controller.m_atmosphereId, m_controller.GetUpdatedSkyAtmosphereParams());
-
-            // reset the LUT changed flag so the LUT is only regenerated when LUT params change
-            m_controller.m_configuration.m_lutPropertyChanged = false;
         }
 
         return Edit::PropertyRefreshLevels::AttributesAndValues;

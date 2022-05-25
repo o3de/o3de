@@ -1,6 +1,6 @@
 {
     "Type": "JsonSerialization",
-    "Description" : "This is the pass template that renders the sun transmittance",
+    "Description" : "This is the pass template that renders the sky view LUT",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
@@ -18,26 +18,6 @@
                     "Name": "SkyViewLUTOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
-                },
-
-                //------------- Shadowing Resources -------------
-                {
-                    "Name": "DirectionalShadowmap",
-                    "ShaderInputName": "m_directionalLightShadowmap",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "IsArray": 1
-                    }
-                },
-                {
-                    "Name": "DirectionalESM",
-                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "IsArray": 1
-                    }
                 }
             ],
             "PassData": {

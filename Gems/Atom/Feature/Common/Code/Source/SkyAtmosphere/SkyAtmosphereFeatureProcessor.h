@@ -48,7 +48,6 @@ namespace AZ::Render
         
         void InitializeAtmosphere(AtmosphereId id);
         void UpdateBackgroundClearColor();
-            
         void CachePasses();
             
         struct SkyAtmosphere

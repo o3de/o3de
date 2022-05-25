@@ -38,9 +38,6 @@ namespace AZ::Render
         bool m_shadowsEnabled;
         bool m_sunEnabled;
         bool m_fastSkyEnabled;
-
-        //! flag used to denote when the LUT should be regenerated
-        bool m_lutUpdateRequired;
     };
 
     class SkyAtmosphereFeatureProcessorInterface

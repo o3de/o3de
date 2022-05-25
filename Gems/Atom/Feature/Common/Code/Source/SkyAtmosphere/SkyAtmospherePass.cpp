@@ -250,6 +250,20 @@ namespace AZ::Render
         }
     }
 
+    bool SkyAtmospherePass::LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const
+    {
+        return lhs.m_rayleighExpDistribution ==  rhs.m_rayleighExpDistribution &&
+            lhs.m_mieExpDistribution == rhs.m_mieExpDistribution &&
+            lhs.m_planetRadius ==  rhs.m_planetRadius &&
+            lhs.m_atmosphereRadius == rhs.m_atmosphereRadius &&
+            lhs.m_luminanceFactor.IsClose(rhs.m_luminanceFactor) &&
+            lhs.m_rayleighScattering.IsClose(rhs.m_rayleighScattering) &&
+            lhs.m_mieScattering.IsClose(rhs.m_mieScattering) &&
+            lhs.m_mieAbsorption.IsClose(rhs.m_mieAbsorption) &&
+            lhs.m_absorption.IsClose(rhs.m_absorption) &&
+            lhs.m_groundAlbedo.IsClose(rhs.m_groundAlbedo);
+    }
+
     void SkyAtmospherePass::UpdateRenderPassSRG(const SkyAtmosphereParams& params)
     {
         m_constants.m_bottomRadius = params.m_planetRadius;
@@ -283,8 +297,11 @@ namespace AZ::Render
             m_constants.m_rayMarchMax = aznumeric_cast<float>(params.m_maxSamples); 
         }
 
-        if (params.m_lutUpdateRequired)
+        // update LUT params the first time or when they change
+        if (m_lutUpdateRequired || !LutParamsEqual(m_atmosphereParams, params))
         {
+            m_lutUpdateRequired = false;
+
             params.m_luminanceFactor.StoreToFloat3(m_constants.m_luminanceFactor);
             params.m_rayleighScattering.StoreToFloat3(m_constants.m_rayleighScattering);
             params.m_mieScattering.StoreToFloat3(m_constants.m_mieScattering);
@@ -314,6 +331,8 @@ namespace AZ::Render
                 m_skyTransmittanceLUTPass->SetEnabled(true);
             }
         }
+
+        m_atmosphereParams = params;
 
         for (auto passData : m_passData)
         {

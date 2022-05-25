@@ -41,8 +41,6 @@
                         ]
                     }
                 },
-
-                //------------- Shadowing Resources -------------
                 {
                     "Name": "DirectionalShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",

@@ -109,6 +109,7 @@ namespace AZ::Render
         void RegisterForShaderNotifications();
         void BindLUTs();
         void BuildShaderData();
+        bool LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const;
 
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;
 
@@ -128,6 +129,8 @@ namespace AZ::Render
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
+        SkyAtmosphereParams m_atmosphereParams;
+        bool m_lutUpdateRequired = true;
 
         AZ::Name o_enableShadows;
         AZ::Name o_enableFastSky;
