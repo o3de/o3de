@@ -719,8 +719,8 @@ namespace Terrain
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {
-        const AZ::Vector2 boundsMin2d = AZ::Vector2(bounds.GetMin().GetX(), bounds.GetMin().GetY());
-        const AZ::Vector2 boundsMax2d = AZ::Vector2(bounds.GetMax().GetX(), bounds.GetMax().GetY());
+        const AZ::Vector2 boundsMin2d = AZ::Vector2(bounds.GetMin());
+        const AZ::Vector2 boundsMax2d = AZ::Vector2(bounds.GetMax());
 
         for (uint32_t lodLevel = 0; lodLevel < m_sectorStack.size(); ++lodLevel)
         {
@@ -732,8 +732,8 @@ namespace Terrain
             auto& stackData = m_sectorStack.at(lodLevel);
             for (StackSectorData& sectorData : stackData.m_sectors)
             {
-                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sectorData.m_aabb.GetMin().GetX(), sectorData.m_aabb.GetMin().GetY());
-                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sectorData.m_aabb.GetMax().GetX(), sectorData.m_aabb.GetMax().GetY());
+                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sectorData.m_aabb.GetMin());
+                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sectorData.m_aabb.GetMax());
                 const bool overlaps = sectorAabbMin2D.IsLessEqualThan(lodBoundsMax2d) && sectorAabbMax2D.IsGreaterEqualThan(lodBoundsMin2d);
                 if (overlaps)
                 {
