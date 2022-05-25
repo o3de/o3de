@@ -64,22 +64,21 @@ namespace AzToolsFramework
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
 
-            QAction* deleteAction = new QAction(tr("Delete Action"), this);
+            setEditTriggers(QAbstractItemView::EditKeyPressed);
+
+            QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
             connect(
-                deleteAction, &QAction::triggered, this,
-                [this]()
-                    {
-                        DeleteEntries();
-                    });
+                deleteAction, &QAction::triggered, this, [this]()
+                {
+                    DeleteEntries();
+                });
             addAction(deleteAction);
 
             QAction* renameAction = new QAction("Rename Action", this);
             renameAction->setShortcut(Qt::Key_F2);
-            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
-                renameAction, &QAction::triggered, this,
-                [this]()
+                renameAction, &QAction::triggered, this, [this]()
                 {
                     RenameEntry();
                 });
@@ -494,6 +493,8 @@ namespace AzToolsFramework
             auto entries = GetSelectedAssets();
             if (entries.size() == 1)
             {
+                edit(currentIndex());
+                AZ_TracePrintf("Test", "We are here %d", currentIndex());
             }
         }
 
@@ -501,4 +502,3 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 #include "AssetBrowser/Views/moc_AssetBrowserTreeView.cpp"
-
