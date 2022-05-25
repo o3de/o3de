@@ -15,6 +15,7 @@
 #include "RenderUtil.h"
 #include "TransformationManipulator.h"
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Vector3.h>
 
 
 namespace MCommon
@@ -88,7 +89,23 @@ namespace MCommon
         void ProcessMouseInput(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY, int32 mouseMovementX, int32 mouseMovementY, bool leftButtonPressed, bool middleButtonPressed, bool rightButtonPressed, uint32 keyboardKeyFlags = 0);
 
     protected:
-        AZ::Vector3             m_rotation;
+        bool internalCheckIntersectXAxis(
+            const MCommon::Camera::ProjectionMode projectionMode,
+            const MCore::Ray& ray,
+            const AZ::Vector3& camRollAxis,
+            AZ::Vector3& normalRotationDirection);
+        bool internalCheckIntersectYAxis(
+            const MCommon::Camera::ProjectionMode projectionMode,
+            const MCore::Ray& ray,
+            const AZ::Vector3& camRollAxis,
+            AZ::Vector3& normalRotationDirection);
+        bool internalCheckIntersectZAxis(
+            const MCommon::Camera::ProjectionMode projectionMode,
+            const MCore::Ray& ray,
+            const AZ::Vector3& camRollAxis,
+            AZ::Vector3& normalRotationDirection);
+
+        AZ::Vector3 m_rotation;
         AZ::Quaternion          m_rotationQuat;
         AZ::Vector3             m_rotationAxis;
         AZ::Vector3             m_clickPosition;

@@ -408,7 +408,7 @@ namespace AZ
 
     Intersect::RayAABBIsectTypes Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb)  
     {
-        float start, end;
+        [[maybe_unused]] float start, end;
         return IntersectRayAABB2(rayStart, dirRCP, aabb, start, end);
     }
 

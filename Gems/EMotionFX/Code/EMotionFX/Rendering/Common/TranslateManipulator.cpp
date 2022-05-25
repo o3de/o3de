@@ -94,8 +94,8 @@ namespace MCommon
         UpdateBoundingVolumes();
 
         // shoot ray ar the mouse position
-        MCore::Ray mouseRay = camera->Unproject(mousePosX, mousePosY);
-        AZ::Vector3 rayReciprocal = mouseRay.GetDirection().GetReciprocal();
+        const MCore::Ray mouseRay = camera->Unproject(mousePosX, mousePosY);
+        const AZ::Vector3 rayReciprocal = mouseRay.GetDirection().GetReciprocal();
 
         // check if one of the AABBs is hit
         if (AZ::Intersect::IntersectRayAABB2(mouseRay.GetOrigin(), rayReciprocal, m_xAxisAabb) != AZ::Intersect::ISECT_RAY_AABB_NONE || 

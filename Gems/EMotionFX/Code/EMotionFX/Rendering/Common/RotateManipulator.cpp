@@ -371,6 +371,77 @@ namespace MCommon
         }
     }
 
+    bool RotateManipulator::internalCheckIntersectXAxis(
+        const MCommon::Camera::ProjectionMode projectionMode,
+        const MCore::Ray& ray,
+        const AZ::Vector3& camRollAxis,
+        AZ::Vector3& normalRotationDirection)
+    {
+        // internal check for rotation around x axis, if the following intersection conditions are fulfilled
+        // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
+        const AZ::Vector3 rayDirectionRCP = ray.GetDirection().GetReciprocal();
+        if ((AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_xAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE ||
+             (projectionMode == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_xAxisVisible)) &&
+            ray.Intersects(m_innerBoundingSphere))
+        {
+            float start = 0, end = 0;
+            if (AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_xAxisAabb, start, end) !=
+                AZ::Intersect::ISECT_RAY_AABB_NONE)
+            {
+                normalRotationDirection = ((ray.GetOrigin() + ray.GetDirection() * start) - m_position).GetNormalized();
+                return MCore::Math::ACos(camRollAxis.Dot(normalRotationDirection)) > MCore::Math::halfPi;
+            }
+        }
+        return false;
+    }
+
+    bool RotateManipulator::internalCheckIntersectYAxis(
+        const MCommon::Camera::ProjectionMode projectionMode,
+        const MCore::Ray& ray,
+        const AZ::Vector3& camRollAxis,
+        AZ::Vector3& normalRotationDirection)
+    {
+        // internal check for rotation around y axis, if the following intersection conditions are fulfilled
+        // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
+        const AZ::Vector3 rayDirectionRCP = ray.GetDirection().GetReciprocal();
+        if ((AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_yAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE ||
+             (projectionMode == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_yAxisVisible)) &&
+            ray.Intersects(m_innerBoundingSphere))
+        {
+            float start = 0, end = 0;
+            if (AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_yAxisAabb, start, end) !=
+                AZ::Intersect::ISECT_RAY_AABB_NONE)
+            {
+                normalRotationDirection = ((ray.GetOrigin() + ray.GetDirection() * start) - m_position).GetNormalized();
+                return MCore::Math::ACos(camRollAxis.Dot(normalRotationDirection)) > MCore::Math::halfPi;
+            }
+        }
+        return false;
+    }
+
+    bool RotateManipulator::internalCheckIntersectZAxis(
+        const MCommon::Camera::ProjectionMode projectionMode,
+        const MCore::Ray& ray,
+        const AZ::Vector3& camRollAxis,
+        AZ::Vector3& normalRotationDirection)
+    {
+        // internal check for rotation around z axis, if the following intersection conditions are fulfilled
+        // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
+        const AZ::Vector3 rayDirectionRCP = ray.GetDirection().GetReciprocal();
+        if ((AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_xAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE ||
+             (projectionMode == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_zAxisVisible)) &&
+            ray.Intersects(m_innerBoundingSphere))
+        {
+            float start = 0, end = 0;
+            if (AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), rayDirectionRCP, m_zAxisAabb, start, end) !=
+                AZ::Intersect::ISECT_RAY_AABB_NONE)
+            {
+                normalRotationDirection = ((ray.GetOrigin() + ray.GetDirection() * start) - m_position).GetNormalized();
+                return MCore::Math::ACos(camRollAxis.Dot(normalRotationDirection)) > MCore::Math::halfPi;
+            }
+        }
+        return false;
+    }
 
     // unproject screen coordinates to a ray
     void RotateManipulator::ProcessMouseInput(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY, int32 mouseMovementX, int32 mouseMovementY, bool leftButtonPressed, bool middleButtonPressed, bool rightButtonPressed, uint32 keyboardKeyFlags)
@@ -408,61 +479,41 @@ namespace MCommon
             }
 
             // the intersection variables
-            AZ::Vector3 intersectA, intersectB;
-            AZ::Vector3 rayReciprocal = mousePosRay.GetDirection().GetReciprocal();
-            AZ::Vector3 normalizedDirection;
-            auto intersectRayDirectionAxis =
-                [=](AZ::Aabb& aabb, const MCore::Ray& ray, const AZ::Vector3& dirRCP, AZ::Vector3& normalizedDirection)
-            {
-                float start = 0, end = 0;
-                auto captured = AZ::Intersect::IntersectRayAABB2(ray.GetOrigin(), dirRCP, aabb, start, end);
-                if (captured != AZ::Intersect::ISECT_RAY_AABB_NONE)
-                {
-                    normalizedDirection = ((ray.GetOrigin() + ray.GetDirection() * start) - m_position).GetNormalized();
-                }
-                return captured;
-            };
+            AZ::Vector3 rotationDirection, rayHitStart, rayHitEnd;
 
             // set rotation mode to rotation around the x axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            if ((AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_xAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE || (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_xAxisVisible)) &&
-                 mousePosRay.Intersects(m_innerBoundingSphere) && intersectRayDirectionAxis(m_xAxisAabb, mousePosRay, rayReciprocal, normalizedDirection) != AZ::Intersect::ISECT_RAY_AABB_NONE && 
-                 MCore::Math::ACos(camRollAxis.Dot(normalizedDirection)) > MCore::Math::halfPi)
+            if (internalCheckIntersectXAxis(
+                    camera->GetProjectionMode(), mousePosRay, camRollAxis, rotationDirection))
             {
                 m_mode = ROTATE_X;
                 m_rotationAxis = AZ::Vector3(1.0f, 0.0f, 0.0f);
-                m_clickPosition = normalizedDirection;
+                m_clickPosition = rotationDirection;
                 m_clickPosition.SetX(0.0f);
-                
             }
             // set rotation mode to rotation around the y axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            else if ((AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal,m_yAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE || (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_yAxisVisible)) &&
-                      mousePosRay.Intersects(m_innerBoundingSphere) && intersectRayDirectionAxis(m_yAxisAabb, mousePosRay, rayReciprocal, normalizedDirection) != AZ::Intersect::ISECT_RAY_AABB_NONE &&
-                      MCore::Math::ACos(camRollAxis.Dot(normalizedDirection)) > MCore::Math::halfPi)
+            else if (internalCheckIntersectYAxis(
+                         camera->GetProjectionMode(), mousePosRay, camRollAxis, rotationDirection))
             {
                 m_mode = ROTATE_Y;
                 m_rotationAxis = AZ::Vector3(0.0f, 1.0f, 0.0f);
-                m_clickPosition = normalizedDirection;
+                m_clickPosition = rotationDirection;
                 m_clickPosition.SetY(0.0f);
-                
             }
             // set rotation mode to rotation around the z axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            else if ((AZ::Intersect::IntersectRayAABB2(mousePosRay.GetOrigin(), rayReciprocal, m_zAxisInnerAabb) == AZ::Intersect::ISECT_RAY_AABB_NONE || (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_zAxisVisible)) &&
-                     mousePosRay.Intersects(m_innerBoundingSphere) && intersectRayDirectionAxis(m_zAxisAabb, mousePosRay, rayReciprocal, normalizedDirection) != AZ::Intersect::ISECT_RAY_AABB_NONE &&
-                     MCore::Math::ACos(camRollAxis.Dot(normalizedDirection)) > MCore::Math::halfPi)
+            else if (internalCheckIntersectZAxis(
+                         camera->GetProjectionMode(), mousePosRay, camRollAxis, rotationDirection))
             {
                 m_mode = ROTATE_Z;
                 m_rotationAxis = AZ::Vector3(0.0f, 0.0f, 1.0f);
-                m_clickPosition = normalizedDirection;
+                m_clickPosition = rotationDirection;
                 m_clickPosition.SetZ(0.0f);
-            
             }
-
             // set rotation mode to rotation around the pitch and yaw axis of the camera,
             // if the inner sphere is hit and none of the previous conditions was fulfilled
-            else if (mousePosRay.Intersects(m_innerBoundingSphere, &intersectA, &intersectB))
+            else if (mousePosRay.Intersects(m_innerBoundingSphere, &rayHitStart, &rayHitEnd))
             {
                 m_mode = ROTATE_CAMPITCHYAW;
 
@@ -471,12 +522,12 @@ namespace MCommon
 
                 // project the click position onto the plane which is perpendicular to the rotation direction
                 MCore::PlaneEq rotationPlane(camRollAxis, m_position);
-                m_clickPosition = (rotationPlane.Project(intersectA - m_position)).GetNormalized();
+                m_clickPosition = (rotationPlane.Project(rayHitStart - m_position)).GetNormalized();
             }
 
             // set rotation mode to rotation around the roll axis of the camera,
             // if the outer sphere is hit and none of the previous conditions was fulfilled
-            else if (mousePosRay.Intersects(m_outerBoundingSphere, &intersectA, &intersectB))
+            else if (mousePosRay.Intersects(m_outerBoundingSphere, &rayHitStart, &rayHitEnd))
             {
                 // set rotation mode to rotate around the view axis
                 m_mode = ROTATE_CAMROLL;
@@ -486,7 +537,7 @@ namespace MCommon
 
                 // project the click position onto the plane which is perpendicular to the rotation direction
                 MCore::PlaneEq rotationPlane(m_rotationAxis, AZ::Vector3::CreateZero());
-                m_clickPosition = (rotationPlane.Project(intersectA - m_position)).GetNormalized();
+                m_clickPosition = (rotationPlane.Project(rayHitStart - m_position)).GetNormalized();
             }
 
             // no bounding volume is currently hit, therefore do not rotate
