@@ -26,138 +26,115 @@ option bool o_blend_between_cascades_enable = false;
 // DirectionalLightShadow calculates lit ratio for a directional light.
 class DirectionalLightShadow
 {
-    struct DebugInfo
-    {
-        uint m_cascadeIndex; // cascade index where lit ratio determined.
-        bool m_usePcfFallback;
-    };
+    static bool UseFullscreenShadows();
 
-    //////////
-    // public method
+    //! Calculates visibility ratio of the surface from the light origin. Should be called from fragment shaders.
+    //! Returns lit ratio from the light (1.0 is fully visible, 0.0 is fully shadowed).
+    static float GetVisibility(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
 
-    //! This calculates visibility ratio of the surface from the light origin.
-    //! This should be called from fragment shaders.
-    //! @param lightIndex directional light index.
-    //! @param shadowCoords shadow coordinates of the surface for each cascade.
-    //! @param normalVector normal vector of the surface in world space.
-    //! @param debugInfo information used in debug coloring.
-    //! @return lit ratio from the light (1.0 is fully visible).
-    static float GetVisibility(
-        uint lightIndex,
-        float3 worldPos,
-        float3 normalVector,
-        float4 screenUv,
-        out DebugInfo debugInfo);
+    static float2 GetVisibilityThickTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
 
-    static float GetThickness(uint lightIndex);
+    static float2 GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor);
+
+    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
 
     //! This alters the input color to visualize which cascade is being used
     //! and whether PCF is used as a fallback in ESM+PCF mode or not.
-    //! @param color input color.
-    //! @param lightIndex directional light index.
-    //! @param debugInfo information of used cascade and PCF is used in ESM+PCF mode.
-    //! @return resulting color.
-    static float3 AddDebugColoring(
-        float3 color, 
-        uint lightIndex,
-        DebugInfo debugInfo);
-
-    //////////
-    // private methods
-
-    // This checks if the point from the given coordinate is shadowed or not.
-    // result.x == true if the shadowCoord falls within the cascade.
-    // result.y == true if the given coordinate is in shadow.
-    bool2 IsShadowed(float3 shadowCoord, uint indexOfCascade);
-
-    // This outputs visibility ratio (from 0.0 to 1.0) of the given coordinate
-    // from the light origin without filtering.
-    float GetVisibilityFromLightNoFilter();
-
-    // This outputs visibility ratio (from 0.0 to 1.0) for PCF.
-    float GetVisibilityFromLightPcf();
-
-    // This outputs visibility ratio (from 0.0 to 1.0) for ESM.
-    float GetVisibilityFromLightEsm();
-
-    // This outputs visibility ratio (from 0.0 to 1.0) for ESM+PCF.
-    float GetVisibilityFromLightEsmPcf();
-
-    float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade);
-
-    float CalculateCascadeBlendAmount(const float3 texCoord);
-
-    uint m_lightIndex;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
-    float m_slopeBias[ViewSrg::MaxCascadeCount];
-    float3 m_normalVector;
-    DebugInfo m_debugInfo;
-    float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
-    float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
+    static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
 };
 
-
-
-float DirectionalLightShadow::GetThickness(uint lightIndex)
+bool DirectionalLightShadow::UseFullscreenShadows()
 {
-    DirectionalShadowCalculator calc; 
-    
-    calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
-    calc.SetLightIndex(lightIndex); 
-    
-    return calc.GetThickness();
+    bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
+    return useFullscreenShadows;
 }
 
-float DirectionalLightShadow::GetVisibility(
-    uint lightIndex,
-    float3 worldPos,
-    float3 normalVector,
-    float4 screenUv,
-    out DirectionalLightShadow::DebugInfo debugInfo)
-{ 
-    debugInfo.m_cascadeIndex = 0;
-    debugInfo.m_usePcfFallback = false;    
+DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+{
+    DirectionalShadowCalculator calc;
+    calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
+    calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
+    calc.SetReceiverShadowPlaneBiasEnable(o_directional_shadow_receiver_plane_bias_enable);
+    calc.SetWorldNormal(normalVector);
+    calc.SetLightIndex(lightIndex);
+    calc.SetFilterMode(o_directional_shadow_filtering_method);
+    calc.SetWorldPos(worldPos);
+    return calc;
+}
+
+float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+{
+    float visibility;
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
     
-    const bool useFullscreenShadow = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
-    if (useFullscreenShadow)
+    if (UseFullscreenShadows())
+    {
+        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+
+        // Compute shadow coords for call to GetThickness below
+        calc.ComputeShadowCoords();
+    }
+    else
+    {    
+        visibility = calc.GetVisibility();
+    }
+
+    float thickness = calc.GetThickness();
+
+    return float2(visibility, thickness);
+}
+
+float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor)
+{
+    float visibility;
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+
+    if (UseFullscreenShadows())
+    {
+        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+    }
+    else
+    {    
+        visibility = calc.GetVisibility();
+    }
+
+    // Apply transmission shrink factor for thin transmission materials and recalculate shadow coords
+    // This way the shrink factor only gets applied to the thickness/transmission factor and not to the default shadows
+    calc.SetWorldPos(worldPos - shrinkFactor * normalVector);
+    calc.ComputeShadowCoords();
+
+    float thickness = calc.GetThickness();
+
+    return float2(visibility, thickness);
+}
+
+float DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+{    
+    if (UseFullscreenShadows())
     {
         return PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
     }
     else
     {
-        DirectionalShadowCalculator calc; 
-        calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
-        calc.SetShadowmaps(PassSrg::m_directionalLightShadowmap, PassSrg::m_directionalLightExponentialShadowmap);
-        calc.SetReceiverShadowPlaneBiasEnable(o_directional_shadow_receiver_plane_bias_enable);
-        calc.SetWorldNormal(normalVector);
-        calc.SetLightIndex(lightIndex); 
-        calc.SetFilterMode(o_directional_shadow_filtering_method);
-        calc.SetWorldPos(worldPos);    
-        
-        return calc.GetVisibility();      
+        DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+        return calc.GetVisibility();
     }
 }
 
-float3 DirectionalLightShadow::AddDebugColoring(
-    float3 color, 
-    uint lightIndex, 
-    DirectionalLightShadow::DebugInfo debugInfo)
+float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
 {
-    const uint cascadeIndex = debugInfo.m_cascadeIndex;
-    const bool usePcfFallback = debugInfo.m_usePcfFallback;
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
-
     if ((ViewSrg::m_directionalLightShadows[lightIndex].m_debugFlags &
         ViewSrg::DirectionalLightShadowDebugColoringBitMask) == 0)
     {
         return color;
     }
-    if (usePcfFallback)
-    {
-        return float3(1, 0, 1);
-    }
 
-    if (cascadeIndex < cascadeCount)
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
+
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    calc.ComputeShadowCoords();
+
+    if (calc.m_cascadeIndex < cascadeCount)
     {
         static const float3 debuggingColors[ViewSrg::MaxCascadeCount] = 
         {
@@ -165,7 +142,7 @@ float3 DirectionalLightShadow::AddDebugColoring(
             float3(0., 1., 0.), 
             float3(0., 0., 1.), 
             float3(1., 1., 0.)};
-        color = color * 0.75 + debuggingColors[cascadeIndex] * 0.25;
+        color = color * 0.75 + debuggingColors[calc.m_cascadeIndex] * 0.25;
     }
     return color;
 }

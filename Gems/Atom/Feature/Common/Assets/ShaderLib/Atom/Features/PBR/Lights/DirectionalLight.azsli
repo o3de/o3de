@@ -13,8 +13,6 @@
 
 void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
-    DirectionalLightShadow::DebugInfo debugInfo = {0, false};
-
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
@@ -26,25 +24,30 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     float transmissionDistance = -1.0f;
 
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
-    {
-        litRatio = DirectionalLightShadow::GetVisibility(
-            shadowIndex,
-            surface.position,
-            surface.vertexNormal,
-            screenUv,
-            debugInfo);
-            
+    {           
 #if ENABLE_TRANSMISSION
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex);
+            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThickTransmission(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+            litRatio = visibilityAndThickness.x;
+            transmissionDistance = visibilityAndThickness.y;
         } 
         else if (o_transmission_mode == TransmissionMode::ThinObject) 
         {
-            // the depth from the shadow map
-            transmissionDistance = DirectionalLightShadow::GetThickness(shadowIndex);
+            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
+                                                shadowIndex, surface.position, surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());
+
+            litRatio = visibilityAndThickness.x;
+            transmissionDistance = visibilityAndThickness.y;
         }
+        else
+        {
+            litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+        }
+#else
+        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
 #endif
+
     }
 
     // Add the lighting contribution for each directional light
@@ -88,10 +91,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
     // Add debug coloring for directional light shadow
     if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
-        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(
-            lightingData.specularLighting,
-            ViewSrg::m_shadowIndexDirectionalLight,
-            debugInfo);
+        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, surface.vertexNormal, screenUv);
     }
 
 }

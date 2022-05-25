@@ -148,7 +148,7 @@
                                 "Pass": "DepthPrePass",
                                 "Attachment": "DepthMSAA" 
                             }
-                        }                
+                        }
                     ]
                 },
                 {

@@ -18,12 +18,6 @@ enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
 // The reason this is a standalone class is because it can be used either in a Forward Shader or in a fullscreen pass shader.
 class DirectionalShadowCalculator 
 {
-    struct DebugInfo 
-    {
-        uint m_cascadeIndex; // cascade index where lit ratio determined.
-        bool m_usePcfFallback;
-    };
-
     void SetBlendBetweenCascadesEnable(const bool enable)
     {
         m_blendBetweenCascadesEnable = enable;
@@ -86,12 +80,11 @@ class DirectionalShadowCalculator
     bool m_blendBetweenCascadesEnable;
 
     int m_lightIndex;
+    int m_cascadeIndex;
     ShadowFilterMethod m_filterMode;
 
     Texture2DArray<float> m_directionalLightShadowmap;   
     Texture2DArray<float> m_directionalLightExponentialShadowmap;        
-
-    DebugInfo m_debugInfo;    
 };
 
 bool DirectionalShadowCalculator::IsShadowCoordInCascade(float3 shadowCoord, uint shadowMapSize)
@@ -111,14 +104,13 @@ float DirectionalShadowCalculator::GetThickness()
     }
 
     Texture2DArray<float> shadowmap = m_directionalLightShadowmap;
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    if(m_cascadeIndex >= 0)
     {  
-        float3 shadowCoord = m_shadowCoords[indexOfCascade];
+        float3 shadowCoord = m_shadowCoords[m_cascadeIndex];
         if (IsShadowCoordInCascade(shadowCoord, size))
         {
-            const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, indexOfCascade)).r;
+            const float depthBufferValue = shadowmap.Sample(PassSrg::LinearSampler, float3(shadowCoord.xy, m_cascadeIndex)).r;
             
             // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
             const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
@@ -138,9 +130,11 @@ void DirectionalShadowCalculator::ComputeShadowCoords()
     const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[m_lightIndex].m_lightViewToShadowmapMatrices;
     const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[m_lightIndex].m_worldToLightViewMatrices;
 
+    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     const float3 shadowOffset = ComputeNormalShadowOffset(ViewSrg::m_directionalLightShadows[m_lightIndex].m_normalShadowBias, m_worldNormal, ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize);
 
+    m_cascadeIndex = -1;
     for (uint index = 0; index < cascadeCount; ++index)
     {        
         float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(m_worldPos + shadowOffset, 1.));
@@ -148,6 +142,12 @@ void DirectionalShadowCalculator::ComputeShadowCoords()
         
         const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
         m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
+
+        // Cache Cascade index
+        if(IsShadowCoordInCascade(m_shadowCoords[index], size) && m_cascadeIndex < 0)
+        {
+            m_cascadeIndex = index;
+        }
     }
             
     if (m_receiverShadowPlaneBiasEnable)
@@ -165,8 +165,6 @@ bool2 DirectionalShadowCalculator::IsShadowed(const float3 shadowCoord, const ui
 {
     // size is the shadowap's width and height.
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
 
     [branch]
     if (IsShadowCoordInCascade(shadowCoord, size))
@@ -239,18 +237,15 @@ float DirectionalShadowCalculator::GetVisibility()
 
 float DirectionalShadowCalculator::GetVisibilityFromLightNoFilter()
 {       
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    if (m_cascadeIndex >= 0)
     {
-        const bool2 checkedShadowed = IsShadowed(m_shadowCoords[indexOfCascade], indexOfCascade);
+        const bool2 checkedShadowed = IsShadowed(m_shadowCoords[m_cascadeIndex], m_cascadeIndex);
 
         if (checkedShadowed.x)
         {
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
             return checkedShadowed.y ? 0. : 1.;
         }
     }
-    m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 }    
 
@@ -259,8 +254,6 @@ float DirectionalShadowCalculator::SamplePcfBicubic(const float3 shadowCoord, co
     const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-
     SampleShadowMapBicubicParameters param;
     param.shadowMap = m_directionalLightShadowmap;
     param.shadowPos = float3(shadowCoord.xy, indexOfCascade);
@@ -287,32 +280,19 @@ float DirectionalShadowCalculator::SamplePcfBicubic(const float3 shadowCoord, co
 
 float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
 {   
-    bool cascadeFound = false;
-    int currentCascadeIndex = 0;
-
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
-    {
-        const float3 shadowCoord = m_shadowCoords[indexOfCascade];
-        if (IsShadowCoordInCascade(shadowCoord, size))
-        {
-            currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
-            cascadeFound = true;
-            break;
-        }
-    }
 
     [branch]
-    if (cascadeFound)
+    if (m_cascadeIndex >= 0)
     {
-        float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
+        float lit = SamplePcfBicubic(m_shadowCoords[m_cascadeIndex], m_cascadeIndex);
         
         if(m_blendBetweenCascadesEnable) 
         {  
-            const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
+            const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[m_cascadeIndex].xyz);
 
-            const int nextCascadeIndex = currentCascadeIndex + 1;
+            const int nextCascadeIndex = m_cascadeIndex + 1;
             [branch]
             if (blendBetweenCascadesAmount < 1.0f && nextCascadeIndex < cascadeCount)
             {
@@ -324,16 +304,14 @@ float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
         return lit;
     }
 
-    m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 } 
 
 float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
 {
-    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
 
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    for (uint indexOfCascade = m_cascadeIndex; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
         const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
@@ -349,21 +327,17 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
             const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
             const float ratio = exp(exponent);
 
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
             return saturate(ratio);
         }
     }
-
-    m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 }
 
 float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
 {
-    const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
 
-    for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+    for (uint indexOfCascade = m_cascadeIndex; indexOfCascade < cascadeCount; ++indexOfCascade)
     {
         const float3 shadowCoord = m_shadowCoords[indexOfCascade];
         const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
@@ -382,20 +356,11 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
             static const float pcfFallbackThreshold = 1.04;
             if (ratio > pcfFallbackThreshold)
             {
-                m_debugInfo.m_usePcfFallback = true;
                 ratio = GetVisibilityFromLightPcf();
             }
-            else
-            {
-                m_debugInfo.m_usePcfFallback = false;
-            }
-            m_debugInfo.m_cascadeIndex = indexOfCascade;
             return saturate(ratio);
         }
     }
-
-    m_debugInfo.m_usePcfFallback = false;
-    m_debugInfo.m_cascadeIndex = cascadeCount;
     return 1.;
 }
 
