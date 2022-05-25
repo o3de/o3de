@@ -4454,7 +4454,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventAddHelpers()
     {
-
+        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 
     void MainWindow::OnScriptEventMenuPreShow()
@@ -4464,17 +4464,17 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventOpen()
     {
-
+        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 
     void MainWindow::OnScriptEventParseAs()
     {
-
+        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 
     void MainWindow::OnScriptEventSaveAs()
     {
-
+        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>
