@@ -17,7 +17,7 @@ namespace RecastNavigation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<RecastNavigationSystemComponent>("RecastNavigation", "[Description of functionality provided by this System Component]")
+                ec->Class<RecastNavigationSystemComponent>("RecastNavigation", "[System Component for the Recast Navigation gem]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

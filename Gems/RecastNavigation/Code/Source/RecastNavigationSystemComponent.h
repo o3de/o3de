@@ -23,7 +23,7 @@ namespace RecastNavigation
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         RecastNavigationSystemComponent();
-        ~RecastNavigationSystemComponent();
+        ~RecastNavigationSystemComponent() override;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
