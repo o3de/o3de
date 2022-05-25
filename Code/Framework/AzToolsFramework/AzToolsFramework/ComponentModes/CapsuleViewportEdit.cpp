@@ -94,10 +94,20 @@ namespace AzToolsFramework
                 AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             m_radiusManipulator->SetViews(AZStd::move(views));
         }
+        m_radiusManipulator->InstallLeftMouseDownCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                BeginEditing();
+            });
         m_radiusManipulator->InstallMouseMoveCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 OnRadiusManipulatorMoved(action);
+            });
+        m_radiusManipulator->InstallLeftMouseUpCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                FinishEditing();
             });
     }
 
@@ -117,10 +127,20 @@ namespace AzToolsFramework
                 AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             m_heightManipulator->SetViews(AZStd::move(views));
         }
+        m_heightManipulator->InstallLeftMouseDownCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                BeginEditing();
+            });
         m_heightManipulator->InstallMouseMoveCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 OnHeightManipulatorMoved(action);
+            });
+        m_heightManipulator->InstallLeftMouseUpCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                FinishEditing();
             });
     }
 
@@ -199,5 +219,13 @@ namespace AzToolsFramework
         m_heightManipulator->SetLocalTransform(
             localTransform * AZ::Transform::CreateTranslation(capsuleHeight * HalfHeight * m_heightManipulator->GetAxis()));
         SetCapsuleHeight(capsuleHeight);
+    }
+
+    void CapsuleViewportEdit::BeginEditing()
+    {
+    }
+
+    void CapsuleViewportEdit::FinishEditing()
+    {
     }
 } // namespace AzToolsFramework
