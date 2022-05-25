@@ -113,7 +113,7 @@ namespace AZ
             bool m_receiverPlaneBiasEnabled = true;
 
             //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
 
             // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
             bool m_cascadeBlendingEnabled = false;
