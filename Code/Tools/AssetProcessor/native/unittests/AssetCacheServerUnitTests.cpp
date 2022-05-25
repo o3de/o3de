@@ -52,6 +52,8 @@ namespace UnitTest
             AZ::SettingsRegistry::Register(&m_mockSettingsRegistry);
             m_tempFolder = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
             m_fakeSourceFile = QString(m_tempFolder + m_fakeFullname + ".zip");
+            AssetUtilities::ResetServerAddress();
+            AssetUtilities::ResetServerMode();
         }
 
         ~AssetServerHandlerUnitTest()
