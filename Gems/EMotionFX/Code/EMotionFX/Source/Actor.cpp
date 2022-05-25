@@ -1392,7 +1392,7 @@ namespace EMotionFX
         return morphTargetMetaAssetInfo.m_assetId.IsValid();
     }
 
-    void Actor::Finalize(LoadRequirement loadReq)
+    void Actor::Finalize([[maybe_unused]]LoadRequirement loadReq)
     {
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
 
@@ -1420,7 +1420,7 @@ namespace EMotionFX
                     morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
             }
 
-            if (loadReq == LoadRequirement::RequireBlockingLoad)
+            //if (loadReq == LoadRequirement::RequireBlockingLoad)
             {
                 if (m_skinMetaAsset.IsLoading())
                 {
@@ -2452,13 +2452,13 @@ namespace EMotionFX
         // 1) Build a set of nodes that we want to keep in the actor skeleton heirarchy.
         // 2) Mark all the node in the above list and all their predecessors.
         // 3) In actor skeleton, remove every node that hasn't been marked.
-        // 4) Meanwhile, build a map that represent the child-parent relationship. 
+        // 4) Meanwhile, build a map that represent the child-parent relationship.
         // 5) After the node index changed, we use the map in 4) to restore the child-parent relationship.
         size_t numNodes = m_skeleton->GetNumNodes();
         AZStd::vector<bool> flags;
         AZStd::unordered_map<AZStd::string, AZStd::string> childParentMap;
         flags.resize(numNodes);
-        
+
         AZStd::unordered_set<Node*> nodesToKeep;
         // Search the hit detection config to find and keep all the hit detection nodes.
         for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : m_physicsSetup->GetHitDetectionConfig().m_nodes)

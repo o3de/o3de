@@ -1237,6 +1237,8 @@ namespace AZ::Data
                 m_debugAssetEvents->ReleaseAsset(assetId);
             }
 
+            AZ_TracePrintf("AssetManager", "Release Asset %s.  CreationToken: %d\n", assetId.ToFixedString().c_str(), creationToken);
+
             // find the asset type handler
             AssetHandlerMap::iterator handlerIt = m_handlers.find(assetType);
             if (handlerIt != m_handlers.end())
@@ -1331,6 +1333,7 @@ namespace AZ::Data
         if (assetIter == m_assets.end() || assetIter->second->IsLoading())
         {
             // Only existing assets can be reloaded.
+            AZ_TracePrintf("AssetManager", "Reload Asset called but asset is not currently loaded: %s\n", assetId.ToFixedString().c_str());
             return;
         }
 
@@ -1556,8 +1559,28 @@ namespace AZ::Data
                     m_reloads.erase(reloadInfo);
                 }
             }
+
+            AZ_TracePrintf(
+                "AssetManager", "Asset ready %s.  CreationToken: %d\n", asset.GetId().ToFixedString().c_str(), asset->GetCreationToken());
+
             // Call reloaded before we can call ReloadAsset below to preserve order
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
+
+            AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> result = AZ::Failure(AZStd::string("No handler"));
+            AssetCatalogRequestBus::BroadcastResult(result, &AssetCatalogRequestBus::Events::GetAllReverseProductDependencies, asset.GetId());
+
+            if (result)
+            {
+                for (const auto& dependency : result.GetValue())
+                {
+                    AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset.GetId());
+                }
+            }
+            else
+            {
+                AZ_Error("AssetManager", false, result.GetError().c_str());
+            }
+
             // Release the lock before we call reload
             if (requeue)
             {

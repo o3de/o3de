@@ -29,7 +29,7 @@ namespace AssetRegistryInternal
         // from the root and thus should be much shorter than AZ_MAX_PATH_LEN
         char tempBuffer[AZ_MAX_PATH_LEN] = { 0 };
         tempBuffer[AZ_ARRAY_SIZE(tempBuffer) - 1] = 0;
-        
+
         // here we try to pass over the memory only once.
         for (AZStd::size_t pos = 0; pos < AZ_ARRAY_SIZE(tempBuffer) - 1; ++pos)
         {
@@ -62,6 +62,7 @@ namespace AzFramework
     void AssetRegistry::Clear()
     {
         m_assetDependencies = {};
+        m_reverseAssetDependencies = {};
         m_assetIdToInfo = AssetIdToInfoMap();
         m_assetPathToId = AssetPathToIdMap();
     }
@@ -86,11 +87,12 @@ namespace AzFramework
                 ->Field("flags", &AZ::Data::ProductDependency::m_flags);
 
             serializeContext->Class<AssetRegistry>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("m_assetIdToInfo", &AssetRegistry::m_assetIdToInfo)
                 ->Field("m_assetPathToIdMap", &AssetRegistry::m_assetPathToId)
                 ->Field("m_legacyAssetIdToRealAssetId", &AssetRegistry::m_legacyAssetIdToRealAssetId)
-                ->Field("m_assetDependencies", &AssetRegistry::m_assetDependencies);
+                ->Field("m_assetDependencies", &AssetRegistry::m_assetDependencies)
+                ->Field("m_reverseAssetDependencies", &AssetRegistry::m_reverseAssetDependencies);
             // note that the above m_assetPathToIdMap used to be called m_assetPathToId in prior serialization
             // and m_assetPathToIdByUUID prior to that, so do not rename it to those more obvious fields in the future.
         }
@@ -107,7 +109,7 @@ namespace AzFramework
         // to achieve this we have two maps
         // one map which maps from [asset relative path] -> [Asset ID]
         // one map which maps from [Asset ID] -> [AssetInfo struct]
-        
+
         // whats important to note is that the [asset relative path] map, for performance and memory purposes, uses the
         // SHA1 hash of the [asset relative path] instead of storing strings.
         // this makes it take a fixed amount of space and a fixed amount of time to do a lookup
@@ -119,7 +121,7 @@ namespace AzFramework
         // because either way, there is an asset there, so it has to be added to both maps.  there will just be two entries
         // in the [Asset ID] -> [AssetInfo struct] that points at the same output file.  Notifying the user that this has occurred
         // should happen at a much higher level.
-        
+
         SetAssetIdByPath(assetInfo.m_relativePath.c_str(), id);
         m_assetIdToInfo.insert_key(id).first->second = assetInfo;
     }
@@ -138,9 +140,10 @@ namespace AzFramework
         {
             m_assetPathToId.erase(CreateUUIDForName(existingAsset->second.m_relativePath.c_str()));
         }
-        
+
         m_assetIdToInfo.erase(id);
         m_assetDependencies.erase(id);
+        m_reverseAssetDependencies.erase(id);
     }
 
     void AssetRegistry::RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId)
@@ -155,17 +158,47 @@ namespace AzFramework
 
     void AssetRegistry::SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies)
     {
+        // Since we're setting the dependencies, we need to go back and erase the reverse dependencies first
+        for (const auto& dependency : m_assetDependencies[id])
+        {
+            auto itr = m_reverseAssetDependencies.find(dependency.m_assetId);
+
+            if (itr != m_reverseAssetDependencies.end())
+            {
+                itr->second.erase(id);
+            }
+        }
+
         m_assetDependencies[id] = dependencies;
+
+        // Now set the new reverse dependencies
+        for (const auto& dependency : dependencies)
+        {
+            m_reverseAssetDependencies[dependency.m_assetId].insert(id);
+        }
     }
 
     void AssetRegistry::RegisterAssetDependency(const AZ::Data::AssetId& id, const AZ::Data::ProductDependency& dependency)
     {
         m_assetDependencies[id].push_back(dependency);
+        m_reverseAssetDependencies[dependency.m_assetId].insert(id);
     }
 
     AZStd::vector<AZ::Data::ProductDependency> AssetRegistry::GetAssetDependencies(const AZ::Data::AssetId& id)
     {
         return m_assetDependencies[id];
+    }
+
+    AZStd::unordered_set<AZ::Data::AssetId> AssetRegistry::GetReverseAssetDependencies(const AZ::Data::AssetId& id)
+    {
+        auto itr = m_reverseAssetDependencies.find(id);
+
+        if (itr == m_reverseAssetDependencies.end())
+        {
+            return {};
+        }
+
+        return itr->second;
     }
 
     AZ::Data::AssetId AssetRegistry::GetAssetIdByLegacyAssetId(const AZ::Data::AssetId& legacyAssetId) const
@@ -198,7 +231,7 @@ namespace AzFramework
         if ((!assetPath) || (assetPath[0] == 0))
         {
             // the empty path has no asset ID.
-            return AZ::Data::AssetId(); 
+            return AZ::Data::AssetId();
         }
 
         auto entry = m_assetPathToId.find(CreateUUIDForName(assetPath));
@@ -217,7 +250,7 @@ namespace AzFramework
         {
             return;
         }
-        
+
         m_assetPathToId.insert_key(CreateUUIDForName(assetPath)).first->second = AZStd::move(id);
     }
 
@@ -227,7 +260,7 @@ namespace AzFramework
         {
             m_assetIdToInfo[element.first] = element.second;
             // remove dependency info that exists for this asset, as the change could have removed any dependenices this asset had.
-            m_assetDependencies.erase(element.first);   
+            m_assetDependencies.erase(element.first);
         }
         for (const auto& element : assetRegistry->m_assetDependencies)
         {
@@ -240,6 +273,10 @@ namespace AzFramework
         for (const auto& element : assetRegistry->m_legacyAssetIdToRealAssetId)
         {
             m_legacyAssetIdToRealAssetId[element.first] = element.second;
+        }
+        for (const auto& dependency: assetRegistry->m_reverseAssetDependencies)
+        {
+            m_reverseAssetDependencies[dependency.first].insert(dependency.second.begin(), dependency.second.end());
         }
     }
 
