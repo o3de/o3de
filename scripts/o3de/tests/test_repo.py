@@ -31,7 +31,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "external_subdirectories": [],
     "templates": [],
     "restricted": [],
-    "repos": ["http://o3de.org", "http://removablerepo.com"],
+    "repos": [],
     "engines": [],
     "engines_path": {}
 }
@@ -43,6 +43,28 @@ TEST_O3DE_REPO_JSON_PAYLOAD = '''
     "repo_name": "Test Repo",
     "origin": "",
     "gems": []
+}
+'''
+
+TEST_O3DE_REPOA_FILENAME = 'ecc7945d5e982114942a8918b52cb37476c38903ff9fd0a1eb9977d3fa2f23b5.json'
+TEST_O3DE_REPOA_JSON_PAYLOAD = '''
+{
+    "repo_name": "Test Repo",
+    "origin": "",
+    "gems": ["http://o3derepo.org/TestGem"],
+    "projects": ["http://o3derepo.org/TestProject"],
+    "templates": ["http://o3derepo.org/TestTemplate"]
+}
+'''
+
+TEST_O3DE_REPOB_FILENAME = 'fe04d87c744a0f41383122f3dd279b216376f94b4105d874b7856aa42f5e4112.json'
+TEST_O3DE_REPOB_JSON_PAYLOAD = '''
+{
+    "repo_name": "Test Repo",
+    "origin": "",
+    "gems": ["http://o3derepo.org/TestGem", "http://o3derepo.org/TestGem2"],
+    "projects": ["http://o3derepo.org/TestProject2"],
+    "templates": ["http://o3derepo.org/TestTemplate2"]
 }
 '''
 
@@ -114,6 +136,7 @@ class TestRepos:
                              ])
     def test_get_repository_list(self, repo_path, expected_manifest_file,expected_result):
         self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+        self.o3de_manifest_data["repos"] = ["http://o3de.org", "http://removablerepo.com"]
 
         def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return self.o3de_manifest_data
@@ -131,6 +154,7 @@ class TestRepos:
     def test_add_repository(self, repo_uri, expected_result, expected_in_repo, download_repo_data, created_file):
 
         self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+        self.o3de_manifest_data["repos"] = ["http://o3de.org", "http://removablerepo.com"]
         self.created_files.clear()
 
         def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
@@ -194,6 +218,7 @@ class TestRepos:
                              ])
     def test_remove_repository(self, repo_path, existing_repo, expected_result):
         self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+        self.o3de_manifest_data["repos"] = ["http://o3de.org", "http://removablerepo.com"]
 
         def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             return self.o3de_manifest_data
@@ -208,3 +233,45 @@ class TestRepos:
             result = register.register(repo_uri=repo_path, remove=True)
             assert result == expected_result
             assert repo_path not in manifest.get_manifest_repos()
+
+    def test_get_object_list(self):
+        self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+        self.o3de_manifest_data["repos"] = ["http://o3de.org/repoA", "http://o3de.org/repoB"]
+        self.created_files.clear()
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            return copy.deepcopy(self.o3de_manifest_data)
+
+        def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            self.o3de_manifest_data = manifest_data
+            return True
+
+        def mocked_open(path, mode, *args, **kwargs):
+            file_data = bytes(0)
+            if pathlib.Path(path).name == TEST_O3DE_REPOA_FILENAME:
+                file_data = TEST_O3DE_REPOA_JSON_PAYLOAD
+            elif pathlib.Path(path).name == TEST_O3DE_REPOB_FILENAME:
+                file_data = TEST_O3DE_REPOB_JSON_PAYLOAD
+            mockedopen = mock_open(mock=MagicMock(), read_data=file_data)
+            return mockedopen(self, *args, **kwargs)
+
+        with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2, \
+                patch('pathlib.Path.open', mocked_open) as _3, \
+                patch('pathlib.Path.is_file', return_value=True) as _4:
+                    # Gems
+                    object_set = repo.get_gem_json_paths_from_cached_repo('http://o3de.org/repoA')
+                    assert len(object_set) == 1
+                    object_set = repo.get_gem_json_paths_from_all_cached_repos()
+                    assert len(object_set) == 2
+                    # Projects
+                    object_set = repo.get_project_json_paths_from_cached_repo('http://o3de.org/repoA')
+                    assert len(object_set) == 1
+                    object_set = repo.get_project_json_paths_from_all_cached_repos()
+                    assert len(object_set) == 2
+                    # Templates
+                    object_set = repo.get_template_json_paths_from_cached_repo('http://o3de.org/repoA')
+                    assert len(object_set) == 1
+                    object_set = repo.get_template_json_paths_from_all_cached_repos()
+                    assert len(object_set) == 2
+        assert True

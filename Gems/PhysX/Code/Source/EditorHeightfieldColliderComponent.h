@@ -90,6 +90,8 @@ namespace PhysX
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
             const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull());
 
+        void UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection);
+
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
         AzPhysics::SceneInterface* m_sceneInterface{ nullptr };
 

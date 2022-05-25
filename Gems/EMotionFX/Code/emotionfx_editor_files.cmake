@@ -86,6 +86,11 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h

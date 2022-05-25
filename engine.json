@@ -58,12 +58,14 @@
         "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Streamer",
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
+        "Gems/ScriptAutomation",
         "Gems/ScriptCanvas",
         "Gems/ScriptCanvasDeveloper",
         "Gems/ScriptCanvasPhysics",
@@ -91,6 +93,7 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/PrebuiltGem",
         "Templates/GemRepo",
         "Templates/AssetGem",
         "Templates/DefaultComponent",

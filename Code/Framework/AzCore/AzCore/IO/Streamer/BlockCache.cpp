@@ -152,6 +152,10 @@ namespace AZ::IO
                 {
                     FlushEntireCache();
                 }
+                else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
+                {
+                    Report(args);
+                }
                 StreamStackEntry::QueueRequest(request);
             }
         }, request->GetCommand());
@@ -376,9 +380,20 @@ namespace AZ::IO
 
     void BlockCache::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        statistics.push_back(Statistic::CreatePercentage(m_name, CacheHitRateName, CalculateHitRatePercentage()));
-        statistics.push_back(Statistic::CreatePercentage(m_name, CacheableName, CalculateCacheableRatePercentage()));
-        statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateAvailableRequestSlots()));
+        statistics.push_back(Statistic::CreatePercentage(
+            m_name, CacheHitRateName, CalculateHitRatePercentage(),
+            "The percentage of requests that could be (partially) serviced with cached data. When running from loose files a lower value "
+            "is better as it indicate full file reads. When running from archives higher values are better as it indicates better "
+            "scheduling efficiency and/or better archive layouts."));
+        statistics.push_back(Statistic::CreatePercentage(
+            m_name, CacheableName, CalculateCacheableRatePercentage(),
+            "The percentage of requests that were candidates for caching. The percentage of requests that could be (partially) serviced "
+            "with cached data. When running from loose files a lower value is better as it indicate full file reads. When running from "
+            "archives higher values are better as it indicates better scheduling efficiency and/or better archive layouts."));
+        statistics.push_back(Statistic::CreateInteger(
+            m_name, "Available slots", CalculateAvailableRequestSlots(),
+            "The total number of slots available to processing cache-able requests with. If this value is low more memory may need to be "
+            "allocated to the cache so more slots are available."));
 
         StreamStackEntry::CollectStatistics(statistics);
     }
@@ -743,5 +758,35 @@ namespace AZ::IO
             ResetCacheEntry(i);
         }
         m_numInFlightRequests = 0;
+    }
+
+    void BlockCache::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Cache size", m_cacheSize,
+                "The size of the cache. Increasing the size will allow more blocks to be created and as a result more file data to "
+                "be cached."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Blocks size", m_blockSize,
+                "The size of the individual blocks in the cache. Larger blocks means fewer blocks, but larger blocks can also hold more "
+                "additional data. Use a drive nodes sector size as a guide."));
+            data.m_output.push_back(
+                Statistic::CreateInteger(m_name, "Block count", m_numBlocks, "The total number of blocks the cache has available."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Alignment", m_alignment,
+                "The number of bytes the cache will align to. For prologs this means adding bytes to the start of the request to meet the "
+                "alignment and for the epilog adding additional bytes at the end of the request. If the alignment matches sector sizes it "
+                "typically means there's no additional cost and the additional data is essentially read for free."));
+            data.m_output.push_back(Statistic::CreateBoolean(
+                m_name, "Only epilog writes", m_onlyEpilogWrites,
+                "Whether or not only the epilog is considered or that both prolog and epilog are used for caching."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

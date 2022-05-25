@@ -12,14 +12,12 @@
 #include <AzCore/Component/Component.h>
 #include <${Name}/${Name}Bus.h>
 
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace ${SanitizedCppName}
 {
     /// System component for ${SanitizedCppName} editor
     class ${SanitizedCppName}EditorSystemComponent
         : public ${SanitizedCppName}RequestBus::Handler
-        , private AzToolsFramework::EditorEvents::Bus::Handler
         , public AZ::Component
     {
     public:

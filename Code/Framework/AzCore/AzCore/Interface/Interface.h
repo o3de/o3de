@@ -23,7 +23,7 @@ namespace AZ
      * pointer is handed to you; the assumption is that the registered system will outlive cached
      * references. A system must register itself with the interface at initialization time by calling
      * @ref Register(); and unregister at shutdown by calling @ref Unregister(). The provided Registrar
-     * class will do this for you automatically.  Registration will only succeed after the 
+     * class will do this for you automatically.  Registration will only succeed after the
      * AZ::Environment has been attached and is ready.
      *
      * Example Usage:
@@ -181,7 +181,7 @@ namespace AZ
         // take the full lock and request it.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
         s_instance = Environment::FindVariable<T*>(GetVariableName());
-        s_instanceAssigned = s_instance.IsValid();
+        s_instanceAssigned = static_cast<bool>(s_instance);
         return s_instance ? s_instance.Get() : nullptr;
     }
 

@@ -238,7 +238,7 @@ namespace AZ
                         behaviorMethod->GetNumArguments());
                     return AZStd::any(false);
                 }
-                AZ::BehaviorValueParameter behaviorParamList[behaviorParamListSize];
+                AZ::BehaviorArgument behaviorParamList[behaviorParamListSize];
 
                 // detect if the method passes in a "this" pointer which can be true if the method is a member function
                 // or if the first argument is the same as the behavior class such as from a lambda function
@@ -254,7 +254,7 @@ namespace AZ
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
                     // the BehaviorObject.m_value is a pointer; the reference version is already dereferenced
-                    AZ::BehaviorValueParameter theThisPointer;
+                    AZ::BehaviorArgument theThisPointer;
                     const void* self = reinterpret_cast<const void*>(m_graphObject.get());
                     if ((thisInfo->m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                     {
@@ -288,7 +288,7 @@ namespace AZ
                     ++paramCount;
                 }
 
-                AZ::BehaviorValueParameter returnBehaviorValue;
+                AZ::BehaviorArgument returnBehaviorValue;
                 if (behaviorMethod->HasResult())
                 {
                     returnBehaviorValue.Set(*behaviorMethod->GetResult());
@@ -336,7 +336,7 @@ namespace AZ
             }
 
             template <typename FROM, typename TO>
-            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id != azrtti_typeid<FROM>())
                 {
@@ -353,7 +353,7 @@ namespace AZ
                 return true;
             }
 
-            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id == argBehaviorInfo->m_typeId)
                 {

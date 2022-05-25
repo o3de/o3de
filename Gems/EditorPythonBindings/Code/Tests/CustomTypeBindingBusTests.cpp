@@ -211,7 +211,7 @@ namespace UnitTest
         AZStd::optional<ValueHandle> PythonToBehavior(
             PyObject* pyObj,
             [[maybe_unused]] AZ::BehaviorParameter::Traits traits,
-            AZ::BehaviorValueParameter& outValue) override
+            AZ::BehaviorArgument& outValue) override
         {
             const AZ::TypeId& typeId = *EditorPythonBindings::CustomTypeBindingNotificationBus::GetCurrentBusId();
             if (typeId == azrtti_typeid<AZ::CustomType<int>>())
@@ -269,7 +269,7 @@ namespace UnitTest
         }
 
         AZStd::optional<ValueHandle> BehaviorToPython(
-            const AZ::BehaviorValueParameter& behaviorValue,
+            const AZ::BehaviorArgument& behaviorValue,
             PyObject*& outPyObj) override
         {
             const AZ::TypeId& typeId = *EditorPythonBindings::CustomTypeBindingNotificationBus::GetCurrentBusId();

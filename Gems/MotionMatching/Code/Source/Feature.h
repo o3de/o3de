@@ -20,6 +20,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <FeatureMatrix.h>
+#include <QueryVector.h>
 
 namespace EMotionFX
 {
@@ -67,17 +68,13 @@ namespace EMotionFX::MotionMatching
         // Feature extraction
         struct EMFX_API ExtractFeatureContext
         {
-            ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
-                : m_featureMatrix(featureMatrix)
-                , m_posePool(posePool)
-            {
-            }
+            ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool);
 
             FrameDatabase* m_frameDatabase = nullptr;
             FeatureMatrix& m_featureMatrix;
 
             size_t m_frameIndex = InvalidIndex;
-            const Pose* m_framePose = nullptr; //! Pre-sampled pose for the given frame.
+            const Pose* m_framePose = nullptr; //!< Pre-sampled pose for the given frame.
             AnimGraphPosePool& m_posePool;
 
             ActorInstance* m_actorInstance = nullptr;
@@ -85,21 +82,25 @@ namespace EMotionFX::MotionMatching
         virtual void ExtractFeatureValues(const ExtractFeatureContext& context) = 0;
 
         ////////////////////////////////////////////////////////////////////////
+        // Fill query vector
+        struct EMFX_API QueryVectorContext
+        {
+            QueryVectorContext(const Pose& currentPose, const TrajectoryQuery& trajectoryQuery);
+
+            const Pose& m_currentPose; //!< Current actor instance pose.
+            const TrajectoryQuery& m_trajectoryQuery;
+        };
+        virtual void FillQueryVector([[maybe_unused]] QueryVector& queryVector,
+            [[maybe_unused]] const QueryVectorContext& context) = 0;
+
+        ////////////////////////////////////////////////////////////////////////
         // Feature cost
         struct EMFX_API FrameCostContext
         {
-            FrameCostContext(const FrameDatabase& frameDatabase, const FeatureMatrix& featureMatrix, const Pose& currentPose)
-                : m_frameDatabase(frameDatabase)
-                , m_featureMatrix(featureMatrix)
-                , m_currentPose(currentPose)
-            {
-            }
+            FrameCostContext(const QueryVector& queryVector, const FeatureMatrix& featureMatrix);
 
-            const FrameDatabase& m_frameDatabase;
+            const QueryVector& m_queryVector; //!< Input query feature values.
             const FeatureMatrix& m_featureMatrix;
-            const ActorInstance* m_actorInstance = nullptr;
-            const Pose& m_currentPose; //! Current actor instance pose.
-            const TrajectoryQuery* m_trajectoryQuery;
         };
         virtual float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
@@ -114,12 +115,9 @@ namespace EMotionFX::MotionMatching
         void SetCostFactor(float costFactor) { m_costFactor = costFactor; }
         float GetCostFactor() const { return m_costFactor; }
 
-        virtual void FillQueryFeatureValues([[maybe_unused]] size_t startIndex,
-            [[maybe_unused]] AZStd::vector<float>& queryFeatureValues,
-            [[maybe_unused]] const FrameCostContext& context) {}
-
         virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-            [[maybe_unused]] MotionMatchingInstance* instance,
+            [[maybe_unused]] const Pose& currentPose,
+            [[maybe_unused]] const FeatureMatrix& featureMatrix,
             [[maybe_unused]] size_t frameIndex) {}
 
         void SetDebugDrawColor(const AZ::Color& color);
