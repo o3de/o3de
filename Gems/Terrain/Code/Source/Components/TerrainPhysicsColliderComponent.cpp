@@ -237,13 +237,14 @@ namespace Terrain
         AZ::Vector2 constrictedAlignedStartPoint = (AZ::Vector2(heightfieldBox.GetMin()) / gridResolution).GetCeil() * gridResolution;
         AZ::Vector2 constrictedAlignedEndPoint = (AZ::Vector2(heightfieldBox.GetMax()) / gridResolution).GetFloor() * gridResolution;
 
+        // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
+        AZ::Vector2 numPoints = (constrictedAlignedEndPoint - constrictedAlignedStartPoint) / gridResolution + AZ::Vector2(1.0f);
+
         m_heightfieldRegion.m_startPoint =
             AZ::Vector3(constrictedAlignedStartPoint.GetX(), constrictedAlignedStartPoint.GetY(), heightfieldBox.GetMin().GetZ());
         m_heightfieldRegion.m_stepSize = gridResolution;
-        m_heightfieldRegion.m_numPointsX =
-            aznumeric_cast<size_t>(((constrictedAlignedEndPoint.GetX() - constrictedAlignedStartPoint.GetX()) / gridResolution.GetX()) + 1);
-        m_heightfieldRegion.m_numPointsY =
-            aznumeric_cast<size_t>(((constrictedAlignedEndPoint.GetY() - constrictedAlignedStartPoint.GetY()) / gridResolution.GetY()) + 1);
+        m_heightfieldRegion.m_numPointsX = aznumeric_cast<size_t>(numPoints.GetX());
+        m_heightfieldRegion.m_numPointsY = aznumeric_cast<size_t>(numPoints.GetY());
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
@@ -421,8 +422,14 @@ namespace Terrain
             updateHeightsMaterialsCallback(row, column, point);
         };
 
-        size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetX() - contractedAlignedStartGridPoint.GetX() + 1), m_heightfieldRegion.m_numPointsX);
-        size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetY() - contractedAlignedStartGridPoint.GetY() + 1), m_heightfieldRegion.m_numPointsY);
+        const size_t numPointsX =
+            AZStd::min(
+                aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetX() - contractedAlignedStartGridPoint.GetX() + 1),
+                m_heightfieldRegion.m_numPointsX);
+        const size_t numPointsY =
+            AZStd::min(
+                aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetY() - contractedAlignedStartGridPoint.GetY() + 1),
+                m_heightfieldRegion.m_numPointsY);
         TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.

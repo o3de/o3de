@@ -800,7 +800,6 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         aznumeric_cast<int32_t>(numSamplesX), aznumeric_cast<int32_t>(numSamplesY), numJobsMax, minPositionsPerJob, xJobs, yJobs);
 
     // The number of jobs returned might be less than the total requested maximum number of jobs, so recalculate it here
-    AZ_Assert((xJobs * yJobs) <= numJobsMax, "The region was subdivided into too many jobs: %d x %d vs %d max", xJobs, yJobs, numJobsMax);
     const int32_t numJobs = xJobs * yJobs;
 
     // Get the number of samples in each direction that we'll use for each query. We calculate this as a fractional value
@@ -1152,7 +1151,7 @@ void TerrainSystem::SubdivideRegionForJobs(
         // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions. 
         if (yChoice == 0)
         {
-            return;
+            break;
         }
 
         // If this combination is better than a previous solution, save it as our new best solution.
@@ -1163,13 +1162,18 @@ void TerrainSystem::SubdivideRegionForJobs(
             subdivisionsY = yChoice;
             bestJobUsage = jobUsage;
 
-            // If we've found an optimal solution, early-out and return.
+            // If we've found an optimal solution, early-out.
             if (jobUsage == clampedMaxNumJobs)
             {
-                return;
+                break;
             }
         }
     }
+
+    // Verify that our subdivision strategy has stayed within the max jobs constraint.
+    AZ_Assert(
+        (subdivisionsX * subdivisionsY) <= maxNumJobs, "The region was subdivided into too many jobs: %d x %d vs %d max", subdivisionsX,
+        subdivisionsY, maxNumJobs);
 }
 
 void TerrainSystem::QueryRegion(

@@ -154,8 +154,10 @@ namespace PhysX
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
 
-        // Create an empty shapeConfig, it will get filled out at runtime as everything initializes.
-        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig{ new Physics::HeightfieldShapeConfiguration() };
+        // Create an empty shapeConfig for initializing the component's ShapeConfiguration.
+        // The actual shapeConfig for the component will get filled out at runtime as everything initializes,
+        // so the values set here during initialization don't matter.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
 
         heightfieldColliderComponent->SetShapeConfiguration(
             { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig });

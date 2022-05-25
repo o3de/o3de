@@ -40,23 +40,14 @@ namespace AzFramework::Terrain
 
             const AZ::Vector3 regionExtents = region.GetExtents();
 
-            // We'll treat the region as min-inclusive, max-exclusive. Ex: (1,1) - (6,6) with stepSize(1) will
-            // process 1, 2, 3, 4, 5 but not 6 in each direction.
-            queryRegion.m_numPointsX = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetX() / stepSize.GetX()));
-            queryRegion.m_numPointsY = aznumeric_cast<size_t>(AZStd::floorf(regionExtents.GetY() / stepSize.GetY()));
-
+            // We'll treat the region as min-inclusive, max-exclusive.
+            // Ex: (1,1) - (6,6) with stepSize(1) will process 1, 2, 3, 4, 5 but not 6 in each direction.
             // If the region is smaller than stepSize, make sure we still process at least the start point ("min-inclusive").
             // However, when an extent is zero-size (i.e. min == max), we need to choose whether to follow the "min-inclusive" rule
             // and include the start/end point, or the "max-exclusive" rule and exclude the start/end point. We're choosing to go
             // with "max-exclusive", since it seems likely that a 0-length extent wasn't intended to include any points.
-            if ((regionExtents.GetX() > 0.0f) && (queryRegion.m_numPointsX == 0))
-            {
-                queryRegion.m_numPointsX = 1;
-            }
-            if ((regionExtents.GetY() > 0.0f) && (queryRegion.m_numPointsY == 0))
-            {
-                queryRegion.m_numPointsY = 1;
-            }
+            queryRegion.m_numPointsX = aznumeric_cast<size_t>(AZStd::ceil(regionExtents.GetX() / stepSize.GetX()));
+            queryRegion.m_numPointsY = aznumeric_cast<size_t>(AZStd::ceil(regionExtents.GetY() / stepSize.GetY()));
         }
 
         return queryRegion;

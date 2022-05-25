@@ -53,6 +53,7 @@ namespace AzFramework
                 : JobContext(jobManager)
                 , m_numJobsToComplete(numJobsToComplete)
             {
+                AZ_Assert(numJobsToComplete > 0, "Invalid number of jobs: %d", numJobsToComplete);
             }
 
             // When a terrain job context is cancelled, all associated
@@ -81,7 +82,7 @@ namespace AzFramework
             // was the final job to be completed, or false otherwise.
             bool OnJobCompleted()
             {
-                return (--m_numJobsToComplete == 0);
+                return (--m_numJobsToComplete <= 0);
             }
 
         private:
@@ -97,20 +98,27 @@ namespace AzFramework
         //! A parameter group struct that can optionally be passed to the various Query*Async API functions.
         struct QueryAsyncParams
         {
-            //! The default minimum number of positions per async terrain request job.
-            static constexpr int32_t MinPositionsPerJobDefault = 8;
-
-            //! The maximum number of jobs which async terrain requests will be split into.
-            //! This is not the value itself, rather a constant that can be used to request
-            //! the work be split into the maximum number of job manager threads available.
+            //! This constant can be used with m_desiredNumberOfJobs to request the maximum
+            //! number of jobs possible for splitting up async terrain requests based on the
+            //! maximum number of cores / job threads on the current PC. It's a symbolic number,
+            //! not a literal one, since the maximum number of available jobs will change from
+            //! machine to machine.
             static constexpr int32_t NumJobsMax = -1;
 
-            //! The default number of jobs which async terrain requests will be split into.
+            //! This constant is used with m_desiredNumberOfJobs to set the default number of jobs
+            //! for splitting up async terrain requests. By default, we use a single job so that the
+            //! request runs asynchronously but only consumes a single thread.
             static constexpr int32_t NumJobsDefault = 1;
 
-            //! The desired number of jobs to split async terrain requests into.
-            //! The actual value used will be clamped to the number of available job manager threads.
+            //! The desired maximum number of jobs to split async terrain requests into.
+            //! The actual number of jobs used will be clamped based on the number of available job manager threads,
+            //! the desired number of jobs, and the minimum number of positions that should be processed per job.
             int32_t m_desiredNumberOfJobs = NumJobsDefault;
+
+            //! This constant is used with m_minPositionsPerJob to set the default minimum number
+            //! of positions to process per async terrain request job. The higher the number, the more it will
+            //! limit the maximum number of simultaneous jobs per async terrain request.
+            static constexpr int32_t MinPositionsPerJobDefault = 8;
 
             //! The minimum number of positions per async terrain request job.
             int32_t m_minPositionsPerJob = MinPositionsPerJobDefault;

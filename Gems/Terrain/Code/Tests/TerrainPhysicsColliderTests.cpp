@@ -138,9 +138,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     const float boundsMin = 0.0f;
     const float boundsMax = 1024.0f;
 
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
-
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
@@ -154,6 +151,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
 
     // With the bounds set at 0-1024 and a resolution of 1.0, the heightfield grid should be 1025x1025, because it
     // should have a final set of vertices to end the grid.
@@ -171,10 +171,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMinB
     const float boundsMin = 0.1f;
     const float boundsMax = 1024.0f;
 
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    // Note that this is also rounding down via the int truncation
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
-
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
@@ -188,6 +184,10 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMinB
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+    // Note that this is also rounding down via the int truncation
+    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
 
     // If the heightfield is not constricted to stay within the shape bounds, the values returned would be 1025.
     EXPECT_EQ(cols, expectedGridSize);
@@ -203,10 +203,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMaxB
     const float boundsMin = 0.0f;
     const float boundsMax = 1023.5f;
 
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    // Note that this is also rounding down via the int truncation
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
-
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
@@ -221,6 +217,10 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMaxB
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+    // Note that this is also rounding down via the int truncation
+    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
+
     // If the heightfield is not constricted to stay within the shape bounds, the values returned would be 1025.
     EXPECT_EQ(cols, expectedGridSize);
     EXPECT_EQ(rows, expectedGridSize);
@@ -233,9 +233,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 
     const float boundsMin = 0.0f;
     const float boundsMax = 1024.0f;
-
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
@@ -266,6 +263,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeights);
+
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax - boundsMin) + 1;
 
     EXPECT_EQ(cols, expectedGridSize);
     EXPECT_EQ(rows, expectedGridSize);
@@ -396,9 +396,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
 
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
-
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
@@ -435,6 +432,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
 
     // Check that the correct number of entries are present.
     // We expect 257 x 257 because there should be an extra point in each direction to "cap off" each grid square.
@@ -475,9 +475,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
-
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
@@ -529,6 +526,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
+    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+        const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
+
         // Check that the correct number of entries are present.
         // We expect 257 x 257 because there should be an extra point in each direction to "cap off" each grid square.
         EXPECT_EQ(cols, expectedGridSize);
@@ -554,9 +554,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
-
-    // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
-    const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
 
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
@@ -608,6 +605,9 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         int32_t cols, rows;
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
+
+        // "max - min" gives us the number of grid squares, "max - min + 1" gives us the number of grid vertices including the final endcap.
+        const int32_t expectedGridSize = aznumeric_cast<int32_t>(boundsMax.GetX() - boundsMin.GetX()) + 1;
 
         // Check that the correct number of entries are present.
         // We expect 257 x 257 because there should be an extra point in each direction to "cap off" each grid square.
