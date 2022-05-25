@@ -349,8 +349,6 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
-    DirectionalLightShadow::DebugInfo debugInfo = {0, false};
-
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
@@ -364,8 +362,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
             shadowIndex,
             surface.position,
             surface.vertexNormal,
-            screenUv,
-            debugInfo);
+            screenUv);
     }
 
     // Add the lighting contribution for each directional light
