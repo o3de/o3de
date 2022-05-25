@@ -126,7 +126,7 @@ namespace Terrain
     {
         if (m_rebuildDrawPackets)
         {
-            // Rebuild the draw packets when the mateiral or shaders change.
+            // Rebuild the draw packets when the material or shaders change.
             RebuildDrawPackets();
             m_rebuildDrawPackets = false;
         }
@@ -375,19 +375,7 @@ namespace Terrain
 
     void TerrainMeshManager::RebuildDrawPackets()
     {
-        // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
-        // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
-        AZ::RPI::ShaderSystemInterface* shaderSystem = AZ::RPI::ShaderSystemInterface::Get();
-        for (auto iter : shaderSystem->GetGlobalShaderOptions())
-        {
-            const AZ::Name& shaderOptionName = iter.first;
-            AZ::RPI::ShaderOptionValue value = iter.second;
-            if (!m_materialInstance->SetSystemShaderOption(shaderOptionName, value).IsSuccess())
-            {
-                AZ_Warning("TerrainMeshManager", false, "Shader option '%s' is owned by this this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
-            }
-        }
-
+        m_materialInstance->ApplyGlobalShaderOptions();
         m_cachedDrawData.clear();
 
         // Rebuild common draw packet data
@@ -458,7 +446,7 @@ namespace Terrain
         // Rebuild the draw packets themselves
         for (auto& stackData : m_sectorStack)
         {
-            for (auto& sector [[maybe_unused]] : stackData.m_sectors)
+            for (auto& sector : stackData.m_sectors)
             {
                 BuildDrawPacket(sector);
             }
@@ -733,12 +721,23 @@ namespace Terrain
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {
+        const AZ::Vector2 boundsMin2d = AZ::Vector2(bounds.GetMin().GetX(), bounds.GetMin().GetY());
+        const AZ::Vector2 boundsMax2d = AZ::Vector2(bounds.GetMax().GetX(), bounds.GetMax().GetY());
+
         for (uint32_t lodLevel = 0; lodLevel < m_sectorStack.size(); ++lodLevel)
         {
+            // Expand the bounds by the spacing of the lod since vertex normals are affected by neighbors.
+            const AZ::Vector2 lodSpacing = AZ::Vector2(m_sampleSpacing * (1 << lodLevel));
+            const AZ::Vector2 lodBoundsMin2d = boundsMin2d - lodSpacing;
+            const AZ::Vector2 lodBoundsMax2d = boundsMax2d + lodSpacing;
+
             auto& stackData = m_sectorStack.at(lodLevel);
             for (StackSectorData& sectorData : stackData.m_sectors)
             {
-                if (sectorData.m_aabb.Overlaps(bounds))
+                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sectorData.m_aabb.GetMin().GetX(), sectorData.m_aabb.GetMin().GetY());
+                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sectorData.m_aabb.GetMax().GetX(), sectorData.m_aabb.GetMax().GetY());
+                const bool overlaps = sectorAabbMin2D.IsLessEqualThan(lodBoundsMax2d) && sectorAabbMax2D.IsGreaterEqualThan(lodBoundsMin2d);
+                if (overlaps)
                 {
                     callback(sectorData, lodLevel);
                 }

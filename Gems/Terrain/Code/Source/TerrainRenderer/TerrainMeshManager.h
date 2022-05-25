@@ -128,7 +128,7 @@ namespace Terrain
             int32_t m_startCoordY = AZStd::numeric_limits<int32_t>::max();
         };
 
-        struct ShaderObjectData // Must align with struct in Object Srg
+        struct ShaderObjectData // Must align with struct in object srg
         {
             AZStd::array<float, 2> m_xyTranslation{ 0.0f, 0.0f };
             float m_xyScale{ 1.0f };

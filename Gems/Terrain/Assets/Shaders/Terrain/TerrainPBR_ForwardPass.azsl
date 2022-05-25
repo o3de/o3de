@@ -215,17 +215,17 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     if (o_debugTerrainLodLevels)
     {
-        float3 debugColor = float3(0.0, 0.0, 0.0);
-        uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
-        switch (lodLevel)
+        float3 debugColors[6] = 
         {
-            case 0: debugColor = float3(0.1, 0.0, 0.0); break;
-            case 1: debugColor = float3(0.0, 0.1, 0.0); break;
-            case 2: debugColor = float3(0.0, 0.0, 0.1); break;
-            case 3: debugColor = float3(0.1, 0.25, 0.0); break;
-            case 4: debugColor = float3(0.25, 0.0, 0.25); break;
-            case 5: debugColor = float3(0.0, 0.25, 0.25); break;
-        }
+            float3(0.1, 0.0, 0.0),
+            float3(0.0, 0.1, 0.0),
+            float3(0.0, 0.0, 0.1),
+            float3(0.1, 0.1, 0.0),
+            float3(0.1, 0.0, 0.1),
+            float3(0.0, 0.1, 0.1),
+        };
+        uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
+        float3 debugColor = debugColors[lodLevel];
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
     }
 
