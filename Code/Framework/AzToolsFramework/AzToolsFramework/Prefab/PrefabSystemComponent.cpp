@@ -734,6 +734,7 @@ namespace AzToolsFramework
                 instancesValue->get().AddMember(
                     rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
                     targetTemplateDom.GetAllocator());
+                SetTemplateDirtyFlag(linkTargetId, true);
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();
