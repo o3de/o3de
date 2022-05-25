@@ -46,6 +46,7 @@ namespace AzPhysics
         //! Returns a shared pointer to the requested shape index.
         //! @param index The index of the shapes to return. Expected to be between 0 and GetShapeCount().
         //! @return Returns a shared pointer of the shape requested or nullptr if index is out of bounds.
-        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]]AZ::u32 index) const { return nullptr; }
+        virtual AZStd::shared_ptr<Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) { return nullptr; }
+        virtual AZStd::shared_ptr<const Physics::Shape> GetShape([[maybe_unused]] AZ::u32 index) const { return nullptr; }
     };
 }

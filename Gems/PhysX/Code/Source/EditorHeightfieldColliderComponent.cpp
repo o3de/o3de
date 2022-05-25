@@ -13,6 +13,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/utility/as_const.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/MaterialBus.h>
@@ -377,7 +378,7 @@ namespace PhysX
         const AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
         for (AZ::u32 shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
         {
-            const AZStd::shared_ptr<Physics::Shape> shape = staticRigidBody->GetShape(shapeIndex);
+            const AZStd::shared_ptr<const Physics::Shape> shape = staticRigidBody->GetShape(shapeIndex);
             m_colliderDebugDraw.DrawHeightfield(debugDisplay, aabbCenterLocalBody,
                 physx_heightfieldDebugDrawDistance, shape);
         }
@@ -432,7 +433,7 @@ namespace PhysX
     // SimulatedBodyComponentRequestsBus
     AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody()
     {
-        return const_cast<AzPhysics::SimulatedBody*>(std::as_const(*this).GetSimulatedBody());
+        return const_cast<AzPhysics::SimulatedBody*>(AZStd::as_const(*this).GetSimulatedBody());
     }
 
     const AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody() const

@@ -111,7 +111,7 @@ namespace PhysX
                 AzFramework::DebugDisplayRequests& debugDisplay,
                 const AZ::Vector3& aabbCenterLocalBody,
                 float drawDistance,
-                const AZStd::shared_ptr<Physics::Shape>& shape) const;
+                const AZStd::shared_ptr<const Physics::Shape>& shape) const;
 
             void DrawPolygonPrism(
                 AzFramework::DebugDisplayRequests& debugDisplay,

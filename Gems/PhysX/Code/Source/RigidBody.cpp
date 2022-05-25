@@ -6,14 +6,16 @@
  *
  */
 
+#include <Source/RigidBody.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/utility/as_const.h>
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/MathConversion.h>
-#include <Source/RigidBody.h>
 #include <Source/Utils.h>
 #include <PhysX/Utils.h>
 #include <Source/Shape.h>
@@ -297,7 +299,13 @@ namespace PhysX
         return static_cast<AZ::u32>(m_shapes.size());
     }
 
-    AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
+    AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index)
+    {
+        AZStd::shared_ptr<const Physics::Shape> constShape = AZStd::as_const(*this).GetShape(index);
+        return AZStd::shared_ptr<Physics::Shape>(const_cast<Physics::Shape*>(constShape.get()));
+    }
+
+    AZStd::shared_ptr<const Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
     {
         if (index >= m_shapes.size())
         {
