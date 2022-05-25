@@ -245,16 +245,12 @@ namespace Terrain
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
-            const AZ::RPI::ShaderVariantId finalVariantId = drawData.m_shaderOptions.GetShaderVariantId();
-            const AZ::RPI::ShaderVariant& variant = shader->GetVariant(finalVariantId);
-
-            auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg;
-            if (drawSrgLayout)
+            if (drawData.m_drawSrgLayout)
             {
                 // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
-                drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-                if (!variant.IsFullyBaked() && drawSrgLayout->HasShaderVariantKeyFallbackEntry())
+                drawSrg = AZ::RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawData.m_drawSrgLayout->GetName());
+                if (!drawData.m_shaderVariant.IsFullyBaked() && drawData.m_drawSrgLayout->HasShaderVariantKeyFallbackEntry())
                 {
                     drawSrg->SetShaderVariantKeyFallbackValue(drawData.m_shaderOptions.GetShaderVariantKeyFallbackValue());
                 }
@@ -440,7 +436,9 @@ namespace Terrain
                 return;
             }
 
-            m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState, drawListTag });
+            auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
+
+            m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState, drawListTag, drawSrgLayout, variant});
         }
 
         // Rebuild the draw packets themselves

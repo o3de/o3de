@@ -160,6 +160,8 @@ namespace Terrain
             AZ::RPI::ShaderOptionGroup m_shaderOptions;
             const AZ::RHI::PipelineState* m_pipelineState;
             AZ::RHI::DrawListTag m_drawListTag;
+            AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
+            AZ::RPI::ShaderVariant m_shaderVariant;
         };
 
         using HeightDataType = uint16_t;
