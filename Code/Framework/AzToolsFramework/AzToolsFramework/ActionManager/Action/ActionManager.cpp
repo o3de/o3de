@@ -87,6 +87,48 @@ namespace AzToolsFramework
                 )
             }
         );
+
+        return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::RegisterCheckableAction(
+        const AZStd::string& contextIdentifier,
+        const AZStd::string& actionIdentifier,
+        const ActionProperties& properties,
+        AZStd::function<void()> handler,
+        AZStd::function<void(QAction*)> updateCallback)
+    {
+        if (!m_actionContexts.contains(contextIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
+                actionIdentifier.c_str(), 
+                contextIdentifier.c_str()
+            ));
+        }
+
+        if (m_actions.contains(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action \"%.s\" twice.",
+                actionIdentifier.c_str()
+            ));
+        }
+
+        m_actions.insert(
+            {
+                actionIdentifier,
+                EditorAction(
+                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionIdentifier,
+                    properties.m_name,
+                    properties.m_description,
+                    properties.m_category,
+                    handler
+                )
+            }
+        );
+
         return AZ::Success();
     }
 

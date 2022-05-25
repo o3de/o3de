@@ -26,6 +26,8 @@ namespace AzToolsFramework
         void AddAction(int sortKey, QAction* action);
         void AddSeparator(int sortKey);
         void AddSubMenu(int sortKey, QMenu* submenu);
+        
+        // Returns the pointer to the menu.
         QMenu* GetMenu();
 
     private:

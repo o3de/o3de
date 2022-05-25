@@ -16,7 +16,9 @@ namespace AzToolsFramework
         AZStd::string name,
         AZStd::string description,
         AZStd::string category,
-        AZStd::function<void()> handler)
+        AZStd::function<void()> handler,
+        AZStd::function<void(QAction*)> updateCallback
+        )
         : m_identifier(AZStd::move(identifier))
         , m_name(AZStd::move(name))
         , m_description(AZStd::move(description))
@@ -31,11 +33,28 @@ namespace AzToolsFramework
                 h();
             }
         );
+
+        if (updateCallback)
+        {
+            m_action->setCheckable(true);
+            m_updateCallback = AZStd::move(updateCallback);
+
+            // Trigger it to set the starting value correctly.
+            m_updateCallback(m_action);
+        }
     }
 
     QAction* EditorAction::GetAction()
     {
         return m_action;
+    }
+    
+    void EditorAction::Update()
+    {
+        if (m_updateCallback)
+        {
+            m_updateCallback(m_action);
+        }
     }
 
 } // namespace AzToolsFramework

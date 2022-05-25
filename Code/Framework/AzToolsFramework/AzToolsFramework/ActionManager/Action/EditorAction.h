@@ -25,10 +25,15 @@ namespace AzToolsFramework
             AZStd::string name,
             AZStd::string description,
             AZStd::string category,
-            AZStd::function<void()> handler);
+            AZStd::function<void()> handler,
+            AZStd::function<void(QAction*)> updateCallback = nullptr
+        );
 
         // Returns the pointer to the action.
         QAction* GetAction();
+
+        // Calls the callback to update the action's checked state, if any.
+        void Update();
 
     private:
         QAction* m_action = nullptr;
@@ -37,6 +42,8 @@ namespace AzToolsFramework
         AZStd::string m_name;
         AZStd::string m_description;
         AZStd::string m_category;
+
+        AZStd::function<void(QAction*)> m_updateCallback = nullptr;
 
         AZStd::string m_parentIdentifier;
     };
