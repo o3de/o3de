@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import os
+
 
 class Tests:
     creation_undo = (
@@ -139,6 +139,7 @@ def AtomEditorComponents_Material_AddedToEntity():
 
     :return: None
     """
+    import os
 
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus

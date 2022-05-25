@@ -28,14 +28,14 @@ def create_screenshots_archive(screenshot_path):
     # Search for .png and .ppm files to add to the zip archive file.
     for (folder_name, sub_folders, file_names) in os.walk(screenshot_path):
         for file_name in file_names:
-            if file_name.endswith(".png") or file_name.endswith(".ppm"):
-                file_path = os.path.join(folder_name, file_name).lower()
+            if file_name.lower().endswith(".png") or file_name.lower().endswith(".ppm"):
+                file_path = os.path.join(folder_name, file_name)
                 files_to_archive.append(file_path)
 
     # Setup variables for naming the zip archive file.
     timestamp = datetime.datetime.now().timestamp()
     formatted_timestamp = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d_%H-%M-%S")
-    screenshots_zip_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip').lower()
+    screenshots_zip_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip')
 
     # Write all of the valid .png and .ppm files to the archive file.
     with zipfile.ZipFile(screenshots_zip_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:

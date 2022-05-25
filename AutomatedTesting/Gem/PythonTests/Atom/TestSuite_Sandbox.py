@@ -14,7 +14,7 @@ import editor_python_test_tools.hydra_test_utils as hydra
 from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 
 logger = logging.getLogger(__name__)
-TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests").lower()
+TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -43,9 +43,9 @@ class TestMaterialEditorBasicTests(object):
         def delete_files():
             file_system.delete(
                     [
-                        os.path.join(workspace.paths.project(), "materials", "test_material.material").lower(),
-                        os.path.join(workspace.paths.project(), "materials", "test_material_1.material").lower(),
-                        os.path.join(workspace.paths.project(), "materials", "test_material_2.material").lower(),
+                        os.path.join(workspace.paths.project(), "materials", "test_material.material"),
+                        os.path.join(workspace.paths.project(), "materials", "test_material_1.material"),
+                        os.path.join(workspace.paths.project(), "materials", "test_material_2.material"),
                     ],
                     True,
                     True,
