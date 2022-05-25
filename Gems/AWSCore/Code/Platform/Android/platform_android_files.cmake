@@ -10,4 +10,5 @@ set(FILES
     AWSCore_Traits_Platform.h
     AWSCore_Traits_Android.h
     GetCertsPath_Android.cpp
+    GetJsonSchemaPath_Android.cpp
 )
