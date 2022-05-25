@@ -200,7 +200,7 @@ namespace ScriptCanvas
     public:
         // This class has been deprecated for NodeFunctionGenericMultiReturn
         NodeFunctionGeneric() = delete;
-        AZ_RTTI(((NodeFunctionGeneric<t_Func, t_Traits, function, t_DefaultFunc, defaultsFunction>), "{19E4AABE-1730-402C-A020-FC1006BC7F7B}", t_Func, t_Traits, t_DefaultFunc), Node);
+        AZ_RTTI((NodeFunctionGeneric, "{19E4AABE-1730-402C-A020-FC1006BC7F7B}", t_Func, t_Traits, t_DefaultFunc), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGeneric);
         AZ_COMPONENT_BASE(NodeFunctionGeneric, Node);
     };
@@ -211,13 +211,13 @@ namespace ScriptCanvas
     {
     public:
         AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
-            AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
+        AZ_RTTI((NodeFunctionGenericMultiReturn, "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
         AZ_POP_DISABLE_WARNING
 
 
-            static const char* GetNodeFunctionName()
+        static const char* GetNodeFunctionName()
         {
             return t_Traits::GetNodeName();
         }
