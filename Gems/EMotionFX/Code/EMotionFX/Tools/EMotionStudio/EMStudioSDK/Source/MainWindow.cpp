@@ -1532,6 +1532,7 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(&newCommandGroup);
+                CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
             }
             if (clearMotions)
             {
@@ -1570,7 +1571,7 @@ namespace EMStudio
         GetCommandManager()->ClearHistory();
 
         Workspace* workspace = GetManager()->GetWorkspace();
-        workspace->SetDirtyFlag(true);
+        workspace->SetDirtyFlag(false);
     }
 
     void MainWindow::OnReset()
