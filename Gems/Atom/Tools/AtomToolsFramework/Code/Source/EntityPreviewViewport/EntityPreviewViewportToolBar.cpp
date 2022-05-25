@@ -55,31 +55,33 @@ namespace AtomToolsFramework
         });
 
         // Add mapping selection button
-        QToolButton* toneMappingButton = new QToolButton(this);
-        QMenu* toneMappingMenu = new QMenu(toneMappingButton);
+        auto displayMapperAction = addAction(QIcon(":/Icons/toneMapping.svg"), "Tone Mapping", this, [this]() {
+            AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> operationNameMap = {
+                { AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard" },
+                { AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB" },
+                { AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough" },
+                { AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut" },
+                { AZ::Render::DisplayMapperOperationType::Aces, "Aces" }
+            };
 
-        m_operationNames = {
-            { AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard" },
-            { AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB" },
-            { AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough" },
-            { AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut" },
-            { AZ::Render::DisplayMapperOperationType::Aces, "Aces" } };
+            AZ::Render::DisplayMapperOperationType currentOperationType = {};
+            EntityPreviewViewportSettingsRequestBus::EventResult(
+                currentOperationType, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetDisplayMapperOperationType);
 
-        for (auto operationNamePair : m_operationNames)
-        {
-            m_operationActions[operationNamePair.first] = toneMappingMenu->addAction(operationNamePair.second, [this, operationNamePair]() {
-                EntityPreviewViewportSettingsRequestBus::Event(
-                    m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetDisplayMapperOperationType, operationNamePair.first);
-            });
-            m_operationActions[operationNamePair.first]->setCheckable(true);
-        }
-
-        toneMappingButton->setMenu(toneMappingMenu);
-        toneMappingButton->setText("Tone Mapping");
-        toneMappingButton->setIcon(QIcon(":/Icons/toneMapping.svg"));
-        toneMappingButton->setPopupMode(QToolButton::InstantPopup);
-        toneMappingButton->setVisible(true);
-        addWidget(toneMappingButton);
+            QMenu menu;
+            for (auto operationNamePair : operationNameMap)
+            {
+                auto operationAction = menu.addAction(operationNamePair.second, [this, operationNamePair]() {
+                    EntityPreviewViewportSettingsRequestBus::Event(
+                        m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetDisplayMapperOperationType,
+                        operationNamePair.first);
+                });
+                operationAction->setCheckable(true);
+                operationAction->setChecked(currentOperationType==operationNamePair.first);
+            }
+            menu.exec(QCursor::pos());
+        });
+        displayMapperAction->setCheckable(false);
 
         // Add lighting preset combo box
         m_lightingPresetComboBox = new AssetSelectionComboBox([](const AZ::Data::AssetInfo& assetInfo) {
@@ -124,11 +126,6 @@ namespace AtomToolsFramework
                 m_toggleAlternateSkybox->setChecked(viewportRequests->GetAlternateSkyboxEnabled());
                 m_lightingPresetComboBox->SelectAsset(viewportRequests->GetLastLightingPresetAssetId());
                 m_modelPresetComboBox->SelectAsset(viewportRequests->GetLastModelPresetAssetId());
-                for (auto operationNamePair : m_operationNames)
-                {
-                    m_operationActions[operationNamePair.first]->setChecked(
-                        operationNamePair.first == viewportRequests->GetDisplayMapperOperationType());
-                }
             });
     }
 } // namespace AtomToolsFramework

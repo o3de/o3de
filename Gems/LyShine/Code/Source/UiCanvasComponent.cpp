@@ -977,6 +977,7 @@ void UiCanvasComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::A
     {
         DestroyRenderTarget();
         m_attachmentImageAsset = attachmentImageAsset;
+        MarkRenderGraphDirty();
     }
 }
 

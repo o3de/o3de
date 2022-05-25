@@ -162,8 +162,6 @@ set(FILES
     Source/AnimGraphEventBuffer.h
     Source/AnimGraphExitNode.cpp
     Source/AnimGraphExitNode.h
-    Source/AnimGraphGameControllerSettings.cpp
-    Source/AnimGraphGameControllerSettings.h
     Source/AnimGraphHubNode.cpp
     Source/AnimGraphHubNode.h
     Source/AnimGraphInstance.cpp

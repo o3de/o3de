@@ -171,5 +171,10 @@ namespace EMotionFX
         animGraphPlugin->GetParameterWindow()->OnMakeDefaultValue();
 
         TestEquality(defaultValueParameter->GetDefaultValue(), expectedValue);
+
+        this->ExecuteCommands({
+            R"(RemoveAnimGraph -animGraphId )" + std::to_string(animGraph->GetID())
+        });
+        actorInstance->Destroy();
     }
 } // namespace EMotionFX

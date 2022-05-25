@@ -145,8 +145,20 @@ set(FILES
     DocumentPropertyEditor/DocumentSchema.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
+    DocumentPropertyEditor/PropertyEditorSystem.cpp
+    DocumentPropertyEditor/PropertyEditorSystem.h
+    DocumentPropertyEditor/PropertyEditorSystemInterface.h
     DocumentPropertyEditor/CvarAdapter.cpp
     DocumentPropertyEditor/CvarAdapter.h
+    DocumentPropertyEditor/RoutingAdapter.cpp
+    DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/ReflectionAdapter.cpp
+    DocumentPropertyEditor/ReflectionAdapter.h
+    DocumentPropertyEditor/Reflection/Attribute.h
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.cpp
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
+    DocumentPropertyEditor/Reflection/Visitor.cpp
+    DocumentPropertyEditor/Reflection/Visitor.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h
@@ -292,11 +304,15 @@ set(FILES
     Spawnable/Script/SpawnableScriptMediator.cpp
     Spawnable/Script/SpawnableScriptMediator.h
     Spawnable/Script/SpawnableScriptNotificationsHandler.h
+    Spawnable/InMemorySpawnableAssetContainer.cpp
+    Spawnable/InMemorySpawnableAssetContainer.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableAssetUtils.h
+    Spawnable/SpawnableAssetUtils.cpp
     Spawnable/SpawnableEntitiesContainer.h
     Spawnable/SpawnableEntitiesContainer.cpp
     Spawnable/SpawnableEntitiesInterface.h

@@ -303,6 +303,7 @@ namespace ScriptCanvas
                 m_dotLua.WriteLine("if _G.%s then", Grammar::k_InterpretedConfigurationRelease);
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("-- ****** release configuration, no debug information available, no performance markers");
+                m_dotLua.WriteNewLine();
             }
 
             TranslateBody();
@@ -314,6 +315,7 @@ namespace ScriptCanvas
                 m_dotLua.WriteLine("elseif _G.%s then", Grammar::k_InterpretedConfigurationPerformance);
                 m_dotLua.WriteLine(k_stars);
                 m_dotLua.WriteLine("-- ***** performance configuration, no debug information available, performance markers in place");
+                m_dotLua.WriteNewLine();
             }
             else if (configuration == BuildConfiguration::Performance)
             {
@@ -452,6 +454,18 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateDestruction()
         {
+            if (!IsConstructCallRequired())
+            {
+                return;
+            }
+
+            m_dotLua.WriteLine("function %s.Destruct(self)", m_tableName.c_str());
+            OpenFunctionBlock(m_dotLua);
+            {
+                m_dotLua.WriteLineIndented("for k, _ in pairs(self) do self[k] = nil end");
+            }
+            CloseFunctionBlock(m_dotLua);
+            m_dotLua.WriteNewLine();
         }
 
         void GraphToLua::TranslateExecutionTreeChildPost(Grammar::ExecutionTreeConstPtr execution, const Grammar::ExecutionChild& /*child*/, size_t index, size_t /*rootIndex*/)
@@ -1135,10 +1149,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateStaticInitialization()
         {
-            if (m_buildConfiguration == BuildConfiguration::Debug)
-            {
-                m_dotLua.WriteLine("%s.%s = \"%s\"", m_tableName.data(), Grammar::k_internalClassName, m_tableName.data());
-            }
+            m_dotLua.WriteLine("%s.%s = \"%s\"", m_tableName.data(), Grammar::k_internalClassName, m_tableName.data());
 
             if (m_runtimeInputs.m_staticVariables.empty())
             {
@@ -1799,7 +1810,6 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteFunctionCallInput(Grammar::ExecutionTreeConstPtr execution, size_t inputCountOverride)
         {
-
             const size_t inputCount = execution->GetInputCount();
             const size_t inputMax = AZStd::min(inputCount, inputCountOverride != inputCount ? inputCountOverride : inputCount);
             const size_t startingIndex = WriteFunctionCallInputThisPointer(execution);

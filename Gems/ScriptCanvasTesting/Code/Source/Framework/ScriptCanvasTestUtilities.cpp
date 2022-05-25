@@ -32,6 +32,11 @@ namespace ScriptCanvasTests
 {
     using namespace ScriptCanvas;
 
+    const char* GetUnitTestDirPathRelative()
+    {
+        return ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative;
+    }
+
     void ExpectParse(AZStd::string_view graphPath)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;

@@ -11,7 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
@@ -28,8 +27,6 @@ namespace EMStudio
     // forward declaration
     class MotionListWindow;
     class MotionPropertiesWindow;
-    class MotionExtractionWindow;
-    class MotionRetargetingWindow;
     class SaveDirtyMotionFilesCallback;
 
     class MotionWindowPlugin
@@ -81,13 +78,10 @@ namespace EMStudio
 
         static AZStd::vector<EMotionFX::MotionInstance*>& GetSelectedMotionInstances();
 
-        MCORE_INLINE MotionRetargetingWindow* GetMotionRetargetingWindow()                          { return m_motionRetargetingWindow; }
-        MCORE_INLINE MotionExtractionWindow* GetMotionExtractionWindow()                            { return m_motionExtractionWindow; }
         MCORE_INLINE MotionListWindow* GetMotionListWindow()                                        { return m_motionListWindow; }
         MCORE_INLINE const char* GetDefaultNodeSelectionLabelText()                                 { return "Click to select node"; }
 
         int OnSaveDirtyMotions();
-        int SaveDirtyMotion(EMotionFX::Motion* motion, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
         void PlayMotions(const AZStd::vector<EMotionFX::Motion*>& motions);
         void PlayMotion(EMotionFX::Motion* motion);
@@ -96,12 +90,10 @@ namespace EMStudio
     public slots:
         void UpdateInterface();
         void UpdateMotions();
-        void VisibilityChanged(bool visible);
         void OnAddMotions();
         void OnClearMotions();
         void OnRemoveMotions();
         void OnSave();
-
 
     private:
         void ClearMotionEntries();
@@ -120,18 +112,11 @@ namespace EMStudio
 
         AZStd::vector<MotionTableEntry*>                m_motionEntries;
 
-        MysticQt::DialogStack*                          m_dialogStack;
         MotionListWindow*                               m_motionListWindow;
         MotionPropertiesWindow*                         m_motionPropertiesWindow;
-        MotionExtractionWindow*                         m_motionExtractionWindow;
-        MotionRetargetingWindow*                        m_motionRetargetingWindow;
-
-        SaveDirtyMotionFilesCallback*                   m_dirtyFilesCallback;
 
         QAction*                                        m_addMotionsAction;
         QAction*                                        m_saveAction;
-
-        QLabel*                                         m_motionNameLabel;
 
         static AZStd::vector<EMotionFX::MotionInstance*> s_internalMotionInstanceSelection;
     };

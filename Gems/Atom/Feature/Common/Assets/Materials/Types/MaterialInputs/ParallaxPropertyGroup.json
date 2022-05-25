@@ -94,6 +94,19 @@
             }
         },
         {
+            "name": "shadowFactor",
+            "displayName": "Shadow Factor",
+            "description": "Strength factor for self-shadowing on surfaces with pixel depth offset (PDO). Use lower values to reduce the appearance of shadow acne or other artifacts.",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_parallax_pdo_shadowFactor"
+            }
+        },
+        {
             "name": "showClipping",
             "displayName": "Show Clipping",
             "description": "Highlight areas where the height map is clipped by the mesh surface.",

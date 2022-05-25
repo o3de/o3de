@@ -11,6 +11,17 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include "AzCore/Serialization/EditContextConstants.inl"
 
+namespace LuaBuilderComponentCpp
+{
+    enum BuilderWorkerVersion
+    {
+        AddDependenciesToAsset = 9,
+
+        // add new, descriptive, entry above
+        Current
+    };
+}
+
 void LuaBuilder::BuilderPluginComponent::Reflect(AZ::ReflectContext* context)
 {
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -23,19 +34,17 @@ void LuaBuilder::BuilderPluginComponent::Reflect(AZ::ReflectContext* context)
 
 void LuaBuilder::BuilderPluginComponent::Activate()
 {
+    using namespace LuaBuilderComponentCpp;
+
     AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
     builderDescriptor.m_name = "Lua Worker Builder";
-    builderDescriptor.m_version = 7;
-    builderDescriptor.m_analysisFingerprint = AZStd::string::format("%s-%d", LuaBuilderWorker::GetAnalysisFingerprint().c_str(), static_cast<AZ::u8>(AZ::ScriptAsset::AssetVersion));
+    builderDescriptor.m_version = BuilderWorkerVersion::Current;
+    builderDescriptor.m_analysisFingerprint = AZStd::string::format("%s-%d", LuaBuilderWorker::GetAnalysisFingerprint().c_str(), BuilderWorkerVersion::Current);
     builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.lua", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
     builderDescriptor.m_busId = azrtti_typeid<LuaBuilderWorker>();
     builderDescriptor.m_createJobFunction = AZStd::bind(&LuaBuilderWorker::CreateJobs, &m_luaBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
     builderDescriptor.m_processJobFunction = AZStd::bind(&LuaBuilderWorker::ProcessJob, &m_luaBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
     m_luaBuilder.BusConnect(builderDescriptor.m_busId);
-
-    // (optimization) this builder does not emit source dependencies:
-    builderDescriptor.m_flags |= AssetBuilderSDK::AssetBuilderDesc::BF_EmitsNoDependencies;
-
     AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
 }
 

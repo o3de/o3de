@@ -30,36 +30,30 @@ struct VSOutput
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
+
+    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
+    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
+    // support for continuous lod is added, we should be able to get away with just one culling plane.
+    float2 m_cullDistance : SV_CullDistance; 
 };
 
-VSOutput TerrainPBR_MainPassVS(VertexInput IN)
+VSOutput TerrainPBR_MainPassVS(VertexInput input)
 {
-    VSOutput OUT;
- 
-    HeightContext heightContext;
-    heightContext.Initialize(SceneSrg::m_heightmapImage, IN.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
+    VSOutput output;
+    
+    CalculateTerrainPosition(
+        SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
+        output.m_worldPosition, output.m_position, output.m_cullDistance // output params
+        );
 
-    if (heightContext.IsVertexOutsideOfTerrainBounds())
+    if (isnan(output.m_position.x))
     {
-        // Output a NaN to remove this vertex.
-        OUT.m_position = 1.0 / 0.0;
-        return OUT;
+        // Don't bother with additional processing if this vertex is out of bounds.
+        return output;
     }
 
-    float height = 0.0;
-
-    if (o_useTerrainSmoothing)
-    {
-        height = heightContext.GetSmoothedHeight(SceneSrg::m_heightmapImage, SceneSrg::HeightmapSampler);
-    }
-    else
-    {
-        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
-    }
-
-    OUT.m_worldPosition = float3(heightContext.m_xyPosition, height);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
-    OUT.m_normal = heightContext.CalculateNormal(SceneSrg::m_heightmapImage);
+    output.m_normal = float3(input.m_xyNormal, 0.0);
+    output.m_normal.z = saturate(sqrt(1.0 - output.m_normal.x * output.m_normal.x - output.m_normal.y * output.m_normal.y));
 
     // directional light shadow 
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -67,12 +61,12 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     {
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
-            OUT.m_worldPosition,
-            OUT.m_normal,
-            OUT.m_shadowCoords);
+            output.m_worldPosition,
+            output.m_normal,
+            output.m_shadowCoords);
     }
     
-    return OUT;
+    return output;
 }
 
 void GatherSurfaceDataFromMaterials(
@@ -125,13 +119,13 @@ void GatherSurfaceDataFromClipmaps(
     }
 }
 
-ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
+ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 {
     // ------- Surface -------
     Surface surface;
-    surface.position = IN.m_worldPosition.xyz;
-    surface.vertexNormal = normalize(IN.m_normal);
-    float viewDistance = length(ViewSrg::m_worldPosition - IN.m_worldPosition.xyz);
+    surface.position = input.m_worldPosition.xyz;
+    surface.vertexNormal = normalize(input.m_normal);
+    float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
 
     // Surface data to be gathered from clipmaps or materials.
@@ -148,7 +142,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-
+    
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
@@ -182,11 +176,11 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     LightingData lightingData;
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow, Occlusion
-    lightingData.shadowCoords = IN.m_shadowCoords;
+    lightingData.shadowCoords = input.m_shadowCoords;
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
@@ -213,14 +207,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     // ------- Output -------
 
-    ForwardPassOutput OUT;
+    ForwardPassOutput output;
 
-    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
-    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
-    OUT.m_specularColor = lightingOutput.m_specularColor;
-    OUT.m_specularF0 = lightingOutput.m_specularF0;
-    OUT.m_albedo = lightingOutput.m_albedo;
-    OUT.m_normal = lightingOutput.m_normal;
+    output.m_diffuseColor = lightingOutput.m_diffuseColor;
+    output.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    output.m_specularColor = lightingOutput.m_specularColor;
+    output.m_specularF0 = lightingOutput.m_specularF0;
+    output.m_albedo = lightingOutput.m_albedo;
+    output.m_normal = lightingOutput.m_normal;
 
-    return OUT;
+    return output;
 }
