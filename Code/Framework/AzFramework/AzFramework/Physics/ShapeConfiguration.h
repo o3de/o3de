@@ -33,6 +33,15 @@ namespace Physics
         Heightfield ///< Interacts with the physics system heightfield
     };
 
+    namespace ShapeConstants
+    {
+        static constexpr float DefaultCapsuleRadius = 0.25f;
+        static constexpr float DefaultCapsuleHeight = 1.0f;
+        static constexpr float DefaultSphereRadius = 0.5f;
+        static const AZ::Vector3 DefaultBoxDimensions = AZ::Vector3::CreateOne();
+        static const AZ::Vector3 DefaultScale = AZ::Vector3::CreateOne();
+    } // namespace ShapeConstants
+
     class ShapeConfiguration
     {
     public:
@@ -42,7 +51,7 @@ namespace Physics
         virtual ~ShapeConfiguration() = default;
         virtual ShapeType GetShapeType() const = 0;
 
-        AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_scale = ShapeConstants::DefaultScale;
     };
 
     class SphereShapeConfiguration : public ShapeConfiguration
@@ -51,11 +60,11 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(SphereShapeConfiguration, "{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit SphereShapeConfiguration(float radius = 0.5f);
+        explicit SphereShapeConfiguration(float radius = ShapeConstants::DefaultSphereRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
 
-        float m_radius = 0.5f;
+        float m_radius = ShapeConstants::DefaultSphereRadius;
     };
 
     class BoxShapeConfiguration : public ShapeConfiguration
@@ -64,11 +73,11 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(BoxShapeConfiguration, "{E58040ED-3E50-4882-B0E9-525E7A548F8D}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = AZ::Vector3::CreateOne());
+        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
 
     class CapsuleShapeConfiguration : public ShapeConfiguration
@@ -77,12 +86,13 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(CapsuleShapeConfiguration, "{19C6A07E-5644-46B7-A49E-48703B56ED32}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit CapsuleShapeConfiguration(float height = 1.0f, float radius = 0.25f);
+        explicit CapsuleShapeConfiguration(
+            float height = ShapeConstants::DefaultCapsuleHeight, float radius = ShapeConstants::DefaultCapsuleRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
 
-        float m_height = 1.0f;
-        float m_radius = 0.25f;
+        float m_height = ShapeConstants::DefaultCapsuleHeight;
+        float m_radius = ShapeConstants::DefaultCapsuleRadius;
 
     private:
         void OnHeightChanged();
