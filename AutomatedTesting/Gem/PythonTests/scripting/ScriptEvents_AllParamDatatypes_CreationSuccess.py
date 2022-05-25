@@ -29,6 +29,7 @@ class Tests():
 
 FILE_PATH = os.path.join(paths.projectroot, "TestAssets", "test_file.scriptevents")
 N_VAR_TYPES = 10  # Top 10 variable types
+SEARCH_RETRY = 20
 TEST_METHOD_NAME = "test_method_name"
 
 class TestScriptEvents_AllParamDatatypes_CreationSuccess():
@@ -110,7 +111,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         self.none_tree_search_box.setText(node_name)
         helper.wait_for_condition(lambda: self.none_tree_search_box.text() == node_name, WAIT_TIME_3)
         # Try clicking ENTER in search box multiple times
-        for _ in range(20):
+        for _ in range(SEARCH_RETRY):
             QtTest.QTest.keyClick(self.none_tree_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
             if pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None:
                 break
@@ -140,7 +141,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         result = helper.wait_for_condition(
             lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Events") is not None
                     and self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "") is not None,
-            5.0,
+            WAIT_TIME_3,
         )
         Report.result(Tests.new_event_created, result)
 
@@ -194,8 +195,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 8) Save file and verify node in SC Node Palette
         Report.result(Tests.file_saved, self.save_file())
-        general.open_pane("Script Canvas")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), WAIT_TIME_3)
+        general.open_pane(SCRIPT_CANVAS_UI)
+        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
         self.initialize_sc_qt_objects()
         self.node_palette_search(TEST_METHOD_NAME)
         result = helper.wait_for_condition(lambda:
@@ -204,7 +205,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 9) Close Asset Editor
         general.close_pane("Asset Editor")
-        general.close_pane("Script Canvas")
+        general.close_pane(SCRIPT_CANVAS_UI)
 
 
 test = TestScriptEvents_AllParamDatatypes_CreationSuccess()
