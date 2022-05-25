@@ -730,6 +730,7 @@ namespace ScriptCanvasEditor
         connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
         connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
         connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
+        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
 
         // List of recent files.
         {
@@ -4454,6 +4455,11 @@ namespace ScriptCanvasEditor
     void MainWindow::OnScriptEventAddHelpers()
     {
 
+    }
+
+    void MainWindow::OnScriptEventMenuPreShow()
+    {
+        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 
     void MainWindow::OnScriptEventOpen()

@@ -12,7 +12,12 @@
 
 #endif
 
-namespace ScriptCanvasEditor
+namespace ScriptEventEditor
 {
-   
+    struct MenuItemsEnabled
+    {
+        bool m_save = false;
+        bool m_addHelpers = false;
+    };
+    MenuItemsEnabled UpdateMenuItemsEnabled();
 }

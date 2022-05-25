@@ -386,6 +386,7 @@ namespace ScriptCanvasEditor
 
         // ScriptEvent Extension Actions
         void OnScriptEventAddHelpers();
+        void OnScriptEventMenuPreShow();
         void OnScriptEventOpen();
         void OnScriptEventParseAs();
         void OnScriptEventSaveAs();
