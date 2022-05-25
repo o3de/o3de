@@ -540,6 +540,13 @@ namespace EMotionFX
             OnAssetReady(asset);
         }
 
+        void EditorActorComponent::OnAssetDependencyReloaded([[maybe_unused]] AZ::Data::AssetId assetId)
+        {
+            AZ_TracePrintf("ActorComponent", "Actor component dependency reload event fired %s\n", assetId.ToFixedString().c_str());
+            DestroyActorInstance();
+            OnAssetReady(m_actorAsset);
+        }
+
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;

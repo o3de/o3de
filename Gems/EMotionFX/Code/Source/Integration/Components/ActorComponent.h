@@ -88,7 +88,7 @@ namespace EMotionFX
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
-                // actor are disabled when the actor is out of view. 
+                // actor are disabled when the actor is out of view.
                 bool m_forceUpdateJointsOOV = false;
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
@@ -174,6 +174,7 @@ namespace EMotionFX
             // AZ::Data::AssetBus::Handler
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+            void OnAssetDependencyReloaded(AZ::Data::AssetId assetId) override;
 
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
