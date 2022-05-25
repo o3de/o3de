@@ -852,7 +852,9 @@ namespace AZ
                 {
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
-                
+
+                VkDescriptorSet vkDescriptorSet = nullptr;
+
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
@@ -864,7 +866,7 @@ namespace AZ
                 else
                 {
                     auto& compiledData = shaderResourceGroup->GetCompiledData();
-                    VkDescriptorSet vkDescriptorSet = compiledData.GetNativeDescriptorSet();
+                    vkDescriptorSet = compiledData.GetNativeDescriptorSet();
                 }
 
                 if (bindings.m_descriptorSets[index] != vkDescriptorSet)
