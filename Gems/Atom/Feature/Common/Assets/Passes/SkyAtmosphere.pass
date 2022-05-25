@@ -54,20 +54,6 @@
                                 "Pass": "SkyTransmittanceLUTPass",
                                 "Attachment": "SkyTransmittanceLUTOutput"
                             }
-                        },
-                        {
-                            "LocalSlot": "DirectionalShadowmap",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DirectionalShadowmap"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DirectionalESM",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DirectionalESM"
-                            }
                         }
                     ]
                 },
