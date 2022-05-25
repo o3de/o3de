@@ -67,6 +67,11 @@ namespace AZ
             provided.push_back(AZ_CRC("RPISystem", 0xf2add773));
         }
 
+        void RPISystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        {
+            dependent.push_back(AZ_CRC_CE("XRSystemService"));
+        }
+
         RPISystemComponent::RPISystemComponent()
         {
         #ifdef RPI_EDITOR
@@ -145,6 +150,16 @@ namespace AZ
 
             // Stop execution since we can't recover from device removal error
             Debug::Trace::Crash();
+        }
+
+        void RPISystemComponent::RegisterXRInterface(XRRenderingInterface* xrSystemInterface)
+        {
+            m_rpiSystem.RegisterXRSystem(xrSystemInterface);
+        }
+
+        void RPISystemComponent::UnRegisterXRInterface()
+        {
+            m_rpiSystem.UnRegisterXRSystem();
         }
 
     } // namespace RPI
