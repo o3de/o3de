@@ -15,7 +15,7 @@ import azlmbr.bus as bus
 import azlmbr.paths as paths
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, SCRIPT_EVENT_UI,
                                                  NODE_PALETTE_QT, EVENTS_QT, NODE_TEST_METHOD, DEFAULT_SCRIPT_EVENT,
-                                                 DEFAULT_METHOD_NAME, SAVE_STRING, WAIT_TIME_3)
+                                                 TREE_VIEW_QT, DEFAULT_METHOD_NAME, SAVE_STRING, WAIT_TIME_3)
 
 class Tests():
     new_event_created = ("New Script Event created", "New Script Event not created")
@@ -60,33 +60,33 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         self.editor_window = None
         self.asset_editor = None
         self.asset_editor_widget = None
-        self.container = None
-        self.menu_bar = None
-        self.sc = None
+        self.asset_editor_row_container = None
+        self.asset_editor_pulldown_menu = None
+        self.script_canvas = None
         self.node_palette = None
-        self.tree = None
-        self.search_frame = None
-        self.search_box = None
+        self.node_palette_tree = None
+        self.node_palette_search_frame = None
+        self.node_palette_search_box = None
 
     def initialize_asset_editor_qt_objects(self):
         self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
         self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
-        self.container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
-        self.menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
+        self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
+        self.asset_editor_pulldown_menu = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
     def initialize_sc_qt_objects(self):
-        self.sc = self.editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-        if self.sc.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
-            action = pyside_utils.find_child_by_pattern(self.sc, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        self.script_canvas = self.editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+        if self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
+            action = pyside_utils.find_child_by_pattern(self.script_canvas, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
             action.trigger()
-        self.node_palette = self.sc.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
-        self.tree = self.node_palette.findChild(QtWidgets.QTreeView, "treeView")
-        self.search_frame = self.node_palette.findChild(QtWidgets.QFrame, "searchFrame")
-        self.search_box = self.search_frame.findChild(QtWidgets.QLineEdit, "searchFilter")
+        self.node_palette = self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+        self.node_palette_tree = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+        self.node_palette_search_frame = self.node_palette.findChild(QtWidgets.QFrame, "searchFrame")
+        self.node_palette_search_box = self.node_palette_search_frame.findChild(QtWidgets.QLineEdit, "searchFilter")
 
     def save_file(self):
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
+        action = pyside_utils.find_child_by_pattern(self.asset_editor_pulldown_menu, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
         action.trigger()
         # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
         # if there are no unsaved changes we will not have any * in the text
@@ -94,16 +94,16 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
 
     def expand_container_rows(self, object_name):
-        children = self.container.findChildren(QtWidgets.QFrame, object_name)
+        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, object_name)
         for child in children:
             check_box = child.findChild(QtWidgets.QCheckBox)
             if check_box and not check_box.isChecked():
                 QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
 
     def node_palette_search(self, node_name):
-        self.search_box.setText(node_name)
-        helper.wait_for_condition(lambda: self.search_box.text() == node_name, WAIT_TIME_3)
-        QtTest.QTest.keyClick(self.search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
+        self.node_palette_search_box.setText(node_name)
+        helper.wait_for_condition(lambda: self.node_palette_search_box.text() == node_name, WAIT_TIME_3)
+        QtTest.QTest.keyClick(self.node_palette_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -120,16 +120,16 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
 
         # 2) Initially create new Script Event file with one method
         self.initialize_asset_editor_qt_objects()
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
+        action = pyside_utils.find_child_by_pattern(self.asset_editor_pulldown_menu, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
-            lambda: self.container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
-            and self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "") is not None,
+            lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
+                    and self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "") is not None,
             WAIT_TIME_3,
         )
         Report.result(Tests.new_event_created, result)
         # Add new method
-        add_event = self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
+        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
         add_event.click()
         result = helper.wait_for_condition(
             lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
@@ -142,7 +142,7 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         Report.result(Tests.file_saved, result and file_saved)
 
         # 4) Add a new child element
-        add_event = self.container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
+        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
         add_event.click()
         result = helper.wait_for_condition(
             lambda: len(self.asset_editor_widget.findChildren(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT)) == NUM_TEST_METHODS,
@@ -171,7 +171,7 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         self.initialize_sc_qt_objects()
         self.node_palette_search(f"{NODE_TEST_METHOD}_1")
         method_result_1 = helper.wait_for_condition(
-            lambda: pyside_utils.find_child_by_pattern(self.tree, {"text": f"{NODE_TEST_METHOD}_1"}) is not None, WAIT_TIME_3)
+            lambda: pyside_utils.find_child_by_pattern(self.node_palette_tree, {"text": f"{NODE_TEST_METHOD}_1"}) is not None, WAIT_TIME_3)
         Report.result(Tests.method_added, method_result_1)
 
         # 7) Delete one method and save
@@ -186,7 +186,7 @@ class TestScriptEvent_AddRemoveMethod_UpdatesInSC():
         self.initialize_sc_qt_objects()
         self.node_palette_search(f"{NODE_TEST_METHOD}_0")
         method_result_0 = helper.wait_for_condition(
-            lambda: pyside_utils.find_child_by_pattern(self.tree, {"text": f"{NODE_TEST_METHOD}_0"}) is None, WAIT_TIME_3)
+            lambda: pyside_utils.find_child_by_pattern(self.node_palette_tree, {"text": f"{NODE_TEST_METHOD}_0"}) is None, WAIT_TIME_3)
         Report.result(Tests.method_removed, method_result_0)
 
         # 9) Close Asset Editor
