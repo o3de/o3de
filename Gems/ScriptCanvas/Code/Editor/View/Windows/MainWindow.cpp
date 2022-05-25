@@ -130,6 +130,7 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 
 #include <Editor/View/Windows/ScriptCanvasContextMenus.h>
+#include <Editor/View/Windows/ScriptEventMenu.h>
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
@@ -3709,9 +3710,6 @@ namespace ScriptCanvasEditor
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
             contextMenu.addSeparator();
-//             contextMenu.AddMenuAction(aznew MakeScriptEventHelpersAction(&contextMenu));
-//             contextMenu.AddMenuAction(aznew SaveAsScriptEventAction(&contextMenu));
-//             contextMenu.AddMenuAction(aznew OpenScriptEventAction(&contextMenu));
         }
 
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
@@ -4474,6 +4472,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventSaveAs()
     {
+        ScriptEvents::Editor::SaveAsAction(m_activeGraph);
         AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
     }
 

@@ -9,15 +9,29 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-
 #endif
 
-namespace ScriptEventEditor
+namespace ScriptCanvas
 {
-    struct MenuItemsEnabled
+    class SourceHandle;
+}
+
+namespace ScriptEvents
+{
+    namespace Editor
     {
-        bool m_save = false;
-        bool m_addHelpers = false;
-    };
-    MenuItemsEnabled UpdateMenuItemsEnabled();
+        AZStd::pair<bool, AZStd::string> MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle);
+
+        void OpenAction();
+
+        AZStd::pair<bool, AZStd::string> SaveAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
+
+        struct MenuItemsEnabled
+        {
+            bool m_addHelpers = false;
+            bool m_save = false;
+        };
+
+        MenuItemsEnabled UpdateMenuItemsEnabled(const ScriptCanvas::SourceHandle& sourceHandle);
+    }
 }
