@@ -227,8 +227,11 @@ namespace AtomToolsFramework
             // modified by Qt (Seen during level load in Editor)
             case QEvent::ShowToParent:  
 
-            // Qt is sending this event as the final events after a viewport change. This even needs to trigger a 
-            // resize at this point or else the swapchain won't be resized  to the correct viewport size(s) on vulkan.
+            // Qt is sending this event as the final events after a viewport change. The resize signal is sent multiple
+            // times per viewport (one for ShowToParent, one for Resize). The final resize will correctly set the
+            // swapchain dimensions, but there is an issue on vulkan where even though the swap chain is created and
+            // updated after the last resize, it does not refresh to the viewport widget. We need to also invoke a resize
+            // after the UpdateLater event to force this.
             case QEvent::UpdateLater:   
             {
                 SendWindowResizeEvent();
