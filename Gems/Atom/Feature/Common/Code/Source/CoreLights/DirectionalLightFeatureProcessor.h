@@ -103,9 +103,9 @@ namespace AZ
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias = 0.0f;
+            float m_normalShadowBias = 2.5f;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
