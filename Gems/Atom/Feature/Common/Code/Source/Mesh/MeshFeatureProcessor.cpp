@@ -240,6 +240,11 @@ namespace AZ
 
             return {};
         }
+        
+        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        {
+            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+        }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
@@ -698,8 +703,8 @@ namespace AZ
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-
-            ModelDataInstance::DrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            
+            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
@@ -1080,8 +1085,8 @@ namespace AZ
                     {
                         AZ_Warning(
                             "MeshFeatureProcessor", false,
-                            "No irradiance.manualColor or irradiance.color field found. Defaulting to black.");
-                        subMesh.m_irradianceColor = AZ::Colors::Black;
+                            "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
+                        subMesh.m_irradianceColor = AZ::Colors::White;
                     }
                 }
             }
@@ -1159,8 +1164,8 @@ namespace AZ
             else
             {
                 AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
-                        "defaulting to black.", irradianceColorSource.GetCStr());
-                subMesh.m_irradianceColor = AZ::Colors::Black;
+                        "defaulting to 1.0f.", irradianceColorSource.GetCStr());
+                subMesh.m_irradianceColor = AZ::Colors::White;
             }
 
 

@@ -15,16 +15,25 @@ imports.init()
 
 import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
+#Bat
+@pytest.mark.SUITE_periodic
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestScriptCanvas(EditorTestSuite):
+    class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
+        import NodePalette_HappyPath_CanSelectNode as test_module
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -59,11 +68,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_Graph_HappyPath_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
-        from . import NodePalette_HappyPath_CanSelectNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
@@ -233,7 +237,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, editor, launcher_platform):
         expected_lines = [
             "New Script event action found: True",
@@ -267,11 +270,10 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
-        var_types = ["Boolean", "Color", "EntityID", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
-        expected_lines = [f"Success: {var_type} variable is created" for var_type in var_types]
-        expected_lines.extend([f"Success: {var_type} variable is deleted" for var_type in var_types])
+        var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+        expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
+        expected_lines.extend([f"{var_type} variable is deleted: True" for var_type in var_types])
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
