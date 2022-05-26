@@ -733,6 +733,9 @@ namespace AssetBuilderSDK
 
         bool Succeeded() const;
 
+        //! Detects if the product Ids do not collide and reports any collisions
+        bool ReportProductCollisions() const;
+
         static void Reflect(AZ::ReflectContext* context);
     };
 
