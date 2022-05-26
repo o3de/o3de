@@ -11,7 +11,6 @@
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
-#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -36,11 +35,10 @@ namespace AZ
         DiffuseProbeGridRelocationPass::DiffuseProbeGridRelocationPass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
-            if (!(RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_rayTracing && AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED))
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
                 // GI is not supported on this platform
                 SetEnabled(false);
-                return;
             }
             else
             {
