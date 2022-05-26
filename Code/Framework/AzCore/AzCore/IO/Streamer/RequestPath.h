@@ -29,7 +29,7 @@ namespace AZ
             RequestPath(RequestPath&& rhs) = default;
             // Allow path views to be cast to a request path.
             RequestPath(AZ::IO::PathView path);
-            
+
             RequestPath& operator=(const RequestPath& rhs) = default;
             RequestPath& operator=(RequestPath&& rhs) = default;
             RequestPath& operator=(AZ::IO::PathView path);

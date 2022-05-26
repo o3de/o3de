@@ -47,8 +47,11 @@ namespace AZ::IO
         void GetIndicesInOrder(const AZStd::function<void(T)>& callback) const;
 
     private:
-        AZStd::unique_ptr<T[]> m_indices_previous;
-        AZStd::unique_ptr<T[]> m_indices_next;
+        template<bool CheckFront, bool CheckBack>
+        void Remove(T index);
+
+        AZStd::unique_ptr<T[]> m_indicesPrevious;
+        AZStd::unique_ptr<T[]> m_indicesNext;
         T m_size{ 0 };
         T m_front{ InvalidIndex };
         T m_back{ InvalidIndex };

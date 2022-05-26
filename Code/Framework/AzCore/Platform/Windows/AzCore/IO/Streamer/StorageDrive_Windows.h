@@ -102,9 +102,9 @@ namespace AZ::IO
         using RecentlyUsedMetaIndex = RecentlyUsedIndex<u32>;
         static const AZStd::chrono::microseconds s_averageSeekTime;
 
-        inline static constexpr u32 InvalidFileCacheIndex = std::numeric_limits<u32>::max();
-        inline static constexpr size_t InvalidReadSlotIndex = std::numeric_limits<size_t>::max();
-        inline static constexpr u32 InvalidMetaDataCacheIndex = std::numeric_limits<u32>::max();
+        inline static constexpr u32 InvalidFileCacheIndex = AZStd::numeric_limits<u32>::max();
+        inline static constexpr size_t InvalidReadSlotIndex = AZStd::numeric_limits<size_t>::max();
+        inline static constexpr u32 InvalidMetaDataCacheIndex = AZStd::numeric_limits<u32>::max();
 
         struct FileReadStatus
         {
