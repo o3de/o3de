@@ -1,0 +1,163 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float4> m_macroColorClipmaps;
+    Texture2DArray<float2> m_macroNormalClipmaps;
+    Texture2DArray<float4> m_detailColorClipmaps;
+    Texture2DArray<float2> m_detailNormalClipmaps;
+    Texture2DArray<float> m_detailHeightClipmaps;
+    Texture2DArray<float> m_detailRoughnessClipmaps;
+    Texture2DArray<float> m_detailSpecularF0Clipmaps;
+    Texture2DArray<float> m_detailMetalnessClipmaps;
+    Texture2DArray<float> m_detailOcclusionClipmaps;
+
+    uint m_clipmapId;
+    float m_clipmapLevel; // cast to float in CPU
+    float m_clipmapSize;
+    float2 m_viewportSize;
+
+    float m_scale;
+    float m_brightness;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+}
+
+struct VSInput
+{
+    uint m_vertexIndex : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : UV0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+float3 UnpackNormal(float2 packedNormal)
+{
+    float z = sqrt(1.0 - packedNormal.x * packedNormal.x - packedNormal.y * packedNormal.y);
+    return float3(packedNormal.xy, z);
+}
+
+// This VS is a slightly modified version of fullscreen pass shader.
+// It uses a single triangle but only covers a fixed area (unrelated to the viewport size)
+// at the bottom-right corner.
+// see also <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float scaleX = PassSrg::m_clipmapSize / PassSrg::m_viewportSize.x * PassSrg::m_scale;
+    float scaleY = PassSrg::m_clipmapSize / PassSrg::m_viewportSize.y * PassSrg::m_scale;
+
+    float u = float(vsInput.m_vertexIndex & 2);
+    float v = float((vsInput.m_vertexIndex << 1) & 2);
+    float x = u * scaleX + (1.0 - scaleX);
+    float y = -v * scaleY - (1.0 - scaleY);
+    OUT.m_position = float4(x, y, 0, 1);
+    OUT.m_uv = float4(u, v, 0, 1);
+    return OUT;
+}
+
+PSOutput MainPS(VSOutput psInput)
+{
+    PSOutput OUT;
+    float3 sampleCoord = float3(psInput.m_uv, PassSrg::m_clipmapLevel);
+    switch (PassSrg::m_clipmapId)
+    {
+        case 0:
+        {
+            float4 color = PassSrg::m_macroColorClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * PassSrg::m_brightness, 1.0);
+            break;
+        }
+        case 1:
+        {
+            float2 packedNormal = PassSrg::m_macroNormalClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 normal = UnpackNormal(packedNormal);
+            normal = (normal + 1.0) / 2.0; // transform to [0, 1] to be displayed on the screen.
+            OUT.m_color = float4(normal.xyz * PassSrg::m_brightness, 1.0);
+            break;
+        }
+        case 2:
+        {
+            float4 color = PassSrg::m_detailColorClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * PassSrg::m_brightness, 1.0);
+            break;
+        }
+        case 3:
+        {
+            float2 packedNormal = PassSrg::m_detailNormalClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 normal = UnpackNormal(packedNormal);
+            normal = (normal + 1.0) / 2.0; // transform to [0, 1] to be displayed on the screen.
+            OUT.m_color = float4(normal.xyz * PassSrg::m_brightness, 1.0);
+            break;
+        }
+        case 4:
+        {
+            float height = PassSrg::m_detailHeightClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 splat = float3(height, height, height) * 0.01 * PassSrg::m_brightness;
+            OUT.m_color = float(splat, 1.0);
+            break;
+        }
+        case 5:
+        {
+            float roughness = PassSrg::m_detailRoughnessClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 splat = float3(roughness, roughness, roughness) * PassSrg::m_brightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 6:
+        {
+            float specularF0 = PassSrg::m_detailSpecularF0Clipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 splat = float3(specularF0, specularF0, specularF0) * PassSrg::m_brightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 7:
+        {
+            float metalness = PassSrg::m_detailMetalnessClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 splat = float3(metalness, metalness, metalness) * PassSrg::m_brightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 8:
+        {
+            float occlusion = PassSrg::m_detailOcclusionClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            float3 splat = float3(occlusion, occlusion, occlusion) * 0.1 * PassSrg::m_brightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        default: // default to detail color
+        {
+            float4 color = PassSrg::m_detailColorClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * PassSrg::m_brightness, 1.0);
+            break;
+        }
+    }
+    return OUT;
+}
+

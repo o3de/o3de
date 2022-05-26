@@ -461,6 +461,11 @@ namespace Terrain
         outThreadZ = 1;
     }
 
+    uint32_t TerrainClipmapManager::GetClipmapSize() const
+    {
+        return m_config.m_clipmapSize;
+    }
+
     bool TerrainClipmapManager::HasMacroClipmapUpdate() const
     {
         return m_macroTotalDispatchThreadX != 0 && m_macroTotalDispatchThreadY != 0;

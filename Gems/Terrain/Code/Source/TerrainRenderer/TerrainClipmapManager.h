@@ -121,6 +121,9 @@ namespace Terrain
         void GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
         void GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
 
+        //! Get the size of the clipmap from config.
+        uint32_t GetClipmapSize() const;
+
         //! Returns if there are clipmap regions requiring update.
         bool HasMacroClipmapUpdate() const;
         bool HasDetailClipmapUpdate() const;
