@@ -117,24 +117,28 @@ namespace ScriptCanvasEditor
     class OnSaveToast
     {
     public:
-        OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful)
+        OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful, AZStd::optional<AZStd::string> discriptionOverride = AZStd::nullopt)
         {
-            AzQtComponents::ToastType toastType = AzQtComponents::ToastType::Information;
-            AZStd::string titleLabel = "Notification";
-
-            AZStd::string description;
-
-            if (saveSuccessful)
+            auto initDescription = [&]()->AZStd::string
             {
-                description = AZStd::string::format("%s Saved", tabName.data());
-            }
-            else
-            {
-                description = AZStd::string::format("Failed to save %s", tabName.data());
-                toastType = AzQtComponents::ToastType::Error;
-            }
+                if (discriptionOverride)
+                {
+                    return *discriptionOverride;
+                }
+                else if (saveSuccessful)
+                {
+                    return AZStd::string::format("%s Saved", tabName.data());
+                }
+                else
+                {
+                    return AZStd::string::format("Failed to save %s", tabName.data());
+                }
+            };
 
-            AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
+            const AZStd::string titleLabel = "Notification";
+            const AZStd::string description = initDescription();;
+            const AzQtComponents::ToastType toastType = saveSuccessful ? AzQtComponents::ToastType::Information : AzQtComponents::ToastType::Error;
+            const AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
             AzToolsFramework::ToastId validationToastId;
 
@@ -386,6 +390,7 @@ namespace ScriptCanvasEditor
 
         // ScriptEvent Extension Actions
         void OnScriptEventAddHelpers();
+        void OnScriptEventClearStatus();
         void OnScriptEventMenuPreShow();
         void OnScriptEventOpen();
         void OnScriptEventParseAs();

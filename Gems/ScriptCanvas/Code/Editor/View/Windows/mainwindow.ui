@@ -171,6 +171,7 @@
     <addaction name="separator"/>
     <addaction name="actionAdd_Script_Event_Helpers"/>
     <addaction name="actionParse_As_Script_Event"/>
+    <addaction name="actionClear_Script_Event_Status"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -816,6 +817,11 @@
    </property>
    <property name="text">
     <string>Parse As Script Event</string>
+   </property>
+  </action>
+  <action name="actionClear_Script_Event_Status">
+   <property name="text">
+    <string>Clear Script Event Status</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

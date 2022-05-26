@@ -23,7 +23,15 @@ namespace ScriptEvents
 {
     namespace Editor
     {
-        AZStd::pair<bool, AZStd::string> MakeHelpersAction([[maybe_unused]] const SourceHandle& sourceHandle)
+        void ClearStatusAction(const SourceHandle& sourceHandle)
+        {
+            if (sourceHandle.Mod())
+            {
+                sourceHandle.Mod()->ClearScriptEventExtension();
+            }
+        }
+
+        AZStd::pair<bool, AZStd::string> MakeHelpersAction(const SourceHandle& sourceHandle)
         {
             if (!sourceHandle.Mod())
             {
@@ -102,6 +110,8 @@ namespace ScriptEvents
 
                 if (result.m_isScriptEvents)
                 {
+                    sourceHandle.Mod()->MarkScriptEventExtension();
+
                     AZ::IO::FixedMaxPath resolvedProjectRoot;
                     AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
                     const auto fileName = QFileDialog::getSaveFileName
@@ -118,7 +128,11 @@ namespace ScriptEvents
                             , result.m_event
                             , path);
 
-                        if (!saveOutcome.IsSuccess())
+                        if (saveOutcome.IsSuccess())
+                        {
+                            errorMessage = path.Filename().FixedMaxPathString().c_str();
+                        }
+                        else
                         {
                             errorMessage = saveOutcome.TakeError();
                         }
@@ -143,6 +157,7 @@ namespace ScriptEvents
             MenuItemsEnabled menuItemsEnabled;
             bool isParsed = graph && ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents;
             menuItemsEnabled.m_addHelpers = graph && !isParsed;
+            menuItemsEnabled.m_clear = graph && graph->IsScriptEventExtension();
             menuItemsEnabled.m_save = isParsed;
             return menuItemsEnabled;
         }

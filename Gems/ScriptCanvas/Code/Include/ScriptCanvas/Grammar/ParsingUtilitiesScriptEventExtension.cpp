@@ -22,14 +22,8 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
 
     AZ::Outcome<ScriptEvents::Method, AZStd::string> TranslateToScriptEventMethod(const FunctionDefinitionNode& node)
     {
-        // this is how return values could be implemented, so manage that
-
-        if (!node.IsExecutionEntry())
-        {
-            return AZ::Failure(AZStd::string("Only User-In nodes (not User-Out nodes) are allowed for ScriptEvents."));
-        }
-
         ScriptEvents::Method method;
+        method.GetNameProperty().Set(node.GetDisplayName());
 
         auto parameterSlots = node.GetSlotsByType(CombinedSlotType::DataOut);
         for (auto& slot : parameterSlots)
@@ -39,11 +33,47 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
             auto azType = slot->GetDataType().GetAZType();
             parameter.GetTypeProperty().Set(azType);
         }
-                
+                        
         auto methodValidateOutcome = method.Validate();
         if (!methodValidateOutcome.IsSuccess())
         {
             return AZ::Failure(methodValidateOutcome.GetError());
+        }
+
+        auto slots = node.GetSlotsByType(CombinedSlotType::ExecutionOut);
+        if (slots.size() > 1)
+        {
+            return AZ::Failure(AZStd::string("Event nodes must have one or zero Execution Out Slots"));
+        }
+
+        if (!slots.empty())
+        {
+            auto resultNodes = node.GetConnectedNodes(*slots.front());
+            if (!resultNodes.empty())
+            {
+                if (resultNodes.size() > 1)
+                {
+                    return AZ::Failure(AZStd::string("Event nodes can only have one connected return value Node"));
+                }
+
+                auto returnValueNode = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(resultNodes.front().first);
+                if (!returnValueNode || !returnValueNode->IsExecutionExit())
+                {
+                    return AZ::Failure(AZStd::string("Event nodes can only be connected to a FunctionDefinitionNode that defines a return value"));
+                }
+
+                auto returnValueSlots = returnValueNode->GetSlotsByType(CombinedSlotType::DataIn);
+                if (returnValueSlots.size() != 1)
+                {
+                    return AZ::Failure(AZStd::string("Event nodes can only be connected to a FunctionDefinitionNode that defines a single return value slot."));
+                }
+
+                for (auto& slot : returnValueSlots)
+                {
+                    const auto azTypeReturn = slot->GetDataType().GetAZType();
+                    method.GetReturnTypeProperty().Set(azTypeReturn);
+                }
+            }
         }
 
         return AZ::Success(method);
@@ -94,13 +124,18 @@ namespace ScriptCanvas::ScriptEventGrammar
     {
         FunctionNodeToScriptEventResult result{ false, &node, {}, {} };
 
-        if (!azrtti_istypeof<Nodes::Core::FunctionDefinitionNode>(node))
+        auto functionDefinitionNode = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(&node);
+
+        if (!functionDefinitionNode)
         {
-            result.m_parseErrors.push_back("All ScriptEvent graph nodes must be FunctionDefinitionNodes");
             return result;
         }
 
-        auto functionDefinitionNode = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(&node);
+        if (!functionDefinitionNode->IsExecutionEntry())
+        {
+            return result;
+        }
+
         auto outcome = TranslateToScriptEventMethod(*functionDefinitionNode);
         if (outcome.IsSuccess())
         {

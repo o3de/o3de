@@ -239,8 +239,9 @@ namespace ScriptCanvas
         ScriptCanvas::ScriptCanvasData* m_owner;
 
     public:
+        void ClearScriptEventExtension();
+        bool IsScriptEventExtension() const;
         void MarkScriptEventExtension();
-        bool IsScriptEventExtension();
 
     private:
         bool m_isScriptEventExtension = false;

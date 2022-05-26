@@ -728,6 +728,7 @@ namespace ScriptCanvasEditor
         ui->action_Interpreter->setVisible(true);
 
         connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
+        connect(ui->actionClear_Script_Event_Status, &QAction::triggered, this, &MainWindow::OnScriptEventClearStatus);
         connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
         connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
         connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
@@ -1635,6 +1636,21 @@ namespace ScriptCanvasEditor
         if (!inMemoryAssetId.IsGraphValid())
         {
             return false;
+        }
+
+        if (inMemoryAssetId.Get()->IsScriptEventExtension())
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Select ScriptCanvas or ScriptEvent source type:")
+                , QObject::tr("Graph defines a ScriptEvent. Press 'Discard' and use Script Event menu to save it as .scriptevent, or 'Ok' to continue to save as .scriptcanvas")
+                , QMessageBox::Ok | QMessageBox::Discard    
+                , nullptr);
+
+            if (mb.exec() == QMessageBox::Discard)
+            {
+                return false;
+            }
         }
 
         if (!m_activeGraph.AnyEquals(inMemoryAssetId))
@@ -4460,10 +4476,16 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void MainWindow::OnScriptEventClearStatus()
+    {
+        ScriptEvents::Editor::ClearStatusAction(m_activeGraph);
+    }
+
     void MainWindow::OnScriptEventMenuPreShow()
     {
         auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
         ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
+        ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
         ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
     }
 
@@ -4529,14 +4551,12 @@ namespace ScriptCanvasEditor
         auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
         if (result.first)
         {
-            QMessageBox mb
-            (QMessageBox::Information
-                , QObject::tr("Graph Saved As Script Event!")
-                , QObject::tr(
-                    "Graph Saved .scriptevent, and this editor can open that file.\n"
-                    "No .scriptcanvas file was saved from this graph.")
-                , QMessageBox::Close
-                , nullptr);
+            OnSaveToast toast
+                ( result.second
+                , GetActiveGraphCanvasGraphId()
+                , true
+                , AZStd::string("Graph Saved .scriptevent, and this editor can open that file.\n"
+                    "No .scriptcanvas file was saved from this graph."));
         }
         else
         {

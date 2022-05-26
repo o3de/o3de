@@ -1219,13 +1219,18 @@ namespace ScriptCanvas
         return const_cast<Graph*>(this)->m_owner;
     }
 
+    void Graph::ClearScriptEventExtension()
+    {
+        m_isScriptEventExtension = false;
+    }
+
+    bool Graph::IsScriptEventExtension() const
+    {
+        return m_isScriptEventExtension;
+    }
+
     void Graph::MarkScriptEventExtension()
     {
         m_isScriptEventExtension = true;
-    }
-
-    bool Graph::IsScriptEventExtension()
-    {
-        return m_isScriptEventExtension;
     }
 }

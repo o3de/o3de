@@ -14,6 +14,8 @@ namespace ScriptEvents
 {
     namespace Editor
     {
+        void ClearStatusAction(const ScriptCanvas::SourceHandle& sourceHandle);
+
         AZStd::pair<bool, AZStd::string> MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle);
 
         AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> OpenAction();
@@ -25,6 +27,7 @@ namespace ScriptEvents
         struct MenuItemsEnabled
         {
             bool m_addHelpers = false;
+            bool m_clear = false;
             bool m_save = false;
         };
 
