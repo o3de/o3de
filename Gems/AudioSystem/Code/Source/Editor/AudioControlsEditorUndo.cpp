@@ -223,6 +223,41 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
+    CUndoFolderRename::CUndoFolderRename(QStandardItem* pItem)
+        : IUndoFolderOperation(pItem)
+    {
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    void CUndoFolderRename::Undo([[maybe_unused]] bool bUndo)
+    {
+        SwapNames();
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    void CUndoFolderRename::Redo()
+    {
+        SwapNames();
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    void CUndoFolderRename::SwapNames()
+    {
+        CUndoSuspend suspendUndo;
+        QATLTreeModel* pTree = CAudioControlsEditorPlugin::GetControlsTree();
+        if (pTree)
+        {
+            QStandardItem* pItem = GetItem(pTree, m_path);
+            if (pItem)
+            {
+                QString oldName = pItem->text();
+                pItem->setText(m_sName);
+                m_sName = oldName;
+            }
+        }
+    }
+
+    //-------------------------------------------------------------------------------------------//
     CUndoControlModified::CUndoControlModified(CID id)
         : m_id(id)
     {
@@ -379,4 +414,5 @@ namespace AudioControls
             Copy(pTree->invisibleRootItem(), m_original.invisibleRootItem());
         }
     }
+
 } // namespace AudioControls
