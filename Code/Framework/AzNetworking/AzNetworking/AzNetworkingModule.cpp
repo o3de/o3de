@@ -24,9 +24,7 @@ namespace AzNetworking
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<NetworkingSystemComponent>(),
-            // TargetManagementComponent. We explicitly type here to workaround a dependency loop with AzFramework
-            AZ::TypeId("{39899133-42B3-4e92-A579-CDDC85A23277}"),
+            azrtti_typeid<NetworkingSystemComponent>()
         };
     }
 } // namespace AzNetworking

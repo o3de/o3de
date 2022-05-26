@@ -178,6 +178,7 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
+    Network/IToolingConnection.h
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp

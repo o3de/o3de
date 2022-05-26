@@ -62,7 +62,6 @@
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -279,9 +278,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::SceneSystemComponent>(),
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>(),
-#if !defined(_RELEASE)
-            azrtti_typeid<AzFramework::TargetManagementComponent>(),
-#endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
 
