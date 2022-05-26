@@ -7,9 +7,9 @@
  */
 
 #include "RotateManipulator.h"
-#include "AzCore/Math/Aabb.h"
-#include "AzCore/Math/Vector3.h"
-#include "MCore/Source/Ray.h"
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Vector3.h>
+#include <MCore/Source/Ray.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MCore/Source/PlaneEq.h>

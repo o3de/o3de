@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Aabb.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
-#include <AzCore/Math/Aabb.h>
 #include "MCommonConfig.h"
 #include "RenderUtil.h"
 #include "TransformationManipulator.h"
