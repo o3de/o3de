@@ -96,7 +96,7 @@ VSOutput MainVS(VSInput vsInput)
     float x = u * scaleX + (1.0 - scaleX);
     float y = -v * scaleY - (1.0 - scaleY);
     OUT.m_position = float4(x, y, 0, 1);
-    OUT.m_uv = float4(u, v, 0, 1);
+    OUT.m_uv = float2(u, v);
     return OUT;
 }
 
@@ -137,6 +137,7 @@ PSOutput MainPS(VSOutput psInput)
         case 4:
         {
             float height = PassSrg::m_detailHeightClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            // Using a default scale for heights going above 1.
             float3 splat = float3(height, height, height) * 0.01 * PassSrg::m_brightness;
             OUT.m_color = float4(splat, 1.0);
             break;
@@ -165,6 +166,7 @@ PSOutput MainPS(VSOutput psInput)
         case 8:
         {
             float occlusion = PassSrg::m_detailOcclusionClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
+            // Using a default scale for occlusion going above 1.
             float3 splat = float3(occlusion, occlusion, occlusion) * 0.1 * PassSrg::m_brightness;
             OUT.m_color = float4(splat, 1.0);
             break;

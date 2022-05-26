@@ -166,89 +166,63 @@ namespace Terrain
         CachePasses();
     }
 
+    void AddPassRequestToRenderPipeline(
+        AZ::RPI::RenderPipeline* renderPipeline,
+        const char* passRequestAssetFilePath,
+        const char* referencePass,
+        bool beforeReferencePass)
+    {
+        auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+        const AZ::RPI::PassRequest* passRequest = nullptr;
+        if (passRequestAsset->IsReady())
+        {
+            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+        if (!passRequest)
+        {
+            AZ_Error("Terrain", false, "Can't load PassRequest from %s", passRequestAssetFilePath);
+            return;
+        }
+
+        // Return if the pass to be created already exists
+        AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
+        AZ::RPI::Pass* existingPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+        if (existingPass)
+        {
+            return;
+        }
+
+        // Create the pass
+        AZ::RPI::Ptr<AZ::RPI::Pass> newPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+        if (!newPass)
+        {
+            AZ_Error("Terrain", false, "Failed to create the pass from pass request [%s].", passRequest->m_passName.GetCStr());
+            return;
+        }
+
+        // Add the pass to render pipeline
+        bool success;
+        if (beforeReferencePass)
+        {
+            success = renderPipeline->AddPassBefore(newPass, AZ::Name(referencePass));
+        }
+        else
+        {
+            success = renderPipeline->AddPassAfter(newPass, AZ::Name(referencePass));
+        }
+        // only create pass resources if it was success
+        if (!success)
+        {
+            AZ_Error("Terrain", false, "Failed to add pass [%s] to render pipeline [%s].", newPass->GetName().GetCStr(), renderPipeline->GetId().GetCStr());
+        }
+    }
+
     void TerrainFeatureProcessor::ApplyRenderPipelineChange(AZ::RPI::RenderPipeline* renderPipeline)
     {
-        // Get the pass request to create terrain parent pass from the asset
-        {
-            const char* passRequestAssetFilePath = "Passes/TerrainPassRequest.azasset";
-            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            const AZ::RPI::PassRequest* passRequest = nullptr;
-            if (passRequestAsset->IsReady())
-            {
-                passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
-            }
-            if (!passRequest)
-            {
-                AZ_Error("Terrain", false, "Failed to add terrain parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-                return;
-            }
-
-            // Return if the pass to be created already exists
-            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
-            AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-            if (pass)
-            {
-                return;
-            }
-
-            // Create the pass
-            AZ::RPI::Ptr<AZ::RPI::Pass> terrainParentPass  = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-            if (!terrainParentPass)
-            {
-                AZ_Error("Terrain", false, "Create terrain parent pass from pass request failed");
-                return;
-            }
-
-            // Add the pass to render pipeline
-            bool success = renderPipeline->AddPassBefore(terrainParentPass, AZ::Name("DepthPrePass"));
-            // only create pass resources if it was success
-            if (!success)
-            {
-                AZ_Error("Terrain", false, "Add the terrain parent pass to render pipeline [%s] failed",
-                    renderPipeline->GetId().GetCStr());
-            }
-        }
-
-        {
-            const char* passRequestAssetFilePath = "Passes/TerrainDebugPassRequest.azasset";
-            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            const AZ::RPI::PassRequest* passRequest = nullptr;
-            if (passRequestAsset->IsReady())
-            {
-                passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
-            }
-            if (!passRequest)
-            {
-                AZ_Error("Terrain", false, "Failed to add terrain parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
-                return;
-            }
-
-            // Return if the pass to be created already exists
-            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
-            AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-            if (pass)
-            {
-                return;
-            }
-
-            // Create the pass
-            AZ::RPI::Ptr<AZ::RPI::Pass> terrainDebugPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
-            if (!terrainDebugPass)
-            {
-                AZ_Error("Terrain", false, "Create terrain debug pass from pass request failed");
-                return;
-            }
-
-            // Add the pass to render pipeline
-            bool success = renderPipeline->AddPassAfter(terrainDebugPass, AZ::Name("DebugOverlayPass"));
-            // only create pass resources if it was success
-            if (!success)
-            {
-                AZ_Error("Terrain", false, "Add the terrain debug pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
-            }
-        }
+        // Get the pass requests to create passes from the asset
+        AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainPassRequest.azasset", "DepthPrePass", true);
+        AddPassRequestToRenderPipeline(renderPipeline, "Passes/TerrainDebugPassRequest.azasset", "DebugOverlayPass", false);
     }
 
     void TerrainFeatureProcessor::PrepareMaterialData()
