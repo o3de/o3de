@@ -6,8 +6,8 @@
  *
  */
 
-#include <EditorWhiteBoxTransformMode.h>
-#include <EditorWhiteBoxComponentModeCommon.h>
+#include "EditorWhiteBoxComponentModeCommon.h"
+#include "EditorWhiteBoxTransformMode.h"
 #include <Viewport/WhiteBoxModifierUtil.h>
 #include <Viewport/WhiteBoxViewportConstants.h>
 
