@@ -4505,6 +4505,8 @@ namespace ScriptCanvasEditor
                 , result.second.c_str()
                 , QMessageBox::Close
                 , nullptr);
+
+            mb.exec();
         }
     }
 
@@ -4520,6 +4522,8 @@ namespace ScriptCanvasEditor
                 , QObject::tr("Graph parsed as ScriptEvent, and may be saved as one.")
                 , QMessageBox::Close
                 , nullptr);
+
+            mb.exec();
         }
         else
         {
@@ -4543,6 +4547,8 @@ namespace ScriptCanvasEditor
                 , parseErrorString.c_str()
                 , QMessageBox::Close
                 , nullptr);
+
+            mb.exec();
         }
     }
 
@@ -4566,6 +4572,8 @@ namespace ScriptCanvasEditor
                 , result.second.c_str()
                 , QMessageBox::Close
                 , nullptr);
+
+            mb.exec();
         }
     }
 

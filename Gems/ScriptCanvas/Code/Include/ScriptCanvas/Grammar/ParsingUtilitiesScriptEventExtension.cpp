@@ -162,7 +162,7 @@ namespace ScriptCanvas::ScriptEventGrammar
             for (auto node : nodes)
             {
                 result.m_nodeResults.push_back(ParseScriptEvent(*node));
-                anyNodeWasInvalid = anyNodeWasInvalid || !result.m_nodeResults.back().m_isScriptEvent;
+                anyNodeWasInvalid = anyNodeWasInvalid || !result.m_nodeResults.back().m_parseErrors.empty();
             }
 
             if (anyNodeWasInvalid)

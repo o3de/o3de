@@ -813,13 +813,16 @@
   </action>
   <action name="actionParse_As_Script_Event">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Parse As Script Event</string>
    </property>
   </action>
   <action name="actionClear_Script_Event_Status">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Clear Script Event Status</string>
    </property>
