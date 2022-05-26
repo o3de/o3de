@@ -246,7 +246,6 @@ namespace AZ::IO
     bool StorageDriveWin::ExecuteRequests()
     {
         bool hasFinalizedReads = FinalizeReads();
-        bool hasWorked = false;
 
         TaskGraph readTasks;
 
@@ -257,7 +256,6 @@ namespace AZ::IO
             if (ReadRequest(request, readTasks))
             {
                 m_pendingReadRequests.pop_front();
-                hasWorked = true;
             }
             else
             {
@@ -265,41 +263,51 @@ namespace AZ::IO
             }
         }
 
-        if (hasWorked && !readTasks.IsEmpty())
+        if (!readTasks.IsEmpty())
         {
             readTasks.Detach();
             readTasks.SubmitOnExecutor(m_taskExecutor);
-        }
-        // Pick up one other synchronous request if no read requests were issued.
-        if (!hasWorked && !m_pendingRequests.empty())
-        {
-            FileRequest* request = m_pendingRequests.front();
-            hasWorked = AZStd::visit(
-                [this, request](auto&& args)
-                {
-                    using Command = AZStd::decay_t<decltype(args)>;
-                    if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
-                    {
-                        FileExistsRequest(request);
-                        m_pendingRequests.pop_front();
-                        return true;
-                    }
-                    else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
-                    {
-                        FileMetaDataRetrievalRequest(request);
-                        m_pendingRequests.pop_front();
-                        return true;
-                    }
-                    else
-                    {
-                        AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
-                        return false;
-                    }
-                },
-                request->GetCommand());
-        }
 
-        return StreamStackEntry::ExecuteRequests() || hasFinalizedReads || hasWorked;
+            StreamStackEntry::ExecuteRequests();
+            return true;
+        }
+        else
+        {
+            // Pick up one other synchronous request if no read requests were issued.
+            if (!m_pendingRequests.empty())
+            {
+                FileRequest* request = m_pendingRequests.front();
+                bool hasWorked = AZStd::visit(
+                    [this, request](auto&& args)
+                    {
+                        using Command = AZStd::decay_t<decltype(args)>;
+                        if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
+                        {
+                            FileExistsRequest(request);
+                            m_pendingRequests.pop_front();
+                            return true;
+                        }
+                        else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
+                        {
+                            FileMetaDataRetrievalRequest(request);
+                            m_pendingRequests.pop_front();
+                            return true;
+                        }
+                        else
+                        {
+                            AZ_Assert(false, "A request was added to StorageDriveWin's pending queue that isn't supported.");
+                            return false;
+                        }
+                    },
+                    request->GetCommand());
+
+                return StreamStackEntry::ExecuteRequests() || hasFinalizedReads || hasWorked;
+            }
+            else
+            {
+                return StreamStackEntry::ExecuteRequests() || hasFinalizedReads;
+            }
+        }
     }
 
     void StorageDriveWin::UpdateStatus(Status& status) const
@@ -835,7 +843,7 @@ namespace AZ::IO
             m_metaDataCache_recentlyUsed.Touch(cacheIndex);
             return;
         }
-        
+
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
         AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
