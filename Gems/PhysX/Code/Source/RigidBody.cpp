@@ -302,7 +302,7 @@ namespace PhysX
     AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index)
     {
         AZStd::shared_ptr<const Physics::Shape> constShape = AZStd::as_const(*this).GetShape(index);
-        return AZStd::shared_ptr<Physics::Shape>(const_cast<Physics::Shape*>(constShape.get()));
+        return AZStd::const_pointer_cast<Physics::Shape>(constShape);
     }
 
     AZStd::shared_ptr<const Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
