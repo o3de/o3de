@@ -37,12 +37,12 @@ namespace AZ
 
         bool RequestPath::operator==(const RequestPath& rhs) const
         {
-            return m_absolutePathHash != rhs.m_absolutePathHash ? false : (m_path == rhs.m_path);
+            return m_absolutePathHash == rhs.m_absolutePathHash && m_path == rhs.m_path;
         }
 
         bool RequestPath::operator!=(const RequestPath& rhs) const
         {
-            return m_absolutePathHash != rhs.m_absolutePathHash ? true : (m_path != rhs.m_path);
+            return !operator==(rhs);
         }
 
         bool RequestPath::IsValid() const

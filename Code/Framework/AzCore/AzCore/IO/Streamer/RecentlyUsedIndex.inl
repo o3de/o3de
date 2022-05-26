@@ -10,8 +10,8 @@ namespace AZ::IO
 {
     template<typename T>
     RecentlyUsedIndex<T>::RecentlyUsedIndex(T size)
-        : m_indices_previous(AZStd::make_unique<T[]>(size))
-        , m_indices_next(AZStd::make_unique<T[]>(size))
+        : m_indicesPrevious(AZStd::make_unique<T[]>(size))
+        , m_indicesNext(AZStd::make_unique<T[]>(size))
         , m_size(size)
         , m_front(0)
         , m_back(size - 1)
@@ -27,31 +27,14 @@ namespace AZ::IO
     {
         if (index != m_back)
         {
-            AZ_Assert(index < m_size, "Index out of bounds while calling Touch in Recently Used Index.");
-
-            // Remove the index from its current spot and fix m_front if needed.
-            T previous = m_indices_previous[index];
-            T next = m_indices_next[index];
-            if (previous != InvalidIndex)
-            {
-                m_indices_next[previous] = next;
-            }
-            else
-            {
-                m_front = next; // This index was at the front, so the front needs to be reset.
-            }
-
-            if (next != InvalidIndex)
-            {
-                m_indices_previous[next] = previous;
-            }
+            Remove<true, false>(index);
 
             // Reset indices.
-            m_indices_previous[index] = m_back;
-            m_indices_next[index] = InvalidIndex;
+            m_indicesPrevious[index] = m_back;
+            m_indicesNext[index] = InvalidIndex;
 
             // Insert at the back.
-            m_indices_next[m_back] = index;
+            m_indicesNext[m_back] = index;
             m_back = index;
         }
     }
@@ -61,30 +44,14 @@ namespace AZ::IO
     {
         if (index != m_front)
         {
-            AZ_Assert(index < m_size, "Index out of bounds while calling Flush in Recently Used Index.");
-
-            T previous = m_indices_previous[index];
-            T next = m_indices_next[index];
-            if (previous != InvalidIndex)
-            {
-                m_indices_next[previous] = next;
-            }
-
-            if (next != InvalidIndex)
-            {
-                m_indices_previous[next] = previous;
-            }
-            else
-            {
-                m_back = previous; // This index was at the front, so the front needs to be reset.
-            }
+            Remove<false, true>(index);
 
             // Reset indices.
-            m_indices_previous[index] = InvalidIndex;
-            m_indices_next[index] = m_front;
+            m_indicesPrevious[index] = InvalidIndex;
+            m_indicesNext[index] = m_front;
 
             // Insert at the front.
-            m_indices_previous[m_front] = index;
+            m_indicesPrevious[m_front] = index;
             m_front = index;
         }
     }
@@ -92,17 +59,17 @@ namespace AZ::IO
     template<typename T>
     void RecentlyUsedIndex<T>::FlushAll()
     {
-        m_indices_previous[0] = InvalidIndex;
+        m_indicesPrevious[0] = InvalidIndex;
         for (T i = 1; i < m_size; ++i)
         {
-            m_indices_previous[i] = i - 1;
+            m_indicesPrevious[i] = i - 1;
         }
 
         for (T i = 0; i < m_size - 1; ++i)
         {
-            m_indices_next[i] = i + 1;
+            m_indicesNext[i] = i + 1;
         }
-        m_indices_next[m_size - 1] = InvalidIndex;
+        m_indicesNext[m_size - 1] = InvalidIndex;
     }
 
     template<typename T>
@@ -111,12 +78,12 @@ namespace AZ::IO
         AZ_Assert(m_size > 0, "Least recently used index is begin touched in Recently Used Index before being initialized with a size.");
 
         // Very similar to Touch and Flush, but some work and checks can be avoided as it's known that it's the front being moved to the back.
-        T next = m_indices_next[m_front];
-        m_indices_next[m_back] = m_front;
-        m_indices_previous[next] = InvalidIndex;
+        T next = m_indicesNext[m_front];
+        m_indicesNext[m_back] = m_front;
+        m_indicesPrevious[next] = InvalidIndex;
 
-        m_indices_previous[m_front] = m_back;
-        m_indices_next[m_front] = InvalidIndex;
+        m_indicesPrevious[m_front] = m_back;
+        m_indicesNext[m_front] = InvalidIndex;
 
         m_back = m_front;
         m_front = next;
@@ -143,8 +110,41 @@ namespace AZ::IO
         for (T i = 0; i < m_size; ++i)
         {
             callback(current);
-            current = m_indices_next[current];
+            current = m_indicesNext[current];
         }
         AZ_Assert(current == InvalidIndex, "The double linked list in Recently Used Index has become corrupted.");
+    }
+
+    template<typename T>
+    template<bool CheckFront, bool CheckBack>
+    void RecentlyUsedIndex<T>::Remove(T index)
+    {
+        AZ_Assert(index < m_size, "Index out of bounds while calling Touch in Recently Used Index.");
+
+        T previous = m_indicesPrevious[index];
+        T next = m_indicesNext[index];
+        if (previous != InvalidIndex)
+        {
+            m_indicesNext[previous] = next;
+        }
+        else
+        {
+            if constexpr (CheckFront)
+            {
+                m_front = next; // This index was at the front, so the front needs to be reset.
+            }
+        }
+
+        if (next != InvalidIndex)
+        {
+            m_indicesPrevious[next] = previous;
+        }
+        else
+        {
+            if constexpr (CheckBack)
+            {
+                m_back = previous; // This index was at the back, so the back needs to be reset.
+            }
+        }
     }
 } // namespace AZ::IO
