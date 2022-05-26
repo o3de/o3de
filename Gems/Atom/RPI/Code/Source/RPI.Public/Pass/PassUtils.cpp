@@ -110,6 +110,11 @@ namespace AZ
                 AZStd::sort(passList.begin(), passList.end(),
                     [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
                     {
+                        if ((lhs->GetTreeDepth() == rhs->GetTreeDepth()))
+                        {
+                            return lhs->GetParentChildIndex() < rhs->GetParentChildIndex();
+                        }
+
                         return (lhs->GetTreeDepth() < rhs->GetTreeDepth());
                     });
             }
@@ -121,6 +126,10 @@ namespace AZ
                 AZStd::sort(passList.begin(), passList.end(),
                     [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
                     {
+                        if ((lhs->GetTreeDepth() == rhs->GetTreeDepth()))
+                        {
+                            return lhs->GetParentChildIndex() > rhs->GetParentChildIndex();
+                        }
                         return (lhs->GetTreeDepth() > rhs->GetTreeDepth());
                     }
                 );

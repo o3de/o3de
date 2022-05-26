@@ -18,7 +18,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     
     ly_add_pytest(
         NAME AssetPipelineTests.Fbx_Tests
-        PATH ${CMAKE_CURRENT_LIST_DIR}/fbx_test/fbx_test.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/fbx_tests.py
         TEST_SUITE sandbox
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch

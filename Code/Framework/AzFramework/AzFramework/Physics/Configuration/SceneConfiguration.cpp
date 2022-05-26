@@ -51,8 +51,8 @@ namespace AzPhysics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enableCcdResweep,
                         "Enable CCD Resweep", "Enable a more accurate but more expensive continuous collision detection method")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &SceneConfiguration::GetCcdVisibility)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "") // end previous group by starting new unnamed expanded group
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enablePcm, "Persistent Contact Manifold", "Enabled the persistent contact manifold narrow-phase algorithm")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_bounceThresholdVelocity,
                         "Bounce Threshold Velocity", "Relative velocity below which colliding objects will not bounce")

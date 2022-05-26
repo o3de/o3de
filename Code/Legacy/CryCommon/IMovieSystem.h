@@ -676,7 +676,7 @@ public:
     virtual void SetName(const char* name) = 0;
 
     //! Get node name.
-    virtual const char* GetName() = 0;
+    virtual const char* GetName() const = 0;
 
     // Get Type of this node.
     virtual AnimNodeType GetType() const = 0;
