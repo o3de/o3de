@@ -12,11 +12,11 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-# Add the ToolingConnection.Static target
+# Add the ToolingConnection.Private.Static target
 # Note: We include the common files and the platform specific files which are set in toolingconnection_common_files.cmake
 # and in ${pal_dir}/toolingconnection_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
-    NAME ToolingConnection.Static STATIC
+    NAME ToolingConnection.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         toolingconnection_files.cmake
@@ -54,7 +54,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ToolingConnection.Static
+            Gem::ToolingConnection.Private.Static
 )
 
 # By default, we will specify that the above target ToolingConnection would be used by
@@ -85,7 +85,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::ToolingConnection.Static
+                    Gem::ToolingConnection.Private.Static
         )
 
         # Add ToolingConnection.Tests to googletest
