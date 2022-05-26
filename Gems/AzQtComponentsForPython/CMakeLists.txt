@@ -1,22 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
 
-#Temp: Modify this to match the location you unpacked the pyside package to.
-set(pyside2_module_dir "c:/ly/3rd_party/packages/pyside2-qt-5.15.2-rev1-windows/pyside2")
-
 # The name of the Python import module we're generating.
 set(bindings_library "azqtpyside")
-
-# Configuration - To be modified if types/classes are added/removed.
 
 # Header file containing all the types/classes we're exposing to Python.
 set(wrapped_header ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.h)
 
 # Typesystem xml.
 set(typesystem_file ${CMAKE_CURRENT_LIST_DIR}/bindings_azqtcomponents.xml)
-
-
-# End configuration
-
 
 # Do not use RPATH to affect install_name on macOS.
 if(POLICY CMP0068)
@@ -69,14 +60,10 @@ endmacro()
 find_python_includes(python_include_dir)
 find_python_link_data(python_linking_data)
 
-
-# Find the paths for the pyside2/shiboken modules - TODO restore this when 3rd_party setup is sorted.
-#ly_get_package_association("pyside2" pyside_package_name)
-#ly_package_get_target_folder(${pyside_package_name} pyside2_DOWNLOAD_LOCATION)
-#set(pyside2_module_dir ${pyside2_DOWNLOAD_LOCATION}/${pyside_package_name}/pyside2)
-
-
-
+# Find the paths for the pyside2/shiboken modules.
+ly_get_package_association("pyside2" pyside_package_name)
+ly_package_get_target_folder(${pyside_package_name} pyside2_DOWNLOAD_LOCATION)
+set(pyside2_module_dir ${pyside2_DOWNLOAD_LOCATION}/${pyside_package_name}/pyside2)
 
 set(pyside2_path "${pyside2_module_dir}/PySide2")
 set(pyside2_include_dir "${pyside2_path}/include")
@@ -84,6 +71,7 @@ set(pyside2_typesystem_path "${pyside2_path}/typesystems")
    
 set(shiboken_generator_dir "${pyside2_module_dir}/shiboken2_generator")   
 set(shiboken_generator_exe_path "${shiboken_generator_dir}/shiboken2${CMAKE_EXECUTABLE_SUFFIX}") 
+
 if(NOT EXISTS ${shiboken_generator_exe_path})
     message(FATAL_ERROR "Shiboken executable not found at path: ${shiboken_generator_dir}")
 endif()
@@ -209,6 +197,10 @@ ly_add_target(
             ${shiboken_shared_libraries}
             ${bindings_library}.bindings
 )
+
+# Add the wrapped files here, they can't be added to the FILES_CMAKE section as they don't exist yet.
+include(wrapped_files.cmake)
+target_sources(${bindings_library} PRIVATE ${LIBRARY_FILES})
 
 # Building the wrapper files will not work with a unity build.
 set_target_properties(${bindings_library} PROPERTIES UNITY_BUILD OFF)
