@@ -40,6 +40,7 @@ EVENTS_QT = "Events"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
 GRAPH_VARIABLES_QT = "graphVariables"
+ADD_BUTTON_QT = "addButton"
 
 """
 General constants
