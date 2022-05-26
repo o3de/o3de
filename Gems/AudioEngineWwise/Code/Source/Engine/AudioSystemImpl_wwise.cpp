@@ -195,7 +195,8 @@ namespace Audio
         char* errorStr = nullptr;
         CONVERT_OSCHAR_TO_CHAR(in_pszError, errorStr);
         AZLOG_NOTICE(
-            "<Wwise> %s ErrorCode: %d PlayingID: %u GameObjID: %llu", errorStr, in_eErrorCode, in_playingID, in_gameObjID);
+            "<Wwise> %s ErrorCode: %d PlayingID: %u GameObjID: %llu", errorStr, in_eErrorCode, in_playingID,
+            static_cast<AZ::u64>(in_gameObjID));
     }
 #endif // WWISE_RELEASE
 
@@ -807,7 +808,7 @@ namespace Audio
                 {
                     AZ_Assert(sourceData, "SourceData not provided for source type!");
                     // format: "external/{collection_id}/{language_id}/{file_id}.wem"
-                    auto filePath = AZStd::string::format("%s" "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 ".wem",
+                    auto filePath = AZStd::string::format("%s/%llu/%llu/%llu.wem",
                         Audio::Wwise::ExternalSourcesPath,
                         sourceData->m_sourceInfo.m_collectionId,
                         sourceData->m_sourceInfo.m_languageId,
@@ -1485,7 +1486,7 @@ namespace Audio
         auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise-Default");
         if (newObjectData)
         {
-            auto listenerName = AZStd::string::format("DefaultAudioListener(%" PRIu64 ")", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
+            auto listenerName = AZStd::string::format("DefaultAudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
             AKRESULT akResult = AK::SoundEngine::RegisterGameObj(newObjectData->nAKListenerObjectId, listenerName.c_str());
             if (IS_WWISE_OK(akResult))
             {
@@ -1514,7 +1515,7 @@ namespace Audio
         auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise");
         if (newObjectData)
         {
-            auto listenerName = AZStd::string::format("AudioListener(%" PRIu64 ")", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
+            auto listenerName = AZStd::string::format("AudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
             AKRESULT akResult = AK::SoundEngine::RegisterGameObj(newObjectData->nAKListenerObjectId, listenerName.c_str());
             if (!IS_WWISE_OK(akResult))
             {
@@ -2098,7 +2099,8 @@ namespace Audio
             else
             {
                 AZLOG_WARN(
-                    "AK::SoundEngine::SetGameObjectAuxSendValues() on object %llu returned AKRESULT %u", implObjectData->nAKID, akResult);
+                    "AK::SoundEngine::SetGameObjectAuxSendValues() on object %llu returned AKRESULT %u",
+                    static_cast<AZ::u64>(implObjectData->nAKID), akResult);
             }
 
             implObjectData->bNeedsToUpdateEnvironments = false;
