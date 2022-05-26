@@ -30,6 +30,7 @@ namespace EMotionFX
         {
             ColliderTranslation,
             ColliderRotation,
+            ColliderDimensions,
             NumModes
         };
 
@@ -44,5 +45,6 @@ namespace EMotionFX
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         mutable AZStd::optional<AZ::s32> m_viewportId;
+        bool m_hasCapsuleCollider = false;
     };
 } // namespace EMotionFX
