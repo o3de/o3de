@@ -73,11 +73,17 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
-        static constexpr auto UIElement = AttributeDefinition<Dom::Value>("UIElement");
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
+        static constexpr auto ChangeNotify = CallbackAttributeDefinition<void(AZ::u32)>("ChangeNotify");
+    };
+
+    struct UIElement : NodeDefinition
+    {
+        static constexpr AZStd::string_view Name = "UIElement";
+        static constexpr auto Handler = NamedCrcAttributeDefinition("Handler");
     };
 
     template<typename T = Dom::Value>
@@ -108,6 +114,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Button : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Button";
+        static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
     };
 
     struct CheckBox : PropertyEditorDefinition

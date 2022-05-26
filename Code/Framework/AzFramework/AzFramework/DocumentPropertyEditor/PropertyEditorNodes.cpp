@@ -50,10 +50,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Visibility);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::UIElement);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+
+        system->RegisterPropertyEditor<UIElement>();
+        system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
         system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);
@@ -67,7 +70,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterPropertyEditor<Slider<>, NumericEditor<>>();
         system->RegisterPropertyEditor<SpinBox<>, NumericEditor<>>();
+
         system->RegisterPropertyEditor<Button>();
+        system->RegisterNodeAttribute<Button>(Button::ButtonText);
+
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();

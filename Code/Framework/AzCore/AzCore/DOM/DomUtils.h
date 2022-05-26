@@ -79,7 +79,7 @@ namespace AZ::Dom::Utils
         {
             return value;
         }
-        else if constexpr (AZStd::is_same_v<WrapperType, AZStd::string> || AZStd::is_same_v<WrapperType, AZStd::string_view>)
+        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
         {
             return Dom::Value(value, true);
         }
@@ -118,7 +118,7 @@ namespace AZ::Dom::Utils
         {
             return value.IsNumber();
         }
-        else if constexpr (AZStd::is_same_v<WrapperType, AZStd::string> || AZStd::is_same_v<WrapperType, AZStd::string_view>)
+        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
         {
             return value.IsString();
         }

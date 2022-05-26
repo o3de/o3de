@@ -195,6 +195,8 @@ namespace AZ::Reflection
                     AZ::Interface<DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
                 AZ_Assert(propertyEditorSystem != nullptr, "LegacyReflectionBridge: Unable to retrieve PropertyEditorSystem");
 
+                AZ::Name handlerName;
+
                 auto checkAttribute = [&](const AZ::AttributePair* it, StackEntry& nodeData, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
@@ -211,10 +213,33 @@ namespace AZ::Reflection
                             return;
                         }
                         visitedAttributes.insert(name);
-                        AZStd::optional<Dom::Value> attributeValue = ReadGenericAttributeToDomValue(nodeData.m_instance, it->second);
-                        if (attributeValue.has_value())
+
+                        // See if any registered attributes can read this attribute.
+                        Dom::Value attributeValue;
+                        propertyEditorSystem->EnumerateRegisteredAttributes(name, [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                            {
+                                if (attributeValue.IsNull())
+                                {
+                                    attributeValue = attributeReader.LegacyAttributeToDomValue(nodeData.m_instance, it->second);
+                                }
+                            });
+
+                        // Fall back on a generic read that handles primitives.
+                        if (attributeValue.IsNull())
                         {
-                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue.value()) });
+                            attributeValue = ReadGenericAttributeToDomValue(nodeData.m_instance, it->second).value_or(Dom::Value());
+                        }
+
+                        // If we got a valid DOM value, store it.
+                        if (!attributeValue.IsNull())
+                        {
+                            // If there's an explicitly specified handler (e.g. in the case of a UIElement)
+                            // omit our normal synthetic Handler attribute.
+                            if (name == DescriptorAttributes::Handler)
+                            {
+                                handlerName = AZ::Name();
+                            }
+                            cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
                         }
                     }
                     else
@@ -235,12 +260,7 @@ namespace AZ::Reflection
                         {
                             if (elementEditData->m_elementId)
                             {
-                                AZ::Name handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
-                                if (!handlerName.IsEmpty())
-                                {
-                                    nodeData.m_cachedAttributes.push_back(
-                                        { group, DescriptorAttributes::Handler, Dom::Value(handlerName.GetCStr(), false) });
-                                }
+                                handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                             }
 
                             if (elementEditData->m_name)
@@ -270,11 +290,6 @@ namespace AZ::Reflection
 
                     if (nodeData.m_classData)
                     {
-                        if (labelAttributeValue.empty() && nodeData.m_classData->m_name)
-                        {
-                            labelAttributeValue = nodeData.m_classData->m_name;
-                        }
-
                         for (auto it = nodeData.m_classData->m_attributes.begin(); it != nodeData.m_classData->m_attributes.end(); ++it)
                         {
                             AZ::AttributePair pair;
@@ -285,6 +300,9 @@ namespace AZ::Reflection
                     }
                 };
 
+                // Check the current node for attributes without m_describesChildren set.
+                checkNodeAttributes(nodeData, false);
+
                 // Check the parent node (if any) for attributes with m_describesChildren set
                 if (m_stack.size() > 1)
                 {
@@ -292,11 +310,16 @@ namespace AZ::Reflection
                     checkNodeAttributes(parentNode, true);
                 }
 
-                // Check the current node for attributes without m_describesChildren set.
-                checkNodeAttributes(nodeData, false);
-
+                if (!handlerName.IsEmpty())
+                {
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DescriptorAttributes::Handler, Dom::Value(handlerName.GetCStr(), false) });
+                }
                 nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
-                nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::Label, Dom::Value(labelAttributeValue, true) });
+                if (!labelAttributeValue.empty())
+                {
+                    nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::Label, Dom::Value(labelAttributeValue, false) });
+                }
                 nodeData.m_cachedAttributes.push_back({ group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueType.GetName(),
                                                         AZ::Dom::Utils::TypeIdToDomValue(nodeData.m_typeId) });
             }

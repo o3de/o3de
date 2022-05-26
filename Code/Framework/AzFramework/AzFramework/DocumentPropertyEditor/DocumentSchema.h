@@ -217,51 +217,29 @@ namespace AZ::DocumentPropertyEditor
     class TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
     {
     public:
-        inline explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
+        explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
             : AttributeDefinition<AZ::TypeId>(name)
         {
         }
 
-        inline Dom::Value ValueToDom(const AZ::TypeId& attribute) const override
+        Dom::Value ValueToDom(const AZ::TypeId& attribute) const override;
+        AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+    };
+
+    class NamedCrcAttributeDefinition final : public AttributeDefinition<AZ::Name>
+    {
+    public:
+        explicit constexpr NamedCrcAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<AZ::Name>(name)
         {
-            return AZ::Dom::Utils::TypeIdToDomValue(attribute);
         }
 
-        inline AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override
-        {
-            // If we happen to see a type ID marshalled as an AZStd::any, go ahead and bring it in.
-            if (value.IsOpaqueValue())
-            {
-                return AttributeDefinition<AZ::TypeId>::DomToValue(value);
-            }
-            if (value.IsString())
-            {
-                auto typeId = AZ::Dom::Utils::DomValueToTypeId(value);
-                if (typeId.IsNull())
-                {
-                    return {};
-                }
-                return typeId;
-            }
-            return {};
-        }
-
-        inline AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
-        {
-            AZ::Uuid uuidValue = DomToValue(value).value_or(AZ::Uuid::CreateNull());
-            return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
-        }
-
-        inline AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
-        {
-            AZ::AttributeReader reader(instance, attribute);
-            AZ::Uuid value;
-            if (!reader.Read<AZ::Uuid>(value))
-            {
-                return AZ::Dom::Value();
-            }
-            return AZ::Dom::Utils::TypeIdToDomValue(value);
-        }
+        Dom::Value ValueToDom(const AZ::Name& attribute) const override;
+        AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
     //! Defines a callback applicable to a Node.
@@ -337,7 +315,8 @@ namespace AZ::DocumentPropertyEditor
             if (value.IsObject())
             {
                 auto typeField = value.FindMember(AZ::Attribute::s_typeField);
-                if (typeField != value.MemberEnd() && typeField->second.IsString() && typeField->second.GetString() == Attribute::s_typeName)
+                if (typeField != value.MemberEnd() && typeField->second.IsString() &&
+                    typeField->second.GetString() == Attribute::s_typeName)
                 {
                     void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
                     AZ::Attribute* attribute = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
@@ -355,7 +334,8 @@ namespace AZ::DocumentPropertyEditor
                         return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
                     }
 
-                    return AZ::Dom::Utils::ValueToTypeUnsafe<CallbackTraits::ResultType>(attribute->DomInvoke(instance, marshalledArguments));
+                    return AZ::Dom::Utils::ValueToTypeUnsafe<CallbackTraits::ResultType>(
+                        attribute->DomInvoke(instance, marshalledArguments));
                 }
             }
 
@@ -392,7 +372,11 @@ namespace AZ::DocumentPropertyEditor
             if (value.IsOpaqueValue() && value.GetOpaqueValue().is<AZ::Attribute*>())
             {
                 AZ::Attribute* attribute = AZStd::any_cast<AZ::Attribute*>(value.GetOpaqueValue());
-                return AZStd::shared_ptr<AZ::Attribute>(attribute, [](AZ::Attribute*){});
+                return AZStd::shared_ptr<AZ::Attribute>(
+                    attribute,
+                    [](AZ::Attribute*)
+                    {
+                    });
             }
 
             // Otherwise, try to store an AZStd::function with our signature
