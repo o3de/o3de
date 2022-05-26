@@ -501,6 +501,8 @@ namespace Terrain
                     ProcessSectorUpdates(sectorsToUpdate);
                 }
             }
+
+            UpdateRaytracingData(dirtyRegion);
         }
     }
 
@@ -568,6 +570,34 @@ namespace Terrain
 
         m_xyPositionsBuffer = CreateMeshBufferInstance(XYPositionFormat, patchData.m_xyPositions.size(), patchData.m_xyPositions.data());
         m_indexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16_UINT, patchData.m_indices.size(), patchData.m_indices.data());
+
+        constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
+        constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
+        m_raytracingPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr);
+        m_raytracingNormalsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16G16_SNORM, rayTracingTotalVertices, nullptr);
+
+        constexpr uint32_t rayTracingIndicesCount = RayTracingQuads1D * RayTracingQuads1D * 2 * 3; // 2 triangles per quad, 3 vertices per triangle
+        AZStd::vector<uint16_t> raytracingIndices;
+        raytracingIndices.reserve(rayTracingIndicesCount);
+
+        for (uint32_t y = 0; y < RayTracingQuads1D; ++y)
+        {
+            for (uint32_t x = 0; x < RayTracingQuads1D; ++x)
+            {
+                const uint16_t topLeft = y * RayTracingQuads1D + x;
+                const uint16_t topRight = topLeft + 1;
+                const uint16_t bottomLeft = (y + 1) * RayTracingQuads1D + x;
+                const uint16_t bottomRight = bottomLeft + 1;
+
+                raytracingIndices.emplace_back(topLeft);
+                raytracingIndices.emplace_back(topRight);
+                raytracingIndices.emplace_back(bottomLeft);
+                raytracingIndices.emplace_back(bottomLeft);
+                raytracingIndices.emplace_back(topRight);
+                raytracingIndices.emplace_back(bottomRight);
+            }
+        }
+        m_raytracingIndexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16_UINT, rayTracingIndicesCount, raytracingIndices.data());
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb)
@@ -713,6 +743,23 @@ namespace Terrain
             executeGroupJob->Start();
         }
         jobCompletion.StartAndWaitForCompletion();
+
+    }
+
+    void TerrainMeshManager::UpdateRaytracingData(const AZ::Aabb& bounds)
+    {
+        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
+        float stepSize = AZStd::GetMax(m_worldBounds.GetXExtent(), m_worldBounds.GetYExtent()) / RayTracingQuads1D;
+
+        auto perPositionCallback = []
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+
+        };
+
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
+            bounds, stepSize, perPositionCallback, samplerType);
 
     }
 

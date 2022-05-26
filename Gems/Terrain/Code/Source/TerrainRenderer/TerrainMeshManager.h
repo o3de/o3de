@@ -169,6 +169,7 @@ namespace Terrain
         static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
+        static constexpr uint32_t RayTracingQuads1D = 200;
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
@@ -192,6 +193,7 @@ namespace Terrain
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
+        void UpdateRaytracingData(const AZ::Aabb& bounds);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -210,6 +212,12 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
+
+        // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
+        // combine them in the future to support terrain lods in ray tracing.
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingPositionsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<StackData> m_sectorStack;
         uint32_t m_1dSectorCount = 0;
