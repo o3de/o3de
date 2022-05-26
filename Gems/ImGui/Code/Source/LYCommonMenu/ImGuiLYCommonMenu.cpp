@@ -282,10 +282,16 @@ namespace ImGui
                         {
                             if (assetInfo.m_assetType == levelAssetType)
                             {
-                                if (assetInfo.m_relativePath.ends_with(".network.spawnable"))
+                                // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                                // Filter out network spawnables from the level list, 
+                                // but keep track of which levels require networking so they can be tagged as "(Networked)" in the level selection menu. 
+                                const AZStd::string networkSpawnablePrefix(".network");
+                                const AZStd::string networkSpawnableFileExtension = networkSpawnablePrefix + ".spawnable";
+
+                                if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
                                 {   
                                     AZStd::string spawnablePath(assetInfo.m_relativePath); 
-                                    AZ::StringFunc::Replace(spawnablePath, ".network", "");
+                                    AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
                                     networkedLevelNames.emplace(spawnablePath);
                                 }
                                 else
