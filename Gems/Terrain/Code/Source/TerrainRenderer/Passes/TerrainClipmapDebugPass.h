@@ -10,7 +10,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
 
@@ -44,6 +43,7 @@ namespace Terrain
         AZ::RHI::ShaderInputNameIndex m_clipmapImageIndex[TerrainClipmapManager::ClipmapName::Count];
 
         //! Shader inputs for debug rendering parameters.
+        //! See corresponding CVars in TerrainClipmapDebugPass.cpp for usage.
         AZ::RHI::ShaderInputNameIndex m_clipmapId = "m_clipmapId";
         AZ::RHI::ShaderInputNameIndex m_clipmapLevel = "m_clipmapLevel";
         AZ::RHI::ShaderInputNameIndex m_clipmapSize = "m_clipmapSize";
