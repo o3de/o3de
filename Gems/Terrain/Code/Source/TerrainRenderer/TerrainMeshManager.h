@@ -151,7 +151,8 @@ namespace Terrain
         {
             AZ::Vector2 m_worldStartPosition;
             float m_vertexSpacing;
-            int16_t m_gridSize;
+            int16_t m_gridSizeX;
+            int16_t m_gridSizeY;
         };
 
         struct CachedDrawData
