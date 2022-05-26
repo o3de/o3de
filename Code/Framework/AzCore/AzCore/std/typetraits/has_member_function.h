@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_TYPE_TRAITS_HAS_MEMBER_FUNCTION_INCLUDED
-#define AZSTD_TYPE_TRAITS_HAS_MEMBER_FUNCTION_INCLUDED
+#pragma once
 
-#include <AzCore/std/typetraits/is_class.h>
+#include <AzCore/std/typetraits/conditional.h>
+#include <AzCore/std/typetraits/remove_cvref.h>
+#include <AzCore/std/typetraits/is_same.h>
 
 /**
 * Helper to create checkers for member function inside a class.
@@ -22,59 +23,35 @@
 *     HasIsReadyMember<A>::value (== false)
 *     HasIsReadyMember<B>::value (== true)
 */
-#define AZ_HAS_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature)                                      \
-    template<bool V>                                                                                               \
-    struct _HasName##ResultType { typedef AZStd::true_type type; };                                                \
-    template<>                                                                                                     \
-    struct _HasName##ResultType<false> { typedef AZStd::false_type type; };                                        \
-    template<class T, bool isClass = AZStd::is_class<T>::value >                                                   \
-    class Has##_HasName {                                                                                          \
-        typedef char Yes;                                                                                          \
-        typedef long No;                                                                                           \
-        template<class U, U>                                                                                       \
-        struct TypeCheck;                                                                                          \
-        template<class U>                                                                                          \
-        struct Helper { typedef _ResultType (U::* mfp) _ParamsSignature; };                                        \
-        template<class C>                                                                                          \
-        static Yes ClassCheck(TypeCheck< typename Helper<C>::mfp, & C::_FunctionName>*);                           \
-        template<class C>                                                                                          \
-        static No  ClassCheck(...);                                                                                \
-    public:                                                                                                        \
-        static const bool value = (sizeof(ClassCheck< typename AZStd::remove_const<T>::type >(0)) == sizeof(Yes)); \
-        typedef typename _HasName##ResultType<value>::type type;                                                   \
-    };                                                                                                             \
-    template<class T >                                                                                             \
-    struct Has##_HasName<T, false> {                                                                               \
-        static const bool value = false;                                                                           \
-        typedef AZStd::false_type type;                                                                            \
-    };
+#define AZ_HAS_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature)        \
+    template<class T, class = void>                                                  \
+    class Has##_HasName                                                              \
+        : public AZStd::false_type                                                   \
+    {                                                                                \
+    };                                                                               \
+    template<class T>                                                                \
+    class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_same_v<                      \
+        _ResultType (AZStd::remove_cvref_t<T>::*) _ParamsSignature,                  \
+         decltype(&AZStd::remove_cvref_t<T>::_FunctionName)>>>                       \
+         : public AZStd::true_type                                                   \
+    {                                                                                \
+    };                                                                               \
+    template <class T>                                                               \
+    inline static constexpr bool Has##_HasName ## _v = Has##_HasName<T>::value;
 
-#define AZ_HAS_STATIC_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature)                               \
-    template<bool V, bool dummy = true>                                                                            \
-    struct _HasName##ResultType { typedef AZStd::true_type type; };                                                \
-    template<bool dummy>                                                                                           \
-    struct _HasName##ResultType<false, dummy> { typedef AZStd::false_type type; };                                 \
-    template<class T, bool isClass = AZStd::is_class<T>::value >                                                   \
-    class Has##_HasName {                                                                                          \
-        typedef char Yes;                                                                                          \
-        typedef long No;                                                                                           \
-        template<class U, U>                                                                                       \
-        struct TypeCheck;                                                                                          \
-        template<class U>                                                                                          \
-        struct Helper { typedef _ResultType (* mfp) _ParamsSignature; };                                           \
-        template<class C>                                                                                          \
-        static Yes ClassCheck(TypeCheck< typename Helper<C>::mfp, & C::_FunctionName>*);                           \
-        template<class C>                                                                                          \
-        static No  ClassCheck(...);                                                                                \
-    public:                                                                                                        \
-        static const bool value = (sizeof(ClassCheck< typename AZStd::remove_const<T>::type >(0)) == sizeof(Yes)); \
-        typedef typename _HasName##ResultType<value>::type type;                                                   \
-    };                                                                                                             \
-    template<class T >                                                                                             \
-    struct Has##_HasName<T, false> {                                                                               \
-        static const bool value = false;                                                                           \
-        typedef AZStd::false_type type;                                                                            \
-    };
+#define AZ_HAS_STATIC_MEMBER(_HasName, _FunctionName, _ResultType, _ParamsSignature) \
+    template<class T, class = void>                                                  \
+    class Has##_HasName                                                              \
+        : public AZStd::false_type                                                   \
+    {                                                                                \
+    };                                                                               \
+    template<class T>                                                                \
+    class Has##_HasName<T, AZStd::enable_if_t<AZStd::is_same_v<                      \
+        _ResultType (*) _ParamsSignature,                                            \
+        decltype(&AZStd::remove_cvref_t<T>::_FunctionName)>>>                        \
+        : public AZStd::true_type                                                    \
+    {                                                                                \
+    };                                                                               \
+    template<class T>                                                                \
+    inline static constexpr bool Has##_HasName ## _v = Has##_HasName<T>::value
 
-#endif // AZSTD_TYPE_TRAITS_HAS_MEMBER_FUNCTION_INCLUDED
-#pragma once
