@@ -14,6 +14,7 @@ Constants for window and tab names
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
 ASSET_EDITOR_UI = "Asset Editor"
+VARIABLE_MANAGER_UI = "Variable Manager"
 
 """
 String constants for Node Palette
@@ -27,9 +28,13 @@ Different from window/tab names because they do not have spaces
 """
 NODE_PALETTE_QT = "NodePalette"
 TREE_VIEW_QT = "treeView"
-
+VARIABLE_PALETTE_QT = "variablePalette"
+VARIABLE_MANAGER_QT = "VariableManager"
+GRAPH_VARIABLES_QT = "graphVariables"
+ADD_BUTTON_QT = "addButton"
 
 """
 General constants
 """
 WAIT_TIME_3 = 3
+VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]

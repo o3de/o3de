@@ -12,16 +12,6 @@
 
 partial ShaderResourceGroup SceneSrg
 {
-    Sampler HeightmapSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
     struct TerrainWorldData
     {
         float3 m_min;
@@ -30,6 +20,5 @@ partial ShaderResourceGroup SceneSrg
         float m_padding2;
     };
 
-    Texture2D m_heightmapImage;
     TerrainWorldData m_terrainWorldData;
 }

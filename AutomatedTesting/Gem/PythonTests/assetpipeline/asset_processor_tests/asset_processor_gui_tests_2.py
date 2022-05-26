@@ -63,6 +63,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -113,12 +114,14 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Not working in Jenkins")
+    @pytest.mark.SUITE_sandbox
     # fmt:off
     def test_WindowsMacPlatforms_GUIFastScanEnabled_GameLauncherWorksWithAP(self, asset_processor, workspace,
                                                                             fast_scan_backup):
         # fmt:on
         """
+        Sandboxed: Not working on Jenkins
+
         Make sure game launcher working with Asset Processor set to turbo mode
         Validate that no fatal errors (crashes) are reported within a certain
         time frame for the AP and the GameLauncher
@@ -163,13 +166,13 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_AllPlatforms(object):
     """
     Tests for Asset Processor GUI To Run on All Supported Host Platforms
     """
 
     @pytest.mark.test_case_id("C1591337")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
@@ -214,7 +217,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_AddScanFolder_AssetsProcessed(
@@ -275,9 +277,11 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     @pytest.mark.test_case_id("C4874114")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Flaky test")
+    @pytest.mark.SUITE_sandbox
     def test_AllSupportedPlatforms_InvalidAddress_AssetsProcessed(self, workspace, request, asset_processor):
         """
+        Sandboxed: Flaky Test
+
         Launch AP with invalid address in bootstrap.cfg
         Assets should process regardless of the new address
 
