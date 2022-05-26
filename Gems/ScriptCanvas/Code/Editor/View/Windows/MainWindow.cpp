@@ -1176,32 +1176,32 @@ namespace ScriptCanvasEditor
     AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAssetImplementation(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
         const SourceHandle& fileAssetId = scriptCanvasAsset;
-        if (!fileAssetId.IsDescriptionValid())
-        {
-            return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
-        }
-
-        if (!scriptCanvasAsset.IsDescriptionValid())
-        {
-            if (!m_isRestoringWorkspace)
-            {
-                AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
-
-                if (errorPath.empty())
-                {
-                    errorPath = m_errorFilePath;
-                }
-
-                if (m_queuedFocusOverride.AnyEquals(fileAssetId))
-                {
-                    m_queuedFocusOverride = fileAssetId;
-                }
-
-                QMessageBox::warning(this, "Unable to open source file", QString("Source File(%1) is in error and cannot be opened").arg(errorPath.c_str()), QMessageBox::StandardButton::Ok);
-            }
-
-            return AZ::Failure(AZStd::string("Source File is in error"));
-        }
+//         if (!fileAssetId.IsDescriptionValid())
+//         {
+//             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
+//         }
+// 
+//         if (!scriptCanvasAsset.IsDescriptionValid())
+//         {
+//             if (!m_isRestoringWorkspace)
+//             {
+//                 AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
+// 
+//                 if (errorPath.empty())
+//                 {
+//                     errorPath = m_errorFilePath;
+//                 }
+// 
+//                 if (m_queuedFocusOverride.AnyEquals(fileAssetId))
+//                 {
+//                     m_queuedFocusOverride = fileAssetId;
+//                 }
+// 
+//                 QMessageBox::warning(this, "Unable to open source file", QString("Source File(%1) is in error and cannot be opened").arg(errorPath.c_str()), QMessageBox::StandardButton::Ok);
+//             }
+// 
+//             return AZ::Failure(AZStd::string("Source File is in error"));
+//         }
 
         int outTabIndex = m_tabBar->FindTab(fileAssetId);
 
@@ -4450,14 +4450,6 @@ namespace ScriptCanvasEditor
         m_saves[key] = AZStd::chrono::system_clock::now();
     }
 
-    /*
-    * connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
-        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
-        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
-        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
-        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
-        */
-
     void MainWindow::OnScriptEventAddHelpers()
     {
         if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph).first)
@@ -4477,7 +4469,21 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventOpen()
     {
-        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
+        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> result = ScriptEvents::Editor::OpenAction();
+
+        if (result.first.Get())
+        {
+            OpenScriptCanvasAssetImplementation(result.first, Tracker::ScriptCanvasFileState::UNMODIFIED);
+        }
+        else
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
+                , result.second.c_str()
+                , QMessageBox::Close
+                , nullptr);
+        }
     }
 
     void MainWindow::OnScriptEventParseAs()
@@ -4523,7 +4529,14 @@ namespace ScriptCanvasEditor
         auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
         if (result.first)
         {
-            // make the * go away, clear not saved status
+            QMessageBox mb
+            (QMessageBox::Information
+                , QObject::tr("Graph Saved As Script Event!")
+                , QObject::tr(
+                    "Graph Saved .scriptevent, and this editor can open that file.\n"
+                    "No .scriptcanvas file was saved from this graph.")
+                , QMessageBox::Close
+                , nullptr);
         }
         else
         {

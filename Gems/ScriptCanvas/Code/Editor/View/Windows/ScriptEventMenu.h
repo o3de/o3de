@@ -8,13 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#endif
-
-namespace ScriptCanvas
-{
-    class SourceHandle;
-}
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptEvents
 {
@@ -22,7 +16,7 @@ namespace ScriptEvents
     {
         AZStd::pair<bool, AZStd::string> MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle);
 
-        void OpenAction();
+        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> OpenAction();
 
         AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
 

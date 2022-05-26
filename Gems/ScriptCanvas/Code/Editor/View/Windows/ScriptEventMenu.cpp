@@ -6,21 +6,18 @@
  *
  */
 
-// #include <GraphCanvas/Editor/GraphModelBus.h>
-
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QObject>
 #include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
 #include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 #include <ScriptEvents/ScriptEventsBus.h>
 
 #include <Editor/View/Windows/ScriptEventMenu.h>
 
 using namespace ScriptCanvas;
-// using namespace GraphCanvas;
 
 namespace ScriptEvents
 {
@@ -38,16 +35,15 @@ namespace ScriptEvents
             return { true, "" };
         }
 
-        void OpenAction()
+        AZStd::pair<SourceHandle, AZStd::string> OpenAction()
         {
-            /*
             AZ::IO::FixedMaxPath resolvedProjectRoot;
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
 
             AZStd::string errorMessage;
 
             const QStringList nameFilters = { "ScriptEvent Files Saved from the ScriptCanvas Editor (*.scriptevents)" };
-            QFileDialog dialog(nullptr, tr("Open a single file..."), resolvedProjectRoot.c_str());
+            QFileDialog dialog(nullptr, QObject::tr("Open a single file..."), resolvedProjectRoot.c_str());
             dialog.setFileMode(QFileDialog::ExistingFiles);
             dialog.setNameFilters(nameFilters);
 
@@ -62,26 +58,16 @@ namespace ScriptEvents
 
                 if (loadOutcome.IsSuccess())
                 {
-                    using namespace ScriptCanvas::ScriptEventGrammar;
-                    ScriptCanvas::ScriptCanvasId scriptCanvasId;
-                    GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
-                    ScriptCanvas::Graph* graph = nullptr;
-                    ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
-
                     auto deserializeResult = Deserialize(loadOutcome.GetValue().GetScriptCanvasSerializationData(), MakeInternalGraphEntitiesUnique::Yes);
-                    if (!deserializeResult.m_isSuccessful)
+                    if (deserializeResult.m_isSuccessful)
+                    {
+                        // success
+                        return { SourceHandle(deserializeResult.m_graphDataPtr, path), "" };
+                    }
+                    else
                     {
                         errorMessage = "failed to deserialize script canvas source data";
                     }
-
-                    if (graph)
-                    {
-                        graph->MarkScriptEventExtension();
-                    }
-
-                    // send open file thing to main window
-                    // now open create an open a scriptcanvas graph from the script event
-                    return;
                 }
                 else
                 {
@@ -93,13 +79,8 @@ namespace ScriptEvents
                 errorMessage = "Failed to select file.";
             }
 
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
-                , errorMessage.c_str()
-                , QMessageBox::Close
-                , nullptr);
-                */
+            // failure
+            return { SourceHandle(), errorMessage };
         }
 
         AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle)
