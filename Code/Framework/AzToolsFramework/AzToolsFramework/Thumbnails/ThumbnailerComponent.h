@@ -68,6 +68,9 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
+
+            const int m_maxThumbnailJobs{ 64 };
+            int m_numLoading;
         };
     } // Thumbnailer
 } // namespace AssetBrowser
