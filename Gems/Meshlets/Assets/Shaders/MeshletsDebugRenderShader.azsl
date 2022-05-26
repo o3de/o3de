@@ -96,6 +96,7 @@ VSOutput MeshletsDebugRender_MainPassVS(VSInput IN)
 {
     VSOutput OUT;
  
+    // Idea - test vertexIndex by sending to render as a position.
     float3 localPosition = MeshletsObjectRenderSrg::GetPosition(IN.m_vertexIndex);
     float3 worldPosition = mul(MeshletsObjectRenderSrg::GetWorldMatrix(), float4(localPosition, 1.0)).xyz;
  

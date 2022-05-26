@@ -11,7 +11,11 @@
                     "Name": "MeshletsSharedBuffer",
                     "ShaderInputName": "m_MeshletsSharedBuffer",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
                 }
             ],
             "PassData": {

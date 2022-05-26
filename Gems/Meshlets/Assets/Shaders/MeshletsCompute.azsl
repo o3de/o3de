@@ -129,39 +129,6 @@ uint4 GetGlobalVertexIndicesAndTriOffset(MeshletDescriptor meshlet, uint localTr
     return globalVertexIndicesAndTriOffset;
 }
 
-/*
-void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
-{
-    for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
-    {
-        meshopt_Meshlet& meshlet = m_meshletsData.Descriptors[meshletId];
-        float tx = (meshletId % 3) * 0.5f;
-        float ty = ((meshletId / 3) % 3) * 0.5f;
-        for (uint32_t localTriangleIdx = 0 ; localTriangleIdx < meshlet.triangle_count; ++localTriangleIdx)
-        {
-            uint32_t globalTriangleIndex = meshlet.triangle_offset + localTriangleIdx;
-            uint32_t encodedTri = m_meshletsData.EncodedTriangles[globalTriangleIndex];
-            // Next bring decode the uint32_t and separate into three elements.
-            uint8_t vtxIndirectIndex[3] = {
-                (encodedTri >> 0) & 0xff,
-                (encodedTri >> 8) & 0xff,
-                (encodedTri >> 16) & 0xff
-            }; 
-
-            for (uint32_t vtx = 0; vtx < 3; ++vtx)
-            {
-                uint32_t globalIndirection = meshlet.vertex_offset + vtxIndirectIndex[vtx];
-                uint32_t vtxIndex = m_meshletsData.IndicesIndirection[globalIndirection];
-
-                mesh.vertices[vtxIndex].tx = tx;
-                mesh.vertices[vtxIndex].ty = ty;
-            }
-        } 
-    }
-}
-*/
-
-
 //------------------------------------------------------------------------------
 //! The group's threads count should match either Meshlets::maxVerticesPerMeshlet
 //! or Meshlets::maxTrianglesPerMeshlet depending on our algorithm for minimizing 
@@ -178,11 +145,21 @@ void ComputeMeshletsIndexBuffer(
     uint meshletId = groupId.x;
     MeshletDescriptor meshlet = MeshletsDataSrg::m_meshletsDescriptors[meshletId];
 
-    float2 debugUVs = float2( (meshletId % 3), ((meshletId / 3) % 3) ) * 0.5;
+    uint uvDebugIndex = meshletId + 7;  // to start off with some interesting color
+    float2 debugUVs = float2( (uvDebugIndex % 3), ((uvDebugIndex / 3) % 3) ) * 0.5;
 
+    /*
+    // Leave anything above the 10th vertex and triangle intact
+    if (groupIndex > 8)
+    {
+        return;
+    }
+    */
+
+//#define _DEBUG_TEST_CONTENT_
 #ifdef _DEBUG_TEST_CONTENT_
     ///////////////////////// Start - Test Debug Only ////////////////////////////
-    // Simple ark the first 4 entries of each meshlet 
+    // Simple test of the first 5 entries of each meshlet 
     if ((groupIndex < meshlet.triangleCount) && (groupIndex < 4))
     {
         uint4 vtxGlobalVerticesAndTriOffset = GetGlobalVertexIndicesAndTriOffset(meshlet, groupIndex);
@@ -224,11 +201,6 @@ void ComputeMeshletsIndexBuffer(
     ///////////////////////// End - Test Debug Only ////////////////////////////
 #endif
 
-    // Leave the first 10 indices and vertices data intact
-    if (groupIndex < 2)
-    {
-        return;
-    }
 
     if (groupIndex < meshlet.triangleCount)
     {   // groupIndex is used here as the index of the trianlge we process

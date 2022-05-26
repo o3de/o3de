@@ -89,7 +89,7 @@ namespace AZ
             // Descriptor setting
             RPI::CommonBufferDescriptor desc;
             desc.m_elementFormat = bufferDesc.m_elementFormat;
-            desc.m_poolType = bufferDesc.m_poolType;;
+            desc.m_poolType = bufferDesc.m_poolType;
             desc.m_elementSize = bufferDesc.m_elementSize;
             desc.m_bufferName = bufferDesc.m_bufferName.GetCStr();
             desc.m_byteCount = (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize;

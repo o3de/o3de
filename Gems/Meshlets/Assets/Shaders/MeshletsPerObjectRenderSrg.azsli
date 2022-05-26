@@ -56,31 +56,55 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
 
     //---------------------------------------------------
     // vertex streams 
-    Buffer<float3> m_positions;
-    Buffer<float3> m_normals;
+//    Buffer<float3> m_positions;
+//    Buffer<float3> m_normals;
+//    Buffer<float4> m_tangents; 
+//    Buffer<float3> m_bitangents; 
+
+    Buffer<float> m_positions;
+    Buffer<float> m_normals;
     Buffer<float4> m_tangents; 
-    Buffer<float3> m_bitangents; 
+    Buffer<float> m_bitangents; 
+
     Buffer<float2> m_uvs;
 
     float3 GetPosition(uint vertexIndex)
     {
-        return m_positions[vertexIndex];
+        uint index = vertexIndex * 3;
+        return float3(m_positions[index], m_positions[index+1], m_positions[index+2]);
     }
 
     float3 GetNormal(uint vertexIndex)
     {
-        return m_normals[vertexIndex];
+        uint index = vertexIndex * 3;
+        return float3(m_normals[index], m_normals[index+1], m_normals[index+2]);
     }
+
+    float3 GetBiTangent(uint vertexIndex)
+    {
+        uint index = vertexIndex * 3;
+        return float3(m_bitangents[index], m_bitangents[index+1], m_bitangents[index+2]);
+    }
+
+//    float3 GetPosition(uint vertexIndex)
+//    {
+//        return m_positions[vertexIndex];
+//    }
+//
+//    float3 GetNormal(uint vertexIndex)
+//    {
+//        return m_normals[vertexIndex];
+//    }
+//
+//    float3 GetBiTangent(uint vertexIndex)
+//    {
+//        return m_bitangents[vertexIndex];
+//    }
 
     // The last element of the tangents indicates face direction / winding
     float4 GetTangent(uint vertexIndex)
     {
         return m_tangents[vertexIndex];
-    }
-
-    float3 GetBiTangent(uint vertexIndex)
-    {
-        return m_bitangents[vertexIndex];
     }
 
     float2 GetUV(uint vertexIndex)

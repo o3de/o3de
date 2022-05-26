@@ -83,6 +83,7 @@ namespace AZ
             std::vector<unsigned int> indices;
         };
 
+        //======================================================================
         struct MeshletsData
         {
             std::vector<meshopt_Meshlet> Descriptors;
@@ -146,6 +147,27 @@ namespace AZ
                 }
 
                 return triNum;
+            }
+
+            //! Using the meshlets data, generates a regular u32 vector indices
+            //! This can be used as a debug validation data and send to render.
+            void GenerateDecodedIndices(std::vector<uint32_t>& decodedIndexVector)
+            {
+                uint32_t currentIdx = 0;
+                for (uint32_t meshletId = 0; meshletId < Descriptors.size(); ++meshletId)
+                {
+                    meshopt_Meshlet& meshlet = Descriptors[meshletId];
+                    for (uint32_t tri = 0; tri < meshlet.triangle_count; ++tri)
+                    {
+                        uint32_t encodedTriangle = EncodedTriangles[meshlet.triangle_offset + tri];
+                        for (uint32_t i = 0; i < 3; i++)
+                        {
+                            uint32_t localIndex = encodedTriangle >> (i * 8) & 0xff;
+                            uint32_t indirectIndex = meshlet.vertex_offset + localIndex;
+                            decodedIndexVector[currentIdx++] = IndicesIndirection[indirectIndex];
+                        }
+                    }
+                }
             }
         };
 
