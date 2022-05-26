@@ -30,9 +30,7 @@ namespace RecastNavigation
                 });
         }
 
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         */
+        //! Add required SystemComponents to the SystemEntity.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{

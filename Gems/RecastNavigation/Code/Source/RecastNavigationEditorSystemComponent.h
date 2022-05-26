@@ -14,7 +14,7 @@
 
 namespace RecastNavigation
 {
-    /// System component for RecastNavigation editor
+    //! System component for RecastNavigation editor
     class RecastNavigationEditorSystemComponent
         : public RecastNavigationSystemComponent
         , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -33,7 +33,7 @@ namespace RecastNavigation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // AZ::Component
+        //! AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
     };

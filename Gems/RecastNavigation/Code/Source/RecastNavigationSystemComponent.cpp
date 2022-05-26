@@ -7,24 +7,22 @@
  */
 
 #include <RecastNavigationSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace RecastNavigation
 {
     void RecastNavigationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                ec->Class<RecastNavigationSystemComponent>("RecastNavigation", "[System Component for the Recast Navigation gem]")
+                editContext->Class<RecastNavigationSystemComponent>("RecastNavigation", "[System Component for the Recast Navigation gem]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
