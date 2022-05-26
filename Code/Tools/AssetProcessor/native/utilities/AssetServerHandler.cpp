@@ -138,6 +138,18 @@ namespace AssetProcessor
             return false;
         }
 
+        // make sub-folders if needed
+        QFileInfo fileInfo(archiveAbsFilePath);
+        if (!fileInfo.absoluteDir().exists())
+        {
+            if (!fileInfo.absoluteDir().mkpath("."))
+            {
+                AZ_Error(AssetProcessor::DebugChannel, false, "Could not make archive folder %s !",
+                    fileInfo.absoluteDir().absolutePath().toUtf8().data());
+                return false;
+            }
+        }
+
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive for job (%s, %s, %s) with fingerprint (%u).\n",
             builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
             builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
