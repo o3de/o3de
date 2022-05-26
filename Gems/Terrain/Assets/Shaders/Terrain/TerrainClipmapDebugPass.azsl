@@ -138,7 +138,7 @@ PSOutput MainPS(VSOutput psInput)
         {
             float height = PassSrg::m_detailHeightClipmaps.Sample(PassSrg::m_sampler, sampleCoord);
             float3 splat = float3(height, height, height) * 0.01 * PassSrg::m_brightness;
-            OUT.m_color = float(splat, 1.0);
+            OUT.m_color = float4(splat, 1.0);
             break;
         }
         case 5:
