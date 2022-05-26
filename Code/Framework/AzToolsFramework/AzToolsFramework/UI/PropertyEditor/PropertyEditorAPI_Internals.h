@@ -21,6 +21,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 class QWidget;
 class QColor;
@@ -267,13 +268,18 @@ namespace AzToolsFramework
         static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
         {
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-            auto typeId = PropertyEditor::ValueType.ExtractFromDomNode(node);
-            if (!typeId.has_value())
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != node.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+            else
             {
                 AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                typeId = &AZ::Dom::Utils::GetValueTypeId(value);
+                typeId = AZ::Dom::Utils::GetValueTypeId(value);
             }
-            return rpeHandler.HandlesType(*typeId.value());
+            return rpeHandler.HandlesType(typeId);
         }
 
         static const AZStd::string_view GetHandlerName(PropertyHandlerBase& rpeHandler)
@@ -429,6 +435,7 @@ namespace AzToolsFramework
                 {
                     return AZStd::make_unique<HandlerType>(*this);
                 };
+                registrationInfo.m_isDefaultHandler = this->IsDefaultHandler();
                 m_registeredDpeHandlerId = dpeSystemInterface->RegisterHandler(AZStd::move(registrationInfo));
             }
         }
@@ -464,6 +471,11 @@ namespace AzToolsFramework
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
         }
 
+        virtual PropertyType* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const
+        {
+            return static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instance, fromId, toId));
+        }
+
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             WidgetType* wid = static_cast<WidgetType*>(widget);
@@ -475,7 +487,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 WriteGUIValuesIntoProperty(idx, wid, *actualCast, node);
             }
@@ -505,7 +517,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {
