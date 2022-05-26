@@ -166,11 +166,6 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(AzRender, "DiffuseProbeGridFeatureProcessor: Simulate");
 
-            if (!RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_rayTracing)
-            {
-                return;
-            }
-
             // update pipeline states
             if (m_needUpdatePipelineStates)
             {
