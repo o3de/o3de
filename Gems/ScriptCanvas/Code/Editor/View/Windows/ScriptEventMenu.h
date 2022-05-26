@@ -24,6 +24,8 @@ namespace ScriptEvents
 
         void OpenAction();
 
+        AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
+
         AZStd::pair<bool, AZStd::string> SaveAsAction(const ScriptCanvas::SourceHandle& sourceHandle);
 
         struct MenuItemsEnabled

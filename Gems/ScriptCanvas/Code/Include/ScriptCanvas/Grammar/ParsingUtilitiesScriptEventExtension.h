@@ -11,6 +11,9 @@
 #include "Primitives.h"
 #include "PrimitivesExecution.h"
 
+#include <ScriptEvents/ScriptEventsMethod.h>
+#include <ScriptEvents/ScriptEventDefinition.h>
+ 
 namespace ScriptCanvas
 {
     class Node;
@@ -39,11 +42,11 @@ namespace ScriptCanvas
             ScriptEvents::ScriptEvent m_event;
         };
 
-        GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph);
+        GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(const Graph& graph);
 
         FunctionNodeToScriptEventResult ParseScriptEvent(const Node& node);
 
-        GraphToScriptEventsResult ParseScriptEventsDefinition(Graph& graph);
+        GraphToScriptEventsResult ParseScriptEventsDefinition(const Graph& graph);
     }
 }
 

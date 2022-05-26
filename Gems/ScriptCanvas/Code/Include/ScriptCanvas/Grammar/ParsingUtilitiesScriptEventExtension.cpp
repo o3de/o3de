@@ -55,7 +55,7 @@ namespace ScriptCanvas::ScriptEventGrammar
     using namespace ScriptCanvas;
     using namespace ParsingUtilitiesScriptEventExtensionCpp;
 
-    GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(Graph& graph)
+    GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(const Graph& graph)
     {
         GraphToScriptEventsResult result;
 
@@ -115,7 +115,7 @@ namespace ScriptCanvas::ScriptEventGrammar
         return result;
     }
 
-    GraphToScriptEventsResult ParseScriptEventsDefinition(Graph& graph)
+    GraphToScriptEventsResult ParseScriptEventsDefinition(const Graph& graph)
     {
         // get name, tool tip, category from variables
         GraphToScriptEventsResult result = ParseMinimumScriptEventArtifacts(graph);

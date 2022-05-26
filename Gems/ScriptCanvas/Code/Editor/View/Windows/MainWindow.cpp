@@ -4450,14 +4450,29 @@ namespace ScriptCanvasEditor
         m_saves[key] = AZStd::chrono::system_clock::now();
     }
 
+    /*
+    * connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
+        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
+        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
+        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
+        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
+        */
+
     void MainWindow::OnScriptEventAddHelpers()
     {
-        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
+        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph).first)
+        {
+            GraphCanvas::GraphModelRequestBus::Event
+                ( m_activeGraph.Mod()->GetEntityId()
+                , &GraphCanvas::GraphModelRequests::RequestUndoPoint);
+        }
     }
 
     void MainWindow::OnScriptEventMenuPreShow()
     {
-        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
+        auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
+        ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
+        ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
     }
 
     void MainWindow::OnScriptEventOpen()
@@ -4467,13 +4482,58 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventParseAs()
     {
-        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
+        AZStd::pair<bool, AZStd::vector<AZStd::string>> result = ScriptEvents::Editor::ParseAsAction(m_activeGraph);
+
+        if (result.first)
+        {
+            QMessageBox mb
+                ( QMessageBox::Information
+                , QObject::tr("Success!")
+                , QObject::tr("Graph parsed as ScriptEvent, and may be saved as one.")
+                , QMessageBox::Close
+                , nullptr);
+        }
+        else
+        {
+            AZStd::string parseErrorString;
+
+            if (!result.second.empty())
+            {
+                parseErrorString = "Parse Errors:\n";
+
+                for (auto& entry : result.second)
+                {
+                    parseErrorString += "* ";
+                    parseErrorString += entry;
+                    parseErrorString += "\n";
+                }
+            }
+
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Graph did not parse as ScriptEvent, please fix issues below to save as a ScriptEvent")
+                , parseErrorString.c_str()
+                , QMessageBox::Close
+                , nullptr);
+        }
     }
 
     void MainWindow::OnScriptEventSaveAs()
     {
-        ScriptEvents::Editor::SaveAsAction(m_activeGraph);
-        AZ_TracePrintf("ScriptCanvas", "The menu has been triggered, update action viability");
+        auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
+        if (result.first)
+        {
+            // make the * go away, clear not saved status
+        }
+        else
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Failed to Save As Script Event")
+                , result.second.c_str()
+                , QMessageBox::Close
+                , nullptr);
+        }
     }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>

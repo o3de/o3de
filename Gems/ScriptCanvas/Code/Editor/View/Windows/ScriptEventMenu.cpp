@@ -6,36 +6,35 @@
  *
  */
 
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
+// #include <GraphCanvas/Editor/GraphModelBus.h>
 
+#include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QObject>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
 #include <ScriptEvents/ScriptEventsBus.h>
+
+#include <Editor/View/Windows/ScriptEventMenu.h>
+
+using namespace ScriptCanvas;
+// using namespace GraphCanvas;
 
 namespace ScriptEvents
 {
     namespace Editor
     {
-        using namespace ScriptCanvas;
-
-        AZStd::pair<bool, AZStd::string> MakeHelpersAction([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
+        AZStd::pair<bool, AZStd::string> MakeHelpersAction([[maybe_unused]] const SourceHandle& sourceHandle)
         {
-            /*
             if (!sourceHandle.Mod())
             {
                 return { false, "no active graph" };
             }
 
-            // redo this part
-            // return GraphCanvas::ContextMenuAction::SceneReaction::PostUndo;
-
-            if (graph)
-            {
-                graph->MarkScriptEventExtension();
-            }
-
+            sourceHandle.Mod()->MarkScriptEventExtension();
             AddScriptEventHelpers(*sourceHandle.Mod());
-            */
-
             return { true, "" };
         }
 
@@ -103,20 +102,19 @@ namespace ScriptEvents
                 */
         }
 
+        AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle)
+        {
+            using namespace ScriptCanvas::ScriptEventGrammar;
+            GraphToScriptEventsResult result = ParseScriptEventsDefinition(*sourceHandle.Get());
+            return { result.m_isScriptEvents, result.m_parseErrors };
+        }
+
         AZStd::pair<bool, AZStd::string> SaveAsAction([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
         {
-            /*
-            if (graph)
-            {
-                graph->MarkScriptEventExtension();
-            }
-
             using namespace ScriptCanvas::ScriptEventGrammar;
 
-            AZStd::string errorWindowTitle;
             AZStd::string errorMessage;
-            AZStd::vector<AZStd::string> parseErrors;
-
+            
             if (sourceHandle.Get())
             {
                 GraphToScriptEventsResult result = ParseScriptEventsDefinition(*sourceHandle.Get());
@@ -126,7 +124,7 @@ namespace ScriptEvents
                     AZ::IO::FixedMaxPath resolvedProjectRoot;
                     AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
                     const auto fileName = QFileDialog::getSaveFileName
-                        ( nullptr, tr("Save As..."), resolvedProjectRoot.c_str(), tr("All ScriptEvent Files (*.scriptevents)"));
+                        ( nullptr, QObject::tr("Save As..."), resolvedProjectRoot.c_str(), QObject::tr("All ScriptEvent Files (*.scriptevents)"));
 
                     if (!fileName.isEmpty())
                     {
@@ -152,93 +150,19 @@ namespace ScriptEvents
                 else
                 {
                     errorMessage = "Changes are required to properly parse graph as ScriptEvents file.";
-                    parseErrors = AZStd::move(parseErrors);
                 }
             }
-            else
-            {
-                errorMessage = "Graph could not be found with ID: ";
-                errorMessage += graphId.ToString();
-                errorMessage += ".";
-            }
-
-            if (!parseErrors.empty())
-            {
-                for (auto& error : parseErrors)
-                {
-                    errorMessage += "\n * ";
-                    errorMessage += error;
-                }
-
-                errorWindowTitle = "Changes are required to properly parse graph as ScriptEvents file.";
-            }
-            else if (!errorMessage.empty())
-            {
-                errorWindowTitle = "Failed to save ScriptEvents file.";
-            }
-
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , errorWindowTitle.c_str()
-                , errorMessage.c_str()
-                , QMessageBox::Close
-                , nullptr);
-                */
-            return { true, "" };
+                            
+            return { errorMessage.empty(), errorMessage };
         }
 
         MenuItemsEnabled UpdateMenuItemsEnabled([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
         {
+            auto graph = sourceHandle.Mod();
             MenuItemsEnabled menuItemsEnabled;
-
-            // add helpers enabled
-            /*
-            ScriptCanvas::ScriptCanvasId scriptCanvasId;
-            GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
-            ScriptCanvas::Graph* graph = nullptr;
-            ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
-
-            if (graph)
-            {
-                graph->MarkScriptEventExtension();
-            }
-
-            setEnabled(graph && !ScriptCanvas::ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents);
-            */
-
-            // save enabled
-            /* using namespace ScriptCanvas::ScriptEventGrammar;
-        // ask the model if is enabled, change name to reason why...?
-        ScriptCanvas::ScriptCanvasId scriptCanvasId;
-        GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::GetScriptCanvasId, graphId);
-
-        ScriptCanvas::Graph* graph = nullptr;
-        ScriptCanvas::GraphRequestBus::EventResult(graph, scriptCanvasId, &ScriptCanvas::GraphRequests::GetGraph);
-
-        if (graph)
-        {
-            if (const GraphToScriptEventsResult result = ParseScriptEventsDefinition(*graph); !result.m_isScriptEvents)
-            {
-                AZ_TracePrintf("ScriptEvents", "Failed to parse graph as ScriptEvents: ");
-                for (auto& reason : result.m_parseErrors)
-                {
-                    AZ_TracePrintf("ScriptEvents", reason.c_str());
-                }
-
-                setEnabled(false);
-                return;
-            }
-        }
-        else
-        {
-            AZ_Error("ScriptEvents", false, "No valid graph was discovered for SaveAsScriptEventAction::RefreshAction");
-            setEnabled(false);
-            return;
-        }
-
-        setEnabled(true);
-        */
-
+            bool isParsed = graph && ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents;
+            menuItemsEnabled.m_addHelpers = graph && !isParsed;
+            menuItemsEnabled.m_save = isParsed;
             return menuItemsEnabled;
         }
     }
