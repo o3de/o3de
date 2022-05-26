@@ -117,6 +117,8 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleEnum, "unordered_map<enum, int>", "")
@@ -209,7 +211,7 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
-#if 1 // change this to test with a reflection adapter instead
+#if 0 // change this to test with a reflection adapter instead
     // create a default cvar adapter to expose the local CVar settings to edit
     AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
 #else

@@ -49,6 +49,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Visibility);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::UIElement);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);

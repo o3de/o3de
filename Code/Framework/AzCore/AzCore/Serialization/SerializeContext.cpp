@@ -1912,18 +1912,60 @@ namespace AZ
             }
             else
             {
-                for (size_t i = 0, n = dataClassInfo->m_elements.size(); i < n; ++i)
+                if (callContext->m_enumerateEditElements && dataClassInfo->m_editData)
                 {
-                    const SerializeContext::ClassElement& ed = dataClassInfo->m_elements[i];
-                    void* dataAddress = (char*)(objectPtr) + ed.m_offset;
-                    if (dataAddress)
+                    for (auto element : dataClassInfo->m_editData->m_elements)
                     {
-                        const SerializeContext::ClassData* elemClassInfo = ed.m_genericClassInfo ? ed.m_genericClassInfo->GetClassData() : FindClassData(ed.m_typeId, dataClassInfo, ed.m_nameCrc);
-
-                        keepEnumeratingSiblings = EnumerateInstance(callContext, dataAddress, ed.m_typeId, elemClassInfo, &ed);
-                        if (!keepEnumeratingSiblings)
+                        const SerializeContext::ClassElement* ed = element.m_serializeClassElement;
+                        if (ed)
                         {
-                            break;
+                            void* dataAddress = (char*)(objectPtr) + ed->m_offset;
+                            if (dataAddress)
+                            {
+                                const SerializeContext::ClassData* elemClassInfo = ed->m_genericClassInfo
+                                    ? ed->m_genericClassInfo->GetClassData()
+                                    : FindClassData(ed->m_typeId, dataClassInfo, ed->m_nameCrc);
+
+                                keepEnumeratingSiblings = EnumerateInstance(callContext, dataAddress, ed->m_typeId, elemClassInfo, ed);
+                                if (!keepEnumeratingSiblings)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // If there's no ClassElement, create a synthetic one and provide it.
+                            // This can happen in the case of entries like UIElements that aren't tied directly to
+                            // a class member, but are still part of the UI.
+                            if (callContext->m_beginElemCB)
+                            {
+                                SerializeContext::ClassElement syntheticClassElement;
+                                syntheticClassElement.m_editData = &element;
+                                callContext->m_beginElemCB(ptr, dataClassInfo, &syntheticClassElement);
+                            }
+                            if (callContext->m_endElemCB)
+                            {
+                                callContext->m_endElemCB();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (size_t i = 0, n = dataClassInfo->m_elements.size(); i < n; ++i)
+                    {
+                        const SerializeContext::ClassElement& ed = dataClassInfo->m_elements[i];
+                        void* dataAddress = (char*)(objectPtr) + ed.m_offset;
+                        if (dataAddress)
+                        {
+                            const SerializeContext::ClassData* elemClassInfo = ed.m_genericClassInfo ? ed.m_genericClassInfo->GetClassData() : FindClassData(ed.m_typeId, dataClassInfo, ed.m_nameCrc);
+
+                            keepEnumeratingSiblings = EnumerateInstance(callContext, dataAddress, ed.m_typeId, elemClassInfo, &ed);
+                            if (!keepEnumeratingSiblings)
+                            {
+                                break;
+                            }
                         }
                     }
                 }

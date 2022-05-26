@@ -56,28 +56,51 @@ namespace AZ::Dom::Utils
 
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
+    template <typename T, typename = void>
+    struct DomValueWrapper
+    {
+        using Type = AZStd::decay_t<T>;
+    };
+
+    template <typename T>
+    struct DomValueWrapper<T, AZStd::enable_if_t<AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>>>
+    {
+        using Type = AZStd::add_pointer_t<AZStd::remove_reference_t<AZStd::decay_t<T>>>;
+    };
+
+    template <typename T>
+    using DomValueWrapperType = typename DomValueWrapper<T>::Type;
+
     template<typename T>
     Dom::Value ValueFromType(const T& value)
     {
-        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        using WrapperType = DomValueWrapperType<T>;
+        if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
         {
             return value;
         }
-        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
+        else if constexpr (AZStd::is_same_v<WrapperType, AZStd::string> || AZStd::is_same_v<WrapperType, AZStd::string_view>)
         {
             return Dom::Value(value, true);
         }
-        else if constexpr (AZStd::is_constructible_v<Dom::Value, const T&>)
+        else if constexpr (AZStd::is_constructible_v<Dom::Value, const WrapperType&>)
         {
             return Dom::Value(value);
         }
-        else if constexpr (AZStd::is_enum_v<T>)
+        else if constexpr (AZStd::is_enum_v<WrapperType>)
         {
-            return ValueFromType(static_cast<AZStd::underlying_type_t<T>>(value));
+            return ValueFromType(static_cast<AZStd::underlying_type_t<WrapperType>>(value));
         }
         else
         {
-            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+            if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
+            {
+                return Dom::Value::FromOpaqueValue(AZStd::any(&value));
+            }
+            else
+            {
+                return Dom::Value::FromOpaqueValue(AZStd::any(value));
+            }
         }
     }
 
@@ -86,21 +109,22 @@ namespace AZ::Dom::Utils
     template <typename T>
     bool CanConvertValueToType(const Dom::Value& value)
     {
-        if constexpr (AZStd::is_same_v<T, bool>)
+        using WrapperType = DomValueWrapperType<T>;
+        if constexpr (AZStd::is_same_v<WrapperType, bool>)
         {
             return value.IsBool();
         }
-        else if constexpr (AZStd::is_integral_v<T> || AZStd::is_floating_point_v<T>)
+        else if constexpr (AZStd::is_integral_v<WrapperType> || AZStd::is_floating_point_v<WrapperType>)
         {
             return value.IsNumber();
         }
-        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
+        else if constexpr (AZStd::is_same_v<WrapperType, AZStd::string> || AZStd::is_same_v<WrapperType, AZStd::string_view>)
         {
             return value.IsString();
         }
-        else if constexpr (AZStd::is_enum_v<T>)
+        else if constexpr (AZStd::is_enum_v<WrapperType>)
         {
-            return CanConvertValueToType<AZStd::underlying_type_t<T>>(value);
+            return CanConvertValueToType<AZStd::underlying_type_t<WrapperType>>(value);
         }
         else
         {
@@ -114,13 +138,14 @@ namespace AZ::Dom::Utils
     }
 
     template <typename T>
-    AZStd::optional<T> ValueToType(const Dom::Value& value)
+    AZStd::optional<DomValueWrapperType<T>> ValueToType(const Dom::Value& value)
     {
-        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        using WrapperType = DomValueWrapperType<T>;
+        if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
         {
             return value;
         }
-        else if constexpr (AZStd::is_same_v<T, bool>)
+        else if constexpr (AZStd::is_same_v<WrapperType, bool>)
         {
             if (!value.IsBool())
             {
@@ -128,31 +153,31 @@ namespace AZ::Dom::Utils
             }
             return value.GetBool();
         }
-        else if constexpr (AZStd::is_integral_v<T> && AZStd::is_signed_v<T>)
+        else if constexpr (AZStd::is_integral_v<WrapperType> && AZStd::is_signed_v<WrapperType>)
         {
             if (!value.IsNumber())
             {
                 return {};
             }
-            return aznumeric_cast<T>(value.GetInt64());
+            return aznumeric_cast<WrapperType>(value.GetInt64());
         }
-        else if constexpr (AZStd::is_integral_v<T> && !AZStd::is_signed_v<T>)
+        else if constexpr (AZStd::is_integral_v<WrapperType> && !AZStd::is_signed_v<WrapperType>)
         {
             if (!value.IsNumber())
             {
                 return {};
             }
-            return aznumeric_cast<T>(value.GetUint64());
+            return aznumeric_cast<WrapperType>(value.GetUint64());
         }
-        else if constexpr (AZStd::is_floating_point_v<T>)
+        else if constexpr (AZStd::is_floating_point_v<WrapperType>)
         {
             if (!value.IsNumber())
             {
                 return {};
             }
-            return aznumeric_cast<T>(value.GetDouble());
+            return aznumeric_cast<WrapperType>(value.GetDouble());
         }
-        else if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<T>, AZStd::string_view>)
+        else if constexpr (AZStd::is_same_v<AZStd::decay_t<WrapperType>, AZStd::string> || AZStd::is_same_v<AZStd::decay_t<WrapperType>, AZStd::string_view>)
         {
             if (!value.IsString())
             {
@@ -160,9 +185,9 @@ namespace AZ::Dom::Utils
             }
             return value.GetString();
         }
-        else if constexpr (AZStd::is_enum_v<T>)
+        else if constexpr (AZStd::is_enum_v<WrapperType>)
         {
-            return static_cast<T>(ValueToType<AZStd::underlying_type_t<T>>(value));
+            return static_cast<WrapperType>(ValueToType<AZStd::underlying_type_t<WrapperType>>(value).value());
         }
         else
         {
@@ -171,17 +196,31 @@ namespace AZ::Dom::Utils
                 return {};
             }
             const AZStd::any& opaqueValue = value.GetOpaqueValue();
-            if (!opaqueValue.is<T>())
+            if (!opaqueValue.is<WrapperType>())
             {
                 // Marshal void* into our type - CanConvertToType will not register this as correct,
                 // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
                 if (opaqueValue.is<void*>())
                 {
-                    return *reinterpret_cast<T*>(AZStd::any_cast<void*>(opaqueValue));
+                    return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
                 }
                 return {};
             }
-            return AZStd::any_cast<T>(opaqueValue);
+            return AZStd::any_cast<WrapperType>(opaqueValue);
+        }
+    }
+
+    template <typename T>
+    T ValueToTypeUnsafe(const Dom::Value& value)
+    {
+        auto convertedValue = ValueToType<T>(value);
+        if constexpr (AZStd::is_reference_v<T>)
+        {
+            return *convertedValue.value();
+        }
+        else
+        {
+            return convertedValue.value();
         }
     }
 } // namespace AZ::Dom::Utils

@@ -37,6 +37,14 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static bool CanBeParentToValue(const Dom::Value& value);
     };
 
+    enum class PropertyVisibility : AZ::u32
+    {
+        Show = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_Show")),
+        ShowChildrenOnly = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly")),
+        Hide = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_Hide")),
+        HideChildren = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_HideChildren")),
+    };
+
     //! Label: A textual label that shall render its contents as part of a Row.
     struct Label : NodeDefinition
     {
@@ -64,6 +72,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
+        static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+        static constexpr auto UIElement = AttributeDefinition<Dom::Value>("UIElement");
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
