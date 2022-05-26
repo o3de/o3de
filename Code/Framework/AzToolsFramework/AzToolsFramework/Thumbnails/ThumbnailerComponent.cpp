@@ -27,8 +27,8 @@ namespace AzToolsFramework
             , m_loadingThumbnail(new LoadingThumbnail())
             , m_numLoading(0)
         {
-        	// Increase the maximum number of QThreads to support the number of
-        	// concurrent jobs needed here.
+            // Increase the maximum number of QThreads to support the number of
+            // concurrent jobs needed here.
             int currentMaxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
             int newMaxThreadCount = qMax<int>(currentMaxThreadCount, m_maxThumbnailJobs + 1);
             QThreadPool::globalInstance()->setMaxThreadCount(newMaxThreadCount);
