@@ -14,7 +14,10 @@ import azlmbr.legacy.general as general
 import azlmbr.editor as editor
 import azlmbr.bus as bus
 import azlmbr.paths as paths
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT, WAIT_TIME_3)
+from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, NODE_PALETTE_UI,
+                                                 NODE_PALETTE_QT, TREE_VIEW_QT, EVENTS_QT, DEFAULT_METHOD_NAME,
+                                                 SEARCH_FRAME_QT, SEARCH_FILTER_QT, EVENT_NAME_QT, NAME_STRING,
+                                                 PARAMETERS_QT, SAVE_STRING, SAVE_ASSET_AS, WAIT_TIME_3)
 
 
 # fmt: off
@@ -80,9 +83,9 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
             action = pyside_utils.find_child_by_pattern(self.script_canvas, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
             action.trigger()
         self.node_palette = self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
-        self.node_tree_view = self.node_palette.findChild(QtWidgets.QTreeView, "treeView")
-        self.node_tree_search_frame = self.node_palette.findChild(QtWidgets.QFrame, "searchFrame")
-        self.none_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, "searchFilter")
+        self.node_tree_view = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+        self.node_tree_search_frame = self.node_palette.findChild(QtWidgets.QFrame, SEARCH_FRAME_QT)
+        self.none_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
 
     def initialize_asset_editor_qt_objects(self):
         self.editor_window = pyside_utils.get_editor_main_window()
@@ -92,8 +95,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         self.menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
     def save_file(self):
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": "Save"})
+        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, FILE_PATH)
+        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
         action.trigger()
         # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
         # if there are no unsaved changes we will not have any * in the text
@@ -130,39 +133,39 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 1) Open Asset Editor
         # Initially close the Asset Editor and then reopen to ensure we don't have any existing assets open
-        general.close_pane("Asset Editor") # this doesn't close a file that was previously open if you had just run a test that created an asset
-        general.open_pane("Asset Editor")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Asset Editor"), WAIT_TIME_3)
+        general.close_pane(ASSET_EDITOR_UI) # this doesn't close a file that was previously open if you had just run a test that created an asset
+        general.open_pane(ASSET_EDITOR_UI)
+        helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
 
         # 2) Initially create new Script Event file with one method
         self.initialize_asset_editor_qt_objects()
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": "Script Events"})
+        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
-            lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Events") is not None
-                    and self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "") is not None,
+            lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
+                    and self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "") is not None,
             WAIT_TIME_3,
         )
         Report.result(Tests.new_event_created, result)
 
         # 3) Add new method and set name to it
-        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Events").findChild(QtWidgets.QToolButton, "")
+        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
         add_event.click()
         result = helper.wait_for_condition(
-            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "EventName") is not None, WAIT_TIME_3
+            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, EVENT_NAME_QT) is not None, WAIT_TIME_3
         )
         Report.result(Tests.child_event_created, result)
-        self.expand_container_rows("EventName")
-        self.expand_container_rows("Name")
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
+        self.expand_container_rows(EVENT_NAME_QT)
+        self.expand_container_rows(NAME_STRING)
+        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
         for child in children:
             line_edit = child.findChild(QtWidgets.QLineEdit)
-            if line_edit is not None and line_edit.text() == "MethodName":
+            if line_edit is not None and line_edit.text() == DEFAULT_METHOD_NAME:
                 line_edit.setText(TEST_METHOD_NAME)
 
         # 4) Add new parameters of each type
-        helper.wait_for_condition(lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters") is not None, WAIT_TIME_3)
-        parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters")
+        helper.wait_for_condition(lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
+        parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
         add_param = parameters.findChild(QtWidgets.QToolButton, "")
         for _ in range(N_VAR_TYPES):
             add_param.click()
@@ -176,8 +179,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
             self.expand_container_rows(f"[{index}]")
 
         # 7) Set different names and datatypes for each parameter
-        self.expand_container_rows("Name")
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
+        self.expand_container_rows(NAME_STRING)
+        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
         index = 0
         for child in children:
             line_edit = child.findChild(QtWidgets.QLineEdit)
@@ -204,7 +207,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         Report.result(Tests.node_found, result)
 
         # 9) Close Asset Editor
-        general.close_pane("Asset Editor")
+        general.close_pane(ASSET_EDITOR_UI)
         general.close_pane(SCRIPT_CANVAS_UI)
 
 
