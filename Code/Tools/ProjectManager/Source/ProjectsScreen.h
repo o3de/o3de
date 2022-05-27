@@ -80,7 +80,9 @@ namespace O3DE::ProjectManager
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
+#ifdef ADD_REMOTE_PROJECT_ENABLED
         QAction* m_addRemoteProjectAction = nullptr;
+#endif
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
