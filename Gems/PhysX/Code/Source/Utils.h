@@ -224,7 +224,8 @@ namespace PhysX
             void GetConvexMeshGeometry(const physx::PxConvexMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
 
             //! Generates vertices and indices representing the provided heightfield geometry, optionally limited to a bounding box
-            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds);
+            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices,
+                AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds);
 
             //! Generates vertices and indices representing the provided sphere geometry and optional stacks and slices
             void GetSphereGeometry(const physx::PxSphereGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::u32 stacks, const AZ::u32 slices);
