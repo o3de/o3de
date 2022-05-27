@@ -187,6 +187,10 @@ namespace AZ::Dom::Utils
         }
         else if constexpr (AZStd::is_enum_v<WrapperType>)
         {
+            if (!value.IsNumber())
+            {
+                return {};
+            }
             return static_cast<WrapperType>(ValueToType<AZStd::underlying_type_t<WrapperType>>(value).value());
         }
         else
@@ -218,9 +222,14 @@ namespace AZ::Dom::Utils
         {
             return *convertedValue.value_or(nullptr);
         }
-        else
+        else if constexpr (AZStd::is_constructible_v<T>)
         {
             return convertedValue.value_or(T());
+        }
+        else
+        {
+            // truly unsafe, this will crash if a value isn't provided
+            return convertedValue.value();
         }
     }
 } // namespace AZ::Dom::Utils

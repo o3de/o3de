@@ -47,9 +47,10 @@ namespace DPEDebugView
         QMessageBox::information(nullptr, "Button", "Button1 pressed");
     }
 
-    void Button2()
+    AZ::Crc32 Button2()
     {
         QMessageBox::information(nullptr, "Button", "Button2 pressed");
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     class TestContainer

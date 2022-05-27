@@ -271,6 +271,11 @@ namespace AZ::DocumentPropertyEditor
                 return AZ::Success(fn(args...));
             }
 
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            {
+                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(attribute->DomInvoke(instance, args)));
+            }
+
             static FunctionType InvokeOnAttribute(void* instance, AZ::Attribute* attribute)
             {
                 return [instance, attribute](Args... args)
@@ -291,6 +296,12 @@ namespace AZ::DocumentPropertyEditor
             static ResultType Invoke(const AZStd::function<void(Args...)>& fn, Args... args)
             {
                 fn(args...);
+                return AZ::Success();
+            }
+
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            {
+                attribute->DomInvoke(instance, args);
                 return AZ::Success();
             }
 
@@ -334,8 +345,7 @@ namespace AZ::DocumentPropertyEditor
                         return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
                     }
 
-                    return AZ::Dom::Utils::ValueToTypeUnsafe<CallbackTraits::ResultType>(
-                        attribute->DomInvoke(instance, marshalledArguments));
+                    return CallbackTraits::InvokeOnAttribute(attribute, instance, marshalledArguments);
                 }
             }
 
