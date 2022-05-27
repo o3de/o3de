@@ -42,6 +42,7 @@ namespace AZ::IO
     {
         // Leave a bit of room for requests that don't check the available space for dependencies
         // because they only add a small (usually one or two) number of dependencies.
-        return AZStd::numeric_limits<typename decltype(m_dependencies)::value_type>::max() - 255;
+        return AZStd::numeric_limits<decltype(m_dependencies.load())>::max() - 255;
+        // Android has a non-conforming version of std::atomic so using value_type doesn't work.
     }
 } // namespace AZ::IO
