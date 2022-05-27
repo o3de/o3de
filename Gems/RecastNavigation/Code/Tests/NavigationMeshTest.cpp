@@ -126,7 +126,7 @@ namespace RecastNavigationTests
                     overlapRequest->m_unboundedOverlapHitCallback({ *m_hit });
                     return AzPhysics::SceneQueryHits();
                 }));
-            
+
             // Fake a simulated body within query results.
             ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _)).WillByDefault(Invoke([this]
             (AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)
