@@ -122,7 +122,7 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicRequestHandler::RemoveInMemorySpawnableAsset(AZStd::string_view spawnableName)
         {
-            auto result = m_spawnableAssetContainer.RemoveInMemorySpawnableAsset(spawnableName);
+            auto result = m_spawnableAssetContainer.GetAssetContainer().RemoveInMemorySpawnableAsset(spawnableName);
             if (result.IsSuccess())
             {
                 return AZ::Success();
@@ -135,17 +135,17 @@ namespace AzToolsFramework
 
         bool PrefabPublicRequestHandler::HasInMemorySpawnableAsset(AZStd::string_view spawnableName) const
         {
-            return m_spawnableAssetContainer.HasInMemorySpawnableAsset(spawnableName);
+            return m_spawnableAssetContainer.GetAssetContainerConst().HasInMemorySpawnableAsset(spawnableName);
         }
 
         AZ::Data::AssetId PrefabPublicRequestHandler::GetInMemorySpawnableAssetId(AZStd::string_view spawnableName) const
         {
-            return m_spawnableAssetContainer.GetInMemorySpawnableAssetId(spawnableName);
+            return m_spawnableAssetContainer.GetAssetContainerConst().GetInMemorySpawnableAssetId(spawnableName);
         }
 
         void PrefabPublicRequestHandler::RemoveAllInMemorySpawnableAssets()
         {
-            m_spawnableAssetContainer.ClearAllInMemorySpawnableAssets();
+            m_spawnableAssetContainer.GetAssetContainer().ClearAllInMemorySpawnableAssets();
         }
 
     } // namespace Prefab

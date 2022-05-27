@@ -6,37 +6,33 @@
  *
  */
 
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzFramework/Physics/Character.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <Editor/ObjectEditor.h>
-#include <Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
 
 namespace EMotionFX
 {
-    PhysicsSetupColliderTranslationManipulators::PhysicsSetupColliderTranslationManipulators()
+    ColliderTranslationManipulators::ColliderTranslationManipulators()
         : m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
-        m_adjustColliderCallback = AZStd::make_unique<DataChangedCallback>(this, false);
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
-    PhysicsSetupColliderTranslationManipulators::~PhysicsSetupColliderTranslationManipulators()
+    ColliderTranslationManipulators::~ColliderTranslationManipulators()
     {
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void ColliderTranslationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
-        if (!m_physicsSetupManipulatorData.m_valid || !m_physicsSetupManipulatorData.m_colliderNodeConfiguration ||
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
+        if (!m_physicsSetupManipulatorData.HasColliders())
         {
             return;
         }
@@ -103,47 +99,46 @@ namespace EMotionFX
             {
                 FinishEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
+
+        PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Refresh()
+    void ColliderTranslationManipulators::Refresh()
     {
-        if (!m_physicsSetupManipulatorData.m_valid || !m_physicsSetupManipulatorData.m_colliderNodeConfiguration ||
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
+        if (m_physicsSetupManipulatorData.HasColliders())
         {
-            return;
+            m_translationManipulators.SetLocalPosition(
+                m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position);
         }
-
-        m_translationManipulators.SetLocalPosition(
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position);
     }
 
-    void PhysicsSetupColliderTranslationManipulators::Teardown()
+    void ColliderTranslationManipulators::Teardown()
     {
+        PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         m_translationManipulators.Unregister();
     }
 
-    void PhysicsSetupColliderTranslationManipulators::ResetValues()
+    void ColliderTranslationManipulators::ResetValues()
     {
-        if (!m_physicsSetupManipulatorData.m_valid || !m_physicsSetupManipulatorData.m_colliderNodeConfiguration ||
-            m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
+        if (m_physicsSetupManipulatorData.HasColliders())
         {
-            return;
+            BeginEditing(
+                m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position, AZ::Vector3::CreateZero());
+            FinishEditing(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
+            Refresh();
         }
-        m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = AZ::Vector3::CreateZero();
-        m_translationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
     }
 
-    AZ::Vector3 PhysicsSetupColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const
+    AZ::Vector3 ColliderTranslationManipulators::GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const
     {
         const float scale = AZ::GetMax(AZ::MinTransformScale, m_physicsSetupManipulatorData.m_nodeWorldTransform.GetUniformScale());
         return startPosition + offset / scale;
     }
 
-    void PhysicsSetupColliderTranslationManipulators::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         AZ::Vector3 newPosition = GetPosition(startPosition, offset);
-        if (m_physicsSetupManipulatorData.m_valid && m_physicsSetupManipulatorData.m_colliderNodeConfiguration &&
-            !m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes.empty())
+        if (m_physicsSetupManipulatorData.HasColliders())
         {
             m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position = newPosition;
         }
@@ -151,7 +146,7 @@ namespace EMotionFX
         m_physicsSetupManipulatorData.m_collidersWidget->Update();
     }
 
-    void PhysicsSetupColliderTranslationManipulators::BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         if (!m_commandGroup.IsEmpty())
         {
@@ -168,7 +163,7 @@ namespace EMotionFX
         command->SetOldPosition(GetPosition(startPosition, offset));
     }
 
-    void PhysicsSetupColliderTranslationManipulators::FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         if (m_commandGroup.IsEmpty())
         {
@@ -184,17 +179,8 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    bool PhysicsSetupColliderTranslationManipulators::DataChangedCallback::Execute(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    void ColliderTranslationManipulators::OnUnderlyingPropertiesChanged()
     {
-        m_manipulators->Refresh();
-        return true;
-    }
-
-    bool PhysicsSetupColliderTranslationManipulators::DataChangedCallback::Undo(
-        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
-    {
-        m_manipulators->Refresh();
-        return true;
+        Refresh();
     }
 } // namespace EMotionFX

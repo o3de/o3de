@@ -173,6 +173,18 @@ namespace ScriptCanvas
         return m_versionData;
     }
 
+    bool Graph::HasDeprecatedNode() const
+    {
+        for (auto& nodeRef : m_graphData.m_nodes)
+        {
+            if (auto node = FindNode(nodeRef->GetId()); node->IsDeprecated())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void Graph::Activate()
     {
         m_variableRequests = nullptr;

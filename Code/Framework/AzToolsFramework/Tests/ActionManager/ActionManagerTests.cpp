@@ -27,14 +27,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RegisterActionToUnregisteredContext)
     {
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
-
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -42,13 +35,7 @@ namespace UnitTest
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_TRUE(outcome.IsSuccess());
     }
@@ -56,22 +43,8 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, RegisterActionTwice)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
-
-        auto outcome = m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_FALSE(outcome.IsSuccess());
     }
@@ -85,13 +58,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, GetAction)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction(
-            "o3de.context.test", "o3de.action.test", {},
-            []()
-            {
-                ;
-            }
-        );
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
         EXPECT_TRUE(action != nullptr);

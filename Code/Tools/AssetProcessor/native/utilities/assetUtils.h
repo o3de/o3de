@@ -85,11 +85,17 @@ namespace AssetUtilities
     //! Checks to see if the asset processor is running in server mode
     bool InServerMode();
 
+    //! Clears the server flag
+    void ResetServerMode();
+
     //! Checks the args for the server parameter, returns true if found otherwise false.
     bool CheckServerMode();
 
     //! Reads the server address from the config file.
     QString ServerAddress();
+
+    //! Clears the string holding the server address for the Cache Server mode
+    void ResetServerAddress();
 
     bool ShouldUseFileHashing();
 

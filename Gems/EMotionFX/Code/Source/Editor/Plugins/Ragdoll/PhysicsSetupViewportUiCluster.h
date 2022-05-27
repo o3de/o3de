@@ -29,11 +29,14 @@ namespace EMotionFX
         enum class SubMode : AZ::u32
         {
             ColliderTranslation,
+            ColliderRotation,
+            ColliderDimensions,
             NumModes
         };
 
     private:
         void SetCurrentMode(SubMode mode);
+        AZ::s32 GetViewportId() const;
 
         AzToolsFramework::ViewportUi::ClusterId m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
         AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds;
@@ -41,5 +44,7 @@ namespace EMotionFX
         SubMode m_subMode = SubMode::ColliderTranslation;
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
+        mutable AZStd::optional<AZ::s32> m_viewportId;
+        bool m_hasCapsuleCollider = false;
     };
 } // namespace EMotionFX

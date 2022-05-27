@@ -400,7 +400,14 @@ namespace AZ
         {
             if (srg)
             {
-                m_shaderResourceGroupsToBind.push_back(srg);
+                if (!m_shaderResourceGroupsToBind.full())
+                {
+                    m_shaderResourceGroupsToBind.push_back(srg);
+                }
+                else
+                {
+                    AZ_Error("Pass System", false, "Attempting to bind an srg to a RenderPass, but there is no more room.")
+                }
             }
         }
 

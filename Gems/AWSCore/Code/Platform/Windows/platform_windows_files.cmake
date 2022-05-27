@@ -10,4 +10,5 @@ set(FILES
     AWSCore_Traits_Platform.h
     AWSCore_Traits_Windows.h
     ../Common/GetCertsPath_Null.cpp
+    ../Common/GetJsonSchemaPath_Common.cpp
 )

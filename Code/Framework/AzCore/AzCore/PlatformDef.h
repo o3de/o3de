@@ -209,6 +209,10 @@
 #   define AZ_PROFILE_BUILD
 #endif
 
+#if !defined(AZ_RELEASE_BUILD) && defined(_RELEASE)
+#   define AZ_RELEASE_BUILD
+#endif
+
 // note that many include ONLY PlatformDef.h and not base.h, so flags such as below need to be here.
 // AZ_ENABLE_DEBUG_TOOLS - turns on and off interaction with the debugger.
 // Things like being able to check whether the current process is being debugged, to issue a "debug break" command, etc.

@@ -123,17 +123,17 @@ namespace AZ
         m_logEvent.Signal(level, buffer.c_str(), file, function, line);
         buffer += '\n';
 
+        // use %s to avoid potential format security issues
         switch (level)
         {
         case LogLevel::Warn:
-            AZ_Warning("Logger", true, buffer.c_str());
+            AZ_Warning(Debug::Trace::GetDefaultSystemWindow(), false, "%s", buffer.c_str());
             break;
         case LogLevel::Error:
-            AZ_Error("Logger", true, buffer.c_str());
+            AZ_Error(Debug::Trace::GetDefaultSystemWindow(), false, "%s", buffer.c_str());
             break;
         default:
-            // Catch all else with trace
-            AZ::Debug::Trace::Output("Logger", buffer.c_str());
+            AZ::Debug::Trace::Printf(Debug::Trace::GetDefaultSystemWindow(), "%s", buffer.c_str());
             break;
         }
     }

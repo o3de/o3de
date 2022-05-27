@@ -36,6 +36,9 @@
 /SerializeContextAnalysis.bat @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Tools/SerializeContextAnalyzer/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
+# SIG-Core (Approval of internal version incrementation)
+/engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+
 # SIG-Content general ownership area
 /Code/Framework/AzToolsFramework/ @o3de/sig-content-maintainers
 /Code/Tools/ @o3de/sig-content-maintainers

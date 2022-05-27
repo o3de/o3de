@@ -75,6 +75,7 @@ namespace AZ::DocumentPropertyEditor
                 CVarFixedString buffer;
                 functor->GetValue(buffer);
                 builder.BeginPropertyEditor<Nodes::LineEdit>(Dom::Value(buffer, true));
+                builder.Attribute(Nodes::PropertyEditor::ValueType, AZ::Dom::Utils::TypeIdToDomValue(azrtti_typeid<AZStd::string>()));
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
@@ -94,20 +95,17 @@ namespace AZ::DocumentPropertyEditor
             {
                 VectorType container;
                 functor->GetValue(container);
-                Dom::Value contents(Dom::Type::Array);
-                for (int i = 0; i < ElementCount; ++i)
-                {
-                    contents.ArrayPushBack(Dom::Value(container.GetElement(i)));
-                }
+                Dom::Value contents = Dom::Utils::ValueFromType(container);
                 builder.BeginPropertyEditor<NodeType>(AZStd::move(contents));
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
+                        VectorType newContainer = Dom::Utils::ValueToType<VectorType>(value).value_or(VectorType());
                         // ConsoleCommandContainer holds string_views, so ensure we allocate our parameters here
                         AZStd::fixed_vector<CVarFixedString, ElementCount> newValue;
                         for (int i = 0; i < ElementCount; ++i)
                         {
-                            newValue.push_back(ConsoleTypeHelpers::ValueToString(value[i].GetDouble()));
+                            newValue.push_back(ConsoleTypeHelpers::ValueToString(newContainer.GetElement(i)));
                         }
                         (*functor)(ConsoleCommandContainer(newValue));
                         m_adapter->OnContentsChanged(path, value);

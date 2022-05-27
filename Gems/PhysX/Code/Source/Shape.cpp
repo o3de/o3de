@@ -418,7 +418,8 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds)
+    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+        const AZ::Aabb* optionalBounds) const
     {
         if (!m_pxShape)
         {

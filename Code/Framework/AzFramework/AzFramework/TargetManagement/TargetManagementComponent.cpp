@@ -299,6 +299,7 @@ namespace AzFramework
         if (target_autoconnect && !m_isTargetHost && !m_targetJoinThread->IsRunning() &&
             m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
         {
+            m_targetJoinThread->Join();
             m_targetJoinThread->Start();
         }
 #endif
@@ -761,7 +762,6 @@ namespace AzFramework
         if (networkInterface && networkInterface->GetConnectionSet().GetActiveConnectionCount() > 0)
         {
             Stop();
-            Join();
         }
     }
 }   // namespace AzFramework

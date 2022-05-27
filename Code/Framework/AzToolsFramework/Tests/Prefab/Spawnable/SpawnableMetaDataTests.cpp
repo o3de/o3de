@@ -30,11 +30,11 @@ namespace UnitTest
             {
                 return true;
             }
-            else if constexpr(AZStd::is_same_v<SetType, uint64_t>)
+            else if constexpr(AZStd::is_same_v<SetType, AZ::u64>)
             {
                 return 42;
             }
-            else if constexpr(AZStd::is_same_v<SetType, int64_t>)
+            else if constexpr(AZStd::is_same_v<SetType, AZ::s64>)
             {
                 return -42;
             }
@@ -54,11 +54,11 @@ namespace UnitTest
             {
                 return AzFramework::SpawnableMetaData::ValueType::Boolean;
             }
-            else if constexpr (AZStd::is_same_v<SetType, uint64_t>)
+            else if constexpr (AZStd::is_same_v<SetType, AZ::u64>)
             {
                 return AzFramework::SpawnableMetaData::ValueType::UnsignedInteger;
             }
-            else if constexpr (AZStd::is_same_v<SetType, int64_t>)
+            else if constexpr (AZStd::is_same_v<SetType, AZ::s64>)
             {
                 return AzFramework::SpawnableMetaData::ValueType::SignedInteger;
             }
@@ -139,8 +139,8 @@ namespace UnitTest
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
         builder.AppendArray("RandomKey", true);
-        builder.AppendArray("RandomKey", uint64_t{ 42 });
-        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", AZ::u64{ 42 });
+        builder.AppendArray("RandomKey", AZ::s64{ -42 });
         builder.AppendArray("RandomKey", 42.0);
         builder.AppendArray("RandomKey", "Hello");
         ASSERT_EQ(6, builder.GetEntryCount()); // 5 entries plus the entry that holds the array size.
@@ -241,18 +241,18 @@ namespace UnitTest
         AppendArray_ReplaceExistingValue_ArraySizeReplacesOriginalEntry,
         Get_WrongType_ReturnsFalse);
 
-    using SpawnableMetaDataTestTypes = ::testing::Types<bool, uint64_t, int64_t, double, AZStd::string>;
+    using SpawnableMetaDataTestTypes = ::testing::Types<bool, AZ::u64, AZ::s64, double, AZStd::string>;
     INSTANTIATE_TYPED_TEST_CASE_P(SpawnableMetaDataTests, TypedSpawnableMetaDataTests, SpawnableMetaDataTestTypes);
 
 
     TEST_F(SpawnableMetaDataTests, Get_UnknownKey_ReturnsFalse)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        builder.Add("RandomKey", uint64_t{ 42 });
+        builder.Add("RandomKey", AZ::u64{ 42 });
 
         AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
 
-        uint64_t stored{};
+        AZ::u64 stored{};
         EXPECT_FALSE(metaData.Get("UnknownKey", stored));
     }
 
@@ -260,8 +260,8 @@ namespace UnitTest
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
         builder.AppendArray("RandomKey", true);
-        builder.AppendArray("RandomKey", uint64_t{ 42 });
-        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", AZ::u64{ 42 });
+        builder.AppendArray("RandomKey", AZ::s64{ -42 });
         builder.AppendArray("RandomKey", 42.0);
         builder.AppendArray("RandomKey", "Hello");
 
@@ -275,7 +275,7 @@ namespace UnitTest
     TEST_F(SpawnableMetaDataTests, Get_ArrayElementsAtVariousIndices_ReturnsValues)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        for (uint64_t i = 42; i < 88; ++i)
+        for (AZ::u64 i = 42; i < 88; ++i)
         {
             builder.AppendArray("RandomKey", i);
         }
@@ -284,7 +284,7 @@ namespace UnitTest
 
         for (size_t i = 0; i < 88 - 42; ++i)
         {
-            uint64_t stored;
+            AZ::u64 stored;
             EXPECT_TRUE(metaData.Get("RandomKey", i, stored));
             EXPECT_EQ(42 + i, stored);
         }
@@ -294,14 +294,14 @@ namespace UnitTest
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
         builder.AppendArray("RandomKey", true);
-        builder.AppendArray("RandomKey", uint64_t{ 42 });
-        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", AZ::u64{ 42 });
+        builder.AppendArray("RandomKey", AZ::s64{ -42 });
         builder.AppendArray("RandomKey", 42.0);
         builder.AppendArray("RandomKey", "Hello");
 
         AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
 
-        uint64_t stored{};
+        AZ::u64 stored{};
         EXPECT_FALSE(metaData.Get("RandomKey", 5, stored));
     }
 
@@ -309,8 +309,8 @@ namespace UnitTest
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
         builder.AppendArray("RandomKey", true);
-        builder.AppendArray("RandomKey", uint64_t{ 42 });
-        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", AZ::u64{ 42 });
+        builder.AppendArray("RandomKey", AZ::s64{ -42 });
         builder.AppendArray("RandomKey", 42.0);
         builder.AppendArray("RandomKey", "Hello");
 
@@ -329,8 +329,8 @@ namespace UnitTest
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
         builder.AppendArray("RandomKey", true);
-        builder.AppendArray("RandomKey", uint64_t{ 42 });
-        builder.AppendArray("RandomKey", int64_t{ -42 });
+        builder.AppendArray("RandomKey", AZ::u64{ 42 });
+        builder.AppendArray("RandomKey", AZ::s64{ -42 });
         builder.AppendArray("RandomKey", 42.0);
         builder.AppendArray("RandomKey", "Hello");
 
@@ -342,13 +342,13 @@ namespace UnitTest
     TEST_F(SpawnableMetaDataTests, Remove_RemoveExistingEntry_EntryNotFound)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        builder.Add("RandomKey", uint64_t{ 42 });
+        builder.Add("RandomKey", AZ::u64{ 42 });
 
         ASSERT_TRUE(builder.Remove("RandomKey"));
 
         AzFramework::SpawnableMetaData metaData(builder.BuildMetaData());
 
-        uint64_t stored{};
+        AZ::u64 stored{};
         EXPECT_FALSE(metaData.Get("RandomKey", stored));
     }
 
@@ -361,12 +361,12 @@ namespace UnitTest
     TEST_F(SpawnableMetaDataTests, Remove_RemoveArray_AllArrayEntriesAreRemovedAsWell)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        builder.AppendArray("RandomKey", uint64_t{ 10 });
-        builder.AppendArray("RandomKey", uint64_t{ 11 });
-        builder.AppendArray("RandomKey", uint64_t{ 12 });
-        builder.AppendArray("RandomKey", uint64_t{ 13 });
-        builder.AppendArray("RandomKey", uint64_t{ 14 });
-        builder.AppendArray("RandomKey", uint64_t{ 15 });
+        builder.AppendArray("RandomKey", AZ::u64{ 10 });
+        builder.AppendArray("RandomKey", AZ::u64{ 11 });
+        builder.AppendArray("RandomKey", AZ::u64{ 12 });
+        builder.AppendArray("RandomKey", AZ::u64{ 13 });
+        builder.AppendArray("RandomKey", AZ::u64{ 14 });
+        builder.AppendArray("RandomKey", AZ::u64{ 15 });
 
         EXPECT_TRUE(builder.Remove("RandomKey"));
 
@@ -376,12 +376,12 @@ namespace UnitTest
     TEST_F(SpawnableMetaDataTests, RemoveArrayEntry_RemoveExistingEntry_EntryNotFound)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        builder.AppendArray("RandomKey", uint64_t{ 10 });
-        builder.AppendArray("RandomKey", uint64_t{ 11 });
-        builder.AppendArray("RandomKey", uint64_t{ 12 });
-        builder.AppendArray("RandomKey", uint64_t{ 13 });
-        builder.AppendArray("RandomKey", uint64_t{ 14 });
-        builder.AppendArray("RandomKey", uint64_t{ 15 });
+        builder.AppendArray("RandomKey", AZ::u64{ 10 });
+        builder.AppendArray("RandomKey", AZ::u64{ 11 });
+        builder.AppendArray("RandomKey", AZ::u64{ 12 });
+        builder.AppendArray("RandomKey", AZ::u64{ 13 });
+        builder.AppendArray("RandomKey", AZ::u64{ 14 });
+        builder.AppendArray("RandomKey", AZ::u64{ 15 });
 
         ASSERT_TRUE(builder.RemoveArrayEntry("RandomKey", 3));
 
@@ -391,7 +391,7 @@ namespace UnitTest
         EXPECT_TRUE(metaData.Get("RandomKey", stored));
         EXPECT_EQ(stored, AzFramework::SpawnableMetaDataArraySize{ 5 });
 
-        uint64_t storedValue;
+        AZ::u64 storedValue;
         EXPECT_TRUE(metaData.Get("RandomKey", 0, storedValue));
         EXPECT_EQ(10, storedValue);
 
@@ -419,12 +419,12 @@ namespace UnitTest
     TEST_F(SpawnableMetaDataTests, RemoveArrayEntry_RemoveNonExistingEntry_ReturnFalse)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::SpawnableMetaDataBuilder builder;
-        builder.AppendArray("RandomKey", uint64_t{ 0 });
-        builder.AppendArray("RandomKey", uint64_t{ 1 });
-        builder.AppendArray("RandomKey", uint64_t{ 2 });
-        builder.AppendArray("RandomKey", uint64_t{ 3 });
-        builder.AppendArray("RandomKey", uint64_t{ 4 });
-        builder.AppendArray("RandomKey", uint64_t{ 5 });
+        builder.AppendArray("RandomKey", AZ::u64{ 0 });
+        builder.AppendArray("RandomKey", AZ::u64{ 1 });
+        builder.AppendArray("RandomKey", AZ::u64{ 2 });
+        builder.AppendArray("RandomKey", AZ::u64{ 3 });
+        builder.AppendArray("RandomKey", AZ::u64{ 4 });
+        builder.AppendArray("RandomKey", AZ::u64{ 5 });
 
         ASSERT_FALSE(builder.RemoveArrayEntry("RandomKey", 42));
     }

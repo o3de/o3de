@@ -883,7 +883,7 @@ namespace ImGui
                 (float)t->GetBasisY().GetX(), (float)t->GetBasisY().GetY(), (float)t->GetBasisY().GetZ(),
                 (float)t->GetBasisZ().GetX(), (float)t->GetBasisZ().GetY(), (float)t->GetBasisZ().GetZ());
         }
-        else if (classElement->m_typeId == AZ::GetAssetClassId())
+        else if (const auto* genericInfo = classElement->m_genericClassInfo; genericInfo && genericInfo->GetGenericTypeId() == AZ::GetAssetClassId())
         {
             const AZ::Data::Asset<AZ::Data::AssetData> *a = reinterpret_cast<const AZ::Data::Asset<AZ::Data::AssetData> *>(instance);
             value = AZStd::string::format("\"%s\"", a->GetHint().c_str());

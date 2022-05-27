@@ -23,6 +23,11 @@
 
 namespace AWSCore
 {
+    namespace Platform
+    {
+        AZ::IO::Path GetJsonSchemaPath();
+    }
+
     AWSResourceMappingManager::AWSResourceMappingManager()
         : m_status(Status::NotLoaded)
         , m_defaultAccountId("")
@@ -246,7 +251,8 @@ namespace AWSCore
     bool AWSResourceMappingManager::ValidateJsonDocumentAgainstSchema(const rapidjson::Document& jsonDocument)
     {
         AZ::IO::Path executablePath = AZ::IO::PathView(AZ::Utils::GetExecutableDirectory());
-        AZ::IO::Path jsonSchemaPath = (executablePath / ResourceMapppingJsonSchemaFilePath).LexicallyNormal();
+        AZ::IO::Path jsonSchemaPath = Platform::GetJsonSchemaPath();
+
         AZ::Outcome<rapidjson::Document, AZStd::string> readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(jsonSchemaPath.c_str());
         if (!readJsonOutcome.IsSuccess() || readJsonOutcome.TakeValue().ObjectEmpty())
         {

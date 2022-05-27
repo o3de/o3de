@@ -1,0 +1,162 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Lua_SimpleSpawnDespawn_Spawner",
+        "Components": {
+            "Component_[101971684203442204]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 101971684203442204
+            },
+            "Component_[12922745642915712283]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 12922745642915712283,
+                "Parent Entity": ""
+            },
+            "Component_[16345326769928943995]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 16345326769928943995
+            },
+            "Component_[2344485830221936119]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 2344485830221936119
+            },
+            "Component_[3344368702486873329]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 3344368702486873329
+            },
+            "Component_[3913128949837984902]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 3913128949837984902
+            },
+            "Component_[4583493846914649652]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 4583493846914649652
+            },
+            "Component_[4641319214343782992]": {
+                "$type": "EditorLockComponent",
+                "Id": 4641319214343782992
+            },
+            "Component_[5549265071976933213]": {
+                "$type": "SelectionComponent",
+                "Id": 5549265071976933213
+            },
+            "Component_[5847678098277715364]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 5847678098277715364,
+                "Child Entity Order": [
+                    "Entity_[752354852204]"
+                ]
+            },
+            "Component_[7908847283243541161]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 7908847283243541161
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[752354852204]": {
+            "Id": "Entity_[752354852204]",
+            "Name": "Lua_Spawner",
+            "Components": {
+                "Component_[11655185132563720260]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 11655185132563720260,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[12865446394759429620]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 12865446394759429620
+                },
+                "Component_[13603919805521551167]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 13603919805521551167
+                },
+                "Component_[14414720628042235592]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 14414720628042235592,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 11655185132563720260
+                        },
+                        {
+                            "ComponentId": 9054818613117161112,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[15920935307012658771]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 15920935307012658771
+                },
+                "Component_[17048991802945352690]": {
+                    "$type": "SelectionComponent",
+                    "Id": 17048991802945352690
+                },
+                "Component_[17154783317073087819]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 17154783317073087819
+                },
+                "Component_[17887168153356299366]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 17887168153356299366
+                },
+                "Component_[2823403831583401591]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 2823403831583401591
+                },
+                "Component_[9054818613117161112]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 9054818613117161112,
+                    "ScriptComponent": {
+                        "Properties": {
+                            "Properties": [
+                                {
+                                    "$type": "AzFramework::ScriptPropertyNumber",
+                                    "id": 2316173759,
+                                    "name": "DespawnTime",
+                                    "value": 3.0
+                                },
+                                {
+                                    "$type": "AzFramework::ScriptPropertyGenericClass",
+                                    "id": 2785736188,
+                                    "name": "Prefab",
+                                    "value": {
+                                        "$type": "AzFramework::Scripts::SpawnableScriptAssetRef",
+                                        "value": {
+                                            "asset": {
+                                                "assetId": {
+                                                    "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
+                                                    "subId": 3875079122
+                                                },
+                                                "loadBehavior": "QueueLoad",
+                                                "assetHint": "assets/prefabs/pinkflower.spawnable"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "Script": {
+                            "assetId": {
+                                "guid": "{41C503C2-5971-5FEC-BEC1-3BC3236264ED}",
+                                "subId": 1
+                            },
+                            "assetHint": "luascripts/spawnables/simplespawndespawn.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{41C503C2-5971-5FEC-BEC1-3BC3236264ED}",
+                            "subId": 1
+                        },
+                        "assetHint": "luascripts/spawnables/simplespawndespawn.luac"
+                    }
+                },
+                "Component_[9369202450081046490]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 9369202450081046490
+                }
+            }
+        }
+    }
+}

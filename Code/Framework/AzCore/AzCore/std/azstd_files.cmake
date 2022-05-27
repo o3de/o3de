@@ -241,6 +241,7 @@ set(FILES
     typetraits/void_t.h
     typetraits/internal/type_sequence_traits.h
     typetraits/internal/is_template_copy_constructible.h
+    utility/as_const.h
     utility/declval.h
     utility/move.h
 )

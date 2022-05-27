@@ -222,12 +222,22 @@ namespace AtomToolsFramework
         switch (event->type()) 
         {
             case QEvent::Resize:
-            case QEvent::ShowToParent: //This event exists to capture the case where a resize event is missed "after" the underlying surface is modified by Qt (Seen during level load in Editor)
+
+            // This event exists to capture the case where a resize event is missed "after" the underlying surface is 
+            // modified by Qt (Seen during level load in Editor)
+            case QEvent::ShowToParent:  
+
+            // Qt is sending this event as the final events after a viewport change. The resize signal is sent multiple
+            // times per viewport (one for ShowToParent, one for Resize). The final resize will correctly set the
+            // swapchain dimensions, but there is an issue on vulkan where even though the swap chain is created and
+            // updated after the last resize, it does not refresh to the viewport widget. We need to also invoke a resize
+            // after the UpdateLater event to force this.
+            case QEvent::UpdateLater:   
             {
                 SendWindowResizeEvent();
                 break;
             }
-           case QEvent::PlatformSurface:
+            case QEvent::PlatformSurface:
             {
                 //Surface is about to be destroyed by QT. Lets close the window
                 QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);

@@ -34,7 +34,7 @@ namespace AzFramework
         static inline constexpr uint64_t ArrayKeyRoot = 146223222818353; // Random prime number
 
         using TableKey = AZ::HashValue64;
-        using TableValue = AZStd::variant<bool, uint64_t, int64_t, double, AZStd::string, SpawnableMetaDataArraySize>;
+        using TableValue = AZStd::variant<bool, AZ::u64, AZ::s64, double, AZStd::string, SpawnableMetaDataArraySize>;
         using TableEntry = AZStd::pair<TableKey, TableValue>;
         using Table = AZStd::vector<TableEntry>;
 
@@ -56,21 +56,21 @@ namespace AzFramework
         explicit SpawnableMetaData(Table table);
 
         bool Get(AZStd::string_view key, bool& value) const;
-        bool Get(AZStd::string_view key, uint64_t& value) const;
-        bool Get(AZStd::string_view key, int64_t& value) const;
+        bool Get(AZStd::string_view key, AZ::u64& value) const;
+        bool Get(AZStd::string_view key, AZ::s64& value) const;
         bool Get(AZStd::string_view key, double& value) const;
         bool Get(AZStd::string_view key, AZStd::string_view& value) const;
         bool Get(AZStd::string_view key, SpawnableMetaDataArraySize& value) const;
 
         bool Get(AZStd::string_view arrayKey, uint64_t index, bool& value) const;
-        bool Get(AZStd::string_view arrayKey, uint64_t index, uint64_t& value) const;
-        bool Get(AZStd::string_view arrayKey, uint64_t index, int64_t& value) const;
+        bool Get(AZStd::string_view arrayKey, uint64_t index, AZ::u64& value) const;
+        bool Get(AZStd::string_view arrayKey, uint64_t index, AZ::s64& value) const;
         bool Get(AZStd::string_view arrayKey, uint64_t index, double& value) const;
         bool Get(AZStd::string_view arrayKey, uint64_t index, AZStd::string_view& value) const;
 
         bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, bool& value) const;
-        bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, uint64_t& value) const;
-        bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, int64_t& value) const;
+        bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::u64& value) const;
+        bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::s64& value) const;
         bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, double& value) const;
         bool Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZStd::string_view& value) const;
 

@@ -19,7 +19,6 @@
 #include <QTableWidget>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
-#include "../../../../EMStudioSDK/Source/SaveChangedFilesManager.h"
 #include "../../../../EMStudioSDK/Source/FileManager.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
@@ -28,97 +27,13 @@
 #include <EMotionFX/Source/MotionSet.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../MotionWindow/MotionListWindow.h"
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 namespace EMStudio
 {
-    class SaveDirtyMotionSetFilesCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyMotionSetFilesCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS)
-
-    public:
-        SaveDirtyMotionSetFilesCallback(MotionSetsWindowPlugin* plugin)
-            : SaveDirtyFilesCallback()  { m_plugin = plugin; }
-        ~SaveDirtyMotionSetFilesCallback()                                                      {}
-
-        enum
-        {
-            TYPE_ID = 0x00000002
-        };
-        uint32 GetType() const override                                         { return TYPE_ID; }
-        uint32 GetPriority() const override                                     { return 2; }
-        bool GetIsPostProcessed() const override                                { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (size_t i = 0; i < numMotionSets; ++i)
-            {
-                EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
-
-                if (motionSet->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
-
-                // only save root motion sets
-                if (motionSet->GetParentSet())
-                {
-                    continue;
-                }
-
-                // return in case we found a dirty file
-                if (motionSet->GetDirtyFlag())
-                {
-                    // add the filename to the dirty filenames array
-                    outFileNames->push_back(motionSet->GetFilename());
-
-                    // add the link to the actual object
-                    ObjectPointer objPointer;
-                    objPointer.m_motionSet = motionSet;
-                    outObjects->push_back(objPointer);
-                }
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.m_motionSet == nullptr)
-                {
-                    continue;
-                }
-
-                EMotionFX::MotionSet* motionSet = objPointer.m_motionSet;
-                if (m_plugin->SaveDirtyMotionSet(motionSet, commandGroup, false) == DirtyFileManager::CANCELED)
-                {
-                    return DirtyFileManager::CANCELED;
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "motionset"; }
-        const char* GetFileType() const override        { return "motion set"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMotionFX::MotionSet>();
-        }
-
-    private:
-        MotionSetsWindowPlugin* m_plugin;
-    };
-
     MotionSetsWindowPlugin::MotionSetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
@@ -126,7 +41,6 @@ namespace EMStudio
         m_selectedSet                    = nullptr;
         m_motionSetManagementWindow      = nullptr;
         m_motionSetWindow                = nullptr;
-        m_dirtyFilesCallback             = nullptr;
     }
 
     MotionSetsWindowPlugin::~MotionSetsWindowPlugin()
@@ -136,9 +50,6 @@ namespace EMStudio
             GetCommandManager()->RemoveCommandCallback(callback, false);
             delete callback;
         }
-
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
-        delete m_dirtyFilesCallback;
     }
 
     // init after the parent dock window has been created
@@ -180,10 +91,6 @@ namespace EMStudio
         ReInit();
         SetSelectedSet(nullptr);
 
-        // initialize the dirty files callback
-        m_dirtyFilesCallback = new SaveDirtyMotionSetFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
-
         return true;
     }
 
@@ -211,90 +118,6 @@ namespace EMStudio
         m_motionSetManagementWindow->ReInit();
         m_motionSetWindow->ReInit();
     }
-
-
-    int MotionSetsWindowPlugin::SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton)
-    {
-        // only save root motion sets
-        if (motionSet->GetParentSet())
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        // only process changed files
-        if (motionSet->GetDirtyFlag() == false)
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        if (askBeforeSaving)
-        {
-            EMStudio::GetApp()->setOverrideCursor(QCursor(Qt::ArrowCursor));
-
-            QMessageBox msgBox(GetMainWindow());
-            AZStd::string text;
-            const AZStd::string& filename = motionSet->GetFilenameString();
-            AZStd::string extension;
-            AzFramework::StringFunc::Path::GetExtension(filename.c_str(), extension, false /* include dot */);
-
-            if (!filename.empty() && !extension.empty())
-            {
-                text = AZStd::string::format("Save changes to '%s'?", motionSet->GetFilename());
-            }
-            else if (!motionSet->GetNameString().empty())
-            {
-                text = AZStd::string::format("Save changes to the motion set named '%s'?", motionSet->GetName());
-            }
-            else
-            {
-                text = "Save changes to untitled motion set?";
-            }
-
-            msgBox.setText(text.c_str());
-            msgBox.setWindowTitle("Save Changes");
-
-            if (showCancelButton)
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            }
-            else
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
-            }
-
-            msgBox.setDefaultButton(QMessageBox::Save);
-            msgBox.setIcon(QMessageBox::Question);
-
-
-            int messageBoxResult = msgBox.exec();
-            switch (messageBoxResult)
-            {
-            case QMessageBox::Save:
-            {
-                GetMainWindow()->GetFileManager()->SaveMotionSet(GetManagementWindow(), motionSet, commandGroup);
-                break;
-            }
-            case QMessageBox::Discard:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::FINISHED;
-            }
-            case QMessageBox::Cancel:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::CANCELED;
-            }
-            }
-        }
-        else
-        {
-            // save without asking first
-            GetMainWindow()->GetFileManager()->SaveMotionSet(GetManagementWindow(), motionSet, commandGroup);
-        }
-
-        return DirtyFileManager::FINISHED;
-    }
-
 
     void MotionSetsWindowPlugin::SetSelectedSet(EMotionFX::MotionSet* motionSet)
     {
@@ -664,5 +487,3 @@ namespace EMStudio
         ReInitMotionSetsPlugin();
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/moc_MotionSetsWindowPlugin.cpp>

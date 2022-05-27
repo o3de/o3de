@@ -28,6 +28,12 @@ namespace AssetProcessor
         {
             return m_container;
         }
+
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override
+        {
+            return m_container;
+        }
+
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override
         {
             return m_excludeContainer;
@@ -36,69 +42,11 @@ namespace AssetProcessor
         RecognizerContainer m_container;
         ExcludeRecognizerContainer m_excludeContainer;
     };
-    class MockRCCompiler
-        : public AssetProcessor::RCCompiler
-    {
-    public:
-        MockRCCompiler()
-            : m_executeResultResult(0, false, "c:\temp")
-        {
-        }
-
-        bool Initialize() override
-        {
-            m_initialize++;
-            return m_initializeResult;
-        }
-        bool Execute([[maybe_unused]] const QString& inputFile, [[maybe_unused]] const QString& watchFolder, [[maybe_unused]] const QString& platformIdentifier, [[maybe_unused]] const QString& params, [[maybe_unused]] const QString& dest, 
-            [[maybe_unused]] const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const override
-        {
-            m_execute++;
-            result = m_executeResultResult;
-            return m_executeResult;
-        }
-        void RequestQuit() override
-        {
-            m_request_quit++;
-        }
-
-        void ResetCounters()
-        {
-            this->m_initialize = 0;
-            this->m_execute = 0;
-            this->m_request_quit = 0;
-        }
-
-        void SetResultInitialize(bool result)
-        {
-            m_initializeResult = result;
-        }
-
-        void SetResultExecute(bool result)
-        {
-            m_executeResult = result;
-        }
-
-        void SetResultResultExecute(Result result)
-        {
-            m_executeResultResult = result;
-        }
-
-        bool m_initializeResult = true;
-        bool m_executeResult = true;
-        Result m_executeResultResult;
-        mutable int m_initialize = 0;
-        mutable int m_execute = 0;
-        mutable int m_request_quit = 0;
-    };
-
-
 
     InternalMockBuilder::InternalMockBuilder(const QHash<QString, BuilderIdAndName>& inputBuilderNameByIdMap)
         : InternalRecognizerBasedBuilder(inputBuilderNameByIdMap,AZ::Uuid::CreateRandom())
         , m_createJobCallsCount(0)
     {
-        this->m_rcCompiler.reset(new MockRCCompiler());
     }
 
     InternalMockBuilder::~InternalMockBuilder()

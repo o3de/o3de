@@ -30,6 +30,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::unordered_map<AZ::Name, AZStd::list<HandlerData>> m_registeredHandlers;
+        AZStd::vector<PropertyHandlerId> m_defaultHandlers;
         // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
         AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
     };

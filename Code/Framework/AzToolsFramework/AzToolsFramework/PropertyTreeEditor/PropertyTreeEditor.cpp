@@ -196,9 +196,17 @@ namespace AzToolsFramework
         AZ_Warning("PropertyTreeEditor", !pteNode.m_newName, "GetProperty - This path [ %.*s ] is deprecated; property name has been changed to %s.", aznumeric_cast<int>(propertyPath.size()), propertyPath.data(), pteNode.m_newName.value().c_str());
 
         void* nodeData = nullptr;
-        AZ::TypeId type = pteNode.m_nodePtr->GetClassMetadata()->m_typeId;
+        const AZ::TypeId& underlyingTypeId = AZ::Internal::GetUnderlyingTypeId(*pteNode.m_nodePtr->GetClassMetadata()->m_azRtti);
+        AZ::TypeId typeId = pteNode.m_nodePtr->GetClassMetadata()->m_typeId;
 
-        if (!pteNode.m_nodePtr->ReadRaw(nodeData, type))
+        // If the type can be downcasted to its underlying type, we return the value in the latter.
+        // For example, this allows to get the value of enums defined with AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE.
+        if (!underlyingTypeId.IsNull() && m_serializeContext->CanDowncast(typeId, underlyingTypeId))
+        {
+            typeId = underlyingTypeId;
+        }
+
+        if (!pteNode.m_nodePtr->ReadRaw(nodeData, typeId))
         {
             AZ_Warning("PropertyTreeEditor", false, "GetProperty - path provided [ %.*s ] was found, but read operation failed.", aznumeric_cast<int>(propertyPath.size()), propertyPath.data());
             return {PropertyAccessOutcome::ErrorType("GetProperty - path provided was found, but read operation failed.")};
@@ -225,12 +233,10 @@ namespace AzToolsFramework
             AZ::Data::Asset<AZ::Data::AssetData>* instancePtr = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(nodeData);
             return {PropertyAccessOutcome::ValueType(instancePtr->GetId())};
         }
-        else
-        {
-            // Default case - just return the value wrapped into an any
-            AZStd::any typeInfoHelper = m_serializeContext->CreateAny(type);
-            return {PropertyAccessOutcome::ValueType(nodeData, typeInfoHelper.get_type_info())};
-        }
+
+        // Default case - just return the value wrapped into an any
+        AZStd::any typeInfoHelper = m_serializeContext->CreateAny(typeId);
+        return {PropertyAccessOutcome::ValueType(nodeData, typeInfoHelper.get_type_info())};
     }
 
     bool PropertyTreeEditor::SetSimpleAssetPath(const AZ::Data::AssetId& assetId, const PropertyTreeEditorNode& pteNode)

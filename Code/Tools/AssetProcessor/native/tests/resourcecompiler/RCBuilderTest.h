@@ -21,63 +21,6 @@ extern const BuilderIdAndName BUILDER_ID_COPY;
 extern const BuilderIdAndName BUILDER_ID_RC;
 extern const BuilderIdAndName BUILDER_ID_SKIP;
 
-class MockRCCompiler
-    : public AssetProcessor::RCCompiler
-{
-public:
-    MockRCCompiler()
-        : m_executeResultResult(0, false, "c:\temp")
-    {
-    }
-
-    bool Initialize() override
-    {
-        m_initialize++;
-        return m_initializeResult;
-    }
-    bool Execute([[maybe_unused]] const QString& inputFile, [[maybe_unused]] const QString& watchFolder, [[maybe_unused]] const QString& platformIdentifier, [[maybe_unused]] const QString& params, [[maybe_unused]] const QString& dest, 
-        [[maybe_unused]] const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const override
-    {
-        m_execute++;
-        result = m_executeResultResult;
-        return m_executeResult;
-    }
-    void RequestQuit() override
-    {
-        m_request_quit++;
-    }
-
-    void ResetCounters()
-    {
-        this->m_initialize = 0;
-        this->m_execute = 0;
-        this->m_request_quit = 0;
-    }
-
-    void SetResultInitialize(bool result)
-    {
-        m_initializeResult = result;
-    }
-
-    void SetResultExecute(bool result)
-    {
-        m_executeResult = result;
-    }
-
-    void SetResultResultExecute(Result result)
-    {
-        m_executeResultResult = result;
-    }
-
-    bool m_initializeResult = true;
-    bool m_executeResult = true;
-    Result m_executeResultResult;
-    mutable int m_initialize = 0;
-    mutable int m_execute = 0;
-    mutable int m_request_quit = 0;
-};
-
-
 struct MockRecognizerConfiguration
     : public RecognizerConfiguration
 {
@@ -87,6 +30,12 @@ struct MockRecognizerConfiguration
     {
         return m_recognizerContainer;
     }
+
+    const RecognizerContainer& GetAssetCacheRecognizerContainer() const override
+    {
+        return m_recognizerContainer;
+    }
+
     const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override
     {
         return m_excludeContainer;
@@ -99,15 +48,6 @@ struct MockRecognizerConfiguration
 struct TestInternalRecognizerBasedBuilder
     : public InternalRecognizerBasedBuilder
 {
-    TestInternalRecognizerBasedBuilder(RCCompiler* rcCompiler = nullptr)
-        : InternalRecognizerBasedBuilder()
-    {
-        if (rcCompiler != nullptr)
-        {
-            m_rcCompiler.reset(rcCompiler);
-        }
-    }
-
     bool FindRC([[maybe_unused]] QString& rcPathOut) override
     {
         return true;

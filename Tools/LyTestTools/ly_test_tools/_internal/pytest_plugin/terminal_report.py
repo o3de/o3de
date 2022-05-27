@@ -5,9 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import os
+import re
 
 import ly_test_tools._internal.pytest_plugin.failed_test_rerun_command as rerun
 
+UNKNOWN_TEST_RESULT = "Indeterminate test result interpreted as failure, possible cause:"
 
 def _add_commands(terminalreporter, header, test_path, nodeids, build_dir=None):
     """
@@ -66,6 +68,18 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that failed locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands): ",
                 test_path, nodeids, build_dir)
+
+            # Check for unknown test failures
+            have_printed_header = False
+            test_name_pattern = "::.*::([^\[]*)"
+            for report in failures:
+                for section in report.sections:
+                    if UNKNOWN_TEST_RESULT in str(section):
+                        if not have_printed_header:
+                            terminalreporter.write_line("\nThe following tests had an unknown result:\n")
+                            have_printed_header = True
+                        terminalreporter.write_line(re.search(test_name_pattern, report.nodeid).group(1))
+                        break
 
         if error_count:
             nodeids = [os.path.basename(report.nodeid) for report in errors]

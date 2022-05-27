@@ -2531,7 +2531,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = AzTypeInfo<T>::Uuid();
+        const AZ::TypeId& canonicalTypeId = azrtti_typeid<T>();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {

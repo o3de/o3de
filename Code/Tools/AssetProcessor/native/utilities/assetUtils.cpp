@@ -237,6 +237,7 @@ namespace AssetUtilities
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
+    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
@@ -551,37 +552,75 @@ namespace AssetUtilities
 
     bool InServerMode()
     {
-        static bool s_serverMode = CheckServerMode();
-        return s_serverMode;
+        if (s_serverMode.has_value())
+        {
+            return s_serverMode.value();
+        }
+        s_serverMode = AZStd::make_optional<bool>(CheckServerMode());
+        return s_serverMode.value();
+    }
+
+    void ResetServerMode()
+    {
+        if (s_serverMode.has_value())
+        {
+            s_serverMode.reset();
+        }
     }
 
     bool CheckServerMode()
     {
-        QStringList args = QCoreApplication::arguments();
-        for (const QString& arg : args)
+        bool inServerMode = false;
+        if (QCoreApplication::instance())
         {
-            if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
+            QStringList args = QCoreApplication::arguments();
+            for (const QString& arg : args)
             {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
+                if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
+                    inServerMode = true;
+                    break;
                 }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
-                break;
             }
         }
 
+        if (!inServerMode)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                bool enableAssetCacheServerMode = false;
+                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+                {
+                    inServerMode = enableAssetCacheServerMode;
+                }
+            }
+        }
+
+        if (inServerMode)
+        {
+            bool isServerAddressValid = false;
+            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
+            if (isServerAddressValid)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
+                return true;
+            }
+            else
+            {
+                AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
+            }
+        }
         return false;
     }
 
+    void ResetServerAddress()
+    {
+        s_assetServerAddress.clear();
+    }
 
     QString ServerAddress()
     {
@@ -617,10 +656,9 @@ namespace AssetUtilities
                 + "/Server/cacheServerAddress"))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+                s_assetServerAddress = address;
+                return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
             }
-            s_assetServerAddress = address;
-
-            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
         }
 
         return QString();

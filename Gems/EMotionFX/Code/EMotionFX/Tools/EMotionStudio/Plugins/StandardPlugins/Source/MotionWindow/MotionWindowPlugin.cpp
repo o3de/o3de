@@ -20,6 +20,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionPropertiesWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 #include <MCore/Source/LogManager.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QApplication>
@@ -34,87 +35,6 @@
 
 namespace EMStudio
 {
-    class SaveDirtyMotionFilesCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyMotionFilesCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS)
-
-    public:
-        SaveDirtyMotionFilesCallback(MotionWindowPlugin* plugin)
-            : SaveDirtyFilesCallback() { m_plugin = plugin; }
-        ~SaveDirtyMotionFilesCallback()                                                     {}
-
-        enum
-        {
-            TYPE_ID = 0x00000003
-        };
-        uint32 GetType() const override                                                     { return TYPE_ID; }
-        uint32 GetPriority() const override                                                 { return 3; }
-        bool GetIsPostProcessed() const override                                            { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            // get the number of motions and iterate through them
-            const size_t numMotions = EMotionFX::GetMotionManager().GetNumMotions();
-            for (size_t i = 0; i < numMotions; ++i)
-            {
-                EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
-
-                if (motion->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
-
-                // return in case we found a dirty file
-                if (motion->GetDirtyFlag())
-                {
-                    // add the filename to the dirty filenames array
-                    outFileNames->push_back(motion->GetFileName());
-
-                    // add the link to the actual object
-                    ObjectPointer objPointer;
-                    objPointer.m_motion = motion;
-                    outObjects->push_back(objPointer);
-                }
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.m_motion == nullptr)
-                {
-                    continue;
-                }
-
-                EMotionFX::Motion* motion = objPointer.m_motion;
-                if (m_plugin->SaveDirtyMotion(motion, commandGroup, false) == DirtyFileManager::CANCELED)
-                {
-                    return DirtyFileManager::CANCELED;
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "motion"; }
-        const char* GetFileType() const override        { return "motion"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMotionFX::Motion>();
-        }
-
-    private:
-        MotionWindowPlugin* m_plugin;
-    };
-
-
     AZStd::vector<EMotionFX::MotionInstance*> MotionWindowPlugin::s_internalMotionInstanceSelection;
 
 
@@ -123,7 +43,6 @@ namespace EMStudio
     {
         m_motionListWindow                   = nullptr;
         m_motionPropertiesWindow             = nullptr;
-        m_dirtyFilesCallback                 = nullptr;
         m_addMotionsAction                   = nullptr;
         m_saveAction                         = nullptr;
     }
@@ -141,9 +60,6 @@ namespace EMStudio
             GetCommandManager()->RemoveCommandCallback(callback, true);
         }
         m_callbacks.clear();
-
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
-        delete m_dirtyFilesCallback;
     }
 
     void MotionWindowPlugin::ClearMotionEntries()
@@ -201,10 +117,6 @@ namespace EMStudio
 
         // update the new interface and return success
         UpdateInterface();
-
-        // initialize the dirty files callback
-        m_dirtyFilesCallback = new SaveDirtyMotionFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         return true;
     }
@@ -287,9 +199,10 @@ namespace EMStudio
             AZ_Assert(motion, "Expected to find the motion, did the motion id change while saving one of the motions?");
 
             // in case we modified the motion ask if the user wants to save changes it before removing it
-            SaveDirtyMotion(motion, nullptr, true, false);
+            SaveDirtyMotionFilesCallback::SaveDirtyMotion(motion, /*commandGroup=*/nullptr, /*askBeforeSaving=*/true, /*showCancelButton=*/false);
             motionsToRemove.push_back(motion);
         }
+
 
         // Make sure we restore the array of motions to removed with valid pointers.
         // Because the motions get reloaded when saving (as the AP picks up changes), the pointers might also change.
@@ -624,79 +537,6 @@ namespace EMStudio
     int MotionWindowPlugin::OnSaveDirtyMotions()
     {
         return GetMainWindow()->GetDirtyFileManager()->SaveDirtyFiles(SaveDirtyMotionFilesCallback::TYPE_ID);
-    }
-
-
-    int MotionWindowPlugin::SaveDirtyMotion(EMotionFX::Motion* motion, [[maybe_unused]] MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton)
-    {
-        // only process changed files
-        if (motion->GetDirtyFlag() == false)
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        if (askBeforeSaving)
-        {
-            EMStudio::GetApp()->setOverrideCursor(QCursor(Qt::ArrowCursor));
-
-            QMessageBox msgBox(GetMainWindow());
-            AZStd::string text;
-
-            if (motion->GetFileNameString().empty() == false)
-            {
-                text = AZStd::string::format("Save changes to '%s'?", motion->GetFileName());
-            }
-            else if (motion->GetNameString().empty() == false)
-            {
-                text = AZStd::string::format("Save changes to the motion named '%s'?", motion->GetName());
-            }
-            else
-            {
-                text = "Save changes to untitled motion?";
-            }
-
-            msgBox.setText(text.c_str());
-            msgBox.setWindowTitle("Save Changes");
-
-            if (showCancelButton)
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            }
-            else
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
-            }
-
-            msgBox.setDefaultButton(QMessageBox::Save);
-            msgBox.setIcon(QMessageBox::Question);
-
-            int messageBoxResult = msgBox.exec();
-            switch (messageBoxResult)
-            {
-            case QMessageBox::Save:
-            {
-                GetMainWindow()->GetFileManager()->SaveMotion(motion->GetID());
-                break;
-            }
-            case QMessageBox::Discard:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::FINISHED;
-            }
-            case QMessageBox::Cancel:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::CANCELED;
-            }
-            }
-        }
-        else
-        {
-            // save without asking first
-            GetMainWindow()->GetFileManager()->SaveMotion(motion->GetID());
-        }
-
-        return DirtyFileManager::FINISHED;
     }
 
     //-----------------------------------------------------------------------------------------

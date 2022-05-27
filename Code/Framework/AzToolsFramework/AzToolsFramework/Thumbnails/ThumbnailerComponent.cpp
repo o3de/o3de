@@ -25,7 +25,13 @@ namespace AzToolsFramework
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
+            , m_currentJobsCount(0)
         {
+            // Increase the maximum number of QThreads to support the number of
+            // concurrent jobs needed here.
+            int currentMaxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
+            int newMaxThreadCount = AZStd::max<int>(currentMaxThreadCount, m_maxThumbnailJobs + 1);
+            QThreadPool::globalInstance()->setMaxThreadCount(newMaxThreadCount);
         }
 
         ThumbnailerComponent::~ThumbnailerComponent()
@@ -109,9 +115,17 @@ namespace AzToolsFramework
                         return thumbnail;
                     }
 
+                    // if we already have the maximum number of concurrent jobs running
+                    // return the loading thumbnail.
+                    if (m_currentJobsCount > m_maxThumbnailJobs)
+                    {
+                        return m_loadingThumbnail;
+                    }
+
                     // if thumbnail is not loaded, start loading it, meanwhile return loading thumbnail
                     if (thumbnail->GetState() == Thumbnail::State::Unloaded)
                     {
+                        ++m_currentJobsCount;
                         // listen to the loading signal, so the anyone using it will update loading animation
                         AzQtComponents::StyledBusyLabel* busyLabel = {};
                         AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
@@ -129,6 +143,7 @@ namespace AzToolsFramework
                                 connect(key.data(), &ThumbnailKey::UpdateThumbnailSignal, thumbnail.data(), &Thumbnail::Update);
 
                                 key->SetReady(true);
+                                m_currentJobsCount--;
                                 Q_EMIT key->ThumbnailUpdatedSignal();
                             });
 

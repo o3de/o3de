@@ -18,6 +18,18 @@ namespace EMStudio
     InspectorWindow::~InspectorWindow()
     {
         InspectorRequestBus::Handler::BusDisconnect();
+
+        if (m_scrollArea)
+        {
+            m_scrollArea->takeWidget();
+
+            delete m_contentWidget;
+            m_contentWidget = nullptr;
+
+            delete m_noSelectionWidget;
+            m_noSelectionWidget = nullptr;
+        }
+
     }
 
     bool InspectorWindow::Init()
@@ -96,11 +108,11 @@ namespace EMStudio
         if (m_scrollArea->widget() != widget)
         {
             // Get back ownership of the cached widgets to avoid recreating it each time.
-            if (QWidget* oldWidget = m_scrollArea->takeWidget())
+            if (m_scrollArea->widget())
             {
-                oldWidget->hide();
-                oldWidget->deleteLater();
+                m_scrollArea->widget()->hide();
             }
+            m_scrollArea->takeWidget();
 
             // Set the no selection widget and destroy the previous one.
             m_scrollArea->setWidget(widget);

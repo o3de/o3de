@@ -17,6 +17,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetManagementWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 #include <MCore/Source/FileSystem.h>
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/LogManager.h>
@@ -29,7 +30,6 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QToolBar>
-
 #include <QMessageBox>
 
 namespace EMStudio
@@ -724,24 +724,18 @@ namespace EMStudio
             QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes
         ) == QMessageBox::Yes;
 
-        // create our command group
         MCore::CommandGroup commandGroup("Remove motion sets");
-
-        // Create the failed remove motions array.
         AZStd::vector<EMotionFX::Motion*> failedRemoveMotions;
 
         // get the number of selected motion sets and iterate through them
         AZStd::set<AZ::u32> toBeRemoved;
         for (auto selectedItem = selectedItems.crbegin(); selectedItem != selectedItems.crend(); ++selectedItem)
         {
-            // get the motion set ID
             const uint32 motionSetID = (*selectedItem)->whatsThis(0).toInt();
-
-            // get the current motion set and only process the root sets
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(motionSetID);
 
             // in case we modified the motion set ask if the user wants to save changes it before removing it
-            m_plugin->SaveDirtyMotionSet(motionSet, nullptr, true, false);
+            SaveDirtyMotionSetFilesCallback::SaveDirtyMotionSet(motionSet, /*commandGroup=*/nullptr, /*askBeforeSaving=*/true, /*showCancelButton=*/false);
 
             // recursively increase motions reference count
             RecursiveIncreaseMotionsReferenceCount(motionSet);
@@ -756,7 +750,6 @@ namespace EMStudio
             }
         }
 
-        // Execute the group command.
         AZStd::string result;
         if (!GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
         {
@@ -770,7 +763,6 @@ namespace EMStudio
             removeMotionsFailedWindow.exec();
         }
     }
-
 
     void MotionSetManagementWindow::OnRenameSelectedMotionSet()
     {

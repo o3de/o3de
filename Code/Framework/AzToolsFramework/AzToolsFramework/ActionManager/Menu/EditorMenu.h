@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
 
 class QAction;
@@ -22,14 +23,34 @@ namespace AzToolsFramework
         EditorMenu();
         explicit EditorMenu(const AZStd::string& name);
 
-        void AddMenuItem(int sortKey, QAction* action);
+        void AddAction(int sortKey, QAction* action);
+        void AddSeparator(int sortKey);
+        void AddSubMenu(int sortKey, QMenu* submenu);
         QMenu* GetMenu();
 
     private:
         void RefreshMenu();
 
+        enum class MenuItemType
+        {
+            Action = 0,
+            Separator,
+            SubMenu
+        };
+
+        struct MenuItem
+        {
+            MenuItem();
+            MenuItem(QAction* action);
+            MenuItem(QMenu* menu);
+
+            MenuItemType m_type;
+
+            AZStd::variant<QAction*, QMenu*> m_value;
+        };
+
         QMenu* m_menu = nullptr;
-        AZStd::multimap<int, QAction*> m_menuItems;
+        AZStd::multimap<int, MenuItem> m_menuItems;
     };
 
 } // namespace AzToolsFramework

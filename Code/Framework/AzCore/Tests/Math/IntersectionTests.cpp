@@ -1092,6 +1092,19 @@ namespace UnitTest
         EXPECT_EQ(hit, 0);
     }
 
+    TEST(MATH_Intersection, RaySmallQuad)
+    {
+        Vector3 rayOrigin = AZ::Vector3::CreateAxisX(-10.0f);
+        Vector3 rayDir = AZ::Vector3::CreateAxisX();
+        Vector3 vertexA(0.0f, -0.001f, 0.001f);
+        Vector3 vertexB(0.0f, 0.001f, 0.001f);
+        Vector3 vertexC(0.0f, 0.001f, -0.001f);
+        Vector3 vertexD(0.0f, -0.001f, -0.001f);
+        float t = 0.0f;
+        int hit = Intersect::IntersectRayQuad(rayOrigin, rayDir, vertexA, vertexB, vertexC, vertexD, t);
+        EXPECT_EQ(hit, 1);
+    }
+
     class MATH_IntersectRayBoxTest
         : public AllocatorsFixture
     {

@@ -32,9 +32,17 @@ namespace AzToolsFramework
             return InvalidHandlerId;
         }
 
+        // If the Type is empty of unspecified, check the default handler list
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");
         if (typeName.empty())
         {
+            for (PropertyHandlerId handler : m_defaultHandlers)
+            {
+                if (handler->m_shouldHandleNode(node))
+                {
+                    return handler;
+                }
+            }
             return InvalidHandlerId;
         }
 
@@ -73,7 +81,12 @@ namespace AzToolsFramework
         // Add this handler to the bucket
         m_registeredHandlers[AZ::Name(handlerData.m_name)].emplace_back(AZStd::move(handlerData));
         // Retrieve a reference to the inserted entry to serve as our persistent handler ID.
-        return &handlerBucket.back();
+        PropertyHandlerId id = &handlerBucket.back();
+        if (id->m_isDefaultHandler)
+        {
+            m_defaultHandlers.push_back(id);
+        }
+        return id;
     }
 
     void PropertyEditorToolsSystem::UnregisterHandler(PropertyHandlerId handlerId)
@@ -82,6 +95,12 @@ namespace AzToolsFramework
         {
             AZ_Assert(false, "Attempted to unregister an invalid handler ID");
             return;
+        }
+
+        // Clear default handlers from the default handler list
+        if (handlerId->m_isDefaultHandler)
+        {
+            m_defaultHandlers.erase(AZStd::remove(m_defaultHandlers.begin(), m_defaultHandlers.end(), handlerId));
         }
 
         auto handlerBucketIt = m_registeredHandlers.find(AZ::Name(handlerId->m_name));

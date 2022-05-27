@@ -33,6 +33,8 @@ public:
     AZ_CLASS_ALLOCATOR(CAnimNode, AZ::SystemAllocator, 0);
     AZ_RTTI(CAnimNode, "{57736B48-5EE7-4530-8051-657ACC9BA1EE}", IAnimNode);
 
+    typedef AZStd::vector<AZStd::intrusive_ptr<IAnimTrack>> AnimTracks;
+
     CAnimNode();
     CAnimNode(const CAnimNode& other);
     CAnimNode(const int id, AnimNodeType nodeType);
@@ -46,7 +48,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     void SetName(const char* name) override { m_name = name; };
-    const char* GetName() override { return m_name.c_str(); };
+    const char* GetName() const override { return m_name.c_str(); };
 
     void SetSequence(IAnimSequence* sequence) override { m_pSequence = sequence; }
     // Return Animation Sequence that owns this node.
@@ -147,7 +149,6 @@ public:
 
     int GetId() const override { return m_id; }
     void SetId(int id) { m_id = id; }
-    const char* GetNameFast() const { return m_name.c_str(); }
 
     void Render() override{}
 
@@ -189,20 +190,18 @@ protected:
     void AnimateSound(std::vector<SSoundInfo>& nodeSoundInfo, SAnimContext& ec, IAnimTrack* pTrack, size_t numAudioTracks);
     //////////////////////////////////////////////////////////////////////////
 
-    int m_refCount;
+    AnimTracks m_tracks;
     AnimNodeType m_nodeType;
-    int m_id;
     AZStd::string m_name;
     IAnimSequence* m_pSequence;
     IAnimNodeOwner* m_pOwner;
     IAnimNode* m_pParentNode;
+    int m_refCount;
+    int m_id;
     int m_nLoadedParentNodeId;  // only used in legacy Serialize()
     int m_parentNodeId;
     int m_flags;
     unsigned int m_bIgnoreSetParam : 1; // Internal flags.
-
-    typedef AZStd::vector<AZStd::intrusive_ptr<IAnimTrack> > AnimTracks;
-    AnimTracks m_tracks;
     bool m_expanded;
 
 private:

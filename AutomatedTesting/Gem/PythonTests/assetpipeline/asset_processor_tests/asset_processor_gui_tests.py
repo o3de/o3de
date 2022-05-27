@@ -63,7 +63,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
 class TestsAssetProcessorGUI_Windows(object):
     """
@@ -235,7 +235,6 @@ class TestsAssetProcessorGUI_Windows(object):
 
     @pytest.mark.test_case_id("C24168803")
     @pytest.mark.BAT
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.assetpipeline
     def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
         """
@@ -364,6 +363,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
 
     @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox
     def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out

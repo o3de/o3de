@@ -1043,11 +1043,12 @@ namespace AZ
         Vector3 E = rayDir.Cross(QA);
         float dnAbs = 0.0f;
 
-        if (dn < -EPSILON) // vertices have counter-clock wise winding when looking at the quad from rayOrigin
+        const float triNLength = triN.GetLength();
+        if (dn < -EPSILON * triNLength) // vertices have counter-clock wise winding when looking at the quad from rayOrigin
         {
             dnAbs = -dn;
         }
-        else if (dn > EPSILON)
+        else if (dn > EPSILON * triNLength)
         {
             E = -E;
             dnAbs = dn;

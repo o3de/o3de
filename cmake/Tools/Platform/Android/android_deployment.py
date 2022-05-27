@@ -183,7 +183,7 @@ class AndroidDeployment(object):
         logging.debug(f"adb command: {subprocess.list2cmdline(call_arguments)}")
 
         try:
-            output = subprocess.check_output(call_arguments,
+            output = subprocess.check_output(subprocess.list2cmdline(call_arguments),
                                              shell=True,
                                              stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
                                                                                common.ENCODING_ERROR_HANDLINGS)

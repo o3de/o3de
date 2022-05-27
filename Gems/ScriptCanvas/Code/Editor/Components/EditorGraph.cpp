@@ -2051,6 +2051,12 @@ namespace ScriptCanvasEditor
     void EditorGraph::PostDeletionEvent()
     {
         GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, GetScriptCanvasId());
+
+#if defined(AZ_PLATFORM_LINUX)
+        // Work-around for a crash on Linux caused by the MainWindow::OnSystemTick not being handled before the ReflectedPropertyEditor's DoRefresh.
+        // This will force a refresh selection on any post-deletion events so that the DoRefresh will not crash on deleted objects
+        UIRequestBus::Broadcast(&UIRequests::RefreshSelection);
+#endif
     }
 
     void EditorGraph::PostCreationEvent()
@@ -3778,7 +3784,7 @@ namespace ScriptCanvasEditor
         m_upgradeSM.SetAsset(source);
         m_upgradeSM.SetConfig(upgradeConfig);
 
-        if (upgradeRequest == UpgradeRequest::Forced || !GetVersion().IsLatest())
+        if (upgradeRequest == UpgradeRequest::Forced || !GetVersion().IsLatest() || HasDeprecatedNode())
         {
             m_upgradeSM.Run(Start::StateID());
             return true;

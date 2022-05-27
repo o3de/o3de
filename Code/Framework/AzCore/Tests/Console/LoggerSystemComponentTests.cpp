@@ -93,7 +93,9 @@ namespace UnitTest
 
     TEST_F(LoggerSystemComponentTests, LogErrorTest)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         AZLOG_ERROR("test error");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_EQ(m_lastLogLevel, AZ::LogLevel::Error);
         EXPECT_EQ(strcmp("test error", m_lastLogMessage.c_str()), 0);
     }

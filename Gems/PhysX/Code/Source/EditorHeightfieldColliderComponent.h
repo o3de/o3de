@@ -57,7 +57,8 @@ namespace PhysX
         void OnDeselected() override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;
@@ -75,6 +76,8 @@ namespace PhysX
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
+
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
         // Physics::HeightfieldProviderNotificationBus
         void OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 

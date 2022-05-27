@@ -198,4 +198,5 @@ set(FILES
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h
     Include/Atom/RHI/TagRegistry.h
+    Include/Atom/RHI/XRRenderingInterface.h
 )

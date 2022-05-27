@@ -55,10 +55,9 @@ namespace EMotionFX
         EMotionFX::Transform SceneDataMatrixToEmfxTransformConverted(
             const SceneDataTypes::MatrixType& azTransform, const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter)
         {
-            return EMotionFX::Transform(
-                coordSysConverter.ConvertVector3(azTransform.GetTranslation()),
-                coordSysConverter.ConvertQuaternion(AZ::Quaternion::CreateFromMatrix3x4(azTransform)),
-                coordSysConverter.ConvertScale(azTransform.RetrieveScale()));
+            EMotionFX::Transform transform;
+            transform.InitFromAZTransform(AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(azTransform)));
+            return transform;
         }
 
 

@@ -36,7 +36,8 @@ namespace PhysX
         // AzPhysics::StaticRigidBody
         void AddShape(const AZStd::shared_ptr<Physics::Shape>& shape) override;
         AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
-        AZ::u32 GetShapeCount() override;
+        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
+        AZ::u32 GetShapeCount() const override;
 
         // AzPhysics::SimulatedBody
         AZ::EntityId GetEntityId() const override;

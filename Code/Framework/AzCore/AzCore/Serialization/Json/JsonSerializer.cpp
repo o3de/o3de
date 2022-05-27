@@ -204,10 +204,7 @@ namespace AZ
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve rtti information for %s.", elementClassData->m_name));
         }
-        // The SerializeGenericTypeInfo<Data::Asset<T>>::GenericClassGenericAsset is a special case
-        // The ClassData typeId is set to the GetAssetClassId(), while the RTTI is set using azrtti_typid<Data::Asset<T>>
-        AZ_Assert(elementClassData->m_azRtti->GetTypeId() == elementClassData->m_typeId
-            || elementClassData->m_typeId == GetAssetClassId(), "Type id mismatch in '%s' during serialization to a json file. (%s vs %s)",
+        AZ_Assert(elementClassData->m_azRtti->GetTypeId() == elementClassData->m_typeId, "Type id mismatch in '%s' during serialization to a json file. (%s vs %s)",
             elementClassData->m_name, elementClassData->m_azRtti->GetTypeId().ToString<AZStd::string>().c_str(), elementClassData->m_typeId.ToString<AZStd::string>().c_str());
 
         if (classElement.m_flags & SerializeContext::ClassElement::FLG_NO_DEFAULT_VALUE)

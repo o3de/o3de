@@ -263,6 +263,14 @@ namespace Terrain
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
 
     private:
+        //! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
+        int32_t CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const;
+
+        //! Given the number of samples in a region and the desired number of jobs, choose the best subdivision of the region into jobs.
+        static void SubdivideRegionForJobs(
+            int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
+            int32_t& subdivisionsX, int32_t& subdivisionsY);
+
         template<typename SynchronousFunctionType, typename VectorType>
         AZStd::shared_ptr<TerrainJobContext> ProcessFromListAsync(
             SynchronousFunctionType synchronousFunction,
@@ -376,21 +384,23 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
-        // Determine the number of jobs to split the work into based on:
-        // 1. The number of available worker threads.
-        // 2. The desired number of jobs as passed in.
-        // 3. The number of positions being processed.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
         const int32_t numPositionsToProcess = static_cast<int32_t>(inPositions.size());
-        const int32_t minPositionsPerJob = params && (params->m_desiredNumberOfJobs > 0) ? params->m_desiredNumberOfJobs : ProcessAsyncParams::MinPositionsPerJobDefault;
-        const int32_t numJobs = AZStd::min(numJobsMax, numPositionsToProcess / minPositionsPerJob);
-        if (numJobs <= 0)
+
+        if (numPositionsToProcess == 0)
         {
             AZ_Warning("TerrainSystem", false, "No positions to process.");
             return nullptr;
         }
+
+        // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+        const int32_t numJobsMax = CalculateMaxJobs(params);
+        const int32_t minPositionsPerJob =
+            params && (params->m_minPositionsPerJob > 0) ? params->m_minPositionsPerJob : ProcessAsyncParams::MinPositionsPerJobDefault;
+
+        // Based on the above, we'll create the maximum number of jobs possible that meet both criteria:
+        // - processes at least minPositionsPerJob for each job
+        // - creates no more than numJobsMax
+        const int32_t numJobs = AZStd::clamp(numPositionsToProcess / minPositionsPerJob, 1, numJobsMax);
 
         // Create a terrain job context, track it, and split the work across multiple jobs.
         AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
@@ -455,30 +465,43 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
-        // ToDo: Determine the number of jobs to split the work into based on:
-        // 1. The number of available worker threads.
-        // 2. The desired number of jobs as passed in.
-        // 3. The size of the area being processed.
-        //
-        // Note: We are currently restricting the number of worker threads to one
-        // because splitting the work over multiple threads causes contention when
-        // locking various mutexes, resulting in slower overall wall time for async
-        // requests split over multiple threads vs one where all the work is done on
-        // a single thread. The latter is still preferable over a regular synchronous
-        // call because it is just as quick and prevents the main thread from blocking.
-        // Once the mutex contention issues have been addressed, we should come up with
-        // an algorithm to break up 'inRegion' into sub-regions (or lists of positions?)
-        // so that async calls automatically split the work between available job manager
-        // worker threads, unless the ProcessAsyncParams specifiy a desired number of jobs.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        int32_t numJobs = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
-        if (numJobs != 1)
+        const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
+        const int64_t numPositionsToProcess = numSamplesX * numSamplesY;
+
+        if (numPositionsToProcess == 0)
         {
-            // Temp until we figure out how to break up the region.
-            AZ_Warning("TerrainSystem", false, "We don't yet support breaking up regions.");
-            numJobs = 1;
+            AZ_Warning("TerrainSystem", false, "No positions to process.");
+            return nullptr;
         }
+
+        // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+        const int32_t numJobsMax = CalculateMaxJobs(params);
+        const int32_t minPositionsPerJob =
+            params && (params->m_minPositionsPerJob > 0) ? params->m_minPositionsPerJob : ProcessAsyncParams::MinPositionsPerJobDefault;
+
+        // Calculate the best subdivision of the region along both the X and Y axes to use as close to the maximum number of jobs
+        // as possible while also keeping all the regions effectively the same size.
+        int32_t xJobs, yJobs;
+        SubdivideRegionForJobs(
+            aznumeric_cast<int32_t>(numSamplesX), aznumeric_cast<int32_t>(numSamplesY), numJobsMax, minPositionsPerJob, xJobs, yJobs);
+
+        // The number of jobs returned might be less than the total requested maximum number of jobs, so recalculate it here
+        AZ_Assert((xJobs * yJobs) <= numJobsMax, "The region was subdivided into too many jobs: %d x %d vs %d max",
+            xJobs, yJobs, numJobsMax);
+        const int32_t numJobs = xJobs * yJobs;
+
+        // Get the number of samples in each direction that we'll use for each query. We calculate this as a fractional value
+        // so that we can keep each query pretty evenly balanced, with just +/- 1 count variation on each axis.
+        const float xSamplesPerQuery = aznumeric_cast<float>(numSamplesX) / xJobs;
+        const float ySamplesPerQuery = aznumeric_cast<float>(numSamplesY) / yJobs;
+
+        // Make sure our subdivisions are producing at least minPositionsPerJob unless the *total* requested point count is
+        // less than minPositionsPerJob.
+        AZ_Assert(
+            ((numSamplesX * numSamplesY) < minPositionsPerJob) ||
+                (aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery)) >= minPositionsPerJob,
+            "Too few positions per job: %d vs %d", aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery),
+            minPositionsPerJob);
 
         // Create a terrain job context and split the work across multiple jobs.
         AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
@@ -486,42 +509,75 @@ namespace Terrain
             AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
             m_activeTerrainJobContexts.push_back(jobContext);
         }
-        for (int32_t i = 0; i < numJobs; ++i)
+
+        [[maybe_unused]] int32_t jobsStarted = 0;
+
+        for (int32_t yJob = 0; yJob < yJobs; yJob++)
         {
-            // Define the job function using the sub region of positions to process.
-            const AZ::Aabb& subRegion = inRegion; // ToDo: Figure out how to break up the region.
-            auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampler, jobContext, params]()
+            // Use the fractional samples per query to calculate the start and end of the region, but then convert it
+            // back to integers so that our regions are always in exact multiples of the number of samples to process.
+            // This is important because we want the XY values for each point that we're processing to exactly align with
+            // 'start + N * (step size)', or else we'll start to process point locations that weren't actually what was requested.
+            int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
+            int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
+            const float inRegionMinY = inRegion.GetMin().GetY() + (y0 * stepSize.GetY());
+
+            // For the last iteration, just set the end to the max to ensure that floating-point drift doesn't cause us to
+            // misalign and miss a point.
+            const float inRegionMaxY =
+                (yJob == (yJobs - 1)) ? inRegion.GetMax().GetY() : inRegion.GetMin().GetY() + (y1 * stepSize.GetY());
+
+            for (int32_t xJob = 0; xJob < xJobs; xJob++)
             {
-                // Process the sub region of positions, unless the associated job context has been cancelled.
-                if (!jobContext->IsCancelled())
-                {
-                    synchronousFunction(subRegion, stepSize, perPositionCallback, sampler);
-                }
+                // Same as above, calculate the start and end of the region, then convert back to integers and create the
+                // region based on 'start + n * (step size)'.
+                int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
+                int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
+                const float inRegionMinX = inRegion.GetMin().GetX() + (x0 * stepSize.GetX());
+                const float inRegionMaxX =
+                    (xJob == (xJobs - 1)) ? inRegion.GetMax().GetX() : inRegion.GetMin().GetX() + (x1 * stepSize.GetX());
 
-                // Decrement the number of completions remaining, invoke the completion callback if this happens
-                // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
-                const bool wasLastJobCompleted = jobContext->OnJobCompleted();
-                if (wasLastJobCompleted)
+                // Define the job function using the sub region of positions to process.
+                AZ::Aabb subRegion = AZ::Aabb::CreateFromMinMax(
+                    AZ::Vector3(inRegionMinX, inRegionMinY, inRegion.GetMin().GetZ()),
+                    AZ::Vector3(inRegionMaxX, inRegionMaxY, inRegion.GetMax().GetZ()));
+
+                auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampler, jobContext, params]()
                 {
-                    if (params && params->m_completionCallback)
+                    // Process the sub region of positions, unless the associated job context has been cancelled.
+                    if (!jobContext->IsCancelled())
                     {
-                        params->m_completionCallback(jobContext);
+                        synchronousFunction(subRegion, stepSize, perPositionCallback, sampler);
                     }
 
+                    // Decrement the number of completions remaining, invoke the completion callback if this happens
+                    // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
+                    const bool wasLastJobCompleted = jobContext->OnJobCompleted();
+                    if (wasLastJobCompleted)
                     {
-                        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
-                        m_activeTerrainJobContexts.erase(AZStd::find(m_activeTerrainJobContexts.begin(),
-                                                                     m_activeTerrainJobContexts.end(),
-                                                                     jobContext));
-                        m_activeTerrainJobContextMutexConditionVariable.notify_one();
-                    }
-                }
-            };
+                        if (params && params->m_completionCallback)
+                        {
+                            params->m_completionCallback(jobContext);
+                        }
 
-            // Create the job and start it immediately.
-            AZ::Job* processJob = AZ::CreateJobFunction(jobFunction, true, jobContext.get());
-            processJob->Start();
+                        {
+                            AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+                            m_activeTerrainJobContexts.erase(
+                                AZStd::find(m_activeTerrainJobContexts.begin(), m_activeTerrainJobContexts.end(), jobContext));
+                            m_activeTerrainJobContextMutexConditionVariable.notify_one();
+                        }
+                    }
+                };
+
+                // Create the job and start it immediately.
+                AZ::Job* processJob = AZ::CreateJobFunction(jobFunction, true, jobContext.get());
+                processJob->Start();
+                jobsStarted++;
+            }
         }
+
+        // Validate this just to ensure that the fractional math for handling points didn't cause any rounding errors anywhere.
+        AZ_Assert(jobsStarted == numJobs, "Wrong number of jobs created: %d vs %d", jobsStarted, numJobs);
 
         return jobContext;
     }

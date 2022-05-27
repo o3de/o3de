@@ -75,14 +75,13 @@ namespace AZ
             const AttachmentId& attachmentId,
             Ptr<Image> image)
         {
-            if (!ValidateAttachmentIsUnregistered(attachmentId))
+            // Only import the attachment if it hasn't already been imported
+            if (FindAttachment(attachmentId) == nullptr)
             {
-                return ResultCode::InvalidArgument;
+                ImageFrameAttachment* attachment = EmplaceFrameAttachment<ImageFrameAttachment>(attachmentId, AZStd::move(image));
+                m_imageAttachments.emplace_back(attachment);
+                m_importedImageAttachments.emplace_back(attachment);
             }
-
-            ImageFrameAttachment* attachment = EmplaceFrameAttachment<ImageFrameAttachment>(attachmentId, AZStd::move(image));
-            m_imageAttachments.emplace_back(attachment);
-            m_importedImageAttachments.emplace_back(attachment);
             return ResultCode::Success;
         }
 
@@ -90,14 +89,13 @@ namespace AZ
             const AttachmentId& attachmentId,
             Ptr<Buffer> buffer)
         {
-            if (!ValidateAttachmentIsUnregistered(attachmentId))
+            // Only import the attachment if it hasn't already been imported
+            if (FindAttachment(attachmentId) == nullptr)
             {
-                return ResultCode::InvalidArgument;
+                BufferFrameAttachment* attachment = EmplaceFrameAttachment<BufferFrameAttachment>(attachmentId, AZStd::move(buffer));
+                m_bufferAttachments.emplace_back(attachment);
+                m_importedBufferAttachments.emplace_back(attachment);
             }
-
-            BufferFrameAttachment* attachment = EmplaceFrameAttachment<BufferFrameAttachment>(attachmentId, AZStd::move(buffer));
-            m_bufferAttachments.emplace_back(attachment);
-            m_importedBufferAttachments.emplace_back(attachment);
             return ResultCode::Success;
         }
 

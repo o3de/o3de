@@ -50,6 +50,8 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -121,6 +123,13 @@ namespace AZ
 
         RHI::PhysicalDeviceList SystemComponent::EnumeratePhysicalDevices()
         {
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                //Update VkInstance from the one provided by XR::Vulkan module
+                Instance::GetInstance().UpdateNativeInstance(xrSystem);
+                
+            }
             return Instance::GetInstance().GetSupportedDevices();
         }
 

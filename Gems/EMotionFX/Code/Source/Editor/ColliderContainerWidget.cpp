@@ -24,6 +24,7 @@
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/ObjectEditor.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 #include <Editor/SkeletonModel.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MysticQt/Source/MysticQtManager.h>
@@ -44,14 +45,14 @@ namespace EMotionFX
     {
     }
 
-    void ColliderPropertyNotify::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
+    void ColliderPropertyNotify::BeforePropertyModified(AzToolsFramework::InstanceDataNode* node)
     {
         if (!m_commandGroup.IsEmpty())
         {
             return;
         }
 
-        const AzToolsFramework::InstanceDataNode* parentDataNode = pNode->GetParent();
+        const AzToolsFramework::InstanceDataNode* parentDataNode = node->GetParent();
         if (!parentDataNode)
         {
             return;
@@ -59,7 +60,7 @@ namespace EMotionFX
 
         const AZ::SerializeContext* serializeContext = parentDataNode->GetSerializeContext();
         const AZ::SerializeContext::ClassData* classData = parentDataNode->GetClassMetadata();
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
+        const AZ::SerializeContext::ClassElement* elementData = node->GetElementMetadata();
 
         const Actor* actor = m_colliderWidget->GetActor();
         const Node* joint = m_colliderWidget->GetJoint();
@@ -147,14 +148,19 @@ namespace EMotionFX
         }
     }
 
-    void ColliderPropertyNotify::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
+    void ColliderPropertyNotify::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+    {
+        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
+    }
+
+    void ColliderPropertyNotify::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* node)
     {
         if (m_commandGroup.IsEmpty())
         {
             return;
         }
 
-        const AzToolsFramework::InstanceDataNode* parentDataNode = pNode->GetParent();
+        const AzToolsFramework::InstanceDataNode* parentDataNode = node->GetParent();
         if (!parentDataNode)
         {
             return;
@@ -162,7 +168,7 @@ namespace EMotionFX
 
         const AZ::SerializeContext* serializeContext = parentDataNode->GetSerializeContext();
         const AZ::SerializeContext::ClassData* classData = parentDataNode->GetClassMetadata();
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
+        const AZ::SerializeContext::ClassElement* elementData = node->GetElementMetadata();
 
         const Actor* actor = m_colliderWidget->GetActor();
         const Node* joint = m_colliderWidget->GetJoint();

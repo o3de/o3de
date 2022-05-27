@@ -138,13 +138,13 @@ namespace AZ::DocumentPropertyEditor
         }
 
         //! Converts a value of this attribute's type to a DOM value.
-        Dom::Value ValueToDom(const AttributeType& attribute) const
+        virtual Dom::Value ValueToDom(const AttributeType& attribute) const
         {
             return Dom::Utils::ValueFromType(attribute);
         }
 
         //! Converts a DOM value to an instance of AttributeType.
-        AZStd::optional<AttributeType> DomToValue(const Dom::Value& value) const
+        virtual AZStd::optional<AttributeType> DomToValue(const Dom::Value& value) const
         {
             return Dom::Utils::ValueToType<AttributeType>(value);
         }
@@ -211,6 +211,57 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
         AZStd::fixed_string<128> m_name;
+    };
+
+    //! Represents an attribute that should resolve to an AZ::TypeId with a string representation.
+    class TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
+    {
+    public:
+        inline explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<AZ::TypeId>(name)
+        {
+        }
+
+        inline Dom::Value ValueToDom(const AZ::TypeId& attribute) const override
+        {
+            return AZ::Dom::Utils::TypeIdToDomValue(attribute);
+        }
+
+        inline AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override
+        {
+            // If we happen to see a type ID marshalled as an AZStd::any, go ahead and bring it in.
+            if (value.IsOpaqueValue())
+            {
+                return AttributeDefinition<AZ::TypeId>::DomToValue(value);
+            }
+            if (value.IsString())
+            {
+                auto typeId = AZ::Dom::Utils::DomValueToTypeId(value);
+                if (typeId.IsNull())
+                {
+                    return {};
+                }
+                return typeId;
+            }
+            return {};
+        }
+
+        inline AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
+        {
+            AZ::Uuid uuidValue = DomToValue(value).value_or(AZ::Uuid::CreateNull());
+            return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
+        }
+
+        inline AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            AZ::AttributeReader reader(instance, attribute);
+            AZ::Uuid value;
+            if (!reader.Read<AZ::Uuid>(value))
+            {
+                return AZ::Dom::Value();
+            }
+            return AZ::Dom::Utils::TypeIdToDomValue(value);
+        }
     };
 
     //! Defines a callback applicable to a Node.

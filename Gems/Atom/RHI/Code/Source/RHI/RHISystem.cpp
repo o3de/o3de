@@ -285,5 +285,21 @@ namespace AZ
         {
             return m_physicalDeviceDescriptor;
         }
+
+        void RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)
+        {
+            AZ_Assert(!m_xrSystem, "XR System is already registered");
+            m_xrSystem = xrRenderingInterface;
+        }
+
+        void RHISystem::UnRegisterXRSystem()
+        {
+            m_xrSystem = nullptr;
+        }
+
+        RHI::XRRenderingInterface* RHISystem::GetXRSystem() const
+        {
+            return m_xrSystem;
+        }
     } //namespace RPI
 } //namespace AZ

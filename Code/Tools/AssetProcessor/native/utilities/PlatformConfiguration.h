@@ -120,6 +120,7 @@ namespace AssetProcessor
     struct RecognizerConfiguration
     {
         virtual const RecognizerContainer& GetAssetRecognizerContainer() const = 0;
+        virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
     };
 
@@ -193,6 +194,25 @@ namespace AssetProcessor
         AZStd::stack<AZStd::string> m_rcNameStack;
         const AZ::SettingsRegistryInterface& m_registry;
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
+    };
+
+    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
+    struct ACSVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZStd::vector<AssetRecognizer> m_assetRecognizers;
+    private:
+        AssetRecognizer* CurrentAssetRecognizer();
+
+        AZStd::stack<AZStd::string> m_nameStack;
     };
 
     /** Reads the platform ini configuration file to determine
@@ -331,6 +351,8 @@ namespace AssetProcessor
 
         const RecognizerContainer& GetAssetRecognizerContainer() const override;
 
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override;
+
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
 
         /** returns true if the config is valid.
@@ -367,6 +389,7 @@ namespace AssetProcessor
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
         RecognizerContainer m_assetRecognizers;
+        RecognizerContainer m_assetCacheServerRecognizers;
         ExcludeRecognizerContainer m_excludeAssetRecognizers;
         AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolders;
         QList<QPair<QString, QString> > m_metaDataFileTypes;
