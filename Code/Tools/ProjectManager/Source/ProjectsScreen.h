@@ -45,6 +45,7 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
+        void HandleAddRemoteProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
         void HandleEditProjectGems(const QString& projectPath);
@@ -77,6 +78,7 @@ namespace O3DE::ProjectManager
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
+        QAction* m_addRemoteProjectAction = nullptr;
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;

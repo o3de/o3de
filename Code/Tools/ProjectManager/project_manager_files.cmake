@@ -83,6 +83,12 @@ set(FILES
     Source/ExternalLinkDialog.cpp
     Source/AdjustableHeaderWidget.h
     Source/AdjustableHeaderWidget.cpp
+    Source/AddRemoteProjectDialog.h
+    Source/AddRemoteProjectDialog.cpp
+    Source/TextOverflowWidget.h
+    Source/TextOverflowWidget.cpp
+    Source/ToggleCheckbox.h
+    Source/ToggleCheckbox.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
