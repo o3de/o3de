@@ -82,6 +82,8 @@ set(FILES
     Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.cpp
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.cpp
     Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.h
     Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.cpp
     Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h
