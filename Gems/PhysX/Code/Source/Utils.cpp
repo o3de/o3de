@@ -1353,7 +1353,8 @@ namespace PhysX
                 }
             }
 
-            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, [[maybe_unused]] AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds)
+            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices,
+                [[maybe_unused]] AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds)
             {
                 int minX = 0;
                 int minY = 0;
@@ -1373,6 +1374,10 @@ namespace PhysX
                     minY = AZStd::max(minY, static_cast<int>(floor(bounds.GetMin().GetY() * inverseRowScale)));
                     maxX = AZStd::min(maxX, static_cast<int>(ceil(bounds.GetMax().GetX() * inverseColumnScale)));
                     maxY = AZStd::min(maxY, static_cast<int>(ceil(bounds.GetMax().GetY() * inverseRowScale)));
+
+                    // Make sure min values don't exceed the max 
+                    minX = AZStd::min(minX, maxX);
+                    minY = AZStd::min(minY, maxY);
                 }
 
                 // num quads * 2 triangles per quad * 3 vertices per triangle

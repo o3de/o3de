@@ -133,7 +133,8 @@ namespace Physics
         //! @param indices A buffer to be filled with indices
         //! @param optionalBounds Optional AABB that, if provided, will limit the mesh returned to that AABB.  
         //!                       Currently only supported by the heightfield shape.
-        virtual void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) = 0;
+        virtual void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const = 0;
 
     };
 } // namespace Physics

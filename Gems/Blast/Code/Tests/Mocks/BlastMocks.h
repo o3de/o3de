@@ -359,7 +359,7 @@ namespace Blast
         MOCK_METHOD1(RayCastLocal, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&));
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb(const AZ::Transform&));
         MOCK_CONST_METHOD0(GetAabbLocal, AZ::Aabb());
-        MOCK_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZ::Aabb*));
+        MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
     };
 
     AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")

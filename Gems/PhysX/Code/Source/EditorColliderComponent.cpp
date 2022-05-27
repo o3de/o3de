@@ -1003,7 +1003,8 @@ namespace PhysX
         }
     }
 
-    void EditorColliderComponent::Display(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         if (!m_colliderDebugDraw.HasCachedGeometry())
         {

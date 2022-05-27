@@ -6,21 +6,36 @@
  *
  */
 
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <Source/EditorHeightfieldColliderComponent.h>
+
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/MathStringConversions.h>
-#include <Editor/ColliderComponentMode.h>
-#include <EditorHeightfieldColliderComponent.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/utility/as_const.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <Editor/ColliderComponentMode.h>
 #include <Source/HeightfieldColliderComponent.h>
-#include <System/PhysXSystem.h>
 #include <Source/Shape.h>
 #include <Source/Utils.h>
+#include <System/PhysXSystem.h>
 #include <PhysX/Material/PhysXMaterial.h>
+
+#include <utility>
 
 namespace PhysX
 {
+    AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr,
+        AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
+    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, true,
+        nullptr, AZ::ConsoleFunctorFlags::Null, "Draw the bounding box used for heightfield debug visualization.");
+
     void EditorHeightfieldColliderComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -323,10 +338,44 @@ namespace PhysX
     }
 
     // DisplayCallback
-    void EditorHeightfieldColliderComponent::Display(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorHeightfieldColliderComponent::Display(const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        const auto& heightfieldConfig = static_cast<const Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig);
-        m_colliderDebugDraw.DrawHeightfield(debugDisplay, m_colliderConfig, heightfieldConfig);
+        const AzPhysics::SimulatedBody* simulatedBody = GetSimulatedBody();
+        if (!simulatedBody)
+        {
+            return;
+        }
+
+        const AzPhysics::StaticRigidBody* staticRigidBody = azrtti_cast<const AzPhysics::StaticRigidBody*>(simulatedBody);
+        if (!staticRigidBody)
+        {
+            return;
+        }
+
+        // Calculate the center of a box in front of the camera - this will be the area to draw
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        const AZ::Vector3 boundsAabbCenter = cameraState.m_position + cameraState.m_forward * physx_heightfieldDebugDrawDistance * 0.5f;
+
+        const AZ::Vector3 bodyPosition = staticRigidBody->GetPosition();
+        const AZ::Vector3 aabbCenterLocalBody = boundsAabbCenter - bodyPosition;
+
+        const AZ::u32 shapeCount = staticRigidBody->GetShapeCount();
+        for (AZ::u32 shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
+        {
+            const AZStd::shared_ptr<const Physics::Shape> shape = staticRigidBody->GetShape(shapeIndex);
+            m_colliderDebugDraw.DrawHeightfield(debugDisplay, aabbCenterLocalBody,
+                physx_heightfieldDebugDrawDistance, shape);
+        }
+
+        if (physx_heightfieldDebugDrawBoundingBox)
+        {
+            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocalBody, physx_heightfieldDebugDrawDistance);
+            if (boundsAabb.IsValid())
+            {
+                debugDisplay.DrawWireBox(boundsAabb.GetMin(), boundsAabb.GetMax());
+            }
+        }
     }
 
     // SimulatedBodyComponentRequestsBus
@@ -368,6 +417,11 @@ namespace PhysX
 
     // SimulatedBodyComponentRequestsBus
     AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody()
+    {
+        return const_cast<AzPhysics::SimulatedBody*>(AZStd::as_const(*this).GetSimulatedBody());
+    }
+
+    const AzPhysics::SimulatedBody* EditorHeightfieldColliderComponent::GetSimulatedBody() const
     {
         if (m_sceneInterface && m_staticRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {

@@ -682,63 +682,36 @@ namespace PhysX
         }
 
         void Collider::DrawHeightfield(
-            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
-            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
-            [[maybe_unused]] const AZ::Vector3& colliderScale,
-            [[maybe_unused]] const bool forceUniformScaling) const
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& aabbCenterLocalBody,
+            float drawDistance,
+            const AZStd::shared_ptr<const Physics::Shape>& shape) const
         {
-            auto heights = heightfieldShapeConfig.GetSamples();
+            // Shape::GetGeometry expects the bounding box in local space
+            const AZ::Vector3 shapeOffset = shape->GetLocalPose().first;
+            const AZ::Vector3 aabbCenterLocalShape = aabbCenterLocalBody - shapeOffset;
 
-            if (heights.empty())
+            // Create the bounds box of the required size
+            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocalShape, drawDistance);
+            if (!boundsAabb.IsValid())
             {
                 return;
             }
 
-            const int numColumns = heightfieldShapeConfig.GetNumColumns();
-            const int numRows = heightfieldShapeConfig.GetNumRows();
+            // Extract the heightfield geometry within the bounds
+            AZStd::vector<AZ::Vector3> vertices;
+            AZStd::vector<AZ::u32> indices;
+            shape->GetGeometry(vertices, indices, &boundsAabb);
 
-            const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
-            const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
-
-            for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
+            if (!vertices.empty())
             {
-                for (int yIndex = 0; yIndex < numRows - 1; yIndex++)
-                {
-                    const int index0 = yIndex * numColumns + xIndex;
-                    const int index1 = yIndex * numColumns + xIndex + 1;
-                    const int index2 = (yIndex + 1) * numColumns + xIndex;
-                    const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
+                // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
+                const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
+                debugDisplay.PushMatrix(shapeOffsetTransform);
 
-                    const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
-                    const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
-                    const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;
-                    const float y1 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * (yIndex + 1);
+                debugDisplay.DrawLines(vertices, AZ::Colors::White);
 
-                    // Always draw top and left line of quad
-                    debugDisplay.DrawLine(
-                        AZ::Vector3(x0, y0, heights[index0].m_height),
-                        AZ::Vector3(x1, y0, heights[index1].m_height));
-                    debugDisplay.DrawLine(
-                        AZ::Vector3(x0, y0, heights[index0].m_height),
-                        AZ::Vector3(x0, y1, heights[index2].m_height));
-
-                    // Draw bottom line in last row
-                    if (yIndex == numRows - 2)
-                    {
-                        debugDisplay.DrawLine(
-                            AZ::Vector3(x1, y1, heights[index3].m_height),
-                            AZ::Vector3(x0, y1, heights[index2].m_height));
-                    }
-
-                    // Draw right line in last column
-                    if (xIndex == numColumns - 2)
-                    {
-                        debugDisplay.DrawLine(
-                            AZ::Vector3(x1, y0, heights[index1].m_height),
-                            AZ::Vector3(x1, y1, heights[index3].m_height));
-                    }
-                }
+                debugDisplay.PopMatrix();
             }
         }
 
@@ -781,8 +754,7 @@ namespace PhysX
         }
 
         // AzFramework::EntityDebugDisplayEventBus
-        void Collider::DisplayEntityViewport(
-            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        void Collider::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
             if (!m_displayCallback)
@@ -815,7 +787,7 @@ namespace PhysX
                     || (proximityVisualization.m_enabled && colliderIsInRange))
                 {
                     debugDisplay.PushMatrix(entityWorldTransformWithoutScale);
-                    m_displayCallback->Display(debugDisplay);
+                    m_displayCallback->Display(viewportInfo, debugDisplay);
                     debugDisplay.PopMatrix();
                 }
             }

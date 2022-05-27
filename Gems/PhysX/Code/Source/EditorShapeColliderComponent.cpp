@@ -849,7 +849,8 @@ namespace PhysX
     }
 
     // DisplayCallback
-    void EditorShapeColliderComponent::Display(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         // polygon prism is a special case
         if (m_shapeType == ShapeType::PolygonPrism)

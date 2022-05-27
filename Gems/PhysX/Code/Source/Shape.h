@@ -64,7 +64,8 @@ namespace PhysX
         AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) override;
         AZ::Aabb GetAabb(const AZ::Transform& worldTransform) const override;
         AZ::Aabb GetAabbLocal() const override;
-        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) override;
+        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const override;
 
         physx::PxShape* GetPxShape();
 
