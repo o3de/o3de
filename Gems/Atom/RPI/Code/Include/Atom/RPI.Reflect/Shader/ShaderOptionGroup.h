@@ -41,8 +41,11 @@ namespace AZ
             //! Resets unspecified shader options to their default values
             void SetUnspecifiedToDefaultValues();
 
-            //! Returns whether all options have been specified
+            //! Returns whether all options have been specified. This would indicate a fully baked shader variant.
             bool IsFullySpecified() const;
+
+            //! Returns true when no options have been specified. This would indicate a root shader variant.
+            bool IsEmpty() const;
 
             //! Returns the shader option index associated with the shader option id,
             //! or a null index if the id was not found.

@@ -21,7 +21,4 @@ namespace AWSCore
     static constexpr const char ResourceMappingRegionKeyName[] = "Region";
     static constexpr const char ResourceMappingTypeKeyName[] = "Type";
     static constexpr const char ResourceMappingVersionKeyName[] = "Version";
-
-    static constexpr const char ResourceMapppingJsonSchemaFilePath[] =
-        "Gems/AWSCore/resource_mapping_schema.json";
 } // namespace AWSCore

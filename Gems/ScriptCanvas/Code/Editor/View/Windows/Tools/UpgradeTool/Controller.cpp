@@ -123,9 +123,9 @@ namespace ScriptCanvasEditor
                     , "InspectAsset: %s, failed to load valid graph"
                     , asset.Path().c_str());
 
-                return graphComponent
-                    && (!graphComponent->GetVersion().IsLatest() || m_view->forceUpgrade->isChecked())
-                        ? ScanConfiguration::Filter::Include
+                return graphComponent &&
+                        (!graphComponent->GetVersion().IsLatest() || graphComponent->HasDeprecatedNode() || m_view->forceUpgrade->isChecked())
+                    ? ScanConfiguration::Filter::Include
                         : ScanConfiguration::Filter::Exclude;
             };
 
