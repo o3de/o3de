@@ -403,9 +403,13 @@ Please note that only those seed files will get updated that are active for your
             if(sources.empty())
             {
                 if (fileExists)
+                {
                     return AZ::Failure(AZStd::string("Wildcard search matched one or more files but none are source assets.  This utility only handles source assets.\n"));
+                }
                 else
+                {
                     return AZ::Failure(AZStd::string("Wildcard search did not match any files.\n"));
+                }
             }
         }
         else // Non-wildcard search
@@ -431,9 +435,13 @@ Please note that only those seed files will get updated that are active for your
             if (sources.empty())
             {
                 if (fileExists)
+                {
                     return AZ::Failure(AZStd::string("Search matched an existing file but it is not a source asset.  This utility only handles source assets.\n"));
+                }
                 else
+                {
                     return AZ::Failure(AZStd::string("File not found.\n"));
+                }
             }
         }
 
