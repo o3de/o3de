@@ -130,7 +130,7 @@ namespace ScriptEvents
 
                         if (saveOutcome.IsSuccess())
                         {
-                            errorMessage = path.Filename().FixedMaxPathString().c_str();
+                            return { true, path.Filename().FixedMaxPathString().c_str() };
                         }
                         else
                         {
@@ -148,7 +148,7 @@ namespace ScriptEvents
                 }
             }
                             
-            return { errorMessage.empty(), errorMessage };
+            return { false, errorMessage };
         }
 
         MenuItemsEnabled UpdateMenuItemsEnabled([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
