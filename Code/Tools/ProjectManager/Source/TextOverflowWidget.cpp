@@ -17,11 +17,50 @@
 
 namespace O3DE::ProjectManager
 {
-    static QString overflowLink = "OverflowLink";
-    static int maxTextLength = 100;
+    static const QString s_overflowLink = "OverflowLink";
+    static const int s_maxTextLength = 100;
+
+    TextOverflowDialog::TextOverflowDialog(const QString& title, const QString& text, QWidget* parent)
+        : QDialog(parent)
+    {
+        setWindowTitle(title);
+        setModal(true);
+        setObjectName("textOverflowDialog");
+        setMinimumSize(600, 600);
+
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setContentsMargins(5, 5, 5, 5);
+        vLayout->setSpacing(0);
+        vLayout->setAlignment(Qt::AlignTop);
+        setLayout(vLayout);
+
+        QScrollArea* scrollArea = new QScrollArea(this);
+        vLayout->addWidget(scrollArea);
+
+        // Set scroll bar policy
+        scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        QWidget* textArea = new QWidget();
+        textArea->setContentsMargins(10, 10, 10, 10);
+
+        scrollArea->setWidget(textArea);
+
+        QVBoxLayout* scrollLayout = new QVBoxLayout;
+        scrollLayout->setSizeConstraint(QLayout::SetFixedSize);
+        textArea->setLayout(scrollLayout);
+
+        QLabel* overflowText = new QLabel(text);
+        overflowText->setObjectName("overflowTextDialogLabel");
+        overflowText->setWordWrap(true);
+        overflowText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        overflowText->setOpenExternalLinks(true);
+        overflowText->setAlignment(Qt::AlignLeft);
+        scrollLayout->addWidget(overflowText);
+    }
 
     // Elides text based on character length with html link tags removed
-    QString ElideLinkedText(const QString& text, int maxLength)
+    QString TextOverflowLabel::ElideLinkedText(const QString& text, int maxLength)
     {
         QRegularExpression linksRegex("</?a(|\\s+[^>]+)>");
         QRegularExpressionMatchIterator matches = linksRegex.globalMatch(text);
@@ -58,10 +97,12 @@ namespace O3DE::ProjectManager
 
             // If there is still room left after we process all matches then
             // offset by the last match length and the remaining display characters
-            if (displayLength < maxLength)
+            if (displayLength <= maxLength)
             {
                 truncateEnd += lastMatchLength + maxLength - displayLength;
-                displayLength = maxLength;
+                // If we broke out early this may overestimate display length
+                // Only trying to determine if displayLength > maxLength so it doesn't matter
+                displayLength += text.length() - truncateEnd;
             }
         }
         else
@@ -75,53 +116,17 @@ namespace O3DE::ProjectManager
         }
 
         // Truncate and add link to full texts
-        if (displayLength >= maxLength)
+        if (displayLength > maxLength)
         {
-            // Append closing tag if link text got truncated %2
             return QString("%1%2 <a href=\"%3\">Read More...</a>")
-                .arg(text.leftRef(truncateEnd), match.isValid() && matchIndex % 2 == 1 ? match.captured() : "", overflowLink);
+                .arg(
+                    text.leftRef(truncateEnd),
+                    // Append closing tag if link text got truncated %2
+                    match.isValid() && matchIndex % 2 == 1 ? match.captured() : "",
+                    s_overflowLink);
         }
 
         return text;
-    }
-
-    TextOverflowDialog::TextOverflowDialog(const QString& title, const QString& text, QWidget* parent)
-        : QDialog(parent)
-    {
-        setWindowTitle(title);
-        setModal(true);
-        setObjectName("textOverflowDialog");
-        setMinimumSize(600, 700);
-
-        QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setContentsMargins(5, 5, 5, 5);
-        vLayout->setSpacing(0);
-        vLayout->setAlignment(Qt::AlignTop);
-        setLayout(vLayout);
-
-        QScrollArea* scrollArea = new QScrollArea(this);
-        vLayout->addWidget(scrollArea);
-
-        // Set scroll bar policy
-        scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-        QWidget* textArea = new QWidget();
-        textArea->setContentsMargins(10, 10, 10, 10);
-
-        scrollArea->setWidget(textArea);
-
-        QVBoxLayout* scrollLayout = new QVBoxLayout;
-        scrollLayout->setSizeConstraint(QLayout::SetFixedSize);
-        textArea->setLayout(scrollLayout);
-
-        QLabel* overflowText = new QLabel(text);
-        overflowText->setObjectName("overflowTextDialogLabel");
-        overflowText->setWordWrap(true);
-        overflowText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        overflowText->setOpenExternalLinks(true);
-        overflowText->setAlignment(Qt::AlignLeft);
-        scrollLayout->addWidget(overflowText);
     }
 
     TextOverflowLabel::TextOverflowLabel(const QString& title, const QString& text, QWidget* parent)
@@ -134,9 +139,9 @@ namespace O3DE::ProjectManager
         setAlignment(Qt::AlignLeft);
 
         // Truncate text and display overflow dialog if it is too long
-        if (text.length() > maxTextLength)
+        if (text.length() > s_maxTextLength)
         {
-            setText(ElideLinkedText(text, maxTextLength));
+            setText(ElideLinkedText(text, s_maxTextLength));
         }
 
         connect(this, &QLabel::linkActivated, this, &TextOverflowLabel::OnLinkActivated);
@@ -144,7 +149,7 @@ namespace O3DE::ProjectManager
 
     void TextOverflowLabel::OnLinkActivated(const QString& link)
     {
-        if (link != overflowLink)
+        if (link != s_overflowLink)
         {
             QDesktopServices::openUrl(QUrl(link));
         }

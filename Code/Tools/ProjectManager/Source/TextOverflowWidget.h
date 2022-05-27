@@ -31,6 +31,8 @@ namespace O3DE::ProjectManager
         : public QLabel
     {
     public:
+        static QString ElideLinkedText(const QString& text, int maxLength);
+
         explicit TextOverflowLabel(const QString& title = {}, const QString& text = {}, QWidget* parent = nullptr);
         ~TextOverflowLabel() = default;
 
