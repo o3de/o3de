@@ -49,12 +49,16 @@ namespace AZ::Render
         void InitializeAtmosphere(AtmosphereId id);
         void UpdateBackgroundClearColor();
         void CachePasses();
+        bool HasValidAtmosphere();
             
         struct SkyAtmosphere
         {
+            ~SkyAtmosphere();
+
             AtmosphereId m_id;
             SkyAtmosphereParams m_params;
             bool m_passNeedsUpdate = false;
+            bool m_enabled = false;
         };
 
         SparseVector<SkyAtmosphere> m_atmospheres;

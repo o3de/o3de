@@ -16,6 +16,13 @@
 
 namespace AZ::Render
 {
+    SkyAtmosphereFeatureProcessor::SkyAtmosphere::~SkyAtmosphere()
+    {
+        m_id.Reset();
+        m_passNeedsUpdate = false;
+        m_enabled = false;
+    }
+
     void SkyAtmosphereFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -59,11 +66,6 @@ namespace AZ::Render
     {
         if (id.IsValid())
         {
-            // because the sparse vector does not necessarily release the memory
-            // we set m_passNeedsUpdate to false to avoid updating released data
-            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
-            atmosphere.m_passNeedsUpdate = false;
-
             m_atmospheres.Release(id.GetIndex());
         }
 
@@ -85,6 +87,7 @@ namespace AZ::Render
         auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
         atmosphere.m_id = id;
         atmosphere.m_passNeedsUpdate = true;
+        atmosphere.m_enabled = true;
 
         for (auto pass : m_skyAtmosphereParentPasses )
         {
@@ -126,7 +129,7 @@ namespace AZ::Render
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
             auto& atmosphere = m_atmospheres.GetElement(i);
-            if (atmosphere.m_id.IsValid())
+            if (atmosphere.m_id.IsValid() && atmosphere.m_enabled)
             {
                 InitializeAtmosphere(atmosphere.m_id);
             }
@@ -140,7 +143,7 @@ namespace AZ::Render
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
             auto& atmosphere = m_atmospheres.GetElement(i);
-            if (atmosphere.m_id.IsValid() && atmosphere.m_passNeedsUpdate)
+            if (atmosphere.m_id.IsValid() && atmosphere.m_enabled && atmosphere.m_passNeedsUpdate)
             {
                 // update every atmosphere parent pass (per-pipeline)
                 for (auto pass : m_skyAtmosphereParentPasses)
@@ -154,8 +157,27 @@ namespace AZ::Render
         }
     }
 
+    bool SkyAtmosphereFeatureProcessor::HasValidAtmosphere()
+    {
+        for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
+        {
+            const auto& atmosphere = m_atmospheres.GetElement(i);
+            if (atmosphere.m_id.IsValid() && atmosphere.m_enabled)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     void SkyAtmosphereFeatureProcessor::UpdateBackgroundClearColor()
     {
+        // don't update the background unless we have valid atmospheres
+        if (!HasValidAtmosphere())
+        {
+            return;
+        }
+
         // This function is only necessary for now because the default clear value
         // color is not black, and is set in various .pass files in places a user
         // is unlikely to find.  Unfortunately, the viewport will revert to the
