@@ -6,16 +6,15 @@
  *
  */
 
-#include "AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h"
-#include "AzFramework/Spawnable/Script/SpawnableScriptBus.h"
-#include "AzFramework/Spawnable/Script/SpawnableScriptMediator.h"
-
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
-#include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptBus.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 #include <AzTest/AzTest.h>
 
 namespace UnitTest
