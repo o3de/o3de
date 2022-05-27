@@ -90,5 +90,7 @@ namespace Multiplayer
         AZStd::deque<AuditTrailInput> m_committedAuditTrail;
         AZStd::deque<AuditTrailInput> m_pendingAuditTrail;
         AZStd::deque<AuditTrailInput> m_filteredAuditTrail;
+
+        AZ::ApplicationTypeQuery m_applicationType;
     };
 }
