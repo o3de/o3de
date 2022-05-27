@@ -130,4 +130,4 @@ namespace RecastNavigation
             }
         }
     }
-}
+} // namespace RecastNavigation

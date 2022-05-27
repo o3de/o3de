@@ -113,4 +113,4 @@ namespace RecastNavigation
         const RecastVector3 v(temp);
         m_verticesToDraw.emplace_back(v.AsVector3(), color);
     }
-}
+} // namespace RecastNavigation

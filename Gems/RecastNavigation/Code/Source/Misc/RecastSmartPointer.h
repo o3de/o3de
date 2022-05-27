@@ -83,4 +83,4 @@ namespace RecastNavigation
             dtFreeNavMeshQuery( p );
         }
     };
-}
+} // namespace RecastNavigation

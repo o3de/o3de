@@ -85,4 +85,4 @@ namespace RecastNavigation
         unsigned char* m_data = nullptr;
         int m_size = 0;
     };
-}
+} // namespace RecastNavigation

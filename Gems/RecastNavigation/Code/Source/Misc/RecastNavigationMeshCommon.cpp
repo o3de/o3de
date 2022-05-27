@@ -45,10 +45,10 @@ namespace RecastNavigation
         config.cs = meshConfig.m_cellSize;
         config.ch = meshConfig.m_cellHeight;
         config.walkableSlopeAngle = meshConfig.m_agentMaxSlope;
-        config.walkableHeight = static_cast<int>(ceilf(meshConfig.m_agentHeight / config.ch));
-        config.walkableClimb = static_cast<int>(floorf(meshConfig.m_agentMaxClimb / config.ch));
-        config.walkableRadius = static_cast<int>(ceilf(meshConfig.m_agentRadius / config.cs));
-        config.maxEdgeLen = static_cast<int>(meshConfig.m_edgeMaxLen / meshConfig.m_cellSize);
+        config.walkableHeight = aznumeric_cast<int>(ceil(meshConfig.m_agentHeight / config.ch));
+        config.walkableClimb = aznumeric_cast<int>(floor(meshConfig.m_agentMaxClimb / config.ch));
+        config.walkableRadius = aznumeric_cast<int>(ceil(meshConfig.m_agentRadius / config.cs));
+        config.maxEdgeLen = aznumeric_cast<int>(meshConfig.m_edgeMaxLen / meshConfig.m_cellSize);
         config.maxSimplificationError = meshConfig.m_edgeMaxError;
         config.minRegionArea = rcSqr(meshConfig.m_regionMinSize);       // Note: area = size*size
         config.mergeRegionArea = rcSqr(meshConfig.m_regionMergeSize);   // Note: area = size*size
@@ -56,7 +56,7 @@ namespace RecastNavigation
         config.detailSampleDist = meshConfig.m_detailSampleDist < 0.9f ? 0 : meshConfig.m_cellSize * meshConfig.m_detailSampleDist;
         config.detailSampleMaxError = meshConfig.m_cellHeight * meshConfig.m_detailSampleMaxError;
 
-        config.tileSize = static_cast<int>(meshConfig.m_tileSize / config.cs);
+        config.tileSize = aznumeric_cast<int>(meshConfig.m_tileSize / config.cs);
         config.borderSize = config.walkableRadius + meshConfig.m_borderSize; // Reserve enough padding.
         config.width = config.tileSize + config.borderSize * 2;
         config.height = config.tileSize + config.borderSize * 2;
@@ -120,11 +120,17 @@ namespace RecastNavigation
         // remove unwanted overhangs caused by the conservative rasterization
         // as well as filter spans where the character cannot possibly stand.
         if (meshConfig.m_filterLowHangingObstacles)
+        {
             rcFilterLowHangingWalkableObstacles(context, config.walkableClimb, *solid);
+        }
         if (meshConfig.m_filterLedgeSpans)
+        {
             rcFilterLedgeSpans(context, config.walkableHeight, config.walkableClimb, *solid);
+        }
         if (meshConfig.m_filterWalkableLowHeightSpans)
+        {
             rcFilterWalkableLowHeightSpans(context, config.walkableHeight, *solid);
+        }
 
         //
         // Step 4. Partition walkable surface to simple regions.

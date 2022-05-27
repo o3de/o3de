@@ -28,7 +28,7 @@ namespace RecastNavigation
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        //! EditorComponentBase ioverrides ...
+        //! EditorComponentBase overrides ...
         //! @{
         void Activate() override;
         void Deactivate() override;
