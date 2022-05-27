@@ -7,6 +7,7 @@
  */
 
 #include <MockInterfaces.h>
+#include <RecastNavigationSystemComponent.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
@@ -33,11 +34,7 @@ namespace RecastNavigationTests
     public:
         unique_ptr<SerializeContext> m_sc;
         unique_ptr<BehaviorContext> m_bc;
-        unique_ptr<ComponentDescriptor> m_nd1;
-        unique_ptr<ComponentDescriptor> m_nd2;
-        unique_ptr<ComponentDescriptor> m_nd3;
-        unique_ptr<ComponentDescriptor> m_nd4;
-        unique_ptr<ComponentDescriptor> m_nd5;
+        unique_ptr<vector<ComponentDescriptor*>> m_descriptors;
         unique_ptr<TimeSystem> m_timeSystem;
         unique_ptr<MockSceneInterface> m_mockSceneInterface;
         unique_ptr<AzPhysics::SceneQueryHit> m_hit;
@@ -53,14 +50,16 @@ namespace RecastNavigationTests
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
 
             // register components involved in testing
+            m_descriptors = AZStd::make_unique<vector<ComponentDescriptor*>>();
             m_sc = AZStd::make_unique<SerializeContext>();
             m_sc->CreateEditContext();
             m_bc = AZStd::make_unique<BehaviorContext>();
-            RegisterComponent<RecastNavigationMeshComponent>(m_nd1);
-            RegisterComponent<RecastNavigationTiledSurveyorComponent>(m_nd2);
-            RegisterComponent<MockShapeComponent>(m_nd3);
-            RegisterComponent<EventSchedulerSystemComponent>(m_nd4);
-            RegisterComponent<DetourNavigationComponent>(m_nd5);
+            RegisterComponent<RecastNavigationMeshComponent>();
+            RegisterComponent<RecastNavigationTiledSurveyorComponent>();
+            RegisterComponent<MockShapeComponent>();
+            RegisterComponent<EventSchedulerSystemComponent>();
+            RegisterComponent<RecastNavigationSystemComponent>();
+            RegisterComponent<DetourNavigationComponent>();
 
             m_timeSystem = AZStd::make_unique<StubTimeSystem>();
             m_mockSceneInterface = AZStd::make_unique< NiceMock<MockSceneInterface>>();
@@ -76,11 +75,13 @@ namespace RecastNavigationTests
             m_hit = {};
             m_mockSceneInterface = {};
             m_timeSystem = {};
-            m_nd1 = {};
-            m_nd2 = {};
-            m_nd3 = {};
-            m_nd4 = {};
-            m_nd5 = {};
+
+            for (ComponentDescriptor* descriptor : *m_descriptors)
+            {
+                delete descriptor;
+            }
+            m_descriptors = {};
+
             m_sc = {};
             m_bc = {};
 
@@ -89,12 +90,15 @@ namespace RecastNavigationTests
             ::UnitTest::AllocatorsFixture::TearDown();
         }
 
+
         template <typename T>
-        void RegisterComponent(unique_ptr<ComponentDescriptor>& descriptor)
+        void RegisterComponent()
         {
-            descriptor.reset(T::CreateDescriptor());
-            descriptor->Reflect(m_sc.get());
-            descriptor->Reflect(m_bc.get());
+            ComponentDescriptor* item = T::CreateDescriptor();
+            item->Reflect(m_sc.get());
+            item->Reflect(m_bc.get());
+
+            m_descriptors->push_back(item);
         }
 
         // helper method
@@ -102,6 +106,7 @@ namespace RecastNavigationTests
         {
             e.SetId(AZ::EntityId{ 1 });
             e.CreateComponent<EventSchedulerSystemComponent>();
+            e.CreateComponent<RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
             e.CreateComponent<RecastNavigationTiledSurveyorComponent>();
             e.CreateComponent<RecastNavigationMeshComponent>(RecastNavigationMeshConfig{}, true);
