@@ -265,7 +265,7 @@ namespace AZ
                         if (top->m_onCompletion)
                         {
                             m_outstandingTaskCount++;
-                            TaskToken completionTask = task.AddTask(
+                            task.AddTask(
                                 m_taskDescriptor,
                                 [this, top]()
                                 {
