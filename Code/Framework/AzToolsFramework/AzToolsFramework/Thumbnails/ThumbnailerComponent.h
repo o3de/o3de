@@ -71,7 +71,7 @@ namespace AzToolsFramework
             //! Maximum number of concurrent jobs allowed.
             const int m_maxThumbnailJobs{ 64 };
             //! Current number of jobs running.
-            int m_numLoading;
+            int m_currentJobsCount;
         };
     } // Thumbnailer
 } // namespace AssetBrowser
