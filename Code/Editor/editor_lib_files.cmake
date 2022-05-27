@@ -580,6 +580,7 @@ set(FILES
     TrackView/TVCustomizeTrackColorsDlg.cpp
     TrackView/TVCustomizeTrackColorsDlg.h
     TrackViewFBXImportPreviewDialog.h
+    TrackView/KeyUIControls.h
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
