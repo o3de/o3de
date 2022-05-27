@@ -100,13 +100,13 @@ namespace Terrain
             // This should only be called within the scope of a lock on m_sectorStateMutex.
             void SetDirty();
 
-            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> m_jobContext;
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> m_jobContext;
             AZStd::unique_ptr<AZStd::semaphore> m_jobCompletionEvent;
             AZStd::recursive_mutex m_sectorStateMutex;
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
-            AZStd::vector<float> m_rowHeights;
-            float m_previousHeight = 0.0f;
+            AZStd::vector<AZ::Vector3> m_sectorVertices;
+            AZStd::vector<bool> m_sectorVertexExists;
             bool m_isDirty{ true };
         };
 

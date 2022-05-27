@@ -31,7 +31,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 
     // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
     // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
@@ -56,17 +55,6 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
 
     output.m_normal = float3(input.m_xyNormal, 0.0);
     output.m_normal.z = saturate(sqrt(1.0 - output.m_normal.x * output.m_normal.x - output.m_normal.y * output.m_normal.y));
-
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            output.m_worldPosition,
-            output.m_normal,
-            output.m_shadowCoords);
-    }
     
     return output;
 }
@@ -182,7 +170,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow, Occlusion
-    lightingData.shadowCoords = input.m_shadowCoords;
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
@@ -197,7 +184,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, input.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);

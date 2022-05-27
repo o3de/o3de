@@ -159,11 +159,12 @@ namespace Terrain
         size_t inPositionIndex = 0;
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequestBus::Events::ProcessSurfacePointsFromList, inPositions,
+            &AzFramework::Terrain::TerrainDataRequestBus::Events::QueryList, inPositions,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All,
             [this, inPositions, &inPositionIndex, &surfacePointList]
                 (const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
             {
-                AZ_Assert(inPositionIndex < inPositions.size(), "Too many points returned from ProcessSurfacePointsFromList");
+                AZ_Assert(inPositionIndex < inPositions.size(), "Too many points returned from QueryList");
 
                 SurfaceData::SurfaceTagWeights weights(surfacePoint.m_surfaceTags);
 

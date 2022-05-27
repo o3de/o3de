@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -110,12 +111,8 @@ namespace PhysX
 
     void HeightfieldColliderComponent::InitStaticRigidBody()
     {
-        // Get the transform from the HeightfieldProvider.  Because rotation and scale can indirectly affect how the heightfield itself
-        // is computed and the size of the heightfield, it's possible that the HeightfieldProvider will provide a different transform
-        // back to us than the one that's directly on that entity.
         AZ::Transform transform = AZ::Transform::CreateIdentity();
-        Physics::HeightfieldProviderRequestsBus::EventResult(
-            transform, GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldTransform);
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
         AzPhysics::StaticRigidBodyConfiguration configuration;
         configuration.m_orientation = transform.GetRotation();

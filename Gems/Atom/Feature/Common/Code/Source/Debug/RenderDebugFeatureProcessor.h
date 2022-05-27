@@ -59,6 +59,11 @@ namespace AZ::Render
         RHI::ShaderInputNameIndex m_debugLightingDirectionIndex = "m_debugLightingDirection";
         RHI::ShaderInputNameIndex m_debugLightingIntensityIndex = "m_debugLightingIntensity";
 
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex01 = "m_customDebugFloat01";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex02 = "m_customDebugFloat02";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex03 = "m_customDebugFloat03";
+        RHI::ShaderInputNameIndex m_customDebugFloatIndex04 = "m_customDebugFloat04";
+
         Name m_shaderDebugEnableOptionName = Name("o_shader_debugging_enabled");
 
         u32 m_debugComponentCount = 0;

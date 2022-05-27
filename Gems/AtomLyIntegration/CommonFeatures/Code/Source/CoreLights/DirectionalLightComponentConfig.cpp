@@ -42,8 +42,12 @@ namespace AZ
                     ->Field("Shadow Bias", &DirectionalLightComponentConfig::m_shadowBias)
                     ->Field("Normal Shadow Bias", &DirectionalLightComponentConfig::m_normalShadowBias)
                     ->Field("CascadeBlendingEnabled", &DirectionalLightComponentConfig::m_cascadeBlendingEnabled)
+                    ->Field("FullscreenBlurEnabled", &DirectionalLightComponentConfig::m_fullscreenBlurEnabled)
+                    ->Field("FullscreenBlurConstFalloff", &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff)
+                    ->Field("FullscreenBlurDepthFalloffStrength", &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength)
                     ->Field("Affects GI", &DirectionalLightComponentConfig::m_affectsGI)
-                    ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor);
+                    ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor)
+                    ;
             }
         }
 

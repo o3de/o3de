@@ -13,6 +13,7 @@
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/Material.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
@@ -73,6 +74,7 @@ namespace Terrain
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
         TerrainPhysicsColliderComponent(const TerrainPhysicsColliderConfig& configuration);
@@ -107,7 +109,6 @@ namespace Terrain
         Physics::MaterialId FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const;
 
         void GenerateHeightsInBounds(AZStd::vector<float>& heights) const;
-        AZ::Aabb GetRegionClampedToGrid(const AZ::Aabb& region) const;
 
         void NotifyListenersOfHeightfieldDataChange(
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask heightfieldChangeMask,
@@ -120,8 +121,11 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        void CalculateHeightfieldRegion();
+
     private:
         TerrainPhysicsColliderConfig m_configuration;
         bool m_terrainDataActive = false;
+        AzFramework::Terrain::TerrainQueryRegion m_heightfieldRegion;
     };
 }

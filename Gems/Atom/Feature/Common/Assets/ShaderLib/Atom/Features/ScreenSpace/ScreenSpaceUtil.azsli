@@ -11,12 +11,10 @@
 // screenCoords - from 0.. dimension of the screen of the current pixel
 // depthStencilTexture - the depth stencil buffer (non linear depth)
 // sDepth - zbuffer non linear depth at the fragment location
-float4 WorldPositionFromDepthBuffer( sampler depthSampler, Texture2D<float2> depthStencilTexture, float zDepth, float2 screenCoords )
-{ 
-    uint2 dimensions;
-    depthStencilTexture.GetDimensions(dimensions.x, dimensions.y);
-    float2 UV = saturate(screenCoords / dimensions.xy);
 
+
+float4 WorldPositionFromDepthBuffer(const float2 UV, const float zDepth )
+{ 
     float x = UV.x * 2.0f - 1.0f;
     float y = (1.0f - UV.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(x, y, zDepth, 1.0f);    // warped projected space [0..1]
@@ -25,4 +23,17 @@ float4 WorldPositionFromDepthBuffer( sampler depthSampler, Texture2D<float2> dep
     positionVS /= positionVS.w;
     float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
     return positionWS;
+}
+
+float4 WorldPositionFromDepthBuffer(const float2 depthBufferDimensions, const float zDepth, const float2 screenCoords )
+{ 
+    float2 UV = saturate(screenCoords / depthBufferDimensions);
+    return WorldPositionFromDepthBuffer(UV, zDepth);
+}
+ 
+float4 WorldPositionFromDepthBuffer(const Texture2D<float2> depthStencilTexture, const float zDepth, const float2 screenCoords )
+{ 
+    uint2 dimensions;
+    depthStencilTexture.GetDimensions(dimensions.x, dimensions.y);
+    return WorldPositionFromDepthBuffer(dimensions, zDepth, screenCoords);
 }

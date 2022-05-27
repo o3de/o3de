@@ -59,6 +59,8 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+    class MenuManagerInterface;
     class Ticker;
     class QtSourceControlNotificationHandler;
 
@@ -76,8 +78,8 @@ namespace AzToolsFramework
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"
 #define MAINFRM_LAYOUT_PREVIEW "PreviewLayout"
 
-// Subclassing so we can add slots to our toolbar widgets
-// Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
+// Sub-classing so we can add slots to our toolbar widgets
+// Using lambdas is prone to crashes since the lambda doesn't know when the widget is deleted.
 
 class UndoRedoToolButton
     : public QToolButton
@@ -209,6 +211,14 @@ private:
     QWidget* CreateSpacerRightWidget();
 
     QToolButton* CreateUndoRedoButton(int command);
+
+    // Editor Action Manager initialization functions
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+
+    void InitializeActionContext();
+    void InitializeActions();
+    void InitializeMenus();
 
 private Q_SLOTS:
     void ShowKeyboardCustomization();

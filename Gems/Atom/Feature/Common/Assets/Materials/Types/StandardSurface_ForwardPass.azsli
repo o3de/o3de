@@ -46,7 +46,6 @@ struct VSOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
@@ -72,16 +71,6 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
     float3x3 objectToWorldIT = GetNormalToWorld();
     ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && !skipShadowCoords && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            worldPosition.xyz,
-            OUT.m_normal,
-            OUT.m_shadowCoords);
-    }
 
     return OUT;
 }
@@ -131,16 +120,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             IN.m_position.w,
             depthNDC,
             displacementIsClipped);
-
-        // Adjust directional light shadow coordinates for parallax correction
-        if(o_parallax_enablePixelDepthOffset)
-        {
-            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-            {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
-            }
-        }
     }
 
     SurfaceSettings surfaceSettings;
@@ -162,9 +141,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // Directional light shadow coordinates
-    lightingData.shadowCoords = IN.m_shadowCoords;
-
     // Surface lighting properties
     lightingData.emissiveLighting = surface.emissiveLighting;
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
@@ -190,7 +166,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);

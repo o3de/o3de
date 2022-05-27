@@ -15,6 +15,12 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },                 
+                {
                     "Name": "DirectionalLightShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "SlotType": "Input",
@@ -150,6 +156,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "ScatterDistanceImage"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
                     }
                 }
             ]

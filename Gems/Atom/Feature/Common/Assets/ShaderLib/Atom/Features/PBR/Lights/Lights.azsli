@@ -19,13 +19,13 @@
 #include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 #include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 
-void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
+void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
     if( IsDirectLightingEnabled() )
     {
         if (o_enableDirectionalLights)
         {
-            ApplyDirectionalLights(surface, lightingData);
+            ApplyDirectionalLights(surface, lightingData, screenUv);
         }
         if (o_enablePunctualLights)
         {
@@ -41,8 +41,14 @@ void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
             ApplyPolygonLights(surface, lightingData);
         }
     }
-
-    if( UseDebugLight() )
+    else if(GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
+    {
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
+    }
+    else if( UseDebugLight() )
     {
         float3 lightIntensity = SceneSrg::m_debugLightingIntensity;
         float3 lightDirection = SceneSrg::m_debugLightingDirection;

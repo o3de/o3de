@@ -38,6 +38,16 @@
 
 #define TRESSFX_FLOAT_EPSILON 1e-7
 
+// Needed for DirectionalLightShadow.azsli - o_opacity_mode exists in most shaders but not this one.
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+    
+} o_opacity_mode = OpacityMode::Blended;
+
 //--------------------------------------------------------------------------------------
 //
 //     Controls whether you do mul(M,v) or mul(v,M)

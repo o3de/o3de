@@ -94,8 +94,10 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_surfaceDataQueryResolution, "Surface Data Query Resolution (m)", "")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ;
             }
         }

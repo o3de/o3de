@@ -58,6 +58,7 @@ namespace AZ::Render
                         ->EnumAttribute(RenderDebugViewMode::Normal, "Normal")
                         ->EnumAttribute(RenderDebugViewMode::Tangent, "Tangent")
                         ->EnumAttribute(RenderDebugViewMode::Bitangent, "Bitangent")
+                        ->EnumAttribute(RenderDebugViewMode::CascadeShadows, "CascadeShadows")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
@@ -170,6 +171,52 @@ namespace AZ::Render
 
                     ->DataElement(Edit::UIHandlers::CheckBox, &RenderDebugComponentConfig::m_enableDetailNormalMaps,
                         "Enable Detail Normal Maps", "Whether to use detail normal maps in rendering.")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    // Custom Debug Variables
+                    // Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code
+                    // Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code
+                    ->ClassElement(Edit::ClassElements::Group, "Custom Debug Variables")
+                        ->Attribute(Edit::Attributes::AutoExpand, false)
+
+                    ->DataElement(Edit::UIHandlers::CheckBox, &RenderDebugComponentConfig::m_customDebugOption01,
+                        "Custom Option 01", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(Edit::UIHandlers::CheckBox, &RenderDebugComponentConfig::m_customDebugOption02,
+                        "Custom Option 02", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(Edit::UIHandlers::CheckBox, &RenderDebugComponentConfig::m_customDebugOption03,
+                        "Custom Option 03", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(Edit::UIHandlers::CheckBox, &RenderDebugComponentConfig::m_customDebugOption04,
+                        "Custom Option 04", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat01,
+                        "Custom Float 01", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat02,
+                        "Custom Float 02", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat03,
+                        "Custom Float 03", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat04,
+                        "Custom Float 04", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
                         ;
