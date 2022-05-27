@@ -625,4 +625,13 @@ namespace RecastNavigationTests
         RecastNavigationNotificationHandler handler;
         handler.OnNavigationMeshUpdated(AZ::EntityId(1));
     }
+
+    /*
+     * Just for code coverage!
+     */
+    TEST_F(NavigationTest, RecastNavigationPhysXProviderCommon)
+    {
+        RecastNavigationPhysXProviderCommon test(true);
+        EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderCommon"), 0);
+    }
 }
