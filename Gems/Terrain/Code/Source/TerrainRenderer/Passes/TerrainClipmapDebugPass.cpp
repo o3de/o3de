@@ -39,7 +39,7 @@ namespace Terrain
         "5: detail roughness clipmap\n"
         "6: detail specularF0 clipmap\n"
         "7: detail metalness clipmap\n"
-        "8: detail occlusion clipmap\n");
+        "8: detail occlusion clipmap");
 
     AZ_CVAR(
         uint32_t,

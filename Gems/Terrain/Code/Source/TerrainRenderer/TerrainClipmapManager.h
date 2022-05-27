@@ -189,6 +189,10 @@ namespace Terrain
             uint32_t m_macroDispatchGroupCountY = 1;
             uint32_t m_detailDispatchGroupCountX = 1;
             uint32_t m_detailDispatchGroupCountY = 1;
+
+            // Enables debug overlay to indicate clipmap levels.
+            float m_enableMacroClipmapOverlay = 0.0f;
+            float m_enableDetailClipmapOverlay = 0.0f;
         };
 
         ClipmapData m_clipmapData;

@@ -10,9 +10,21 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <AzCore/Console/Console.h>
 
 namespace Terrain
 {
+    AZ_CVAR(
+        uint32_t,
+        r_terrainClipmapDebugOverlay,
+        0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The clipmap index to be rendered on the screen.\n"
+        "0: off\n"
+        "1: macro clipmap overlay\n"
+        "2: detail clipmap overlay");
+
     namespace
     {
         [[maybe_unused]] static const char* TerrainClipmapManagerName = "TerrainClipmapManager";
@@ -437,6 +449,22 @@ namespace Terrain
             m_detailTotalDispatchThreadY = 0;
             m_clipmapData.m_detailDispatchGroupCountX = 1;
             m_clipmapData.m_detailDispatchGroupCountY = 1;
+        }
+
+        if (r_terrainClipmapDebugOverlay == 0u)
+        {
+            m_clipmapData.m_enableMacroClipmapOverlay = 0.0f;
+            m_clipmapData.m_enableDetailClipmapOverlay = 0.0f;
+        }
+        else if (r_terrainClipmapDebugOverlay == 1u)
+        {
+            m_clipmapData.m_enableMacroClipmapOverlay = 1.0f;
+            m_clipmapData.m_enableDetailClipmapOverlay = 0.0f;
+        }
+        else
+        {
+            m_clipmapData.m_enableMacroClipmapOverlay = 0.0f;
+            m_clipmapData.m_enableDetailClipmapOverlay = 1.0f;
         }
     }
 

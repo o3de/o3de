@@ -143,6 +143,10 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_macroDispatchGroupCountY;
         uint m_detailDispatchGroupCountX;
         uint m_detailDispatchGroupCountY;
+
+        // Enables debug overlay to indicate clipmap levels.
+        float m_enableMacroClipmapOverlay;
+        float m_enableDetailClipmapOverlay;
     };
 
     MeshData m_meshData;
