@@ -24,6 +24,8 @@
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
+option bool o_debugTerrainLodLevels = false;
+
 struct VSOutput
 {
     float4 m_position : SV_Position;
@@ -142,7 +144,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-    
+
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
@@ -210,6 +212,23 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ForwardPassOutput output;
 
     output.m_diffuseColor = lightingOutput.m_diffuseColor;
+
+    if (o_debugTerrainLodLevels)
+    {
+        float3 debugColors[6] = 
+        {
+            float3(0.1, 0.0, 0.0),
+            float3(0.0, 0.1, 0.0),
+            float3(0.0, 0.0, 0.1),
+            float3(0.1, 0.1, 0.0),
+            float3(0.1, 0.0, 0.1),
+            float3(0.0, 0.1, 0.1),
+        };
+        uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
+        float3 debugColor = debugColors[lodLevel];
+        output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+    }
+
     output.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     output.m_specularColor = lightingOutput.m_specularColor;
     output.m_specularF0 = lightingOutput.m_specularF0;
