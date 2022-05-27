@@ -8,6 +8,7 @@
 
 #include "RecastNavigationPhysXProviderComponent.h"
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>

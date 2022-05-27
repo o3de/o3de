@@ -11,6 +11,8 @@
 #include <Recast.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/function/function_template.h>
 
 namespace RecastNavigation
 {

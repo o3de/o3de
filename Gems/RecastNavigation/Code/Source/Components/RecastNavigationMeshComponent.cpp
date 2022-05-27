@@ -10,6 +10,7 @@
 
 #include <DetourDebugDraw.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
 
