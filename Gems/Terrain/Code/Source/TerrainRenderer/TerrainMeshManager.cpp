@@ -549,7 +549,7 @@ namespace Terrain
         }
     }
 
-    AZ::Data::Instance<AZ::RPI::Buffer> TerrainMeshManager::CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData)
+    AZ::Data::Instance<AZ::RPI::Buffer> TerrainMeshManager::CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData, const char* name)
     {
         AZ::RPI::CommonBufferDescriptor desc;
         desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
@@ -557,6 +557,11 @@ namespace Terrain
         desc.m_byteCount = desc.m_elementSize * elementCount;
         desc.m_elementFormat = format;
         desc.m_bufferData = initialData;
+
+        if (name != nullptr)
+        {
+            desc.m_bufferName = name;
+        }
 
         return AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
     }
@@ -577,8 +582,8 @@ namespace Terrain
 
         constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
         constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
-        m_raytracingPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr);
-        m_raytracingNormalsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16G16_SNORM, rayTracingTotalVertices, nullptr);
+        m_raytracingPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingPositions");
+        m_raytracingNormalsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16G16_SNORM, rayTracingTotalVertices, nullptr, "TerrainRaytracingNormals");
 
         constexpr uint32_t rayTracingIndicesCount = RayTracingQuads1D * RayTracingQuads1D * 2 * 3; // 2 triangles per quad, 3 vertices per triangle
         AZStd::vector<uint32_t> raytracingIndices;
@@ -601,7 +606,7 @@ namespace Terrain
                 raytracingIndices.emplace_back(bottomRight);
             }
         }
-        m_raytracingIndexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32_UINT, rayTracingIndicesCount, raytracingIndices.data());
+        m_raytracingIndexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32_UINT, rayTracingIndicesCount, raytracingIndices.data(), "TerrainRaytracingIndices");
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb)

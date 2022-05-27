@@ -190,7 +190,7 @@ namespace Terrain
 
         void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
         void InitializeCommonSectorData();
-        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr);
+        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr, const char* name = "");
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
 
