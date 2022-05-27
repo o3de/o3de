@@ -29,6 +29,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AZ
 {
@@ -51,6 +52,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
+            , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
 
@@ -378,6 +380,12 @@ namespace AzToolsFramework
 
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
+
+            //! Called by the AssetProcessor when a source of an asset has been removed.
+            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+
+            //! Called by the AssetProcessor when a source of an asset has been removed.
+            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;

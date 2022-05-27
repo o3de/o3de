@@ -6,6 +6,8 @@
  *
  */
 
+#pragma optimize("", off)
+
 
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 
@@ -73,6 +75,124 @@ namespace AzToolsFramework
             AZStd::unordered_set<AZ::IO::Path> progressedFilePathsSet;
             TemplateId newTemplateId = LoadTemplateFromFile(filePath, progressedFilePathsSet);
             return newTemplateId;
+        }
+
+        void PrefabLoader::ReloadTemplateFromFile(AZ::IO::PathView filePath)
+        {
+            AZStd::unordered_set<AZ::IO::Path> progressedFilePathsSet;
+            if (!IsValidPrefabPath(filePath))
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadTemplateFromFile - "
+                    "Invalid file path: '%.*s'.",
+                    AZ_STRING_ARG(filePath.Native()));
+            }
+
+            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), AZStd::numeric_limits<size_t>::max());
+            if (!readResult.IsSuccess())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
+                    "Error message: '%s'",
+                    AZ_STRING_ARG(filePath.Native()), readResult.GetError().c_str());
+               
+            }
+
+            if (!IsValidPrefabPath(filePath))
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadTemplateFromString - "
+                    "Invalid origin path: '%.*s'",
+                    AZ_STRING_ARG(filePath.Native()));
+               
+            }
+
+            
+
+            // Cyclical dependency detected if the prefab file is already part of the progressed
+            // file path set.
+            if (progressedFilePathsSet.contains(filePath))
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadTemplateFromString - "
+                    "Prefab file '%.*s' has been detected to directly or indirectly depend on itself."
+                    "Terminating any further loading of this branch of its prefab hierarchy.",
+                    AZ_STRING_ARG(filePath.Native()));
+                
+            }
+
+           
+
+            // Read Template's prefab file from disk and parse Prefab DOM from file.
+            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
+            if (!readPrefabFileResult.IsSuccess())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
+                    "Error message: '%s'",
+                    AZ_STRING_ARG(filePath.Native()), readPrefabFileResult.GetError().c_str());
+
+                
+            }
+
+            // Add or replace the Source parameter in the dom
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Set(readPrefabFileResult.GetValue(), filePath.Native().data());
+
+            //call update function thr
+            
+            // Create new Template with the Prefab DOM.
+            auto prefabDom = readPrefabFileResult.TakeValue();
+            
+           
+
+            //TemplateReference newTemplateReference = m_prefabSystemComponentInterface->FindTemplate(newTemplateId);
+            //Template& newTemplate = newTemplateReference->get();
+
+
+            //// Mark the file as being in progress.
+            //progressedFilePathsSet.emplace(relativePath); // include this
+
+            //// Get 'Instances' value from Template.
+            //bool isLoadSuccessful = true;
+            //PrefabDomValueReference instancesReference = newTemplate.GetInstancesValue();
+            //if (instancesReference.has_value())
+            //{
+            //    PrefabDomValue& instances = instancesReference->get();
+
+            //    // For each instance value in 'instances', try to create source Templates for target Template's nested instance data.
+            //    // Also create Links between source/target Templates if source Template loaded successfully.
+            //    for (PrefabDomValue::MemberIterator instanceIterator = instances.MemberBegin(); instanceIterator != instances.MemberEnd();
+            //         ++instanceIterator)
+            //    {
+            //        /*if (!LoadNestedInstance(instanceIterator, newTemplateId, progressedFilePathsSet))
+            //        {
+            //            isLoadSuccessful = false;
+            //            AZ_Error(
+            //                "Prefab", false,
+            //                "PrefabLoader::LoadTemplate - "
+            //                "Loading nested instance '%s' in target Template '%u' from Prefab file '%.*s' failed.",
+            //                instanceIterator->name.GetString(), newTemplateId, AZ_STRING_ARG(filePath.Native()));
+            //        }*/
+            //    }
+            //}
+
+            //isLoadSuccessful &= SanitizeLoadedTemplate(prefabDom);
+            SanitizeLoadedTemplate(prefabDom);
+
+            //newTemplate.MarkAsLoadedWithErrors(!isLoadSuccessful);
+
+            // Un-mark the file as being in progress.
+            progressedFilePathsSet.erase(filePath);
+
+           // Directly return loaded Template id.
+            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(filePath);
+            m_prefabSystemComponentInterface->UpdatePrefabTemplate(loadedTemplateId, prefabDom);
         }
 
         TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
@@ -146,7 +266,7 @@ namespace AzToolsFramework
 
             // Directly return loaded Template id.
             TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
-            if (loadedTemplateId != InvalidTemplateId)
+            if (loadedTemplateId != InvalidTemplateId)//exclude logic
             {
                 return loadedTemplateId;
             }
@@ -202,7 +322,7 @@ namespace AzToolsFramework
             }
 
             // Mark the file as being in progress.
-            progressedFilePathsSet.emplace(relativePath);
+            progressedFilePathsSet.emplace(relativePath); //include this
 
             // Get 'Instances' value from Template.
             bool isLoadSuccessful = true;
@@ -726,3 +846,5 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+
+#pragma optimize("", on)

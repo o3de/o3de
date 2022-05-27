@@ -54,6 +54,8 @@ namespace AzToolsFramework
              */
             TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath) override;
 
+            void ReloadTemplateFromFile(AZ::IO::PathView filePath);
+
             /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.
              * Converts .prefab form into Prefab Template form by expanding source path and patch info

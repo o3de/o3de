@@ -6,6 +6,8 @@
  *
  */
 
+#pragma optimize("", off)
+
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 
 #include <AzCore/Component/Entity.h>
@@ -20,6 +22,8 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AzToolsFramework
 {
@@ -39,10 +43,12 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
+            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
+            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -160,7 +166,26 @@ namespace AzToolsFramework
                 newInstance->SetTemplateId(newTemplateId);
             }
         }
-
+        void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            AZ_Error("Prefab", false,
+                "File changed", relativePath.c_str());
+            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
+            if (found != m_templateFilePathToIdMap.end())
+            {
+                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
+            }
+            else
+            {
+              
+            }
+            return;
+        }
+        void PrefabSystemComponent::SourceFileRemoved(
+            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            AZ_Error("Prefab", false, "File removed", relativePath.c_str());
+        }
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
             TemplateReference findTemplateResult = FindTemplate(templateId);
@@ -1135,3 +1160,4 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)
