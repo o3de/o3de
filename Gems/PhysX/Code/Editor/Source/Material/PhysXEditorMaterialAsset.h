@@ -8,26 +8,14 @@
 
 #pragma once
 
+#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
+
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
 namespace PhysicsLegacy
 {
-    // O3DE_DEPRECATION
-    // Legacy Physics material Id class used to identify the material in the collection of materials.
-    // Used when converting old material asset to new one.
-    class MaterialId
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(MaterialId, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(PhysicsLegacy::MaterialId, "{744CCE6C-9F69-4E2F-B950-DAB8514F870B}");
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Uuid m_id = AZ::Uuid::CreateNull();
-    };
-
     class MaterialFromAssetConfiguration;
-} // namespace PhysX
+} // namespace PhysicsLegacy
 
 namespace PhysX
 {
@@ -50,6 +38,8 @@ namespace PhysX
         virtual ~EditorMaterialAsset() = default;
 
         const MaterialConfiguration& GetMaterialConfiguration() const;
+
+        PhysicsLegacy::MaterialId GetLegacyPhysicsMaterialId() const;
 
     protected:
         MaterialConfiguration m_materialConfiguration;

@@ -20,6 +20,8 @@ namespace Physics
 
 namespace PhysX
 {
+    class EditorMaterialAsset;
+
     //! Builder to convert PhysX Editor Material assets in the
     //! source folder into Physics Material assets in the cache folder.
     class EditorMaterialAssetBuilder
@@ -38,8 +40,7 @@ namespace PhysX
         void ShutDown() override { }
 
     private:
-        AZStd::optional<MaterialConfiguration> GetMaterialConfigurationFromEditorMaterialAsset(
-            const AZStd::string& assetFullPath) const;
+        AZ::Data::Asset<EditorMaterialAsset> LoadEditorMaterialAsset(const AZStd::string& assetFullPath) const;
 
         bool SerializeOutPhysicsMaterialAsset(
             AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset,

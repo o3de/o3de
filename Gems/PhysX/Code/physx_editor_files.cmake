@@ -129,6 +129,10 @@ set(FILES
     Editor/Source/Material/PhysXEditorMaterialAsset.h
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.cpp
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h
 )

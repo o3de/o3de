@@ -13,6 +13,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
@@ -43,6 +45,7 @@ namespace Terrain
 
         SurfaceData::SurfaceTag m_surfaceTag;
         AZ::Data::Asset<Physics::MaterialAsset> m_materialAsset;
+        PhysicsLegacy::MaterialId m_legacyMaterialId; // Kept to convert old physics material assets.
 
     private:
         const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
@@ -58,6 +61,7 @@ namespace Terrain
         AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         AZ::Data::Asset<Physics::MaterialAsset> m_defaultMaterialAsset;
+        PhysicsLegacy::MaterialSelection m_legacyDefaultMaterialSelection; // Kept to convert old physics material assets.
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
     };
 

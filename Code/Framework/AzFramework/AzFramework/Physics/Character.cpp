@@ -89,6 +89,7 @@ namespace Physics
                 ->Field("CollisionLayer", &CharacterConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &CharacterConfiguration::m_collisionGroupId)
                 ->Field("MaterialSlots", &CharacterConfiguration::m_materialSlots)
+                ->Field("Material", &CharacterConfiguration::m_legacyMaterialSelection)
                 ->Field("UpDirection", &CharacterConfiguration::m_upDirection)
                 ->Field("MaximumSlopeAngle", &CharacterConfiguration::m_maximumSlopeAngle)
                 ->Field("StepHeight", &CharacterConfiguration::m_stepHeight)

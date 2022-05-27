@@ -59,6 +59,7 @@ namespace Terrain
                 ->Version(3)
                 ->Field("Surface", &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag)
                 ->Field("MaterialAsset", &TerrainPhysicsSurfaceMaterialMapping::m_materialAsset)
+                ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_legacyMaterialId)
             ;
         }
     }
@@ -72,6 +73,7 @@ namespace Terrain
             serialize->Class<TerrainPhysicsColliderConfig>()
                 ->Version(5)
                 ->Field("DefaultMaterialAsset", &TerrainPhysicsColliderConfig::m_defaultMaterialAsset)
+                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_legacyDefaultMaterialSelection)
                 ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
             ;
         }

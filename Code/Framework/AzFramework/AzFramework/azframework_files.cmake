@@ -255,6 +255,8 @@ set(FILES
     Physics/Material/PhysicsMaterialManager.cpp
     Physics/Material/PhysicsMaterialSystemComponent.h
     Physics/Material/PhysicsMaterialSystemComponent.cpp
+    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h
+    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h

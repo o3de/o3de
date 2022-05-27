@@ -134,7 +134,7 @@ namespace Blast
         AZ_Assert(!assetPath.empty(), "Asset Catalog returned an invalid path from an enumerated asset.");
         if (assetPath.empty())
         {
-            AZ_Warning("BlastMaterialConversion", false, "Not able get asset path for asset with id %s.",
+            AZ_Warning("BlastMaterialConversion", false, "Not able to get asset path for asset with id %s.",
                 assetId.ToString<AZStd::string>().c_str());
             return AZStd::nullopt;
         }

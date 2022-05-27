@@ -11,26 +11,10 @@
 
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 
-namespace PhysicsLegacy
-{
-    void MaterialId::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<PhysicsLegacy::MaterialId>()
-                ->Version(1)
-                ->Field("MaterialId", &PhysicsLegacy::MaterialId::m_id)
-                ;
-        }
-    }
-}
-
 namespace PhysX
 {
     void EditorMaterialAsset::Reflect(AZ::ReflectContext* context)
     {
-        PhysicsLegacy::MaterialId::Reflect(context);
-
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::EditorMaterialAsset, AZ::Data::AssetData>()
@@ -56,5 +40,10 @@ namespace PhysX
     const MaterialConfiguration& EditorMaterialAsset::GetMaterialConfiguration() const
     {
         return m_materialConfiguration;
+    }
+
+    PhysicsLegacy::MaterialId EditorMaterialAsset::GetLegacyPhysicsMaterialId() const
+    {
+        return m_legacyPhysicsMaterialId;
     }
 } // namespace PhysX

@@ -42,20 +42,22 @@ namespace PhysX
         const AssetBuilderSDK::ProcessJobRequest& request,
         AssetBuilderSDK::ProcessJobResponse& response) const
     {
-        AZStd::optional<MaterialConfiguration> materialConfiguration = GetMaterialConfigurationFromEditorMaterialAsset(request.m_fullPath);
-        if (!materialConfiguration.has_value())
+        AZ::Data::Asset<EditorMaterialAsset> editorMaterialAsset = LoadEditorMaterialAsset(request.m_fullPath);
+        if (!editorMaterialAsset)
         {
-            AZ_Error("EditorMaterialAssetBuilder", false, "Failed to obtain material configuration from PhysX EditorMaterialAsset: %s", request.m_fullPath.c_str());
+            AZ_Error("EditorMaterialAssetBuilder", false, "Failed to load PhysX EditorMaterialAsset: %s", request.m_fullPath.c_str());
             return;
         }
 
-        AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset = materialConfiguration->CreateMaterialAsset();
+        AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset = editorMaterialAsset->GetMaterialConfiguration().CreateMaterialAsset();
         if (!physicsMaterialAsset.IsReady())
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "Failed to create physics material assset.");
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
         }
+
+        physicsMaterialAsset->SetLegacyPhysicsMaterialId(editorMaterialAsset->GetLegacyPhysicsMaterialId());
 
         if (!SerializeOutPhysicsMaterialAsset(physicsMaterialAsset, request, response))
         {
@@ -67,7 +69,7 @@ namespace PhysX
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }
 
-    AZStd::optional<MaterialConfiguration> EditorMaterialAssetBuilder::GetMaterialConfigurationFromEditorMaterialAsset(const AZStd::string& assetFullPath) const
+    AZ::Data::Asset<EditorMaterialAsset> EditorMaterialAssetBuilder::LoadEditorMaterialAsset(const AZStd::string& assetFullPath) const
     {
         auto assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
         // Read in the data from a file to a buffer, then hand ownership of the buffer over to the assetDataStream
@@ -76,14 +78,14 @@ namespace PhysX
             if (!AZ::IO::RetryOpenStream(stream))
             {
                 AZ_Error("EditorMaterialAssetBuilder", false, "Source file '%s' could not be opened.", assetFullPath.c_str());
-                return AZStd::nullopt;
+                return {};
             }
             AZStd::vector<AZ::u8> fileBuffer(stream.GetLength());
             size_t bytesRead = stream.Read(fileBuffer.size(), fileBuffer.data());
             if (bytesRead != stream.GetLength())
             {
                 AZ_Error("EditorMaterialAssetBuilder", false, "Source file '%s' could not be read.", assetFullPath.c_str());
-                return AZStd::nullopt;
+                return {};
             }
 
             assetDataStream->Open(AZStd::move(fileBuffer));
@@ -96,22 +98,22 @@ namespace PhysX
         if (!physxEditorMaterialAssetHandler)
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "Unable to find PhysX EditorMaterialAsset handler.");
-            return AZStd::nullopt;
+            return {};
         }
 
         if (physxEditorMaterialAssetHandler->LoadAssetDataFromStream(physxEditorMaterialAsset, assetDataStream, nullptr) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "Failed to load PhysX EditorMaterialAsset: '%s'", assetFullPath.c_str());
-            return AZStd::nullopt;
+            return {};
         }
 
         if (!physxEditorMaterialAsset)
         {
             AZ_Error("EditorMaterialAssetBuilder", false, "PhysX EditorMaterialAsset loaded with invalid data: '%s'", assetFullPath.c_str());
-            return AZStd::nullopt;
+            return {};
         }
 
-        return physxEditorMaterialAsset->GetMaterialConfiguration();
+        return physxEditorMaterialAsset;
     }
 
     bool EditorMaterialAssetBuilder::SerializeOutPhysicsMaterialAsset(

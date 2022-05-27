@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -19,6 +18,8 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
+
+#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h>
 
 namespace PhysicsLegacy
 {
@@ -72,8 +73,7 @@ namespace PhysicsLegacy
 
         static void Reflect(AZ::ReflectContext* context)
         {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<PhysicsLegacy::MaterialFromAssetConfiguration>()
                     ->Version(1)
@@ -129,7 +129,7 @@ namespace PhysX
     void ConvertMaterialLibrariesIntoIndividualMaterials([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs);
 
     AZ_CONSOLEFREEFUNC("ed_physxConvertMaterialLibrariesIntoIndividualMaterials", ConvertMaterialLibrariesIntoIndividualMaterials, AZ::ConsoleFunctorFlags::Null,
-        "Finds legacy physics material library assets in the project and generates new individual physx material assets. Original library assets will be deleted.");
+        "Finds legacy physics material library assets in the project and generates new individual PhysX material assets. Original library assets will be deleted.");
 
     void ReflectLegacyMaterialClasses(AZ::ReflectContext* context)
     {
@@ -145,7 +145,7 @@ namespace PhysX
         AZ_Assert(!assetPath.empty(), "Asset Catalog returned an invalid path from an enumerated asset.");
         if (assetPath.empty())
         {
-            AZ_Warning("PhysXMaterialConversion", false, "Not able get asset path for asset with id %s.",
+            AZ_Warning("PhysXMaterialConversion", false, "Not able to get asset path for asset with id %s.",
                 assetId.ToString<AZStd::string>().c_str());
             return AZStd::nullopt;
         }
@@ -341,7 +341,7 @@ namespace PhysX
         auto* materialAssetHandler = AZ::Data::AssetManager::Instance().GetHandler(EditorMaterialAsset::RTTI_Type());
         if (!materialAssetHandler)
         {
-            AZ_Error("PhysXMaterialConversion", false, "Unable to find physx EditorMaterialAsset handler.");
+            AZ_Error("PhysXMaterialConversion", false, "Unable to find PhysX EditorMaterialAsset handler.");
             return;
         }
 

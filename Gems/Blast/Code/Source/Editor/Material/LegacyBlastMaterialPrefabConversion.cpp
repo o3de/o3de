@@ -40,11 +40,12 @@ namespace Blast
         }
 
         AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> entities;
-        entities.reserve(prefabDom.MemberCount());
 
         if (auto entitiesIter = prefabDom.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
             entitiesIter != prefabDom.MemberEnd() && entitiesIter->value.IsObject())
         {
+            entities.reserve(entitiesIter->value.MemberCount());
+
             for (auto entityIter = entitiesIter->value.MemberBegin(); entityIter != entitiesIter->value.MemberEnd(); ++entityIter)
             {
                 if (entityIter->value.IsObject())
@@ -61,11 +62,12 @@ namespace Blast
     AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> GetPrefabComponents(AzToolsFramework::Prefab::PrefabDomValue& prefabEntity)
     {
         AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> components;
-        components.reserve(prefabEntity.MemberCount());
 
         if (auto componentsIter = prefabEntity.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
             componentsIter != prefabEntity.MemberEnd() && componentsIter->value.IsObject())
         {
+            components.reserve(componentsIter->value.MemberCount());
+
             for (auto componentIter = componentsIter->value.MemberBegin(); componentIter != componentsIter->value.MemberEnd(); ++componentIter)
             {
                 if (!componentIter->value.IsObject())

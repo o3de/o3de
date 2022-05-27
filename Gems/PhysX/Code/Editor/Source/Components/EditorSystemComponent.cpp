@@ -21,7 +21,7 @@
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
-#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetConversion.h>
+#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX

@@ -30,6 +30,7 @@ namespace Physics
                 ->Field("Position", &ColliderConfiguration::m_position)
                 ->Field("Rotation", &ColliderConfiguration::m_rotation)
                 ->Field("MaterialSlots", &ColliderConfiguration::m_materialSlots)
+                ->Field("MaterialSelection", &ColliderConfiguration::m_legacyMaterialSelection)
                 ->Field("propertyVisibilityFlags", &ColliderConfiguration::m_propertyVisibilityFlags)
                 ->Field("ColliderTag", &ColliderConfiguration::m_tag)
                 ->Field("RestOffset", &ColliderConfiguration::m_restOffset)
