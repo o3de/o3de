@@ -36,7 +36,6 @@ namespace RecastNavigationTests
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("BoxShapeService"));
             provided.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         }
 
@@ -205,7 +204,7 @@ namespace RecastNavigationTests
             while (current < timeout && m_calls == 0)
             {
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(static_cast<int>(timeStep)));
-                current += timeStep;                
+                current += timeStep;
             }
         }
     };

@@ -6,18 +6,15 @@
  *
  */
 
-#include <Misc/RecastNavigationMeshCommon.h>
 #include <DetourNavMeshBuilder.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
+#include <Misc/RecastNavigationMeshCommon.h>
+#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
 
 AZ_DEFINE_BUDGET(Navigation);
-
-//#pragma optimize("", off)
 
 namespace RecastNavigation
 {
@@ -273,7 +270,7 @@ namespace RecastNavigation
 
             params.tileX = geom->m_tileX;
             params.tileY = geom->m_tileY;
-            params.tileLayer = 0; // This can be used for providing vertical layers when navigation map has multiple levels.
+            params.tileLayer = 0; // This can be used to provide vertical layers when navigation map has multiple levels.
 
             if (!dtCreateNavMeshData(&params, &navigationTileData.m_data, &navigationTileData.m_size))
             {
@@ -302,12 +299,12 @@ namespace RecastNavigation
         AZ::Aabb worldVolume = AZ::Aabb::CreateNull();
 
         dtNavMeshParams params = {};
-        RecastNavigationSurveyorRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationSurveyorRequests::GetWorldBounds);
+        RecastNavigationPhysXProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationPhysXProviderRequests::GetWorldBounds);
 
         const RecastVector3 worldCenter(worldVolume.GetMin());
         rcVcopy(params.orig, &worldCenter.m_x);
 
-        RecastNavigationSurveyorRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationSurveyorRequests::GetNumberOfTiles, tileSize);
+        RecastNavigationPhysXProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationPhysXProviderRequests::GetNumberOfTiles, tileSize);
 
         // in world units
         params.tileWidth = tileSize;
@@ -349,5 +346,3 @@ namespace RecastNavigation
         return true;
     }
 } // namespace RecastNavigation
-
-//#pragma optimize("", on)

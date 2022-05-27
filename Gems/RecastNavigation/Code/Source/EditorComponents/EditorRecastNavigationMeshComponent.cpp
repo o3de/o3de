@@ -8,15 +8,11 @@
 
 #include "EditorRecastNavigationMeshComponent.h"
 
-#include <DetourDebugDraw.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Components/RecastNavigationMeshComponent.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
 
 namespace RecastNavigation
 {
-
     void EditorRecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
     {
         if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -55,7 +51,8 @@ namespace RecastNavigation
 
     void EditorRecastNavigationMeshComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("RecastNavigationSurveyorService"));
+        // This can be satisfied by @RecastNavigationPhysXProviderComponent or a user-defined component.
+        required.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
     }
 
     void EditorRecastNavigationMeshComponent::Activate()

@@ -13,7 +13,8 @@
 
 namespace RecastNavigation
 {
-    class RecastNavigationSurveyorRequests
+    //! The interface for @RecastNavigationPhysXProviderRequestBus
+    class RecastNavigationPhysXProviderRequests
         : public AZ::ComponentBus
     {
     public:
@@ -25,8 +26,8 @@ namespace RecastNavigation
         virtual AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) = 0;
 
         //! A navigation mesh is made up of tiles. Each tile is a square of the same size.
-        //! @param tileSize size of square tile that make up a navigation mesh.
-        //! @return number of tiles that would be necessary to the cover the required area.
+        //! @param tileSize size of square tiles that make up a navigation mesh.
+        //! @return number of tiles that would be necessary to the cover the required area provided by @GetWorldBounds.
         virtual int GetNumberOfTiles([[maybe_unused]] float tileSize) const = 0;
 
         //! Returns the world bounds that this surveyor is configured to collect geometry.
@@ -34,5 +35,6 @@ namespace RecastNavigation
         virtual AZ::Aabb GetWorldBounds() const = 0;
     };
 
-    using RecastNavigationSurveyorRequestBus = AZ::EBus<RecastNavigationSurveyorRequests>;
+    //! Request EBus for a navigation PhysX provider component that collects geometry data from PhysX world.
+    using RecastNavigationPhysXProviderRequestBus = AZ::EBus<RecastNavigationPhysXProviderRequests>;
 } // namespace RecastNavigation

@@ -11,7 +11,7 @@
 #include <DetourDebugDraw.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
+#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
 
 AZ_CVAR(
     bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -59,8 +59,9 @@ namespace RecastNavigation
     {
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
-        RecastNavigationSurveyorRequestBus::EventResult(tiles, GetEntityId(),
-            &RecastNavigationSurveyorRequests::CollectGeometry,
+        // Blocking call.
+        RecastNavigationPhysXProviderRequestBus::EventResult(tiles, GetEntityId(),
+            &RecastNavigationPhysXProviderRequests::CollectGeometry,
             m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
 
         {
@@ -71,14 +72,17 @@ namespace RecastNavigation
                     continue;
                 }
 
+                // Given geometry create Recast tile structure.
                 NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
                     m_meshConfig, m_context.get());
 
+                // If a tile at the location already exists, remove it before update the data.
                 if (const dtTileRef tileRef = m_navObjects->m_mesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
                 {
                     m_navObjects->m_mesh->removeTile(tileRef, nullptr, nullptr);
                 }
 
+                // A tile might have no geometry at all if no objects were found there.
                 if (navigationTileData.IsValid())
                 {
                     AttachNavigationTileToMesh(navigationTileData);
@@ -88,7 +92,7 @@ namespace RecastNavigation
 
         RecastNavigationMeshNotificationBus::Event(GetEntityId(), &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, GetEntityId());
     }
-    
+
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponent::GetNavigationObject()
     {
         return m_navObjects;
@@ -98,6 +102,8 @@ namespace RecastNavigation
     {
         m_context = AZStd::make_unique<rcContext>();
 
+        // It is safe to create the navigation mesh object now.
+        // The actual navigation data will be passed at a later time.
         CreateNavigationMesh(GetEntityId(), m_meshConfig.m_tileSize);
 
         if (cl_navmesh_debug || m_showNavigationMesh)

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Misc/RecastNavigationTiledSurveyorCommon.h>
+#include <Misc/RecastNavigationPhysXProviderCommon.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -23,24 +23,18 @@ AZ_CVAR(
 
 AZ_DECLARE_BUDGET(Navigation);
 
-#pragma optimize("", off)
-
 namespace RecastNavigation
 {
-    RecastNavigationTiledSurveyorCommon::RecastNavigationTiledSurveyorCommon(bool useEditorScene) : m_useEditorScene(useEditorScene)
+    RecastNavigationPhysXProviderCommon::RecastNavigationPhysXProviderCommon(bool useEditorScene) : m_useEditorScene(useEditorScene)
     {
     }
 
-    const char* RecastNavigationTiledSurveyorCommon::GetSceneName() const
+    const char* RecastNavigationPhysXProviderCommon::GetSceneName() const
     {
         return m_useEditorScene ? AzPhysics::EditorPhysicsSceneName : AzPhysics::DefaultPhysicsSceneName;
     }
 
-    RecastNavigationTiledSurveyorCommon::~RecastNavigationTiledSurveyorCommon()
-    {
-    }
-
-    void RecastNavigationTiledSurveyorCommon::CollectGeometryWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
+    void RecastNavigationPhysXProviderCommon::CollectCollidersWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryWithinVolume");
 
@@ -51,7 +45,7 @@ namespace RecastNavigation
         shapeConfiguration.m_dimensions = dimension;
 
         AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
-        request.m_queryType = AzPhysics::SceneQuery::QueryType::Static;
+        request.m_queryType = AzPhysics::SceneQuery::QueryType::Static; // only looking for static PhysX colliders
         request.m_collisionGroup = AzPhysics::CollisionGroup::All;
 
         AzPhysics::SceneQuery::UnboundedOverlapHitCallback unboundedOverlapHitCallback =
@@ -66,6 +60,7 @@ namespace RecastNavigation
             return true;
         };
 
+        //! We need to use unbounded callback, otherwise the results will be limited to 32 or so objects.
         request.m_unboundedOverlapHitCallback = unboundedOverlapHitCallback;
 
         if (auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -78,7 +73,7 @@ namespace RecastNavigation
         }
     }
 
-    void RecastNavigationTiledSurveyorCommon::AppendColliderGeometry(
+    void RecastNavigationPhysXProviderCommon::AppendColliderGeometry(
         TileGeometry& geometry,
         const QueryHits& overlapHits,
         bool debugDrawInputData)
@@ -102,11 +97,13 @@ namespace RecastNavigation
 
             AZ::Transform t = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
             overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
+            // Note: geometry data is in local space
 
             if (!vertices.empty())
             {
                 if (indices.empty())
                 {
+                    // Some PhysX colliders (convex shapes) return geometry without indices. Build indices now.
                     AZStd::vector<AZ::Vector3> transformed;
 
                     int currentLocalIndex = 0;
@@ -180,7 +177,7 @@ namespace RecastNavigation
         }
     }
 
-    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationTiledSurveyorCommon::CollectGeometryImpl(
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderCommon::CollectGeometryImpl(
         float tileSize, float borderSize, const AZ::Aabb& worldVolume, bool debugDrawInputData)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
@@ -196,6 +193,7 @@ namespace RecastNavigation
 
         const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
 
+        // Find all geometry one tile at a time.
         for (int y = 0; y < tilesAlongY; ++y)
         {
             for (int x = 0; x < tilesAlongX; ++x)
@@ -212,11 +210,12 @@ namespace RecastNavigation
                     worldMax.GetZ()
                 };
 
+                // Recast wants extra triangle data around each tile, so that each tile can connect to each other.
                 AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
                 AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
 
                 QueryHits results;
-                CollectGeometryWithinVolume(scanVolume, results);
+                CollectCollidersWithinVolume(scanVolume, results);
 
                 AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
                 geometryData->m_worldBounds = tileVolume;
@@ -231,5 +230,3 @@ namespace RecastNavigation
         return tiles;
     }
 } // namespace RecastNavigation
-
-#pragma optimize("", on)

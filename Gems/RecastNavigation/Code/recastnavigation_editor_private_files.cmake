@@ -14,6 +14,6 @@ set(FILES
     Source/EditorComponents/EditorDetourNavigationComponent.cpp
     Source/EditorComponents/EditorRecastNavigationMeshComponent.h
     Source/EditorComponents/EditorRecastNavigationMeshComponent.cpp
-    Source/EditorComponents/EditorRecastNavigationTiledSurveyorComponent.h
-    Source/EditorComponents/EditorRecastNavigationTiledSurveyorComponent.cpp
+    Source/EditorComponents/EditorRecastNavigationPhysXProviderComponent.h
+    Source/EditorComponents/EditorRecastNavigationPhysXProviderComponent.cpp
 )

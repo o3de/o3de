@@ -13,16 +13,17 @@
 
 namespace RecastNavigation
 {
+    //! Interface for path finding API.
     class DetourNavigationRequests
         : public AZ::ComponentBus
     {
-    public:        
+    public:
         //! Blocking call that find a walkable path between two entities.
         //! @param fromEntity The starting point of the path from the position of this entity.
         //! @param toEntity The end point of the path is at the position of this entity.
         //! @return If a path is found, returns a vector of waypoints. An empty vector is returned if a path was not found.
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenEntities( AZ::EntityId fromEntity, AZ::EntityId toEntity ) = 0;
-        
+
         //! Blocking call that find a walkable path between two world positions.
         //! @param fromWorldPosition The starting point of the path.
         //! @param toWorldPosition The end point of the path to find.
@@ -30,5 +31,6 @@ namespace RecastNavigation
         virtual AZStd::vector<AZ::Vector3> FindPathBetweenPositions( const AZ::Vector3& fromWorldPosition, const AZ::Vector3& toWorldPosition ) = 0;
     };
 
+    //! Request EBus for a path finding component.
     using DetourNavigationRequestBus = AZ::EBus<DetourNavigationRequests>;
 } // namespace RecastNavigation

@@ -19,7 +19,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <Components/DetourNavigationComponent.h>
 #include <Components/RecastNavigationMeshComponent.h>
-#include <Components/RecastNavigationTiledSurveyorComponent.h>
+#include <Components/RecastNavigationPhysXProviderComponent.h>
 
 namespace RecastNavigationTests
 {
@@ -55,7 +55,7 @@ namespace RecastNavigationTests
             m_sc->CreateEditContext();
             m_bc = AZStd::make_unique<BehaviorContext>();
             RegisterComponent<RecastNavigationMeshComponent>();
-            RegisterComponent<RecastNavigationTiledSurveyorComponent>();
+            RegisterComponent<RecastNavigationPhysXProviderComponent>();
             RegisterComponent<MockShapeComponent>();
             RegisterComponent<EventSchedulerSystemComponent>();
             RegisterComponent<RecastNavigationSystemComponent>();
@@ -108,7 +108,7 @@ namespace RecastNavigationTests
             e.CreateComponent<EventSchedulerSystemComponent>();
             e.CreateComponent<RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
-            e.CreateComponent<RecastNavigationTiledSurveyorComponent>();
+            e.CreateComponent<RecastNavigationPhysXProviderComponent>();
             e.CreateComponent<RecastNavigationMeshComponent>(RecastNavigationMeshConfig{}, true);
         }
 
@@ -118,6 +118,7 @@ namespace RecastNavigationTests
             m_hit->m_entityId = AZ::EntityId{ 1 };
             m_hit->m_shape = m_mockPhysicsShape.get();
 
+            // Fake result when querying PhysX world.
             ON_CALL(*m_mockSceneInterface, QueryScene(_, _)).WillByDefault(Invoke([this]
             (AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest* request)
                 {
@@ -125,13 +126,14 @@ namespace RecastNavigationTests
                     overlapRequest->m_unboundedOverlapHitCallback({ *m_hit });
                     return AzPhysics::SceneQueryHits();
                 }));
-
-
+            
+            // Fake a simulated body within query results.
             ON_CALL(*m_mockSceneInterface, GetSimulatedBodyFromHandle(_, _)).WillByDefault(Invoke([this]
             (AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle)
                 {
                     return m_mockSimulatedBody.get();
                 }));
+            // Provide a position and an orientation of a simulated body.
             ON_CALL(*m_mockSimulatedBody, GetOrientation()).WillByDefault(Return(AZ::Quaternion::CreateIdentity()));
             ON_CALL(*m_mockSimulatedBody, GetPosition()).WillByDefault(Return(AZ::Vector3::CreateZero()));
         }
@@ -145,6 +147,7 @@ namespace RecastNavigationTests
 
         MockShapeComponent* m_mockShapeComponent = nullptr;
 
+        // Test data
         void AddTestGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, bool indexed = true)
         {
             constexpr float size = 2.5f;
@@ -205,7 +208,9 @@ namespace RecastNavigationTests
 
         AZStd::shared_ptr<NavMeshQuery> nav;
         RecastNavigationMeshRequestBus::EventResult(nav, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
-
+        /*
+         * We updated the navigation mesh using a blocking call. We should have access to the native Recast object now.
+         */
         EXPECT_NE(nav, nullptr);
     }
 
@@ -234,6 +239,10 @@ namespace RecastNavigationTests
                 }));
         }
 
+        /*
+         * Corner case, when a collider doesn't have a physical body for reason. Just don't fail.
+         */
+
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
@@ -258,7 +267,9 @@ namespace RecastNavigationTests
 
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
-
+        /*
+         * Verify the notification EBus is called when a navigation mesh is updated.
+         */
         EXPECT_EQ(wait.m_calls, 1);
     }
 
@@ -270,7 +281,12 @@ namespace RecastNavigationTests
             e.SetId(AZ::EntityId{ 1 });
             e.CreateComponent<EventSchedulerSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
-            e.CreateComponent<RecastNavigationTiledSurveyorComponent>(true);
+
+            /*
+             * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
+             */
+            e.CreateComponent<RecastNavigationPhysXProviderComponent>(true);
+
             e.CreateComponent<RecastNavigationMeshComponent>();
         }
         ActivateEntity(e);
@@ -293,7 +309,12 @@ namespace RecastNavigationTests
             e.SetId(AZ::EntityId{ 1 });
             e.CreateComponent<EventSchedulerSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
-            e.CreateComponent<RecastNavigationTiledSurveyorComponent>(true);
+
+            /*
+             * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
+             */
+            e.CreateComponent<RecastNavigationPhysXProviderComponent>(true);
+
             e.CreateComponent<RecastNavigationMeshComponent>();
         }
         ActivateEntity(e);
@@ -302,12 +323,18 @@ namespace RecastNavigationTests
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
         (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
             {
+                /*
+                 * Testing with non-indexed triangle data. No way to verify, though. This test must not crash, though.
+                 */
                 AddTestGeometry(vertices, indices, false);
             }));
 
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
     }
 
+    /*
+     * Run update navigation mesh twice with indexed triangle data.
+     */
     TEST_F(NavigationTest, BlockingTestRerun)
     {
         Entity e;
@@ -325,6 +352,9 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
     }
 
+    /*
+     * Run update navigation mesh twice with no data.
+     */
     TEST_F(NavigationTest, BlockingOnEmptyRerun)
     {
         Entity e;
@@ -336,6 +366,9 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
     }
 
+    /*
+     * Exercise debug ticking code.
+     */
     TEST_F(NavigationTest, BlockingTestNonIndexedGeometry)
     {
         Entity e;
@@ -354,6 +387,9 @@ namespace RecastNavigationTests
         TickBus::Broadcast(&TickBus::Events::OnTick, 0.1f, ScriptTimePoint{});
     }
 
+    /*
+     * Exercise debug ticking code with indexed data.
+     */
     TEST_F(NavigationTest, TickingDebugDraw)
     {
         Entity e;
@@ -373,6 +409,9 @@ namespace RecastNavigationTests
         TickBus::Broadcast(&TickBus::Events::OnTick, 0.1f, ScriptTimePoint{});
     }
 
+    /*
+     * Exercise API rarely used by Recast
+     */
     TEST_F(NavigationTest, DirectTestOnDebugDrawQuad)
     {
         RecastNavigationDebugDraw debugDraw;
@@ -386,6 +425,9 @@ namespace RecastNavigationTests
         debugDraw.end();
     }
 
+    /*
+     * Exercise API rarely used by Recast
+     */
     TEST_F(NavigationTest, DirectTestOnDebugDrawLines)
     {
         RecastNavigationDebugDraw debugDraw(true);
@@ -399,6 +441,9 @@ namespace RecastNavigationTests
         debugDraw.end();
     }
 
+    /*
+     * Exercise API rarely used by Recast
+     */
     TEST_F(NavigationTest, DirectTestOnDebugDrawWithoutDebugDisplayRequests)
     {
         RecastNavigationDebugDraw debugDraw(true);
@@ -411,6 +456,9 @@ namespace RecastNavigationTests
         debugDraw.end();
     }
 
+    /*
+     * Basic find path test.
+     */
     TEST_F(NavigationTest, FindPathTestDetaultDetourSettings)
     {
         Entity e;
@@ -434,6 +482,9 @@ namespace RecastNavigationTests
         EXPECT_GT(waypoints.size(), 0);
     }
 
+    /*
+     * Basic find path test.
+     */
     TEST_F(NavigationTest, FindPathTest)
     {
         Entity e;
@@ -457,6 +508,9 @@ namespace RecastNavigationTests
         EXPECT_GT(waypoints.size(), 0);
     }
 
+    /*
+     * Test with one of the point being way outside of the range of the navigation mesh.
+     */
     TEST_F(NavigationTest, FindPathToOutOfBoundsDestination)
     {
         Entity e;
@@ -480,6 +534,9 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
     }
 
+    /*
+     * Corner case, test on empty data.
+     */
     TEST_F(NavigationTest, FindPathOnEmptyNavMesh)
     {
         Entity e;
@@ -501,6 +558,9 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
     }
 
+    /*
+     * Corner case. Invalid entities.
+     */
     TEST_F(NavigationTest, FindPathBetweenInvalidEntities)
     {
         Entity e;
@@ -522,6 +582,9 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
     }
 
+    /*
+     * Corner case. Empty nav mesh.
+     */
     TEST_F(NavigationTest, FindPathBetweenEntitiesOnEmptyNavMesh)
     {
         Entity e;
@@ -545,12 +608,18 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
     }
 
+    /*
+     * Just for code coverage!
+     */
     TEST_F(NavigationTest, RecastNavigationMeshCommonTests)
     {
         RecastNavigationMeshCommon common;
         EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshCommon"), 0);
     }
 
+    /*
+     * Just for code coverage!
+     */
     TEST_F(NavigationTest, RecastNavigationNotificationHandler)
     {
         RecastNavigationNotificationHandler handler;

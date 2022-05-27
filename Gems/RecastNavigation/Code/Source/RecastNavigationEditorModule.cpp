@@ -10,7 +10,7 @@
 #include <RecastNavigationEditorSystemComponent.h>
 #include <EditorComponents/EditorDetourNavigationComponent.h>
 #include <EditorComponents/EditorRecastNavigationMeshComponent.h>
-#include <EditorComponents/EditorRecastNavigationTiledSurveyorComponent.h>
+#include <EditorComponents/EditorRecastNavigationPhysXProviderComponent.h>
 
 namespace RecastNavigation
 {
@@ -31,7 +31,7 @@ namespace RecastNavigation
                 RecastNavigationEditorSystemComponent::CreateDescriptor(),
                 EditorDetourNavigationComponent::CreateDescriptor(),
                 EditorRecastNavigationMeshComponent::CreateDescriptor(),
-                EditorRecastNavigationTiledSurveyorComponent::CreateDescriptor(),
+                EditorRecastNavigationPhysXProviderComponent::CreateDescriptor(),
             });
         }
 

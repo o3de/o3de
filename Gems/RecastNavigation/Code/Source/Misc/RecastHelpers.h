@@ -54,16 +54,19 @@ namespace RecastNavigation
     {
     public:
         AZ::Aabb m_worldBounds = AZ::Aabb::CreateNull();
-        AZ::Aabb m_scanBounds = AZ::Aabb::CreateNull(); // includes @m_worldBounds and additional border extends
+        AZ::Aabb m_scanBounds = AZ::Aabb::CreateNull(); // includes @m_worldBounds and additional border extents
 
         int m_tileX = 0; // tile coordinate within the navigation grid along X-axis
         int m_tileY = 0; // tile coordinate within the navigation grid along Y-axis
 
+        //! Indexed vertices.
         AZStd::vector<RecastVector3> m_vertices;
         AZStd::vector<AZ::s32> m_indices;
 
+        //! Callback to the navigation mesh component that should process this tile.
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
-
+        
+        //! @return true if there are no vertices in this tile
         bool IsEmpty() const
         {
             return m_vertices.empty();
@@ -73,7 +76,7 @@ namespace RecastNavigation
     //! Navigation data in binary Recast form
     struct NavigationTileData
     {
-
+        //! @return true if the Recast data is not empty
         bool IsValid() const
         {
             return m_size > 0 && m_data != nullptr;

@@ -29,18 +29,17 @@ namespace RecastNavigation
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        //! EditorComponentBase interface implementation
+        //! EditorComponentBase overrides ...
         //! @{
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         //! @}
 
-        void OnDebugDrawTick();
-        void OnUpdateEvent();
-
     private:
+        //! Navigation mesh configuration to be passed to the game component, @RecastNavigationMeshComponent.
         RecastNavigationMeshConfig m_meshConfig;
+        //! If enabled, draw the navigation mesh in the game.
         bool m_enableDebugDraw = false;
     };
 } // namespace RecastNavigation

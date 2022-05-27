@@ -13,7 +13,7 @@
 
 namespace RecastNavigation
 {
-    //! Editor version of @DetourNavigationComponent.
+    //! Editor version of a path finding component, @DetourNavigationComponent.
     class EditorDetourNavigationComponent final
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -24,7 +24,7 @@ namespace RecastNavigation
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        //! EditorComponentBase interface implementation
+        //! EditorComponentBase overrides ...
         //! @{
         void Activate() override;
         void Deactivate() override;
@@ -32,7 +32,10 @@ namespace RecastNavigation
         //! @}
 
     private:
+        //! Entity with Recast Navigation Mesh component.
         AZ::EntityId m_navQueryEntityId;
+        //! If FindPath APIs are given points that are outside the navigation mesh, then
+        //! look for the nearest point on the navigation mesh within this distance from the specified positions.
         float m_nearestDistance = 3.f;
     };
 } // namespace RecastNavigation

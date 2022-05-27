@@ -10,17 +10,17 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <Misc/RecastNavigationTiledSurveyorCommon.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
+#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
 
 namespace RecastNavigation
 {
-    //! Editor version of @RecastNavigationTiledSurveyorComponent
-    class EditorRecastNavigationTiledSurveyorComponent final
+    //! Editor version of @RecastNavigationPhysXProviderComponent
+    class EditorRecastNavigationPhysXProviderComponent final
         : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorRecastNavigationTiledSurveyorComponent,
+        AZ_EDITOR_COMPONENT(EditorRecastNavigationPhysXProviderComponent,
             "{F1E57D0B-11A1-46C2-876D-720DD40CB14D}", AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -28,7 +28,7 @@ namespace RecastNavigation
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
-        //! EditorComponentBase interface implementation
+        //! EditorComponentBase ioverrides ...
         //! @{
         void Activate() override;
         void Deactivate() override;
@@ -36,6 +36,7 @@ namespace RecastNavigation
         //! @}
 
     private:
+        //! If enabled, debug draw is enabled to show the triangles collected in the PhysX scene for the navigation mesh.
         bool m_debugDrawInputData = false;
     };
 } // namespace RecastNavigation

@@ -11,42 +11,38 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Aabb.h>
 #include <Misc/RecastHelpers.h>
-#include <Misc/RecastNavigationDebugDraw.h>
-#include <Misc/RecastNavigationMeshConfig.h>
-#include <Misc/RecastNavigationTiledSurveyorCommon.h>
-#include <RecastNavigation/RecastNavigationSurveyorBus.h>
+#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
 
 namespace RecastNavigation
 {
     //! This component requires an axis aligned box shape component that defines a world space to collect geometry from
-    //! static physical colliders present within the bounds of a shape component on the same entity.
+    //! static PhysX colliders present within the bounds of a shape component on the same entity.
     //! The geometry is collected in portions of vertical tiles and is fed into @RecastNavigationMeshComponent.
     //!
     //! @note You can provide your implementation of collecting geometry instead of this component.
-    //!       If you do, in your component's @GetProvidedServices specify AZ_CRC_CE("RecastNavigationSurveyorService"),
+    //!       If you do, in your component's @GetProvidedServices specify AZ_CRC_CE("RecastNavigationProviderService"),
     //!       which is needed by @RecastNavigationMeshComponent.
-    class RecastNavigationTiledSurveyorComponent final
+    class RecastNavigationPhysXProviderComponent final
         : public AZ::Component
-        , public RecastNavigationSurveyorRequestBus::Handler
-        , public RecastNavigationTiledSurveyorCommon
+        , public RecastNavigationPhysXProviderRequestBus::Handler
+        , public RecastNavigationPhysXProviderCommon
     {
     public:
-        AZ_COMPONENT(RecastNavigationTiledSurveyorComponent, "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}");
+        AZ_COMPONENT(RecastNavigationPhysXProviderComponent, "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}");
 
-        explicit RecastNavigationTiledSurveyorComponent(bool debugDrawInputData = false);
+        //! Can be invoked by the Editor version of this component to pass the configuration.
+        //! @param debugDrawInputData if enabled, debug draw is enabled to show the triangles collected
+        explicit RecastNavigationPhysXProviderComponent(bool debugDrawInputData = false);
         static void Reflect(AZ::ReflectContext* context);
 
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-
-        //! AZ::Component interface implementation
+        //! AZ::Component overrides ...
         //! @{
         void Activate() override;
         void Deactivate() override;
         //! @}
 
-        //! RecastNavigationSurveyorRequestBus interface implementation
+        //! RecastNavigationPhysXProviderRequestBus overrides ...
         //! @{
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
         AZ::Aabb GetWorldBounds() const override;
@@ -54,6 +50,7 @@ namespace RecastNavigation
         //! @}
 
     private:
+        //! If enabled, debug draw is enabled to show the triangles collected in the Editor scene for the navigation mesh
         bool m_debugDrawInputData;
     };
 } // namespace RecastNavigation

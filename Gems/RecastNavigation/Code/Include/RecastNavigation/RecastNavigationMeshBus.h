@@ -22,31 +22,36 @@ namespace RecastNavigation
         //! Recast navigation mesh object.
         RecastPointer<dtNavMesh> m_mesh;
 
-        //! Recast navigation query object can be used to find paths.
+        //! Recast navigation query object that can be used to find paths.
         RecastPointer<dtNavMeshQuery> m_query;
     };
 
+    //! The interface for request API of @RecastNavigationMeshRequestBus
     class RecastNavigationMeshRequests
         : public AZ::ComponentBus
     {
     public:
         //! Re-calculates the navigation mesh withing the defined world area. Blocking call.
         virtual void UpdateNavigationMeshBlockUntilCompleted() = 0;
-        
-        //! @return returns the underlying navigation objects with the associated synchronization object
+
+        //! @return the underlying navigation objects with the associated synchronization object
         virtual AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() = 0;
     };
 
+    //! Request EBus for a navigation mesh component.
     using RecastNavigationMeshRequestBus = AZ::EBus<RecastNavigationMeshRequests>;
 
+    //! The interface for notification API of @RecastNavigationMeshNotificationBus
     class RecastNavigationMeshNotifications
         : public AZ::ComponentBus
     {
-    public:        
+    public:
         //! Notifies when a navigation mesh is re-calculated and updated.
+        //! @param navigationMeshEntity the entity the navigation mesh is on. This is helpful for Script Canvas use.
         virtual void OnNavigationMeshUpdated(AZ::EntityId navigationMeshEntity) = 0;
     };
 
+    //! Notification EBus for a navigation mesh component.
     using RecastNavigationMeshNotificationBus = AZ::EBus<RecastNavigationMeshNotifications>;
 
     //! Scripting reflection helper for @RecastNavigationMeshNotificationBus
@@ -56,9 +61,11 @@ namespace RecastNavigation
     {
     public:
         AZ_EBUS_BEHAVIOR_BINDER(RecastNavigationNotificationHandler,
-            "{819FF083-C28A-4620-B59E-78EB7D2CB432}", 
+            "{819FF083-C28A-4620-B59E-78EB7D2CB432}",
             AZ::SystemAllocator, OnNavigationMeshUpdated);
 
+        //! Notifies when a navigation mesh is updated.
+        //! @param navigationMeshEntity the entity with the navigation mesh. This makes for an easier to work in Script Cavnas.
         void OnNavigationMeshUpdated(AZ::EntityId navigationMeshEntity) override
         {
             Call(FN_OnNavigationMeshUpdated, navigationMeshEntity);

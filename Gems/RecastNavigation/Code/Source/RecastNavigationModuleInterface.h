@@ -6,12 +6,12 @@
  *
  */
 
+#include <RecastNavigationSystemComponent.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
-#include <RecastNavigationSystemComponent.h>
 #include <Components/DetourNavigationComponent.h>
 #include <Components/RecastNavigationMeshComponent.h>
-#include <Components/RecastNavigationTiledSurveyorComponent.h>
+#include <Components/RecastNavigationPhysXProviderComponent.h>
 
 namespace RecastNavigation
 {
@@ -32,7 +32,7 @@ namespace RecastNavigation
                 RecastNavigationSystemComponent::CreateDescriptor(),
                 DetourNavigationComponent::CreateDescriptor(),
                 RecastNavigationMeshComponent::CreateDescriptor(),
-                RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
+                RecastNavigationPhysXProviderComponent::CreateDescriptor(),
                 });
         }
 
