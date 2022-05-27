@@ -113,8 +113,6 @@ namespace Terrain
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
         float m_sampleSpacing{ 0.0f };
-        
-        bool m_forceRebuildDrawPackets{ false };
         bool m_terrainBoundsNeedUpdate{ false };
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;

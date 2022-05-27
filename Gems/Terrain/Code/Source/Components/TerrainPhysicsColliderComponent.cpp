@@ -422,14 +422,10 @@ namespace Terrain
             updateHeightsMaterialsCallback(row, column, point);
         };
 
-        const size_t numPointsX =
-            AZStd::min(
-                aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetX() - contractedAlignedStartGridPoint.GetX() + 1),
-                m_heightfieldRegion.m_numPointsX);
-        const size_t numPointsY =
-            AZStd::min(
-                aznumeric_cast<size_t>(contractedAlignedEndGridPoint.GetY() - contractedAlignedStartGridPoint.GetY() + 1),
-                m_heightfieldRegion.m_numPointsY);
+        // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
+        AZ::Vector2 numPoints = contractedAlignedEndGridPoint - contractedAlignedStartGridPoint + AZ::Vector2(1.0f);
+        const size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(numPoints.GetX()), m_heightfieldRegion.m_numPointsX);
+        const size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(numPoints.GetY()),  m_heightfieldRegion.m_numPointsY);
         TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
