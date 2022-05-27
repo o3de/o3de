@@ -24,8 +24,8 @@ namespace RecastNavigation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<EditorRecastNavigationPhysXProviderComponent>("Recast Navigation Tiled Surveyor",
-                    "[Collects triangle geometry for navigation mesh within the area defined by a shape component]")
+                ec->Class<EditorRecastNavigationPhysXProviderComponent>("Recast Navigation PhysX Provider",
+                    "[Collects triangle geometry from PhysX scene for navigation mesh within the area defined by a shape component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
