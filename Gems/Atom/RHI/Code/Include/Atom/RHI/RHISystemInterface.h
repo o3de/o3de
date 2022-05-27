@@ -14,6 +14,7 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 AZ_DECLARE_BUDGET(RHI);
 
@@ -68,6 +69,8 @@ namespace AZ
             virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
             
             virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
+
+            virtual XRRenderingInterface* GetXRSystem() const = 0;
         };
 
         //! This bus exists to give RHI samples the ability to slot in scopes manually

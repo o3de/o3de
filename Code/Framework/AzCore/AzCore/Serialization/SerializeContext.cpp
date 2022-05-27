@@ -2395,7 +2395,8 @@ namespace AZ
 
         if (classData->m_serializer)
         {
-            if (classData->m_typeId == GetAssetClassId())
+            if (const auto* genericInfo = elementData ? elementData->m_genericClassInfo : FindGenericClassInfo(classData->m_typeId);
+                    genericInfo && genericInfo->GetGenericTypeId() == GetAssetClassId())
             {
                 // Optimized clone path for asset references.
                 static_cast<AssetSerializer*>(classData->m_serializer.get())->Clone(srcPtr, destPtr);

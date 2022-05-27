@@ -10,6 +10,7 @@ from collections import Counter
 from collections import deque
 from os import path
 from pathlib import Path
+from typing import List
 
 from PySide2 import QtWidgets
 
@@ -223,7 +224,7 @@ class Prefab:
         return new_prefab, new_prefab_instance
 
     @classmethod
-    def remove_prefabs(cls, prefab_instances: list[PrefabInstance]):
+    def remove_prefabs(cls, prefab_instances: list[PrefabInstance]) -> List[azlmbr.entity.EntityId]:
         """
         Remove target prefab instances.
         :param prefab_instances: Instances to be removed.
@@ -254,6 +255,8 @@ class Prefab:
             instance_deleted_prefab = Prefab.get_prefab(instance.prefab_file_path)
             instance_deleted_prefab.instances.remove(instance)
             instance = PrefabInstance()
+
+        return entity_ids_to_remove
 
     @classmethod
     def duplicate_prefabs(cls, prefab_instances: list[PrefabInstance]):

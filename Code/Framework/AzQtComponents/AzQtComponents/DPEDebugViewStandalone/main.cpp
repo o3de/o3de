@@ -27,6 +27,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QTreeView>
+#include <QScrollArea>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
@@ -97,6 +98,11 @@ namespace DPEDebugView
                     ->Field("entityIdMap", &TestContainer::m_entityIdMap)
                     ->Field("enumValue", &TestContainer::m_enumValue)
                     ->Field("entityId", &TestContainer::m_entityId);
+
+                serializeContext->Enum<EnumType>()
+                    ->Value("Value1", EnumType::Value1)
+                    ->Value("Value2", EnumType::Value2)
+                    ->Value("ValueZ", EnumType::ValueZ);
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
@@ -229,9 +235,11 @@ int main(int argc, char** argv)
     theWindow->show();
 
     // create a real DPE on the same adapter as the debug adapter for testing purposes
-    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
     dpeInstance->SetAdapter(adapter.get());
-    dpeInstance->show();
+    QScrollArea dpeScrollArea;
+    dpeScrollArea.setWidget(dpeInstance);
+    dpeScrollArea.show();
 
     return qtApp.exec();
 }
