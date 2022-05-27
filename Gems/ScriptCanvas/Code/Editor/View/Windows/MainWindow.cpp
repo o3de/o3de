@@ -1631,8 +1631,10 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const SourceHandle& inMemoryAssetId, Save save)
+    bool MainWindow::SaveAssetImpl(const SourceHandle& inMemoryAssetIdIn, Save save)
     {
+        SourceHandle inMemoryAssetId = inMemoryAssetIdIn;
+
         if (!inMemoryAssetId.IsGraphValid())
         {
             return false;
@@ -1652,6 +1654,13 @@ namespace ScriptCanvasEditor
                 return false;
             }
         }
+
+        if (inMemoryAssetId.Path().Extension() == ".scriptevents")
+        {
+            auto newPath = inMemoryAssetId.Path();
+            newPath.ReplaceExtension(".scriptcanvas");
+            inMemoryAssetId = SourceHandle(inMemoryAssetId, newPath);
+        }        
 
         if (!m_activeGraph.AnyEquals(inMemoryAssetId))
         {
