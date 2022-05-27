@@ -132,7 +132,7 @@ QTabBar::tab:focus {
     border:none;
 }
 
-#formFrame QPushButton {
+#formFrame QPushButton:disabled {
     background:transparent url(:/Select_Folder_Disabled.svg) no-repeat center;
 }
 

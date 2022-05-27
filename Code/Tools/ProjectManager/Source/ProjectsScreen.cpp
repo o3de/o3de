@@ -441,18 +441,6 @@ namespace O3DE::ProjectManager
                 QMessageBox::warning(this, tr("No Input"), tr("Please provide a repo Uri."));
                 return;
             }
-
-            //auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
-            //if (addGemRepoResult.IsSuccess())
-            //{
-            //    emit ChangeScreenRequest(ProjectManagerScreen::Projects);
-            //}
-            //else
-            //{
-            //    QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
-            //    ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
-            //    AZ_Error("Project Manager", false, failureMessage.toUtf8());
-            //}
         }
     }
 

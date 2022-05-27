@@ -13,7 +13,6 @@
 #include <QLabel>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
 namespace O3DE::ProjectManager
