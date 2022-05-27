@@ -113,11 +113,6 @@ QTabBar::tab:focus {
     color: #cccccc;
 }
 
-#formFrame QLabel {
-    font-size: 13px;
-    color: #cccccc;
-}
-
 #formFrame QLabel:disabled {
     color: #888888;
 }
