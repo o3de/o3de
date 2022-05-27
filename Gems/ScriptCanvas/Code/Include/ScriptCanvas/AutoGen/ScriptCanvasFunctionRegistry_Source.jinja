@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 // This code was produced with AzAutoGen, any modifications made will not be preserved.
 // If you need to modify this code see:
 //
-// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Source.jinja
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunctionRegistry_Source.jinja
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -53,12 +53,11 @@ false
 
 #include "{{filename}}.h"
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <ScriptCanvasAutoGenRegistry.h>
 {% for ScriptCanvas in dataFiles %}
 {% for Library in ScriptCanvas%}
 {{ macros.Required('Include', Library, Library) -}}
 
-#include "{{ Library.attrib['Include'] }}"
+#include <{{ Library.attrib['Include'] }}>
 
 {{- macros.ReportErrors() }}
 {% endfor %}
@@ -77,7 +76,7 @@ namespace ScriptCanvas
     }
 
     const char* {{autogenTargetName}}FunctionRegistry::GetRegistryName() {
-        return "{{autogenTargetName}}";
+        return "{{autogenTargetName}}FunctionRegistry";
     }
 
     void {{autogenTargetName}}FunctionRegistry::Reflect(AZ::ReflectContext* context)

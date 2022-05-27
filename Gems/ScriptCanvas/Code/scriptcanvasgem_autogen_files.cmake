@@ -7,7 +7,12 @@
 #
 
 set(FILES
-    Include/ScriptCanvas/AutoGen/ScriptCanvasFunction.xsd
-    Include/ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.cpp
-    Include/ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h
+    Include/ScriptCanvas/AutoGen/ScriptCanvas_Macros.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvas_Nodeable_Macros.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasFunctionRegistry_Header.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasFunctionRegistry_Source.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasGrammar_Header.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasGrammar_Source.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasNodeable_Header.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasNodeable_Source.jinja
 )

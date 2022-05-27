@@ -34,7 +34,7 @@
 
 #include <AutoGenFunctionRegistry.generated.h>
 
-REGISTER_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
 
 namespace ScriptCanvasSystemComponentCpp
 {

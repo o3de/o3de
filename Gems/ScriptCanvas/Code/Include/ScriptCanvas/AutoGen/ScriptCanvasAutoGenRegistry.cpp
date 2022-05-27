@@ -8,10 +8,12 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/string/string.h>
 #include "ScriptCanvasAutoGenRegistry.h"
 
 namespace ScriptCanvas
 {
+    static constexpr const char ScriptCanvasAutoGenFunctionSuffix[] = "FunctionRegistry";
     static constexpr const char ScriptCanvasAutoGenRegistryName[] = "AutoGenRegistry";
     static constexpr int MaxMessageLength = 4096;
     static constexpr const char ScriptCanvasAutoGenFunctionRegistrationWarningMessage[] = "[Warning] Functions name %s is occupied already, ignore functions registration.\n";
@@ -36,11 +38,12 @@ namespace ScriptCanvas
         // ...
     }
 
-    void AutoGenRegistry::ReflectFunction(AZ::ReflectContext* context, const char* functionName)
+    void AutoGenRegistry::Reflect(AZ::ReflectContext* context, const char* registryName)
     {
         if (auto registry = GetInstance())
         {
-            auto functionIter = registry->m_functions.find(functionName);
+            AZStd::string functionRegistry = AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenFunctionSuffix);
+            auto functionIter = registry->m_functions.find(functionRegistry.c_str());
             if (functionIter != registry->m_functions.end())
             {
                 functionIter->second->Reflect(context);

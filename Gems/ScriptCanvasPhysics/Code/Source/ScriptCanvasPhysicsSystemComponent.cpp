@@ -13,7 +13,7 @@
 #include "ScriptCanvasPhysicsSystemComponent.h"
 #include <AutoGenFunctionRegistry.generated.h>
 
-REGISTER_SCRIPTCANVAS_AUTOGEN(ScriptCanvasPhysicsStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasPhysicsStatic);
 
 namespace ScriptCanvasPhysics
 {
