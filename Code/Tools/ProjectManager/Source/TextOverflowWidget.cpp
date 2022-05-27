@@ -67,6 +67,11 @@ namespace O3DE::ProjectManager
         else
         {
             displayLength = text.length();
+
+            if (displayLength > maxLength)
+            {
+                truncateEnd = maxLength;
+            }
         }
 
         // Truncate and add link to full texts
