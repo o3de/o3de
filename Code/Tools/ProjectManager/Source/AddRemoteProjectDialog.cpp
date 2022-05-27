@@ -16,7 +16,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QCheckbox>
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QDir>
