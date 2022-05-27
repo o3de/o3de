@@ -24,63 +24,63 @@ namespace RecastNavigation
     template <>
     struct CustomRecastDeleter<rcHeightfield>
     {
-        void operator ()( rcHeightfield* p )
+        void operator ()(rcHeightfield* p)
         {
-            rcFreeHeightField( p );
+            rcFreeHeightField(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<rcCompactHeightfield>
     {
-        void operator ()( rcCompactHeightfield* p )
+        void operator ()(rcCompactHeightfield* p)
         {
-            rcFreeCompactHeightfield( p );
+            rcFreeCompactHeightfield(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<rcContourSet>
     {
-        void operator ()( rcContourSet* p )
+        void operator ()(rcContourSet* p)
         {
-            rcFreeContourSet( p );
+            rcFreeContourSet(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<rcPolyMesh>
     {
-        void operator ()( rcPolyMesh* p )
+        void operator ()(rcPolyMesh* p)
         {
-            rcFreePolyMesh( p );
+            rcFreePolyMesh(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<rcPolyMeshDetail>
     {
-        void operator ()( rcPolyMeshDetail* p )
+        void operator ()(rcPolyMeshDetail* p)
         {
-            rcFreePolyMeshDetail( p );
+            rcFreePolyMeshDetail(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<dtNavMesh>
     {
-        void operator ()( dtNavMesh* p )
+        void operator ()(dtNavMesh* p)
         {
-            dtFreeNavMesh( p );
+            dtFreeNavMesh(p);
         }
     };
 
     template <>
     struct CustomRecastDeleter<dtNavMeshQuery>
     {
-        void operator ()( dtNavMeshQuery* p )
+        void operator ()(dtNavMeshQuery* p)
         {
-            dtFreeNavMeshQuery( p );
+            dtFreeNavMeshQuery(p);
         }
     };
 } // namespace RecastNavigation
