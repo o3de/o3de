@@ -34,7 +34,7 @@ namespace RecastNavigation
         //! @param borderSize an additional extend in all direction around the tile volume, this additional geometry will allow Recast to connect tiles together.
         //! @param worldVolume the overall volume to collect static PhysX geometry
         //! @param debugDrawInputData if true, debug draw will show the geometry collected
-        //! @return an array of tiles, each containing indexed geometry
+        //! @returns an array of tiles, each containing indexed geometry
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometryImpl(
             float tileSize,
             float borderSize,

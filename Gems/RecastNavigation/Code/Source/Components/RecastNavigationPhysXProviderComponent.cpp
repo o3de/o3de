@@ -24,7 +24,7 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationPhysXProviderComponent, AZ::Component>()
                 ->Version(1)

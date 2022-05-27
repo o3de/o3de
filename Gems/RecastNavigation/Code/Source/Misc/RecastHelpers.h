@@ -36,11 +36,11 @@ namespace RecastNavigation
             m_y = data[1];
             m_z = data[2];
         }
-        
-        //! @return raw data without any conversion between coordinate systems.
+
+        //! @returns raw data without any conversion between coordinate systems.
         float* GetData() { return &m_x; }
-        
-        //! @return vector in O3DE coordinate space, with +Z being up
+
+        //! @returns vector in O3DE coordinate space, with +Z being up
         [[nodiscard]] AZ::Vector3 AsVector3() const
         {
             return { m_x, m_z, m_y };
@@ -65,18 +65,18 @@ namespace RecastNavigation
 
         //! Callback to the navigation mesh component that should process this tile.
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
-        
-        //! @return true if there are no vertices in this tile
+
+        //! @returns true if there are no vertices in this tile
         bool IsEmpty() const
         {
             return m_vertices.empty();
         }
     };
-    
+
     //! Navigation data in binary Recast form
     struct NavigationTileData
     {
-        //! @return true if the Recast data is not empty
+        //! @returns true if the Recast data is not empty
         bool IsValid() const
         {
             return m_size > 0 && m_data != nullptr;

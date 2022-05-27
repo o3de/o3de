@@ -31,10 +31,10 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
-        //! Re-calculates the navigation mesh withing the defined world area. Blocking call.
+        //! Re-calculates the navigation mesh within the defined world area. Blocking call.
         virtual void UpdateNavigationMeshBlockUntilCompleted() = 0;
 
-        //! @return the underlying navigation objects with the associated synchronization object
+        //! @returns the underlying navigation objects with the associated synchronization object
         virtual AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() = 0;
     };
 

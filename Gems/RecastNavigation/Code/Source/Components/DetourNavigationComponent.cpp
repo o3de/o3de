@@ -24,7 +24,7 @@ namespace RecastNavigation
 
     void DetourNavigationComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<DetourNavigationComponent, AZ::Component>()
                 ->Field("Navigation Query Entity", &DetourNavigationComponent::m_navQueryEntityId)

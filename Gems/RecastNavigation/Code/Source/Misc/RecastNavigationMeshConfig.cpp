@@ -12,7 +12,7 @@ namespace RecastNavigation
 {
     void RecastNavigationMeshConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             using Self = RecastNavigationMeshConfig;
 

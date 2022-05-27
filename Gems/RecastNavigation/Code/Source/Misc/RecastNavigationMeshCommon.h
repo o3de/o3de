@@ -24,7 +24,7 @@ namespace RecastNavigation
     public:
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
         virtual ~RecastNavigationMeshCommon() = default;
-        
+
         //! Allocates and initializes Recast navigation mesh into @m_navMesh
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
         //! @param tileSize the size of each square tile that form the navigation mesh. Recommended values are power of 2
@@ -40,7 +40,7 @@ namespace RecastNavigation
         //! @param geom A set of geometry, triangle data
         //! @param meshConfig Recast navigation mesh configuration
         //! @param context Recast context object, @rcContext
-        //! @return the tile data that can be attached to the navigation mesh using @AttachNavigationTileToMesh
+        //! @returns the tile data that can be attached to the navigation mesh using @AttachNavigationTileToMesh
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
 
         //! Debug draw object for Recast navigation mesh.

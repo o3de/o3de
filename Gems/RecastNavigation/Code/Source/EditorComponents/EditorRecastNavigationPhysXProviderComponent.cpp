@@ -15,7 +15,7 @@ namespace RecastNavigation
 {
     void EditorRecastNavigationPhysXProviderComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorRecastNavigationPhysXProviderComponent, AZ::Component>()
                 ->Field("Show Input Data", &EditorRecastNavigationPhysXProviderComponent::m_debugDrawInputData)

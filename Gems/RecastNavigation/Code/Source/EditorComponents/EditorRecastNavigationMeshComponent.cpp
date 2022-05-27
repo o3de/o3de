@@ -15,7 +15,7 @@ namespace RecastNavigation
 {
     void EditorRecastNavigationMeshComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorRecastNavigationMeshComponent, AZ::Component>()
                 ->Field("Configuration", &EditorRecastNavigationMeshComponent::m_meshConfig)

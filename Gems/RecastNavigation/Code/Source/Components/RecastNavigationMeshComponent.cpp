@@ -30,7 +30,7 @@ namespace RecastNavigation
     {
         RecastNavigationMeshConfig::Reflect(context);
 
-        if (const auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationMeshComponent, AZ::Component>()
                 ->Field("Config", &RecastNavigationMeshComponent::m_meshConfig)
