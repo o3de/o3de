@@ -33,7 +33,7 @@ namespace PhysX
 {
     AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr,
         AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
-    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, true,
+    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, false,
         nullptr, AZ::ConsoleFunctorFlags::Null, "Draw the bounding box used for heightfield debug visualization.");
 
     void EditorHeightfieldColliderComponent::Reflect(AZ::ReflectContext* context)
