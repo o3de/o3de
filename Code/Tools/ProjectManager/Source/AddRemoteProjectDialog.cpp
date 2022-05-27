@@ -9,7 +9,7 @@
 #include <AddRemoteProjectDialog.h>
 #include <FormFolderBrowseEditWidget.h>
 #include <TextOverflowWidget.h>
-#include <ToggleCheckbox.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <ProjectUtils.h>
 
 #include <QVBoxLayout>
@@ -80,8 +80,9 @@ namespace O3DE::ProjectManager
         buildHLayout->setContentsMargins(0, 0, 0, 0);
         buildHLayout->setAlignment(Qt::AlignLeft);
 
-        m_autoBuild = new ToggleCheckbox(this);
+        m_autoBuild = new QCheckBox(this);
         m_autoBuild->setChecked(true);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_autoBuild);
         buildHLayout->addWidget(m_autoBuild);
 
         buildHLayout->addSpacing(10);
