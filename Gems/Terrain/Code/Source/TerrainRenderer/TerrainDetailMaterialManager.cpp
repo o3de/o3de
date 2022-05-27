@@ -948,7 +948,7 @@ namespace Terrain
             {
                 float totalWeight = firstWeight + secondWeight;
                 float blendWeight = 1.0f - (firstWeight / totalWeight);
-                pixel.m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                pixel.m_blend = aznumeric_cast<uint8_t>(blendWeight * 255.0f + 0.5f);
             }
         };
             

@@ -153,6 +153,8 @@ namespace Terrain
             float m_vertexSpacing;
             int16_t m_gridSizeX;
             int16_t m_gridSizeY;
+            AzFramework::Terrain::TerrainDataRequests::Sampler m_samplerType =
+                AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         };
 
         struct CachedDrawData

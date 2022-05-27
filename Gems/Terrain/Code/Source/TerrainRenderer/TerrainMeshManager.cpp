@@ -620,13 +620,12 @@ namespace Terrain
         // pad the max by half a sample spacing to make sure it's inclusive of the last point.
         AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);
 
-        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(request.m_vertexSpacing);
 
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            queryBounds, stepSize, samplerType);
+            queryBounds, stepSize, request.m_samplerType);
 
         uint16_t vertexCount1dX = (request.m_gridSizeX + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
         uint16_t vertexCount1dY = (request.m_gridSizeY + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
@@ -656,7 +655,7 @@ namespace Terrain
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            queryBounds, stepSize, perPositionCallback, samplerType);
+            queryBounds, stepSize, perPositionCallback, request.m_samplerType);
 
         const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
@@ -764,6 +763,7 @@ namespace Terrain
         request.m_vertexSpacing = AZStd::GetMax(m_worldBounds.GetXExtent(), m_worldBounds.GetYExtent()) / RayTracingQuads1D;
         request.m_gridSizeX = aznumeric_cast<uint16_t>(bounds.GetXExtent() / request.m_vertexSpacing);
         request.m_gridSizeY = aznumeric_cast<uint16_t>(bounds.GetYExtent() / request.m_vertexSpacing);
+        request.m_samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT;
 
         AZStd::vector<HeightDataType> meshHeights;
         AZStd::vector<NormalDataType> meshNormals;
