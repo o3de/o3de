@@ -185,7 +185,7 @@ Please note that only those seed files will get updated that are active for your
 
         for (const QString& file : filesNotInAssetDatabase)
         {
-            AZ_Printf("AssetProcessor", "The file %s is not found in the asset database and will not be processed.\n", file.toUtf8().constData());
+            AZ_Printf("AssetProcessor", "File `%s` was found/matched but is not a source asset.  Skipping.\n", file.toUtf8().constData());
         }
 
         return sourceIndexMap;
@@ -403,7 +403,7 @@ Please note that only those seed files will get updated that are active for your
             if(sources.empty())
             {
                 if (fileExists)
-                    return AZ::Failure(AZStd::string("Wildcard search did not match any files found in the asset database.\n"));
+                    return AZ::Failure(AZStd::string("Wildcard search matched one or more files but none are source assets.  This utility only handles source assets.\n"));
                 else
                     return AZ::Failure(AZStd::string("Wildcard search did not match any files.\n"));
             }
@@ -431,7 +431,7 @@ Please note that only those seed files will get updated that are active for your
             if (sources.empty())
             {
                 if (fileExists)
-                    return AZ::Failure(AZStd::string("File is not found in the asset database and will not be processed.\n"));
+                    return AZ::Failure(AZStd::string("Search matched an existing file but it is not a source asset.  This utility only handles source assets.\n"));
                 else
                     return AZ::Failure(AZStd::string("File not found.\n"));
             }
