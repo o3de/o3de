@@ -28,26 +28,26 @@ namespace WhiteBox
     {
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> TransformMode::PopulateActions(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    AZStd::vector<AzToolsFramework::ActionOverride> TransformMode::PopulateActions([[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         return {};
     }
 
     void TransformMode::Display(
-        const AZ::EntityComponentIdPair& entityComponentIdPair,
-        const AZ::Transform& worldFromLocal,
-        const IntersectionAndRenderData& renderData,
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair,
+        [[maybe_unused]] const AZ::Transform& worldFromLocal,
+        [[maybe_unused]] const IntersectionAndRenderData& renderData,
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
     }
 
     bool TransformMode::HandleMouseInteraction(
-        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-        const AZ::EntityComponentIdPair& entityComponentIdPair,
-        const AZStd::optional<EdgeIntersection>& edgeIntersection,
-        const AZStd::optional<PolygonIntersection>& polygonIntersection,
-        const AZStd::optional<VertexIntersection>& vertexIntersection)
+        [[maybe_unused]] const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
+        [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair,
+        [[maybe_unused]] const AZStd::optional<EdgeIntersection>& edgeIntersection,
+        [[maybe_unused]] const AZStd::optional<PolygonIntersection>& polygonIntersection,
+        [[maybe_unused]] const AZStd::optional<VertexIntersection>& vertexIntersection)
     {
         return false;
     }
