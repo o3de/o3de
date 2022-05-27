@@ -10,4 +10,22 @@ set(FILES
     Source/RecastNavigationModuleInterface.h
     Source/RecastNavigationSystemComponent.cpp
     Source/RecastNavigationSystemComponent.h
+
+    Source/Components/DetourNavigationComponent.h
+    Source/Components/DetourNavigationComponent.cpp
+    Source/Components/RecastNavigationMeshComponent.h
+    Source/Components/RecastNavigationMeshComponent.cpp
+    Source/Components/RecastNavigationTiledSurveyorComponent.h
+    Source/Components/RecastNavigationTiledSurveyorComponent.cpp
+
+    Source/Misc/RecastHelpers.h
+    Source/Misc/RecastNavigationDebugDraw.h
+    Source/Misc/RecastNavigationDebugDraw.cpp
+    Source/Misc/RecastNavigationMeshCommon.h
+    Source/Misc/RecastNavigationMeshCommon.cpp
+    Source/Misc/RecastNavigationMeshConfig.h
+    Source/Misc/RecastNavigationMeshConfig.cpp
+    Source/Misc/RecastNavigationTiledSurveyorCommon.h
+    Source/Misc/RecastNavigationTiledSurveyorCommon.cpp
+    Source/Misc/RecastSmartPointer.h
 )

@@ -9,6 +9,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <RecastNavigationSystemComponent.h>
+#include <Components/DetourNavigationComponent.h>
+#include <Components/RecastNavigationMeshComponent.h>
+#include <Components/RecastNavigationTiledSurveyorComponent.h>
 
 namespace RecastNavigation
 {
@@ -27,6 +30,9 @@ namespace RecastNavigation
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 RecastNavigationSystemComponent::CreateDescriptor(),
+                DetourNavigationComponent::CreateDescriptor(),
+                RecastNavigationMeshComponent::CreateDescriptor(),
+                RecastNavigationTiledSurveyorComponent::CreateDescriptor(),
                 });
         }
 
