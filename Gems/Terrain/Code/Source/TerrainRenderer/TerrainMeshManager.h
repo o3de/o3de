@@ -151,8 +151,8 @@ namespace Terrain
         {
             AZ::Vector2 m_worldStartPosition;
             float m_vertexSpacing;
-            int16_t m_gridSizeX;
-            int16_t m_gridSizeY;
+            int16_t m_samplesX;
+            int16_t m_samplesY;
             AzFramework::Terrain::TerrainDataRequests::Sampler m_samplerType =
                 AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         };
