@@ -491,14 +491,19 @@ void MainWindow::Initialize()
 
         m_levelEditorMenuHandler->Initialize();
     }
-    else if (m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+    else
     {
-        InitializeActionContext();
-        InitializeActions();
-
-        if (m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get())
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        if(m_actionManagerInterface)
         {
-            InitializeMenus();
+            InitializeActionContext();
+            InitializeActions();
+
+            m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            if (m_menuManagerInterface)
+            {
+                InitializeMenus();
+            }
         }
     }
 
