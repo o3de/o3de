@@ -269,7 +269,7 @@ namespace AzToolsFramework
             // The source path of the template this instance represents
             AZ::IO::Path m_templateSourcePath;
 
-            //! This can be used to set the DOM that was last used for buildng the instance object through deserialization.
+            //! This can be used to set the DOM that was last used for building the instance object through deserialization.
             //! This is optional and will only be set when asked explicitly through SetCachedInstanceDom().
             PrefabDom m_cachedInstanceDom;
 

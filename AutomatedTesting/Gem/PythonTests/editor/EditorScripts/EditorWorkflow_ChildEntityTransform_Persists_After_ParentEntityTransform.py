@@ -47,7 +47,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
             03. create child entity and set a name
             04. Update transform position of child entity and verify that it moved.
             05. Update transform position of parent entity and verify that the child moved along with parent while
-                maintaining it's relative position.
+                maintaining its relative position.
             06. Undo and verify both parent and child went back to original transform
             07. Redo and verify that both parent and child moved again to new transform
     """
