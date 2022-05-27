@@ -112,6 +112,9 @@ namespace DPEDebugView
                         ->Value("ValueZ", EnumType::ValueZ);
 
                     editContext->Class<TestContainer>("TestContainer", "")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button1 (no multi-edit)")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
@@ -136,9 +139,6 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button1 (no multi-edit)")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button2 (multi-edit)")

@@ -45,6 +45,15 @@ namespace AZ::DocumentPropertyEditor::Nodes
         HideChildren = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_HideChildren")),
     };
 
+    enum class PropertyRefreshLevel : AZ::u32
+    {
+        Undefined = 0,
+        None = static_cast<AZ::u32>(AZ_CRC_CE("RefreshNone")),
+        ValuesOnly = static_cast<AZ::u32>(AZ_CRC_CE("RefreshValues")),
+        AttributesAndValues = static_cast<AZ::u32>(AZ_CRC_CE("RefreshAttributesAndValues")),
+        EntireTree = static_cast<AZ::u32>(AZ_CRC_CE("RefreshEntireTree")),
+    };
+
     //! Label: A textual label that shall render its contents as part of a Row.
     struct Label : NodeDefinition
     {
@@ -77,7 +86,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
-        static constexpr auto ChangeNotify = CallbackAttributeDefinition<void(AZ::u32)>("ChangeNotify");
+        static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
+        static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
     struct UIElement : NodeDefinition

@@ -187,6 +187,12 @@ namespace AzToolsFramework
                 AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
         }
 
+        void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnRequestPropertyNotify);
+        }
+
         void PropertyManagerComponent::CreateBuiltInHandlers()
         {
             RegisterCrcHandler();

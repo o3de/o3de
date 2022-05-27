@@ -216,11 +216,11 @@ namespace AZ::Dom::Utils
         auto convertedValue = ValueToType<T>(value);
         if constexpr (AZStd::is_reference_v<T>)
         {
-            return *convertedValue.value();
+            return *convertedValue.value_or(nullptr);
         }
         else
         {
-            return convertedValue.value();
+            return convertedValue.value_or(T());
         }
     }
 } // namespace AZ::Dom::Utils
