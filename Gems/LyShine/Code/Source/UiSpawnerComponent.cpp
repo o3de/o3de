@@ -15,6 +15,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <LyShine/Bus/UiGameEntityContextBus.h>
 #include <LyShine/Bus/UiElementBus.h>
 
@@ -88,18 +90,20 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
         }
     }
 
-    AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-    if (behaviorContext)
+    bool usePrefabSystem = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (!usePrefabSystem)
     {
-        behaviorContext->EBus<UiSpawnerBus>("UiSpawnerBus")
-            ->Event("Spawn", &UiSpawnerBus::Events::Spawn)
-            ->Event("SpawnRelative", &UiSpawnerBus::Events::SpawnRelative)
-            ->Event("SpawnAbsolute", &UiSpawnerBus::Events::SpawnViewport)
-        ;
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->EBus<UiSpawnerBus>("UiSpawnerBus")
+                ->Event("Spawn", &UiSpawnerBus::Events::Spawn)
+                ->Event("SpawnRelative", &UiSpawnerBus::Events::SpawnRelative)
+                ->Event("SpawnAbsolute", &UiSpawnerBus::Events::SpawnViewport);
 
-        behaviorContext->EBus<UiSpawnerNotificationBus>("UiSpawnerNotificationBus")
-            ->Handler<BehaviorUiSpawnerNotificationBusHandler>()
-        ;
+            behaviorContext->EBus<UiSpawnerNotificationBus>("UiSpawnerNotificationBus")->Handler<BehaviorUiSpawnerNotificationBusHandler>();
+        }
     }
 }
 
