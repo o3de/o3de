@@ -136,7 +136,8 @@ namespace PhysX
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;
