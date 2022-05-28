@@ -13,6 +13,7 @@
 #include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
@@ -285,8 +286,8 @@ namespace ImGui
                                 // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
                                 // Filter out network spawnables from the level list, 
                                 // but keep track of which levels require networking so they can be tagged as "(Networked)" in the level selection menu. 
-                                const AZStd::string networkSpawnablePrefix(".network");
-                                const AZStd::string networkSpawnableFileExtension = networkSpawnablePrefix + ".spawnable";
+                                constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
+                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + Spawnable::DotFileExtension;
 
                                 if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
                                 {   
