@@ -1926,7 +1926,7 @@ void EditorViewportWidget::SetDefaultCamera()
     }
 
     // check to see if we have an existing last known location for this level
-    AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<AzToolsFramework::ViewBookmarkLoaderInterface>::Get();
+    auto* bookmarkLoader = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
     if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkLoader->LoadLastKnownLocation();
         lastKnownLocationBookmark.has_value())
     {

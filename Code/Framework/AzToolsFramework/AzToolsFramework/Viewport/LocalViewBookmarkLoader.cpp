@@ -36,22 +36,21 @@ namespace AzToolsFramework
 
         AZ::SettingsRegistryInterface::VisitResponse Traverse(
             AZStd::string_view path,
-            AZStd::string_view,
+            [[maybe_unused]] AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action,
-            AZ::SettingsRegistryInterface::Type) override
+            [[maybe_unused]] AZ::SettingsRegistryInterface::Type type) override
         {
             if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
             {
                 // strip off the last json pointer key from the path and if it matches the view bookmark key then add an entry
                 // to the view bookmark map
-                AZStd::optional<AZStd::string_view> localBookmarksID = AZ::StringFunc::TokenizeLast(path, "/");
-                if (path == m_viewBookmarksKey && localBookmarksID && !localBookmarksID->empty())
+                AZStd::optional<AZStd::string_view> localBookmarksId = AZ::StringFunc::TokenizeLast(path, "/");
+                if (path == m_viewBookmarksKey && localBookmarksId.has_value() && !localBookmarksId->empty())
                 {
-                    AZStd::string_view bookmarkKey = localBookmarksID.value();
-
-                    if (auto existingBookmarkEntry = m_bookmarkMap.find(bookmarkKey) == m_bookmarkMap.end())
+                    if (const auto existingBookmarkEntry = m_bookmarkMap.find(localBookmarksId.value());
+                        existingBookmarkEntry == m_bookmarkMap.end())
                     {
-                        m_bookmarkMap.insert(AZStd::make_pair(bookmarkKey, AZStd::vector<ViewBookmark>{}));
+                        m_bookmarkMap.insert(AZStd::make_pair(localBookmarksId.value(), AZStd::vector<ViewBookmark>{}));
                     }
                 }
             }
@@ -220,14 +219,68 @@ namespace AzToolsFramework
         return prefabTemplateName.data() + AZStd::string("_") + timeSinceEpoch + ".setreg";
     }
 
-    void LocalViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
+    static AZ::SettingsRegistryMergeUtils::DumperSettings CreateDumperSettings(const AZStd::string& bookmarkKey)
     {
-        AZ::Interface<ViewBookmarkLoaderInterface>::Register(this);
+        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+        dumperSettings.m_prettifyOutput = true;
+        dumperSettings.m_includeFilter = [bookmarkKey](AZStd::string_view path)
+        {
+            AZStd::string_view o3dePrefixPath(bookmarkKey);
+            return o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+        };
+        return dumperSettings;
     }
 
-    void LocalViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
+    void LocalViewBookmarkLoader::RegisterViewBookmarkInterface()
     {
-        AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
+        AZ::Interface<ViewBookmarkInterface>::Register(this);
+        AZ::Interface<ViewBookmarkPersistInterface>::Register(this);
+
+        m_streamWriteFn = [](const AZStd::string& localBookmarksFileName, const AZStd::string stringBuffer,
+                             AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
+        {
+            constexpr auto configurationMode =
+                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
+
+            // resolve path to user project folder
+            const auto localBookmarkFilePath = LocalBookmarkFilePath(localBookmarksFileName);
+
+            AZ::IO::SystemFile outputFile;
+            outputFile.Open(localBookmarkFilePath.c_str(), configurationMode);
+
+            AZ::IO::SystemFileStream systemFileStream(&outputFile, false);
+            const bool saved = write(systemFileStream, stringBuffer);
+
+            AZ_Warning(
+                "LocalViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)",
+                localBookmarkFilePath.c_str());
+
+            return saved;
+        };
+
+        m_streamReadFn = [](const AZStd::string localBookmarksFileName)
+        {
+            const auto localBookmarkFilePath = LocalBookmarkFilePath(localBookmarksFileName);
+            const auto fileSize = AZ::IO::SystemFile::Length(localBookmarkFilePath.c_str());
+            AZStd::vector<char> buffer(fileSize + 1);
+            buffer[fileSize] = '\0';
+            if (!AZ::IO::SystemFile::Read(localBookmarkFilePath.c_str(), buffer.data()))
+            {
+                return AZStd::vector<char>{};
+            }
+            return buffer;
+        };
+
+        m_fileExistsFn = [](const AZStd::string& localBookmarksFileName)
+        {
+            return EnsureLocalBookmarkFileExists(localBookmarksFileName);
+        };
+    }
+
+    void LocalViewBookmarkLoader::UnregisterViewBookmarkInterface()
+    {
+        AZ::Interface<ViewBookmarkPersistInterface>::Unregister(this);
+        AZ::Interface<ViewBookmarkInterface>::Unregister(this);
     }
 
     void LocalViewBookmarkLoader::WriteViewBookmarksSettingsRegistryToFile(const AZStd::string& localBookmarksFileName)
@@ -239,43 +292,34 @@ namespace AzToolsFramework
             return;
         }
 
-        // resolve path to user project folder
-        const auto localBookmarkFilePath = LocalBookmarkFilePath(localBookmarksFileName);
-
-        AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
-        dumperSettings.m_prettifyOutput = true;
-
         const AZStd::string bookmarkKey = "/" + localBookmarksFileName;
-        dumperSettings.m_includeFilter = [&bookmarkKey](AZStd::string_view path)
-        {
-            AZStd::string_view o3dePrefixPath(bookmarkKey);
-            return o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
-        };
 
         AZStd::string stringBuffer;
         AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
+        if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, CreateDumperSettings(bookmarkKey)))
         {
             AZ_Warning(
-                "LocalViewBookmarkLoader", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
-                localBookmarkFilePath.c_str());
-
+                "LocalViewBookmarkLoader", false, R"(Unable to dump SettingsRegistry to stream "%s"\n)", localBookmarksFileName.c_str());
             return;
         }
 
-        [[maybe_unused]] bool saved = false;
-        constexpr auto configurationMode =
-            AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
-        if (AZ::IO::SystemFile outputFile; outputFile.Open(localBookmarkFilePath.c_str(), configurationMode))
-        {
-            saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
-        }
+        [[maybe_unused]] const bool saved = m_streamWriteFn(
+            localBookmarksFileName, stringBuffer,
+            [this](AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer)
+            {
+                return Write(genericStream, stringBuffer);
+            });
+
+        AZ_Warning(
+            "LocalViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)", localBookmarksFileName.c_str());
 
         // once written to the desired file, remove the key from the settings registry
         registry->Remove(bookmarkKey + "/");
+    }
 
-        AZ_Warning(
-            "LocalViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)", localBookmarkFilePath.c_str());
+    bool LocalViewBookmarkLoader::Write(AZ::IO::GenericStream& stream, const AZStd::string& stringBuffer)
+    {
+        return stream.Write(stringBuffer.size(), stringBuffer.data()) == stringBuffer.size();
     }
 
     bool LocalViewBookmarkLoader::SaveBookmarkAtIndex(const ViewBookmark& bookmark, const int index)
@@ -293,7 +337,7 @@ namespace AzToolsFramework
         }
 
         const auto& localBookmarksFileName = bookmarkComponent->GetLocalBookmarksFileName();
-        ReadViewBookmarksFromSettingsRegistry(localBookmarksFileName);
+        ReadViewBookmarksSettingsRegistryFromFile(localBookmarksFileName);
 
         bool success = false;
         if (auto registry = AZ::SettingsRegistry::Get())
@@ -346,7 +390,7 @@ namespace AzToolsFramework
         return success;
     }
 
-    bool LocalViewBookmarkLoader::ReadViewBookmarksFromSettingsRegistry(const AZStd::string& localBookmarksFileName)
+    bool LocalViewBookmarkLoader::ReadViewBookmarksSettingsRegistryFromFile(const AZStd::string& localBookmarksFileName)
     {
         auto registry = AZ::SettingsRegistry::Get();
         if (!registry)
@@ -356,16 +400,12 @@ namespace AzToolsFramework
         }
 
         // merge the current view bookmark file into the settings registry
-        bool isMerged = registry->MergeSettingsFile(
-            LocalBookmarkFilePath(localBookmarksFileName).Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-            ViewBookmarksRegistryPath);
-
-        if (isMerged)
+        if (registry->MergeSettings(
+                m_streamReadFn(localBookmarksFileName), AZ::SettingsRegistryInterface::Format::JsonMergePatch, ViewBookmarksRegistryPath))
         {
-            const AZStd::string bookmarkKey = AZStd::string::format("%s/%s", ViewBookmarksRegistryPath, localBookmarksFileName.c_str());
-
             ViewBookmarkVisitor viewBookmarkVisitor;
-            const bool visitedViewBookmarks = registry->Visit(viewBookmarkVisitor, bookmarkKey);
+            const bool visitedViewBookmarks = registry->Visit(
+                viewBookmarkVisitor, AZStd::string::format("%s/%s", ViewBookmarksRegistryPath, localBookmarksFileName.c_str()));
 
             if (visitedViewBookmarks)
             {
@@ -400,7 +440,7 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
-        ReadViewBookmarksFromSettingsRegistry(bookmarkComponent->GetLocalBookmarksFileName());
+        ReadViewBookmarksSettingsRegistryFromFile(bookmarkComponent->GetLocalBookmarksFileName());
 
         if (index >= 0 && index < m_localBookmarks.size())
         {
@@ -454,7 +494,7 @@ namespace AzToolsFramework
             return AZStd::nullopt;
         }
 
-        ReadViewBookmarksFromSettingsRegistry(bookmarkComponent->GetLocalBookmarksFileName());
+        ReadViewBookmarksSettingsRegistryFromFile(bookmarkComponent->GetLocalBookmarksFileName());
 
         return m_lastKnownLocation;
     }
@@ -496,7 +536,7 @@ namespace AzToolsFramework
             bookmarkComponent->SetLocalBookmarksFileName(GenerateBookmarkFileName());
         }
 
-        if (!EnsureLocalBookmarkFileExists(bookmarkComponent->GetLocalBookmarksFileName()))
+        if (const auto localBookmarksFileName = bookmarkComponent->GetLocalBookmarksFileName(); !m_fileExistsFn(localBookmarksFileName))
         {
             auto registry = AZ::SettingsRegistry::Get();
             if (!registry)
@@ -507,16 +547,31 @@ namespace AzToolsFramework
 
             // initialize default locations to zero, this is a temporary solution to match the 12 locations of the legacy system
             // once there is a UI for the view bookmarks these lines should be removed
-            if (const auto setRegPath = LocalViewBookmarkSetRegPath(bookmarkComponent->GetLocalBookmarksFileName());
+            if (const auto setRegPath = LocalViewBookmarkSetRegPath(localBookmarksFileName);
                 !registry->SetObject(setRegPath, AZStd::vector<ViewBookmark>(DefaultViewBookmarkCount, ViewBookmark())))
             {
                 AZ_Warning("LocalViewBookmarkLoader", false, "SetObject for \"%s\" failed", setRegPath.c_str());
             }
 
-            WriteViewBookmarksSettingsRegistryToFile(bookmarkComponent->GetLocalBookmarksFileName());
+            WriteViewBookmarksSettingsRegistryToFile(localBookmarksFileName);
         }
 
         return bookmarkComponent;
+    }
+
+    void LocalViewBookmarkLoader::SetStreamWriteFn(StreamWriteFn streamWriteFn)
+    {
+        m_streamWriteFn = AZStd::move(streamWriteFn);
+    }
+
+    void LocalViewBookmarkLoader::SetStreamReadFn(StreamReadFn streamReadFn)
+    {
+        m_streamReadFn = AZStd::move(streamReadFn);
+    }
+
+    void LocalViewBookmarkLoader::SetFileExistsFn(FileExistsFn fileExistsFn)
+    {
+        m_fileExistsFn = AZStd::move(fileExistsFn);
     }
 
     void StoreViewBookmarkLastKnownLocationFromActiveCamera()
@@ -527,14 +582,14 @@ namespace AzToolsFramework
 
         if (found)
         {
-            using AzToolsFramework::ViewBookmarkLoaderInterface;
+            using AzToolsFramework::ViewBookmarkInterface;
 
             const auto radToDeg3 = [](const AZ::Vector3& radians)
             {
                 return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
             };
 
-            ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+            ViewBookmarkInterface* bookmarkLoader = AZ::Interface<ViewBookmarkInterface>::Get();
 
             AzToolsFramework::ViewBookmark bookmark;
             bookmark.m_position = cameraState.m_position;

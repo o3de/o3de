@@ -900,15 +900,15 @@ void MainWindow::InitActions()
 
     const auto goToViewBookmarkFn = [](int index)
     {
-        AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
-        if (!bookmarkLoader)
+        AzToolsFramework::ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+        if (!viewBookmarkInterface)
         {
             AZ_Warning("Main Window", false, "Couldn't find View Bookmark Loader");
             return false;
         }
 
         const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark =
-            bookmarkLoader->LoadBookmarkAtIndex(index);
+            viewBookmarkInterface->LoadBookmarkAtIndex(index);
 
         if (!bookmark.has_value())
         {
@@ -998,8 +998,8 @@ void MainWindow::InitActions()
 
     const auto tagViewBookmarkFn = [](int index)
     {
-        AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
-        if (!bookmarkLoader)
+        AzToolsFramework::ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+        if (!viewBookmarkInterface)
         {
             QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
             AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
@@ -1022,7 +1022,7 @@ void MainWindow::InitActions()
         bookmark.m_rotation =
             AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
 
-        bookmarkLoader->SaveBookmarkAtIndex(bookmark, index);
+        viewBookmarkInterface->SaveBookmarkAtIndex(bookmark, index);
         QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
                                      .arg(index + 1)
                                      .arg(bookmark.m_position.GetX(), 0, 'f', 2)
