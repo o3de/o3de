@@ -21,6 +21,7 @@ AZ_PUSH_DISABLE_WARNING(,"-Wdelete-non-virtual-dtor")
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include "SliceUpgradeTestsData.h"
 
@@ -107,6 +108,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_sliceDescriptor;
         AZStd::unique_ptr<SliceUpgradeTest_MockCatalog> m_mockCatalog;
         AZStd::unique_ptr<AZ::IO::Streamer> m_streamer;
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
 
         AZStd::unique_ptr<AZ::SliceComponent> m_rootSliceComponent;
         AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::SliceAsset>> m_sliceAssets;
@@ -117,6 +119,9 @@ namespace UnitTest
         {
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
 
             m_streamer = AZStd::make_unique<AZ::IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
             AZ::Interface<AZ::IO::IStreamer>::Register(m_streamer.get());
@@ -159,6 +164,9 @@ namespace UnitTest
 
             AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer.get());
             m_streamer.reset();
+
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
