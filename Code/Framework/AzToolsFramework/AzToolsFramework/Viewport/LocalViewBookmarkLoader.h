@@ -9,20 +9,17 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzFramework/Entity/EntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
-#include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 
 namespace AzToolsFramework
 {
+    class LocalViewBookmarkComponent;
+
     //! @class LocalViewBookmarkLoader.
     //! @brief class used to load/store local ViewBookmarks from project/user/Registry/ViewBookmarks.
     class LocalViewBookmarkLoader final
         : public ViewBookmarkLoaderInterface
-        , private Prefab::PrefabTemplateNotificationBus::Handler
-        , private Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
@@ -46,12 +43,6 @@ namespace AzToolsFramework
         AZStd::optional<ViewBookmark> LoadLastKnownLocation() override;
 
     private:
-        // PrefabTemplateNotificationBus overrides ...
-        void OnPrefabTemplateSaved() override;
-
-        // PrefabPublicNotificationBus overrides ...
-        void OnRootPrefabInstanceLoaded() override;
-
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
 
         LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
@@ -62,4 +53,7 @@ namespace AzToolsFramework
         AZStd::vector<ViewBookmark> m_localBookmarks;
         AZStd::optional<ViewBookmark> m_lastKnownLocation;
     };
+
+    //! Helper to store the last known location using the current active camera position
+    void StoreViewBookmarkLastKnownLocationFromActiveCamera();
 } // namespace AzToolsFramework

@@ -71,6 +71,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyleManager.h>
@@ -697,9 +698,11 @@ void CCryEditApp::OnFileSave()
         AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
 
         prefabIntegrationInterface->SaveCurrentPrefab();
+
+        // when attempting to save, update the last known location using the active camera transform
+        AzToolsFramework::StoreViewBookmarkLastKnownLocationFromActiveCamera();
     }
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateDocumentReady(QAction* action)

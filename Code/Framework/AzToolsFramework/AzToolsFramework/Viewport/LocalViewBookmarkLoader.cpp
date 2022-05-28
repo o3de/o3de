@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Prefab/PrefabSystemComponentInterface.h>
+#include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/LocalViewBookmarkLoader.h>
 
 namespace AzToolsFramework
@@ -217,15 +218,10 @@ namespace AzToolsFramework
     void LocalViewBookmarkLoader::RegisterViewBookmarkLoaderInterface()
     {
         AZ::Interface<ViewBookmarkLoaderInterface>::Register(this);
-
-        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     void LocalViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
     {
-        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
-        Prefab::PrefabTemplateNotificationBus::Handler::BusDisconnect();
-
         AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
     }
 
@@ -537,39 +533,29 @@ namespace AzToolsFramework
         return success;
     }
 
-    void LocalViewBookmarkLoader::OnRootPrefabInstanceLoaded()
-    {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-        AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-
-        if (Prefab::PrefabTemplateNotificationBus::Handler::BusIsConnected())
-        {
-            Prefab::PrefabTemplateNotificationBus::Handler::BusDisconnect();
-        }
-
-        Prefab::PrefabTemplateNotificationBus::Handler::BusConnect(rootPrefabTemplateId);
-    }
-
-    void LocalViewBookmarkLoader::OnPrefabTemplateSaved()
+    void StoreViewBookmarkLastKnownLocationFromActiveCamera()
     {
         bool found = false;
         AzFramework::CameraState cameraState;
         Camera::EditorCameraRequestBus::BroadcastResult(found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
 
-        const auto radToDeg3 = [](const AZ::Vector3& radians)
-        {
-            return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
-        };
-
         if (found)
         {
-            ViewBookmark bookmark;
+            using AzToolsFramework::ViewBookmarkLoaderInterface;
+
+            const auto radToDeg3 = [](const AZ::Vector3& radians)
+            {
+                return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
+            };
+
+            ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+
+            AzToolsFramework::ViewBookmark bookmark;
             bookmark.m_position = cameraState.m_position;
             bookmark.m_rotation = radToDeg3(
                 AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up)));
 
-            SaveLastKnownLocation(bookmark);
+            bookmarkLoader->SaveLastKnownLocation(bookmark);
         }
     }
 } // namespace AzToolsFramework
