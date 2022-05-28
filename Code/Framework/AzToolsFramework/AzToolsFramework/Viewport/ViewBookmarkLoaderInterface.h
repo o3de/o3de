@@ -74,8 +74,7 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(ViewBookmarkLoaderInterface, "{71E7E178-4107-4975-A6E6-1C4B005C981A}")
 
-        virtual bool SaveBookmark(const ViewBookmark& bookmark) = 0;
-        virtual bool ModifyBookmarkAtIndex(const ViewBookmark& bookmark, int index) = 0;
+        virtual bool SaveBookmarkAtIndex(const ViewBookmark& bookmark, int index) = 0;
         virtual bool SaveLastKnownLocation(const ViewBookmark& bookmark) = 0;
         virtual AZStd::optional<ViewBookmark> LoadBookmarkAtIndex(int index) = 0;
         virtual AZStd::optional<ViewBookmark> LoadLastKnownLocation() = 0;

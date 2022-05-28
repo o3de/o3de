@@ -1022,7 +1022,7 @@ void MainWindow::InitActions()
         bookmark.m_rotation =
             AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
 
-        bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index);
+        bookmarkLoader->SaveBookmarkAtIndex(bookmark, index);
         QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
                                      .arg(index + 1)
                                      .arg(bookmark.m_position.GetX(), 0, 'f', 2)
