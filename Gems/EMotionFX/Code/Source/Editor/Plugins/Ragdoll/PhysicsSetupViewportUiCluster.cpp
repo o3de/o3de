@@ -8,6 +8,7 @@
 
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
+#include <Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
@@ -18,6 +19,7 @@ namespace EMotionFX
     {
         m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<ColliderTranslationManipulators>();
         m_subModes[SubMode::ColliderRotation] = AZStd::make_unique<ColliderRotationManipulators>();
+        m_subModes[SubMode::ColliderDimensions] = AZStd::make_unique<ColliderCapsuleManipulators>();
     }
 
     AZ::s32 PhysicsSetupViewportUiCluster::GetViewportId() const
@@ -60,9 +62,16 @@ namespace EMotionFX
     void PhysicsSetupViewportUiCluster::CreateClusterIfNoneExists(PhysicsSetupManipulatorData physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
+        const bool hasCapsuleCollider = m_physicsSetupManipulatorData.HasCapsuleCollider();
 
-        if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId)
+        if (hasCapsuleCollider != m_hasCapsuleCollider)
         {
+            DestroyClusterIfExists();
+        }
+
+        if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId || hasCapsuleCollider != m_hasCapsuleCollider)
+        {
+            m_hasCapsuleCollider = hasCapsuleCollider;
             const AZ::s32 viewportId = GetViewportId();
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
                 m_clusterId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
@@ -71,6 +80,10 @@ namespace EMotionFX
             m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
             m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)] = RegisterClusterButton(viewportId, m_clusterId, "Move");
             m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)] = RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+            if (m_hasCapsuleCollider)
+            {
+                m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)] = RegisterClusterButton(viewportId, m_clusterId, "Scale");
+            }
 
             const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
@@ -81,6 +94,10 @@ namespace EMotionFX
                 else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)])
                 {
                     SetCurrentMode(SubMode::ColliderRotation);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)])
+                {
+                    SetCurrentMode(SubMode::ColliderDimensions);
                 }
             };
 

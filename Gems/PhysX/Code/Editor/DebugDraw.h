@@ -38,7 +38,8 @@ namespace PhysX
         class DisplayCallback
         {
         public:
-            virtual void Display(AzFramework::DebugDisplayRequests& debugDisplayRequests) const = 0;
+            virtual void Display(const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) const = 0;
         protected:
             ~DisplayCallback() = default;
         };
@@ -108,10 +109,9 @@ namespace PhysX
 
             void DrawHeightfield(
                 AzFramework::DebugDisplayRequests& debugDisplay,
-                const Physics::ColliderConfiguration& colliderConfig,
-                const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& aabbCenterLocalBody,
+                float drawDistance,
+                const AZStd::shared_ptr<const Physics::Shape>& shape) const;
 
             void DrawPolygonPrism(
                 AzFramework::DebugDisplayRequests& debugDisplay,

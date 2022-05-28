@@ -58,7 +58,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("clear_testingAssets_dir")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetRelocator_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -3774,7 +3774,7 @@ move_a_folder_tests = [
 @pytest.mark.usefixtures("clear_moveoutput")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorMove_WindowsAndMac:
 
     # run one test:
