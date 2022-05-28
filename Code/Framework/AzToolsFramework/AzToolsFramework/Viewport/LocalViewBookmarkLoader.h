@@ -25,12 +25,6 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
         AZ_RTTI(LocalViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkLoaderInterface);
 
-        enum class ViewBookmarkType : int
-        {
-            Standard,
-            LastKnownLocation
-        };
-
         void RegisterViewBookmarkLoaderInterface();
         void UnregisterViewBookmarkLoaderInterface();
 
