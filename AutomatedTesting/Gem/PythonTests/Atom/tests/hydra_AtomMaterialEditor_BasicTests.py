@@ -10,7 +10,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 
 import os
-import sys
 import time
 
 import azlmbr.math as math
@@ -25,10 +24,10 @@ TEST_MATERIAL_1 = "001_DefaultWhite.material"
 TEST_MATERIAL_2 = "002_BaseColorLerp.material"
 TEST_MATERIAL_3 = "003_MetalMatte.material"
 TEST_DATA_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases").lower()
+    azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases")
 MATERIAL_TYPE_PATH = os.path.join(
     azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets",
-    "Materials", "Types", "StandardPBR.materialtype").lower()
+    "Materials", "Types", "StandardPBR.materialtype")
 CACHE_FILE_EXTENSION = ".azmaterial"
 
 
