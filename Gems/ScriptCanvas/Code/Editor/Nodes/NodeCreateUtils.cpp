@@ -106,7 +106,17 @@ namespace ScriptCanvasEditor::Nodes
         AZ::Entity* scriptCanvasEntity{ aznew AZ::Entity };
         scriptCanvasEntity->Init();
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
-        ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        if (classId == "")
+        {
+            ScriptCanvas::SystemRequestBus::BroadcastResult(
+                node, &ScriptCanvas::SystemRequests::CreateNodeOnEntityWithoutUuid, scriptCanvasEntity->GetId(), scriptCanvasId);
+        }
+        else
+        {
+            ScriptCanvas::SystemRequestBus::BroadcastResult(
+                node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        }
+        
         if (onCreateCallback)
         {
             onCreateCallback(node);

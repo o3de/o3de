@@ -59,6 +59,13 @@ namespace ScriptCanvasEditor
         AZStd::string m_tooltip;
     };
 
+    struct RegisterNodeInformation
+    {
+        AZStd::string m_displayName;
+        AZStd::string m_toolTip;
+        AZStd::string m_categoryPath;
+    };
+
     class NodePaletteModel
         : public GraphCanvas::CategorizerInterface
         , UpgradeNotificationsBus::Handler
@@ -76,6 +83,8 @@ namespace ScriptCanvasEditor
         void AssignAssetModel(AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
 
         void RepopulateModel();
+
+        void RegisterNode(const RegisterNodeInformation& nodeInformation);
 
         void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);

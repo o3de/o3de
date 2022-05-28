@@ -262,6 +262,44 @@ namespace ScriptCanvas
         return nullptr;
     }
 
+    ScriptCanvas::Node* SystemComponent::CreateNodeOnEntityWithoutUuid(
+        const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId)
+    {
+        AZ::Entity* nodeEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        ScriptCanvas::Node* node = aznew Node;
+        node->SetNodeName("++");
+
+        DynamicDataSlotConfiguration inputPin;
+
+        inputPin.m_name = " ";
+        inputPin.m_toolTip = "Input";
+        inputPin.SetConnectionType(ConnectionType::Input);
+        inputPin.m_dynamicDataType = DynamicDataType::Any;
+        inputPin.m_displayType = Data::Type::Number();
+
+        node->AddSlot(inputPin, true);
+
+        DynamicDataSlotConfiguration outputPin;
+
+        outputPin.m_name = " ";
+        outputPin.m_toolTip = "Output";
+        outputPin.SetConnectionType(ConnectionType::Output);
+        outputPin.m_dynamicDataType = DynamicDataType::Any;
+        outputPin.m_displayType = Data::Type::Number();
+
+        node->AddSlot(outputPin, true);
+
+        if (node && nodeEntity)
+        {
+            nodeEntity->SetName(node->GetNodeName());
+            nodeEntity->AddComponent(node);
+        }
+
+        GraphRequestBus::Event(scriptCanvasId, &GraphRequests::AddNode, nodeEntity->GetId());
+        return node;
+    }
+
     void SystemComponent::AddOwnedObjectReference(const void* object, BehaviorContextObject* behaviorContextObject)
     {
         if (object == nullptr)

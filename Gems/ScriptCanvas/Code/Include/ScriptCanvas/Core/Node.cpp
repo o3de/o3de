@@ -2963,27 +2963,35 @@ namespace ScriptCanvas
 
     AZStd::string Node::GetNodeName() const
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        if (serializeContext)
+        if (m_name == "")
         {
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
-            if (classData)
+            if (serializeContext)
             {
-                if (classData->m_editData)
+                const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+
+                if (classData)
                 {
-                    return classData->m_editData->m_name;
-                }
-                else
-                {
-                    return classData->m_name;
+                    if (classData->m_editData)
+                    {
+                        return classData->m_editData->m_name;
+                    }
+                    else
+                    {
+                        return classData->m_name;
+                    }
                 }
             }
+            return "<unknown>";
         }
+        return m_name;
+    }
 
-        return "<unknown>";
+    void Node::SetNodeName(AZStd::string name)
+    {
+        m_name = name;
     }
 
     bool Node::IsEntryPoint() const

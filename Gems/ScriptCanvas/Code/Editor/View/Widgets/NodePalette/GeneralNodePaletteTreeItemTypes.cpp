@@ -275,6 +275,7 @@ namespace ScriptCanvasEditor
     ScriptCanvasEditor::NodeIdPair CreateCustomNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
     {
         Nodes::StyleConfiguration styleConfiguration;
+        
         styleConfiguration.m_nodeSubStyle = m_styleOverride;
         styleConfiguration.m_titlePalette = m_titlePalette;
 

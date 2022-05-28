@@ -192,7 +192,8 @@ namespace ScriptCanvasEditor::Nodes
 
         graphCanvasEntity->SetName(AZStd::string::format("GC-Node(%s)", details.m_name.c_str()));
 
-        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
+        GraphCanvas::NodeTitleRequestBus::Event(
+            graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetSubTitle, details.m_category);
 
         // Add to the tooltip the C++ class for reference

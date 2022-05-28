@@ -780,6 +780,19 @@ namespace
         }
     }
 
+    void PopulateConfiguredNodeInformationRatherThanMoreClassHierarchy(
+        ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
+    {
+
+        // Create the small operator node information
+        ScriptCanvasEditor::RegisterNodeInformation nodeInformation;
+        nodeInformation.m_displayName = "Small Operator";
+        nodeInformation.m_categoryPath = "Math";
+        nodeInformation.m_toolTip = "Perform small operations";
+
+        nodePaletteModel.RegisterNode(nodeInformation);
+    }
+
 
     // Helper function for populating the node palette model.
     // Pulled out just to make the tabbing a bit nicer, since it's a huge method.
@@ -824,6 +837,10 @@ namespace
 
         // Populates the NodePalette with Properties reflected directly on the BehaviorContext
         PopulateBehaviorContextGlobalProperties(nodePaletteModel, *behaviorContext);
+
+        // Populates the NodePalette with nodes that are instances of the Node class instead of inherited classes of Node
+        PopulateConfiguredNodeInformationRatherThanMoreClassHierarchy(nodePaletteModel);
+
     }
 }
 
@@ -921,6 +938,21 @@ namespace ScriptCanvasEditor
         }
 
         NodePaletteModelNotificationBus::Event(m_paletteId, &NodePaletteModelNotifications::OnAssetModelRepopulated);
+    }
+
+    // Register a node given its specific attributes
+    void NodePaletteModel::RegisterNode(const RegisterNodeInformation& nodeInformation)
+    {
+        CustomNodeModelInformation* customNodeInformation = aznew CustomNodeModelInformation();
+        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier("");
+
+        customNodeInformation->m_nodeIdentifier = nodeIdentifier;
+        customNodeInformation->m_typeId = "";
+        customNodeInformation->m_displayName = nodeInformation.m_displayName;
+        customNodeInformation->m_categoryPath = nodeInformation.m_categoryPath;
+        customNodeInformation->m_toolTip = nodeInformation.m_toolTip;
+
+        m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, customNodeInformation));
     }
 
     void NodePaletteModel::RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath)
