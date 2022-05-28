@@ -435,10 +435,6 @@ CCryEditApp::CCryEditApp()
 
     m_sPreviewFile[0] = 0;
 
-    // Place all significant initialization in InitInstance
-    ZeroStruct(m_tagLocations);
-    ZeroStruct(m_tagAngles);
-
     AzFramework::AssetSystemInfoBus::Handler::BusConnect();
 
     m_disableIdleProcessingCounter = 0;
@@ -1815,8 +1811,6 @@ void CCryEditApp::LoadFile(QString fileName)
     {
         return;
     }
-
-    LoadTagLocations();
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
@@ -3382,7 +3376,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
     {
         GetIEditor()->ShowConsole(bVisible);
     }
-    LoadTagLocations();
 
     MainWindow::instance()->menuBar()->setEnabled(true);
 
@@ -3443,55 +3436,6 @@ void CCryEditApp::OnViewConfigureLayout()
         {
             // Will kill this Pane. so must be last line in this function.
             layout->CreateLayout(dlg.GetLayout());
-        }
-    }
-}
-
-void CCryEditApp::SaveTagLocations()
-{
-    // Save to file.
-    QString filename = QFileInfo(GetIEditor()->GetDocument()->GetLevelPathName()).dir().absoluteFilePath("tags.txt");
-    QFile f(filename);
-    if (f.open(QFile::WriteOnly))
-    {
-        QTextStream stream(&f);
-        for (int i = 0; i < 12; i++)
-        {
-            stream <<
-                m_tagLocations[i].x << "," << m_tagLocations[i].y << "," <<  m_tagLocations[i].z << "," <<
-                m_tagAngles[i].x << "," << m_tagAngles[i].y << "," << m_tagAngles[i].z << Qt::endl;
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::LoadTagLocations()
-{
-    QString filename = QFileInfo(GetIEditor()->GetDocument()->GetLevelPathName()).dir().absoluteFilePath("tags.txt");
-    // Load tag locations from file.
-
-    ZeroStruct(m_tagLocations);
-
-    QFile f(filename);
-    if (f.open(QFile::ReadOnly))
-    {
-        QTextStream stream(&f);
-        for (int i = 0; i < 12; i++)
-        {
-            QStringList line = stream.readLine().split(",");
-            float x = 0, y = 0, z = 0, ax = 0, ay = 0, az = 0;
-            if (line.count() == 6)
-            {
-                x = line[0].toFloat();
-                y = line[1].toFloat();
-                z = line[2].toFloat();
-                ax = line[3].toFloat();
-                ay = line[4].toFloat();
-                az = line[5].toFloat();
-            }
-
-            m_tagLocations[i] = Vec3(x, y, z);
-            m_tagAngles[i] = Ang3(ax, ay, az);
         }
     }
 }
