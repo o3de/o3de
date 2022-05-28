@@ -119,7 +119,7 @@ namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
 
-    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler 
+    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
         EditorEntityNotifications(EditorViewportWidget& editorViewportWidget)
@@ -589,7 +589,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndLoad:
     case eNotify_OnEndCreate:
         UpdateScene();
-        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -597,10 +596,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndNewScene:
-        {
-            PopDisableRendering();
-            UpdateScene();
-        }
+        PopDisableRendering();
+        UpdateScene();
         break;
 
     case eNotify_OnBeginTerrainCreate:

@@ -54,14 +54,12 @@ namespace AzToolsFramework
 
         bool SaveLocalBookmark(const ViewBookmark& bookmark, ViewBookmarkType bookmarkType);
 
-        void SetupLocalViewBookmarkComponent();
-        void WriteBookmarksSettingsRegistryToFile();
-        bool ReadViewBookmarksFromSettingsRegistry();
-        AZStd::string GenerateBookmarkFileName() const;
-        LocalViewBookmarkComponent* RetrieveLocalViewBookmarkComponent();
+        LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
+
+        void WriteViewBookmarksSettingsRegistryToFile(const AZStd::string& localBookmarksFileName);
+        bool ReadViewBookmarksFromSettingsRegistry(const AZStd::string& localBookmarksFileName);
 
         AZStd::vector<ViewBookmark> m_localBookmarks;
         AZStd::optional<ViewBookmark> m_lastKnownLocation;
-        AZStd::string m_bookmarkFileName;
     };
 } // namespace AzToolsFramework
