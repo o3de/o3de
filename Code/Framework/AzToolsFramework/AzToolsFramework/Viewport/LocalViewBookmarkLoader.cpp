@@ -19,9 +19,6 @@
 #include <Prefab/PrefabSystemComponentInterface.h>
 #include <Viewport/LocalViewBookmarkLoader.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     static constexpr const char* ViewBookmarksRegistryPath = "/O3DE/ViewBookmarks";
@@ -576,6 +573,3 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

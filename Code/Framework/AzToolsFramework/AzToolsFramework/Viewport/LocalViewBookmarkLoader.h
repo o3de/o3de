@@ -10,8 +10,8 @@
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Entity/EntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <Viewport/LocalViewBookmarkComponent.h>
 #include <Viewport/ViewBookmarkLoaderInterface.h>
 

@@ -112,9 +112,6 @@ void StartFixedCursorMode(QObject* viewport);
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT 8.0f
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -1913,7 +1910,7 @@ void EditorViewportWidget::SetDefaultCamera()
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
 
-    // Synchronize the configured editor viewport FOV to the default camera
+    // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
         const float fov = gSettings.viewports.fDefaultFov;
@@ -1921,14 +1918,14 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fov);
     }
 
-    // Push the default view as the active view
-    auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (atomViewportRequests)
+    // push the default view as the active view
+    if (auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
 
+    // check to see if we have an existing last known location for this level
     AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<AzToolsFramework::ViewBookmarkLoaderInterface>::Get();
     if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkLoader->LoadLastKnownLocation();
         lastKnownLocationBookmark.has_value())
@@ -1939,8 +1936,8 @@ void EditorViewportWidget::SetDefaultCamera()
     }
     else
     {
+        // set the default editor camera position and orientation if there was no last known location
         const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
-        // Set the default Editor Camera position and orientation
         m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
         m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
             SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
@@ -2137,6 +2134,7 @@ void EditorViewportWidget::OnStartPlayInEditorBegin()
 
 void EditorViewportWidget::OnRootPrefabInstanceLoaded()
 {
+    // set the camera position once we know the entire scene (level) has finished loading
     SetDefaultCamera();
 }
 
@@ -2599,8 +2597,5 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
-
-#pragma optimize("", on)
-#pragma inline_depth()
 
 #include <moc_EditorViewportWidget.cpp>

@@ -237,7 +237,7 @@ private:
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
     bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
-    // AzToolsFramework::Prefab::PrefabPublicNotificationBus
+    // AzToolsFramework::Prefab::PrefabPublicNotificationBus overrides ...
     void OnRootPrefabInstanceLoaded() override;
 
     ////////////////////////////////////////////////////////////////////////

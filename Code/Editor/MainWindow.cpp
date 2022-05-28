@@ -978,7 +978,6 @@ void MainWindow::InitActions()
             return false;
         }
 
-        // factor out <begin>
         bool found = false;
         AzFramework::CameraState cameraState;
         Camera::EditorCameraRequestBus::BroadcastResult(
@@ -994,7 +993,6 @@ void MainWindow::InitActions()
         bookmark.m_position = cameraState.m_position;
         bookmark.m_rotation =
             AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
-        // factor out <end>
 
         bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index);
         QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
