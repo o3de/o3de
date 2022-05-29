@@ -6,11 +6,11 @@
  *
  */
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/LineSegment.h>
 #include <AzCore/Math/Ray.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {

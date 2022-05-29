@@ -6,10 +6,11 @@
  *
  */
 
-#include <AzCore/Math/Ray.h>
-#include <AzCore/Math/LineSegment.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/LineSegment.h>
+#include <AzCore/Math/Ray.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
 {
@@ -28,4 +29,11 @@ namespace UnitTest
         EXPECT_THAT(ray.GetOrigin(), IsClose(AZ::Vector3(0.0f, 0.5f, 12.0f)));
         EXPECT_THAT(ray.GetDirection(), IsClose((AZ::Vector3(15.0f, 0.0f, 3.0f) - AZ::Vector3(0.0f, 0.5f, 12.0f)).GetNormalized()));
     }
-}
+
+    TEST(MATH_Ray, Ray_CreateDirectionNonNormalizedFail)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AZ::Ray rayUnused = AZ::Ray(AZ::Vector3(), AZ::Vector3(3, 0, 0));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+} // namespace UnitTest
