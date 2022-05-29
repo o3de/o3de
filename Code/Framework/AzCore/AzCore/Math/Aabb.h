@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/span.h>
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 
@@ -43,6 +44,9 @@ namespace AZ
 
         //! Creates an AABB which contains the specified points.
         static Aabb CreatePoints(const Vector3* pts, size_t numPts);
+
+        //! Creates an AABB which contains the specified points.
+        static Aabb CreatePoints(const AZStd::span<Vector3>& points);
 
         //! Creates an AABB which contains the specified OBB.
         static Aabb CreateFromObb(const Obb& obb);
