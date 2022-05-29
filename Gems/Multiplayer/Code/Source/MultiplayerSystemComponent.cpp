@@ -93,7 +93,7 @@ namespace Multiplayer
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
-    AZ_CVAR(bool, connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
+    AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -201,7 +201,7 @@ namespace Multiplayer
         {
             m_consoleCommandHandler.Connect(console->GetConsoleCommandInvokedEvent());
 
-            if (connect_onstartup)
+            if (cl_connect_onstartup)
             {
                 console->PerformCommand("connect");
             }
@@ -1252,7 +1252,7 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
-    void launch_local_client(const AZ::ConsoleCommandContainer& arguments)
+    void sv_launch_local_client(const AZ::ConsoleCommandContainer& arguments)
     {
         // Try finding the game launcher from the executable folder where this server was launched from.
         AZ::IO::FixedMaxPath gameLauncherPath = AZ::Utils::GetExecutableDirectory();
@@ -1266,7 +1266,7 @@ namespace Multiplayer
         auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get();
         if (!multiplayerInterface)
         {
-            AZLOG_ERROR("Launch_local_client failed. MultiplayerSystemComponent hasn't been constructed yet.");
+            AZLOG_ERROR("Sv_launch_local_client failed. MultiplayerSystemComponent hasn't been constructed yet.");
             return;
         }
 
@@ -1274,13 +1274,13 @@ namespace Multiplayer
         if (multiplayerInterface->GetAgentType() != MultiplayerAgentType::DedicatedServer &&
             multiplayerInterface->GetAgentType() != MultiplayerAgentType::ClientServer)
         {
-            AZLOG_ERROR("Cannot launch_local_client. This program isn't hosting, please call 'host' command.");
+            AZLOG_ERROR("Cannot sv_launch_local_client. This program isn't hosting, please call 'host' command.");
             return;
         }
         
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = gameLauncherPath.String();
-        processLaunchInfo.m_commandlineParameters = "--connect_onstartup=true";
+        processLaunchInfo.m_commandlineParameters = "--cl_connect_onstartup=true";
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
         
         // Launch GameLauncher and connect to this server
@@ -1291,14 +1291,14 @@ namespace Multiplayer
             return;
         }
     }
-    AZ_CONSOLEFREEFUNC(launch_local_client, AZ::ConsoleFunctorFlags::DontReplicate, "Launches a local client to connects to this host (only applies if currently hosting)");
+    AZ_CONSOLEFREEFUNC(sv_launch_local_client, AZ::ConsoleFunctorFlags::DontReplicate, "Launches a local client and connects to this host server (only works if currently hosting)");
 
 
     void connect(const AZ::ConsoleCommandContainer& arguments)
     {
         if (!AZ::Interface<IMultiplayer>::Get())
         {
-            AZLOG_ERROR("Connect failed. MultiplayerSystemComponent hasn't been constructed yet. Did you mean to use connect_onstartup?");
+            AZLOG_ERROR("Connect failed. MultiplayerSystemComponent hasn't been constructed yet. Did you mean to use cl_connect_onstartup?");
             return;
         }
 

@@ -124,7 +124,7 @@ namespace Multiplayer
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
                     if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
                     {
-                        if (ImGui::Button("Host"))
+                        if (ImGui::Button(HOST_BUTTON_TITLE))
                         {
                             console->PerformCommand("host");
                         }
@@ -132,9 +132,9 @@ namespace Multiplayer
                     else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
                         multiplayerAgentType == MultiplayerAgentType::ClientServer)
                     {
-                        if (ImGui::Button("Launch Local Client"))
+                        if (ImGui::Button(LAUNCH_LOCAL_CLIENT_BUTTON_TITLE))
                         {
-                            console->PerformCommand("launch_local_client");
+                            console->PerformCommand("sv_launch_local_client");
                         }
                     }
                 }
