@@ -261,33 +261,21 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
 }
 
 AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    Sampler sampler) const
+    const AzFramework::Terrain::TerrainQueryRegion& queryRegion) const
 {
     AZ_PROFILE_FUNCTION(Terrain);
 
     AZStd::vector<AZ::Vector3> inPositions;
-    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
-    inPositions.reserve(numSamplesX * numSamplesY);
+    inPositions.reserve(queryRegion.m_numPointsX * queryRegion.m_numPointsY);
 
-    AZ::Vector2 startPosition = AZ::Vector2(inRegion.GetMin().GetX(), inRegion.GetMin().GetY());
+    AZ::Vector2 startPosition(queryRegion.m_startPoint);
 
-    if (sampler == Sampler::CLAMP)
+    for (size_t y = 0; y < queryRegion.m_numPointsY; y++)
     {
-        // Adjust the start position to be on a clamped position.
-        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
-        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
-        startPosition.SetX(firstSampleX * stepSize.GetX());
-        startPosition.SetY(firstSampleY * stepSize.GetY());
-    }
-
-    for (size_t y = 0; y < numSamplesY; y++)
-    {
-        float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
-        for (size_t x = 0; x < numSamplesX; x++)
+        float fy = aznumeric_cast<float>(queryRegion.m_startPoint.GetY() + (y * queryRegion.m_stepSize.GetY()));
+        for (size_t x = 0; x < queryRegion.m_numPointsX; x++)
         {
-            float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
+            float fx = aznumeric_cast<float>(queryRegion.m_startPoint.GetX() + (x * queryRegion.m_stepSize.GetX()));
             inPositions.emplace_back(AZ::Vector3(fx, fy, 0.0f));
         }
     }
@@ -760,128 +748,146 @@ AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
     return m_terrainRaycastContext.RayIntersect(ray);
 }
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListAsync(
+AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryListAsync(
     const AZStd::span<const AZ::Vector3>& inPositions,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
+    AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const
 {
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
+    return ProcessFromListAsync(inPositions, requestedData, perPositionCallback, sampler, params);
 }
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListAsync(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListAsync(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListAsync(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromListOfVector2Async(
+AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryListOfVector2Async(
     const AZStd::span<const AZ::Vector2>& inPositions,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
+    AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const
 {
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
+    return ProcessFromListAsync(inPositions, requestedData, perPositionCallback, sampler, params);
 }
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromListOfVector2Async(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromListOfVector2Async(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampler, params);
-}
-
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessHeightsFromRegionAsync(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
+AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryRegionAsync(
+    const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
+    AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const
 {
-    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-        inRegion, stepSize, perPositionCallback, sampler, params);
-}
+    AZ_PROFILE_FUNCTION(Terrain);
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessNormalsFromRegionAsync(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-        inRegion, stepSize, perPositionCallback, sampler, params);
-}
+    auto numSamplesX = queryRegion.m_numPointsX;
+    auto numSamplesY = queryRegion.m_numPointsY;
+    const int64_t numPositionsToProcess = numSamplesX * numSamplesY;
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfaceWeightsFromRegionAsync(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-    Sampler sampler,
-    AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-        inRegion, stepSize, perPositionCallback, sampler, params);
-}
+    if (numPositionsToProcess == 0)
+    {
+        AZ_Warning("TerrainSystem", false, "No positions to process.");
+        return nullptr;
+    }
 
-AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessSurfacePointsFromRegionAsync(
-    const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler,
-            AZStd::shared_ptr<ProcessAsyncParams> params) const
-{
-    return ProcessFromRegionAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromRegion, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4),
-        inRegion, stepSize, perPositionCallback, sampler, params);
+    // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+    const int32_t numJobsMax = CalculateMaxJobs(params);
+    const int32_t minPositionsPerJob = params && (params->m_minPositionsPerJob > 0)
+        ? params->m_minPositionsPerJob
+        : AzFramework::Terrain::QueryAsyncParams::MinPositionsPerJobDefault;
+
+    // Calculate the best subdivision of the region along both the X and Y axes to use as close to the maximum number of jobs
+    // as possible while also keeping all the regions effectively the same size.
+    int32_t xJobs, yJobs;
+    SubdivideRegionForJobs(
+        aznumeric_cast<int32_t>(numSamplesX), aznumeric_cast<int32_t>(numSamplesY), numJobsMax, minPositionsPerJob, xJobs, yJobs);
+
+    // The number of jobs returned might be less than the total requested maximum number of jobs, so recalculate it here
+    const int32_t numJobs = xJobs * yJobs;
+
+    // Get the number of samples in each direction that we'll use for each query. We calculate this as a fractional value
+    // so that we can keep each query pretty evenly balanced, with just +/- 1 count variation on each axis.
+    const float xSamplesPerQuery = aznumeric_cast<float>(numSamplesX) / xJobs;
+    const float ySamplesPerQuery = aznumeric_cast<float>(numSamplesY) / yJobs;
+
+    // Make sure our subdivisions are producing at least minPositionsPerJob unless the *total* requested point count is
+    // less than minPositionsPerJob.
+    AZ_Assert(
+        ((numSamplesX * numSamplesY) < minPositionsPerJob) ||
+        (aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery)) >= minPositionsPerJob,
+        "Too few positions per job: %d vs %d", aznumeric_cast<int32_t>(xSamplesPerQuery) * aznumeric_cast<int32_t>(ySamplesPerQuery),
+        minPositionsPerJob);
+
+    // Create a terrain job context and split the work across multiple jobs.
+    AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> jobContext =
+        AZStd::make_shared<AzFramework::Terrain::TerrainJobContext>(*m_terrainJobManager, numJobs);
+    {
+        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+        m_activeTerrainJobContexts.push_back(jobContext);
+    }
+
+    [[maybe_unused]] int32_t jobsStarted = 0;
+
+    for (int32_t yJob = 0; yJob < yJobs; yJob++)
+    {
+        // Use the fractional samples per query to calculate the start and end of the region, but then convert it
+        // back to integers so that our regions are always in exact multiples of the number of samples to process.
+        // This is important because we want the XY values for each point that we're processing to exactly align with
+        // 'start + N * (step size)', or else we'll start to process point locations that weren't actually what was requested.
+        const int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
+        const int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
+        const float inRegionMinY = queryRegion.m_startPoint.GetY() + (y0 * queryRegion.m_stepSize.GetY());
+        const int32_t numPointsY = AZStd::min(y1 - y0, aznumeric_cast<int32_t>(numSamplesY) - y0);
+
+
+        for (int32_t xJob = 0; xJob < xJobs; xJob++)
+        {
+            // Same as above, calculate the start and end of the region, then convert back to integers and create the
+            // region based on 'start + n * (step size)'.
+            const int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
+            const int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
+            const float inRegionMinX = queryRegion.m_startPoint.GetX() + (x0 * queryRegion.m_stepSize.GetX());
+            const int32_t numPointsX = AZStd::min(x1 - x0, aznumeric_cast<int32_t>(numSamplesX) - x0);
+
+            // Define the job function using the sub region of positions to process.
+            AzFramework::Terrain::TerrainQueryRegion subQueryRegion(
+                AZ::Vector3(inRegionMinX, inRegionMinY, queryRegion.m_startPoint.GetZ()), numPointsX, numPointsY, queryRegion.m_stepSize);
+
+            auto jobFunction = [this, subQueryRegion, x0, y0, requestedData, perPositionCallback, sampler, jobContext, params]()
+            {
+                // Process the sub region of positions, unless the associated job context has been cancelled.
+                if (!jobContext->IsCancelled())
+                {
+                    QueryRegionInternal(subQueryRegion, x0, y0, requestedData, perPositionCallback, sampler);
+                }
+
+                // Decrement the number of completions remaining, invoke the completion callback if this happens
+                // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
+                const bool wasLastJobCompleted = jobContext->OnJobCompleted();
+                if (wasLastJobCompleted)
+                {
+                    if (params && params->m_completionCallback)
+                    {
+                        params->m_completionCallback(jobContext);
+                    }
+
+                    {
+                        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
+                        m_activeTerrainJobContexts.erase(
+                            AZStd::find(m_activeTerrainJobContexts.begin(), m_activeTerrainJobContexts.end(), jobContext));
+                        m_activeTerrainJobContextMutexConditionVariable.notify_one();
+                    }
+                }
+            };
+
+            // Create the job and start it immediately.
+            AZ::Job* processJob = AZ::CreateJobFunction(jobFunction, true, jobContext.get());
+            processJob->Start();
+            jobsStarted++;
+        }
+    }
+
+    // Validate this just to ensure that the fractional math for handling points didn't cause any rounding errors anywhere.
+    AZ_Assert(jobsStarted == numJobs, "Wrong number of jobs created: %d vs %d", jobsStarted, numJobs);
+
+    return jobContext;
 }
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const
@@ -1011,8 +1017,9 @@ const char* TerrainSystem::GetMaxSurfaceName(
     return "";
 }
 
-void TerrainSystem::ProcessHeightsFromList(
+void TerrainSystem::QueryList(
     const AZStd::span<const AZ::Vector3>& inPositions,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
@@ -1024,108 +1031,54 @@ void TerrainSystem::ProcessHeightsFromList(
     }
 
     AZStd::vector<bool> terrainExists(inPositions.size());
-    AZStd::vector<float> heights(inPositions.size());
+    AZStd::vector<float> heights;
+    AZStd::vector<AZ::Vector3> normals;
+    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
-    GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
+    if (requestedData & TerrainDataMask::Heights)
+    {
+        heights.resize(inPositions.size());
+        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::Normals)
+    {
+        normals.resize(inPositions.size());
+        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::SurfaceData)
+    {
+        // We can potentially skip an extra call to GetHeights if we already
+        // got the terrain exists flags in the earlier call to GetHeights
+        AZStd::vector<bool> terrainExistsEmpty;
+
+        surfaceWeights.resize(inPositions.size());
+        GetOrderedSurfaceWeightsFromList(inPositions, sampler, surfaceWeights,
+            (requestedData & TerrainDataMask::Heights) ? terrainExistsEmpty : terrainExists);
+    }
 
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
     for (size_t i = 0; i < inPositions.size(); i++)
     {
         surfacePoint.m_position = inPositions[i];
-        surfacePoint.m_position.SetZ(heights[i]);
+        if (requestedData & TerrainDataMask::Heights)
+        {
+            surfacePoint.m_position.SetZ(heights[i]);
+        }
+        if (requestedData & TerrainDataMask::Normals)
+        {
+            surfacePoint.m_normal = AZStd::move(normals[i]);
+        }
+        if (requestedData & TerrainDataMask::SurfaceData)
+        {
+            surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
+        }
         perPositionCallback(surfacePoint, terrainExists[i]);
     }
 }
 
-void TerrainSystem::ProcessNormalsFromList(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<bool> terrainExists(inPositions.size());
-    AZStd::vector<AZ::Vector3> normals(inPositions.size());
-
-    GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t i = 0; i < inPositions.size(); i++)
-    {
-        surfacePoint.m_position = inPositions[i];
-        surfacePoint.m_normal = AZStd::move(normals[i]);
-        perPositionCallback(surfacePoint, terrainExists[i]);
-    }
-}
-
-void TerrainSystem::ProcessSurfaceWeightsFromList(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
-    AZStd::vector<bool> terrainExists(inPositions.size());
-
-    GetOrderedSurfaceWeightsFromList(inPositions, sampler, outSurfaceWeightsList, terrainExists);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t i = 0; i < inPositions.size(); i++)
-    {
-        surfacePoint.m_position = inPositions[i];
-        surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
-        perPositionCallback(surfacePoint, terrainExists[i]);
-    }
-}
-
-void TerrainSystem::ProcessSurfacePointsFromList(
-    const AZStd::span<const AZ::Vector3>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<float> heights(inPositions.size());
-    AZStd::vector<AZ::Vector3> normals(inPositions.size());
-    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
-    AZStd::vector<bool> terrainExists(inPositions.size());
-
-    GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-
-    // We can skip the unnecessary call to GetHeights since we already
-    // got the terrain exists flags in the earlier call to GetHeights
-    AZStd::vector<bool> terrainExistsEmpty;
-    GetOrderedSurfaceWeightsFromList(inPositions, sampler, outSurfaceWeightsList, terrainExistsEmpty);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t i = 0; i < inPositions.size(); i++)
-    {
-        surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), heights[i]);
-        surfacePoint.m_normal = AZStd::move(normals[i]);
-        surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
-        perPositionCallback(surfacePoint, terrainExists[i]);
-    }
-}
-
-void TerrainSystem::ProcessHeightsFromListOfVector2(
+void TerrainSystem::QueryListOfVector2(
     const AZStd::span<const AZ::Vector2>& inPositions,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
     Sampler sampler) const
 {
@@ -1138,94 +1091,15 @@ void TerrainSystem::ProcessHeightsFromListOfVector2(
 
     AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
 
-    ProcessHeightsFromList(inPositionsVec3, perPositionCallback, sampler);
-}
-
-void TerrainSystem::ProcessNormalsFromListOfVector2(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
-
-    ProcessNormalsFromList(inPositionsVec3, perPositionCallback, sampler);
-}
-
-void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
-
-    ProcessSurfaceWeightsFromList(inPositionsVec3, perPositionCallback, sampler);
-}
-
-void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
-    const AZStd::span<const AZ::Vector2>& inPositions,
-    AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    AZStd::vector<AZ::Vector3> inPositionsVec3 = GenerateInputPositionsFromListOfVector2(inPositions);
-
-    ProcessSurfacePointsFromList(inPositionsVec3, perPositionCallback, sampler);
-}
-
-AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    Sampler sampler) const
-{
-    size_t countX = 0;
-    size_t countY = 0;
-    
-    switch (sampler)
-    {
-    case Sampler::CLAMP:
-    {
-        // Only consider points that line up with the query resolution
-        const int32_t firstSampleX = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetX() / stepSize.GetX()));
-        const int32_t lastSampleX = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetX() / stepSize.GetX()));
-        const int32_t firstSampleY = aznumeric_cast<int32_t>(AZStd::ceilf(inRegion.GetMin().GetY() / stepSize.GetY()));
-        const int32_t lastSampleY = aznumeric_cast<int32_t>(AZStd::floorf(inRegion.GetMax().GetY() / stepSize.GetY()));
-        countX = lastSampleX - firstSampleX + 1;
-        countY = lastSampleY - firstSampleY + 1;
-    }
-    default:
-        countX = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetX() / stepSize.GetX()));
-        countY = aznumeric_cast<size_t>(AZStd::floorf(inRegion.GetExtents().GetY() / stepSize.GetY()));
-    }
-    
-    return AZStd::make_pair(countX, countY);
+    QueryList(inPositionsVec3, requestedData, perPositionCallback, sampler);
 }
 
 //! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
-int32_t TerrainSystem::CalculateMaxJobs(AZStd::shared_ptr<ProcessAsyncParams> params) const
+int32_t TerrainSystem::CalculateMaxJobs(AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const
 {
     // Determine the maximum number of jobs available to split the work across for async calls.
     const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-    const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
+    const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : AzFramework::Terrain::QueryAsyncParams::NumJobsDefault;
     const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
 
     return numJobsMax;
@@ -1277,7 +1151,7 @@ void TerrainSystem::SubdivideRegionForJobs(
         // where even the entire Y range (i.e. yChoice == 1) isn't sufficient, we can stop checking, we won't find any more solutions. 
         if (yChoice == 0)
         {
-            return;
+            break;
         }
 
         // If this combination is better than a previous solution, save it as our new best solution.
@@ -1288,18 +1162,33 @@ void TerrainSystem::SubdivideRegionForJobs(
             subdivisionsY = yChoice;
             bestJobUsage = jobUsage;
 
-            // If we've found an optimal solution, early-out and return.
+            // If we've found an optimal solution, early-out.
             if (jobUsage == clampedMaxNumJobs)
             {
-                return;
+                break;
             }
         }
     }
+
+    // Verify that our subdivision strategy has stayed within the max jobs constraint.
+    AZ_Assert(
+        (subdivisionsX * subdivisionsY) <= maxNumJobs, "The region was subdivided into too many jobs: %d x %d vs %d max", subdivisionsX,
+        subdivisionsY, maxNumJobs);
 }
 
-void TerrainSystem::ProcessHeightsFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
+void TerrainSystem::QueryRegion(
+    const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+    TerrainDataMask requestedData,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampler) const
+{
+    QueryRegionInternal(queryRegion, 0, 0, requestedData, perPositionCallback, sampler);
+}
+
+void TerrainSystem::QueryRegionInternal(
+    const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+    size_t xIndexOffset, size_t yIndexOffset,
+    TerrainDataMask requestedData,
     AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
     Sampler sampler) const
 {
@@ -1311,9 +1200,7 @@ void TerrainSystem::ProcessHeightsFromRegion(
         return;
     }
 
-    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
-
-    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(queryRegion);
 
     if (inPositions.empty())
     {
@@ -1321,153 +1208,55 @@ void TerrainSystem::ProcessHeightsFromRegion(
     }
 
     AZStd::vector<bool> terrainExists(inPositions.size());
-    AZStd::vector<float> heights(inPositions.size());
+    AZStd::vector<float> heights;
+    AZStd::vector<AZ::Vector3> normals;
+    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
-    GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
+    if (requestedData & TerrainDataMask::Heights)
+    {
+        heights.resize(inPositions.size());
+        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::Normals)
+    {
+        normals.resize(inPositions.size());
+        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::SurfaceData)
+    {
+        // We can potentially skip an extra call to GetHeights if we already
+        // got the terrain exists flags in the earlier call to GetHeights
+        AZStd::vector<bool> terrainExistsEmpty;
+
+        surfaceWeights.resize(inPositions.size());
+        GetOrderedSurfaceWeightsFromList(
+            inPositions, sampler, surfaceWeights, (requestedData & TerrainDataMask::Heights) ? terrainExistsEmpty : terrainExists);
+    }
     
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0, i = 0; y < numSamplesY; y++)
+    for (size_t y = 0, i = 0; y < queryRegion.m_numPointsY; y++)
     {
-        for (size_t x = 0; x < numSamplesX; x++)
+        for (size_t x = 0; x < queryRegion.m_numPointsX; x++)
         {
-            surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), heights[i]);
-            perPositionCallback(x, y, surfacePoint, terrainExists[i]);
+            surfacePoint.m_position = inPositions[i];
+            if (requestedData & TerrainDataMask::Heights)
+            {
+                surfacePoint.m_position.SetZ(heights[i]);
+            }
+            if (requestedData & TerrainDataMask::Normals)
+            {
+                surfacePoint.m_normal = AZStd::move(normals[i]);
+            }
+            if (requestedData & TerrainDataMask::SurfaceData)
+            {
+                surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
+            }
+            perPositionCallback(x + xIndexOffset, y + yIndexOffset, surfacePoint, terrainExists[i]);
             i++;
         }
     }
 }
 
-void TerrainSystem::ProcessNormalsFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    // Don't bother processing if we don't have a callback
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
-
-    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
-
-    if (inPositions.empty())
-    {
-        return;
-    }
-
-    AZStd::vector<bool> terrainExists(inPositions.size());
-    AZStd::vector<AZ::Vector3> normals(inPositions.size());
-
-    GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0, i = 0; y < numSamplesY; y++)
-    {
-        for (size_t x = 0; x < numSamplesX; x++)
-        {
-            surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), 0.0f);
-            surfacePoint.m_normal = AZStd::move(normals[i]);
-            perPositionCallback(x, y, surfacePoint, terrainExists[i]);
-            i++;
-        }
-    }
-}
-
-void TerrainSystem::ProcessSurfaceWeightsFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    // Don't bother processing if we don't have a callback
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
-
-    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
-
-    if (inPositions.empty())
-    {
-        return;
-    }
-
-    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
-    AZStd::vector<bool> terrainExists(inPositions.size());
-
-    GetOrderedSurfaceWeightsFromList(inPositions, sampler, outSurfaceWeightsList, terrainExists);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0, i = 0; y < numSamplesY; y++)
-    {
-        for (size_t x = 0; x < numSamplesX; x++)
-        {
-            surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), 0.0f);
-            surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
-            perPositionCallback(x, y, surfacePoint, terrainExists[i]);
-            i++;
-        }
-    }
-}
-
-void TerrainSystem::ProcessSurfacePointsFromRegion(
-    const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-    Sampler sampler) const
-{
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    // Don't bother processing if we don't have a callback
-    if (!perPositionCallback)
-    {
-        return;
-    }
-
-    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize, sampler);
-
-    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize, sampler);
-
-    if (inPositions.empty())
-    {
-        return;
-    }
-
-    AZStd::vector<float> heights(inPositions.size());
-    AZStd::vector<AZ::Vector3> normals(inPositions.size());
-    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
-    AZStd::vector<bool> terrainExists(inPositions.size());
-
-    GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
-
-    // We can skip the unnecessary call to GetHeights since we already
-    // got the terrain exists flags in the earlier call to GetHeights
-    AZStd::vector<bool> terrainExistsEmpty;
-    GetOrderedSurfaceWeightsFromList(inPositions, sampler, outSurfaceWeightsList, terrainExistsEmpty);
-
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0, i = 0; y < numSamplesY; y++)
-    {
-        for (size_t x = 0; x < numSamplesX; x++)
-        {
-            surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), heights[i]);
-            surfacePoint.m_normal = AZStd::move(normals[i]);
-            surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
-            perPositionCallback(x, y, surfacePoint, terrainExists[i]);
-            i++;
-        }
-    }
-}
 
 void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 {

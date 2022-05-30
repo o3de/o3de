@@ -82,6 +82,12 @@ set(FILES
     Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.cpp
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h
@@ -90,9 +96,11 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h
-    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.h
-    Source/Editor/Plugins/Ragdoll/PhysicsSetupColliderTranslationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h
