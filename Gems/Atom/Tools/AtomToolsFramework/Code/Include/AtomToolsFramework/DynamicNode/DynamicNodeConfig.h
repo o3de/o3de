@@ -23,8 +23,10 @@ namespace AtomToolsFramework
             const AZStd::string& category,
             const AZStd::string& title,
             const AZStd::string& subTitle,
+            const DynamicNodeSettingsMap& settings,
             const AZStd::vector<DynamicNodeSlotConfig>& inputSlots,
-            const AZStd::vector<DynamicNodeSlotConfig>& outputSlots);
+            const AZStd::vector<DynamicNodeSlotConfig>& outputSlots,
+            const AZStd::vector<DynamicNodeSlotConfig>& propertySlots);
         DynamicNodeConfig() = default;
         ~DynamicNodeConfig() = default;
 
@@ -34,7 +36,9 @@ namespace AtomToolsFramework
         AZStd::string m_category;
         AZStd::string m_title = "Unnamed";
         AZStd::string m_subTitle;
+        DynamicNodeSettingsMap m_settings;
         AZStd::vector<DynamicNodeSlotConfig> m_inputSlots;
         AZStd::vector<DynamicNodeSlotConfig> m_outputSlots;
+        AZStd::vector<DynamicNodeSlotConfig> m_propertySlots;
     };
 } // namespace AtomToolsFramework

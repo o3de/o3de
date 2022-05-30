@@ -11,11 +11,15 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/std/any.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
+    using DynamicNodeSettingsMap = AZStd::unordered_map<AZStd::string, AZStd::string>;
+
     //! Structure containing settings for configuring individual input and output slots on a dynamic node
     struct DynamicNodeSlotConfig final
     {
@@ -24,20 +28,20 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         DynamicNodeSlotConfig(
-            const AZStd::string& type,
             const AZStd::string& name,
             const AZStd::string& displayName,
             const AZStd::string& description,
+            const AZStd::any& defaultValue,
             const AZStd::vector<AZStd::string>& supportedDataTypes,
-            const AZStd::string& defaultValue);
+            const DynamicNodeSettingsMap& settings);
         DynamicNodeSlotConfig() = default;
         ~DynamicNodeSlotConfig() = default;
 
-        AZStd::string m_type = "Data";
         AZStd::string m_name = "Unnamed";
         AZStd::string m_displayName = "Unnamed";
         AZStd::string m_description;
+        AZStd::any m_defaultValue;
         AZStd::vector<AZStd::string> m_supportedDataTypes;
-        AZStd::string m_defaultValue;
+        DynamicNodeSettingsMap m_settings;
     };
 } // namespace AtomToolsFramework
