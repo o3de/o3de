@@ -1,5 +1,21 @@
-Purpose: 
---------
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+Atom Meshlets Gem POC
+=====================
+
+Author: Adi Bar-Lev, May 2022
+Contributors: 
+Dependencies: meshlets generation is done by an excellent open source library - 
+    the MeshOptimizer library: https://github.com/zeux/meshoptimizer
+
+Demo Showcase
+-------------
 MeshExampleComponent will generate a secondary meshlet model that will be displayed
 along side the original one with UVs grouped by meshlet and can be associated with 
 color - this is done by using the material DebugShaderMaterial_01 based on the 

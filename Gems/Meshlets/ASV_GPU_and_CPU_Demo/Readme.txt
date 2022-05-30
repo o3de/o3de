@@ -11,9 +11,22 @@ Atom Meshlets Gem POC
 
 Author: Adi Bar-Lev, May 2022
 Contributors: 
-Dependencies: meshlets generation is done by an excellentopen source library - 
+Dependencies: meshlets generation is done by an excellent open source library - 
     the MeshOptimizer library: https://github.com/zeux/meshoptimizer
 
+
+Demo Show Case
+--------------
+MeshExampleComponent will generate two meshlet models that will be displayed
+along side the original one with UVs grouped by meshlet and can be associated with 
+color.
+The fisrt colored meshlets model is the reference model done by generating the meshlets 
+in the CPU at run time model load and by using the material DebugShaderMaterial_01 based on the 
+shader DebugShaderPBR_ForwardPass - all copied to this folder.
+The second Meshlets model is using the meshlets data from the CPU and processing it 
+on the fly using dispatch compute that creates the index buffer and the UV coloring - this
+is then sent to a direct draw render that will displays it.
+The latest is the POC that can be enhance to become a parallel GPU driven pipeline.
 
 Short Intro
 ===========
@@ -25,7 +38,9 @@ of these clusters is much more efficient than culling the entire mesh.
 The work is inspired by Ubisoft 2015 presentation and recently Nanity by Epic.
 The current POC does not do the indirect dispatch and render and lacks the culling 
 stage - these are the main two steps missing to make it beyond a POC.
+
 What does it do?
+================
 - Splits the mesh and creates the data structures requires for meshlets
 - Prepares the GPU, buffers and data required by the GPU for such render pipeline
 - Dispatch Compute groups that generates the index buffer and debug color UVs
@@ -74,7 +89,7 @@ How to Connect this Gem to the project folder (AtomSamplesViewer for example):
             {
                 "SourcePaths":
                 [
-                    "Gems/AtomTressFX/Assets"
+                    "Gems/Meshlets/Assets"
                 ]
             }
     Remark: this is not required in this case as Meshlets can process regular Atom meshes
