@@ -12,6 +12,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -193,16 +194,16 @@ namespace AzToolsFramework
 
     static AZStd::string GenerateBookmarkFileName()
     {
-        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto* prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
         AZ_Assert(prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface is not found.");
-        AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+        Prefab::TemplateId rootPrefabTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
 
-        if (rootPrefabTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
+        if (rootPrefabTemplateId == Prefab::InvalidTemplateId)
         {
             return AZStd::string();
         }
 
-        auto* prefabSystemComponent = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+        auto* prefabSystemComponent = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
         AZ_Assert(
             prefabSystemComponent != nullptr,
             "Prefab System Component Interface could not be found. "
@@ -501,7 +502,7 @@ namespace AzToolsFramework
 
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
-        auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
         const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
         if (!containerEntityId.IsValid())
         {
@@ -574,7 +575,19 @@ namespace AzToolsFramework
         m_fileExistsFn = AZStd::move(fileExistsFn);
     }
 
-    void StoreViewBookmarkLastKnownLocationFromActiveCamera()
+    static AZ::Vector3 RadiansToDegrees(const AZ::Vector3& radians)
+    {
+        return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
+    }
+
+    static ViewBookmark ViewBookmarkFromCameraState(const AzFramework::CameraState& cameraState)
+    {
+        return { cameraState.m_position,
+                 RadiansToDegrees(AzFramework::EulerAngles(
+                     AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up))) };
+    }
+
+    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromActiveCamera()
     {
         bool found = false;
         AzFramework::CameraState cameraState;
@@ -582,21 +595,49 @@ namespace AzToolsFramework
 
         if (found)
         {
-            using AzToolsFramework::ViewBookmarkInterface;
-
-            const auto radToDeg3 = [](const AZ::Vector3& radians)
-            {
-                return AZ::Vector3(AZ::RadToDeg(radians.GetX()), AZ::RadToDeg(radians.GetY()), AZ::RadToDeg(radians.GetZ()));
-            };
-
-            ViewBookmarkInterface* bookmarkLoader = AZ::Interface<ViewBookmarkInterface>::Get();
-
-            AzToolsFramework::ViewBookmark bookmark;
-            bookmark.m_position = cameraState.m_position;
-            bookmark.m_rotation = radToDeg3(
-                AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up)));
-
-            bookmarkLoader->SaveLastKnownLocation(bookmark);
+            return StoreViewBookmarkLastKnownLocationFromCameraState(cameraState);
         }
+
+        return {};
+    }
+
+    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromCameraState(const AzFramework::CameraState& cameraState)
+    {
+        ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+
+        if (const ViewBookmark viewBookmark = ViewBookmarkFromCameraState(cameraState);
+            viewBookmarkInterface->SaveLastKnownLocation(viewBookmark))
+        {
+            return viewBookmark;
+        }
+
+        return {};
+    }
+
+    AZStd::optional<ViewBookmark> StoreViewBookmarkFromActiveCameraAtIndex(const int index)
+    {
+        bool found = false;
+        AzFramework::CameraState cameraState;
+        Camera::EditorCameraRequestBus::BroadcastResult(found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
+
+        if (found)
+        {
+            return StoreViewBookmarkFromCameraStateAtIndex(index, cameraState);
+        }
+
+        return {};
+    }
+
+    AZStd::optional<ViewBookmark> StoreViewBookmarkFromCameraStateAtIndex(const int index, const AzFramework::CameraState& cameraState)
+    {
+        ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+
+        if (const ViewBookmark viewBookmark = ViewBookmarkFromCameraState(cameraState);
+            viewBookmarkInterface->SaveBookmarkAtIndex(ViewBookmarkFromCameraState(cameraState), index))
+        {
+            return viewBookmark;
+        }
+
+        return {};
     }
 } // namespace AzToolsFramework

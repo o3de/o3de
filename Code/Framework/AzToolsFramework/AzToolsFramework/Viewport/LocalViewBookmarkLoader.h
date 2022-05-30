@@ -10,7 +10,12 @@
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <Viewport/ViewBookmarkLoaderInterface.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
+
+namespace AzFramework
+{
+    struct CameraState;
+}
 
 namespace AzToolsFramework
 {
@@ -58,6 +63,17 @@ namespace AzToolsFramework
         FileExistsFn m_fileExistsFn;
     };
 
-    //! Helper to store the last known location using the current active camera position
-    void StoreViewBookmarkLastKnownLocationFromActiveCamera();
+    //! Stores the last known location using the current active camera position.
+    //! Returns the ViewBookmark that was stored if successful.
+    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromActiveCamera();
+    //! Stores the last known location using cameraState.
+    //! Returns the ViewBookmark that was stored if successful.
+    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromCameraState(const AzFramework::CameraState& cameraState);
+
+    //! Stores the view bookmark at the given index using the current active camera position.
+    //! Returns the ViewBookmark that was stored if successful.
+    AZStd::optional<ViewBookmark> StoreViewBookmarkFromActiveCameraAtIndex(int index);
+    //! Stores the view bookmark at the given index using cameraState.
+    //! Returns the ViewBookmark that was stored if successful.
+    AZStd::optional<ViewBookmark> StoreViewBookmarkFromCameraStateAtIndex(int index, const AzFramework::CameraState& cameraState);
 } // namespace AzToolsFramework

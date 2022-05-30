@@ -14,11 +14,13 @@
 
 #include <Tests/Prefab/PrefabTestFixture.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace UnitTest
 {
+    struct LocalPersistentSettingsRegistry
+    {
+        AZStd::vector<char> m_buffer;
+    };
+
     // Fixture for testing the viewport editor mode state tracker
     class ViewBookmarkTestFixture : public PrefabTestFixture
     {
@@ -40,6 +42,39 @@ namespace UnitTest
 
             AZ::Entity* entity = nullptr;
             m_rootEntityId = UnitTest::CreateDefaultEditorEntity("Root", &entity);
+
+            AzToolsFramework::ViewBookmarkPersistInterface* bookmarkPersistInterface =
+                AZ::Interface<AzToolsFramework::ViewBookmarkPersistInterface>::Get();
+
+            auto persistentSetReg = AZStd::make_shared<LocalPersistentSettingsRegistry>();
+            bookmarkPersistInterface->SetStreamWriteFn(
+                [persistentSetReg](
+                    [[maybe_unused]] const AZStd::string& localBookmarksFileName, const AZStd::string& stringBuffer,
+                    AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
+                {
+                    persistentSetReg->m_buffer.resize(stringBuffer.size() + 1);
+
+                    AZ::IO::MemoryStream memoryStream(persistentSetReg->m_buffer.data(), persistentSetReg->m_buffer.size(), 0);
+                    const bool saved = write(memoryStream, stringBuffer);
+
+                    EXPECT_THAT(saved, ::testing::IsTrue());
+
+                    return saved;
+                });
+
+            bookmarkPersistInterface->SetStreamReadFn(
+                [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
+                {
+                    [[maybe_unused]] auto debugString = AZStd::string(persistentSetReg->m_buffer);
+                    return persistentSetReg->m_buffer;
+                });
+
+            bookmarkPersistInterface->SetFileExistsFn(
+                [exists = false](const AZStd::string&) mutable
+                {
+                    // initially does not exist and is then created
+                    return AZStd::exchange(exists, true);
+                });
         }
         void TearDownEditorFixtureImpl() override
         {
@@ -69,50 +104,62 @@ namespace UnitTest
 
     TEST_F(ViewBookmarkTestFixture, ViewBookmarkLastKnownLocationIsNotFoundWithNoLevel)
     {
-        AzToolsFramework::ViewBookmarkPersistInterface* bookmarkPersistInterface =
-            AZ::Interface<AzToolsFramework::ViewBookmarkPersistInterface>::Get();
-
-        struct LocalPersistentSettingsRegistry
-        {
-            AZStd::vector<char> m_buffer;
-        };
-
-        auto persistentSetReg = AZStd::make_shared<LocalPersistentSettingsRegistry>();
-        bookmarkPersistInterface->SetStreamWriteFn(
-            [persistentSetReg](
-                [[maybe_unused]] const AZStd::string& localBookmarksFileName, const AZStd::string& stringBuffer,
-                AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
-            {
-                persistentSetReg->m_buffer.resize(stringBuffer.size() + 1);
-
-                AZ::IO::MemoryStream memoryStream(persistentSetReg->m_buffer.data(), persistentSetReg->m_buffer.size(), 0);
-                const bool saved = write(memoryStream, stringBuffer);
-
-                EXPECT_THAT(saved, ::testing::IsTrue());
-
-                return saved;
-            });
-
-        bookmarkPersistInterface->SetStreamReadFn(
-            [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
-            {
-                [[maybe_unused]] auto debugString = AZStd::string(persistentSetReg->m_buffer);
-                return persistentSetReg->m_buffer;
-            });
-
-        bool exists = false;
-        bookmarkPersistInterface->SetFileExistsFn(
-            [&exists](const AZStd::string&)
-            {
-                return AZStd::exchange(exists, true);
-            });
-
         using ::testing::IsFalse;
         AzToolsFramework::ViewBookmarkInterface* bookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
         const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkInterface->LoadLastKnownLocation();
         EXPECT_THAT(lastKnownLocationBookmark.has_value(), IsFalse());
     }
-} // namespace UnitTest
 
-#pragma optimize("", on)
-#pragma inline_depth()
+    TEST_F(ViewBookmarkTestFixture, ViewBookmarkLastKnownLocationCanBeStoredAndRetrieved)
+    {
+        using ::testing::IsFalse;
+        AzToolsFramework::ViewBookmarkInterface* bookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
+
+        const auto cameraPosition = AZ::Vector3(0.0f, 20.0f, 12.0f);
+        const auto expectedCameraRotationXDegrees = -35.0f;
+        const auto expectedCameraRotationZDegrees = 90.0f;
+
+        const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(expectedCameraRotationZDegrees)) *
+                    AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(expectedCameraRotationXDegrees)),
+                cameraPosition),
+            AzFramework::ScreenSize(1280, 720));
+
+        AzToolsFramework::StoreViewBookmarkLastKnownLocationFromCameraState(cameraState);
+
+        const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkInterface->LoadLastKnownLocation();
+
+        EXPECT_THAT(lastKnownLocationBookmark->m_position, IsClose(cameraPosition));
+        EXPECT_THAT(
+            lastKnownLocationBookmark->m_rotation,
+            IsClose(AZ::Vector3(expectedCameraRotationXDegrees, 0.0f, expectedCameraRotationZDegrees)));
+    }
+
+    TEST_F(ViewBookmarkTestFixture, ViewBookmarkCanBeStoredAndRetrievedAtIndex)
+    {
+        using ::testing::IsFalse;
+        AzToolsFramework::ViewBookmarkInterface* bookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
+
+        const auto index = 4;
+        const auto cameraPosition = AZ::Vector3(13.0f, 20.0f, 70.0f);
+        const auto expectedCameraRotationXDegrees = 75.0f;
+        const auto expectedCameraRotationZDegrees = 64.0f;
+
+        const AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
+            AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(expectedCameraRotationZDegrees)) *
+                    AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(expectedCameraRotationXDegrees)),
+                cameraPosition),
+            AzFramework::ScreenSize(1280, 720));
+
+        AzToolsFramework::StoreViewBookmarkFromCameraStateAtIndex(index, cameraState);
+
+        const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = bookmarkInterface->LoadBookmarkAtIndex(4);
+
+        EXPECT_THAT(lastKnownLocationBookmark->m_position, IsClose(cameraPosition));
+        EXPECT_THAT(
+            lastKnownLocationBookmark->m_rotation,
+            IsClose(AZ::Vector3(expectedCameraRotationXDegrees, 0.0f, expectedCameraRotationZDegrees)));
+    }
+} // namespace UnitTest
