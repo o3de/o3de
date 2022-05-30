@@ -132,10 +132,10 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            const int bookmarkIndex = stoi(AZStd::string(bookmarkIndexStr->data()));
-                            AZ_Assert(bookmarkIndex < bookmarks.size(), "Bookmark index is out of bounds");
+                            const int bookmarkIndex = AZStd::stoi(AZStd::string(bookmarkIndexStr->data()));
+                            AZ_Assert(bookmarkIndex >= 0 && bookmarkIndex < bookmarks.size(), "Bookmark index is out of bounds");
                             ViewBookmark& bookmark = bookmarks[bookmarkIndex];
-                            const int currentIndex = stoi(AZStd::string(valueIndex));
+                            const int currentIndex = AZStd::stoi(AZStd::string(valueIndex));
 
                             if (dataType == "Position")
                             {
@@ -189,7 +189,7 @@ namespace AzToolsFramework
 
     static AZStd::string LastKnownLocationSetRegPath(const AZStd::string& bookmarkFileName)
     {
-        return "/" + bookmarkFileName + "/LastKnownLocation";
+        return AZStd::string::format("/%s/LastKnownLocation", bookmarkFileName.c_str());
     }
 
     static AZStd::string GenerateBookmarkFileName()
@@ -216,8 +216,7 @@ namespace AzToolsFramework
         // to generate the file name in which we will store the view Bookmarks we use the name of the prefab + the timestamp
         // e.g. LevelName_1639763579377.setreg
         const AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-        const AZStd::string timeSinceEpoch = AZStd::string::format("%llu", now.time_since_epoch().count());
-        return prefabTemplateName.data() + AZStd::string("_") + timeSinceEpoch + ".setreg";
+        return AZStd::string::format("%s_%llu.setreg", prefabTemplateName.c_str(), now.time_since_epoch().count());
     }
 
     static AZ::SettingsRegistryMergeUtils::DumperSettings CreateDumperSettings(const AZStd::string& bookmarkKey)
@@ -364,7 +363,7 @@ namespace AzToolsFramework
         const LocalViewBookmarkComponent* bookmarkComponent = FindOrCreateLocalViewBookmarkComponent();
         if (!bookmarkComponent)
         {
-            AZ_Assert(bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
+            AZ_Error("LocalViewBookmarkLoader", bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
             return false;
         }
 
@@ -462,7 +461,7 @@ namespace AzToolsFramework
         const LocalViewBookmarkComponent* bookmarkComponent = FindOrCreateLocalViewBookmarkComponent();
         if (!bookmarkComponent)
         {
-            AZ_Assert(bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
+            AZ_Error("LocalViewBookmarkLoader", bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
             return false;
         }
 
@@ -552,6 +551,7 @@ namespace AzToolsFramework
                 !registry->SetObject(setRegPath, AZStd::vector<ViewBookmark>(DefaultViewBookmarkCount, ViewBookmark())))
             {
                 AZ_Warning("LocalViewBookmarkLoader", false, "SetObject for \"%s\" failed", setRegPath.c_str());
+                return nullptr;
             }
 
             WriteViewBookmarksSettingsRegistryToFile(localBookmarksFileName);
@@ -598,7 +598,7 @@ namespace AzToolsFramework
             return StoreViewBookmarkLastKnownLocationFromCameraState(cameraState);
         }
 
-        return {};
+        return AZStd::nullopt;
     }
 
     AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromCameraState(const AzFramework::CameraState& cameraState)
@@ -611,7 +611,7 @@ namespace AzToolsFramework
             return viewBookmark;
         }
 
-        return {};
+        return AZStd::nullopt;
     }
 
     AZStd::optional<ViewBookmark> StoreViewBookmarkFromActiveCameraAtIndex(const int index)
@@ -625,7 +625,7 @@ namespace AzToolsFramework
             return StoreViewBookmarkFromCameraStateAtIndex(index, cameraState);
         }
 
-        return {};
+        return AZStd::nullopt;
     }
 
     AZStd::optional<ViewBookmark> StoreViewBookmarkFromCameraStateAtIndex(const int index, const AzFramework::CameraState& cameraState)
@@ -638,6 +638,6 @@ namespace AzToolsFramework
             return viewBookmark;
         }
 
-        return {};
+        return AZStd::nullopt;
     }
 } // namespace AzToolsFramework

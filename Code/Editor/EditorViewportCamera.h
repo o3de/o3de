@@ -20,9 +20,6 @@ namespace AZ
 
 namespace SandboxEditor
 {
-    //! Returns a pitch/yaw rotation as a quaternion.
-    SANDBOX_API AZ::Quaternion CameraRotation(float pitch, float yaw);
-
     //! Sets the default viewport camera translation/position.
     SANDBOX_API void SetDefaultViewportCameraPosition(const AZ::Vector3& position);
 
