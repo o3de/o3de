@@ -238,7 +238,7 @@ namespace AzToolsFramework
         AZ::Interface<ViewBookmarkPersistInterface>::Register(this);
 
         m_streamWriteFn = [](const AZStd::string& localBookmarksFileName, const AZStd::string stringBuffer,
-                             AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
+                             AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> writeFn)
         {
             constexpr auto configurationMode =
                 AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
@@ -250,7 +250,7 @@ namespace AzToolsFramework
             outputFile.Open(localBookmarkFilePath.c_str(), configurationMode);
 
             AZ::IO::SystemFileStream systemFileStream(&outputFile, false);
-            const bool saved = write(systemFileStream, stringBuffer);
+            const bool saved = writeFn(systemFileStream, stringBuffer);
 
             AZ_Warning(
                 "LocalViewBookmarkLoader", saved, R"(Unable to save Local View Bookmark file to path "%s"\n)",
