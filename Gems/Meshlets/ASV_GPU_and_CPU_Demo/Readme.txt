@@ -46,6 +46,11 @@ What does it do?
 - Dispatch Compute groups that generates the index buffer and debug color UVs
 - Direct draw the output of the compute using direct buffer access for the vertex streams
 
+Known Bug:
+==========
+- In the latest version there seem to be an occasional missing meshlet group, hence creating 
+    an area with missing polygons, this might be a very simple counting bug. Will be fixed in
+    future versions.
 
 Moving Forward
 ==============
