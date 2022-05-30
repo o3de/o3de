@@ -87,9 +87,7 @@ namespace UnitTest
 
     TEST(MATH_Aabb, TestCreatePointsEmpty)
     {
-        const int numPoints = 0;
-        Vector3 points[numPoints] = {};
-        Aabb aabb = Aabb::CreatePoints(points, numPoints);
+        Aabb aabb = Aabb::CreatePoints(nullptr, 0);
         EXPECT_FALSE(aabb.IsValid());
     }
 

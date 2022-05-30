@@ -59,17 +59,17 @@ namespace AZ
         return CreateCenterHalfExtents(center, Vector3(radius));
     }
 
-    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* pts, size_t numPts)
+    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* points, size_t pointCount)
     {
         Aabb aabb = Aabb::CreateNull();
-        for (size_t i = 0; i < numPts; ++i)
+        for (size_t i = 0; i < pointCount; ++i)
         {
-            aabb.AddPoint(pts[i]);
+            aabb.AddPoint(points[i]);
         }
         return aabb;
     }
 
-    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const AZStd::span<Vector3>& points)
+    AZ_MATH_INLINE Aabb Aabb::CreatePoints(AZStd::span<const Vector3> points)
     {
         Aabb aabb = Aabb::CreateNull();
         for (const auto& point : points)
