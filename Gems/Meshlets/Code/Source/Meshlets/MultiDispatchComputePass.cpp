@@ -126,7 +126,7 @@ namespace AZ
             m_dispatchItems.clear();
         }
 
-        // [Adi] - should be implemented to support hot reloading of the Compute shader
+        // [To Do] - implement in order to support hot reloading of the shaders
         void MultiDispatchComputePass::BuildShaderAndRenderData()
         {
         }

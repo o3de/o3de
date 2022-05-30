@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <MeshletsDispatchItem.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -13,8 +14,6 @@
 #include <limits>
 
 #include "MeshletsAssets.h"
-
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -67,5 +66,3 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("", on)

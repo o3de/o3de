@@ -1,4 +1,12 @@
 
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -12,7 +20,6 @@
 #include <MeshletsFeatureProcessor.h>
 #include <MultiDispatchComputePass.h>
 
-#pragma optimize("", off)
 namespace AZ
 {
     namespace Meshlets

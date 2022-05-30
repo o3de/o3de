@@ -8,7 +8,6 @@
 
 #pragma once
 
-//#include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 #include <Atom/RHI/DispatchItem.h>

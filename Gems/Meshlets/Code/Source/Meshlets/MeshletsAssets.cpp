@@ -1,3 +1,11 @@
+/*
+* Copyright (c) Contributors to the Open 3D Engine Project.
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+*
+* SPDX-License-Identifier: Apache-2.0 OR MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/Math/Aabb.h>
@@ -19,8 +27,6 @@
 #include <vector>
 
 #include "MeshletsAssets.h"
-
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -140,7 +146,7 @@ namespace AZ
             m_meshletsData.ValidateData((uint32_t)meshlet_vertices.size());
             ////////////////////////////
 
-            // [Adi] - add this to display meshlet separation - debug purpose only
+            // Add this in order to display meshlet separation - debug purpose only
             static bool markTextureCoordinates = true;
             if (markTextureCoordinates)
             {
@@ -188,18 +194,18 @@ namespace AZ
         {
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
-                Vector3* positionV3 = (Vector3*)position;
+                Vector3 positionV3 = Vector3(position[0], position[1], position[2]);
 
-                float length = positionV3->GetLength();
+                float length = positionV3.GetLength();
                 const float maxVertexSize = 99.0f;
                 if (length < maxVertexSize)
                 {
-                    m_aabb.AddPoint(*positionV3);
+                    m_aabb.AddPoint(positionV3);
                 }
                 else
                 {   
                     AZ_Warning("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
-                        vtx, vtxNum, positionV3->GetX(), positionV3->GetY(), positionV3->GetZ(), m_name.c_str());
+                        vtx, vtxNum, positionV3.GetX(), positionV3.GetY(), positionV3.GetZ(), m_name.c_str());
                 }
             }
 
@@ -537,5 +543,3 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("", on)

@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/base.h>
@@ -66,8 +74,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
             RHI::IndexBufferView IndexBufferView;
-            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews;
-//            AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> m_renderBuffersAllocators; 
+            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews; 
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
             const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
@@ -108,7 +115,6 @@ namespace AZ
                 return m_modelRenderData[AZStd::max(lodIdx, (uint32_t)m_modelRenderData.size() - 1)];
             }
 
-//            bool UpdateShader(Data::Instance<RPI::Shader> updatedShader);
 
             // This method is binding the buffers to the Srg and is separated from
             // the creation method to allow frame sync when the data is compiled
@@ -154,39 +160,24 @@ namespace AZ
 
             bool CreateComputeBuffers(MeshRenderData &meshRenderData);
 
-//            bool CreateAndBindComputeSrg(MeshRenderData &meshRenderData);
-//            bool CreateAndBindComputeBuffers(MeshRenderData &meshRenderData);
-
             bool SetShaders();
 
         private:
             MeshletsFeatureProcessor* m_featureProcessor = nullptr;
             AZStd::string m_name;
 
-            Aabb m_aabb;    // [Adi] should be per Lod per mesh and not global
+            Aabb m_aabb;    // Should be per Lod per mesh and not global
 
             static AZStd::vector<SrgBufferDescriptor> m_srgBufferDescriptors;
 
-            // [Adi] - meshlets data should be a vector of meshlets data per lod per mesh
+            // [To Do] - meshlets data should be a vector of meshlets data per lod per mesh
+            // This should be fairly easy to do once LOD are properly supported - set it
+            // in the MeshRenderData.
             MeshletsData m_meshletsData;    // the actual mesh meshlets' data
 
             uint32_t m_meshletsCount = 0;
 
-            /*
-            using ModelLodDispatchMap = AZStd::unordered_map<RPI::ModelLodAsset::Mesh*, Data::Instance<MeshletsDispatchItem>>;
-            using ModelLodDrawPacketMap = AZStd::unordered_map<RPI::ModelLodAsset::Mesh*, RPI::MeshDrawPacket>;
-
-            //! Lod entries draw packets map - each Lod entry represents a map of draw packets for
-            //! geometry render per the different meshes existing within this Lod
-            AZStd::unordered_map<Data::Instance<RPI::ModelLod>, ModelLodDispatchMap> m_drawPackets;
-
-            //! Lod entries dispatch items map - each Lod entry represents a map of dispatches used
-            //! for Compute per the different meshes existing within this Lod
-            AZStd::unordered_map<Data::Instance<RPI::ModelLod>, ModelLodDispatchMap> m_dispatchItems;
-            */
-
             //------------------------------------------------------------------
-            // [Adi]
             // Remarks:
             // 1. Moving to indirect compute, all the buffer views will need to either
             // become offsets passed as part of each mesh dispatch, or bindless resources.

@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/base.h>
@@ -57,7 +65,6 @@ namespace AZ
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void Render(const FeatureProcessor::RenderPacket& packet) override;
-//            void OnRenderEnd() override;
 
             bool InitComputePass(const Name& passName);
             bool InitRenderPass(const Name& passName);

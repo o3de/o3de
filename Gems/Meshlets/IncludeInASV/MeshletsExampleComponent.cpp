@@ -468,7 +468,7 @@ namespace AtomSampleViewer
                 m_meshletsModelAsset = m_meshetsModel->GetMeshletsModel()->GetModelAsset();
                 m_meshletsMeshHandle = GetMeshFeatureProcessor()->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_meshletsModelAsset }, m_meshletsDebugMaterial);// m_materialOverrideInstance);
 
-                AZ::Transform translation = AZ::Transform::CreateTranslation(AZ::Vector3(0, 2.0, 0));
+                AZ::Transform translation = AZ::Transform::CreateTranslation(AZ::Vector3(0.75, 1.5, 0));
                 GetMeshFeatureProcessor()->SetTransform(m_meshletsMeshHandle, translation);
             }
 
@@ -479,7 +479,7 @@ namespace AtomSampleViewer
                 {
                     m_meshletObjectId = m_meshletsFeatureProcessor->AddMeshletsRenderObject(m_meshetsRenderObject);
 
-                    AZ::Transform translation = AZ::Transform::CreateTranslation(AZ::Vector3(0.5, 2.5, 0));
+                    AZ::Transform translation = AZ::Transform::CreateTranslation(AZ::Vector3(-0.75, 1.5, 0));
                     m_meshletsFeatureProcessor->SetTransform(m_meshletObjectId, translation);
                 }
             }

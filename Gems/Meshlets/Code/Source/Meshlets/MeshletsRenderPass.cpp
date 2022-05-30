@@ -26,8 +26,6 @@
 #include <MeshletsUtilities.h>
 #include <MeshletsFeatureProcessor.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace Meshlets
@@ -57,15 +55,12 @@ namespace AZ
             }
 
             RPI::Scene* scene = GetScene();
-            if (scene)
-            {
-                m_featureProcessor = scene->GetFeatureProcessor<MeshletsFeatureProcessor>();
-            }
-            else
+            if (!scene)
             {
                 return false;
             }
 
+            m_featureProcessor = scene->GetFeatureProcessor<MeshletsFeatureProcessor>();
             if (!m_featureProcessor)
             {
                 AZ_Warning("Meshlets", false,
@@ -110,7 +105,7 @@ namespace AZ
             }
 
             m_shader = RPI::Shader::FindOrCreate(shaderAsset);
-            if (m_shader == nullptr)
+            if (!m_shader)
             {
                 AZ_Error("Meshlets", false, "Pass failed to load shader '%s'!", shaderFilePath);
                 return false;
@@ -179,14 +174,14 @@ namespace AZ
 
 
         //==============================================================================
-        // [Adi] - to use the object Id and VertexUtility the ObjectSrg must be created 
+        // [To Do] - to use the object Id and VertexUtility the ObjectSrg must be created 
         // and passed with the Object Id here.
         // This will require more than several changes also on the CPU side, utilizing the 
         // transform (m_transformService->ReserveObjectId()) and setting the Id in the 
         // PerObjectSrg (objectSrg->SetConstant(objectIdIndex, m_objectId.GetIndex())).
         // Look at ModelDataInstance::Init(Data::Instance<RPI::Model> model) to see how
-        // to set the model Id - this will lead to MeshDrawPacket::DoUpdate that will demonstrate 
-        // how to set the Srgs.
+        // to set the model Id - this will lead to MeshDrawPacket::DoUpdate that will
+        // demonstrate how to set the Srgs.
         // The buffers for the render are passed and set via Srg and not as assembly buffers
         // which means that the instance Is must be set (for matrices) and vertex Id must
         // be used in the shader to address the buffers
@@ -203,16 +198,18 @@ namespace AZ
             ModelLodDataArray& lodRenderDataArray,
             Render::TransformServiceFeatureProcessorInterface::ObjectId objectId)
         {
-            for (auto& lodRenderData : lodRenderDataArray)
+            for (uint32_t lod = 0; lod < lodRenderDataArray.size(); ++lod)
             {
-                if (!lodRenderData->RenderObjectSrg)
+                MeshRenderData* lodRenderData = lodRenderDataArray[lod];
+                if (!lodRenderData || !lodRenderData->RenderObjectSrg)
                 {
-                    AZ_Error("Meshlets", false, "Failed to build draw packet - missing Render Srg.");
+                    AZ_Error("Meshlets", false,
+                        "Failed to build draw packet - missing LOD[%d] render data Render Srg.", lod);
                     return false;
                 }
 
                 // ObjectId belongs to the instance and not the object - to be moved
-                lodRenderData->ObjectId = objectId; 
+                lodRenderData->ObjectId = objectId;
 
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = m_drawListTag;
@@ -256,8 +253,8 @@ namespace AZ
                     AZ_Error("Meshlets", false, "Failed to build the Meshlet DrawPacket.");
                     return false;
                 }
-                return true;
             }
+
             return true;
         }
 
@@ -355,6 +352,3 @@ namespace AZ
         }
     } // namespace Meshlets
 }   // namespace AZ
-
-#pragma optimize("", on)
-

@@ -55,7 +55,10 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
     }
 
     //---------------------------------------------------
-    // vertex streams 
+    // Vertex streams - currently we use Buffer<float> instead of the exact required
+    // data type (float3 for example) because of alignment problem in Atom buffer 
+    // creation from a common pool.
+    // [To Do] - change when supported to prevent offset calculation overhead.
 //    Buffer<float3> m_positions;
 //    Buffer<float3> m_normals;
 //    Buffer<float4> m_tangents; 
@@ -86,6 +89,7 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
         return float3(m_bitangents[index], m_bitangents[index+1], m_bitangents[index+2]);
     }
 
+// Accessor functions for accurate data types (float3)
 //    float3 GetPosition(uint vertexIndex)
 //    {
 //        return m_positions[vertexIndex];

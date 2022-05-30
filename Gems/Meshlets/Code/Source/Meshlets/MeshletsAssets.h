@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/base.h>
@@ -17,7 +25,6 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include "../../External/meshoptimizer.h"
-//#include <meshoptimizer.h>
 
 #include <MeshletsDispatchItem.h>
 #include <MeshletsData.h>
@@ -32,10 +39,11 @@ namespace AZ
     namespace Meshlets
     {
         //======================================================================
+        //!       Reference Class to Demonstrate Meshlets Prep in CPU
         //! The following class is taking in ModelAsset and based on it, generates
         //! a new Atom Model that now contains enhanced meshlet data.
-        //! This class is built to demonstrate using the mesh data in order to generate
-        //! the meshlets on the fly and send them to the regualr render.
+        //! This class is built to demonstrate and used as reference for using the mesh data
+        //! to generate the meshlets on the fly and send them to the regular render.
         //! This is NOT the class that will be used to create indirect Compute and Draw calls.
         //! For this we will be using the MeshletRenderObject class.
         //! 
@@ -97,9 +105,6 @@ namespace AZ
                 RHI::BufferBindFlags bufferBindFlags,
                 const void* data);
 
-//            static PrepareSrgDescriptors(AZStd::vector<SrgBufferDescriptor>& descriptorArray);
-//            void CreateMeshletsBuffersAndSrg();
-
             uint32_t CreateMeshlets(
                 float* positions, float* normals, float* texCoords, uint32_t vtxNum,
                 uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat
@@ -118,13 +123,13 @@ namespace AZ
 
             Data::Instance<RPI::Shader> m_meshletsDataPrepComputeShader;
 
-            Aabb m_aabb;    // [Adi] should be per Lod per mesh and not global
+            Aabb m_aabb;    // Should be per Lod per mesh and not global
 
             Data::Asset<RPI::ModelAsset> m_sourceModelAsset;
 
             Data::Instance<RPI::Model> m_meshletsModel;
 
-            // [Adi] - meshlets data should be a vector of meshlets data per lod per mesh
+            // Meshlets data should be a vector of meshlets data per lod per mesh
             MeshletsData m_meshletsData;    // the actual mesh meshlets' data
 
             uint32_t m_meshletsAmount = 0;

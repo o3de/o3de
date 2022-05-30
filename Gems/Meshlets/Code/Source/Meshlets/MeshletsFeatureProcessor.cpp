@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -17,8 +25,6 @@
 
 #include <MeshletsRenderObject.h>
 #include <MeshletsFeatureProcessor.h>
-
-#pragma optimize("", off)
 
 #ifndef SAFE_DELETE
 #define SAFE_DELETE(p){if(p){delete p;p=nullptr;}}
@@ -257,7 +263,7 @@ namespace AZ
             AZStd::list<const RHI::DrawPacket*> drawPackets;
             for (auto renderObject : m_meshletsRenderObjects)
             {
-                // [Adi] For demo purposed the model lod index is set for 0.
+                // For demo purposed the model lod index is set for 0.
                 // This entire control scheme will be removed to be replaced with GPU
                 // driven pipeline control.
                 ModelLodDataArray& modelLodArray = renderObject->GetMeshletsRenderData(0);
@@ -285,8 +291,6 @@ namespace AZ
 
         void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
-//            CleanResources();
-
             if (!HasMeshletPasses(renderPipeline))
             {   // This pipeline is not relevant - exist without changing anything.
                 return;
@@ -294,6 +298,8 @@ namespace AZ
 
             m_renderPipeline = renderPipeline;
             CreateResources();
+
+            // This should be used in the future instead of changing the actual pipeline file
 //            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
@@ -307,6 +313,8 @@ namespace AZ
 
             m_renderPipeline = renderPipeline.get();
             CreateResources();
+
+            // This should be used in the future instead of changing the actual pipeline file
 //            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
@@ -319,10 +327,7 @@ namespace AZ
             }
 
             m_renderPipeline = nullptr;
-//            CleanResources();
         }
 
     } // namespace AtomSceneStream
 } // namespace AZ
-
-#pragma optimize("", on)

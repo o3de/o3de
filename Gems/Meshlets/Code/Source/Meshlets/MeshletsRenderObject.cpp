@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/Math/Aabb.h>
@@ -23,8 +31,6 @@
 #include <MeshletsFeatureProcessor.h>
 #include <MeshletsUtilities.h>
 #include <MeshletsRenderObject.h>
-
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -164,23 +170,27 @@ namespace AZ
 
         bool MeshletsRenderObject::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
+            uint32_t badVertices = 0;
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
-                Vector3* positionV3 = (Vector3*)position;
+                Vector3 positionV3 = Vector3(position[0], position[1], position[1]);
 
-                float length = positionV3->GetLength();
+                float length = positionV3.GetLength();
                 const float maxVertexSize = 99.0f;
                 if (length < maxVertexSize)
                 {
-                    m_aabb.AddPoint(*positionV3);
+                    m_aabb.AddPoint(positionV3);
                 }
                 else
-                {   
-                    AZ_Warning("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
-                        vtx, vtxNum, positionV3->GetX(), positionV3->GetY(), positionV3->GetZ(), m_name.c_str());
+                {
+                    badVertices++;
+                    AZ_WarningOnce("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
+                        vtx, vtxNum, positionV3.GetX(), positionV3.GetY(), positionV3.GetZ(), m_name.c_str());
                 }
             }
 
+            AZ_Error("Meshlets", (badVertices == 0),
+                "[%d] Bad Vertices in Model [%s]", badVertices, m_name.c_str());
             AZ_Error("Meshlets", m_aabb.IsValid(), "Error --- Model [%s] AABB is invalid - all [%d] vertices are corrupted",
                 m_name.c_str(), vtxNum);
             return m_aabb.IsValid() ? true : false;
@@ -327,7 +337,7 @@ namespace AZ
             // doesn't really matter since it won't be used.
             meshRenderData.RenderBuffersDescriptors[uint8_t(RenderStreamsSemantics::Indices)] =
                 SrgBufferDescriptor(
-                    RPI::CommonBufferPoolType::StaticInputAssembly,  // [Adi] - Not used, created using shared buffer
+                    RPI::CommonBufferPoolType::StaticInputAssembly,  // Not used (by the pool), created using shared buffer
                     RHI::Format::R32_UINT,
                     RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::InputAssembly,
                     sizeof(uint32_t), indicesCount,
@@ -347,9 +357,8 @@ namespace AZ
             }
             if (!meshRenderData.RenderObjectSrg)
             {
-                AZ_Error("Meshlets", false, "Failed to create the Render Srg");
-                // [Adi] - for now don't return if no srg
-//                return false;
+                AZ_Error("Meshlets", false, "Failed to create the Render Srg - Meshlets Mesh load will fail");
+                return false;
             }
 
             bool success = true;
@@ -596,6 +605,12 @@ namespace AZ
 
                 descriptor = &meshRenderData.RenderBuffersDescriptors[stream];
                 bufferAssetView = meshAsset.GetSemanticBufferAssetView(descriptor->m_bufferName);
+                if (!bufferAssetView)
+                {
+                    AZ_Error("Meshlets", false,
+                        "Error - missing buffer stream [%s]", descriptor->m_bufferName.GetCStr());
+                    return false;
+                }
                 descriptor->m_bufferData = RetrieveBufferData(bufferAssetView, streamFormat, vertexCount, vertexCount, bufferDescriptor);
 
                 if (streamFormat != descriptor->m_elementFormat)
@@ -698,13 +713,13 @@ namespace AZ
                 AZ_Error("Meshlets", false, "More than a single mesh, or non-matching elements count");
                 return nullptr;
             }
-//          uint32_t elementSize = bufferDesc.m_elementSize;
+
             format = bufferDesc.m_elementFormat;
             AZStd::span<const uint8_t> bufferData = bufferAsset->GetBuffer();
             return (uint8_t *) bufferData.data();
         }
 
-        // [Adi] - currently we create only the first mesh of the first Lod to be able to
+        // [To Do] - currently we create only the first mesh of the first Lod to be able to
         // get to a fully working POC.
         // Enhancing this by doing a double pass, gathering all data and creating meshlets groups
         // by Lod level should not be a problem but a design of meshlet model structure should be
@@ -774,5 +789,3 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("", on)

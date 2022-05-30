@@ -3,7 +3,7 @@
     "Version": 1,
     "ClassName": "PassRequest",
     "ClassData": {
-        // [Adi] - temporary until we have more passes.
+        // This is not set yet - please fill with active passes.
         // This should be replaced with a parent pass that will contain all meshlets passes
         "Name": "MeshletsParentPass",
         "TemplateName": "MeshletsParentTemplate",

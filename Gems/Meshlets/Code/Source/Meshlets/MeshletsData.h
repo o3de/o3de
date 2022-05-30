@@ -1,3 +1,11 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
 #pragma once
 
 #include <AzCore/base.h>
@@ -5,9 +13,6 @@
 #include <AzCore/std/containers/list.h>
 
 #include "../../External/meshoptimizer.h"
-//#include <meshoptimizer.h>
-
-#pragma optimize("", off)
 
 namespace AZ
 {
@@ -173,6 +178,4 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("", on)
 

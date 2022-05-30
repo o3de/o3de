@@ -17,9 +17,6 @@
 
 #include <numeric>
 
-#pragma optimize("", off)
-
-
 namespace AZ
 {
     namespace Meshlets
@@ -235,4 +232,4 @@ namespace AZ
 
     } // namespace Meshlets
 } // namespace AZ
-#pragma optimize("", on)
+

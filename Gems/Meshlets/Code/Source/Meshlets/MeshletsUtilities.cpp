@@ -15,8 +15,6 @@
 
 #include <MeshletsUtilities.h>
 
-#pragma optimize("",off)
-
 namespace AZ
 {
     namespace Meshlets
@@ -221,15 +219,12 @@ namespace AZ
             // BufferView creation
             Data::Instance<RHI::BufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
 
-            if (!BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
+            if (srg && !BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
             {
-                // [Adi] - Currently is still should return the buffer even if not bound
-//                    return nullptr;
+               return nullptr;
             }
             return bufferView;
         }
 
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("",on)

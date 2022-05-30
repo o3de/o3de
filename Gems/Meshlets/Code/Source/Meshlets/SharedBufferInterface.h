@@ -17,8 +17,6 @@
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/RHI/Allocator.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace RHI
@@ -131,5 +129,3 @@ namespace AZ
         };
     } // namespace Meshlets
 } // namespace AZ
-
-#pragma optimize("", on)
