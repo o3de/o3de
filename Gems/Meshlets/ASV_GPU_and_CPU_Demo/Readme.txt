@@ -66,8 +66,8 @@ Remark: The POC seem to still have a small bug - in some meshes, small amount of
     as missing a meshlet group.
 
 
-How to Connect this Gem to the project folder (AtomSamplesViewer for example):
-==============================================================================
+Connecting the Gem to the project folder (AtomSamplesViewer for example):
+=========================================================================
 1. Add Meshlets Shader Assets directories to the file 
     <project_folder>/config/shader_global_build_options.json
     
@@ -104,9 +104,11 @@ How to Connect this Gem to the project folder (AtomSamplesViewer for example):
 4. Add the current passes to both MainPipeline.pass and LowEndPipeline.pass - 
     these two files were added to this folder as a reference.
 
+5. Add the meshoptimizer.lib compiled library (under Gems\Meshlets\External\Lib) 
+    to your Meshlets.static project.
 
-How to include the Meshlets sample in ASV
-=========================================
+Including the Meshlets sample in ASV
+====================================
 1. Add the following two files under the directory [O3de dir]\AtomSampleViewer\Gem\Code\Source
     MeshletsExampleComponent.h
     MeshletsExampleComponent.cpp
