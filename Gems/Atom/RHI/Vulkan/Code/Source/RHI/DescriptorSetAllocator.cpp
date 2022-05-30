@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <RHI/DescriptorSetAllocator.h>
 #include <RHI/Device.h>
+#include <RHI/DescriptorSetLayout.h>
 
 namespace AZ
 {
@@ -159,7 +160,9 @@ namespace AZ
             AZStd::unordered_map<VkDescriptorType, VkDescriptorPoolSize> sizesByType;
             for (const auto& layoutBinding : descriptor.m_layout->GetNativeLayoutBindings())
             {
-                sizesByType[layoutBinding.descriptorType].descriptorCount += layoutBinding.descriptorCount * m_descriptor.m_poolSize;
+                auto& descriptor = sizesByType[layoutBinding.descriptorType];
+                descriptor.descriptorCount = AZStd::min(descriptor.descriptorCount  + layoutBinding.descriptorCount * m_descriptor.m_poolSize, 
+                    DescriptorSetLayout::MaxUnboundedArrayDescriptors);
             }
             poolDescriptor.m_descriptorPoolSizes.reserve(sizesByType.size());
             AZStd::transform(sizesByType.begin(), sizesByType.end(), AZStd::back_inserter(poolDescriptor.m_descriptorPoolSizes), [](auto &it) 
