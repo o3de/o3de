@@ -903,15 +903,13 @@ void MainWindow::InitActions()
             return false;
         }
 
-        const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark =
-            viewBookmarkInterface->LoadBookmarkAtIndex(index);
-
+        const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark = viewBookmarkInterface->LoadBookmarkAtIndex(index);
         if (!bookmark.has_value())
         {
             return false;
         }
 
-        // Check the bookmark we want to load is not exactly 0 
+        // Check the bookmark we want to load is not exactly 0
         if (bookmark.value().IsZero())
         {
             QString tagConsoleText = tr("View Bookmark %1 has not been set yet").arg(index + 1);

@@ -318,9 +318,9 @@ namespace AzToolsFramework
         registry->Remove(bookmarkKey + "/");
     }
 
-    bool LocalViewBookmarkLoader::Write(AZ::IO::GenericStream& stream, const AZStd::string& stringBuffer)
+    bool LocalViewBookmarkLoader::Write(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer)
     {
-        return stream.Write(stringBuffer.size(), stringBuffer.data()) == stringBuffer.size();
+        return genericStream.Write(stringBuffer.size(), stringBuffer.data()) == stringBuffer.size();
     }
 
     bool LocalViewBookmarkLoader::SaveBookmarkAtIndex(const ViewBookmark& bookmark, const int index)
@@ -560,17 +560,17 @@ namespace AzToolsFramework
         return bookmarkComponent;
     }
 
-    void LocalViewBookmarkLoader::SetStreamWriteFn(StreamWriteFn streamWriteFn)
+    void LocalViewBookmarkLoader::OverrideStreamWriteFn(StreamWriteFn streamWriteFn)
     {
         m_streamWriteFn = AZStd::move(streamWriteFn);
     }
 
-    void LocalViewBookmarkLoader::SetStreamReadFn(StreamReadFn streamReadFn)
+    void LocalViewBookmarkLoader::OverrideStreamReadFn(StreamReadFn streamReadFn)
     {
         m_streamReadFn = AZStd::move(streamReadFn);
     }
 
-    void LocalViewBookmarkLoader::SetFileExistsFn(FileExistsFn fileExistsFn)
+    void LocalViewBookmarkLoader::OverrideFileExistsFn(FileExistsFn fileExistsFn)
     {
         m_fileExistsFn = AZStd::move(fileExistsFn);
     }

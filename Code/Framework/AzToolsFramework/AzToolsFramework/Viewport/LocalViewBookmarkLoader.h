@@ -42,9 +42,9 @@ namespace AzToolsFramework
         AZStd::optional<ViewBookmark> LoadLastKnownLocation() override;
 
         // ViewBookmarkPersistInterface overrides ...
-        void SetStreamWriteFn(StreamWriteFn streamWriteFn) override;
-        void SetStreamReadFn(StreamReadFn streamReadFn) override;
-        void SetFileExistsFn(FileExistsFn fileExistsFn) override;
+        void OverrideStreamWriteFn(StreamWriteFn streamWriteFn) override;
+        void OverrideStreamReadFn(StreamReadFn streamReadFn) override;
+        void OverrideFileExistsFn(FileExistsFn fileExistsFn) override;
 
     private:
         LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
@@ -53,14 +53,14 @@ namespace AzToolsFramework
         bool ReadViewBookmarksSettingsRegistryFromFile(const AZStd::string& localBookmarksFileName);
 
         //! Writes the content of the string buffer to the stream.
-        bool Write(AZ::IO::GenericStream& stream, const AZStd::string& stringBuffer);
+        bool Write(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer);
 
         AZStd::vector<ViewBookmark> m_localBookmarks;
         AZStd::optional<ViewBookmark> m_lastKnownLocation;
 
-        StreamWriteFn m_streamWriteFn;
-        StreamReadFn m_streamReadFn;
-        FileExistsFn m_fileExistsFn;
+        StreamWriteFn m_streamWriteFn; //!< The function to use to write out the ViewBookmark SettingsRegistry values.
+        StreamReadFn m_streamReadFn; //!< The function to use to read in the ViewBookmark SettingsRegistry values.
+        FileExistsFn m_fileExistsFn; //!< The function used to check if the ViewBookmark SettingsRegistry file for the level already exists.
     };
 
     //! Stores the last known location using the current active camera position.

@@ -66,7 +66,7 @@ namespace AzToolsFramework
     };
 
     //! @class ViewBookmarkIntereface
-    //! @brief Interface for saving/loading View Bookmarks.
+    //! @brief Interface for saving/loading ViewBookmarks.
     class ViewBookmarkInterface
     {
     public:
@@ -79,27 +79,32 @@ namespace AzToolsFramework
         virtual bool RemoveBookmarkAtIndex(int index) = 0;
     };
 
-    //! Provide the ability to override how the SettingsRegistry data is persisted.
+    //! Provides the ability to override how the SettingsRegistry data is persisted.
     class ViewBookmarkPersistInterface
     {
     public:
         AZ_RTTI(ViewBookmarkPersistInterface, "{16D3997B-DE3E-42FB-8F0B-39DF0ED8FA24}")
 
+        //! Writable stream interface
+        //! Accepts a filename and contents buffer, it will pass the buffer to the third parameter and output to the stream provided.
         using StreamWriteFn = AZStd::function<bool(
             const AZStd::string& localBookmarksFileName,
             const AZStd::string& stringBuffer,
-            AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)>)>;
+            AZStd::function<bool(AZ::IO::GenericStream& genericStream, const AZStd::string& stringBuffer)>)>;
+        //! Readable interface
+        //! Will load the file name provided (using project for full path) and return the contents of the file.
         using StreamReadFn = AZStd::function<AZStd::vector<char>(const AZStd::string& localBookmarksFileName)>;
+        // Interface to determine if a file (using project for full path) with the name provided exists already.
         using FileExistsFn = AZStd::function<bool(const AZStd::string& localBookmarksFileName)>;
 
         //! Overrides the behavior of writing to a stream.
         //! @note By default this will write to a file on disk.
-        virtual void SetStreamWriteFn(StreamWriteFn streamWriteFn) = 0;
+        virtual void OverrideStreamWriteFn(StreamWriteFn streamWriteFn) = 0;
         //! Overrides the behavior of reading from a stream.
         //! @note By default this will read from a file on disk.
-        virtual void SetStreamReadFn(StreamReadFn streamReadFn) = 0;
+        virtual void OverrideStreamReadFn(StreamReadFn streamReadFn) = 0;
         //! Overrides the check for if the persistent View Bookmark Settings Registry exists or not.
         //! @note By default this will check for a file on disk.
-        virtual void SetFileExistsFn(FileExistsFn fileExistsFn) = 0;
+        virtual void OverrideFileExistsFn(FileExistsFn fileExistsFn) = 0;
     };
 } // namespace AzToolsFramework

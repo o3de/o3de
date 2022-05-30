@@ -21,7 +21,7 @@ namespace UnitTest
         AZStd::vector<char> m_buffer;
     };
 
-    // Fixture for testing the viewport editor mode state tracker
+    // fixture for testing the view bookmark save and load functionality
     class ViewBookmarkTestFixture : public PrefabTestFixture
     {
     public:
@@ -47,7 +47,7 @@ namespace UnitTest
                 AZ::Interface<AzToolsFramework::ViewBookmarkPersistInterface>::Get();
 
             auto persistentSetReg = AZStd::make_shared<LocalPersistentSettingsRegistry>();
-            bookmarkPersistInterface->SetStreamWriteFn(
+            bookmarkPersistInterface->OverrideStreamWriteFn(
                 [persistentSetReg](
                     [[maybe_unused]] const AZStd::string& localBookmarksFileName, const AZStd::string& stringBuffer,
                     AZStd::function<bool(AZ::IO::GenericStream&, const AZStd::string&)> write)
@@ -62,14 +62,14 @@ namespace UnitTest
                     return saved;
                 });
 
-            bookmarkPersistInterface->SetStreamReadFn(
+            bookmarkPersistInterface->OverrideStreamReadFn(
                 [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
                 {
                     [[maybe_unused]] auto debugString = AZStd::string(persistentSetReg->m_buffer);
                     return persistentSetReg->m_buffer;
                 });
 
-            bookmarkPersistInterface->SetFileExistsFn(
+            bookmarkPersistInterface->OverrideFileExistsFn(
                 [exists = false](const AZStd::string&) mutable
                 {
                     // initially does not exist and is then created
