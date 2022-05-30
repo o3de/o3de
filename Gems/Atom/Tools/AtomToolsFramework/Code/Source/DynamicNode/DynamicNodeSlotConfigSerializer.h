@@ -14,7 +14,7 @@
 
 namespace AtomToolsFramework
 {
-    // Custom JSON serializer for DynamicNodeSlotConfig containing AZStd::any, which isn't supported by the system
+    // Custom JSON serializer for DynamicNodeSlotConfig containing AZStd::any, which isn't natively supported by the system
     class JsonDynamicNodeSlotConfigSerializer : public AZ::BaseJsonSerializer
     {
     public:

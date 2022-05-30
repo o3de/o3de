@@ -20,7 +20,7 @@ namespace AtomToolsFramework
 {
     using DynamicNodeSettingsMap = AZStd::unordered_map<AZStd::string, AZStd::string>;
 
-    //! Structure containing settings for configuring individual input and output slots on a dynamic node
+    //! Contains all of the settings for an individual input or output slot on a DynamicNode
     struct DynamicNodeSlotConfig final
     {
         AZ_CLASS_ALLOCATOR(DynamicNodeSlotConfig, AZ::SystemAllocator, 0);
@@ -37,11 +37,17 @@ namespace AtomToolsFramework
         DynamicNodeSlotConfig() = default;
         ~DynamicNodeSlotConfig() = default;
 
+        //! Unique name or ID of a slot
         AZStd::string m_name = "Unnamed";
+        //! Name displayed next to a slot in the node UI
         AZStd::string m_displayName = "Unnamed";
+        //! Longer description display for tooltips and other UI
         AZStd::string m_description;
+        //! The default value associated with a slot
         AZStd::any m_defaultValue;
+        //! Names of all supported data types that a slot can connect to
         AZStd::vector<AZStd::string> m_supportedDataTypes;
+        //! Container of generic or application specific settings for a slot
         DynamicNodeSettingsMap m_settings;
     };
 } // namespace AtomToolsFramework

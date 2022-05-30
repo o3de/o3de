@@ -14,7 +14,9 @@
 
 namespace AtomToolsFramework
 {
-    //! Data driven graph model node
+    //! Graph Model node that generates its appearance and slots based on an external data driven configuration. The node looks up the
+    //! config via DynamicNodeManagerRequestBus, using a tool ID and a config ID. Serializing these IDs instead of the config object saves
+    //! considerable space in the serialized graph.
     class DynamicNode final : public GraphModel::Node
     {
     public:

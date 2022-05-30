@@ -78,18 +78,18 @@ namespace AtomToolsFramework
 
     void DynamicNodeManager::RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config)
     {
-        m_dynamicNodeConfigMap[configId] = config;
+        m_nodeConfigMap[configId] = config;
     }
 
     DynamicNodeConfig DynamicNodeManager::GetConfig(const AZStd::string& configId) const
     {
-        auto configItr = m_dynamicNodeConfigMap.find(configId);
-        return configItr != m_dynamicNodeConfigMap.end() ? configItr->second : DynamicNodeConfig();
+        auto configItr = m_nodeConfigMap.find(configId);
+        return configItr != m_nodeConfigMap.end() ? configItr->second : DynamicNodeConfig();
     }
 
     void DynamicNodeManager::Clear()
     {
-        m_dynamicNodeConfigMap.clear();
+        m_nodeConfigMap.clear();
     }
 
     GraphCanvas::GraphCanvasTreeItem* DynamicNodeManager::CreateNodePaletteTree() const
@@ -101,7 +101,7 @@ namespace AtomToolsFramework
 
         // Create a container of all of the node configs, sorted by category and title to generate the node palette
         AZStd::vector<AZStd::pair<AZStd::string, DynamicNodeConfig>> sortedConfigVec(
-            m_dynamicNodeConfigMap.begin(), m_dynamicNodeConfigMap.end());
+            m_nodeConfigMap.begin(), m_nodeConfigMap.end());
 
         AZStd::sort(
             sortedConfigVec.begin(), sortedConfigVec.end(),

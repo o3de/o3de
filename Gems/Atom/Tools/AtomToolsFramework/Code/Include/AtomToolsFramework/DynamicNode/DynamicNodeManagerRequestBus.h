@@ -15,7 +15,7 @@
 
 namespace AtomToolsFramework
 {
-    //! Interface dynamic node manager, loading and registering dynamic node configurations and creating notes from them
+    //! Interface for dynamic node manager interactions
     class DynamicNodeManagerRequests : public AZ::EBusTraits
     {
     public:
@@ -25,24 +25,24 @@ namespace AtomToolsFramework
 
         virtual ~DynamicNodeManagerRequests() = default;
 
-        //! Loads and registers all of the dynamic node configuration files matching given extensions
-        //! @param extensions Set of extensions used to enumerate and identify dynamic mode configuration files
+        //! Loads and registers all of the DynamicNodeConfig files matching given extensions
+        //! @param extensions Set of extensions used to enumerate DynamicNodeConfig files
         virtual void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) = 0;
 
-        //! Register a node configuration with the manager.
-        //! @param configId Path or other unique identifier used to register a configuration
-        //! @param config Dynamic node configuration to be added.
+        //! Register a DynamicNodeConfig with the manager.
+        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
+        //! @param config DynamicNodeConfig to be added.
         virtual void RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) = 0;
 
-        //! Get a node configuration with a specified ID.
-        //! @param configId Path or other unique identifier used to register a configuration
-        //! @returns Dynamic node configuration matching the ID or a default.
+        //! Get a DynamicNodeConfig with a specified ID.
+        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
+        //! @returns DynamicNodeConfig matching the ID or a default.
         virtual DynamicNodeConfig GetConfig(const AZStd::string& configId) const = 0;
 
-        //! Remove all registered node configurations.
+        //! Remove all registered DynamicNodeConfig.
         virtual void Clear() = 0;
 
-        //! Generate the node palette hierarchy from the dynamic node configurations
+        //! Generate the node palette tree from registered DynamicNodeConfig
         virtual GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const = 0;
     };
 

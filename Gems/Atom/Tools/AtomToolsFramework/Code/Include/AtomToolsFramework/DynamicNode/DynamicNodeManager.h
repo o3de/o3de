@@ -15,8 +15,8 @@
 
 namespace AtomToolsFramework
 {
-    //! Manages a collection of dynamic node configuration objects.
-    //! Provides functions for loading, registering, clearing, and sorting configurations as well as generating node palette items.
+    //! Manages all of the DynamicNodeConfig for a tool, providing functions for loading, registering, retrieving DynamicNodeConfig, as well
+    //! as generating a node palette tree to create DynamicNode from DynamicNodeConfig.
     class DynamicNodeManager : public DynamicNodeManagerRequestBus::Handler
     {
     public:
@@ -36,7 +36,6 @@ namespace AtomToolsFramework
 
     private:
         const AZ::Crc32 m_toolId = {};
-        AZStd::unordered_map<AZStd::string, DynamicNodeConfig> m_dynamicNodeConfigMap;
+        AZStd::unordered_map<AZStd::string, DynamicNodeConfig> m_nodeConfigMap;
     };
-
 } // namespace AtomToolsFramework
