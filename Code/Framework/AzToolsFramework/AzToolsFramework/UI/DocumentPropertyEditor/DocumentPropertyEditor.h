@@ -14,16 +14,38 @@
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 #include <AzCore/Interface/Interface.h>
-#include <QFrame>
+
+#include <QScrollArea>
+#include <QHBoxLayout>
 
 class QVBoxLayout;
-class QHBoxLayout;
 
 #endif // Q_MOC_RUN
 
 namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
+
+    class DPELayout : public QLayout
+    {
+    public:
+        DPELayout(QWidget* parentWidget) : QLayout(parentWidget) {}
+        // todo: look into caching and QLayoutItem::invalidate()
+
+        // QLayout overrides
+        void addItem(QLayoutItem* item) override;
+        QSize sizeHint() const override;
+        QSize minimumSize() const override;
+        int count() const override;
+        QLayoutItem* itemAt(int itemIndex) const override;
+        QLayoutItem* takeAt(int itemIndex) override;
+        void setGeometry(const QRect& rect) override;
+
+    protected:
+        DocumentPropertyEditor* GetDPE() const;
+
+        QVector<QLayoutItem*> m_layoutItems;
+    };
 
     class DPERowWidget : public QWidget
     {
@@ -45,17 +67,14 @@ namespace AzToolsFramework
     protected:
         DocumentPropertyEditor* GetDPE();
 
-        QVBoxLayout* m_mainLayout = nullptr;
-        QHBoxLayout* m_columnLayout = nullptr;
-        QVBoxLayout* m_childRowLayout = nullptr;
-
+        DPELayout* m_columnLayout = nullptr;
         AZStd::deque<QWidget*> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
-    class DocumentPropertyEditor : public QFrame
+    class DocumentPropertyEditor : public QScrollArea
     {
         Q_OBJECT
 
@@ -79,5 +98,6 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
+        QVBoxLayout* m_layout = nullptr;
     };
 } // namespace AzToolsFramework
