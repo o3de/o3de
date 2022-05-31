@@ -14,6 +14,7 @@ import azlmbr.legacy.general as general
 import azlmbr.editor as editor
 import azlmbr.bus as bus
 import azlmbr.paths as paths
+import scripting_utils.scripting_tools as tools
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, NODE_PALETTE_UI,
                                                  NODE_PALETTE_QT, TREE_VIEW_QT, EVENTS_QT, DEFAULT_METHOD_NAME,
                                                  SEARCH_FRAME_QT, SEARCH_FILTER_QT, EVENT_NAME_QT, NAME_STRING,
@@ -32,8 +33,9 @@ class Tests():
 
 FILE_PATH = os.path.join(paths.projectroot, "TestAssets", "test_file.scriptevents")
 N_VAR_TYPES = 10  # Top 10 variable types
-SEARCH_RETRY = 20
+SEARCH_RETRY_ATTEMPTS = 20
 TEST_METHOD_NAME = "test_method_name"
+
 
 class TestScriptEvents_AllParamDatatypes_CreationSuccess():
     """
@@ -77,48 +79,6 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         node_tree_search_frame = None
         none_tree_search_box = None
 
-    def initialize_sc_qt_objects(self):
-        self.script_canvas = self.editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-        if self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
-            action = pyside_utils.find_child_by_pattern(self.script_canvas, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
-            action.trigger()
-        self.node_palette = self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
-        self.node_tree_view = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
-        self.node_tree_search_frame = self.node_palette.findChild(QtWidgets.QFrame, SEARCH_FRAME_QT)
-        self.none_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
-
-    def initialize_asset_editor_qt_objects(self):
-        self.editor_window = pyside_utils.get_editor_main_window()
-        self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
-        self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
-        self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
-        self.menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
-
-    def save_file(self):
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, FILE_PATH)
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
-        action.trigger()
-        # wait till file is saved, to validate that check the text of QLabel at the bottom of the AssetEditor,
-        # if there are no unsaved changes we will not have any * in the text
-        label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
-        return helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_3)
-
-    def expand_container_rows(self, object_name):
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, object_name)
-        for child in children:
-            check_box = child.findChild(QtWidgets.QCheckBox)
-            if check_box and not check_box.isChecked():
-                QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
-    def node_palette_search(self, node_name):
-        self.none_tree_search_box.setText(node_name)
-        helper.wait_for_condition(lambda: self.none_tree_search_box.text() == node_name, WAIT_TIME_3)
-        # Try clicking ENTER in search box multiple times
-        for _ in range(SEARCH_RETRY):
-            QtTest.QTest.keyClick(self.none_tree_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
-            if pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None:
-                break
-
     def verify_added_params(self):
         for index in range(N_VAR_TYPES):
             if self.asset_editor_row_container.findChild(QtWidgets.QFrame, f"[{index}]") is None:
@@ -138,7 +98,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
 
         # 2) Initially create new Script Event file with one method
-        self.initialize_asset_editor_qt_objects()
+        tools.initialize_asset_editor_qt_objects(self)
         action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
@@ -155,8 +115,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
             lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, EVENT_NAME_QT) is not None, WAIT_TIME_3
         )
         Report.result(Tests.child_event_created, result)
-        self.expand_container_rows(EVENT_NAME_QT)
-        self.expand_container_rows(NAME_STRING)
+        tools.expand_qt_container_rows(self, EVENT_NAME_QT)
+        tools.expand_qt_container_rows(self, NAME_STRING)
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
         for child in children:
             line_edit = child.findChild(QtWidgets.QLineEdit)
@@ -176,10 +136,10 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 6) Expand the parameter rows (to render QFrame 'Type' for each param)
         for index in range(N_VAR_TYPES):
-            self.expand_container_rows(f"[{index}]")
+            tools.expand_qt_container_rows(self, f"[{index}]")
 
         # 7) Set different names and datatypes for each parameter
-        self.expand_container_rows(NAME_STRING)
+        tools.expand_qt_container_rows(self, NAME_STRING)
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
         index = 0
         for child in children:
@@ -197,11 +157,11 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
                 index += 1
 
         # 8) Save file and verify node in SC Node Palette
-        Report.result(Tests.file_saved, self.save_file())
+        Report.result(Tests.file_saved, tools.save_file(self, FILE_PATH))
         general.open_pane(SCRIPT_CANVAS_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-        self.initialize_sc_qt_objects()
-        self.node_palette_search(TEST_METHOD_NAME)
+        tools.initialize_sc_qt_objects(self)
+        tools.canvas_node_palette_search(self, TEST_METHOD_NAME, SEARCH_RETRY_ATTEMPTS)
         result = helper.wait_for_condition(lambda:
                                            pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": TEST_METHOD_NAME}) is not None, WAIT_TIME_3)
         Report.result(Tests.node_found, result)
