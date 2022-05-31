@@ -26,7 +26,7 @@ namespace RecastNavigation
         //! @param navQueryEntityId entity id of the entity with a navigation mesh component
         //! @param nearestDistance distance to use when finding nearest point on the navigation
         //!            mesh when points provided to FindPath are outside of the navigation mesh.
-        explicit DetourNavigationComponent(AZ::EntityId navQueryEntityId, float nearestDistance);
+        DetourNavigationComponent(AZ::EntityId navQueryEntityId, float nearestDistance);
 
         static void Reflect(AZ::ReflectContext* context);
 

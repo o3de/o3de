@@ -32,7 +32,7 @@ namespace RecastNavigation
                 ->Version(1);
         }
 
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<DetourNavigationRequestBus>("DetourNavigationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -97,26 +97,28 @@ namespace RecastNavigation
         }
 
         // Some reasonable amount of waypoints along the path. Recast isn't made to calculate very long paths.
-        constexpr int maxPathLength = 100;
+        constexpr int MaxPathLength = 100;
 
-        dtPolyRef path[maxPathLength] = {};
+        AZStd::array<dtPolyRef, MaxPathLength> path;
         int pathLength = 0;
 
         // Find an approximate path first. In Recast, an approximate path is a collection of polygons, where a polygon covers an area.
-        result = nav->m_query->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(), &filter, path, &pathLength, maxPathLength);
+        result = nav->m_query->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(),
+            &filter, path.data(), &pathLength, MaxPathLength);
         if (dtStatusFailed(result))
         {
             return {};
         }
 
-        RecastVector3 detailedPath[maxPathLength] = {};
-        AZ::u8 detailedPathFlags[maxPathLength] = {};
-        dtPolyRef detailedPolyPathRefs[maxPathLength] = {};
+        AZStd::array<RecastVector3, MaxPathLength> detailedPath;
+        AZStd::array<AZ::u8, MaxPathLength> detailedPathFlags;
+        AZStd::array<dtPolyRef, MaxPathLength> detailedPolyPathRefs;
         int detailedPathCount = 0;
 
         // Then the detailed path. This gives us actual specific waypoints along the path over the polygons found earlier.
-        result = nav->m_query->findStraightPath(startRecast.GetData(), endRecast.GetData(), path, pathLength, detailedPath[0].GetData(), detailedPathFlags, detailedPolyPathRefs,
-            &detailedPathCount, maxPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
+        result = nav->m_query->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
+            detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
+            &detailedPathCount, MaxPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
         if (dtStatusFailed(result))
         {
             return {};
