@@ -363,7 +363,7 @@ namespace AzFramework
 
     bool EntitySpawnTicket::operator!=(const EntitySpawnTicket& rhs) const
     {
-        return GetId() != rhs.GetId();
+        return !(*this == rhs);
     }
 
     void EntitySpawnTicket::Reflect(AZ::ReflectContext* context)
