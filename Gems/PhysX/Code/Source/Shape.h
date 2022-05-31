@@ -93,7 +93,8 @@ namespace PhysX
         //! Retrieve this shape AABB using local coordinates
         AZ::Aabb GetAabbLocal() const override;
 
-        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) override;
+        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const override;
 
     private:
         void BindMaterialsWithPxShape();

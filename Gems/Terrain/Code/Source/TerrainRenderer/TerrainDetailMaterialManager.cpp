@@ -955,9 +955,11 @@ namespace Terrain
         AZ::Vector2 stepSize(m_detailTextureScale);
         AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(offsetWorldAabb.GetMin(), width, height, stepSize);
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegion, queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::SurfaceData, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;

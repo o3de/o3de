@@ -88,31 +88,29 @@ namespace AzToolsFramework
             auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
             auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
 
-            // <apm> this shouldn't happen once everything is implemented, but bail for now on a null handlerId
-            if (!handlerId)
+            // if we found a valid handler, grab its widget and add it to our column layout
+            if (handlerId)
             {
-                return;
+                // store, then reference the unique_ptr that will manage the handler's lifetime
+                auto handler = dpeSystem->CreateHandlerInstance(handlerId);
+                handler->SetValueFromDom(childValue);
+                addedWidget = handler->GetWidget();
+                m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
+                layoutForWidget = m_columnLayout;
             }
-
-            // store, then reference the unique_ptr that will manage the handler's lifetime
-            auto handler = dpeSystem->CreateHandlerInstance(handlerId);
-            handler->SetValueFromDom(childValue);
-            addedWidget = handler->GetWidget();
-            m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
-            layoutForWidget = m_columnLayout;
         }
         else
         {
             AZ_Assert(0, "unknown node type for DPE");
         }
 
+        // insert this new widget into the dom order, even if it's an empty widget to ensure the order is correct
+        auto insertIterator = m_domOrderedChildren.begin() + domIndex;
+        insertIterator = m_domOrderedChildren.insert(insertIterator, addedWidget);
+
         // properly place the new widget in its given layout, correctly ordered by DOM index
         if (addedWidget && layoutForWidget)
         {
-            // insert this new widget into the dom order
-            auto insertIterator = m_domOrderedChildren.begin() + domIndex;
-            insertIterator = m_domOrderedChildren.insert(insertIterator, addedWidget);
-
             // search subsequent dom entries for the first occurrence of a widget in the same layout,
             // then insert this new widget right before it. If there aren't any, then append this to the layout
             ++insertIterator;
@@ -194,11 +192,16 @@ namespace AzToolsFramework
         {
             // find the next widget in the path and delegate the operation to them
             const size_t childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : m_domOrderedChildren.size() - 1);
+            AZ_Assert(childIndex <= m_domOrderedChildren.size(), "DPE: Patch failed to apply, invalid child index specified");
+            if (childIndex > m_domOrderedChildren.size())
+            {
+                return;
+            }
             QWidget* childWidget = m_domOrderedChildren[childIndex];
             if (m_childRowLayout->indexOf(childWidget) != -1)
             {
                 // child is a DPERowWidget if it's in this layout, pass patch processing to it
-                static_cast<DPERowWidget>(childWidget).HandleOperationAtPath(domOperation, pathIndex + 1);
+                static_cast<DPERowWidget*>(childWidget)->HandleOperationAtPath(domOperation, pathIndex + 1);
             }
             else // child must be a label or a PropertyEditor
             {
