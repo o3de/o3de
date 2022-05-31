@@ -395,7 +395,15 @@ namespace Physics
 
     void HeightfieldShapeConfiguration::SetNumColumnVertices(int32_t numColumns)
     {
+        AZ_Assert(
+            (numColumns == 0) || (numColumns >= 2),
+            "A non-empty heightfield must have at least 2 column vertices to define 1 square. Num columns provided: %d", numColumns);
         m_numColumns = numColumns;
+
+        if (m_numColumns < 2)
+        {
+            m_numColumns = 0;
+        }
     }
 
     int32_t HeightfieldShapeConfiguration::GetNumRowVertices() const
@@ -405,7 +413,15 @@ namespace Physics
 
     void HeightfieldShapeConfiguration::SetNumRowVertices(int32_t numRows)
     {
+        AZ_Assert(
+            (numRows == 0) || (numRows >= 2),
+            "A non-empty heightfield must have at least 2 row vertices to define 1 square. Num rows provided: %d", numRows);
         m_numRows = numRows;
+
+        if (m_numRows < 2)
+        {
+            m_numRows = 0;
+        }
     }
 
     int32_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
