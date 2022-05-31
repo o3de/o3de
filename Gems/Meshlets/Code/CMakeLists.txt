@@ -5,12 +5,12 @@
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here in our gem : Gems/Meshlets/Code/Platform/<platorm_name>  or
 #            <restricted_folder>/<platform_name>/Gems/Meshlets/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
+#o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
 # is supported by this platform.
-include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+#include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # Add the Meshlets.Static target
 # Note: We include the common files and the platform specific files which are set in meshlets_common_files.cmake
@@ -20,7 +20,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         meshlets_files.cmake
-        ${pal_dir}/meshlets_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+#        ${pal_dir}/meshlets_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -45,7 +45,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         meshlets_shared_files.cmake
-        ${pal_dir}/meshlets_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+#        ${pal_dir}/meshlets_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
