@@ -477,7 +477,7 @@ void MainWindow::Activate()
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
 
-    settings.beginGroup("Options"); //GetBuilderDebugFlag
+    settings.beginGroup("Options");
     bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
     bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
     settings.endGroup();
