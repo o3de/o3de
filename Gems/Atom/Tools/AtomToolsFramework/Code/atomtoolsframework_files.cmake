@@ -62,7 +62,7 @@ set(FILES
     Source/DynamicNode/DynamicNodePaletteItem.cpp
     Source/DynamicNode/DynamicNodeSlotConfig.cpp
     Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
-    Source/DynamicNode/DynamicNodeSlotConfigSerializer.H
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
 
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h

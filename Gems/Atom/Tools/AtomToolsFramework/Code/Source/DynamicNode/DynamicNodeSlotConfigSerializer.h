@@ -18,7 +18,7 @@ namespace AtomToolsFramework
     class JsonDynamicNodeSlotConfigSerializer : public AZ::BaseJsonSerializer
     {
     public:
-        AZ_RTTI(JsonDynamicNodeSlotConfigSerializer, "{9AFE526F-7785-4B29-AE5C-65F1AB4A7FF0}", AZ::BaseJsonSerializer);
+        AZ_RTTI(JsonDynamicNodeSlotConfigSerializer, "{265FA2FE-FBD0-4A61-98CD-1D61AE48E221}", AZ::BaseJsonSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
 
         AZ::JsonSerializationResult::Result Load(
