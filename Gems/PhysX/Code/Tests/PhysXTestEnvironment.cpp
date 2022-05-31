@@ -12,6 +12,7 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -49,6 +50,7 @@ namespace PhysX
                 azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
+                azrtti_typeid<AZ::TaskGraphSystemComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
                 azrtti_typeid<PhysX::SystemComponent>()
             });

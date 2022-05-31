@@ -27,6 +27,7 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
@@ -215,6 +216,9 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
+            m_taskExecutor = aznew AZ::TaskExecutor();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor);
+
             m_serializeContext = aznew AZ::SerializeContext(true, true);
             m_sliceDescriptor = AZ::SliceComponent::CreateDescriptor();
 
@@ -250,6 +254,9 @@ namespace UnitTest
             delete m_streamer;
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
 
+            AZ::TaskExecutor::SetInstance(nullptr);
+            delete m_taskExecutor;
+
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
@@ -257,6 +264,7 @@ namespace UnitTest
         }
 
         AZ::IO::FileIOBase* m_prevFileIO{ nullptr };
+        AZ::TaskExecutor* m_taskExecutor{ nullptr };
         AZ::IO::Streamer* m_streamer{ nullptr };
         TestFileIOBase m_fileIO;
         AZStd::unique_ptr<SliceTest_MockCatalog> m_catalog;

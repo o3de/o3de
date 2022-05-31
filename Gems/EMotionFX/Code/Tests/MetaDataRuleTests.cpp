@@ -26,6 +26,7 @@ namespace EMotionFX
         AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent,
