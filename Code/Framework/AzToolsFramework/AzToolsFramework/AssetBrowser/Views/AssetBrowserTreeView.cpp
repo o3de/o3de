@@ -64,8 +64,6 @@ namespace AzToolsFramework
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
 
-            setEditTriggers(QAbstractItemView::EditKeyPressed);
-
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
             connect(
@@ -494,7 +492,6 @@ namespace AzToolsFramework
             if (entries.size() == 1)
             {
                 edit(currentIndex());
-                AZ_TracePrintf("Test", "We are here %d", currentIndex());
             }
         }
 

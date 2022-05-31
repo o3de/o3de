@@ -14,8 +14,10 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <QMimeData>
+#include <QFileInfo>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
@@ -183,12 +185,48 @@ namespace AzToolsFramework
                 return QVariant::fromValue(item);
             }
 
+            if (role == Qt::EditRole)
+            {
+                const AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                QString editName = item->GetDisplayName();
+                QString editName2 = QFileInfo(editName).baseName();
+                QString extension = QFileInfo(editName).completeSuffix();
+                return editName2;
+            }
+
             return QVariant();
+        }
+
+        bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
+        {
+            using namespace AZ::IO;
+
+            AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+            Path oldPath = item->GetFullPath();
+            PathView extension = oldPath.Extension();
+            PathView newFile = value.toString().toUtf8().data();
+            Path newPath = oldPath;
+            newPath.ReplaceFilename(newFile);
+            newPath.ReplaceExtension(extension);
+            using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+            SCCommandBus::Broadcast(
+                &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
+                [this, item, newFile, extension, index](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                {
+                    if (success)
+                    {
+                        AZ_TracePrintf("JJS", "Succeeded")
+                        item->SetFileData(newFile, extension);
+                        emit dataChanged(index, index);
+                    }
+                });
+            AZ_TracePrintf("JJS", "Return")
+            return false;
         }
 
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
-            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 
             if (index.isValid())
             {
