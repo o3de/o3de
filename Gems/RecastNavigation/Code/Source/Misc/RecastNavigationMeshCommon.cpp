@@ -45,9 +45,9 @@ namespace RecastNavigation
         config.cs = meshConfig.m_cellSize;
         config.ch = meshConfig.m_cellHeight;
         config.walkableSlopeAngle = meshConfig.m_agentMaxSlope;
-        config.walkableHeight = aznumeric_cast<int>(ceil(meshConfig.m_agentHeight / config.ch));
-        config.walkableClimb = aznumeric_cast<int>(floor(meshConfig.m_agentMaxClimb / config.ch));
-        config.walkableRadius = aznumeric_cast<int>(ceil(meshConfig.m_agentRadius / config.cs));
+        config.walkableHeight = aznumeric_cast<int>(AZStd::ceil(meshConfig.m_agentHeight / config.ch));
+        config.walkableClimb = aznumeric_cast<int>(AZStd::floor(meshConfig.m_agentMaxClimb / config.ch));
+        config.walkableRadius = aznumeric_cast<int>(AZStd::ceil(meshConfig.m_agentRadius / config.cs));
         config.maxEdgeLen = aznumeric_cast<int>(meshConfig.m_edgeMaxLen / meshConfig.m_cellSize);
         config.maxSimplificationError = meshConfig.m_edgeMaxError;
         config.minRegionArea = rcSqr(meshConfig.m_regionMinSize);       // Note: area = size*size
