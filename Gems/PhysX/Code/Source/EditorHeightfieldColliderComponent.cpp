@@ -111,6 +111,14 @@ namespace PhysX
     {
         // By default, disable heightfield collider debug drawing. This doesn't need to be viewed in the common case.
         m_colliderDebugDraw.SetDisplayFlag(false);
+
+        // Heightfields don't support the following:
+        // - Offset:  There shouldn't be a need to offset the data, since the heightfield provider is giving a physics representation
+        // - IsTrigger:  PhysX heightfields don't support acting as triggers
+        // - MaterialSelection:  The heightfield provider provides per-vertex material selection
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
     }
 
     EditorHeightfieldColliderComponent ::~EditorHeightfieldColliderComponent()
@@ -120,13 +128,6 @@ namespace PhysX
     // AZ::Component
     void EditorHeightfieldColliderComponent::Activate()
     {
-        // Heightfields don't support the following:
-        // - Offset:  There shouldn't be a need to offset the data, since the heightfield provider is giving a physics representation
-        // - IsTrigger:  PhysX heightfields don't support acting as triggers
-        // - MaterialSelection:  The heightfield provider provides per-vertex material selection
-        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
-        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
-        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
 
         AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
         if (auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())

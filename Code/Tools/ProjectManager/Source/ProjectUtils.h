@@ -73,6 +73,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
 
+        QString GetDefaultProjectPath();
+
         /**
          * Create a desktop shortcut.
          * @param filename the name of the desktop shorcut file
