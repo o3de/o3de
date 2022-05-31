@@ -33,6 +33,8 @@ namespace Physics
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static const char* const EntireObjectSlotName;
+
         //! Contstructor will already provide a valid default slot.
         MaterialSlots();
         virtual ~MaterialSlots() = default;

@@ -105,6 +105,23 @@ namespace PhysX
             return nullptr;
         }
 
+        // Fixes up an asset by querying the asset catalog for its id using its hint path.
+        // Returns true if it was able to find the asset in the catalog and set the asset id.
+        static bool FixUpAssetIdByHint(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+        {
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
+                AZ::Data::s_invalidAssetType, false);
+
+            if (assetId.IsValid())
+            {
+                asset.Create(assetId, false);
+                return true;
+            }
+            return false;
+        }
+
         AZ::Data::AssetHandler::LoadResult MeshAssetHandler::LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
@@ -123,6 +140,31 @@ namespace PhysX
             if (!AZ::Utils::LoadObjectFromStreamInPlace(*stream, meshAsset->m_assetData, serializeContext))
             {
                 return AZ::Data::AssetHandler::LoadResult::Error;
+            }
+
+            // PhysX Mesh Asset could have been saved with material assets that only have the hint valid (asset path in the cache).
+            // This could happen for example when MeshGroup was filled procedurally and the materials were only given the path (hint).
+            // Now at runtime after the PhysX Mesh is loaded let's complete the asset by looking for it in the catalog and
+            // assigning its id. At runtime physics material will always be in the catalog because it's a critical asset.
+            for (size_t slotId = 0; slotId < meshAsset->m_assetData.m_materialSlots.GetSlotsCount(); ++slotId)
+            {
+                AZ::Data::Asset<AZ::Data::AssetData> materialAsset = meshAsset->m_assetData.m_materialSlots.GetMaterialAsset(slotId);
+                // Does it need to resolve its id from the hint path?
+                if (!materialAsset.GetId().IsValid() && !materialAsset.GetHint().empty())
+                {
+                    if (FixUpAssetIdByHint(materialAsset))
+                    {
+                        meshAsset->m_assetData.m_materialSlots.SetMaterialAsset(slotId, materialAsset);
+                    }
+                    else
+                    {
+                        AZ_Warning("PhysX Mesh Asset", false,
+                            "Loading PhysX Mesh '%s' it didn't find physics material '%s', assigned to slot '%s'. Default physics material will be used.",
+                            asset.GetHint().c_str(),
+                            materialAsset.GetHint().c_str(),
+                            meshAsset->m_assetData.m_materialSlots.GetSlotName(slotId).c_str());
+                    }
+                }
             }
 
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
@@ -227,7 +269,5 @@ namespace PhysX
                 colliderConfiguration.m_tag = *m_tag;
             }
         }
-
-
-} //namespace Pipeline
+    } //namespace Pipeline
 } // namespace PhysX

@@ -173,9 +173,25 @@ namespace PhysX
                 Physics::MaterialSlots newSlots;
                 newSlots.SetSlots(newMaterials);
 
-                // In the new material list, the materials might have changed slots.
-                // Form the new list of physics material slots by looking at the previous list
-                // and keeping the same physics materials association when found.
+                // The new material list could have different names or be in a different order,
+                // because they are obtained from the current mesh nodes selected.
+                // Go through the previous slots and keep the same physics material
+                // association if the slot name is the same.
+                // Example:
+                // 
+                //     Previous Material Slots from MeshGroup:
+                //        Material_A: glass.physicsmaterial
+                //        Material_B: sand.physicsmaterial
+                //        Material_C: gold.physicsmaterial
+                // 
+                //     Materials now extracted from mesh nodes selected:
+                //        Material_C
+                //        Material_A
+                // 
+                //     New Material Slots have to keep the same physics materials association:
+                //        Material_C: gold.physicsmaterial
+                //        Material_A: glass.physicsmaterial
+                //
                 for (size_t newSlotId = 0; newSlotId < newSlots.GetSlotsCount(); ++newSlotId)
                 {
                     for (size_t prevSlotId = 0; prevSlotId < physicsMaterialSlots.GetSlotsCount(); ++prevSlotId)
@@ -183,11 +199,46 @@ namespace PhysX
                         if (AZ::StringFunc::Equal(physicsMaterialSlots.GetSlotName(prevSlotId), newSlots.GetSlotName(newSlotId), false/*bCaseSensitive*/))
                         {
                             const auto materialAsset = physicsMaterialSlots.GetMaterialAsset(prevSlotId);
-                            if (materialAsset.GetId().IsValid())
+                            // Note: Material asset is also valid if it's got a path hint (which will be resolved
+                            // by PhysX MeshAssetHandler after loading the MeshAsset).
+                            if (materialAsset.GetId().IsValid() || !materialAsset.GetHint().empty())
                             {
                                 newSlots.SetMaterialAsset(newSlotId, materialAsset);
                             }
                             break;
+                        }
+                    }
+                }
+
+                // The material slots data come from MeshGroup. MeshGroup created from FBX Settings
+                // will always generate Material Slots with a valid name in them (extracted from the mesh).
+                // But when MeshGroup data is generated procedurally it's not possible to know what's the
+                // material name from the mesh nodes. In order to cover this case, when the slot name is
+                // default or empty the physics materials assigned will still be used in the new slots.
+                // Example:
+                // 
+                //     Previous Material Slots from MeshGroup:
+                //        "": glass.physicsmaterial
+                // 
+                //     Materials now extracted from mesh nodes selected:
+                //        Material_C
+                //        Material_A
+                // 
+                //     New Material Slots will keep physics materials from empty slot names
+                //        Material_C: glass.physicsmaterial
+                //        Material_A:
+                //
+                for (size_t slotId = 0; slotId < physicsMaterialSlots.GetSlotsCount(); ++slotId)
+                {
+                    if (physicsMaterialSlots.GetSlotName(slotId).empty() ||
+                        physicsMaterialSlots.GetSlotName(slotId) == Physics::MaterialSlots::EntireObjectSlotName)
+                    {
+                        const auto materialAsset = physicsMaterialSlots.GetMaterialAsset(slotId);
+                        // Note: Material asset is also valid if it's got a path hint (which will be resolved
+                        // by PhysX MeshAssetHandler after loading the MeshAsset).
+                        if (materialAsset.GetId().IsValid() || !materialAsset.GetHint().empty())
+                        {
+                            newSlots.SetMaterialAsset(slotId, materialAsset);
                         }
                     }
                 }

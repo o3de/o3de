@@ -17,8 +17,6 @@ namespace PhysX
 {
     namespace Pipeline
     {
-
-
         /// Asset handler for loading and initializing PhysXMeshAsset assets.
         class MeshAssetHandler
             : public AZ::Data::AssetHandler
