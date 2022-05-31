@@ -93,8 +93,8 @@ namespace AZ
 
             ////////////////////////////
             std::vector<meshopt_Meshlet> meshlets(max_meshlets);
-            std::vector<unsigned int> meshlet_vertices(max_meshlets * max_vertices);		// Vertex Index indirection map
-            std::vector<unsigned char> meshlet_triangles(max_meshlets * max_triangles * 3);	// Meshlet triangles into the vertex index indirection - local to meshlet.
+            std::vector<unsigned int> meshlet_vertices(max_meshlets * max_vertices);        // Vertex Index indirection map
+            std::vector<unsigned char> meshlet_triangles(max_meshlets * max_triangles * 3); // Meshlet triangles into the vertex index indirection - local to meshlet.
 
             // NO scan seems to return more localized meshlets
             meshlets.resize(meshopt_buildMeshlets(

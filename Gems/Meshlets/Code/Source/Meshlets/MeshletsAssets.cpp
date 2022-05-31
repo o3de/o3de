@@ -69,7 +69,8 @@ namespace AZ
             }
         }
 
-        void debugMarkVertexUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
+        // The results of using this function will alter the mesh UVs
+        void debugMarkVertexUVs(GeneratorMesh& mesh)
         {
             for (uint32_t vtxIndex = 0; vtxIndex < mesh.vertices.size(); ++vtxIndex)
             {
