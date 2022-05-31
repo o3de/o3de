@@ -361,7 +361,6 @@ namespace Terrain
     void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
     {
         PrepareMaterialData();
-        m_forceRebuildDrawPackets = true;
         m_terrainBoundsNeedUpdate = true;
     }
 
