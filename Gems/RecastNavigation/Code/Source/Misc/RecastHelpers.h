@@ -16,6 +16,7 @@ namespace RecastNavigation
 {
     //! A helper class to manage different coordinate systems between O3DE and Recast Navigation library.
     //! In O3DE, +Z is up. In Recast library, +Y is up.
+    //! The data in this class is kept always in Recast format with +Y. Use @AsVector3WithZup to get a vector in O3DE format.
     class RecastVector3
     {
     public:
@@ -32,7 +33,7 @@ namespace RecastNavigation
         }
 
         //! A constructor from Recast coordinate values.
-        static RecastVector3 CreateFromFloatSwapYZ(const float* data)
+        static RecastVector3 CreateFromFloatValuesWithoutAxisSwapping(const float* data)
         {
             RecastVector3 out;
             out.m_xyz[0] = data[0];

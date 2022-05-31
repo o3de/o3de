@@ -110,7 +110,7 @@ namespace RecastNavigation
     void RecastNavigationDebugDraw::AddVertex(float x, float y, float z, unsigned color)
     {
         const float temp[3] = { x, y, z };
-        const RecastVector3 v = RecastVector3::CreateFromFloatSwapYZ(temp);
+        const RecastVector3 v = RecastVector3::CreateFromFloatValuesWithoutAxisSwapping(temp);
         m_verticesToDraw.emplace_back(v.AsVector3WithZup(), color);
     }
 } // namespace RecastNavigation
