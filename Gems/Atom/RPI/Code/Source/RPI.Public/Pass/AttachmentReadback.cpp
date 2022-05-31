@@ -501,6 +501,7 @@ namespace AZ
             result.m_attachmentType = m_attachmentType;
             result.m_dataBuffer = m_dataBuffer;
             result.m_name = m_readbackName;
+            result.m_userIdentifier = m_userIdentifier;
             result.m_imageDescriptor = m_imageDescriptor;
             result.m_imageDescriptor.m_arraySize = 1;
             return result;
