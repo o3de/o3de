@@ -87,21 +87,18 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
-                        // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
-                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMin)
-                        ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
-                        // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
-                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateWorldMax)
-                        ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
-                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateHeightQueryResolution)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_surfaceDataQueryResolution, "Surface Data Query Resolution (m)", "")
-                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateSurfaceQueryResolution);
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
+                    ;
             }
         }
     }
@@ -182,50 +179,6 @@ namespace Terrain
             return true;
         }
         return false;
-    }
-
-    float TerrainWorldConfig::NumberOfSamples(const AZ::Vector3& min, const AZ::Vector3& max, float heightQuery)
-    {
-        float numberOfSamples = ((max.GetX() - min.GetX()) / heightQuery) * ((max.GetY() - min.GetY()) / heightQuery);
-        return numberOfSamples;
-    }
-
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::DetermineMessage(float numSamples)
-    {
-        const float maximumSamplesAllowed = 16.0f * 1024.0f * 1024.0f;
-        if (numSamples <= maximumSamplesAllowed)
-        {
-            return AZ::Success();
-        }
-        return AZ::Failure(AZStd::string("The number of samples exceeds the maximum allowed."));
-    }
-
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldMin(void* newValue, [[maybe_unused]]const AZ::Uuid& valueType)
-    {
-        AZ::Vector3 minValue = *static_cast<AZ::Vector3*>(newValue);
-
-        return DetermineMessage(NumberOfSamples(minValue, m_worldMax, m_heightQueryResolution));
-    }
-
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
-    {
-        AZ::Vector3 maxValue = *static_cast<AZ::Vector3*>(newValue);
-
-        return DetermineMessage(NumberOfSamples(m_worldMin, maxValue, m_heightQueryResolution));
-    }
-
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateHeightQueryResolution(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
-    {
-        float heightQueryResolution = *static_cast<float*>(newValue);
-
-        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, heightQueryResolution));
-    }
-
-    AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateSurfaceQueryResolution(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
-    {
-        float surfaceQueryResolution = *static_cast<float*>(newValue);
-
-        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, surfaceQueryResolution));
     }
 
 } // namespace Terrain
