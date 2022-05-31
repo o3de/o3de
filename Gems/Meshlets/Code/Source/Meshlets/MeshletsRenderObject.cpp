@@ -6,8 +6,6 @@
 *
 */
 
-#pragma once
-
 #include <AzCore/Math/Aabb.h>
 
 #include <Atom/RHI/Factory.h>
