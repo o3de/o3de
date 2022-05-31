@@ -15,10 +15,8 @@ import azlmbr.editor as editor
 import azlmbr.bus as bus
 import azlmbr.paths as paths
 import scripting_utils.scripting_tools as tools
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, NODE_PALETTE_UI,
-                                                 NODE_PALETTE_QT, TREE_VIEW_QT, EVENTS_QT, DEFAULT_METHOD_NAME,
-                                                 SEARCH_FRAME_QT, SEARCH_FILTER_QT, EVENT_NAME_QT, NAME_STRING,
-                                                 PARAMETERS_QT, SAVE_STRING, SAVE_ASSET_AS, WAIT_TIME_3)
+from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT,
+                                                 DEFAULT_METHOD_NAME, EVENT_NAME_QT, NAME_STRING, PARAMETERS_QT, WAIT_TIME_3)
 
 
 # fmt: off
@@ -72,12 +70,12 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         asset_editor = None
         asset_editor_widget = None
         asset_editor_row_container = None
-        menu_bar = None
+        asset_editor_menu_bar = None
         script_canvas = None
         node_palette = None
         node_tree_view = None
         node_tree_search_frame = None
-        none_tree_search_box = None
+        node_tree_search_box = None
 
     def verify_added_params(self):
         for index in range(N_VAR_TYPES):
@@ -99,7 +97,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 2) Initially create new Script Event file with one method
         tools.initialize_asset_editor_qt_objects(self)
-        action = pyside_utils.find_child_by_pattern(self.menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
+        action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
             lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
@@ -157,7 +155,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
                 index += 1
 
         # 8) Save file and verify node in SC Node Palette
-        Report.result(Tests.file_saved, tools.save_file(self, FILE_PATH))
+        Report.result(Tests.file_saved, tools.save_script_event_file(self, FILE_PATH))
         general.open_pane(SCRIPT_CANVAS_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
         tools.initialize_sc_qt_objects(self)
