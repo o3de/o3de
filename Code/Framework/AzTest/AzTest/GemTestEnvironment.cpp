@@ -12,6 +12,7 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 
 namespace AZ
 {
@@ -116,6 +117,7 @@ namespace AZ
             AddComponentIfNotPresent<AZ::MemoryComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::AssetManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::JobManagerComponent>(m_systemEntity);
+            AddComponentIfNotPresent<AZ::TaskGraphSystemComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::StreamerComponent>(m_systemEntity);
 
             m_systemEntity->Init();
