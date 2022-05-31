@@ -23,19 +23,29 @@
 
 namespace RecastNavigationTests
 {
-    using namespace AZ;
-    using namespace AZStd;
-    using namespace RecastNavigation;
-    using namespace testing;
+    using testing::_;
+    using testing::Invoke;
+    using testing::NiceMock;
+    using testing::Return;
+    using AZStd::unique_ptr;
+    using AZ::Entity;
+    using AZ::EventSchedulerSystemComponent;
+    using RecastNavigation::RecastNavigationMeshRequestBus;
+    using RecastNavigation::RecastNavigationMeshRequests;
+    using RecastNavigation::RecastNavigationDebugDraw;
+    using RecastNavigation::DetourNavigationRequests;
+    using RecastNavigation::NavMeshQuery;
+    using RecastNavigation::DetourNavigationComponent;
+    using RecastNavigation::DetourNavigationRequestBus;
 
     class NavigationTest
         : public ::UnitTest::AllocatorsFixture
     {
     public:
-        unique_ptr<SerializeContext> m_sc;
-        unique_ptr<BehaviorContext> m_bc;
-        unique_ptr<vector<ComponentDescriptor*>> m_descriptors;
-        unique_ptr<TimeSystem> m_timeSystem;
+        unique_ptr<AZ::SerializeContext> m_sc;
+        unique_ptr<AZ::BehaviorContext> m_bc;
+        unique_ptr<AZStd::vector<AZ::ComponentDescriptor*>> m_descriptors;
+        unique_ptr<AZ::TimeSystem> m_timeSystem;
         unique_ptr<MockSceneInterface> m_mockSceneInterface;
         unique_ptr<AzPhysics::SceneQueryHit> m_hit;
         unique_ptr<MockPhysicsShape> m_mockPhysicsShape;
@@ -50,19 +60,19 @@ namespace RecastNavigationTests
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
 
             // register components involved in testing
-            m_descriptors = AZStd::make_unique<vector<ComponentDescriptor*>>();
-            m_sc = AZStd::make_unique<SerializeContext>();
+            m_descriptors = AZStd::make_unique<AZStd::vector<AZ::ComponentDescriptor*>>();
+            m_sc = AZStd::make_unique<AZ::SerializeContext>();
             m_sc->CreateEditContext();
-            m_bc = AZStd::make_unique<BehaviorContext>();
-            RegisterComponent<RecastNavigationMeshComponent>();
-            RegisterComponent<RecastNavigationPhysXProviderComponent>();
+            m_bc = AZStd::make_unique<AZ::BehaviorContext>();
+            RegisterComponent<RecastNavigation::RecastNavigationMeshComponent>();
+            RegisterComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
             RegisterComponent<MockShapeComponent>();
-            RegisterComponent<EventSchedulerSystemComponent>();
-            RegisterComponent<RecastNavigationSystemComponent>();
-            RegisterComponent<DetourNavigationComponent>();
+            RegisterComponent<AZ::EventSchedulerSystemComponent>();
+            RegisterComponent<RecastNavigation::RecastNavigationSystemComponent>();
+            RegisterComponent<RecastNavigation::DetourNavigationComponent>();
 
-            m_timeSystem = AZStd::make_unique<StubTimeSystem>();
-            m_mockSceneInterface = AZStd::make_unique< NiceMock<MockSceneInterface>>();
+            m_timeSystem = AZStd::make_unique<AZ::StubTimeSystem>();
+            m_mockSceneInterface = AZStd::make_unique<NiceMock<MockSceneInterface>>();
             m_hit = AZStd::make_unique<AzPhysics::SceneQueryHit>();
             m_mockPhysicsShape = AZStd::make_unique<NiceMock<MockPhysicsShape>>();
             m_mockSimulatedBody = AZStd::make_unique<NiceMock<MockSimulatedBody>>();
@@ -76,7 +86,7 @@ namespace RecastNavigationTests
             m_mockSceneInterface = {};
             m_timeSystem = {};
 
-            for (ComponentDescriptor* descriptor : *m_descriptors)
+            for (AZ::ComponentDescriptor* descriptor : *m_descriptors)
             {
                 delete descriptor;
             }
@@ -94,7 +104,7 @@ namespace RecastNavigationTests
         template <typename T>
         void RegisterComponent()
         {
-            ComponentDescriptor* item = T::CreateDescriptor();
+            AZ::ComponentDescriptor* item = T::CreateDescriptor();
             item->Reflect(m_sc.get());
             item->Reflect(m_bc.get());
 
@@ -102,14 +112,14 @@ namespace RecastNavigationTests
         }
 
         // helper method
-        void PopulateEntity(Entity& e)
+        void PopulateEntity(AZ::Entity& e)
         {
             e.SetId(AZ::EntityId{ 1 });
-            e.CreateComponent<EventSchedulerSystemComponent>();
-            e.CreateComponent<RecastNavigationSystemComponent>();
+            e.CreateComponent<AZ::EventSchedulerSystemComponent>();
+            e.CreateComponent<RecastNavigation::RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
-            e.CreateComponent<RecastNavigationPhysXProviderComponent>();
-            e.CreateComponent<RecastNavigationMeshComponent>(RecastNavigationMeshConfig{}, true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{}, true);
         }
 
         void SetupNavigationMesh()
@@ -151,7 +161,7 @@ namespace RecastNavigationTests
         void AddTestGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, bool indexed = true)
         {
             constexpr float size = 2.5f;
-            const vector<AZ::Vector3> boxVertices = {
+            const AZStd::vector<AZ::Vector3> boxVertices = {
                 AZ::Vector3(-size, -size, -size),
                 AZ::Vector3(size, -size, -size) ,
                 AZ::Vector3(size, size, -size)  ,
@@ -167,7 +177,7 @@ namespace RecastNavigationTests
             indices.clear();
             if (indexed)
             {
-                const vector<AZ::u32> boxIndices = {
+                const AZStd::vector<AZ::u32> boxIndices = {
                     /*0*/	2,                    /*1*/	    1,                    /*2*/	    0,
                     /*3*/	0,                    /*4*/	    3,                    /*5*/	    2,
                     /*6*/	3,                    /*7*/	    0,                    /*8*/	    7,
@@ -206,7 +216,7 @@ namespace RecastNavigationTests
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        AZStd::shared_ptr<NavMeshQuery> nav;
+        AZStd::shared_ptr<RecastNavigation::NavMeshQuery> nav;
         RecastNavigationMeshRequestBus::EventResult(nav, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
         /*
          * We updated the navigation mesh using a blocking call. We should have access to the native Recast object now.
@@ -285,9 +295,9 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
 
-            e.CreateComponent<RecastNavigationMeshComponent>();
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
         ActivateEntity(e);
         SetupNavigationMesh();
@@ -313,9 +323,9 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
 
-            e.CreateComponent<RecastNavigationMeshComponent>();
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
         ActivateEntity(e);
         SetupNavigationMesh();
@@ -384,7 +394,7 @@ namespace RecastNavigationTests
 
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        TickBus::Broadcast(&TickBus::Events::OnTick, 0.1f, ScriptTimePoint{});
+        AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.1f, AZ::ScriptTimePoint{});
     }
 
     /*
@@ -406,7 +416,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
         MockDebug debug;
-        TickBus::Broadcast(&TickBus::Events::OnTick, 0.1f, ScriptTimePoint{});
+        AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.1f, AZ::ScriptTimePoint{});
     }
 
     /*
@@ -475,7 +485,7 @@ namespace RecastNavigationTests
 
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0));
 
@@ -501,7 +511,7 @@ namespace RecastNavigationTests
 
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0));
 
@@ -527,7 +537,7 @@ namespace RecastNavigationTests
 
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2000.f, 2000, 0));
 
@@ -551,7 +561,7 @@ namespace RecastNavigationTests
                 AddTestGeometry(vertices, indices, true);
             }));
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
             AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0));
 
@@ -575,7 +585,7 @@ namespace RecastNavigationTests
                 AddTestGeometry(vertices, indices, true);
             }));
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenEntities,
             AZ::EntityId(), AZ::EntityId());
 
@@ -601,7 +611,7 @@ namespace RecastNavigationTests
                 AddTestGeometry(vertices, indices, true);
             }));
 
-        vector<Vector3> waypoints;
+        AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenEntities,
             AZ::EntityId(1), AZ::EntityId(2));
 
@@ -613,7 +623,7 @@ namespace RecastNavigationTests
      */
     TEST_F(NavigationTest, RecastNavigationMeshCommonTests)
     {
-        RecastNavigationMeshCommon common;
+        RecastNavigation::RecastNavigationMeshCommon common;
         EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshCommon"), 0);
     }
 
@@ -622,7 +632,7 @@ namespace RecastNavigationTests
      */
     TEST_F(NavigationTest, RecastNavigationNotificationHandler)
     {
-        RecastNavigationNotificationHandler handler;
+        RecastNavigation::RecastNavigationNotificationHandler handler;
         handler.OnNavigationMeshUpdated(AZ::EntityId(1));
     }
 
@@ -631,7 +641,7 @@ namespace RecastNavigationTests
      */
     TEST_F(NavigationTest, RecastNavigationPhysXProviderCommon)
     {
-        RecastNavigationPhysXProviderCommon test(true);
+        RecastNavigation::RecastNavigationPhysXProviderCommon test(true);
         EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderCommon"), 0);
     }
 }

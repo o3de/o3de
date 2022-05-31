@@ -20,9 +20,9 @@
 
 namespace RecastNavigationTests
 {
-    using namespace AZ;
-    using namespace AZStd;
-    using namespace testing;
+    using AZ::Event;
+    using AZStd::tuple;
+    using AZ::Crc32;
 
     class MockShapeComponent
         : public AZ::Component
@@ -32,7 +32,7 @@ namespace RecastNavigationTests
         AZ_COMPONENT(MockShapeComponent,
             "{A9406916-365D-4C72-9F4C-2A3E5220CE2B}");
 
-        static void Reflect(ReflectContext*) {}
+        static void Reflect(AZ::ReflectContext*) {}
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -102,7 +102,7 @@ namespace RecastNavigationTests
         MOCK_METHOD1(SetTransform, void (const AZ::Transform&));
     };
 
-    class MockSceneInterface : public Interface<AzPhysics::SceneInterface>::Registrar
+    class MockSceneInterface : public AZ::Interface<AzPhysics::SceneInterface>::Registrar
     {
     public:
         MockSceneInterface() = default;
@@ -130,19 +130,19 @@ namespace RecastNavigationTests
         MOCK_METHOD4(QuerySceneAsyncBatch, bool(AzPhysics::SceneHandle, AzPhysics::SceneQuery::AsyncRequestId, const AzPhysics::
             SceneQueryRequests&, AzPhysics::SceneQuery::AsyncBatchCallback));
         MOCK_METHOD2(QuerySceneBatch, AzPhysics::SceneQueryHitsList(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequests&));
-        MOCK_METHOD2(RegisterSceneActiveSimulatedBodiesHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const vector<
+        MOCK_METHOD2(RegisterSceneActiveSimulatedBodiesHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const AZStd::vector<
             tuple<Crc32, int>>&>::Handler&));
-        MOCK_METHOD2(RegisterSceneCollisionEventHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const vector<
+        MOCK_METHOD2(RegisterSceneCollisionEventHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const AZStd::vector<
             AzPhysics::CollisionEvent>&>::Handler&));
         MOCK_METHOD2(RegisterSceneConfigurationChangedEventHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const
             AzPhysics::SceneConfiguration&>::Handler&));
-        MOCK_METHOD2(RegisterSceneGravityChangedEvent, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const Vector3&>::
+        MOCK_METHOD2(RegisterSceneGravityChangedEvent, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const AZ::Vector3&>::
             Handler&));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle, AzPhysics::SceneEvents::
             OnSceneSimulationFinishHandler&));
         MOCK_METHOD2(RegisterSceneSimulationStartHandler, void(AzPhysics::SceneHandle, AzPhysics::SceneEvents::
             OnSceneSimulationStartHandler&));
-        MOCK_METHOD2(RegisterSceneTriggersEventHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const vector<
+        MOCK_METHOD2(RegisterSceneTriggersEventHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, const AZStd::vector<
             AzPhysics::TriggerEvent>&>::Handler&));
         MOCK_METHOD2(RegisterSimulationBodyAddedHandler, void(AzPhysics::SceneHandle, Event<tuple<Crc32, signed char>, tuple<Crc32, int>>::
             Handler&));
@@ -224,13 +224,13 @@ namespace RecastNavigationTests
             AZ::TransformBus::MultiHandler::BusDisconnect();
         }
 
-        void BindTransformChangedEventHandler(TransformChangedEvent::Handler&) override {}
-        void BindParentChangedEventHandler(ParentChangedEvent::Handler&) override {}
-        void BindChildChangedEventHandler(ChildChangedEvent::Handler&) override {}
-        void NotifyChildChangedEvent(ChildChangeType, EntityId) override {}
+        void BindTransformChangedEventHandler(AZ::TransformChangedEvent::Handler&) override {}
+        void BindParentChangedEventHandler(AZ::ParentChangedEvent::Handler&) override {}
+        void BindChildChangedEventHandler(AZ::ChildChangedEvent::Handler&) override {}
+        void NotifyChildChangedEvent(AZ::ChildChangeType, AZ::EntityId) override {}
 
-        MOCK_METHOD0(GetLocalTM, const Transform& ());
-        MOCK_METHOD0(GetWorldTM, const Transform& ());
+        MOCK_METHOD0(GetLocalTM, const AZ::Transform& ());
+        MOCK_METHOD0(GetWorldTM, const AZ::Transform& ());
         MOCK_METHOD0(IsStaticTransform, bool());
     };
 }
