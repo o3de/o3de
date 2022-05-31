@@ -23,9 +23,9 @@ namespace RecastNavigation
                 ->Version(1)
                 ;
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                ec->Class<EditorRecastNavigationMeshComponent>("Recast Navigation Mesh",
+                editContext->Class<EditorRecastNavigationMeshComponent>("Recast Navigation Mesh",
                     "[Calculates the walkable navigation mesh within a specified area.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))

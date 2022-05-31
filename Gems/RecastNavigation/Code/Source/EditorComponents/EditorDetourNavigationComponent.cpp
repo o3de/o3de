@@ -23,9 +23,9 @@ namespace RecastNavigation
                 ->Version(1)
                 ;
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                ec->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
+                editContext->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
                     "[Calculates paths within an associated navigation mesh.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))

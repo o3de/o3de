@@ -294,9 +294,9 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create mesh");
 
-        m_navObjects = AZStd::make_shared<NavMeshQuery>();
-        m_navObjects->m_mesh.reset(dtAllocNavMesh());
-        if (!m_navObjects->m_mesh)
+        m_navObject = AZStd::make_shared<NavMeshQuery>();
+        m_navObject->m_mesh.reset(dtAllocNavMesh());
+        if (!m_navObject->m_mesh)
         {
             AZ_Error("Navigation", false, "Could not create Detour navmesh");
             return false;
@@ -316,16 +316,16 @@ namespace RecastNavigation
         params.tileWidth = tileSize;
         params.tileHeight = tileSize;
 
-        dtStatus status = m_navObjects->m_mesh->init(&params);
+        dtStatus status = m_navObject->m_mesh->init(&params);
         if (dtStatusFailed(status))
         {
             AZ_Error("Navigation", false, "Could not init Detour navmesh");
             return false;
         }
 
-        m_navObjects->m_query.reset(dtAllocNavMeshQuery());
+        m_navObject->m_query.reset(dtAllocNavMeshQuery());
 
-        status = m_navObjects->m_query->init(m_navObjects->m_mesh.get(), 2048);
+        status = m_navObject->m_query->init(m_navObject->m_mesh.get(), 2048);
         if (dtStatusFailed(status))
         {
             AZ_Error("Navigation", false, "Could not init Detour navmesh query");
@@ -340,7 +340,7 @@ namespace RecastNavigation
         AZ_PROFILE_SCOPE(Navigation, "Navigation: addTile");
 
         dtTileRef tileRef = 0;
-        const dtStatus status = m_navObjects->m_mesh->addTile(
+        const dtStatus status = m_navObject->m_mesh->addTile(
             navigationTileData.m_data, navigationTileData.m_size,
             DT_TILE_FREE_DATA, 0, &tileRef);
         if (dtStatusFailed(status))

@@ -68,8 +68,8 @@ namespace RecastNavigation
         const AZ::Aabb worldVolume = GetWorldBounds();
 
         const AZ::Vector3 extents = worldVolume.GetExtents();
-        const int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
-        const int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
+        const int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+        const int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
 
         return tilesAlongX * tilesAlongY;
     }

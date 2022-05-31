@@ -18,7 +18,7 @@
 namespace RecastNavigation
 {
     //! Common navigation mesh logic for Recast navigation components. Recommended use is as a base class.
-    //! The method provided are not thread-safe. Use the mutex from @m_navObjects to synchronize as necessary at the higher level.
+    //! The method provided are not thread-safe. Use the mutex from @m_navObject to synchronize as necessary at the higher level.
     class RecastNavigationMeshCommon
     {
     public:
@@ -50,7 +50,7 @@ namespace RecastNavigation
         AZStd::unique_ptr<rcContext> m_context;
 
         //! Recast navigation objects.
-        AZStd::shared_ptr<NavMeshQuery> m_navObjects;
+        AZStd::shared_ptr<NavMeshQuery> m_navObject;
     };
 
 } // namespace RecastNavigation

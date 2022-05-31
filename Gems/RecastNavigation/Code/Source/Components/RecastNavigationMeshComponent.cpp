@@ -78,9 +78,9 @@ namespace RecastNavigation
                     m_meshConfig, m_context.get());
 
                 // If a tile at the location already exists, remove it before update the data.
-                if (const dtTileRef tileRef = m_navObjects->m_mesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                if (const dtTileRef tileRef = m_navObject->m_mesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
                 {
-                    m_navObjects->m_mesh->removeTile(tileRef, nullptr, nullptr);
+                    m_navObject->m_mesh->removeTile(tileRef, nullptr, nullptr);
                 }
 
                 // A tile might have no geometry at all if no objects were found there.
@@ -96,7 +96,7 @@ namespace RecastNavigation
 
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponent::GetNavigationObject()
     {
-        return m_navObjects;
+        return m_navObject;
     }
 
     void RecastNavigationMeshComponent::Activate()
@@ -120,16 +120,16 @@ namespace RecastNavigation
         m_tickEvent.RemoveFromQueue();
 
         m_context = {};
-        m_navObjects = {};
+        m_navObject = {};
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
     }
 
     void RecastNavigationMeshComponent::OnDebugDrawTick()
     {
-        if (m_navObjects && m_navObjects->m_mesh && (cl_navmesh_debug || m_showNavigationMesh))
+        if (m_navObject && m_navObject->m_mesh && (cl_navmesh_debug || m_showNavigationMesh))
         {
-            duDebugDrawNavMesh(&m_customDebugDraw, *m_navObjects->m_mesh, DU_DRAWNAVMESH_COLOR_TILES);
+            duDebugDrawNavMesh(&m_customDebugDraw, *m_navObject->m_mesh, DU_DRAWNAVMESH_COLOR_TILES);
         }
     }
 } // namespace RecastNavigation

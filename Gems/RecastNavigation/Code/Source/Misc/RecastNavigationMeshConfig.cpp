@@ -38,9 +38,9 @@ namespace RecastNavigation
                 ->Version(1)
                 ;
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                ec->Class<RecastNavigationMeshConfig>("Recast Navigation Mesh Config",
+                editContext->Class<RecastNavigationMeshConfig>("Recast Navigation Mesh Config",
                     "[Navigation mesh configuration]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
