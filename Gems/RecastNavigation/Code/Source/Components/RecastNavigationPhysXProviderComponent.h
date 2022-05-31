@@ -51,6 +51,6 @@ namespace RecastNavigation
 
     private:
         //! If enabled, debug draw is enabled to show the triangles collected in the Editor scene for the navigation mesh
-        bool m_debugDrawInputData;
+        bool m_debugDrawInputData = false;
     };
 } // namespace RecastNavigation

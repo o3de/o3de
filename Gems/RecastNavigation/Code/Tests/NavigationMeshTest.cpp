@@ -20,6 +20,9 @@
 #include <Components/DetourNavigationComponent.h>
 #include <Components/RecastNavigationMeshComponent.h>
 #include <Components/RecastNavigationPhysXProviderComponent.h>
+#include <PhysX/MockPhysicsShape.h>
+#include <PhysX/MockSceneInterface.h>
+#include <PhysX/MockSimulatedBody.h>
 
 namespace RecastNavigationTests
 {
@@ -46,10 +49,10 @@ namespace RecastNavigationTests
         unique_ptr<AZ::BehaviorContext> m_bc;
         unique_ptr<AZStd::vector<AZ::ComponentDescriptor*>> m_descriptors;
         unique_ptr<AZ::TimeSystem> m_timeSystem;
-        unique_ptr<MockSceneInterface> m_mockSceneInterface;
+        unique_ptr<UnitTest::MockSceneInterface> m_mockSceneInterface;
         unique_ptr<AzPhysics::SceneQueryHit> m_hit;
-        unique_ptr<MockPhysicsShape> m_mockPhysicsShape;
-        unique_ptr<MockSimulatedBody> m_mockSimulatedBody;
+        unique_ptr<UnitTest::MockPhysicsShape> m_mockPhysicsShape;
+        unique_ptr<UnitTest::MockSimulatedBody> m_mockSimulatedBody;
         unique_ptr<AZ::Console> m_console;
 
         void SetUp() override
@@ -72,10 +75,10 @@ namespace RecastNavigationTests
             RegisterComponent<RecastNavigation::DetourNavigationComponent>();
 
             m_timeSystem = AZStd::make_unique<AZ::StubTimeSystem>();
-            m_mockSceneInterface = AZStd::make_unique<NiceMock<MockSceneInterface>>();
+            m_mockSceneInterface = AZStd::make_unique<NiceMock<UnitTest::MockSceneInterface>>();
             m_hit = AZStd::make_unique<AzPhysics::SceneQueryHit>();
-            m_mockPhysicsShape = AZStd::make_unique<NiceMock<MockPhysicsShape>>();
-            m_mockSimulatedBody = AZStd::make_unique<NiceMock<MockSimulatedBody>>();
+            m_mockPhysicsShape = AZStd::make_unique<NiceMock<UnitTest::MockPhysicsShape>>();
+            m_mockSimulatedBody = AZStd::make_unique<NiceMock<UnitTest::MockSimulatedBody>>();
         }
 
         void TearDown() override

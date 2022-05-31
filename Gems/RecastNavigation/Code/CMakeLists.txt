@@ -221,6 +221,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::RecastNavigation.Private.Object
                     Gem::RecastNavigation.API
                     Gem::LmbrCentral.API
+                    Gem::PhysX.Mocks
         )
 
         # Add RecastNavigation.Tests to googletest
@@ -248,6 +249,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         AZ::AzTest
                         Gem::RecastNavigation.Private.Object
+                        Gem::PhysX.Mocks
             )
 
             # Add RecastNavigation.Editor.Tests to googletest
