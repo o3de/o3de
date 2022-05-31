@@ -93,7 +93,7 @@ namespace AzToolsFramework
                         inout.SetZ(aznumeric_cast<float>(value));
                         break;
                     default:
-                        AZ_Warning(
+                        AZ_Error(
                             "LocalViewBookmarkLoader", false, "Trying to set an invalid index in a Vector3, index = %d", currentIndex);
                         break;
                     }
@@ -288,7 +288,7 @@ namespace AzToolsFramework
         auto registry = AZ::SettingsRegistry::Get();
         if (!registry)
         {
-            AZ_Warning("LocalViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+            AZ_Error("LocalViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
             return;
         }
 
@@ -298,7 +298,7 @@ namespace AzToolsFramework
         AZ::IO::ByteContainerStream stringStream(&stringBuffer);
         if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, CreateDumperSettings(bookmarkKey)))
         {
-            AZ_Warning(
+            AZ_Error(
                 "LocalViewBookmarkLoader", false, R"(Unable to dump SettingsRegistry to stream "%s"\n)", localBookmarksFileName.c_str());
             return;
         }
@@ -326,29 +326,33 @@ namespace AzToolsFramework
     {
         if (index < 0 || index >= DefaultViewBookmarkCount)
         {
+            AZ_Error("LocalViewBookmarkLoader", false, "Attempting to save bookmark at invalid index");
+            return false;
+        }
+
+        auto registry = AZ::SettingsRegistry::Get();
+        if (!registry)
+        {
+            AZ_Error("LocalViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
             return false;
         }
 
         const LocalViewBookmarkComponent* bookmarkComponent = FindOrCreateLocalViewBookmarkComponent();
         if (!bookmarkComponent)
         {
-            AZ_Assert(bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
+            AZ_Error("LocalViewBookmarkLoader", bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
             return false;
         }
 
         const auto& localBookmarksFileName = bookmarkComponent->GetLocalBookmarksFileName();
         ReadViewBookmarksSettingsRegistryFromFile(localBookmarksFileName);
 
-        bool success = false;
-        if (auto registry = AZ::SettingsRegistry::Get())
-        {
-            // write to the settings registry
-            success = registry->SetObject(LocalViewBookmarkSetRegPathAtIndex(localBookmarksFileName, index), bookmark);
-        }
+        // write to the settings registry
+        const bool success = registry->SetObject(LocalViewBookmarkSetRegPathAtIndex(localBookmarksFileName, index), bookmark);
 
         if (!success)
         {
-            AZ_Warning("LocalViewBookmarkLoader", false, "couldn't remove View Bookmark at index %d", index);
+            AZ_Error("LocalViewBookmarkLoader", false, "couldn't remove View Bookmark at index %d", index);
             return false;
         }
 
@@ -378,9 +382,10 @@ namespace AzToolsFramework
 
         if (!success)
         {
-            AZ_Warning(
+            AZ_Error(
                 "LocalViewBookmarkLoader", false, "View Bookmark x=%.4f, y=%.4f, z=%.4f couldn't be saved", bookmark.m_position.GetX(),
                 bookmark.m_position.GetY(), bookmark.m_position.GetZ());
+
             return false;
         }
 
@@ -395,7 +400,7 @@ namespace AzToolsFramework
         auto registry = AZ::SettingsRegistry::Get();
         if (!registry)
         {
-            AZ_Warning("LocalViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+            AZ_Error("LocalViewBookmarkLoader", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
             return false;
         }
 
@@ -436,7 +441,7 @@ namespace AzToolsFramework
         const LocalViewBookmarkComponent* bookmarkComponent = FindOrCreateLocalViewBookmarkComponent();
         if (!bookmarkComponent)
         {
-            AZ_Assert(bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
+            AZ_Error("LocalViewBookmarkLoader", false, "Couldn't find or create LocalViewBookmarkComponent.");
             return AZStd::nullopt;
         }
 
@@ -447,7 +452,7 @@ namespace AzToolsFramework
             return m_localBookmarks[index];
         }
 
-        AZ_Warning("LocalViewBookmarkLoader", false, "Couldn't load View Bookmark from file.");
+        AZ_Error("LocalViewBookmarkLoader", false, "Couldn't load View Bookmark from file.");
         return AZStd::nullopt;
     }
 
@@ -475,7 +480,7 @@ namespace AzToolsFramework
 
         if (!success)
         {
-            AZ_Warning("LocalViewBookmarkLoader", false, "Couldn't remove View Bookmark at index %d", index);
+            AZ_Error("LocalViewBookmarkLoader", false, "Couldn't remove View Bookmark at index %d", index);
             return false;
         }
 
@@ -490,7 +495,7 @@ namespace AzToolsFramework
         const LocalViewBookmarkComponent* bookmarkComponent = FindOrCreateLocalViewBookmarkComponent();
         if (!bookmarkComponent)
         {
-            AZ_Assert(bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
+            AZ_Error("LocalViewBookmarkLoader", bookmarkComponent, "Couldn't find or create LocalViewBookmarkComponent.");
             return AZStd::nullopt;
         }
 
@@ -541,7 +546,7 @@ namespace AzToolsFramework
             auto registry = AZ::SettingsRegistry::Get();
             if (!registry)
             {
-                AZ_Warning("LocalViewBookmarkLoader", false, "Unable to access global settings registry.");
+                AZ_Error("LocalViewBookmarkLoader", false, "Unable to access global settings registry.");
                 return nullptr;
             }
 
@@ -550,7 +555,7 @@ namespace AzToolsFramework
             if (const auto setRegPath = LocalViewBookmarkSetRegPath(localBookmarksFileName);
                 !registry->SetObject(setRegPath, AZStd::vector<ViewBookmark>(DefaultViewBookmarkCount, ViewBookmark())))
             {
-                AZ_Warning("LocalViewBookmarkLoader", false, "SetObject for \"%s\" failed", setRegPath.c_str());
+                AZ_Error("LocalViewBookmarkLoader", false, "SetObject for \"%s\" failed", setRegPath.c_str());
                 return nullptr;
             }
 
