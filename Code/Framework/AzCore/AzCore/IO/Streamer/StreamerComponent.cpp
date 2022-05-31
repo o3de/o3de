@@ -181,6 +181,7 @@ namespace AZ
 
     void StreamerComponent::GetDependentServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("TaskExecutorService"));
     }
 
     //=========================================================================
