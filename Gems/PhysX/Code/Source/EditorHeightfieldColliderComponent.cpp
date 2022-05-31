@@ -33,7 +33,7 @@ namespace PhysX
 {
     AZ_CVAR(float, physx_heightfieldDebugDrawDistance, 50.0f, nullptr,
         AZ::ConsoleFunctorFlags::Null, "Distance for PhysX Heightfields debug visualization.");
-    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, true,
+    AZ_CVAR(bool, physx_heightfieldDebugDrawBoundingBox, false,
         nullptr, AZ::ConsoleFunctorFlags::Null, "Draw the bounding box used for heightfield debug visualization.");
 
     void EditorHeightfieldColliderComponent::Reflect(AZ::ReflectContext* context)
@@ -103,6 +103,14 @@ namespace PhysX
     {
         // By default, disable heightfield collider debug drawing. This doesn't need to be viewed in the common case.
         m_colliderDebugDraw.SetDisplayFlag(false);
+
+        // Heightfields don't support the following:
+        // - Offset:  There shouldn't be a need to offset the data, since the heightfield provider is giving a physics representation
+        // - IsTrigger:  PhysX heightfields don't support acting as triggers
+        // - MaterialSelection:  The heightfield provider provides per-vertex material selection
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
+        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
     }
 
     EditorHeightfieldColliderComponent ::~EditorHeightfieldColliderComponent()
@@ -114,14 +122,6 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
-
-        // Heightfields don't support the following:
-        // - Offset:  There shouldn't be a need to offset the data, since the heightfield provider is giving a physics representation
-        // - IsTrigger:  PhysX heightfields don't support acting as triggers
-        // - MaterialSelection:  The heightfield provider provides per-vertex material selection
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
 
         m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (m_sceneInterface)
@@ -158,8 +158,14 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
+
+        // Create an empty shapeConfig for initializing the component's ShapeConfiguration.
+        // The actual shapeConfig for the component will get filled out at runtime as everything initializes,
+        // so the values set here during initialization don't matter.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
+
         heightfieldColliderComponent->SetShapeConfiguration(
-            { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig });
+            { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig });
     }
 
     void EditorHeightfieldColliderComponent::OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
@@ -186,6 +192,13 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::InitStaticRigidBody()
     {
+        const AZ::Transform baseTransform = GetWorldTM();
+        AzPhysics::StaticRigidBodyConfiguration configuration;
+        configuration.m_orientation = baseTransform.GetRotation();
+        configuration.m_position = baseTransform.GetTranslation();
+        configuration.m_entityId = GetEntityId();
+        configuration.m_debugName = GetEntity()->GetName();
+
         // Get the transform from the HeightfieldProvider.  Because rotation and scale can indirectly affect how the heightfield itself
         // is computed and the size of the heightfield, it's possible that the HeightfieldProvider will provide a different transform
         // back to us than the one that's directly on that entity.
@@ -193,11 +206,11 @@ namespace PhysX
         Physics::HeightfieldProviderRequestsBus::EventResult(
             transform, GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldTransform);
 
-        AzPhysics::StaticRigidBodyConfiguration configuration;
-        configuration.m_orientation = transform.GetRotation();
-        configuration.m_position = transform.GetTranslation();
-        configuration.m_entityId = GetEntityId();
-        configuration.m_debugName = GetEntity()->GetName();
+        // Because the heightfield's transform may not match the entity's transform, use the heightfield transform
+        // to generate an offset rotation/position from the entity's transform for the collider configuration.
+        m_colliderConfig.m_rotation = transform.GetRotation() * baseTransform.GetRotation().GetInverseFull();
+        m_colliderConfig.m_position =
+            m_colliderConfig.m_rotation.TransformVector(transform.GetTranslation() - baseTransform.GetTranslation());
 
         // Update material selection from the mapping
         Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), m_colliderConfig.m_materialSlots);
@@ -276,8 +289,8 @@ namespace PhysX
         if (!shouldRecreateHeightfield)
         {
             Physics::HeightfieldShapeConfiguration baseConfiguration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
-            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRows() != m_shapeConfig->GetNumRows());
-            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumns() != m_shapeConfig->GetNumColumns());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumRowVertices() != m_shapeConfig->GetNumRowVertices());
+            shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetNumColumnVertices() != m_shapeConfig->GetNumColumnVertices());
             shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMinHeightBounds() != m_shapeConfig->GetMinHeightBounds());
             shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMaxHeightBounds() != m_shapeConfig->GetMaxHeightBounds());
         }

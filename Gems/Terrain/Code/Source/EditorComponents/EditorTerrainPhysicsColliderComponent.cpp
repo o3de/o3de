@@ -94,6 +94,15 @@ namespace Terrain
         services.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
     }
 
+    void EditorTerrainPhysicsColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // If any of the following appear on the same entity as this one, they should get activated first as their data will
+        // affect this component.
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainHeightProviderService"));
+        services.push_back(AZ_CRC_CE("TerrainSurfaceProviderService"));
+    }
+
     void EditorTerrainPhysicsColliderComponent::Init()
     {
         m_component.Init();

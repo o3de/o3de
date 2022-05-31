@@ -132,11 +132,18 @@ namespace PhysXEditorTests
             SetupMockMethods(*m_editorMockShapeRequests.get());
             m_editorEntity->Activate();
 
+            // Notify the Editor entity that the heightfield data changed so that it refreshes itself before we build
+            // the corresponding game entity.
+            Physics::HeightfieldProviderNotificationBus::Broadcast(
+                &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
+                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
+
             m_gameEntity = TestCreateActiveGameEntityFromEditorEntity(m_editorEntity.get());
             m_gameMockShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockPhysXHeightfieldProvider>>(m_gameEntity->GetId());
             SetupMockMethods(*m_gameMockShapeRequests.get());
             m_gameEntity->Activate();
 
+            // Send the notification a second time so that the game entity gets refreshed as well.
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
@@ -278,19 +285,18 @@ namespace PhysXEditorTests
         Physics::HeightfieldProviderRequestsBus::EventResult(
             samples, gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
+        float minHeightBounds{ 0.0f };
+        float maxHeightBounds{ 0.0f };
+        Physics::HeightfieldProviderRequestsBus::Event(
+            gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
+
+        const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
+        const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
+
         for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
         {
             for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
             {
-                float minHeightBounds{ 0.0f };
-                float maxHeightBounds{ 0.0f };
-                Physics::HeightfieldProviderRequestsBus::Event(
-                    gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds,
-                    maxHeightBounds);
-
-                const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
-                const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
-
                 physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
                 Physics::HeightMaterialPoint samplePhysics = samples[sampleRow * numColumns + sampleColumn];
                 EXPECT_EQ(samplePhysX.height, azlossy_cast<physx::PxI16>(samplePhysics.m_height * scaleFactor));
@@ -331,6 +337,15 @@ namespace PhysXEditorTests
 
         const AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> physicsMaterialAssets = GetMaterialList();
 
+        // Our heightfield is located in the world as follows:
+        // - entity center is (0, 0)
+        // - mocked heightfield is 3 samples spaced at 1 m intervals, so it's a heightfield size of (2, 2)
+        // - mocked heightfield transform returns the heightfield center at (1, 2)
+        // - final heightfield goes from (0, 1) - (2, 3)
+        // Note: entity also has a box of size (1, 1) on it, but since we've mocked the heightfield provider, the box is ignored
+        const float heightfieldMinCornerX = 0.0f;
+        const float heightfieldMinCornerY = 1.0f;
+
         // PhysX Heightfield cooking doesn't map 1-1 sample material indices to triangle material indices 
         // Hence hardcoding the expected material indices in the test 
         const AZStd::array<int, 4> physicsMaterialsValidationDataIndex = {0, 2, 1, 1};
@@ -347,8 +362,10 @@ namespace PhysXEditorTests
 
                 if (sampleRow != numRows - 1 && sampleColumn != numColumns - 1)
                 {
-                    const float x_offset = -0.25f;
-                    const float y_offset = 0.75f;
+                    // There are two materials per quad, so we'll perform 1 raycast per triangle per quad.
+                    // Our quads are 1 m in size, so a ray at (1/4 m, 1/4 m) and (3/4 m, 3/4 m) in each quad should hit the two triangles.
+                    const float x_offset = heightfieldMinCornerX + 0.25f;
+                    const float y_offset = heightfieldMinCornerY + 0.25f;
                     const float secondRayOffset = 0.5f;
 
                     float rayX = x_offset + sampleColumn;

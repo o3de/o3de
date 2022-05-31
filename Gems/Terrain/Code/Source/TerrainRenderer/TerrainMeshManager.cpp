@@ -572,32 +572,10 @@ namespace Terrain
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb)
     {
-        AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
-        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(request.m_gridSize * request.m_vertexSpacing);
-
-        // expand the bounds in order to calculate normals.
-        AZ::Vector3 queryAabbMin = aabbMin - AZ::Vector3(request.m_vertexSpacing);
-        AZ::Vector3 queryAabbMax = aabbMax + AZ::Vector3(request.m_vertexSpacing * 2.0f); // extra padding to catch the last vertex
-
-        // pad the max by half a sample spacing to make sure it's inclusive of the last point.
-        AZ::Aabb queryBounds = AZ::Aabb::CreateFromMinMax(queryAabbMin, queryAabbMax);
-
-        auto samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         const AZ::Vector2 stepSize(request.m_vertexSpacing);
-
-        AZStd::pair<size_t, size_t> numSamples;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            queryBounds, stepSize, samplerType);
 
         uint16_t vertexCount1d = (request.m_gridSize + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
         uint16_t paddedVertexCount1d = vertexCount1d + 2; // extra row / column on each side for normals.
-
-        if (numSamples.first != paddedVertexCount1d || numSamples.second != paddedVertexCount1d)
-        {
-            AZ_Assert(false, "Number of samples returned from GetNumSamplesFromRegion does not match expectations");
-            return;
-        }
 
         uint16_t meshVertexCount = vertexCount1d * vertexCount1d;
         uint16_t queryVertexCount = paddedVertexCount1d * paddedVertexCount1d;
@@ -614,9 +592,15 @@ namespace Terrain
             heights.at(yIndex * paddedVertexCount1d + xIndex) = height;
         };
 
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(
+            request.m_worldStartPosition - stepSize, paddedVertexCount1d, paddedVertexCount1d, stepSize);
+
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            queryBounds, stepSize, perPositionCallback, samplerType);
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
+            queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
+            perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP);
 
         const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
@@ -671,6 +655,10 @@ namespace Terrain
             }
         }
 
+
+        AZ::Vector3 aabbMin =
+            AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
+        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(request.m_gridSize * request.m_vertexSpacing);
         aabbMin.SetZ(minHeight);
         aabbMax.SetZ(maxHeight);
         meshAabb.Set(aabbMin, aabbMax);
