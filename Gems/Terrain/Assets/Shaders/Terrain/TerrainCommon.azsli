@@ -79,6 +79,8 @@ struct VertexInput
     float2 m_xyPosition : POSITION0;
     float1 m_zposition : POSITION1;
     float2 m_xyNormal : NORMAL;
+
+    uint m_vertexId : SV_VertexID; // Used for continuous lod
 };
 
 float2 GetWorldXYPosition(in ObjectSrg::PatchData patchData, in float2 vertexPosition)
@@ -105,8 +107,18 @@ void CalculateTerrainPosition(
 
     float heightScale = worldData.m_max.z - worldData.m_min.z;
     float height = worldData.m_min.z + input.m_zposition * heightScale;
+
+    //float xOffset = (input.m_vertexId % 2) * -1.0f;
+    //float yOffset = (input.m_vertexId >> 6) % 2 * -1.0f;
+
     worldPosition = float3(GetWorldXYPosition(patchData, input.m_xyPosition), height);
     cullDistance = TerrainSrg::CalculateCullDistance(patchData.m_lodLevel, worldPosition);
+
+    if (input.m_vertexId % 2 == 0 || (input.m_vertexId >> 6) % 2 == 0)
+    {
+        float clodBlend = saturate(cullDistance.y * (1.0 / 64.0));
+        worldPosition.z = lerp(height + 1.0f, height, clodBlend);
+    }
 
     position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 }
