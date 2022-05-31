@@ -108,8 +108,8 @@ namespace UnitTest
         
         AzFramework::Scripts::SpawnableScriptAssetRef CreateSpawnable(size_t numElements)
         {
-            auto spawnable = aznew AzFramework::Spawnable(
-                AZ::Data::AssetId::CreateString("{EB2E8A2B-F253-4A90-BBF4-55F2EED786B8}:0"), AZ::Data::AssetData::AssetStatus::Ready);
+            AZ::Data::AssetId spawnableAssetId(AZ::Uuid::Create(), 0);
+            auto spawnable = aznew AzFramework::Spawnable(spawnableAssetId, AZ::Data::AssetData::AssetStatus::Ready);
             AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
             entities.reserve(numElements);
             for (size_t i = 0; i < numElements; ++i)
