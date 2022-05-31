@@ -116,9 +116,9 @@ namespace PhysX
         // - Offset:  There shouldn't be a need to offset the data, since the heightfield provider is giving a physics representation
         // - IsTrigger:  PhysX heightfields don't support acting as triggers
         // - MaterialSelection:  The heightfield provider provides per-vertex material selection
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
-        m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
+        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
+        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::IsTrigger, false);
+        m_colliderConfig->SetPropertyVisibility(Physics::ColliderConfiguration::MaterialSelection, false);
     }
 
     EditorHeightfieldColliderComponent ::~EditorHeightfieldColliderComponent()
