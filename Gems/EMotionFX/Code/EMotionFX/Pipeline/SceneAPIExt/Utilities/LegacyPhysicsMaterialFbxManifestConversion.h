@@ -9,7 +9,7 @@
 
 #include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
 
-namespace PhysX
+namespace EMotionFX::Pipeline::Utilities
 {
-    void FixPrefabsWithPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap);
-} // namespace PhysX
+    void FixFbxManifestsWithPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap);
+} // namespace EMotionFX::Pipeline::Utilities

@@ -11,8 +11,10 @@
 
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
+#include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
+
+#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.h>
 #include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h>
-#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.h>
 
 namespace PhysX
 {
@@ -24,9 +26,9 @@ namespace PhysX
         AZ::ConsoleFunctorFlags::Null,
         "Finds assets that reference legacy physics material ids and fixes them by using new physics material assets.");
 
-    LegacyMaterialIdToNewAssetIdMap CollectConvertedMaterialIds()
+    Physics::Utils::LegacyMaterialIdToNewAssetIdMap CollectConvertedMaterialIds()
     {
-        LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap;
+        Physics::Utils::LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap;
 
         AZ::Data::AssetCatalogRequests::AssetEnumerationCB assetEnumerationCB =
             [&legacyMaterialIdToNewAssetIdMap](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
@@ -63,16 +65,22 @@ namespace PhysX
     void FixAssetsUsingPhysicsLegacyMaterials([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
     {
         AZ_TracePrintf("PhysXMaterialConversion", "Searching for converted physics material assets...\n");
-        LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap = CollectConvertedMaterialIds();
+        Physics::Utils::LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap = CollectConvertedMaterialIds();
         if (legacyMaterialIdToNewAssetIdMap.empty())
         {
             AZ_TracePrintf("PhysXMaterialConversion", "No converted physics material assets found.\n");
-            AZ_TracePrintf("PhysXMaterialConversion", "Command stopped as there are no material assets with legacy information to be able to fix prefabs.\n");
+            AZ_TracePrintf("PhysXMaterialConversion", "Command stopped as there are no physics materials with legacy information to be able to fix assets.\n");
             return;
         }
         AZ_TracePrintf("PhysXMaterialConversion", "Found %zu converted physics materials.\n", legacyMaterialIdToNewAssetIdMap.size());
         AZ_TracePrintf("PhysXMaterialConversion", "\n");
 
         FixPrefabsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);
+
+        FixFbxManifestsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);
+
+        Physics::Utils::PhysicsMaterialConversionRequestBus::Broadcast(
+            &Physics::Utils::PhysicsMaterialConversionRequestBus::Events::FixPhysicsLegacyMaterials,
+            legacyMaterialIdToNewAssetIdMap);
     }
 } // namespace PhysX

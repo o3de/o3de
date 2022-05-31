@@ -605,6 +605,8 @@ namespace PhysX
                     ->Field("DecomposeMeshes", &MeshGroup::m_decomposeMeshes)
                     ->Field("ConvexDecompositionParams", &MeshGroup::m_convexDecompositionParams)
                     ->Field("PhysicsMaterialSlots", &MeshGroup::m_physicsMaterialSlots)
+                    ->Field("MaterialSlots", &MeshGroup::m_legacyMaterialSlots)
+                    ->Field("PhysicsMaterials", &MeshGroup::m_legacyPhysicsMaterials)
                     ->Field("rules", &MeshGroup::m_rules);
 
                 if (

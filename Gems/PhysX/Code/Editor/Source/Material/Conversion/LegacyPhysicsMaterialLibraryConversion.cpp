@@ -14,8 +14,8 @@
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
 
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 
@@ -138,33 +138,6 @@ namespace PhysX
         PhysicsLegacy::MaterialLibraryAsset::Reflect(context);
     }
 
-    AZStd::optional<AZStd::string> GetFullSourceAssetPathById(AZ::Data::AssetId assetId)
-    {
-        AZStd::string assetPath;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetId);
-        AZ_Assert(!assetPath.empty(), "Asset Catalog returned an invalid path from an enumerated asset.");
-        if (assetPath.empty())
-        {
-            AZ_Warning("PhysXMaterialConversion", false, "Not able to get asset path for asset with id %s.",
-                assetId.ToString<AZStd::string>().c_str());
-            return AZStd::nullopt;
-        }
-
-        AZStd::string assetFullPath;
-        bool assetFullPathFound = false;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetFullPathFound,
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
-            assetPath, assetFullPath);
-        if (!assetFullPathFound)
-        {
-            AZ_Warning("PhysXMaterialConversion", false, "Source file of asset '%s' could not be found.", assetPath.c_str());
-            return AZStd::nullopt;
-        }
-
-        return { AZStd::move(assetFullPath) };
-    }
-
     struct PhysicsMaterialLibrary
     {
         AZStd::vector<PhysicsLegacy::MaterialFromAssetConfiguration> m_materialAssetConfigurations;
@@ -189,7 +162,7 @@ namespace PhysX
                 return;
             }
 
-            AZStd::optional<AZStd::string> assetFullPath = GetFullSourceAssetPathById(assetId);
+            AZStd::optional<AZStd::string> assetFullPath = Physics::Utils::GetFullSourceAssetPathById(assetId);
             if (!assetFullPath.has_value())
             {
                 return;

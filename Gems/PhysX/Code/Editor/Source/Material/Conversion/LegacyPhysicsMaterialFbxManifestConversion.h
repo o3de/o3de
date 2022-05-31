@@ -7,11 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Math/Uuid.h>
+#include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
 
 namespace PhysX
 {
-    using LegacyMaterialIdToNewAssetIdMap = AZStd::unordered_map<AZ::Uuid, AZ::Data::AssetId>;
+    void FixFbxManifestsWithPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap);
 } // namespace PhysX
