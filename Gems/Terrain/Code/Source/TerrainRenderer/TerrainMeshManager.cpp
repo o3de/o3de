@@ -386,7 +386,7 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
             if (!shader)
             {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 continue;
             }
 
@@ -432,7 +432,7 @@ namespace Terrain
             const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
             {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 return;
             }
 
@@ -693,9 +693,11 @@ namespace Terrain
                 };
             }
         }
-        AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), minHeight);
-        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(request.m_samplesX * request.m_vertexSpacing, request.m_samplesY * request.m_vertexSpacing, 0.0f);
-        aabbMax.SetZ(maxHeight);
+
+        float width = (request.m_samplesX - 1) * request.m_vertexSpacing;
+        float height = (request.m_samplesY - 1) * request.m_vertexSpacing;
+        AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ() + minHeight);
+        AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldBounds.GetMin().GetZ() + maxHeight);
         meshAabb.Set(aabbMin, aabbMax);
     }
 
@@ -769,6 +771,12 @@ namespace Terrain
 
         Position* positions = reinterpret_cast<Position*>(m_raytracingPositionsBuffer->Map(m_raytracingPositionsBuffer->GetBufferSize(), 0));
         Normal* normals = reinterpret_cast<Normal*>(m_raytracingNormalsBuffer->Map(m_raytracingNormalsBuffer->GetBufferSize(), 0));
+
+        if (positions == nullptr || normals == nullptr)
+        {
+            AZ_Error(TerrainMeshManagerName, false, "Enable to map buffers for ray tracing mesh.");
+            return;
+        }
 
         uint32_t xMin = aznumeric_cast<uint32_t>((bounds.GetMin().GetX() - m_worldBounds.GetMin().GetX()) / request.m_vertexSpacing);
         uint32_t xMax = xMin + request.m_samplesX;
