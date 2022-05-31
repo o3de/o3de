@@ -31,7 +31,7 @@ namespace RecastNavigation
         RecastPointer<rcPolyMesh> polyMesh;
         RecastPointer<rcPolyMeshDetail> polyMeshDetail;
 
-        const float* vertices = &geom->m_vertices.front().m_x;
+        const float* vertices = geom->m_vertices.front().m_xyz;
         const int vertexCount = static_cast<int>(geom->m_vertices.size());
         const int* triangleData = &geom->m_indices[0];
         const int triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
@@ -68,8 +68,8 @@ namespace RecastNavigation
         const RecastVector3 worldMin(geom->m_worldBounds.GetMin());
         const RecastVector3 worldMax(geom->m_worldBounds.GetMax());
 
-        rcVcopy(config.bmin, &worldMin.m_x);
-        rcVcopy(config.bmax, &worldMax.m_x);
+        rcVcopy(config.bmin, worldMin.m_xyz);
+        rcVcopy(config.bmax, worldMax.m_xyz);
         config.bmin[0] -= aznumeric_cast<float>(config.borderSize) * config.cs;
         config.bmin[2] -= aznumeric_cast<float>(config.borderSize) * config.cs;
         config.bmax[0] += aznumeric_cast<float>(config.borderSize) * config.cs;
@@ -308,7 +308,7 @@ namespace RecastNavigation
         RecastNavigationProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationProviderRequests::GetWorldBounds);
 
         const RecastVector3 worldCenter(worldVolume.GetMin());
-        rcVcopy(params.orig, &worldCenter.m_x);
+        rcVcopy(params.orig, worldCenter.m_xyz);
 
         RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, tileSize);
 

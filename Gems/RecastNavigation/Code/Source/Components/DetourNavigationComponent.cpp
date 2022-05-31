@@ -127,7 +127,7 @@ namespace RecastNavigation
         // Note: Recast uses +Y, O3DE used +Z as up vectors.
         for (int i = 0; i < detailedPathCount; ++i)
         {
-            pathPoints.push_back(detailedPath[i].AsVector3());
+            pathPoints.push_back(detailedPath[i].AsVector3WithZup());
         }
 
         return pathPoints;

@@ -111,6 +111,6 @@ namespace RecastNavigation
     {
         const float temp[3] = { x, y, z };
         const RecastVector3 v(temp);
-        m_verticesToDraw.emplace_back(v.AsVector3(), color);
+        m_verticesToDraw.emplace_back(v.AsVector3WithZup(), color);
     }
 } // namespace RecastNavigation

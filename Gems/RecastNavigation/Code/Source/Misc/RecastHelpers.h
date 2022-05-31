@@ -26,29 +26,29 @@ namespace RecastNavigation
         //! A constructor from O3DE coordinate values.
         explicit RecastVector3(const AZ::Vector3& in)
         {
-            m_x = in.GetX();
-            m_y = in.GetZ(); // swapping y and z
-            m_z = in.GetY();
+            m_xyz[0] = in.GetX();
+            m_xyz[1] = in.GetZ(); // swapping y and z
+            m_xyz[2] = in.GetY();
         }
 
         //! A constructor from Recast coordinate values.
         explicit RecastVector3(const float* data)
         {
-            m_x = data[0];
-            m_y = data[1];
-            m_z = data[2];
+            m_xyz[0] = data[0];
+            m_xyz[1] = data[1];
+            m_xyz[2] = data[2];
         }
 
-        //! @returns raw data without any conversion between coordinate systems.
-        float* GetData() { return &m_x; }
+        //! @returns raw data without any conversion between coordinate systems. Useful when working with Recast library API.
+        float* GetData() { return &m_xyz[0]; }
 
-        //! @returns vector in O3DE coordinate space, with +Z being up
-        [[nodiscard]] AZ::Vector3 AsVector3() const
+        //! @returns vector in O3DE coordinate space, with +Z being up. Useful when passing data from Recast to O3DE.
+        [[nodiscard]] AZ::Vector3 AsVector3WithZup() const
         {
-            return { m_x, m_z, m_y };
+            return { m_xyz[0], m_xyz[2] , m_xyz[1] };
         }
 
-        float m_x = 0, m_y = 0, m_z = 0;
+        float m_xyz[3] = { 0, 0, 0 };
     };
 
     //! A collection of triangle data within a volume defined by an axis aligned bounding box.
