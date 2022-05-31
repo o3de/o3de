@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 class Tests:
     remove_component = (
-        "UNDO Entity creation success",
-        "P0: UNDO Entity creation failed")
+        "Component removal was successful",
+        "P0: Component removal failed")
     ssao_creation = (
         "SSAO Entity successfully created",
         "P0: SSAO Entity failed to be created")
