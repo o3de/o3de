@@ -92,7 +92,7 @@ namespace AZ
         struct MeshletsData
         {
             std::vector<meshopt_Meshlet> Descriptors;
-            std::vector<uint32_t> EncodedTriangles;	    // Meshlet triangles local indices [0..256]
+            std::vector<uint32_t> EncodedTriangles;     // Meshlet triangles local indices [0..256]
             std::vector<uint32_t> IndicesIndirection;   // Vertex Index indirection map - local to global
 
             bool ValidateData(uint32_t vtxCount)
@@ -107,9 +107,9 @@ namespace AZ
                         uint32_t encodedTri = EncodedTriangles[meshlet.triangle_offset + triIdx];
                         // Next bring decode the uint32_t and separate into three elements.
                         uint8_t vtxIndirectIndex[3] = {
-                            (encodedTri >> 0) & 0xff,
-                            (encodedTri >> 8) & 0xff,
-                            (encodedTri >> 16) & 0xff
+                            uint8_t((encodedTri >> 0) & 0xff),
+                            uint8_t((encodedTri >> 8) & 0xff),
+                            uint8_t((encodedTri >> 16) & 0xff)
                         };
 
                         for (uint32_t vtx = 0; vtx < 3; ++vtx)

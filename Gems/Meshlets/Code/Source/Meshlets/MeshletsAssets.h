@@ -113,10 +113,9 @@ namespace AZ
             uint32_t CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset);
 
             uint32_t CreateMeshletsModel(const RPI::ModelLod& modelLod);
-            uint32_t CreateMeshletsModel(
-                const RPI::ModelLodAsset::Mesh& meshAsset);
+            uint32_t CreateMeshletsModel(const RPI::ModelLodAsset::Mesh& meshAsset);
 
-            uint32_t GetMehsletsAmount() { m_meshletsAmount;  }
+            uint32_t GetMehsletsAmount() { return m_meshletsAmount;  }
 
         private:
             AZStd::string m_name;

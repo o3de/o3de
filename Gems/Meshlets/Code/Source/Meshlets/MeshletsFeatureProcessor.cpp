@@ -158,6 +158,11 @@ namespace AZ
             return true;
         }
 
+        // This hook to the pipeline is still not connected and requires testing.
+        // Current connection is by altering the two pipeline manually. Since the hook is
+        // not the same for both pipelines, special care should be taken (on MainPipeline
+        // it comes after OpaquePass while on the LowEndPipeline after MSAAResolvePass). It
+        // is possible to simplify the logic and only hook to the active pipeline.
         bool MeshletsFeatureProcessor::AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline)
         {
             const char* passRequestAssetFilePath = "Passes/MeshletsPassRequest.azasset";
@@ -173,8 +178,6 @@ namespace AZ
                 AZ_Error("Meshlets", false, "Failed to add meshlets pass. Can't load PassRequest from [%s]", passRequestAssetFilePath);
                 return false;
             }
-
-            passRequest->m_templateName == AZ::Name("MeshletsComputePassTemplate");
 
             // Create the pass
             RPI::Ptr<RPI::Pass> pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);

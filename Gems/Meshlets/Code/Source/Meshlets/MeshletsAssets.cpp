@@ -38,9 +38,10 @@ namespace AZ
         uint32_t MeshletsModel::s_modelNumber = 0;
 
         //----------------------------------------------------------------------
-        // Meshlets Generation
+        // Meshlets Generation.
+        // Resulted operation will alter the mesh 
         //----------------------------------------------------------------------
-        void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)	// Results will alter the mesh 
+        void MeshletsModel::debugMarkMeshletsUVs(GeneratorMesh& mesh)   
         {
             for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
             {
@@ -52,9 +53,9 @@ namespace AZ
                     uint32_t encodedTri = m_meshletsData.EncodedTriangles[meshlet.triangle_offset + triIdx];
                     // Next bring decode the uint32_t and separate into three elements.
                     uint8_t vtxIndirectIndex[3] = {
-                        (encodedTri >> 0) & 0xff,
-                        (encodedTri >> 8) & 0xff,
-                        (encodedTri >> 16) & 0xff
+                        uint8_t((encodedTri >> 0) & 0xff),
+                        uint8_t((encodedTri >> 8) & 0xff),
+                        uint8_t((encodedTri >> 16) & 0xff)
                     }; 
 
                     for (uint32_t vtx = 0; vtx < 3; ++vtx)
