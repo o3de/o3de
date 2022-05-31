@@ -37,6 +37,7 @@ namespace EMotionFX
     using ActorBuilderPipelineFixtureBase = InitSceneAPIFixture<
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent,
