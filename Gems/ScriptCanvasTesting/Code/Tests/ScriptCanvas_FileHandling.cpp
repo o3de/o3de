@@ -24,18 +24,25 @@ namespace ScriptCanvasTests
         }
     };
 
-    void PopulateEntityIdsFromFile(AZStd::set<AZ::EntityId, EntityIdComparer>& /*sortedEntityIds*/, const char* /*fileName*/, bool /*makeEntityIdsUnique*/)
+    void PopulateEntityIdsFromFile(AZStd::set<AZ::EntityId, EntityIdComparer>& sortedEntityIds, const char* fileName, bool makeEntityIdsUnique)
     {
-        EXPECT_TRUE(false); // finish me.
-//         AZ::IO::FixedMaxPath filePath = ScriptCanvasTests::GetUnitTestDirPathRelative();
-//         filePath /= fileName;
-//         auto result = ScriptCanvasEditor::LoadFromFile(filePath.c_str(), makeEntityIdsUnique ? MakeInternalGraphEntitiesUnique::Yes : MakeInternalGraphEntitiesUnique::No);
-//         EXPECT_TRUE(result.IsSuccess());
-//         const ScriptCanvas::GraphData* graphData = result.GetValue().handle.Get()->GetGraphDataConst();
-//         for (auto& entityNode : graphData->m_nodes)
-//         {
-//             sortedEntityIds.insert(entityNode->GetId());
-//         }
+         AZ::IO::FixedMaxPath filePath = ScriptCanvasTests::GetUnitTestDirPathRelative();
+         filePath /= fileName;
+         auto result = ScriptCanvasEditor::LoadFromFile
+            ( filePath.c_str()
+            , makeEntityIdsUnique
+            ? MakeInternalGraphEntitiesUnique::Yes
+            : MakeInternalGraphEntitiesUnique::No);
+
+         EXPECT_TRUE(result.m_isSuccess);
+         if (result.m_isSuccess)
+         {
+             const ScriptCanvas::GraphData* graphData = result.m_handle.Get()->GetGraphDataConst();
+             for (auto& entityNode : graphData->m_nodes)
+             {
+                 sortedEntityIds.insert(entityNode->GetId());
+             }
+         }
     }
 
     TEST_F(ScriptCanvasTestFixture, LoadFromString_MultipleTimes_NotMakeEntityIdsUnique_EntityIdsMatchSourceString)
