@@ -34,18 +34,18 @@ namespace RecastNavigation
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<RecastNavigationPhysXProviderComponent>()->RequestBus("RecastNavigationPhysXProviderRequestBus");
+            behaviorContext->Class<RecastNavigationPhysXProviderComponent>()->RequestBus("RecastNavigationProviderRequestBus");
         }
     }
 
     void RecastNavigationPhysXProviderComponent::Activate()
     {
-        RecastNavigationPhysXProviderRequestBus::Handler::BusConnect(GetEntityId());
+        RecastNavigationProviderRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void RecastNavigationPhysXProviderComponent::Deactivate()
     {
-        RecastNavigationPhysXProviderRequestBus::Handler::BusDisconnect();
+        RecastNavigationProviderRequestBus::Handler::BusDisconnect();
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponent::CollectGeometry(

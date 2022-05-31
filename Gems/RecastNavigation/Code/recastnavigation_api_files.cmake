@@ -10,5 +10,5 @@ set(FILES
     Include/RecastNavigation/RecastNavigationBus.h
     Include/RecastNavigation/DetourNavigationBus.h
     Include/RecastNavigation/RecastNavigationMeshBus.h
-    Include/RecastNavigation/RecastNavigationPhysXProviderBus.h
+    Include/RecastNavigation/RecastNavigationProviderBus.h
 )

@@ -12,7 +12,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
+#include <RecastNavigation/RecastNavigationProviderBus.h>
 
 AZ_CVAR(
     bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -61,8 +61,8 @@ namespace RecastNavigation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
         // Blocking call.
-        RecastNavigationPhysXProviderRequestBus::EventResult(tiles, GetEntityId(),
-            &RecastNavigationPhysXProviderRequests::CollectGeometry,
+        RecastNavigationProviderRequestBus::EventResult(tiles, GetEntityId(),
+            &RecastNavigationProviderRequests::CollectGeometry,
             m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
 
         {

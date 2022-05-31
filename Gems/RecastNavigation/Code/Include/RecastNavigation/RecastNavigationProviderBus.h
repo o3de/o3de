@@ -13,8 +13,8 @@
 
 namespace RecastNavigation
 {
-    //! The interface for @RecastNavigationPhysXProviderRequestBus
-    class RecastNavigationPhysXProviderRequests
+    //! The interface for @RecastNavigationProviderRequestBus
+    class RecastNavigationProviderRequests
         : public AZ::ComponentBus
     {
     public:
@@ -35,6 +35,6 @@ namespace RecastNavigation
         virtual AZ::Aabb GetWorldBounds() const = 0;
     };
 
-    //! Request EBus for a navigation PhysX provider component that collects geometry data from PhysX world.
-    using RecastNavigationPhysXProviderRequestBus = AZ::EBus<RecastNavigationPhysXProviderRequests>;
+    //! Request EBus for a navigation provider component that collects geometry data.
+    using RecastNavigationProviderRequestBus = AZ::EBus<RecastNavigationProviderRequests>;
 } // namespace RecastNavigation

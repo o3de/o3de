@@ -12,7 +12,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <Misc/RecastNavigationMeshCommon.h>
-#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
+#include <RecastNavigation/RecastNavigationProviderBus.h>
 
 AZ_DEFINE_BUDGET(Navigation);
 
@@ -305,12 +305,12 @@ namespace RecastNavigation
         AZ::Aabb worldVolume = AZ::Aabb::CreateNull();
 
         dtNavMeshParams params = {};
-        RecastNavigationPhysXProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationPhysXProviderRequests::GetWorldBounds);
+        RecastNavigationProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationProviderRequests::GetWorldBounds);
 
         const RecastVector3 worldCenter(worldVolume.GetMin());
         rcVcopy(params.orig, &worldCenter.m_x);
 
-        RecastNavigationPhysXProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationPhysXProviderRequests::GetNumberOfTiles, tileSize);
+        RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, tileSize);
 
         // in world units
         params.tileWidth = tileSize;

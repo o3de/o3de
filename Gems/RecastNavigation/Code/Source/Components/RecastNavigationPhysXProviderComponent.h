@@ -12,7 +12,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <Misc/RecastHelpers.h>
 #include <Misc/RecastNavigationPhysXProviderCommon.h>
-#include <RecastNavigation/RecastNavigationPhysXProviderBus.h>
+#include <RecastNavigation/RecastNavigationProviderBus.h>
 
 namespace RecastNavigation
 {
@@ -25,7 +25,7 @@ namespace RecastNavigation
     //!       which is needed by @RecastNavigationMeshComponent.
     class RecastNavigationPhysXProviderComponent final
         : public AZ::Component
-        , public RecastNavigationPhysXProviderRequestBus::Handler
+        , public RecastNavigationProviderRequestBus::Handler
         , public RecastNavigationPhysXProviderCommon
     {
     public:
@@ -42,7 +42,7 @@ namespace RecastNavigation
         void Deactivate() override;
         //! @}
 
-        //! RecastNavigationPhysXProviderRequestBus overrides ...
+        //! RecastNavigationProviderRequestBus overrides ...
         //! @{
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
         AZ::Aabb GetWorldBounds() const override;
