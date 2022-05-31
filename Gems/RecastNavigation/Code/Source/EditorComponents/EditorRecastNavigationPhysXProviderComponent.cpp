@@ -67,6 +67,6 @@ namespace RecastNavigation
 
     void EditorRecastNavigationPhysXProviderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<RecastNavigationPhysXProviderComponent>();
+        gameEntity->CreateComponent<RecastNavigationPhysXProviderComponent>(m_debugDrawInputData);
     }
 } // namespace RecastNavigation

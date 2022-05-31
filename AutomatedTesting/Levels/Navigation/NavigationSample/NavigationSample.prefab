@@ -92,7 +92,8 @@
                 },
                 "Component_[2589933865646691481]": {
                     "$type": "EditorRecastNavigationPhysXProviderComponent",
-                    "Id": 2589933865646691481
+                    "Id": 2589933865646691481,
+                    "Show Input Data": true
                 },
                 "Component_[2681084637176744288]": {
                     "$type": "EditorRecastNavigationMeshComponent",

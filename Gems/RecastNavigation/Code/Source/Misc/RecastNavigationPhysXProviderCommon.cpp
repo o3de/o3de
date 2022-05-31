@@ -6,12 +6,13 @@
  *
  */
 
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <DebugDraw/DebugDrawBus.h>
+#include <Misc/RecastNavigationPhysXProviderCommon.h>
 
 AZ_CVAR(
     bool, cl_navmesh_showInputData, false, nullptr, AZ::ConsoleFunctorFlags::Null,

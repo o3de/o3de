@@ -23,23 +23,55 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create tile");
 
-        rcConfig config = {};
-        AZStd::vector<AZ::u8> trianglesAreas;
-        RecastPointer<rcHeightfield> solid;
-        RecastPointer<rcCompactHeightfield> compactHeightfield;
-        RecastPointer<rcContourSet> contourSet;
-        RecastPointer<rcPolyMesh> polyMesh;
-        RecastPointer<rcPolyMeshDetail> polyMeshDetail;
-
-        const float* vertices = geom->m_vertices.front().m_xyz;
-        const int vertexCount = static_cast<int>(geom->m_vertices.size());
-        const int* triangleData = &geom->m_indices[0];
-        const int triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
-
-        //
+        RecastProcessing recast;
+        recast.vertices = geom->m_vertices.front().m_xyz;
+        recast.vertexCount = static_cast<int>(geom->m_vertices.size());
+        recast.triangleData = &geom->m_indices[0];
+        recast.triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
+        recast.context = context;
+        
         // Step 1. Initialize build config.
-        //
+        recast.InitializeMeshConfig(geom, meshConfig);
+        
+        // Step 2. Rasterize input polygon soup.
+        if (!recast.RasterizeInputPolygonSoup())
+        {
+            return {};
+        }
+        
+        // Step 3. Filter walkable surfaces.
+        recast.FilterWalkableSurfaces(meshConfig);
+        
+        // Step 4. Partition walkable surface to simple regions.
+        if (!recast.PartitionWalkableSurfaceToSimpleRegions())
+        {
+            return {};
+        }
+        
+        // Step 5. Trace and simplify region contours.
+        if (!recast.TraceAndSimplifyRegionContours())
+        {
+            return {};
+        }
+        
+        // Step 6. Build polygons mesh from contours.
+        if (!recast.BuildPolygonsMeshFromContours())
+        {
+            return {};
+        }
+        
+        // Step 7. Create detail mesh which allows to access approximate height on each polygon.
+        if (!recast.CreateDetailMesh())
+        {
+            return {};
+        }
+        
+        // Step 8. Create Detour data from Recast poly mesh.
+        return recast.CreateDetourData(geom, meshConfig);
+    }
 
+    void RecastNavigationMeshCommon::RecastProcessing::InitializeMeshConfig(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig)
+    {
         // Init build configuration from GUI
         memset(&config, 0, sizeof(config));
         config.cs = meshConfig.m_cellSize;
@@ -74,23 +106,22 @@ namespace RecastNavigation
         config.bmin[2] -= aznumeric_cast<float>(config.borderSize) * config.cs;
         config.bmax[0] += aznumeric_cast<float>(config.borderSize) * config.cs;
         config.bmax[2] += aznumeric_cast<float>(config.borderSize) * config.cs;
+    }
 
-        //
-        // Step 2. Rasterize input polygon soup.
-        //
-
+    bool RecastNavigationMeshCommon::RecastProcessing::RasterizeInputPolygonSoup()
+    {
         // Allocate voxel height field where we rasterize our input data to.
         solid.reset(rcAllocHeightfield());
         if (!solid)
         {
             AZ_Error("Navigation", false, "buildNavigation: Out of memory 'solid'.");
-            return {};
+            return false;
         }
         if (!rcCreateHeightfield(context, *solid, config.width, config.height,
             config.bmin, config.bmax, config.cs, config.ch))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not create solid height field.");
-            return {};
+            return false;
         }
 
         // Allocate array that can hold triangle area types.
@@ -107,15 +138,15 @@ namespace RecastNavigation
             trianglesAreas.data(), triangleCount, *solid))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not rasterize triangles.");
-            return {};
+            return false;
         }
 
         trianglesAreas.clear();
+        return true;
+    }
 
-        //
-        // Step 3. Filter walkable surfaces.
-        //
-
+    void RecastNavigationMeshCommon::RecastProcessing::FilterWalkableSurfaces(const RecastNavigationMeshConfig& meshConfig)
+    {
         // Once all geometry is rasterized, we do initial pass of filtering to
         // remove unwanted overhangs caused by the conservative rasterization
         // as well as filter spans where the character cannot possibly stand.
@@ -131,11 +162,10 @@ namespace RecastNavigation
         {
             rcFilterWalkableLowHeightSpans(context, config.walkableHeight, *solid);
         }
+    }
 
-        //
-        // Step 4. Partition walkable surface to simple regions.
-        //
-
+    bool RecastNavigationMeshCommon::RecastProcessing::PartitionWalkableSurfaceToSimpleRegions()
+    {
         // Compact the height field so that it is faster to handle from now on.
         // This will result more cache coherent data as well as the neighbors
         // between walkable cells will be calculated.
@@ -143,12 +173,12 @@ namespace RecastNavigation
         if (!compactHeightfield)
         {
             AZ_Error("Navigation", false, "buildNavigation: Out of memory 'chf'.");
-            return {};
+            return false;
         }
         if (!rcBuildCompactHeightfield(context, config.walkableHeight, config.walkableClimb, *solid, *compactHeightfield))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not build compact data.");
-            return {};
+            return false;
         }
 
         solid.reset();
@@ -157,7 +187,7 @@ namespace RecastNavigation
         if (!rcErodeWalkableArea(context, config.walkableRadius, *compactHeightfield))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not erode.");
-            return {};
+            return false;
         }
 
         // Partition the walkable surface into simple regions without holes.
@@ -166,68 +196,71 @@ namespace RecastNavigation
             config.borderSize, config.minRegionArea, config.mergeRegionArea))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not build monotone regions.");
-            return {};
+            return false;
         }
 
-        //
-        // Step 5. Trace and simplify region contours.
-        //
+        return true;
+    }
 
+    bool RecastNavigationMeshCommon::RecastProcessing::TraceAndSimplifyRegionContours()
+    {
         // Create contours.
         contourSet.reset(rcAllocContourSet());
         if (!contourSet)
         {
             AZ_Error("Navigation", false, "buildNavigation: Out of memory while allocating contours.");
-            return {};
+            return false;
         }
         if (!rcBuildContours(context, *compactHeightfield, config.maxSimplificationError,
             config.maxEdgeLen, *contourSet))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not create contours.");
-            return {};
+            return false;
         }
 
-        //
-        // Step 6. Build polygons mesh from contours.
-        //
+        return true;
+    }
 
+    bool RecastNavigationMeshCommon::RecastProcessing::BuildPolygonsMeshFromContours()
+    {
         // Build polygon nav mesh from the contours.
         polyMesh.reset(rcAllocPolyMesh());
         if (!polyMesh)
         {
             AZ_Error("Navigation", false, "buildNavigation: Out of memory while creating poly mesh.");
-            return {};
+            return false;
         }
         if (!rcBuildPolyMesh(context, *contourSet, config.maxVertsPerPoly, *polyMesh))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not triangulate contours.");
-            return {};
+            return false;
         }
 
-        //
-        // Step 7. Create detail mesh which allows to access approximate height on each polygon.
-        //
+        return true;
+    }
 
+    bool RecastNavigationMeshCommon::RecastProcessing::CreateDetailMesh()
+    {
         polyMeshDetail.reset(rcAllocPolyMeshDetail());
         if (!polyMeshDetail)
         {
             AZ_Error("Navigation", false, "buildNavigation: Out of memory while allocating detail mesh.");
-            return {};
+            return false;
         }
 
         if (!rcBuildPolyMeshDetail(context, *polyMesh, *compactHeightfield, config.detailSampleDist, config.detailSampleMaxError, *polyMeshDetail))
         {
             AZ_Error("Navigation", false, "buildNavigation: Could not build detail mesh.");
-            return {};
+            return false;
         }
 
         compactHeightfield = nullptr;
         contourSet = nullptr;
+        return true;
+    }
 
-        //
-        // Step 8. Create Detour data from Recast poly mesh.
-        //
-
+    NavigationTileData RecastNavigationMeshCommon::RecastProcessing::CreateDetourData(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig)
+    {
         if (config.maxVertsPerPoly <= DT_VERTS_PER_POLYGON)
         {
             NavigationTileData navigationTileData;

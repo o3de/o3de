@@ -65,29 +65,27 @@ namespace RecastNavigation
             &RecastNavigationProviderRequests::CollectGeometry,
             m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
 
+        for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
         {
-            for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
+            if (tile->IsEmpty())
             {
-                if (tile->IsEmpty())
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                // Given geometry create Recast tile structure.
-                NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
-                    m_meshConfig, m_context.get());
+            // Given geometry create Recast tile structure.
+            NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
+                m_meshConfig, m_context.get());
 
-                // If a tile at the location already exists, remove it before update the data.
-                if (const dtTileRef tileRef = m_navObject->m_mesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
-                {
-                    m_navObject->m_mesh->removeTile(tileRef, nullptr, nullptr);
-                }
+            // If a tile at the location already exists, remove it before update the data.
+            if (const dtTileRef tileRef = m_navObject->m_mesh->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+            {
+                m_navObject->m_mesh->removeTile(tileRef, nullptr, nullptr);
+            }
 
-                // A tile might have no geometry at all if no objects were found there.
-                if (navigationTileData.IsValid())
-                {
-                    AttachNavigationTileToMesh(navigationTileData);
-                }
+            // A tile might have no geometry at all if no objects were found there.
+            if (navigationTileData.IsValid())
+            {
+                AttachNavigationTileToMesh(navigationTileData);
             }
         }
 

@@ -28,6 +28,7 @@ namespace RecastNavigation
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationPhysXProviderComponent, AZ::Component>()
+                ->Field("Debug Draw Input Data" , &RecastNavigationPhysXProviderComponent::m_debugDrawInputData)
                 ->Version(1)
                 ;
         }
