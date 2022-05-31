@@ -225,7 +225,7 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto result = LoadFromFile(handle.Path().c_str());
+                auto result = ScriptCanvas::LoadFromFile(handle.Path().c_str());
                 if (result)
                 {
                     handle = result.m_handle;
