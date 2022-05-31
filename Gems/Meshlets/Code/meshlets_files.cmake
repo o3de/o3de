@@ -4,7 +4,7 @@ set(FILES
     Source/MeshletsModuleInterface.h
     Source/MeshletsSystemComponent.cpp
     Source/MeshletsSystemComponent.h
-    
+
     ../Assets/Passes/MeshletsPassTemplates.azasset
     ../Assets/Passes/MeshletsPassRequest.azasset
     ../Assets/Passes/MeshletsParent.pass

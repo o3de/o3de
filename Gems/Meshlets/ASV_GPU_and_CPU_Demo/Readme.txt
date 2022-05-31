@@ -71,6 +71,30 @@ Remark: The POC seem to still have a small bug - in some meshes, small amount of
     as missing a meshlet group.
 
 
+Quick Build and Run Direction
+=============================
+1. Copy the files in this folder over the original ASV files
+2. Run cmake again
+3. Compile meshoptimizer.lib as static library and add it to the Meshlets gem
+3. Compile in VS
+4. Run the standalone ASV and choose the MeshExampleComponent
+5. When selecting a large enough model, a secondary meshlet model will be generated
+and displayed along side.
+
+
+Adding the meshoptimizer library to the Gem
+===========================================
+The meshoptimizer library is not included as part of the O3DE.
+When adding and compiling this Gem, compile the meshoptimizer 
+library and add it as part of Meshlets.Static project (for example, in 
+Visual Studio you simply add the library file to the project).
+Once this is done, the Gem should compile and link properly to allow you 
+to run the ASV sample 'Meshlets' (created with the MeshletsExampleComponent)
+
+The meshoptimizer library and source can be found in the following Github link:
+https://github.com/zeux/meshoptimizer
+
+
 Connecting the Gem to the project folder (AtomSamplesViewer for example):
 =========================================================================
 1. Add Meshlets Shader Assets directories to the file 
@@ -111,6 +135,7 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
 
 5. Add the meshoptimizer.lib compiled library (under Gems\Meshlets\External\Lib) 
     to your Meshlets.static project.
+    
 
 Including the Meshlets sample in ASV
 ====================================

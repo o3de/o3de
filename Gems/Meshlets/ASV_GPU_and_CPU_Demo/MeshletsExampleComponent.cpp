@@ -425,7 +425,6 @@ namespace AtomSampleViewer
 
     void MeshletsExampleComponent::OnEntityDestruction(const AZ::EntityId& entityId)
     {
-        OnLightingPresetEntityShutdown(entityId);
         AZ::EntityBus::MultiHandler::BusDisconnect(entityId);
     }
 
