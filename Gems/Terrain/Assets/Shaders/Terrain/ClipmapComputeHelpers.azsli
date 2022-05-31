@@ -21,14 +21,18 @@ static const float BlendingStartFactor = 0.8;
 
 // Used for the debug overlay color for each clipmap level.
 // Only use 5 for better contrast, and we don't really care about far away maps.
-static const float3 ClipmapLevelDebugColor[5] = 
+static const uint ClipmapLevelDebugColorCount = 6;
+static const float3 ClipmapLevelDebugColor[ClipmapLevelDebugColorCount] = 
 {
     {1.0, 0.0, 0.0},
     {1.0, 1.0, 0.0},
     {0.0, 1.0, 0.0},
     {0.0, 1.0, 1.0},
-    {0.0, 0.0, 1.0}
+    {0.0, 0.0, 1.0},
+    {1.0, 0.0, 1.0}
 };
+
+#define USE_DEBUG_OVERLAY 1
 
 // Clipmap levels
 //         |<- clipmap size ->|
@@ -150,6 +154,24 @@ float3 UnpackNormal(float2 packedNormal)
     return float3(packedNormal.xy, z);
 }
 
+void ApplyDebugOverlaySingleLevel(inout float3 color, uint clipmapLevel, float debugOverlayFactor)
+{
+#if USE_DEBUG_OVERLAY
+    float3 overlayColor = ClipmapLevelDebugColor[clipmapLevel % ClipmapLevelDebugColorCount];
+    color.xyz = lerp(color.xyz, overlayColor, debugOverlayFactor * 0.25);
+#endif
+}
+
+void ApplyDebugOverlayDoubleLevel(inout float3 color, uint clipmapLevel1, uint clipmapLevel2, float blendWeight, float debugOverlayFactor)
+{
+#if USE_DEBUG_OVERLAY
+    float3 overlayColor = lerp(ClipmapLevelDebugColor[clipmapLevel1 % ClipmapLevelDebugColorCount],
+                            ClipmapLevelDebugColor[clipmapLevel2 % ClipmapLevelDebugColorCount],
+                            blendWeight);
+    color.xyz = lerp(color.xyz, overlayColor, debugOverlayFactor * 0.25);
+#endif
+}
+
 struct BilinearUvs
 {
     uint2 m_u0v0;
@@ -241,13 +263,12 @@ BilinearUvs CalculateClipmapUv(
     return uvs;
 }
 
-float4 ColorPointSampling(Texture2DArray<float4> colorClipmap, uint2 uv, uint clipmapLevel, float debugEnabled)
+float4 ColorPointSampling(Texture2DArray<float4> colorClipmap, uint2 uv, uint clipmapLevel, float debugOverlayFactor)
 {
     uint3 texelIndex = uint3(uv, clipmapLevel);
     float4 color = colorClipmap[texelIndex];
     // Debug option
-    float3 overlayColor = ClipmapLevelDebugColor[min(clipmapLevel, 4)];
-    color.xyz += (color.xyz * -0.25 + overlayColor * 0.25) * debugEnabled;
+    ApplyDebugOverlaySingleLevel(color.xyz, clipmapLevel, debugOverlayFactor);
 
     return color;
 }
@@ -265,7 +286,7 @@ float GeneralFloatPointSampling(Texture2DArray<float> clipmap, uint2 uv, uint cl
     return clipmap[texelIndex];
 }
 
-float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs, uint clipmapLevel, float debugEnabled)
+float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs, uint clipmapLevel, float debugOverlayFactor)
 {
     float4 color00 = colorClipmap[uint3(uvs.m_u0v0, clipmapLevel)];
     float4 color10 = colorClipmap[uint3(uvs.m_u1v0, clipmapLevel)];
@@ -282,8 +303,7 @@ float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uv
 
     float4 color = float4(lerp(color0, color1, uvs.m_weight.y), min(alpha0, alpha1));
     // Debug option
-    float3 overlayColor = ClipmapLevelDebugColor[min(clipmapLevel, 4)];
-    color.xyz += (color.xyz * -0.25 + overlayColor * 0.25) * debugEnabled;
+    ApplyDebugOverlaySingleLevel(color.xyz, clipmapLevel, debugOverlayFactor);
 
     return color;
 }
@@ -312,7 +332,7 @@ float GeneralFloatBilinearSampling(Texture2DArray<float> clipmap, BilinearUvs uv
     return lerp(value0, value1, uvs.m_weight.y);
 }
 
-float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel, float debugEnabled)
+float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel, float debugOverlayFactor)
 {
     float4 color1 = ColorBilinearSampling(colorClipmap, uvs1, clipmapLevel.m_closestLevel, 0.0);
     float4 color2 = ColorBilinearSampling(colorClipmap, uvs2, clipmapLevel.m_nextLevel, 0.0);
@@ -323,10 +343,7 @@ float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs u
 
     float4 color = float4(lerp(color1.rgb, color2.rgb, clipmapLevel.m_weight), alpha);
     // Debug option
-    float3 overlayColor = lerp(ClipmapLevelDebugColor[min(clipmapLevel.m_closestLevel, 4)],
-                            ClipmapLevelDebugColor[min(clipmapLevel.m_nextLevel, 4)],
-                            clipmapLevel.m_weight);
-    color.xyz += (color.xyz * -0.25 + overlayColor * 0.25) * debugEnabled;
+    ApplyDebugOverlayDoubleLevel(color.xyz, clipmapLevel.m_closestLevel, clipmapLevel.m_nextLevel, clipmapLevel.m_weight, debugOverlayFactor);
 
     return color;
 }

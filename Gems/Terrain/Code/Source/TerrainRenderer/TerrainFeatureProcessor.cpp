@@ -332,7 +332,7 @@ namespace Terrain
 
                 if (m_clipmapManager.IsInitialized())
                 {
-                    m_clipmapManager.Update(cameraPosition, m_terrainSrg);
+                    m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
                 }
             }
             if (m_imageArrayHandler->IsInitialized())

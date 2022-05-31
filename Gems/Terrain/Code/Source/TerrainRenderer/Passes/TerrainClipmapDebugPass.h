@@ -38,19 +38,5 @@ namespace Terrain
         bool IsEnabled() const override;
     private:
         TerrainClipmapDebugPass(const AZ::RPI::PassDescriptor& descriptor);
-
-        //! Clipmaps inputs.
-        AZ::RHI::ShaderInputNameIndex m_clipmapImageIndex[TerrainClipmapManager::ClipmapName::Count];
-
-        //! Shader inputs for debug rendering parameters.
-        //! See corresponding CVars in TerrainClipmapDebugPass.cpp for usage.
-        AZ::RHI::ShaderInputNameIndex m_clipmapId = "m_clipmapId";
-        AZ::RHI::ShaderInputNameIndex m_clipmapLevel = "m_clipmapLevel";
-        AZ::RHI::ShaderInputNameIndex m_clipmapSize = "m_clipmapSize";
-        AZ::RHI::ShaderInputNameIndex m_viewportSize = "m_viewportSize";
-        AZ::RHI::ShaderInputNameIndex m_scale = "m_scale";
-        AZ::RHI::ShaderInputNameIndex m_brightness = "m_brightness";
-
-        bool m_needsUpdate = true;
     };
 }
