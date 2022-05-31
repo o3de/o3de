@@ -255,7 +255,9 @@ namespace PhysX
         {
             *m_shapeConfig = Utils::CreateBaseHeightfieldShapeConfiguration(m_entityId);
             size_t numSamples = m_shapeConfig->GetNumRowVertices() * m_shapeConfig->GetNumColumnVertices();
-            if (numSamples > 0)
+
+            // A heightfield needs to be at least a 1 x 1 square.
+            if ((m_shapeConfig->GetNumRowSquares() > 0) && (m_shapeConfig->GetNumColumnSquares() > 0))
             {
                 AZStd::vector<Physics::HeightMaterialPoint> samples(numSamples);
                 m_shapeConfig->SetSamples(AZStd::move(samples));
@@ -263,7 +265,7 @@ namespace PhysX
         }
 
         // If our new size is "none", we're done.
-        if (m_shapeConfig->GetSamples().empty())
+        if ((m_shapeConfig->GetNumRowSquares() == 0) || (m_shapeConfig->GetNumColumnSquares() == 0))
         {
             return;
         }
