@@ -32,7 +32,7 @@ namespace PhysX
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<HeightfieldColliderComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("ColliderConfiguration", &HeightfieldColliderComponent::m_colliderConfig)
                 ;
         }
