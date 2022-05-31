@@ -28,7 +28,7 @@ namespace RecastNavigation
         //! A navigation mesh is made up of tiles. Each tile is a square of the same size.
         //! @param tileSize size of square tiles that make up a navigation mesh.
         //! @returns number of tiles that would be necessary to the cover the required area provided by @GetWorldBounds.
-        virtual int GetNumberOfTiles([[maybe_unused]] float tileSize) const = 0;
+        virtual int GetNumberOfTiles(float tileSize) const = 0;
 
         //! Returns the world bounds that this surveyor is configured to collect geometry.
         //! @returns an axis aligned bounding box of the world bounds.
