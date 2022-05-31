@@ -110,7 +110,7 @@ namespace RecastNavigation
                     for (const AZ::Vector3& vertex : vertices)
                     {
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
-                        geometry.m_vertices.push_back(RecastVector3(translated));
+                        geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
 
                         if (cl_navmesh_showInputData || debugDrawInputData)
                         {
@@ -141,7 +141,7 @@ namespace RecastNavigation
                     for (const AZ::Vector3& vertex : vertices)
                     {
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
-                        geometry.m_vertices.push_back(RecastVector3(translated));
+                        geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
 
                         if (cl_navmesh_showInputData || debugDrawInputData)
                         {

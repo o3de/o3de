@@ -73,7 +73,8 @@ namespace RecastNavigation
         }
 
         AZStd::vector<AZ::Vector3> pathPoints;
-        RecastVector3 startRecast{ fromWorldPosition }, endRecast{ toWorldPosition };
+        RecastVector3 startRecast = RecastVector3::CreateFromVector3SwapYZ(fromWorldPosition);
+        RecastVector3 endRecast = RecastVector3::CreateFromVector3SwapYZ(toWorldPosition);
         const float halfExtents[3] = { m_nearestDistance, m_nearestDistance, m_nearestDistance };
 
         dtPolyRef startPoly = 0, endPoly = 0;

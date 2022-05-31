@@ -7,12 +7,10 @@
  */
 
 #pragma once
-#include <DetourAlloc.h>
-#include <Recast.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/function/function_template.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace RecastNavigation
 {
@@ -24,19 +22,23 @@ namespace RecastNavigation
         RecastVector3() = default;
 
         //! A constructor from O3DE coordinate values.
-        explicit RecastVector3(const AZ::Vector3& in)
+        static RecastVector3 CreateFromVector3SwapYZ(const AZ::Vector3& in)
         {
-            m_xyz[0] = in.GetX();
-            m_xyz[1] = in.GetZ(); // swapping y and z
-            m_xyz[2] = in.GetY();
+            RecastVector3 out;
+            out.m_xyz[0] = in.GetX(),
+            out.m_xyz[1] = in.GetZ(),
+            out.m_xyz[2] = in.GetY();
+            return out;
         }
 
         //! A constructor from Recast coordinate values.
-        explicit RecastVector3(const float* data)
+        static RecastVector3 CreateFromFloatSwapYZ(const float* data)
         {
-            m_xyz[0] = data[0];
-            m_xyz[1] = data[1];
-            m_xyz[2] = data[2];
+            RecastVector3 out;
+            out.m_xyz[0] = data[0];
+            out.m_xyz[1] = data[1];
+            out.m_xyz[2] = data[2];
+            return out;
         }
 
         //! @returns raw data without any conversion between coordinate systems. Useful when working with Recast library API.

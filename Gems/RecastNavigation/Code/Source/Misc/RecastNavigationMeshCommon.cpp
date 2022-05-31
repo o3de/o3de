@@ -65,8 +65,8 @@ namespace RecastNavigation
         // Here the bounds of the input mesh are used, but the
         // area could be specified by an user defined box, etc.
 
-        const RecastVector3 worldMin(geom->m_worldBounds.GetMin());
-        const RecastVector3 worldMax(geom->m_worldBounds.GetMax());
+        const RecastVector3 worldMin = RecastVector3::CreateFromVector3SwapYZ(geom->m_worldBounds.GetMin());
+        const RecastVector3 worldMax = RecastVector3::CreateFromVector3SwapYZ(geom->m_worldBounds.GetMax());
 
         rcVcopy(config.bmin, worldMin.m_xyz);
         rcVcopy(config.bmax, worldMax.m_xyz);
@@ -307,7 +307,7 @@ namespace RecastNavigation
         dtNavMeshParams params = {};
         RecastNavigationProviderRequestBus::EventResult(worldVolume, meshEntityId, &RecastNavigationProviderRequests::GetWorldBounds);
 
-        const RecastVector3 worldCenter(worldVolume.GetMin());
+        const RecastVector3 worldCenter = RecastVector3::CreateFromVector3SwapYZ(worldVolume.GetMin());
         rcVcopy(params.orig, worldCenter.m_xyz);
 
         RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, tileSize);
