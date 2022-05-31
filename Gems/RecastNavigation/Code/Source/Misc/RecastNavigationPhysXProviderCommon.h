@@ -54,6 +54,7 @@ namespace RecastNavigation
 
         //! Returns the built-in names for the PhysX scene, either Editor or game scene.
         const char* GetSceneName() const;
+
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene;
     };

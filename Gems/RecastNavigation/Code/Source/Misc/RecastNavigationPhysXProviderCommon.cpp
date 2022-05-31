@@ -7,7 +7,6 @@
  */
 
 #include <Misc/RecastNavigationPhysXProviderCommon.h>
-#include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
@@ -73,6 +72,30 @@ namespace RecastNavigation
         }
     }
 
+    static void AddDebugVertexIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZ::Vector3& translated, bool debugDrawInputData)
+    {
+        if (cl_navmesh_showInputData || debugDrawInputData)
+        {
+            transformed.push_back(translated);
+        }        
+    }
+
+    static void AddDebugDrawIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZStd::vector<AZ::u32>& indices, bool debugDrawInputData)
+    {
+        if (cl_navmesh_showInputData || debugDrawInputData)
+        {
+            for (size_t i = 2; i < indices.size(); i += 3)
+            {
+                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
+                    transformed[indices[i - 2]], transformed[indices[i - 1]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
+                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
+                    transformed[indices[i - 1]], transformed[indices[i - 0]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
+                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
+                    transformed[indices[i - 0]], transformed[indices[i - 2]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
+            }
+        }
+    }
+
     void RecastNavigationPhysXProviderCommon::AppendColliderGeometry(
         TileGeometry& geometry,
         const QueryHits& overlapHits,
@@ -112,27 +135,13 @@ namespace RecastNavigation
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
                         geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
 
-                        if (cl_navmesh_showInputData || debugDrawInputData)
-                        {
-                            transformed.push_back(translated);
-                        }
+                        AddDebugVertexIfEnabled(transformed, translated, debugDrawInputData);
 
                         geometry.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + currentLocalIndex));
                         currentLocalIndex++;
                     }
 
-                    if (cl_navmesh_showInputData || debugDrawInputData)
-                    {
-                        for (size_t i = 2; i < vertices.size(); i += 3)
-                        {
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[i - 2], transformed[i - 1], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[i - 1], transformed[i - 0], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[i - 0], transformed[i - 2], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                        }
-                    }
+                    AddDebugDrawIfEnabled(transformed, indices, debugDrawInputData);
                 }
                 else
                 {
@@ -143,10 +152,7 @@ namespace RecastNavigation
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
                         geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
 
-                        if (cl_navmesh_showInputData || debugDrawInputData)
-                        {
-                            transformed.push_back(translated);
-                        }
+                        AddDebugVertexIfEnabled(transformed, translated, debugDrawInputData);
                     }
 
                     for (size_t i = 2; i < indices.size(); i += 3)
@@ -156,18 +162,7 @@ namespace RecastNavigation
                         geometry.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 2]));
                     }
 
-                    if (cl_navmesh_showInputData || debugDrawInputData)
-                    {
-                        for (size_t i = 2; i < indices.size(); i += 3)
-                        {
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[indices[i - 2]], transformed[indices[i - 1]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[indices[i - 1]], transformed[indices[i - 0]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                            DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                                transformed[indices[i - 0]], transformed[indices[i - 2]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                        }
-                    }
+                    AddDebugDrawIfEnabled(transformed, indices, debugDrawInputData);
                 }
 
                 indicesCount += vertices.size();
