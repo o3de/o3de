@@ -65,7 +65,7 @@ namespace AssetProcessorTests
         AZStd::unique_ptr<AZStd::string> m_productFile2;
     };
 
-    TEST_F(JobOutputTests, JobProduct_DifferntSubIds_Works)
+    TEST_F(JobOutputTests, JobProduct_DifferentSubIds_Works)
     {
         AssetBuilderSDK::ProcessJobResponse processJobResponse;
         processJobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
