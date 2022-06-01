@@ -159,7 +159,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::RecastNavigation.Private.Object>
+                Gem::RecastNavigation.Private.Object
                 RecastNavigation::DebugUtils
                 RecastNavigation::Detour
                 RecastNavigation::Recast
