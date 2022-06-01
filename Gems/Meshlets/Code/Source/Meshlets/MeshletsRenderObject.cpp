@@ -210,7 +210,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::Unknown,   // Mark is as Unknown since it represents StructuredBuffer
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(MeshletDescriptor), (uint32_t)m_meshletsData.Descriptors.size(), 
                     Name{ "MESHLETS" }, Name{ "m_meshletsDescriptors" }, 0, 0,
                     (uint8_t*)m_meshletsData.Descriptors.data()
@@ -220,7 +221,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(uint32_t), (uint32_t)m_meshletsData.EncodedTriangles.size(),
                     Name{ "MESHLETS_TRIANGLES" }, Name{ "m_meshletsTriangles" }, 1, 0,
                     (uint8_t*)m_meshletsData.EncodedTriangles.data()
@@ -230,7 +232,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(uint32_t), (uint32_t)m_meshletsData.IndicesIndirection.size(),
                     Name{ "MESHLETS_LOOKUP" }, Name{ "m_meshletsIndicesLookup" }, 2, 0,
                     (uint8_t*)m_meshletsData.IndicesIndirection.data()
@@ -244,7 +247,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
                     RHI::Format::R32G32_FLOAT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite, // | RHI::BufferBindFlags::InputAssembly,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderReadWrite, // | RHI::BufferBindFlags::InputAssembly,
                     sizeof(float) * 2, vertexCount,
                     Name{ "UV" }, Name{ "m_uvs" }, 3, 0
                 );
@@ -253,7 +257,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
                     RHI::Format::R32_UINT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite, // | RHI::BufferBindFlags::InputAssembly,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderReadWrite, // | RHI::BufferBindFlags::InputAssembly,
                     sizeof(uint32_t), indexCount,
                     Name{ "INDICES" }, Name{ "m_indices" }, 4, 0
                 );
@@ -275,8 +280,9 @@ namespace AZ
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT,
 //                    RHI::Format::R32G32B32_FLOAT,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
 //                    RHI::BufferBindFlags::InputAssembly, 
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(float),
                     3 * vertexCount,    // The amount of elements   
                     Name{ "POSITION" }, Name{ "m_positions" }, 0, 0
@@ -291,8 +297,9 @@ namespace AZ
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT,
 //                    RHI::Format::R32G32B32_FLOAT,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
 //                    RHI::BufferBindFlags::InputAssembly, 
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(float),
                     3 * vertexCount,    // The amount of elements   
                     Name{ "NORMAL" }, Name{ "m_normals" }, 1, 0
@@ -303,8 +310,9 @@ namespace AZ
 //                    RPI::CommonBufferPoolType::StaticInputAssembly,
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32A32_FLOAT,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
 //                    RHI::BufferBindFlags::InputAssembly, 
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(float) * 4, vertexCount,
                     Name{ "TANGENT" }, Name{ "m_tangents" }, 2, 0
                 );
@@ -314,8 +322,9 @@ namespace AZ
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT,
 //                    RHI::Format::R32G32B32_FLOAT,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
 //                    RHI::BufferBindFlags::InputAssembly, 
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderRead,
+                    RHI::BufferBindFlags::ShaderRead,
                     sizeof(float),
                     3 * vertexCount,    // The amount of elements   
                     Name{ "BITANGENT" }, Name{ "m_bitangents" }, 3, 0
@@ -326,7 +335,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32_FLOAT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::InputAssembly,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::InputAssembly,
                     sizeof(float) * 2, vertexCount,
                     Name{ "UV" }, Name{ "m_uvs" }, 4, 0
                 );
@@ -337,7 +347,8 @@ namespace AZ
                 SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::StaticInputAssembly,  // Not used (by the pool), created using shared buffer
                     RHI::Format::R32_UINT,
-                    RHI::BufferBindFlags::Indirect | RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::InputAssembly,
+//                    RHI::BufferBindFlags::Indirect |  [To Do] - add this when moving to GPU driven render pipeline
+                    RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::InputAssembly,
                     sizeof(uint32_t), indicesCount,
                     Name{ "INDICES" }, Name{ "m_indices" }, 5, 0
                 );
