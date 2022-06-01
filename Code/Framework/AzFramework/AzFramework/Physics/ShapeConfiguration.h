@@ -233,10 +233,12 @@ namespace Physics
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
         const AZ::Vector2& GetGridResolution() const;
         void SetGridResolution(const AZ::Vector2& gridSpacing);
-        int32_t GetNumColumns() const;
-        void SetNumColumns(int32_t numColumns);
-        int32_t GetNumRows() const;
-        void SetNumRows(int32_t numRows);
+        int32_t GetNumColumnVertices() const;
+        int32_t GetNumColumnSquares() const;
+        void SetNumColumnVertices(int32_t numColumns);
+        int32_t GetNumRowVertices() const;
+        int32_t GetNumRowSquares() const;
+        void SetNumRowVertices(int32_t numRows);
         const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
         void ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point);
         void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);

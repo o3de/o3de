@@ -103,7 +103,7 @@ namespace AZ
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()
             //      - Material::Compile() updates all the material's outputs (SRG data, shader selection, shader options, etc).
             //      - Material::SetPropertyValue("bar",...). This bumps the materials' CurrentChangeId() again.
-            //      - We do not process Material::Compile() a second time because because you can only call SRG::Compile() once per frame. Material::Compile()
+            //      - We do not process Material::Compile() a second time because you can only call SRG::Compile() once per frame. Material::Compile()
             //        will be processed on the next frame. (See implementation of Material::Compile())
             //      - MeshDrawPacket::Update() is called. It runs DoUpdate() to rebuild the draw packet, but everything is still in the state when "foo" was
             //        set. The "bar" changes haven't been applied yet. It also sets m_materialChangeId to GetCurrentChangeId(), which corresponds to "bar" not "foo".
@@ -306,18 +306,7 @@ namespace AZ
                 return true;
             };
 
-            // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
-            // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
-            RPI::ShaderSystemInterface* shaderSystem = RPI::ShaderSystemInterface::Get();
-            for (auto iter : shaderSystem->GetGlobalShaderOptions())
-            {
-                const AZ::Name& shaderOptionName = iter.first;
-                ShaderOptionValue value = iter.second;
-                if (!m_material->SetSystemShaderOption(shaderOptionName, value).IsSuccess())
-                {
-                    AZ_Warning("MeshDrawPacket", false, "Shader option '%s' is owned by this this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
-                }
-            }
+            m_material->ApplyGlobalShaderOptions();
 
             for (auto& shaderItem : m_material->GetShaderCollection())
             {

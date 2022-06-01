@@ -268,7 +268,7 @@ namespace AzToolsFramework
             //apply the patch to the template within the target
             [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
 
-            AZ_Error(
+            AZ_Warning(
                 "Prefab",
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),

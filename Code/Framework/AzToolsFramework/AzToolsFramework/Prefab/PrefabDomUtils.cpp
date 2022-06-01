@@ -156,6 +156,11 @@ namespace AzToolsFramework
                     settings.m_metadata.Add(&entityIdMapper);
                     settings.m_metadata.Add(tracker);
 
+                    if ((flags & LoadFlags::UseSelectiveDeserialization) == LoadFlags::UseSelectiveDeserialization)
+                    {
+                        settings.m_metadata.Create<InstanceDomMetadata>();
+                    }
+
                     AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
 
                     AZ::Data::AssetManager::Instance().ResumeAssetRelease();
@@ -171,6 +176,34 @@ namespace AzToolsFramework
                     }
 
                     return true;
+                }
+
+                //! Identifies instance members to be added or removed by inspecting the patch entry provided.
+                //! @param patchEntry The patch entry to inspect.
+                //! @param membersToAdd The set to add the instance member to if an addition operation is detected.
+                //! @param membersToRemove The set to add the instance member to if a remove operation is detected.
+                //! @param memberName The name of the instance member found in the patch.
+                static void IdentifyInstanceMembersToAddAndRemove(
+                    const PrefabDomValue& patchEntry,
+                    AZStd::unordered_set<AZStd::string>& membersToAdd,
+                    AZStd::unordered_set<AZStd::string>& membersToRemove,
+                    AZStd::string_view memberName)
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("op");
+                    if (patchEntryIterator != patchEntry.MemberEnd())
+                    {
+                        AZStd::string opPath = patchEntryIterator->value.GetString();
+
+                        if (opPath == "remove")
+                        {
+                            membersToRemove.emplace(AZStd::move(memberName));
+                        }
+                        else if (opPath == "add" || opPath == "replace")
+                        {
+                            // Could be an add or change from empty->full. The later case is rare but not impossible.
+                            membersToAdd.emplace(AZStd::move(memberName));
+                        }
+                    }
                 }
             }
 
@@ -332,6 +365,80 @@ namespace AzToolsFramework
                 applyPatchSettings.m_reporting = AZStd::move(issueReportingCallback);
                 return AZ::JsonSerialization::ApplyPatch(
                     prefabDomToApplyPatchesOn, allocator, patches, AZ::JsonMergeApproach::JsonPatch, applyPatchSettings);
+            }
+
+            //! Identifies the instance members to reload by parsing through the patches provided.
+            PatchesMetadata IdentifyModifiedInstanceMembers(const PrefabDom& patches)
+            {
+                PrefabDomUtils::PatchesMetadata patchesMetadata;
+                for (const PrefabDomValue& patchEntry : patches.GetArray())
+                {
+                    PrefabDomValue::ConstMemberIterator patchEntryIterator = patchEntry.FindMember("path");
+                    if (patchEntryIterator != patchEntry.MemberEnd())
+                    {
+                        AZStd::string_view patchPath = patchEntryIterator->value.GetString();
+
+                        if (patchPath == PathMatchingEntities) // Path is /Entities
+                        {
+                            patchesMetadata.m_clearAndLoadAllEntities = true;
+                        }
+                        else if (patchPath.starts_with(PathStartingWithEntities)) // Path begins with /Entities/
+                        {
+                            if (patchesMetadata.m_clearAndLoadAllEntities)
+                            {
+                                continue;
+                            }
+
+                            patchPath.remove_prefix(strlen(PathStartingWithEntities));
+                            AZStd::size_t pathSeparatorIndex = patchPath.find('/');
+                            if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Entities/{someString}/
+                            {
+                                patchesMetadata.m_entitiesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                            }
+                            else // Path is with /Entities/{someString}
+                            {
+                                Internal::IdentifyInstanceMembersToAddAndRemove(
+                                    patchEntry, patchesMetadata.m_entitiesToReload, patchesMetadata.m_entitiesToRemove, AZStd::move(patchPath));
+                            }
+                        }
+                        else if (patchPath == PathMatchingInstances) // Path is /Instances
+                        {
+                            patchesMetadata.m_clearAndLoadAllInstances = true;
+                        }
+                        else if (patchPath.starts_with(PathStartingWithInstances))// Path begins with /Instances/
+                        {
+                            if (patchesMetadata.m_clearAndLoadAllInstances)
+                            {
+                                continue;
+                            }
+
+                            patchPath.remove_prefix(strlen(PathStartingWithInstances));
+                            AZStd::size_t pathSeparatorIndex = patchPath.find('/');
+                            if (pathSeparatorIndex != AZStd::string::npos) // Path begins with /Instances/{someString}/
+                            {
+                                patchesMetadata.m_instancesToReload.emplace(patchPath.substr(0, pathSeparatorIndex));
+                            }
+                            else // Path is /Instances/{someString}
+                            {
+                                Internal::IdentifyInstanceMembersToAddAndRemove(
+                                    patchEntry, patchesMetadata.m_instancesToAdd, patchesMetadata.m_instancesToRemove, AZStd::move(patchPath));
+                            }
+                        }
+                        else if (patchPath.starts_with(PathMatchingContainerEntity)) // Path begins with /ContainerEntity
+                        {
+                            patchesMetadata.m_shouldReloadContainerEntity = true;
+                        }
+                        else
+                        {
+                            AZ_Warning(
+                                "Prefab", false,
+                                "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, or "
+                                "ContainerEntity.",
+                                AZ_STRING_ARG(patchPath));
+                        }
+                    }
+                }
+                return AZStd::move(patchesMetadata);
             }
 
             void PrintPrefabDomValue(

@@ -75,10 +75,13 @@ set(FILES
     Prefab/Benchmark/Propagation/SingleInstanceMultipleNestedInstancesBenchmarks.h
     Prefab/Benchmark/Propagation/SingleInstanceMultipleEntityBenchmarks.cpp
     Prefab/Benchmark/Propagation/SingleInstanceMultipleEntityBenchmarks.h
+    Prefab/Benchmark/Propagation/SingleInstanceOverrideBenchmarks.cpp
+    Prefab/Benchmark/Propagation/SingleInstanceOverrideBenchmarks.h
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.h
     Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp
     Prefab/Benchmark/Spawnable/SpawnAllEntitiesBenchmarks.cpp
+    Prefab/Instance/InstanceDeserializationTests.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
