@@ -92,8 +92,7 @@
                 },
                 "Component_[2589933865646691481]": {
                     "$type": "EditorRecastNavigationPhysXProviderComponent",
-                    "Id": 2589933865646691481,
-                    "Show Input Data": true
+                    "Id": 2589933865646691481
                 },
                 "Component_[2681084637176744288]": {
                     "$type": "EditorRecastNavigationMeshComponent",
@@ -101,8 +100,7 @@
                     "Configuration": {
                         "Agent Radius": 0.5,
                         "Voxel Size": 0.20000000298023224
-                    },
-                    "Debug Draw": true
+                    }
                 },
                 "Component_[490606516712228268]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
