@@ -98,11 +98,11 @@ def IsPullRequest(branchName) {
 }
 
 def IsPeriodicPipeline(pipelineName) {
-    return pipelineName.pipelineName.startsWith('periodic-')
+    return pipelineName.startsWith('periodic-')
 }
 
 def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
-    if (IsPullRequest(branchName)) {
+    if (IsPullRequest(branchName) && !IsPeriodicPipeline(pipelineName)) {
         return buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
     }
     def job_list_override = params.JOB_LIST_OVERRIDE ? params.JOB_LIST_OVERRIDE.tokenize(',') : ''
@@ -938,7 +938,7 @@ try {
         }
         if("${currentBuild.currentResult}" == "SUCCESS" && IsPeriodicPipeline(pipelineName) && IsPullRequest(branchName)) {
             currentBuild.result = 'UNSTABLE'
-            currentBuild.result.color = 'BLUE'
+            currentBuild.description = 'Builds succeeded but regular PR run is required to merge the PR.'
         }
     }
 }
