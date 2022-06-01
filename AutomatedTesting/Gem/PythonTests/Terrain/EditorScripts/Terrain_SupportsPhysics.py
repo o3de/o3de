@@ -72,7 +72,7 @@ def Terrain_SupportsPhysics():
     # 2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
     entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider", "PhysX Heightfield Collider"]
     entity2_components_to_add = ["Shape Reference", "Gradient Transform Modifier", "FastNoise Gradient"]
-    ball_components_to_add = ["Sphere Shape", "PhysX Collider", "PhysX Rigid Body"]
+    ball_components_to_add = ["Sphere Shape", "PhysX Collider"]
     terrain_spawner_entity = hydra.Entity("TestEntity1")
     terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)
     Report.result(Tests.create_terrain_spawner_entity, terrain_spawner_entity.id.IsValid())
@@ -95,7 +95,7 @@ def Terrain_SupportsPhysics():
         box_shape_dimensions = hydra.get_component_property_value(terrain_spawner_entity.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.box_dimensions_changed, box_dimensions == box_shape_dimensions)
         
-        # 5) Set the Refreence Shape to TestEntity1
+        # 5) Set the Reference Shape to TestEntity1
         height_provider_entity.get_set_test(0, "Configuration|Shape Entity Id", terrain_spawner_entity.id)
         entityId = hydra.get_component_property_value(height_provider_entity.components[0], "Configuration|Shape Entity Id")
         Report.result(Tests.shape_changed, entityId == terrain_spawner_entity.id)
