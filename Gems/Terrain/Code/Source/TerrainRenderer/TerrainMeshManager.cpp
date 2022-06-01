@@ -312,12 +312,16 @@ namespace Terrain
 
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
-                uint32_t vertexCount = (GridSize + 1) * (GridSize + 1);
+                uint32_t vertexCount = GridVerts1D * GridVerts1D;
                 sector.m_heightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
                 sector.m_normalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
+                sector.m_lodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
+                sector.m_lodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
                 sector.m_streamBufferViews[0] = CreateStreamBufferView(m_xyPositionsBuffer);
                 sector.m_streamBufferViews[1] = CreateStreamBufferView(sector.m_heightsBuffer);
                 sector.m_streamBufferViews[2] = CreateStreamBufferView(sector.m_normalsBuffer);
+                sector.m_streamBufferViews[3] = CreateStreamBufferView(sector.m_lodHeightsBuffer);
+                sector.m_streamBufferViews[4] = CreateStreamBufferView(sector.m_lodNormalsBuffer);
 
                 BuildDrawPacket(sector);
             }
@@ -424,7 +428,9 @@ namespace Terrain
             AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
             layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, XYPositionFormat);
             layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, HeightFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL" }, NormalFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 0 }, NormalFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 2 }, HeightFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 1 }, NormalFormat);
             pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
 
             m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
@@ -559,6 +565,43 @@ namespace Terrain
     {
         sector.m_heightsBuffer->UpdateData(heights.data(), heights.size_bytes(), 0);
         sector.m_normalsBuffer->UpdateData(normals.data(), normals.size_bytes(), 0);
+
+        // Store the height and normal information for the next lod level in each vertex for continuous LOD.
+        AZStd::vector<HeightDataType> lodHeights;
+        AZStd::vector<NormalDataType> lodNormals;
+        lodHeights.resize_no_construct(heights.size());
+        lodNormals.resize_no_construct(normals.size());
+
+        for (uint32_t yPos = 0; yPos < GridVerts1D; ++yPos)
+        {
+            for (uint32_t xPos = 0; xPos < GridVerts1D; ++xPos)
+            {
+                uint32_t index = yPos * GridVerts1D + xPos;
+                uint32_t lodIndex1 = index;
+                uint32_t lodIndex2 = index;
+
+                if (xPos % 2 == 1)
+                {
+                    // x position is between two vertices in the row
+                    --lodIndex1;
+                    ++lodIndex2;
+                }
+                if (yPos % 2 == 1)
+                {
+                    // y position is between two vertices in the column
+                    lodIndex1 += GridVerts1D;
+                    lodIndex2 -= GridVerts1D;
+                }
+                lodHeights[index] = (heights[lodIndex1] + heights[lodIndex2]) / 2;
+
+                // This is technically not correct because the normals are based off of neighbors from this lod, not the next lod.
+                lodNormals[index].first = (normals[lodIndex1].first + normals[lodIndex2].first) / 2;
+                lodNormals[index].second = (normals[lodIndex1].second + normals[lodIndex2].second) / 2;
+            }
+        }
+
+        sector.m_lodHeightsBuffer->UpdateData(lodHeights.data(), lodHeights.size() * sizeof(HeightDataType), 0);
+        sector.m_lodNormalsBuffer->UpdateData(lodNormals.data(), lodNormals.size() * sizeof(NormalDataType), 0);
     }
 
     void TerrainMeshManager::InitializeCommonSectorData()
@@ -610,7 +653,7 @@ namespace Terrain
         float maxHeight = heights.at(paddedVertexCount1d + 1);
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
-        constexpr float maxUint16 = AZStd::numeric_limits<uint16_t>::max();
+        constexpr float maxUint15 = float(AZStd::numeric_limits<uint16_t>::max() / 2);
         constexpr float maxInt16 = AZStd::numeric_limits<int16_t>::max();
 
         for (uint16_t y = 0; y < vertexCount1d; ++y)
@@ -625,8 +668,8 @@ namespace Terrain
 
                 const float height = heights.at(offsetCoord);
                 const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
-                const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint16 + 0.5f); // always positive, so just add 0.5 to round.
-                meshHeights.at(coord) = uint16Height;
+                const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint15 + 0.5f); // always positive, so just add 0.5 to round.
+                meshHeights.at(coord) = uint16Height * 2;
 
                 if (minHeight > height)
                 {

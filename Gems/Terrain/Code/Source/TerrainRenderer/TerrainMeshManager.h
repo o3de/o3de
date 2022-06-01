@@ -86,7 +86,9 @@ namespace Terrain
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
-        static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr int32_t GridSizeExponent = 6; // 2^6 = 64
+        static constexpr int32_t GridSize{ 1 << GridSizeExponent }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr int32_t GridVerts1D = GridSize + 1;
 
     private:
         
@@ -113,7 +115,9 @@ namespace Terrain
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, 3> m_streamBufferViews;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsBuffer;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_lodNormalsBuffer;
+            AZStd::array<AZ::RHI::StreamBufferView, 5> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;

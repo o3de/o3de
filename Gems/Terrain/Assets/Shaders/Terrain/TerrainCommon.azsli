@@ -77,8 +77,10 @@ option bool o_useClipmap = false;
 struct VertexInput
 {
     float2 m_xyPosition : POSITION0;
-    float1 m_zposition : POSITION1;
-    float2 m_xyNormal : NORMAL;
+    float1 m_zPosition : POSITION1;
+    float2 m_xyNormal : NORMAL0;
+    float1 m_lodZPosition : POSITION2;
+    float2 m_lodXYNormal : NORMAL1;
 
     uint m_vertexId : SV_VertexID; // Used for continuous lod
 };
@@ -95,7 +97,7 @@ bool IsVertexOutsideOfTerrainBounds(float2 position, float2 minBounds, float2 ma
 
 void CalculateTerrainPosition(
     in SceneSrg::TerrainWorldData worldData, in ObjectSrg::PatchData patchData, in VertexInput input,
-    out float3 worldPosition, out float4 position, out float2 cullDistance)
+    out float3 worldPosition, out float4 position, out float2 cullDistance, out float3 normal)
 {
     float2 worldXyPosition = GetWorldXYPosition(ObjectSrg::m_patchData, input.m_xyPosition);
     if (IsVertexOutsideOfTerrainBounds(worldXyPosition, worldData.m_min.xy, worldData.m_max.xy))
@@ -106,7 +108,7 @@ void CalculateTerrainPosition(
     }
 
     float heightScale = worldData.m_max.z - worldData.m_min.z;
-    float height = worldData.m_min.z + input.m_zposition * heightScale;
+    float height = worldData.m_min.z + input.m_zPosition * heightScale;
 
     //float xOffset = (input.m_vertexId % 2) * -1.0f;
     //float yOffset = (input.m_vertexId >> 6) % 2 * -1.0f;
@@ -114,10 +116,16 @@ void CalculateTerrainPosition(
     worldPosition = float3(GetWorldXYPosition(patchData, input.m_xyPosition), height);
     cullDistance = TerrainSrg::CalculateCullDistance(patchData.m_lodLevel, worldPosition);
 
-    if (input.m_vertexId % 2 == 0 || (input.m_vertexId >> 6) % 2 == 0)
+    //if (input.m_vertexId % 2 == 0 || (input.m_vertexId >> 6) % 2 == 0)
     {
-        float clodBlend = saturate(cullDistance.y * (1.0 / 64.0));
-        worldPosition.z = lerp(height + 1.0f, height, clodBlend);
+        float quadSize = patchData.m_xyScale * rcp(64.0);
+        float clodPadding = quadSize * sqrt(2.0);
+        float clodBlend = saturate((cullDistance.y - clodPadding) * rcp(quadSize * 8.0));
+        float lodHeight = worldData.m_min.z + input.m_lodZPosition * heightScale;
+        worldPosition.z = lerp(lodHeight, height, clodBlend);
+
+        normal = float3(lerp(input.m_lodXYNormal, input.m_xyNormal, clodBlend), 0.0);
+        normal.z = saturate(sqrt(1.0 - normal.x * normal.x - normal.y * normal.y));
     }
 
     position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
