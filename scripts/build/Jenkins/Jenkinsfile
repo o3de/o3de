@@ -833,7 +833,7 @@ try {
                         pipelineConfig = LoadPipelineConfig(pipelineName, branchName)
 
                         // Add each platform as a parameter that the user can disable if needed
-                        if (!IsPullRequest(branchName)) {
+                        if (!IsPullRequest(branchName) || pipelineName != 'default') {
                             pipelineParameters.add(stringParam(defaultValue: '', description: 'Filters and overrides the list of jobs to run for each of the below platforms (comma-separated). Can\'t be used during a pull request.', name: 'JOB_LIST_OVERRIDE'))
 
                             pipelineConfig.platforms.each { platform ->
@@ -889,7 +889,7 @@ try {
             }
         }
 
-        if(env.BUILD_NUMBER == '1' && !IsPullRequest(branchName)) {
+        if(env.BUILD_NUMBER == '1' && !(IsPullRequest(branchName) && pipelineName == 'default')) {
             // Exit pipeline early on the intial build. This allows Jenkins to load the pipeline for the branch and enables users
             // to select build parameters on their first actual build. See https://issues.jenkins.io/browse/JENKINS-41929
             currentBuild.result = 'SUCCESS'
