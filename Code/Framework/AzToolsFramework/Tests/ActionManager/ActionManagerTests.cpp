@@ -215,6 +215,4 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
-
-
 } // namespace UnitTest
