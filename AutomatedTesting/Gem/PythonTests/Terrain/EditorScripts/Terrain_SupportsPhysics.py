@@ -33,10 +33,10 @@ def Terrain_SupportsPhysics():
     Test Steps:
      1) Load the base level
      2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
-     2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
+     2a) Create a ball at 600.0, 600.0, 46.0 - This position intersects the terrain
      3) Start the Tracer to catch any errors and warnings
      4) Change the Axis Aligned Box Shape dimensions
-     5) Set the Vegetation Shape reference to TestEntity1
+     5) Set the Reference Shape to TestEntity1
      6) Set the FastNoise gradient frequency to 0.01
      7) Set the Gradient List to TestEntity2
      8) Set the PhysX Collider to Sphere mode
@@ -79,7 +79,8 @@ def Terrain_SupportsPhysics():
     height_provider_entity = hydra.Entity("TestEntity2")
     height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
     Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
-    # 2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
+    # 2a) Create a ball at 600.0, 600.0, 46.0 - The ball is created as a collider, but without a Rigid Body, so it will stay in place.
+    # This location is chosen because the ball should intersect the terrain.
     ball = hydra.Entity("Ball")
     ball.create_entity(azmath.Vector3(600.0, 600.0, 46.0), ball_components_to_add)
     Report.result(Tests.create_test_ball, ball.id.IsValid())
@@ -94,7 +95,7 @@ def Terrain_SupportsPhysics():
         box_shape_dimensions = hydra.get_component_property_value(terrain_spawner_entity.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.box_dimensions_changed, box_dimensions == box_shape_dimensions)
         
-        # 5) Set the Vegetaion Shape reference to TestEntity1
+        # 5) Set the Refreence Shape to TestEntity1
         height_provider_entity.get_set_test(0, "Configuration|Shape Entity Id", terrain_spawner_entity.id)
         entityId = hydra.get_component_property_value(height_provider_entity.components[0], "Configuration|Shape Entity Id")
         Report.result(Tests.shape_changed, entityId == terrain_spawner_entity.id)
@@ -125,7 +126,7 @@ def Terrain_SupportsPhysics():
 
         general.idle_wait_frames(1)
 
-        # 10) Enter game mode and test if the ball hits the heightfield within 3 seconds
+        # 10) Enter game mode and test if the ball detects the heightfield collision within 3 seconds
         TIMEOUT = 3.0
 
         class Collider:
