@@ -90,7 +90,7 @@ namespace AssetProcessorTests
         EXPECT_TRUE(processJobResponse.ReportProductCollisions());
     }
 
-    TEST_F(JobOutputTests, JobProduct_SameSubIds_Fails)
+    TEST_F(JobOutputTests, JobProduct_SubIdsWithCollisions_Detected)
     {
         AssetBuilderSDK::ProcessJobResponse processJobResponse;
         processJobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
