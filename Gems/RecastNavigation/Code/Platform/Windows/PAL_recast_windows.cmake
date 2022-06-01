@@ -6,8 +6,9 @@
 #
 #
 
-set(FILES
-    Tests/MockInterfaces.h
-    Tests/NavigationMeshTest.cpp
-    Tests/RecastNavigationTest.cpp
+# Lower warning level for RecastNavigation::Detour library
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY COMPILE_OPTIONS /W3
 )

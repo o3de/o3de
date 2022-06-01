@@ -5,9 +5,3 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-set(FILES
-    Tests/MockInterfaces.h
-    Tests/NavigationMeshTest.cpp
-    Tests/RecastNavigationTest.cpp
-)
