@@ -188,9 +188,9 @@ namespace AtomSampleViewer
             if (GetMeshletsFeatureProcessor())
             {
                 m_meshletsFeatureProcessor->RemoveMeshletsRenderObject(m_meshetsRenderObject);
+                // No deletion - this will be done by the feature processor
+                m_meshetsRenderObject = nullptr;
             }
-            delete m_meshetsRenderObject;
-            m_meshetsRenderObject = nullptr;
         }
 
         m_modelAsset = {};
@@ -323,9 +323,10 @@ namespace AtomSampleViewer
             if (GetMeshletsFeatureProcessor())
             {
                 m_meshletsFeatureProcessor->RemoveMeshletsRenderObject(m_meshetsRenderObject);
+                // No deletion - this will be done by the feature processor
+                m_meshetsRenderObject = nullptr;
             }
-            delete m_meshetsRenderObject;
-            m_meshetsRenderObject = nullptr;
+
             return;
         }
 
@@ -368,14 +369,13 @@ namespace AtomSampleViewer
                 if (GetMeshletsFeatureProcessor())
                 {
                     m_meshletsFeatureProcessor->RemoveMeshletsRenderObject(m_meshetsRenderObject);
+                    // No deletion - this will be done by the feature processor
+                    m_meshetsRenderObject = nullptr;
                 }
 
                 GetMeshFeatureProcessor()->ReleaseMesh(m_meshletsMeshHandle);
                 delete m_meshetsModel;
                 m_meshetsModel = nullptr;
-
-                delete m_meshetsRenderObject;
-                m_meshetsRenderObject = nullptr;
             }
 
             m_meshHandle = GetMeshFeatureProcessor()->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset }, m_materialOverrideInstance);

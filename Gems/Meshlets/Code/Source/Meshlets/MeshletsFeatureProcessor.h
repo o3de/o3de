@@ -99,6 +99,8 @@ namespace AZ
             void CleanResources();
             void CleanPasses();
 
+            void DeletePendingMeshletsRenderObjects();
+
         private:
             AZ_DISABLE_COPY_MOVE(MeshletsFeatureProcessor);
 
@@ -122,6 +124,8 @@ namespace AZ
             RPI::RenderPipeline* m_renderPipeline = nullptr;
 
             Render::TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
+
+            AZStd::list<MeshletsRenderObject*> m_renderObjectsMarkedForDeletion;
 
             Data::Instance<RPI::Shader> m_renderShader;
             Data::Instance<RPI::Shader> m_computeShader;

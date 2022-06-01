@@ -27,7 +27,7 @@
 #include <MeshletsFeatureProcessor.h>
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(p){if(p){delete p;p=nullptr;}}
+    #define SAFE_DELETE(p){if(p){delete p;p=nullptr;}}
 #endif
 
 namespace AZ
@@ -60,6 +60,10 @@ namespace AZ
 
                 m_sharedBuffer = AZStd::make_unique<Meshlets::SharedBuffer>(sharedBufferName, bufferSize, tempRenderData.RenderBuffersDescriptors);
             }
+
+            m_renderObjectsMarkedForDeletion = m_meshletsRenderObjects;
+            m_renderObjectsMarkedForDeletion.clear();
+            DeletePendingMeshletsRenderObjects();
         }
 
         void MeshletsFeatureProcessor::CleanResources()
@@ -226,18 +230,33 @@ namespace AZ
             return objectId;
         }
 
+        void MeshletsFeatureProcessor::DeletePendingMeshletsRenderObjects()
+        {
+            if (m_renderObjectsMarkedForDeletion.empty())
+            {
+                return;
+            }
+
+            for (auto renderObject : m_renderObjectsMarkedForDeletion)
+            {
+                ModelLodDataArray& modelLodArray = renderObject->GetMeshletsRenderData(0);
+                for (auto& renderData : modelLodArray)
+                {
+                    if (m_transformServiceFeatureProcessor && renderData)
+                    {
+                        m_transformServiceFeatureProcessor->ReleaseObjectId(renderData->ObjectId);
+                        break;  //same instance / object Id
+                    }
+                }
+                m_meshletsRenderObjects.remove(renderObject);
+                SAFE_DELETE(renderObject);
+            }
+            m_renderObjectsMarkedForDeletion.clear();
+        }
+
         void MeshletsFeatureProcessor::RemoveMeshletsRenderObject(MeshletsRenderObject* meshletsRenderObject)
         {
-            ModelLodDataArray& modelLodArray = meshletsRenderObject->GetMeshletsRenderData(0);
-            for (auto& renderData : modelLodArray)
-            {
-                if (m_transformServiceFeatureProcessor && renderData)
-                {
-                    m_transformServiceFeatureProcessor->ReleaseObjectId(renderData->ObjectId);
-                    break;  //same instance / object Id
-                }
-            }
-            m_meshletsRenderObjects.remove(meshletsRenderObject);
+            m_renderObjectsMarkedForDeletion.emplace_back(meshletsRenderObject);
         }
 
         void MeshletsFeatureProcessor::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -261,6 +280,9 @@ namespace AZ
             {
                 return;
             }
+
+            // Remove any dangling leftovers 
+            DeletePendingMeshletsRenderObjects();
 
             AZStd::list<RHI::DispatchItem*> dispatchItems;
             AZStd::list<const RHI::DrawPacket*> drawPackets;
