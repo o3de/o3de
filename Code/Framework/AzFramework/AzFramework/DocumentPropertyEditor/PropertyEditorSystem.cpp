@@ -89,7 +89,7 @@ namespace AZ::DocumentPropertyEditor
     }
 
     void PropertyEditorSystem::EnumerateRegisteredAttributes(
-        AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)> enumerateCallback) const
+        AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const
     {
         if (auto attributeContainerIt = m_attributeMetadata.find(name); attributeContainerIt != m_attributeMetadata.end())
         {
