@@ -13,10 +13,10 @@ import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.paths as paths
+import scripting_utils.scripting_tools as tools
 import azlmbr.legacy.general as general
-from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, NODE_PALETTE_UI, SCRIPT_EVENT_UI,
-                                                 NODE_PALETTE_QT, EVENTS_QT, NODE_TEST_METHOD, DEFAULT_SCRIPT_EVENT,
-                                                 TREE_VIEW_QT, DEFAULT_METHOD_NAME, SAVE_STRING, WAIT_TIME_3)
+from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
+                                                  SAVE_ASSET_AS, WAIT_TIME_3)
 # fmt: off
 class Tests():
     new_event_created   = ("Successfully created a new event", "Failed to create a new event")
@@ -52,11 +52,11 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
     """
 
     def __init__(self):
-        self.editor_window = None
-        self.asset_editor = None
-        self.asset_editor_widget = None
-        self.asset_editor_row_container = None
-        self.asset_editor_pulldown_menu = None
+        editor_window = None
+        asset_editor = None
+        asset_editor_widget = None
+        asset_editor_row_container = None
+        asset_editor_menu_bar = None
 
     def create_script_event(self) -> None:
         action = pyside_utils.find_child_by_pattern(self.asset_editor_pulldown_menu, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
@@ -74,7 +74,7 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         )
         Report.result(Tests.child_event_created, result)
         # Save the Script Event file
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
+        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, FILE_PATH)
 
         # Verify if file is created
         result = helper.wait_for_condition(lambda: os.path.exists(FILE_PATH), WAIT_TIME_3)
@@ -87,7 +87,7 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
             lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
         )
         Report.result(Tests.parameter_created, result)
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
+        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, FILE_PATH)
 
     def remove_parameter(self) -> None:
         remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
@@ -96,7 +96,7 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
             lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
         )
         Report.result(Tests.parameter_removed, result)
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, "SaveAssetAs", FILE_PATH)
+        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, FILE_PATH)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -111,11 +111,7 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
 
         # 2) Get Asset Editor Qt object
-        self.editor_window = pyside_utils.get_editor_main_window()
-        self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
-        self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
-        self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
-        self.asset_editor_pulldown_menu = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
+        tools.initialize_asset_editor_qt_objects(self)
 
         # 3) Create new Script Event Asset
         self.create_script_event()
