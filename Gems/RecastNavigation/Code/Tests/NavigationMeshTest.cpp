@@ -211,7 +211,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -273,7 +273,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -306,7 +306,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -334,7 +334,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 /*
                  * Testing with non-indexed triangle data. No way to verify, though. This test must not crash, though.
@@ -356,7 +356,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -390,7 +390,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, false);
             }));
@@ -411,7 +411,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -481,7 +481,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -507,7 +507,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -533,7 +533,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -559,7 +559,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -583,7 +583,7 @@ namespace RecastNavigationTests
         SetupNavigationMesh();
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
@@ -609,7 +609,7 @@ namespace RecastNavigationTests
         MockTransforms mockTransforms({ AZ::EntityId(1), AZ::EntityId(2) });
 
         ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
-        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb*)
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
             {
                 AddTestGeometry(vertices, indices, true);
             }));
