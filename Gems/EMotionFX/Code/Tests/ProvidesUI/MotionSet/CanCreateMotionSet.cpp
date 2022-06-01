@@ -55,7 +55,7 @@ namespace EMotionFX
         QToolBar* toolBar = managerWindow->findChild<QToolBar*>("MotionSetManagementWindow.ToolBar");
         ASSERT_TRUE(toolBar) << "Motion Set Management ToolBar could not be found";
         QWidget* newMotionSetButton = GetWidgetFromToolbar(toolBar, "Add new motion set");
-        
+
         ASSERT_TRUE(newMotionSetButton) << "Could not find new motion set button. Did the text description change?";
         QTest::mouseClick(newMotionSetButton, Qt::LeftButton);
 
@@ -64,6 +64,6 @@ namespace EMotionFX
 
         // Validate state after clicking "add motionset" button
         ASSERT_EQ(GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "The default and the newly created motion set should be present.";
-        ASSERT_TRUE(model->index(0, 0, model->index(0, 0)).isValid()) << "Newly created motion set should be a child motion set of the default one";
+        ASSERT_EQ(model->rowCount(), GetMotionManager().GetNumMotionSets());
     }
 }

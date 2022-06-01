@@ -918,7 +918,19 @@ namespace EMStudio
         }
 
         // enable the menus if at least one motion set
-        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
+        bool emptyDefaultMotionSet = false;
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() == 1)
+        {
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
+            if (motionSet->GetNumChildSets() == 0 &&
+                motionSet->GetNumMotionEntries() == 0 &&
+                motionSet->GetNameString() == CommandSystem::s_defaultMotionSetName)
+            {
+                emptyDefaultMotionSet = true;
+            }
+        }
+
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0 && !emptyDefaultMotionSet)
         {
             m_resetAction->setEnabled(true);
             m_saveAllAction->setEnabled(true);
@@ -1514,7 +1526,7 @@ namespace EMStudio
     }
 
 
-    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup)
+    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup, bool addDefaultMotionSet)
     {
         // create and relink to a temporary new command group in case the input command group has not been specified
         MCore::CommandGroup newCommandGroup("Reset Scene");
@@ -1533,7 +1545,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(&newCommandGroup);
-                CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1553,7 +1568,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(commandGroup);
-                CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -2192,7 +2210,7 @@ namespace EMStudio
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
 
                 // clear everything before laoding a new workspace file
-                Reset(true, true, true, true, &workspaceCommandGroup);
+                Reset(true, true, true, true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
                 workspaceCommandGroup.SetReturnFalseAfterError(true);
 
                 // load the first workspace of the list as more doesn't make sense anyway

@@ -1262,8 +1262,7 @@ namespace CommandSystem
 
         const bool oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
 
-        const char* name = "Default";
-        const AZStd::string command = AZStd::string::format("CreateMotionSet -name \"%s\"", name);
+        const AZStd::string command = AZStd::string::format("CreateMotionSet -name \"%s\"", s_defaultMotionSetName);
 
         if (!commandGroup)
         {
@@ -1278,7 +1277,7 @@ namespace CommandSystem
             commandGroup->AddCommandString(command);
         }
 
-        EMotionFX::MotionSet* defaultMotionSet = EMotionFX::GetMotionManager().FindMotionSetByName(name);
+        EMotionFX::MotionSet* defaultMotionSet = EMotionFX::GetMotionManager().FindMotionSetByName(s_defaultMotionSetName);
         if (defaultMotionSet)
         {
             // Unset the dirty flag as an empty default motion set should not ask users to save when closing.

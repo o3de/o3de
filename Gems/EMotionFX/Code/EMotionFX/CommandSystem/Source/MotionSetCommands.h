@@ -115,4 +115,5 @@ namespace CommandSystem
      * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Elsewise the command is directly executed as a single command.
      */
     void COMMANDSYSTEM_API CreateDefaultMotionSet(bool forceCreate = false, MCore::CommandGroup* commandGroup = nullptr);
+    static constexpr const char* s_defaultMotionSetName = "Default";
 } // namespace CommandSystem

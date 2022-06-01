@@ -153,7 +153,7 @@ namespace EMotionFX
             saveDirtyPopupHandler.WaitForCompletion();
             resetSettingsHandler.WaitForCompletion();
 
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
             ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
         }
 
@@ -234,7 +234,7 @@ namespace EMotionFX
         ResetAll();
 
         //Check everything has gone.
-        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
         ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
 
         // Reload the saved workspace and check everything reappears:

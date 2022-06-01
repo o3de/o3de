@@ -95,7 +95,6 @@ namespace EMStudio
         m_dialogStack->Add(m_motionSetWindow, "Motion Set", /*closed=*/false, /*maximizeSize=*/true);
 
         ReInit();
-        SetSelectedSet(nullptr);
         CommandSystem::CreateDefaultMotionSet();
 
         return true;
