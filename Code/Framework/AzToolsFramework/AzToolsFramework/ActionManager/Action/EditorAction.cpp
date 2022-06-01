@@ -41,11 +41,25 @@ namespace AzToolsFramework
 
             // Trigger it to set the starting value correctly.
             m_updateCallback(m_action);
+
+            AZStd::function<void(QAction*)> callbackCopy = m_updateCallback;
+
+            // Trigger the update after the handler is called.
+            QObject::connect(
+                m_action, &QAction::triggered, parentWidget,
+                [u = AZStd::move(callbackCopy), a = m_action]()
+                {
+                    u(a);
+                }
+            );
         }
     }
 
     QAction* EditorAction::GetAction()
     {
+        // Update the action to ensure it is visualized correctly.
+        Update();
+
         return m_action;
     }
     
@@ -53,6 +67,7 @@ namespace AzToolsFramework
     {
         if (m_updateCallback)
         {
+            // Refresh checkable action value.
             m_updateCallback(m_action);
         }
     }

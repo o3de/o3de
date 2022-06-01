@@ -124,7 +124,8 @@ namespace AzToolsFramework
                     properties.m_name,
                     properties.m_description,
                     properties.m_category,
-                    handler
+                    handler,
+                    updateCallback
                 )
             }
         );
