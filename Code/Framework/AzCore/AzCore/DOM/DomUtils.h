@@ -133,7 +133,7 @@ namespace AZ::Dom::Utils
                 return false;
             }
             const AZStd::any& opaqueValue = value.GetOpaqueValue();
-            return opaqueValue.is<T>();
+            return opaqueValue.is<WrapperType>();
         }
     }
 

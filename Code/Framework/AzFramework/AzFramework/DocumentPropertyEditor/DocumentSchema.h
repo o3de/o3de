@@ -228,6 +228,8 @@ namespace AZ::DocumentPropertyEditor
         AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
+    //! Represents an attribute that should be stored as an AZ::Name, but legacy attribute instances (AZ::Attribute*)
+    //! will marshal the attribute as a CRC32 that needs to be translated back into a Name.
     class NamedCrcAttributeDefinition final : public AttributeDefinition<AZ::Name>
     {
     public:

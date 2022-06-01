@@ -21,22 +21,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! Be sure to update this if you change this file.
     void Reflect(PropertyEditorSystemInterface* system);
 
-    //! Adapter: The top-level tag for a DocumentAdapter that may contain any number of Rows.
-    struct Adapter : NodeDefinition
-    {
-        static constexpr AZStd::string_view Name = "Adapter";
-        static bool CanAddToParentNode(const Dom::Value& parentNode);
-        static bool CanBeParentToValue(const Dom::Value& value);
-    };
-
-    //! Row: An adapter entry that may contain any number of child nodes or other Rows
-    struct Row : NodeDefinition
-    {
-        static constexpr AZStd::string_view Name = "Row";
-        static bool CanAddToParentNode(const Dom::Value& parentNode);
-        static bool CanBeParentToValue(const Dom::Value& value);
-    };
-
+    //! PropertyVisibility: Provided for compatability with the RPE, determines whether an entry
+    //! and/or its children should be visible.
     enum class PropertyVisibility : AZ::u32
     {
         Show = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_Show")),
@@ -45,6 +31,31 @@ namespace AZ::DocumentPropertyEditor::Nodes
         HideChildren = static_cast<AZ::u32>(AZ_CRC_CE("PropertyVisibility_HideChildren")),
     };
 
+    //! Base class for nodes that have a Visibility attribute.
+    struct NodeWithVisiblityControl : NodeDefinition
+    {
+        static constexpr AZStd::string_view Name = "NodeWithVisiblityControl";
+        static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+    };
+
+    //! Adapter: The top-level tag for a DocumentAdapter that may contain any number of Rows.
+    struct Adapter : NodeWithVisiblityControl
+    {
+        static constexpr AZStd::string_view Name = "Adapter";
+        static bool CanAddToParentNode(const Dom::Value& parentNode);
+        static bool CanBeParentToValue(const Dom::Value& value);
+    };
+
+    //! Row: An adapter entry that may contain any number of child nodes or other Rows
+    struct Row : NodeWithVisiblityControl
+    {
+        static constexpr AZStd::string_view Name = "Row";
+        static bool CanAddToParentNode(const Dom::Value& parentNode);
+        static bool CanBeParentToValue(const Dom::Value& value);
+    };
+
+    //! PropertyRefreshLevel: Determines the amount of a property tree that needs to be rebuilt
+    //! based on a change to a reflected property.
     enum class PropertyRefreshLevel : AZ::u32
     {
         Undefined = 0,
@@ -55,7 +66,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     };
 
     //! Label: A textual label that shall render its contents as part of a Row.
-    struct Label : NodeDefinition
+    struct Label : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Label";
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
@@ -63,7 +74,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
     //! that can edit an associated value.
-    struct PropertyEditor : NodeDefinition
+    struct PropertyEditor : NodeWithVisiblityControl
     {
         //! Specifies the type of value change specifeid in OnChanged.
         //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack.
@@ -81,7 +92,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
-        static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
@@ -90,7 +100,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
-    struct UIElement : NodeDefinition
+    struct UIElement : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "UIElement";
         static constexpr auto Handler = NamedCrcAttributeDefinition("Handler");
