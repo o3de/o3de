@@ -27,7 +27,14 @@ namespace AZ
         class MeshDrawPacket
         {
         public:
-            using ShaderList = AZStd::vector<Data::Instance<Shader>>;
+            struct ShaderData
+            {
+                Data::Instance<Shader> m_shader;
+                ShaderVariantId m_requestedShaderVariantId;
+                ShaderVariantId m_activeShaderVariantId;
+            };
+
+            using ShaderList = AZStd::vector<ShaderData>;
 
             MeshDrawPacket() = default;
             MeshDrawPacket(
@@ -48,7 +55,8 @@ namespace AZ
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
             bool SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
 
-            Data::Instance<Material> GetMaterial();
+            Data::Instance<Material> GetMaterial() const;
+            const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
 
         private:
             bool DoUpdate(const Scene& parentScene);

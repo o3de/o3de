@@ -143,12 +143,49 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_macroDispatchGroupCountY;
         uint m_detailDispatchGroupCountX;
         uint m_detailDispatchGroupCountY;
+
+        // Debug data
+        // Enables debug overlay to indicate clipmap levels.
+        float m_enableMacroClipmapOverlay;
+        float m_enableDetailClipmapOverlay;
+
+        // 0: macro color clipmap
+        // 1: macro normal clipmap
+        // 2: detail color clipmap
+        // 3: detail normal clipmap
+        // 4: detail height clipmap
+        // 5: detail roughness clipmap
+        // 6: detail specularF0 clipmap
+        // 7: detail metalness clipmap
+        // 8: detail occlusion clipmap
+        uint m_debugClipmapId;
+
+        // Which clipmap level to sample from, or texture array index.
+        float m_debugClipmapLevel; // cast to float in CPU
+
+        // Current viewport size.
+        float2 m_viewportSize;
+
+        // How big the clipmap should appear on the screen.
+        float m_debugScale;
+
+        // Multiplier adjustment for final color output.
+        float m_debugBrightness;
     };
 
     MeshData m_meshData;
 
     // Clipmap SRG
     ClipmapData m_clipmapData;
+
+    // Clipmap Sampler
+    Sampler m_clipmapSampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
 
     Texture2DArray<float4> m_macroColorClipmaps;
     Texture2DArray<float2> m_macroNormalClipmaps;
