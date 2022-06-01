@@ -936,7 +936,7 @@ try {
         if (!someBuildHappened) {
             currentBuild.result = 'NOT_BUILT'
         }
-        if("${currentBuild.currentResult}" == "SUCCESS" IsPeriodicPipeline(pipelineName) && IsPullRequest(branchName)) {
+        if("${currentBuild.currentResult}" == "SUCCESS" && IsPeriodicPipeline(pipelineName) && IsPullRequest(branchName)) {
             currentBuild.result = 'UNSTABLE'
             currentBuild.result.color = 'BLUE'
         }
