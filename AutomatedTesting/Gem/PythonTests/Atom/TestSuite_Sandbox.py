@@ -43,9 +43,9 @@ class TestMaterialEditorBasicTests(object):
         def delete_files():
             file_system.delete(
                     [
-                        os.path.join(workspace.paths.project(), "materials", "test_material.material"),
-                        os.path.join(workspace.paths.project(), "materials", "test_material_1.material"),
-                        os.path.join(workspace.paths.project(), "materials", "test_material_2.material"),
+                        os.path.join(workspace.paths.project(), "Materials", "test_material.material"),
+                        os.path.join(workspace.paths.project(), "Materials", "test_material_1.material"),
+                        os.path.join(workspace.paths.project(), "Materials", "test_material_2.material"),
                     ],
                     True,
                     True,
