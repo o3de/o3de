@@ -512,6 +512,20 @@ namespace WhiteBox
         m_transformRotateButtonId = RegisterClusterButton(m_transformClusterId, "Rotate");
         m_transformScaleButtonId = RegisterClusterButton(m_transformClusterId, "Scale");
 
+        // set translation tooltips
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformTranslateButtonId, ManipulatorModeClusterTranslateTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformRotateButtonId, ManipulatorModeClusterRotateTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformScaleButtonId, ManipulatorModeClusterScaleTooltip);
+
         // create the cluster for changing transform mode
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_modeSelectionClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -529,6 +543,10 @@ namespace WhiteBox
             if (hasTransformMode)
             {
                 m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");
+                AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+                    m_transformModeButtonId, WhiteboxModeClusterManipulatorTooltip);
             }
         }
 
@@ -539,7 +557,6 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
             m_edgeRestoreModeButtonId, WhiteboxModeClusterEdgeRestoreTooltip);
-
         auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
         {
             if (buttonId == m_defaultModeButtonId)

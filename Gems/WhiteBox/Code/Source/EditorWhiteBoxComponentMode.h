@@ -43,6 +43,11 @@ namespace WhiteBox
 
         constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
         constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
+        constexpr static const char* const WhiteboxModeClusterManipulatorTooltip = "Switch to Manipulator mode";
+
+        constexpr static const char* const ManipulatorModeClusterTranslateTooltip = "Switch to translate mode";
+        constexpr static const char* const ManipulatorModeClusterRotateTooltip = "Switch to rotate mode";
+        constexpr static const char* const ManipulatorModeClusterScaleTooltip = "Switch to scale mode";
 
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
