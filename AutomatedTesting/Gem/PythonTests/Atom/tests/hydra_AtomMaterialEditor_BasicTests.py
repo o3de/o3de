@@ -93,7 +93,7 @@ def run():
     document1_id, document2_id, document3_id = (
         material_editor.open_material(os.path.join(TEST_DATA_PATH, material)
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
-    )
+    ))
 
     # 4) Test Case: Closing All Materials
     print(f"All documents closed: {material_editor.close_all_documents()}")
