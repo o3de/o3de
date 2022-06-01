@@ -1066,10 +1066,11 @@ namespace AZ
             unsigned int                    m_accessFlags;          ///< Data access flags for the enumeration, see \ref EnumerationAccessFlags.
             ErrorHandler*                   m_errorHandler;         ///< Optional user error handler.
             const SerializeContext*         m_context;              ///< Serialize context containing class reflection required for data traversal.
-            bool                            m_enumerateEditElements;///< If set, enuemration will enumerate elements from AZ::Edit::ClassData instea of SerializeContext::ClassData where available.
+            /// If set, enuemration will enumerate elements from AZ::Edit::ClassData instead of SerializeContext::ClassData where available.
+            bool                            m_enumerateEditElements = false;
 
-            IDataContainer::ElementCB       m_elementCallback;      // Pre-bound functor computed internally to avoid allocating closures during traversal.
-            ErrorHandler                    m_defaultErrorHandler;  // If no custom error handler is provided, the context provides one.
+            IDataContainer::ElementCB       m_elementCallback;      ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            ErrorHandler                    m_defaultErrorHandler;  ///< If no custom error handler is provided, the context provides one.
         };
 
         /// Find a class data (stored information) based on a class ID and possible parent class data.
