@@ -22,7 +22,8 @@ namespace EMStudio
     {
         Q_OBJECT // AUTOMOC
 
-    public : MotionPropertiesWindow(QWidget* parent);
+    public:
+        MotionPropertiesWindow(QWidget* parent);
         ~MotionPropertiesWindow();
 
         void UpdateInterface();
