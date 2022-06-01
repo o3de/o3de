@@ -30,7 +30,7 @@
                 {
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
-                        "Pass": "TintPass",
+                        "Pass": "BlurPassParent",
                         "Attachment": "OutputColor"
                     }
                 }
@@ -97,35 +97,35 @@
                             }
                         }
                     ]
-                }//,
+                },
                 // Applied the box blur effect to entities not of interest
-                //{
-                //    "Name": "BlurPassParent",
-                //    "TemplateName": "EditorModeBlurParentTemplate",
-                //    "Connections": [
-                //        {
-                //            "LocalSlot": "InputDepth",
-                //            "AttachmentRef": {
-                //                "Pass": "Parent",
-                //                "Attachment": "InputDepth"
-                //            }
-                //        },
-                //        {
-                //            "LocalSlot": "InputEntityMask",
-                //            "AttachmentRef": {
-                //                "Pass": "Parent",
-                //                "Attachment": "InputEntityMask"
-                //            }
-                //        },
-                //        {
-                //            "LocalSlot": "InputColor",
-                //            "AttachmentRef": {
-                //                "Pass": "TintPass",
-                //                "Attachment": "OutputColor"
-                //            }
-                //        }
-                //    ]
-                //}
+                {
+                    "Name": "BlurPassParent",
+                    "TemplateName": "EditorModeBlurParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "TintPass",
+                                "Attachment": "OutputColor"
+                            }
+                        }
+                    ]
+                }
             ]
         }
     }
