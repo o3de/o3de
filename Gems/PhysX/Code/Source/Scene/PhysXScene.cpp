@@ -32,6 +32,7 @@
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 namespace PhysX
 {
@@ -229,7 +230,7 @@ namespace PhysX
         AzPhysics::SimulatedBody* CreateRagdollBody(PhysXScene* scene,
             const Physics::RagdollConfiguration* ragdollConfig)
         {
-            return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
+            return Utils::Characters::CreateRagdoll(*ragdollConfig,
                 scene->GetSceneHandle());
         }
 

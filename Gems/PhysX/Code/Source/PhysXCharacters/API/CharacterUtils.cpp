@@ -149,7 +149,7 @@ namespace PhysX::Utils::Characters
         return aznew CharacterController(pxController, AZStd::move(callbackManager), scene->GetSceneHandle());
     }
 
-    Ragdoll* CreateRagdoll(Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle)
+    Ragdoll* CreateRagdoll(const Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle)
     {
         const size_t numNodes = configuration.m_nodes.size();
         if (numNodes != configuration.m_initialState.size())
@@ -172,7 +172,7 @@ namespace PhysX::Utils::Characters
         // Set up rigid bodies
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
-            Physics::RagdollNodeConfiguration& nodeConfig = configuration.m_nodes[nodeIndex];
+            Physics::RagdollNodeConfiguration nodeConfig = configuration.m_nodes[nodeIndex];
             const Physics::RagdollNodeState& nodeState = configuration.m_initialState[nodeIndex];
 
             Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = configuration.m_colliders.FindNodeConfigByName(nodeConfig.m_debugName);
