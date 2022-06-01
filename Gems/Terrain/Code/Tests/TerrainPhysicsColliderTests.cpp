@@ -252,6 +252,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
                 []([[maybe_unused]]float x, [[maybe_unused]]float y){ return 0.0f; });
         }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, nullptr,
+                    []([[maybe_unused]] float x, [[maybe_unused]] float y){ return 0.0f; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     ActivateEntity(m_entity.get());
 
@@ -296,6 +313,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
                 [mockHeight]([[maybe_unused]]float x, [[maybe_unused]]float y){ return mockHeight; });
         }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this, mockHeight](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, nullptr,
+                    [mockHeight]([[maybe_unused]] float x, [[maybe_unused]] float y){ return mockHeight; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     // Just return the bounds as setup. This is equivalent to the box being at the origin.
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
@@ -421,6 +455,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
                 [mockHeight]([[maybe_unused]]float x, [[maybe_unused]]float y){ return mockHeight; });
         }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this, mockHeight, &surfaceTags](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, &surfaceTags,
+                    [mockHeight]([[maybe_unused]] float x, [[maybe_unused]] float y){ return mockHeight; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     ActivateEntity(m_entity.get());
 
@@ -501,6 +552,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
             [mockHeight]([[maybe_unused]]float x, [[maybe_unused]]float y){ return mockHeight; });
     }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this, mockHeight, &surfaceTags](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, &surfaceTags,
+                    [mockHeight]([[maybe_unused]] float x, [[maybe_unused]] float y){ return mockHeight; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     ActivateEntity(m_entity.get());
 
@@ -583,6 +651,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
             [mockHeight]([[maybe_unused]]float x, [[maybe_unused]]float y){ return mockHeight; });
     }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this, mockHeight, &surfaceTags](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, &surfaceTags,
+                    [mockHeight]([[maybe_unused]] float x, [[maybe_unused]] float y){ return mockHeight; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     ActivateEntity(m_entity.get());
 
@@ -658,6 +743,23 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
             [](float x, float y){ return x + y; });
     }
     );
+    ON_CALL(terrainListener, QueryRegionAsync)
+        .WillByDefault(
+            [this, &surfaceTags](
+                const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::TerrainDataMask requestedData,
+                AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter,
+                AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params)
+                -> AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>
+            {
+                ProcessRegionLoop(
+                    queryRegion, perPositionCallback, &surfaceTags,
+                    [](float x, float y){ return x + y; });
+
+                params->m_completionCallback(nullptr);
+                return nullptr;
+            });
 
     ActivateEntity(m_entity.get());
 
