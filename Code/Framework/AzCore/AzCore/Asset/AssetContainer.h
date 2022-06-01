@@ -37,7 +37,7 @@ namespace AZ
 
             AssetContainer() = default;
 
-            AssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams);
+            AssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload = false);
             ~AssetContainer();
 
             bool IsReady() const;
@@ -127,6 +127,8 @@ namespace AZ
             // The root asset id is stored here semi-redundantly on initialization so that we can still refer to it even if the
             // root asset reference gets cleared.
             AssetId m_containerAssetId;
+
+            bool m_isReload;
 
             mutable AZStd::recursive_mutex m_dependencyMutex;
             DependencyList m_dependencies;
