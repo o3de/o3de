@@ -16,6 +16,11 @@ namespace EMotionFX
         return m_valid && m_colliderNodeConfiguration && !m_colliderNodeConfiguration->m_shapes.empty();
     }
 
+    bool PhysicsSetupManipulatorData::HasCapsuleCollider() const
+    {
+        return HasColliders() && m_colliderNodeConfiguration->m_shapes[0].second->GetShapeType() == Physics::ShapeType::Capsule;
+    }
+
     void PhysicsSetupManipulatorsBase::SetViewportId(AZ::s32 viewportId)
     {
         m_viewportId = viewportId;

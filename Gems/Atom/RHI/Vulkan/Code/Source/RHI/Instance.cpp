@@ -7,9 +7,12 @@
  */
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
+#include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Utils/Utils.h>
+#include <Atom/RHI/RHIUtils.h>
 
 namespace AZ
 {
@@ -43,7 +46,7 @@ namespace AZ
         {
             Shutdown();
         }
-
+        
         bool Instance::Init(const Descriptor& descriptor)
         {
             m_descriptor = descriptor;
@@ -96,13 +99,12 @@ namespace AZ
                 return false;
             }                
 
-            VkApplicationInfo appInfo = {};
-            appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-            appInfo.apiVersion = apiVersion;
+            
+            m_appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+            m_appInfo.apiVersion = apiVersion;
 
-            VkInstanceCreateInfo instanceCreateInfo = {};
-            instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-            instanceCreateInfo.pApplicationInfo = &appInfo;
+            m_instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+            m_instanceCreateInfo.pApplicationInfo = &m_appInfo;
 
             StringList instanceLayerNames = GetInstanceLayerNames();
             RawStringList optionalLayers = FilterList(m_descriptor.m_optionalLayers, instanceLayerNames);
@@ -112,12 +114,11 @@ namespace AZ
             RawStringList optionalExtensions = FilterList(m_descriptor.m_optionalExtensions, instanceExtensions);
             m_descriptor.m_requiredExtensions.insert(m_descriptor.m_requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
-            instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_descriptor.m_requiredLayers.size());
-            instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
-            instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
-            instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-
-            if (vkCreateInstance(&instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
+            m_instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_descriptor.m_requiredLayers.size());
+            m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
+            m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
+            m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
+            if (vkCreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
                 return false;
@@ -126,17 +127,8 @@ namespace AZ
             // Now that we have created the instance, load the function pointers for it.
             m_functionLoader->LoadProcAddresses(m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
 
-            auto validationMode = GetValidationMode();
-            if (validationMode != RHI::ValidationMode::Disabled)
-            {
-                auto messagesTypeMask = Debug::DebugMessageTypeFlag::Error | Debug::DebugMessageTypeFlag::Warning | Debug::DebugMessageTypeFlag::Performance;
-                if (validationMode == RHI::ValidationMode::Verbose)
-                {
-                    messagesTypeMask |= Debug::DebugMessageTypeFlag::Debug | Debug::DebugMessageTypeFlag::Info;
-                }
+            CreateDebugMessenger();
 
-                Debug::InitDebugMessages(m_instance, messagesTypeMask);
-            }
             // Check that we have at least one device that meets the requirements.
             m_supportedDevices = EnumerateSupportedDevices();
 
@@ -145,6 +137,21 @@ namespace AZ
         }
 
         void Instance::Shutdown() 
+        {
+            //Only destroy VkInstance if created locally and not passed in by XR module
+            if (!m_isXRInstanceCreated)
+            {
+                ShutdownNativeInstance();
+            }
+            
+            if (m_functionLoader)
+            {
+                m_functionLoader->Shutdown();
+            }
+            m_functionLoader = nullptr;
+        }
+
+        void Instance::ShutdownNativeInstance()
         {
             if (m_instance != VK_NULL_HANDLE)
             {
@@ -157,12 +164,6 @@ namespace AZ
                 vkDestroyInstance(m_instance, nullptr);
                 m_instance = VK_NULL_HANDLE;
             }
-
-            if (m_functionLoader)
-            {
-                m_functionLoader->Shutdown();
-            }
-            m_functionLoader = nullptr;
         }
 
         const Instance::Descriptor& Instance::GetDescriptor() const
@@ -285,6 +286,68 @@ namespace AZ
                 it = shouldIgnore ? supportedDevices.erase(it) : it + 1;
             }
             return supportedDevices;
+        }
+
+        void Instance::CreateDebugMessenger()
+        {
+            auto validationMode = GetValidationMode();
+            if (validationMode != RHI::ValidationMode::Disabled)
+            {
+                auto messagesTypeMask =
+                    Debug::DebugMessageTypeFlag::Error | Debug::DebugMessageTypeFlag::Warning | Debug::DebugMessageTypeFlag::Performance;
+                if (validationMode == RHI::ValidationMode::Verbose)
+                {
+                    messagesTypeMask |= Debug::DebugMessageTypeFlag::Debug | Debug::DebugMessageTypeFlag::Info;
+                }
+
+                Debug::InitDebugMessages(m_instance, messagesTypeMask);
+            }
+        }
+
+        void Instance::UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem)
+        {
+            if (m_isXRInstanceCreated)
+            {
+                AZ_Warning("Vulkan", false, "XR Vulkan instance is already created");
+                return;
+            }
+
+            RHI::Ptr<XRInstanceDescriptor> xrInstanceDescriptor = aznew XRInstanceDescriptor();
+            xrInstanceDescriptor->m_inputData.m_createInfo = &m_instanceCreateInfo;
+
+            // Init the new native instance for XR
+            AZ::RHI::ResultCode result = xrSystem->InitNativeInstance(xrInstanceDescriptor.get());
+            AZ_Warning("Vulkan", result == RHI::ResultCode::Success, "Xr instance creation was not successful");
+            if (result == RHI::ResultCode::Success)
+            {
+                //Delete existing VkInstance
+                ShutdownNativeInstance();
+
+                //Update the native object from the passed by the XR module
+                m_instance = xrInstanceDescriptor->m_outputData.m_xrVkInstance;
+
+                //Re-add support for validation with the updated VkInstance
+                CreateDebugMessenger();
+
+                //Get number of  Physical devices
+                uint32_t numPhysicalDevices = xrSystem->GetNumPhysicalDevices();
+                    
+                //Clear any existing physical devices
+                m_supportedDevices.clear();
+                m_supportedDevices.reserve(numPhysicalDevices);
+
+                //Re-populate physical devices from XR module
+                for (uint32_t i = 0; i < numPhysicalDevices; i++)
+                {
+                    RHI::Ptr<XRPhysicalDeviceDescriptor> xrPhysicalDeviceDesc = aznew XRPhysicalDeviceDescriptor();
+                    xrSystem->GetXRPhysicalDevice(xrPhysicalDeviceDesc.get(), i);
+
+                    RHI::Ptr<PhysicalDevice> physicalDevice = aznew PhysicalDevice;
+                    physicalDevice->Init(xrPhysicalDeviceDesc->m_outputData.m_xrVkPhysicalDevice);
+                    m_supportedDevices.emplace_back(physicalDevice);
+                }
+                m_isXRInstanceCreated = true;
+            }
         }
     }
 }

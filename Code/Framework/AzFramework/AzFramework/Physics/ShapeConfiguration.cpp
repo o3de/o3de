@@ -388,24 +388,52 @@ namespace Physics
         m_gridResolution = gridResolution;
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumColumns() const
+    int32_t HeightfieldShapeConfiguration::GetNumColumnVertices() const
     {
         return m_numColumns;
     }
 
-    void HeightfieldShapeConfiguration::SetNumColumns(int32_t numColumns)
+    void HeightfieldShapeConfiguration::SetNumColumnVertices(int32_t numColumns)
     {
+        AZ_Assert(
+            (numColumns == 0) || (numColumns >= 2),
+            "A non-empty heightfield must have at least 2 column vertices to define 1 square. Num columns provided: %d", numColumns);
         m_numColumns = numColumns;
+
+        if (m_numColumns < 2)
+        {
+            m_numColumns = 0;
+        }
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumRows() const
+    int32_t HeightfieldShapeConfiguration::GetNumRowVertices() const
     {
         return m_numRows;
     }
 
-    void HeightfieldShapeConfiguration::SetNumRows(int32_t numRows)
+    void HeightfieldShapeConfiguration::SetNumRowVertices(int32_t numRows)
     {
+        AZ_Assert(
+            (numRows == 0) || (numRows >= 2),
+            "A non-empty heightfield must have at least 2 row vertices to define 1 square. Num rows provided: %d", numRows);
         m_numRows = numRows;
+
+        if (m_numRows < 2)
+        {
+            m_numRows = 0;
+        }
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return AZStd::max(0, m_numColumns - 1);
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumRowSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return AZStd::max(0, m_numRows - 1);
     }
 
     const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
