@@ -22,7 +22,7 @@ def save_script_event_file(self, file_path):
 
     param self: the script object calling this function
     param file_path: full path to the file as a string
-    returns: none
+    returns: true if the Save action is successful and the * character disappears from the asset editor label
     """
     editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, file_path)
     action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "iconText": SAVE_STRING})
@@ -37,7 +37,7 @@ def initialize_asset_editor_qt_objects(self):
     """
     function for initializing qt objects needed for testing around asset editor
 
-    param self: teh script object calling this function.
+    param self: the script object calling this function.
     """
     self.editor_window = pyside_utils.get_editor_main_window()
     self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
