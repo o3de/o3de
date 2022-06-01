@@ -18,39 +18,27 @@
 #include <AzTest/AzTest.h>
 
 namespace UnitTest
-{
-    class TestApplication : public AzFramework::Application
-    {
-    public:
-        // ComponentApplication
-        void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override
-        {
-            Application::SetSettingsRegistrySpecializations(specializations);
-            specializations.Append("test");
-            specializations.Append("spawnable");
-        }
-    };
-    
+{    
     class SpawnableScriptMediatorTests
         : public AllocatorsFixture
         , public AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler
     {
     public:
-        using TicketToEntitiesPair = AZStd::pair<AzFramework::EntitySpawnTicket, AZStd::vector<AZ::EntityId>>;
+        using TicketToEntityIdsPair = AZStd::pair<AzFramework::EntitySpawnTicket, AZStd::vector<AZ::EntityId>>;
         constexpr static AZ::u64 EntityIdStartId = 40;
 
-        AZStd::vector<TicketToEntitiesPair> m_spawnedEntities;
+        AZStd::vector<TicketToEntityIdsPair> m_spawnedTicketAndEntitiesPairs ;
 
         void OnSpawn(AzFramework::EntitySpawnTicket spawnTicket, AZStd::vector<AZ::EntityId> entityList) override
         {
-            m_spawnedEntities.push_back({ spawnTicket, AZStd::move(entityList) });
+            m_spawnedTicketAndEntitiesPairs .push_back({ spawnTicket, AZStd::move(entityList) });
         }
 
         virtual void OnDespawn(AzFramework::EntitySpawnTicket spawnTicket) override
         {
             AZStd::erase_if(
-                m_spawnedEntities,
-                [&spawnTicket](const TicketToEntitiesPair& pair) -> bool
+                m_spawnedTicketAndEntitiesPairs ,
+                [&spawnTicket](const TicketToEntityIdsPair& pair) -> bool
                 {
                     return pair.first == spawnTicket;
                 });
@@ -60,7 +48,7 @@ namespace UnitTest
         {
             AllocatorsFixture::SetUp();
 
-            m_application = new TestApplication();
+            m_application = new AzFramework::Application();
             AZ::ComponentApplication::Descriptor descriptor;
             m_application->Start(descriptor);
 
@@ -83,7 +71,7 @@ namespace UnitTest
                    AzFramework::SpawnableEntitiesManager::CommandQueueStatus::NoCommandsLeft)
                 ;
             
-            m_spawnedEntities = {};
+            m_spawnedTicketAndEntitiesPairs  = {};
 
             delete m_application;
             m_application = nullptr;
@@ -103,6 +91,7 @@ namespace UnitTest
                     break;
                 }
             }
+            // force an additional tick on mediator to synchronize spawn callbacks and dispatch EBus notifications
             mediator.OnTick(0, AZ::ScriptTimePoint());
         }
         
@@ -128,7 +117,7 @@ namespace UnitTest
 
     protected:
         AzFramework::SpawnableEntitiesManager* m_manager { nullptr };
-        TestApplication* m_application { nullptr };
+        AzFramework::Application* m_application{ nullptr };
     };
 
     TEST_F(SpawnableScriptMediatorTests, CreateSpawnTicket_Works)
@@ -152,17 +141,17 @@ namespace UnitTest
 
         mediator.Spawn(ticket);
         WaitForResponse(mediator);
-        EXPECT_EQ(m_spawnedEntities.size(), 1);
-        EXPECT_EQ(m_spawnedEntities[0].first, ticket);
-        EXPECT_EQ(m_spawnedEntities[0].second.size(), 1);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs .size(), 1);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].first, ticket);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].second.size(), 1);
 
         mediator.Despawn(ticket);
         WaitForResponse(mediator);
 
-        EXPECT_TRUE(m_spawnedEntities.empty());
+        EXPECT_TRUE(m_spawnedTicketAndEntitiesPairs .empty());
     }
 
-    TEST_F(SpawnableScriptMediatorTests, SpawnAndMultipleAtOnce_Works)
+    TEST_F(SpawnableScriptMediatorTests, SpawnMultipleAtOnce_Works)
     {
         using namespace AzFramework::Scripts;
         
@@ -182,28 +171,28 @@ namespace UnitTest
         WaitForResponse(mediator);
 
         auto it1 = AZStd::find_if(
-            m_spawnedEntities.begin(), m_spawnedEntities.end(),
-            [&ticket1](const TicketToEntitiesPair& pair) -> bool
+            m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
+            [&ticket1](const TicketToEntityIdsPair& pair) -> bool
             {
                 return pair.first == ticket1;
             });
-        EXPECT_FALSE(it1 == m_spawnedEntities.end());
+        EXPECT_FALSE(it1 == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_EQ(it1->second.size(), 1);
 
         auto it2 = AZStd::find_if(
-            m_spawnedEntities.begin(), m_spawnedEntities.end(),
-            [&ticket2](const TicketToEntitiesPair& pair) -> bool
+            m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
+            [&ticket2](const TicketToEntityIdsPair& pair) -> bool
             {
                 return pair.first == ticket2;
             });
-        EXPECT_FALSE(it2 == m_spawnedEntities.end());
+        EXPECT_FALSE(it2 == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_EQ(it2->second.size(), 2);
 
         mediator.Despawn(ticket1);
         mediator.Despawn(ticket2);
         WaitForResponse(mediator);
 
-        EXPECT_TRUE(m_spawnedEntities.empty());
+        EXPECT_TRUE(m_spawnedTicketAndEntitiesPairs .empty());
     }
 
     TEST_F(SpawnableScriptMediatorTests, SpawnAndParent_Works)
@@ -229,9 +218,9 @@ namespace UnitTest
         AZStd::vector<AZ::EntityId> descendantIds;
         AZ::TransformBus::EventResult(descendantIds, parentId, &AZ::TransformBus::Events::GetAllDescendants);
         EXPECT_EQ(descendantIds.size(), 1);
-        EXPECT_EQ(m_spawnedEntities.size(), 1);
-        EXPECT_EQ(m_spawnedEntities[0].second.size(), 1);
-        EXPECT_EQ(descendantIds[0], m_spawnedEntities[0].second[0]);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs .size(), 1);
+        EXPECT_EQ(m_spawnedTicketAndEntitiesPairs [0].second.size(), 1);
+        EXPECT_EQ(descendantIds[0], m_spawnedTicketAndEntitiesPairs [0].second[0]);
 
         mediator.Despawn(ticket);
         WaitForResponse(mediator);
@@ -271,12 +260,12 @@ namespace UnitTest
 
         EXPECT_EQ(descendantIds.size(), 1);
         auto it = AZStd::find_if(
-            m_spawnedEntities.begin(), m_spawnedEntities.end(),
-            [&ticket](const TicketToEntitiesPair& pair) -> bool
+            m_spawnedTicketAndEntitiesPairs .begin(), m_spawnedTicketAndEntitiesPairs .end(),
+            [&ticket](const TicketToEntityIdsPair& pair) -> bool
             {
                 return pair.first.GetId() == ticket.GetId();
             });
-        EXPECT_FALSE(it == m_spawnedEntities.end());
+        EXPECT_FALSE(it == m_spawnedTicketAndEntitiesPairs .end());
         EXPECT_FALSE(it->second.empty());
 
         AZ::EntityId entityId = it->second[0];
