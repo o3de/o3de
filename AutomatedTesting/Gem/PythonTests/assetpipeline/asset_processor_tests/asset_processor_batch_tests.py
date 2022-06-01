@@ -135,37 +135,6 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.test_case_id('C1571827')
-    @pytest.mark.SUITE_sandbox
-    def test_ProcessAssets_IncludeTwoAssetsWithSameProduct_FailingOnSecondAsset(self, asset_processor, ap_setup_fixture):
-        """
-        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
-        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
-        before the shutdown completes and the failure doesn't end up counting
-
-        Tests processing two source assets with the same product file and validates that the second source will error
-
-        Test Steps:
-        1. Create a test environment that has two source files with the same product
-        2. Run asset processor
-        3. Validate that 1 asset failed to process
-        4. Validate that only one product file with the expected name is found in the cache
-        """
-
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAssets_IncludeTwoAssetsWithSameProduct_FailingOnSecondAsset")
-        result, output = asset_processor.batch_process(capture_output = True, expect_failure = True)
-
-        assert not result, "Expected asset processor to fail, but it did not fail"
-        num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
-        assert num_failed_assets == 1, \
-            'Wrong number of failed assets'
-        missing_assets, _ = asset_processor.compare_assets_with_cache()
-        assert missing_assets, 'Unexpectedly found two products in the cache with the same name: {}'.format(
-            missing_assets)
-
-
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1587615')
     def test_ProcessAndDeleteCache_APBatchShouldReprocess(self, asset_processor, ap_setup_fixture):
         """
@@ -182,7 +151,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Deleting assets from Cache will make them re-processed in AP (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join( "TestAssets", "single_working_prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         result, _ = asset_processor.batch_process()
@@ -225,7 +194,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # AP Batch Processing changed files (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
 
         # Calling AP first time and checking whether desired assets were processed
         batch_success, output = asset_processor.batch_process(capture_output=True)
@@ -311,7 +280,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Feed two similar prefabs with different names - should process without any issues
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], os.path.join("TestAssets", "multiple_working_prefab"))
 
         # Launching AP, capturing output and asserting on number of processed assets
         result, output = asset_processor.batch_process(capture_output=True)
@@ -345,26 +314,23 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
         before the shutdown completes and the failure doesn't end up counting
 
-        Tests processing of two textures with the same name then verifies that AP will successfully process after
-        renaming one of the textures
+        Tests processing of two assets with the same product name, then verifies that AP will successfully process after
+        renaming one of the assets' outputs.
 
         Test Steps:
-        1. Create test environment with two textures that have the same name
+        1. Create test environment with two assets that will output products with the same name
         2. Launch Asset Processor
         3. Validate that Asset Processor generates an error
-        4. Rename texture files
+        4. Use an assetinfo file to rename the output product
         5. Run asset processor
         6. Verify that asset processor does not error
         7. Verify that expected product files are in the cache
         """
-        # Feed two different textures with same name (but different extensions) - ap will fail
-        # Rename one of textures and failure should go away
 
-        # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_AddTwoTexturesWithSameName_ShouldProcessAfterRename")
-
+        # Copying test assets to project folder
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
         # Launching AP, making sure it is failing
-        result, output = asset_processor.batch_process(expect_failure=True, capture_output=True)
+        result, output = asset_processor.gui_process(capture_output=True, extra_params='--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"')
         assert result == False, f'AssetProcessorBatch should have failed because there are textures that are generating same output product, output was {output}'
 
         # Renaming original files so they won't collide in cache after second processing
@@ -521,7 +487,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Add assets to test asset directory
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
 
         # Run batch to ensure everything is processed
         assert asset_processor.batch_process(), "First AP Batch failed"
@@ -666,10 +632,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         error_line_found = False
 
         # Import pre-corrupted test assets
-        asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets/Corrupted_Prefab")
+        asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets/single_corrupted_prefab")
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=True)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Createjobs Failed", "Corrupted_Prefab.prefab"]):
+        for _ in log.get_lines(-1, ["Createjobs Failed", "corrupted_prefab.prefab"]):
             error_line_found = True
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
