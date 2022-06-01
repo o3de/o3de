@@ -31,7 +31,7 @@ namespace UnitTest::IntersectTest
         float sphereRadius = 5.f;
         Vector3 testPoint(10.f, 10.f, 10.f);
 
-        EXPECT_TRUE(Intersect::PointSphere(sphereCenter, sphereRadius * sphereRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointSphere(sphereCenter, sphereRadius * sphereRadius, testPoint));
     }
 
     // Tests a point just inside the border of the sphere
@@ -51,7 +51,7 @@ namespace UnitTest::IntersectTest
         float sphereRadius = 5.f;
         Vector3 testPoint(6.01f, 2.f, 3.f);
 
-        EXPECT_TRUE(Intersect::PointSphere(sphereCenter, sphereRadius * sphereRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointSphere(sphereCenter, sphereRadius * sphereRadius, testPoint));
     }
 
     // Tests a point inside cylinder
@@ -75,7 +75,7 @@ namespace UnitTest::IntersectTest
         float cylinderLength = 2.f;
         Vector3 testPoint(9.f, 9.f, 9.f);
 
-        EXPECT_TRUE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint));
     }
 
     // Tests a point just inside border at the top of the cylinder
@@ -99,7 +99,7 @@ namespace UnitTest::IntersectTest
         float cylinderLength = cylinderAxis.GetLength();
         Vector3 testPoint(1.f, 7.01f, 3.f);
 
-        EXPECT_TRUE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint));
     }
 
     // Tests a point just inside border at the bottom of the cylinder
@@ -123,7 +123,7 @@ namespace UnitTest::IntersectTest
         float cylinderLength = cylinderAxis.GetLength();
         Vector3 testPoint(1.f, 1.99f, 3.f);
 
-        EXPECT_TRUE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint));
     }
 
     // Tests a point just inside border at the side of the cylinder
@@ -147,20 +147,20 @@ namespace UnitTest::IntersectTest
         float cylinderLength = cylinderAxis.GetLength();
         Vector3 testPoint(2.01f, 2.f, 3.f);
 
-        EXPECT_TRUE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint) == false);
+        EXPECT_FALSE(Intersect::PointCylinder(cylinderBase, cylinderAxis, cylinderLength * cylinderLength, cylinderRadius * cylinderRadius, testPoint));
     }
 
 
     TEST(MATH_IntersectBarycentric, TestBarycentric)
     {
-        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1,0,0), AZ::Vector3(0,1,0), AZ::Vector3(0,0,1), AZ::Vector3(1,0,0)),
-            IsClose(AZ::Vector3(1,0,0)));
-        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1,0,0), AZ::Vector3(0,1,0), AZ::Vector3(0,0,1), AZ::Vector3(0,1,0)),
+        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1.0f,0.0f,0.0f), AZ::Vector3(0.0f,1,0.0f), AZ::Vector3(0.0f,0.0f,1), AZ::Vector3(1,0.0f,0.0f)),
+            IsClose(AZ::Vector3(1.0f,0.0f,0.0f)));
+        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1.0f,0.0f,0.0f), AZ::Vector3(0.0f,1.0f,0.0f), AZ::Vector3(0.0f,0.0f,1.0f), AZ::Vector3(0.0f,1.0f,0.0f)),
             IsClose(AZ::Vector3(0,1,0)));
-        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1,0,0), AZ::Vector3(0,1,0), AZ::Vector3(0,0,1), AZ::Vector3(0,0,1)),
+        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1.0f,0.0f,0.0f), AZ::Vector3(0.0f,1.0f,0.0f), AZ::Vector3(0.0f,0.0f,1.0f), AZ::Vector3(0.0f,0.0f,1.0f)),
             IsClose(AZ::Vector3(0,0,1)));
-        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1,0,0), AZ::Vector3(0,1,0), AZ::Vector3(0,0,1), AZ::Vector3(.3,.3,.3)),
-            IsClose(AZ::Vector3(0.333333,0.333333,0.333333)));
+        EXPECT_THAT(AZ::Intersect::Barycentric(AZ::Vector3(1.0f,0.0f,0.0f), AZ::Vector3(0.0f,1.0f,0.0f), AZ::Vector3(0.0f,0.0f,1.0f), AZ::Vector3(0.3f,0.3f,0.3f)),
+            IsClose(AZ::Vector3(0.333333f,0.333333f,0.333333f)));
     }
 
 }
