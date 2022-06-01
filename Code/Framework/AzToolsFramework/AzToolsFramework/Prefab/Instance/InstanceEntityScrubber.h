@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -30,7 +31,7 @@ namespace AzToolsFramework
 
             explicit InstanceEntityScrubber(EntityList& entities);
 
-            void AddEntitiesToScrub(const EntityList& entities);
+            void AddEntitiesToScrub(const AZStd::span<AZ::Entity*>& entities);
 
         private:
             EntityList& m_entities;

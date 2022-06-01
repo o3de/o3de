@@ -103,7 +103,7 @@ namespace AzFramework
             //! maximum number of cores / job threads on the current PC. It's a symbolic number,
             //! not a literal one, since the maximum number of available jobs will change from
             //! machine to machine.
-            static constexpr int32_t NumJobsMax = -1;
+            static constexpr int32_t UseMaxJobs = -1;
 
             //! This constant is used with m_desiredNumberOfJobs to set the default number of jobs
             //! for splitting up async terrain requests. By default, we use a single job so that the
