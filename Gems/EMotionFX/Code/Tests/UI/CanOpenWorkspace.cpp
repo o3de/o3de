@@ -163,13 +163,6 @@ namespace EMotionFX
             m_animGraphPlugin->GetViewWidget()->OnCreateAnimGraph();
             ASSERT_TRUE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to create AnimGraph.";
 
-            // MotionSset
-            EMStudio::MotionSetManagementWindow* managementWindow = GetMotionSetManagementWindow();
-            ASSERT_TRUE(managementWindow);
-
-            managementWindow->OnCreateMotionSet();
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to create motion set for reset test.";
-
             CreateAnimGraphParameter("TestParam1");
             CreateAnimGraphParameter("TestParam2");
             CreateAnimGraphParameter("TestParam3");

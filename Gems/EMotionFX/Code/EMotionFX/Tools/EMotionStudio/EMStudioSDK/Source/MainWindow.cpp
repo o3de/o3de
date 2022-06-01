@@ -201,6 +201,7 @@ namespace EMStudio
         // Unload everything from the Editor, so that reopening the editor
         // results in an empty scene
         Reset();
+        CommandSystem::ClearMotionSetsCommand(); // Remove the default motion set.
 
         delete m_shortcutManager;
         delete m_fileManager;
@@ -1552,6 +1553,7 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(commandGroup);
+                CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
             }
             if (clearMotions)
             {
