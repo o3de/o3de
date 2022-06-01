@@ -35,6 +35,9 @@ namespace AzToolsFramework
         // Calls the callback to update the action's checked state, if any.
         void Update();
 
+        // Returns whether the action is checkable.
+        bool IsCheckable();
+
     private:
         QAction* m_action = nullptr;
 

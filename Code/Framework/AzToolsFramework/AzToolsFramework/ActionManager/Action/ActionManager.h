@@ -49,6 +49,7 @@ namespace AzToolsFramework
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;
+        ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
 
         void ClearActionContextMap();
 

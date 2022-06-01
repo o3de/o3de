@@ -71,5 +71,10 @@ namespace AzToolsFramework
             m_updateCallback(m_action);
         }
     }
+    
+    bool EditorAction::IsCheckable()
+    {
+        return m_action->isCheckable();
+    }
 
 } // namespace AzToolsFramework

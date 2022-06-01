@@ -165,6 +165,27 @@ namespace AzToolsFramework
 
         return m_actions[actionIdentifier].GetAction();
     }
+    
+    ActionManagerOperationResult ActionManager::UpdateAction(const AZStd::string& actionIdentifier)
+    {
+        if (!m_actions.contains(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not update action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        if (!m_actions[actionIdentifier].IsCheckable())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not update action \"%s\" as it was not registered as Checkable.",
+                actionIdentifier.c_str()));
+        }
+        
+        m_actions[actionIdentifier].Update();
+
+        return AZ::Success();
+    }
 
     void ActionManager::ClearActionContextMap()
     {
