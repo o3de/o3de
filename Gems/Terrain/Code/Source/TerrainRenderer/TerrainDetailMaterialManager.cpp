@@ -960,7 +960,7 @@ namespace Terrain
 
         AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
             = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-        asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+        asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
         asyncParams->m_minPositionsPerJob = 4 * m_detailTextureSize; // do at least 4 rows per job.
         asyncParams->m_completionCallback = [&wait](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>)
         {
