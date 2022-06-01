@@ -73,7 +73,7 @@ namespace RecastNavigation
     void RecastNavigationMeshCommon::RecastProcessing::InitializeMeshConfig(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig)
     {
         // Init build configuration from GUI
-        memset(&config, 0, sizeof(config));
+        config = {};
         config.cs = meshConfig.m_cellSize;
         config.ch = meshConfig.m_cellHeight;
         config.walkableSlopeAngle = meshConfig.m_agentMaxSlope;

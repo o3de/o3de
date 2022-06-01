@@ -178,11 +178,16 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
 
+        if (tileSize <= 0.f)
+        {
+            return {};
+        }
+
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
         const AZ::Vector3 extents = worldVolume.GetExtents();
-        int tilesAlongX = static_cast<int>(AZStd::ceilf(extents.GetX() / tileSize));
-        int tilesAlongY = static_cast<int>(AZStd::ceilf(extents.GetY() / tileSize));
+        int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+        int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
 
         const AZ::Vector3& worldMin = worldVolume.GetMin();
         const AZ::Vector3& worldMax = worldVolume.GetMax();

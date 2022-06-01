@@ -13,7 +13,7 @@
 
 namespace RecastNavigation
 {
-    //! The interface for @RecastNavigationProviderRequestBus
+    //! The interface for @RecastNavigationProviderRequestBus.
     class RecastNavigationProviderRequests
         : public AZ::ComponentBus
     {

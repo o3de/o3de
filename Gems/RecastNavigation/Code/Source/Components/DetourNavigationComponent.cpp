@@ -72,7 +72,6 @@ namespace RecastNavigation
             return {};
         }
 
-        AZStd::vector<AZ::Vector3> pathPoints;
         RecastVector3 startRecast = RecastVector3::CreateFromVector3SwapYZ(fromWorldPosition);
         RecastVector3 endRecast = RecastVector3::CreateFromVector3SwapYZ(toWorldPosition);
         const float halfExtents[3] = { m_nearestDistance, m_nearestDistance, m_nearestDistance };
@@ -125,6 +124,8 @@ namespace RecastNavigation
             return {};
         }
 
+        AZStd::vector<AZ::Vector3> pathPoints;
+        pathPoints.reserve(detailedPathCount);
         // Note: Recast uses +Y, O3DE used +Z as up vectors.
         for (int i = 0; i < detailedPathCount; ++i)
         {

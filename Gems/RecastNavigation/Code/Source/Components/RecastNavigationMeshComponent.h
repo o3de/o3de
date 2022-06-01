@@ -30,8 +30,8 @@ namespace RecastNavigation
         RecastNavigationMeshComponent() = default;
 
         //! Used by the Editor version of this component.
-        //! @param config navigation mesh configuration
-        //! @param drawDebug if true, draws debug view of the navigation mesh in the game mode
+        //! @param config navigation mesh configuration.
+        //! @param drawDebug if true, draws debug view of the navigation mesh in the game mode.
         RecastNavigationMeshComponent(const RecastNavigationMeshConfig& config, bool drawDebug);
 
         static void Reflect(AZ::ReflectContext* context);

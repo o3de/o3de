@@ -26,7 +26,7 @@ namespace RecastNavigation
         RecastPointer<dtNavMeshQuery> m_query;
     };
 
-    //! The interface for request API of @RecastNavigationMeshRequestBus
+    //! The interface for request API of @RecastNavigationMeshRequestBus.
     class RecastNavigationMeshRequests
         : public AZ::ComponentBus
     {
@@ -34,14 +34,14 @@ namespace RecastNavigation
         //! Re-calculates the navigation mesh within the defined world area. Blocking call.
         virtual void UpdateNavigationMeshBlockUntilCompleted() = 0;
 
-        //! @returns the underlying navigation objects with the associated synchronization object
+        //! @returns the underlying navigation objects with the associated synchronization object.
         virtual AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() = 0;
     };
 
     //! Request EBus for a navigation mesh component.
     using RecastNavigationMeshRequestBus = AZ::EBus<RecastNavigationMeshRequests>;
 
-    //! The interface for notification API of @RecastNavigationMeshNotificationBus
+    //! The interface for notification API of @RecastNavigationMeshNotificationBus.
     class RecastNavigationMeshNotifications
         : public AZ::ComponentBus
     {
@@ -54,7 +54,7 @@ namespace RecastNavigation
     //! Notification EBus for a navigation mesh component.
     using RecastNavigationMeshNotificationBus = AZ::EBus<RecastNavigationMeshNotifications>;
 
-    //! Scripting reflection helper for @RecastNavigationMeshNotificationBus
+    //! Scripting reflection helper for @RecastNavigationMeshNotificationBus.
     class RecastNavigationNotificationHandler
         : public RecastNavigationMeshNotificationBus::Handler
         , public AZ::BehaviorEBusHandler

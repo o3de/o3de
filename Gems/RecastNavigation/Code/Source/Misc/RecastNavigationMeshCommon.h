@@ -27,19 +27,19 @@ namespace RecastNavigation
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
-        //! @param tileSize the size of each square tile that form the navigation mesh. Recommended values are power of 2
-        //! @return true if the navigation mesh object was successfully created
+        //! @param tileSize the size of each square tile that form the navigation mesh. Recommended values are power of 2.
+        //! @return true if the navigation mesh object was successfully created.
         bool CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize);
 
         //! Given a Recast data add a tile to the navigation mesh @m_navMesh.
         //! @param navigationTileData the raw data of a Recast tile
-        //! @return true if successful
+        //! @return true if successful.
         bool AttachNavigationTileToMesh(NavigationTileData& navigationTileData);
 
         //! Given a set of geometry and configuration create a Recast tile that can be attached using @AttachNavigationTileToMesh.
-        //! @param geom A set of geometry, triangle data
-        //! @param meshConfig Recast navigation mesh configuration
-        //! @param context Recast context object, @rcContext
+        //! @param geom A set of geometry, triangle data.
+        //! @param meshConfig Recast navigation mesh configuration.
+        //! @param context Recast context object, @rcContext.
         //! @returns the tile data that can be attached to the navigation mesh using @AttachNavigationTileToMesh
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
 

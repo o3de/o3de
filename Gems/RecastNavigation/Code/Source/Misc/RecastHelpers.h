@@ -51,7 +51,7 @@ namespace RecastNavigation
             return { m_xyz[0], m_xyz[2] , m_xyz[1] };
         }
 
-        float m_xyz[3] = { 0, 0, 0 };
+        float m_xyz[3] = { 0.f, 0.f, 0.f };
     };
 
     //! A collection of triangle data within a volume defined by an axis aligned bounding box.
@@ -71,17 +71,17 @@ namespace RecastNavigation
         //! Callback to the navigation mesh component that should process this tile.
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
 
-        //! @returns true if there are no vertices in this tile
+        //! @returns true if there are no vertices in this tile.
         bool IsEmpty() const
         {
             return m_vertices.empty();
         }
     };
 
-    //! Navigation data in binary Recast form
+    //! Navigation data in binary Recast form.
     struct NavigationTileData
     {
-        //! @returns true if the Recast data is not empty
+        //! @returns true if the Recast data is not empty.
         bool IsValid() const
         {
             return m_size > 0 && m_data != nullptr;

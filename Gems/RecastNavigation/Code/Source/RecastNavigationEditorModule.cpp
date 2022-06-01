@@ -36,7 +36,7 @@ namespace RecastNavigation
         }
 
         //! Add required SystemComponents to the SystemEntity.
-        //! Non-SystemComponents should not be added here
+        //! Non-SystemComponents should not be added here.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {

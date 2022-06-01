@@ -23,7 +23,7 @@ namespace RecastNavigation
         AZ_COMPONENT(DetourNavigationComponent, "{B9A8F260-2772-4C94-8DE4-850C94A8F2AC}");
         DetourNavigationComponent() = default;
         //! Constructor to be used by Editor variant to pass the configuration in.
-        //! @param navQueryEntityId entity id of the entity with a navigation mesh component
+        //! @param navQueryEntityId entity id of the entity with a navigation mesh component.
         //! @param nearestDistance distance to use when finding nearest point on the navigation
         //!            mesh when points provided to FindPath are outside of the navigation mesh.
         DetourNavigationComponent(AZ::EntityId navQueryEntityId, float nearestDistance);
