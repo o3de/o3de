@@ -24,6 +24,11 @@
                 "Name": "EditorModeOutlineTemplate",
                 "Path": "Passes/Child/EditorModeOutline.pass"
             }
+            ,
+            {
+                "Name": "EditorModePassthroughTemplate",
+                "Path": "Passes/Child/EditorModePassthrough.pass"
+            }
         ]
     }
 }

@@ -189,170 +189,202 @@ namespace AZ::Render
        //}
 
         // Desaturation pass
-       //{
-       //    RPI::PassRequest pass;
-       //    pass.m_passName = Name("DesaturationPass");
-       //    pass.m_templateName = Name("EditorModeDesaturationTemplate");
-       //
-       //    // Input depth
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputDepth");
-       //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input entity mask
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputEntityMask");
-       //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input color
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputColor");
-       //        connection.m_attachmentRef = { Name("Parent"), Name("ColorInputOutput") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    mainParentPassTemplate->AddPassRequest(pass);
-       //}
-       //
-       //// Tint pass
-       //{
-       //    RPI::PassRequest pass;
-       //    pass.m_passName = Name("TintPass");
-       //    pass.m_templateName = Name("EditorModeTintTemplate");
-       //
-       //    // Input depth
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputDepth");
-       //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input entity mask
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputEntityMask");
-       //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input color
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputColor");
-       //        connection.m_attachmentRef = { Name("DesaturationPass"), Name("OutputColor") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    mainParentPassTemplate->AddPassRequest(pass);
-       //}
-       //
-       //// Blur pass
-       //{
-       //    RPI::PassRequest pass;
-       //    pass.m_passName = Name("BlurPass");
-       //    pass.m_templateName = Name("EditorModeBlurParentTemplate");
-       //
-       //    // Input depth
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputDepth");
-       //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input entity mask
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputEntityMask");
-       //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input color
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputColor");
-       //        connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    mainParentPassTemplate->AddPassRequest(pass);
-       //}
-       //
-       //// Blur pass
-       //{
-       //    RPI::PassRequest pass;
-       //    pass.m_passName = Name("BlurPass");
-       //    pass.m_templateName = Name("EditorModeBlurParentTemplate");
-       //
-       //    // Input depth
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputDepth");
-       //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input entity mask
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputEntityMask");
-       //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    // Input color
-       //    {
-       //        RPI::PassConnection connection;
-       //        connection.m_localSlot = Name("InputColor");
-       //        connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
-       //        pass.AddInputConnection(connection);
-       //    }
-       //
-       //    mainParentPassTemplate->AddPassRequest(pass);
-       //}
-       //
-       //// Outline pass
-       {
-           RPI::PassRequest pass;
-           pass.m_passName = Name("EntityOutlinePass");
-           pass.m_templateName = Name("EditorModeOutlineTemplate");
-       
-           // Input depth
-           {
-               RPI::PassConnection connection;
-               connection.m_localSlot = Name("InputDepth");
-               connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-               pass.AddInputConnection(connection);
-           }
-       
-           // Input entity mask
-           {
-               RPI::PassConnection connection;
-               connection.m_localSlot = Name("InputEntityMask");
-               connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
-               pass.AddInputConnection(connection);
-           }
-       
-           // Input color
-           {
-               RPI::PassConnection connection;
-               connection.m_localSlot = Name("InputColor");
-               //connection.m_attachmentRef = { Name("BlurPass"), Name("OutputColor") };
-               connection.m_attachmentRef = { Name("EditorStateFocusedEntityParentPass"), Name("OutputColor") };
-               pass.AddInputConnection(connection);
-           }
-       
-           mainParentPassTemplate->AddPassRequest(pass);
-       }
+        //{
+        //    RPI::PassRequest pass;
+        //    pass.m_passName = Name("DesaturationPass");
+        //    pass.m_templateName = Name("EditorModeDesaturationTemplate");
+        //
+        //    // Input depth
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputDepth");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input entity mask
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputEntityMask");
+        //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input color
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputColor");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("ColorInputOutput") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    mainParentPassTemplate->AddPassRequest(pass);
+        //}
+        //
+        //// Tint pass
+        //{
+        //    RPI::PassRequest pass;
+        //    pass.m_passName = Name("TintPass");
+        //    pass.m_templateName = Name("EditorModeTintTemplate");
+        //
+        //    // Input depth
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputDepth");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input entity mask
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputEntityMask");
+        //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input color
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputColor");
+        //        connection.m_attachmentRef = { Name("DesaturationPass"), Name("OutputColor") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    mainParentPassTemplate->AddPassRequest(pass);
+        //}
+        //
+        //// Blur pass
+        //{
+        //    RPI::PassRequest pass;
+        //    pass.m_passName = Name("BlurPass");
+        //    pass.m_templateName = Name("EditorModeBlurParentTemplate");
+        //
+        //    // Input depth
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputDepth");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input entity mask
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputEntityMask");
+        //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input color
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputColor");
+        //        connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    mainParentPassTemplate->AddPassRequest(pass);
+        //}
+        //
+        //// Blur pass
+        //{
+        //    RPI::PassRequest pass;
+        //    pass.m_passName = Name("BlurPass");
+        //    pass.m_templateName = Name("EditorModeBlurParentTemplate");
+        //
+        //    // Input depth
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputDepth");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input entity mask
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputEntityMask");
+        //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input color
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputColor");
+        //        connection.m_attachmentRef = { Name("TintPass"), Name("OutputColor") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    mainParentPassTemplate->AddPassRequest(pass);
+        //}
+        //
+        //// Outline pass
+        //{
+        //    RPI::PassRequest pass;
+        //    pass.m_passName = Name("EntityOutlinePass");
+        //    pass.m_templateName = Name("EditorModeOutlineTemplate");
+        //
+        //    // Input depth
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputDepth");
+        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input entity mask
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputEntityMask");
+        //        connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    // Input color
+        //    {
+        //        RPI::PassConnection connection;
+        //        connection.m_localSlot = Name("InputColor");
+        //        connection.m_attachmentRef = { Name("BlurPass"), Name("OutputColor") };
+        //        pass.AddInputConnection(connection);
+        //    }
+        //
+        //    mainParentPassTemplate->AddPassRequest(pass);
+        //}
+
+        // Outline pass
+        {
+            RPI::PassRequest pass;
+            pass.m_passName = Name("EntityPassthroughPass");
+            pass.m_templateName = Name("EditorModePassthroughTemplate");
+
+            // Input depth
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputDepth");
+                connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+                pass.AddInputConnection(connection);
+            }
+
+            // Input entity mask
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputEntityMask");
+                connection.m_attachmentRef = { Name("EntityMaskPass"), Name("OutputEntityMask") };
+                pass.AddInputConnection(connection);
+            }
+
+            // Input color
+            {
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { Name("EditorStateFocusedEntityParentPass"), Name("OutputColor") };
+                pass.AddInputConnection(connection);
+            }
+
+            mainParentPassTemplate->AddPassRequest(pass);
+        }
 
         RPI::PassSystemInterface::Get()->AddPassTemplate(mainParentPassTemplate->m_name, mainParentPassTemplate);
         AZ::RPI::PassRequest passRequest;
