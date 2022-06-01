@@ -72,7 +72,7 @@ def run():
     print(f"Material opened: {material_editor.is_document_open(document_id)}")
 
     # Verify if the test material exists initially
-    target_path = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL).lower()
+    target_path = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL)
     print(f"Test asset doesn't exist initially: {not os.path.exists(target_path)}")
 
     # 2) Test Case: Creating a New Material Using Existing One
@@ -91,7 +91,7 @@ def run():
 
     # Open materials initially
     document1_id, document2_id, document3_id = (
-        material_editor.open_material(os.path.join(TEST_DATA_PATH, material).lower())
+        material_editor.open_material(os.path.join(TEST_DATA_PATH, material)
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
     )
 
@@ -100,14 +100,14 @@ def run():
 
     # 5) Test Case: Closing all but Selected Material
     document1_id, document2_id, document3_id = (
-        material_editor.open_material(os.path.join(TEST_DATA_PATH, material).lower())
+        material_editor.open_material(os.path.join(TEST_DATA_PATH, material))
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
     )
     result = material_editor.close_all_except_selected(document1_id)
     print(f"Close All Except Selected worked as expected: {result and material_editor.is_document_open(document1_id)}")
 
     # 6) Test Case: Saving Material
-    document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1).lower())
+    document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     property_name = "baseColor.color"
     initial_color = material_editor.get_property(document_id, property_name)
     # Assign new color to the material file and save the actual material
@@ -120,10 +120,10 @@ def run():
     # Assign new color to the material file and save the document as copy
     expected_color_1 = math.Color(0.5, 0.5, 0.5, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_1)
-    target_path_1 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_1).lower()
+    target_path_1 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_1)
     cache_file_name_1 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_1', '.material')
     cache_file_1 = f"{cache_file_name_1[0]}{CACHE_FILE_EXTENSION}"
-    target_path_1_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_1).lower()
+    target_path_1_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_1)
     material_editor.save_document_as_copy(document_id, target_path_1)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_1_cache), 4.0)
 
@@ -131,16 +131,16 @@ def run():
     # Assign new color to the material file save the document as child
     expected_color_2 = math.Color(0.75, 0.75, 0.75, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_2)
-    target_path_2 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_2).lower()
+    target_path_2 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_2)
     cache_file_name_2 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_2', '.material')
     cache_file_2 = f"{cache_file_name_2[0]}{CACHE_FILE_EXTENSION}"
-    target_path_2_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_2).lower()
+    target_path_2_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_2)
     material_editor.save_document_as_child(document_id, target_path_2)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_2_cache), 4.0)
 
     # Close/Reopen documents
     material_editor.close_all_documents()
-    document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1).lower())
+    document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     document1_id = material_editor.open_material(target_path_1)
     document2_id = material_editor.open_material(target_path_2)
 
@@ -165,14 +165,14 @@ def run():
 
     # 9) Test Case: Saving all Open Materials
     # Open first material and make change to the values
-    document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1).lower())
+    document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     property1_name = "metallic.factor"
     initial_metallic_factor = material_editor.get_property(document1_id, property1_name)
     expected_metallic_factor = 0.444
     material_editor.set_property(document1_id, property1_name, expected_metallic_factor)
 
     # Open second material and make change to the values
-    document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2).lower())
+    document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
     property2_name = "baseColor.color"
     initial_color = material_editor.get_property(document2_id, property2_name)
     expected_color = math.Color(0.4156, 0.0196, 0.6862, 1.0)
@@ -183,11 +183,11 @@ def run():
     material_editor.close_all_documents()
 
     # Reopen materials and verify values
-    document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1).lower())
+    document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
     result = material_editor.is_close(
         material_editor.get_property(document1_id, property1_name), expected_metallic_factor, 0.00001
     )
-    document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2).lower())
+    document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
     result = result and material_editor.compare_colors(
         expected_color, material_editor.get_property(document2_id, property2_name))
     print(f"Save All worked as expected: {result}")
