@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Utils/Utils.h>
@@ -43,12 +44,19 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+            if (AzToolsFramework::IsHotReloadEnabled())
+            {
+                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+            }
+            
         }
 
         void PrefabSystemComponent::Deactivate()
         {
-            AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+            if (AzToolsFramework::IsHotReloadEnabled())
+            {
+                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+            }
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -168,16 +176,11 @@ namespace AzToolsFramework
         }
         void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
-            AZ_Error("Prefab", false,
-                "File changed", relativePath.c_str());
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
             if (found != m_templateFilePathToIdMap.end())
             {
+                AZ_Error("Prefab", false, "File changed", relativePath.c_str());
                 m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
-            }
-            else
-            {
-              
             }
             return;
         }
