@@ -8,6 +8,7 @@
 
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -18,6 +19,8 @@
 
 #include <QMimeData>
 #include <QFileInfo>
+#include <QThread>
+#include <QApplication>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
@@ -200,7 +203,6 @@ namespace AzToolsFramework
         bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
         {
             using namespace AZ::IO;
-
             AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
             Path oldPath = item->GetFullPath();
             PathView extension = oldPath.Extension();
@@ -209,18 +211,30 @@ namespace AzToolsFramework
             newPath.ReplaceFilename(newFile);
             newPath.ReplaceExtension(extension);
             using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+            m_result = waiting;
             SCCommandBus::Broadcast(
                 &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
-                [this, item, newFile, extension, index](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                [this, item, newFile, extension](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
                 {
                     if (success)
                     {
-                        AZ_TracePrintf("JJS", "Succeeded")
                         item->SetFileData(newFile, extension);
-                        emit dataChanged(index, index);
+                        m_result = succeeded;
+                    }
+                    else
+                    {
+                        m_result = failed;
                     }
                 });
-            AZ_TracePrintf("JJS", "Return")
+            while(m_result == waiting)
+            {
+                QApplication::processEvents();
+            }
+            if (m_result == succeeded)
+            {
+                emit dataChanged(index, index);
+                return true;
+            }
             return false;
         }
 

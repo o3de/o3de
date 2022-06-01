@@ -494,7 +494,6 @@ namespace AzToolsFramework
                 edit(currentIndex());
             }
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
