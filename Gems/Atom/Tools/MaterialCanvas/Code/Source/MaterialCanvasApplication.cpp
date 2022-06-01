@@ -78,7 +78,12 @@ namespace MaterialCanvas
         m_dynamicNodeManager->LoadMatchingConfigFiles({ "materialcanvasnode.azasset" });
 
         // This callback is passed into the main window and views to populate nude palette items from the dynamic node manager
-        auto createNodePaletteFn = [this](const AZ::Crc32& toolId)
+        AtomToolsFramework::GraphViewConfig graphViewConfig;
+        graphViewConfig.m_translationPath = "@products@/translation/materialcanvas_en_us.qm";
+        graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/graphcanvas_style.json";
+        graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
+        graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
+        graphViewConfig.m_createNodeTreeItemsFn = [this](const AZ::Crc32& toolId)
         {
             return m_dynamicNodeManager->CreateNodePaletteRootTreeItem(toolId);
         };
@@ -93,9 +98,9 @@ namespace MaterialCanvas
         };
 
         // Overriding documentview factory function to create graph view
-        documentTypeInfo.m_documentViewFactoryCallback = [this, createNodePaletteFn](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+        documentTypeInfo.m_documentViewFactoryCallback = [this, graphViewConfig](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, createNodePaletteFn));
+            return m_window->AddDocumentTab(documentId, aznew MaterialCanvasGraphView(toolId, documentId, graphViewConfig));
         };
 
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
@@ -103,7 +108,7 @@ namespace MaterialCanvas
 
         m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, createNodePaletteFn));
+        m_window.reset(aznew MaterialCanvasMainWindow(m_toolId, graphViewConfig));
         m_window->show();
     }
 
