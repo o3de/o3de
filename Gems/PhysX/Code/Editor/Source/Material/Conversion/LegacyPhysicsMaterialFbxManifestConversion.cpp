@@ -89,6 +89,8 @@ namespace PhysX
         return newMaterialSlots;
     }
 
+    // Converts legacy material selection inside PhysX Mesh Group
+    // into new material slots.
     struct FixPhysXMeshGroup
     {
         static bool Fix(
@@ -109,7 +111,7 @@ namespace PhysX
             {
                 AZ_Assert(
                     physxMeshGroup.m_legacyPhysicsMaterials.size() == materialSlots.GetSlotsCount(),
-                    "Number of elements in legacy material selection (%zu) and match slots (%zu) do not match.",
+                    "Number of elements in legacy material selection (%zu) and material slots (%zu) do not match.",
                     physxMeshGroup.m_legacyPhysicsMaterials.size(), materialSlots.GetSlotsCount());
 
                 for (size_t i = 0; i < materialSlots.GetSlotsCount(); ++i)
@@ -130,6 +132,8 @@ namespace PhysX
         }
     };
 
+    // Converts all legacy material selections found inside an FBX
+    // manifest (PhysX Mesh Group) into new material slots.
     void FixFbxManifestPhysicsMaterials(
         const AZStd::string& fbxManifestFullPath,
         const LegacyMaterialNameToNewAssetIdsMap& legacyMaterialNameToNewAssetIdsMap)

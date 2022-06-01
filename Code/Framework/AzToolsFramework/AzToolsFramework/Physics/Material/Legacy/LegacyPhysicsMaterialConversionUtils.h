@@ -16,7 +16,7 @@
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
-// O3DE_DEPRECATION
+// O3DE_DEPRECATION_NOTICE(GHI-9840)
 // Utilities used for legacy material conversion.
 
 namespace Physics::Utils

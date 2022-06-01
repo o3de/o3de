@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Math/Vector4.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 
 namespace AZ
@@ -20,7 +19,7 @@ namespace AzPhysics
 {
     //! Contains global physics settings.
     //! Used to initialize the Physics System.
-    struct SystemConfiguration
+    struct alignas(16) SystemConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::SystemConfiguration, "{24697CAF-AC00-443D-9C27-28D58734A84C}");
@@ -54,10 +53,15 @@ namespace AzPhysics
         AZ::u32 OnMaxTimeStepChanged();
         float GetFixedTimeStepMax() const;
 
-        // Padding with a 16 byte aligned type to make the class aligned to 16 bytes too.
-        // This is used instead of adding alignas(16) to the struct because that generates
-        // warnings everywhere the struct is used indicating that padding is added, which 
-        // causes compilation errors.
-        AZ::Vector4 m_unusedPadding;
+        // Padding with a 16 byte aligned structure to make SystemConfiguration aligned to 16 bytes too.
+        // Without this, SystemConfiguration generates warnings everywhere it is used indicating that
+        // padding was added. But having this structure limits the warnings to this member usage because
+        // SystemConfiguration won't need extra padding to achieve 16 byte alignment.
+        AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") // structure was padded due to alignment
+        struct alignas(16)
+        {
+            unsigned char m_unused[16];
+        } m_unusedPadding;
+        AZ_POP_DISABLE_WARNING
     };
 }

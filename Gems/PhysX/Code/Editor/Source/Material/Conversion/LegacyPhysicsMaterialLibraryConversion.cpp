@@ -23,7 +23,7 @@
 
 namespace PhysicsLegacy
 {
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9840)
     // Default values used for initializing materials.
     // Use MaterialConfiguration to define properties for materials at the time of creation.
     class MaterialConfiguration
@@ -63,7 +63,7 @@ namespace PhysicsLegacy
         AZ::Color m_debugColor = AZ::Colors::White;
     };
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9840)
     // A single Material entry in the material library
     // MaterialLibraryAsset holds a collection of MaterialFromAssetConfiguration instances.
     class MaterialFromAssetConfiguration
@@ -98,7 +98,7 @@ namespace PhysicsLegacy
         }
     };
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9840)
     // An asset that holds a list of materials.
     class MaterialLibraryAsset
         : public AZ::Data::AssetData

@@ -10,6 +10,7 @@
 
 #include <PhysX/ForceRegionComponentBus.h>
 
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>

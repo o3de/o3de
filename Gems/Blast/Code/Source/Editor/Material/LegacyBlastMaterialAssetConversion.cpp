@@ -29,7 +29,7 @@ namespace Blast
     AZ_CONSOLEFREEFUNC("ed_blastConvertMaterialLibrariesIntoIndividualMaterials", ConvertMaterialLibrariesIntoIndividualMaterials, AZ::ConsoleFunctorFlags::Null,
         "Finds legacy blast material library assets in the project and generates new individual blast material assets. Original library assets will be deleted.");
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9839)
     // Default values used for initializing materials.
     // Use BlastMaterialConfiguration to define properties for materials at the time of creation.
     class BlastMaterialConfiguration
@@ -63,7 +63,7 @@ namespace Blast
         AZStd::string m_materialName{ "Default" };
     };
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9839)
     // A single BlastMaterial entry in the material library
     // BlastMaterialLibraryAsset holds a collection of BlastMaterialFromAssetConfiguration instances.
     class BlastMaterialFromAssetConfiguration
@@ -97,7 +97,7 @@ namespace Blast
         }
     };
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9839)
     // An asset that holds a list of materials.
     class BlastMaterialLibraryAsset : public AZ::Data::AssetData
     {

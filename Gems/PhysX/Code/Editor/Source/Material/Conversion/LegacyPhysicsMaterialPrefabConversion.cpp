@@ -61,7 +61,7 @@ namespace PhysX
             {
                 AZ_Assert(
                     legacyMaterialSelection.m_materialIdsAssignedToSlots.size() == materialSlots.GetSlotsCount(),
-                    "Number of elements in legacy material selection (%zu) and match slots (%zu) do not match.",
+                    "Number of elements in legacy material selection (%zu) and material slots (%zu) do not match.",
                     legacyMaterialSelection.m_materialIdsAssignedToSlots.size(), materialSlots.GetSlotsCount());
 
                 for (size_t i = 0; i < materialSlots.GetSlotsCount(); ++i)

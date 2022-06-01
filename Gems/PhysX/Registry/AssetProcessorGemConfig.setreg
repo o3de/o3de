@@ -26,7 +26,7 @@
                     "critical": true,
                     "productAssetType": "{BC7B88B9-EE31-4FBF-A01E-2A93624C49D3}"
                 },
-                // O3DE_DEPRECATION
+                // O3DE_DEPRECATION_NOTICE(GHI-9840)
                 // Legacy physics material library asset.
                 // Used to collect old material assets to convert them to the new one.
                 "RC physmaterial": {

@@ -90,7 +90,7 @@ namespace PhysX
     void MaterialConfiguration::ValidateMaterialAsset(
         [[maybe_unused]] AZ::Data::Asset<Physics::MaterialAsset> materialAsset)
     {
-#if !defined(_RELEASE)
+#if !defined(AZ_RELEASE_BUILD)
         if (!materialAsset)
         {
             AZ_Error("MaterialConfiguration", false, "Invalid material asset");

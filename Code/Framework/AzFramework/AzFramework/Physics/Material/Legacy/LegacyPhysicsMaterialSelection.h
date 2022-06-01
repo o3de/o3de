@@ -10,7 +10,7 @@
 
 namespace PhysicsLegacy
 {
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9840)
     // Legacy Physics material Id class used to identify the material in the collection of materials.
     // Used when converting old material asset to new one.
     class MaterialId
@@ -24,7 +24,7 @@ namespace PhysicsLegacy
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
     };
 
-    // O3DE_DEPRECATION
+    // O3DE_DEPRECATION_NOTICE(GHI-9840)
     // Legacy class to store a vector of MaterialIds selected from the library.
     // Used when converting old material asset to new one.
     class MaterialSelection

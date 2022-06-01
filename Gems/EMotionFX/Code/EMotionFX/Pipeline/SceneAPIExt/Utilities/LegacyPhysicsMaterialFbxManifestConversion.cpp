@@ -22,6 +22,8 @@
 
 namespace EMotionFX::Pipeline::Utilities
 {
+    // Converts legacy material selection inside character collider configuration
+    // into new material slots.
     bool FixCharacterColliderConfiguration(
         Physics::CharacterColliderConfiguration& characterColliderConfiguration,
         const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
@@ -51,7 +53,7 @@ namespace EMotionFX::Pipeline::Utilities
                 {
                     AZ_Assert(
                         colliderConfiguration->m_legacyMaterialSelection.m_materialIdsAssignedToSlots.size() == materialSlots.GetSlotsCount(),
-                        "Number of elements in legacy material selection (%zu) and match slots (%zu) do not match.",
+                        "Number of elements in legacy material selection (%zu) and material slots (%zu) do not match.",
                         colliderConfiguration->m_legacyMaterialSelection.m_materialIdsAssignedToSlots.size(), materialSlots.GetSlotsCount());
 
                     for (size_t i = 0; i < materialSlots.GetSlotsCount(); ++i)
@@ -74,6 +76,8 @@ namespace EMotionFX::Pipeline::Utilities
         return characterColliderConfigurationModified;
     }
 
+    // Converts all legacy material selections found inside physics setup rule
+    // into new material slots.
     bool FixActorPhysicsSetupRule(
         EMotionFX::Pipeline::Rule::ActorPhysicsSetupRule& actorPhysicsSetupRule,
         const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
@@ -122,6 +126,8 @@ namespace EMotionFX::Pipeline::Utilities
         return physicsSetupModified;
     }
 
+    // Converts all legacy material selections found inside an FBX
+    // manifest (Actor Group) into new material slots.
     void FixFbxManifestPhysicsMaterials(
         const AZStd::string& fbxManifestFullPath,
         const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)

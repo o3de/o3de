@@ -22,6 +22,7 @@
 #include <extensions/PxRigidBodyExt.h>
 #include <PxPhysicsAPI.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Material/PhysXMaterial.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 
 namespace PhysX

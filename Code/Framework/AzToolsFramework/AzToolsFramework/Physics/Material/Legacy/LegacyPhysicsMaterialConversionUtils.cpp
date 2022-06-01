@@ -94,7 +94,7 @@ namespace Physics::Utils
             for (size_t i = 0; i < legacyMaterialSelection.m_materialIdsAssignedToSlots.size(); ++i)
             {
                 // Using Material 1, Material 2, etc. for slot names when there is more than one entry.
-                slotNames.push_back(AZStd::string::format("Material %d", i + 1));
+                slotNames.push_back(AZStd::string::format("Material %zu", i + 1));
             }
 
             newMaterialSlots.SetSlots(slotNames);

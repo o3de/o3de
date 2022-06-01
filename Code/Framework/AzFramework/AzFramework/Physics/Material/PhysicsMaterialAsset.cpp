@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 
@@ -25,6 +26,8 @@ namespace Physics
                 ->Field("MaterialProperties", &MaterialAsset::m_materialProperties)
                 ->Field("LegacyPhysicsMaterialId", &MaterialAsset::m_legacyPhysicsMaterialId)
                 ;
+
+            serializeContext->RegisterGenericType<AZ::Data::Asset<MaterialAsset>>();
 
             if (auto* editContext = serializeContext->GetEditContext())
             {

@@ -159,10 +159,10 @@ namespace PhysX
                     else
                     {
                         AZ_Warning("PhysX Mesh Asset", false,
-                            "Loading PhysX Mesh '%s' it didn't find physics material '%s', assigned to slot '%s'. Default physics material will be used.",
+                            "Loading PhysX Mesh '%s' it didn't find physics material '%s', assigned to slot '%.*s'. Default physics material will be used.",
                             asset.GetHint().c_str(),
                             materialAsset.GetHint().c_str(),
-                            meshAsset->m_assetData.m_materialSlots.GetSlotName(slotId).c_str());
+                            AZ_STRING_ARG(meshAsset->m_assetData.m_materialSlots.GetSlotName(slotId)));
                     }
                 }
             }

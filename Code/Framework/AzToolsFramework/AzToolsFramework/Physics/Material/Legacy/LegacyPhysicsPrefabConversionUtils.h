@@ -11,7 +11,7 @@
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
- // O3DE_DEPRECATION
+ // O3DE_DEPRECATION_NOTICE(GHI-9840)
  // Utilities used for legacy material conversion.
 
 namespace Physics::Utils
