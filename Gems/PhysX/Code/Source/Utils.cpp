@@ -1574,8 +1574,12 @@ namespace PhysX
             Physics::HeightfieldProviderRequestsBus::Event(
                 entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
-            configuration.SetNumRowVertices(numRows);
-            configuration.SetNumColumnVertices(numColumns);
+            // The heightfield needs to be at least 2 x 2 vertices to define a single heightfield square.
+            if ((numRows >= 2) && (numColumns >= 2))
+            {
+                configuration.SetNumRowVertices(numRows);
+                configuration.SetNumColumnVertices(numColumns);
+            }
 
             float minHeightBounds = 0.0f;
             float maxHeightBounds = 0.0f;

@@ -26,7 +26,7 @@ namespace AzToolsFramework
                 PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
                 state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance.GetTemplateId());
                 state->SetParent(undoBatch);
-                state->Redo(instance);
+                state->Redo();
             }
 
             LinkId CreateLink(

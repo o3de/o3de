@@ -14,10 +14,13 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
@@ -26,6 +29,11 @@ AZ_DECLARE_BUDGET(Terrain);
 
 namespace Terrain
 {
+    AZ_CVAR(int32_t, cl_terrainPhysicsColliderMaxJobs, AzFramework::Terrain::QueryAsyncParams::UseMaxJobs, nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The maximum number of jobs to use when updating a Terrain Physics Collider (-1 will use all available cores).");
+
+
     Physics::HeightfieldProviderNotifications::HeightfieldChangeMask TerrainToPhysicsHeightfieldChangeMask(AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask mask)
     {
         using AzFramework::Terrain::TerrainDataNotifications;
@@ -188,8 +196,9 @@ namespace Terrain
         m_terrainDataActive = true;
 
         // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
+        // Notify this as a 'settings' change because the heightfield has changed activation status.
         NotifyListenersOfHeightfieldDataChange(
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd, AZ::Aabb::CreateNull());
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
@@ -198,8 +207,9 @@ namespace Terrain
 
         // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
         // will no longer have any valid data.
+        // Notify this as a 'settings' change because the heightfield has changed activation status.
         NotifyListenersOfHeightfieldDataChange(
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::DestroyBegin, AZ::Aabb::CreateNull());
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings, AZ::Aabb::CreateNull());
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataChanged(
@@ -207,8 +217,8 @@ namespace Terrain
     {
         if (m_terrainDataActive)
         {
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask
-                = TerrainToPhysicsHeightfieldChangeMask(dataChangedMask);
+            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask physicsMask =
+                TerrainToPhysicsHeightfieldChangeMask(dataChangedMask);
 
             NotifyListenersOfHeightfieldDataChange(physicsMask, dirtyRegion);
         }
@@ -216,6 +226,13 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::CalculateHeightfieldRegion()
     {
+        if (!m_terrainDataActive)
+        {
+            AZStd::unique_lock lock(m_stateMutex);
+            m_heightfieldRegion = AzFramework::Terrain::TerrainQueryRegion();
+            return;
+        }
+
         AZ::Aabb heightfieldBox = AZ::Aabb::CreateNull();
 
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -229,28 +246,45 @@ namespace Terrain
         // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
         AZ::Vector2 numPoints = (constrictedAlignedEndPoint - constrictedAlignedStartPoint) / gridResolution + AZ::Vector2(1.0f);
 
-        m_heightfieldRegion.m_startPoint =
-            AZ::Vector3(constrictedAlignedStartPoint.GetX(), constrictedAlignedStartPoint.GetY(), heightfieldBox.GetMin().GetZ());
-        m_heightfieldRegion.m_stepSize = gridResolution;
-        m_heightfieldRegion.m_numPointsX = aznumeric_cast<size_t>(numPoints.GetX());
-        m_heightfieldRegion.m_numPointsY = aznumeric_cast<size_t>(numPoints.GetY());
+        {
+            AZStd::unique_lock lock(m_stateMutex);
+            m_heightfieldRegion.m_startPoint =
+                AZ::Vector3(constrictedAlignedStartPoint.GetX(), constrictedAlignedStartPoint.GetY(), heightfieldBox.GetMin().GetZ());
+            m_heightfieldRegion.m_stepSize = gridResolution;
+            m_heightfieldRegion.m_numPointsX = aznumeric_cast<size_t>(numPoints.GetX());
+            m_heightfieldRegion.m_numPointsY = aznumeric_cast<size_t>(numPoints.GetY());
+        }
     }
 
     AZ::Aabb TerrainPhysicsColliderComponent::GetHeightfieldAabb() const
     {
+        if (!m_terrainDataActive)
+        {
+            return AZ::Aabb::CreateNull();
+        }
+
         AZ::Aabb heightfieldBox = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             heightfieldBox, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-
-        AZ::Vector3 endPoint = m_heightfieldRegion.m_startPoint +
-            AZ::Vector3(m_heightfieldRegion.m_stepSize.GetX() * (m_heightfieldRegion.m_numPointsX - 1),
-                        m_heightfieldRegion.m_stepSize.GetY() * (m_heightfieldRegion.m_numPointsY - 1), heightfieldBox.GetZExtent());
-        return AZ::Aabb::CreateFromMinMax(m_heightfieldRegion.m_startPoint, endPoint);
+        {
+            AZStd::shared_lock lock(m_stateMutex);
+            AZ::Vector3 endPoint = m_heightfieldRegion.m_startPoint +
+                AZ::Vector3(m_heightfieldRegion.m_stepSize.GetX() * (m_heightfieldRegion.m_numPointsX - 1),
+                            m_heightfieldRegion.m_stepSize.GetY() * (m_heightfieldRegion.m_numPointsY - 1), heightfieldBox.GetZExtent());
+            return AZ::Aabb::CreateFromMinMax(m_heightfieldRegion.m_startPoint, endPoint);
+        }
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const
     {
+        if (!m_terrainDataActive)
+        {
+            minHeightBounds = 0.0f;
+            maxHeightBounds = 0.0f;
+            return;
+        }
+
         const AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
 
         // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
@@ -287,8 +321,16 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
+        AzFramework::Terrain::TerrainQueryRegion queryRegion;
+
+        {
+            AZStd::shared_lock lock(m_stateMutex);
+            queryRegion = m_heightfieldRegion;
+        }
+
+
         heights.clear();
-        heights.reserve(m_heightfieldRegion.m_numPointsX * m_heightfieldRegion.m_numPointsY);
+        heights.reserve(queryRegion.m_numPointsX * queryRegion.m_numPointsY);
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
         const float worldCenterZ = worldSize.GetCenter().GetZ();
@@ -301,7 +343,7 @@ namespace Terrain
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequests::QueryRegion, m_heightfieldRegion,
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegion, queryRegion,
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
             perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
@@ -321,6 +363,8 @@ namespace Terrain
 
     AZ::Data::Asset<Physics::MaterialAsset> TerrainPhysicsColliderComponent::FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const
     {
+        AZStd::shared_lock lock(m_stateMutex);
+        
         uint8_t index = 0;
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
@@ -362,15 +406,29 @@ namespace Terrain
 
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
-        AZ::Vector2 heightfieldStartGridPoint = AZ::Vector2(m_heightfieldRegion.m_startPoint) / m_heightfieldRegion.m_stepSize;
+        TerrainQueryRegion queryRegion;
+        size_t xOffset, yOffset;
 
-        AZ::Vector2 contractedAlignedStartGridPoint = (AZ::Vector2(region.GetMin()) / gridResolution).GetCeil();
-        AZ::Vector2 contractedAlignedEndGridPoint = (AZ::Vector2(region.GetMax()) / gridResolution).GetFloor();
+        {
+            AZStd::shared_lock lock(m_stateMutex);
 
-        AZ::Vector2 contractedAlignedStartPoint = contractedAlignedStartGridPoint * gridResolution;
+            AZ::Vector2 heightfieldStartGridPoint = AZ::Vector2(m_heightfieldRegion.m_startPoint) / m_heightfieldRegion.m_stepSize;
 
-        size_t xOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetX() - heightfieldStartGridPoint.GetX());
-        size_t yOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetY() - heightfieldStartGridPoint.GetY());
+            AZ::Vector2 contractedAlignedStartGridPoint = (AZ::Vector2(region.GetMin()) / gridResolution).GetCeil();
+            AZ::Vector2 contractedAlignedEndGridPoint = (AZ::Vector2(region.GetMax()) / gridResolution).GetFloor();
+
+            AZ::Vector2 contractedAlignedStartPoint = contractedAlignedStartGridPoint * gridResolution;
+
+            xOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetX() - heightfieldStartGridPoint.GetX());
+            yOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetY() - heightfieldStartGridPoint.GetY());
+
+            // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
+            AZ::Vector2 numPoints = contractedAlignedEndGridPoint - contractedAlignedStartGridPoint + AZ::Vector2(1.0f);
+            const size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(numPoints.GetX()), m_heightfieldRegion.m_numPointsX);
+            const size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(numPoints.GetY()),  m_heightfieldRegion.m_numPointsY);
+
+            queryRegion = TerrainQueryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
+        }
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
         const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
@@ -413,24 +471,39 @@ namespace Terrain
             updateHeightsMaterialsCallback(row, column, point);
         };
 
-        // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
-        AZ::Vector2 numPoints = contractedAlignedEndGridPoint - contractedAlignedStartGridPoint + AZ::Vector2(1.0f);
-        const size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(numPoints.GetX()), m_heightfieldRegion.m_numPointsX);
-        const size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(numPoints.GetY()),  m_heightfieldRegion.m_numPointsY);
-        TerrainQueryRegion queryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
+        // Create an async query to update all of the height and material data so that we can spread the computation across
+        // multiple threads, but block on completion so that we can guarantee the updates have completed by the time we leave
+        // this method.
+
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> jobContext;
+
+        AZStd::binary_semaphore wait;
+        auto params = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
+        params->m_desiredNumberOfJobs = cl_terrainPhysicsColliderMaxJobs;
+        params->m_completionCallback =
+            [&wait]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> context)
+        {
+            // Notify the main test thread that the query has completed.
+            wait.release();
+        };
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
-        TerrainDataRequestBus::Broadcast(
-            &TerrainDataRequests::QueryRegion,
-            queryRegion,
-            static_cast<TerrainDataRequests::TerrainDataMask>(TerrainDataRequests::TerrainDataMask::Heights | TerrainDataRequests::TerrainDataMask::SurfaceData),
-            perPositionCallback,
-            TerrainDataRequests::Sampler::EXACT);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            jobContext, &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync, queryRegion,
+            static_cast<TerrainDataRequests::TerrainDataMask>(
+                TerrainDataRequests::TerrainDataMask::Heights | TerrainDataRequests::TerrainDataMask::SurfaceData),
+            perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, params);
+
+        // Wait for the query to complete.
+        wait.acquire();
     }
 
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
     {
-        m_configuration = newConfiguration;
+        {
+            AZStd::unique_lock lock(m_stateMutex);
+            m_configuration = newConfiguration;
+        }
 
         NotifyListenersOfHeightfieldDataChange(
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping, AZ::Aabb::CreateNull());
@@ -438,6 +511,11 @@ namespace Terrain
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
+        if (!m_terrainDataActive)
+        {
+            return AZ::Vector2(0.0f);
+        }
+
         float gridResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
@@ -447,22 +525,27 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
     {
+        AZStd::shared_lock lock(m_stateMutex);
         numColumns = aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsX);
         numRows = aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsY);
     }
 
     int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
     {
+        AZStd::shared_lock lock(m_stateMutex);
         return aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsX);
     }
 
     int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
     {
+        AZStd::shared_lock lock(m_stateMutex);
         return aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsY);
     }
 
     AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> TerrainPhysicsColliderComponent::GetMaterialList() const
     {
+        AZStd::shared_lock lock(m_stateMutex);
+        
         AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
         materialList.reserve(m_configuration.m_surfaceMaterialMappings.size() + 1); // +1 for default material asset
 

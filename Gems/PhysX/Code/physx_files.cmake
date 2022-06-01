@@ -37,6 +37,8 @@ set(FILES
     Source/MeshColliderComponent.h
     Source/BoxColliderComponent.h
     Source/BoxColliderComponent.cpp
+    Source/HeightfieldCollider.h
+    Source/HeightfieldCollider.cpp
     Source/HeightfieldColliderComponent.h
     Source/HeightfieldColliderComponent.cpp
     Source/SphereColliderComponent.h

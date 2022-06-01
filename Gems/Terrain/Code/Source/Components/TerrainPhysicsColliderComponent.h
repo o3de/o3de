@@ -131,7 +131,10 @@ namespace Terrain
 
     private:
         TerrainPhysicsColliderConfig m_configuration;
-        bool m_terrainDataActive = false;
+        AZStd::atomic_bool m_terrainDataActive = false;
         AzFramework::Terrain::TerrainQueryRegion m_heightfieldRegion;
+
+        // Protect state reads from happening in parallel with state writes.
+        mutable AZStd::shared_mutex m_stateMutex;
     };
 }
