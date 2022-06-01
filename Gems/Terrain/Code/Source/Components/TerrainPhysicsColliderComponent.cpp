@@ -503,8 +503,14 @@ namespace Terrain
                 TerrainDataRequests::TerrainDataMask::Heights | TerrainDataRequests::TerrainDataMask::SurfaceData),
             perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, params);
 
-        // Wait for the query to complete.
-        wait.acquire();
+        // If a jobContext was successfully created, wait for the query to complete.
+        // (If the call to UpdateHeightsAndMaterials was made on a thread, and the TerrainSystem is currently shutting down on a different
+        // thread, it's possible that the TerrainDataRequest bus won't have a listener at the moment we call it, which is why we need
+        // to validate that the jobContext was returned successfully)
+        if (jobContext)
+        {
+            wait.acquire();
+        }
     }
 
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
