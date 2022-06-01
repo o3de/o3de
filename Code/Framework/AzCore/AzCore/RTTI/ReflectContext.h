@@ -289,7 +289,7 @@ namespace AZ
         }
 
         // Unneeded arguments will be discarded, so larger array sizes are OK
-        if (domArray.ArraySize() >= index)
+        if (index >= domArray.ArraySize())
         {
             return true;
         }
@@ -317,6 +317,10 @@ namespace AZ
     bool CanInvokeFromDomArray(const AZ::Dom::Value& domArray)
     {
         size_t index = 0;
+        if (!domArray.IsArray() || domArray.ArraySize() < sizeof...(T))
+        {
+            return false;
+        }
         return (CanInvokeFromDomArrayEntry<T>(domArray, index++) && ...);
     }
 
@@ -324,6 +328,10 @@ namespace AZ
     Dom::Value InvokeFromDomArray(const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray)
     {
         size_t index = 0;
+        if (!domArray.IsArray() || domArray.ArraySize() < sizeof...(Args))
+        {
+            return {};
+        }
         if constexpr (AZStd::is_same_v<R, void>)
         {
             invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[index++])...);
