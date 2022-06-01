@@ -10,7 +10,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <QSortFilterProxyModel>
-#include <QPersistentModelIndex>
 #include <QPointer>
 #endif
 #include <Editor/EditorSettingsAPIBus.h>
@@ -45,10 +44,8 @@ namespace AzToolsFramework
 
         protected:
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
-            void timerEvent(QTimerEvent* event) override;
             ////////////////////////////////////////////////////////////////////
 
-            void StartUpdateModelMapTimer();
             AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
             int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
 
@@ -57,13 +54,11 @@ namespace AzToolsFramework
 
         private slots:
             void SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
-
         private:
             AZ::u64 m_numberOfItemsDisplayed = 50;
             int m_displayedItemsCounter = 0;
-            int m_updateModelMapTimerId = 0;
             QPointer<AssetBrowserFilterModel> m_filterModel;
-            QMap<int, QPersistentModelIndex> m_indexMap;
+            QMap<int, QModelIndex> m_indexMap;
             QMap<QModelIndex, int> m_rowMap;
         };
     } // namespace AssetBrowser
