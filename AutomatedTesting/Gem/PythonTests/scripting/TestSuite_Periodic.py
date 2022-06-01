@@ -221,6 +221,22 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Verified no tabs open: True",
+            "New tab opened successfully: True",
+            "Open file window triggered successfully: True"
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvent_AddRemoveParameter_ActionsSuccessful.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
             "Verified no tabs open: True",

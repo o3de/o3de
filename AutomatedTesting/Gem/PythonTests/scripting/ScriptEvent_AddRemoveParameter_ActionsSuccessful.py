@@ -5,6 +5,14 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+from PySide2 import QtWidgets
+from editor_python_test_tools.utils import Report
+from editor_python_test_tools.utils import TestHelper as helper
+import editor_python_test_tools.pyside_utils as pyside_utils
+import azlmbr.bus as bus
+import azlmbr.editor as editor
+import azlmbr.legacy.general as general
 
 # fmt: off
 class Tests():
@@ -15,8 +23,11 @@ class Tests():
     parameter_removed   = ("Successfully removed parameter",   "Failed to remove parameter")
 # fmt: on
 
+GENERAL_WAIT = 1.0  # seconds
+FILE_PATH = os.path.join("AutomatedTesting", "ScriptCanvas", "test_file.scriptevent")
+QtObject = object
 
-def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
+class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
     """
     Summary:
      Parameter can be removed from a Script Event method
@@ -38,20 +49,6 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
 
     :return: None
     """
-    import os
-    from PySide2 import QtWidgets
-
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
-    import editor_python_test_tools.pyside_utils as pyside_utils
-
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
-
-    GENERAL_WAIT = 1.0  # seconds
-    FILE_PATH = os.path.join("AutomatedTesting", "ScriptCanvas", "test_file.scriptevent")
-    QtObject = object
 
     def create_script_event(asset_editor: QtObject, file_path: str) -> None:
         action = pyside_utils.find_child_by_pattern(menu_bar, {"type": QtWidgets.QAction, "text": "Script Events"})
@@ -117,11 +114,5 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
     # 5) Remove Parameter from Event
     remove_parameter(FILE_PATH)
 
-
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from editor_python_test_tools.utils import Report
-
-    Report.start_test(ScriptEvent_AddRemoveParameter_ActionsSuccessful)
+test = ScriptEvent_AddRemoveParameter_ActionsSuccessful()
+test.run_test()
