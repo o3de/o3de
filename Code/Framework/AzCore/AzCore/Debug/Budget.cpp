@@ -11,7 +11,6 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 AZ_DEFINE_BUDGET(Animation);
 AZ_DEFINE_BUDGET(Audio);
@@ -27,7 +26,24 @@ namespace AZ::Debug
     struct BudgetImpl
     {
         AZ_CLASS_ALLOCATOR(BudgetImpl, AZ::SystemAllocator, 0);
-        // TODO: Budget implementation for tracking budget wall time per-core, memory, etc.
+
+        BudgetImpl()
+        {
+            m_logger = AZ::Interface<IEventLogger>::Get();
+        }
+
+        IEventLogger* m_logger;
+        AZStd::atomic<AZ::u32> m_frameNumber{ 0 };
+        thread_local static AZStd::chrono::system_clock::time_point s_startTime;
+    };
+
+    thread_local AZStd::chrono::system_clock::time_point BudgetImpl::s_startTime;
+
+    struct PerformanceEvent
+    {
+        AZ::u64 m_duration;
+        AZ::u32 m_frameNumber;
+        char m_budgetName[32];
     };
 
     Budget::Budget(const char* name)
@@ -38,12 +54,9 @@ namespace AZ::Debug
     Budget::Budget(const char* name, uint32_t crc)
         : m_name{ name }
         , m_crc{ crc }
+        , m_budgetHash { name }
     {
         m_impl = aznew BudgetImpl;
-        if (auto statsProfiler = Interface<Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
-        {
-            statsProfiler->RegisterProfilerId(m_crc);
-        }
     }
 
     Budget::~Budget()
@@ -58,14 +71,22 @@ namespace AZ::Debug
 
     void Budget::PerFrameReset()
     {
+        m_impl->m_frameNumber++;
     }
 
     void Budget::BeginProfileRegion()
     {
+        BudgetImpl::s_startTime = AZStd::chrono::high_resolution_clock::now();
     }
 
     void Budget::EndProfileRegion()
     {
+        AZStd::chrono::microseconds duration = AZStd::chrono::high_resolution_clock::now() - BudgetImpl::s_startTime;
+        PerformanceEvent& event = m_impl->m_logger->RecordEventBegin<PerformanceEvent>(m_budgetHash, 0);
+        event.m_duration = duration.count();
+        event.m_frameNumber = m_impl->m_frameNumber;
+        memcpy(event.m_budgetName, m_name.data(), m_name.length());
+        m_impl->m_logger->RecordEventEnd();
     }
 
     void Budget::TrackAllocation(uint64_t)

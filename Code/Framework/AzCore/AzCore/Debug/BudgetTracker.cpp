@@ -66,6 +66,17 @@ namespace AZ::Debug
         }
     }
 
+    void BudgetTracker::PerFrameReset()
+    {
+        if (m_impl)
+        {
+            for (auto budgetRef : m_impl->m_externalBudgetRefs)
+            {
+                (*budgetRef)->PerFrameReset();
+            }
+        }
+    }
+
     void BudgetTracker::GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         AZStd::scoped_lock lock{ m_mutex };
