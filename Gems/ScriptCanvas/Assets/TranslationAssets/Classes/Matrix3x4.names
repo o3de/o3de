@@ -5,12 +5,11 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Matrix 3x 4"
+                "name": "Matrix3x4"
             },
             "methods": [
                 {
                     "base": "CreateZero",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Zero"
@@ -26,14 +25,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetRotationPartFromQuaternion",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Rotation Part From Quaternion"
@@ -49,7 +47,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -62,7 +60,6 @@
                 },
                 {
                     "base": "CreateFromColumns",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create From Columns"
@@ -78,19 +75,25 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
                             }
                         }
                     ],
@@ -98,14 +101,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "IsClose",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Close"
@@ -121,7 +123,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -142,7 +150,6 @@
                 },
                 {
                     "base": "IsOrthogonal",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Orthogonal"
@@ -155,6 +162,12 @@
                         "name": "Is Orthogonal"
                     },
                     "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
@@ -173,7 +186,6 @@
                 },
                 {
                     "base": "Orthogonalize",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Orthogonalize"
@@ -189,37 +201,43 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateFromMatrix3x3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Create From Matrix 3x 3"
+                        "tooltip": "When signaled, this will invoke Create From Matrix3x3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Create From Matrix 3x 3 is invoked"
+                        "tooltip": "Signaled after Create From Matrix3x3 is invoked"
                     },
                     "details": {
-                        "name": "Create From Matrix 3x 3"
+                        "name": "Create From Matrix3x3"
                     },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "RetrieveScale",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Retrieve Scale"
@@ -231,18 +249,25 @@
                     "details": {
                         "name": "Retrieve Scale"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateRotationX",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create RotationX"
@@ -254,34 +279,11 @@
                     "details": {
                         "name": "Create RotationX"
                     },
-                    "results": [
-                        {
-                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
-                            "details": {
-                                "name": "Matrix 3x 4"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "CreateFromMatrix3x3AndTranslation",
-                    "context": "Matrix3x4",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Create From Matrix 3x 3 And Translation"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Create From Matrix 3x 3 And Translation is invoked"
-                    },
-                    "details": {
-                        "name": "Create From Matrix 3x 3 And Translation"
-                    },
                     "params": [
                         {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "float"
                             }
                         }
                     ],
@@ -289,14 +291,49 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateFromMatrix3x3AndTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create From Matrix3x3 And Translation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create From Matrix3x3 And Translation is invoked"
+                    },
+                    "details": {
+                        "name": "Create From Matrix3x3 And Translation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "ToString",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke To String"
@@ -308,18 +345,25 @@
                     "details": {
                         "name": "To String"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                                "name": "AZ Std::string"
                             }
                         }
                     ]
                 },
                 {
                     "base": "ExtractScale",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Extract Scale"
@@ -331,18 +375,25 @@
                     "details": {
                         "name": "Extract Scale"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetTranspose",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Transpose"
@@ -354,18 +405,25 @@
                     "details": {
                         "name": "Get Transpose"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "InvertFast",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Invert Fast"
@@ -381,14 +439,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateFromRows",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create From Rows"
@@ -404,13 +461,19 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
                             }
                         }
                     ],
@@ -418,14 +481,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Translation"
@@ -437,41 +499,55 @@
                     "details": {
                         "name": "Create Translation"
                     },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetTranspose3x3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Transpose 3x 3"
+                        "tooltip": "When signaled, this will invoke Get Transpose 3x3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Transpose 3x 3 is invoked"
+                        "tooltip": "Signaled after Get Transpose 3x3 is invoked"
                     },
                     "details": {
-                        "name": "Get Transpose 3x 3"
+                        "name": "Get Transpose 3x3"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetColumn",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Column"
@@ -487,7 +563,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -499,14 +575,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetRow",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Row"
@@ -520,6 +595,12 @@
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
                                 "name": "int"
@@ -530,14 +611,13 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetInverseFast",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Inverse Fast"
@@ -549,18 +629,25 @@
                     "details": {
                         "name": "Get Inverse Fast"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetOrthogonalized",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Orthogonalized"
@@ -572,34 +659,47 @@
                     "details": {
                         "name": "Get Orthogonalized"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "Multiply3x3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Multiply 3x 3"
+                        "tooltip": "When signaled, this will invoke Multiply 3x3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Multiply 3x 3 is invoked"
+                        "tooltip": "Signaled after Multiply 3x3 is invoked"
                     },
                     "details": {
-                        "name": "Multiply 3x 3"
+                        "name": "Multiply 3x3"
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ],
@@ -607,14 +707,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "IsFinite",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Finite"
@@ -626,6 +725,14 @@
                     "details": {
                         "name": "Is Finite"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -637,7 +744,6 @@
                 },
                 {
                     "base": "CreateFromQuaternion",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create From Quaternion"
@@ -649,18 +755,25 @@
                     "details": {
                         "name": "Create From Quaternion"
                     },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetBasisAndTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Basis And Translation"
@@ -676,54 +789,59 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "MultiplyVector4",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Multiply Vector 4"
+                        "tooltip": "When signaled, this will invoke Multiply Vector4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Multiply Vector 4 is invoked"
+                        "tooltip": "Signaled after Multiply Vector4 is invoked"
                     },
                     "details": {
-                        "name": "Multiply Vector 4"
+                        "name": "Multiply Vector4"
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ],
@@ -731,14 +849,13 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateScale",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Scale"
@@ -750,18 +867,25 @@
                     "details": {
                         "name": "Create Scale"
                     },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateDiagonal",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Diagonal"
@@ -773,18 +897,25 @@
                     "details": {
                         "name": "Create Diagonal"
                     },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Translation"
@@ -796,18 +927,25 @@
                     "details": {
                         "name": "Get Translation"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "InvertFull",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Invert Full"
@@ -823,14 +961,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetColumns",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Columns"
@@ -846,38 +983,37 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetElement",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Element"
@@ -893,7 +1029,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -918,7 +1054,6 @@
                 },
                 {
                     "base": "Equal",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -934,7 +1069,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -949,18 +1090,25 @@
                 },
                 {
                     "base": "GetDeterminant3x3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Determinant 3x 3"
+                        "tooltip": "When signaled, this will invoke Get Determinant 3x3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Determinant 3x 3 is invoked"
+                        "tooltip": "Signaled after Get Determinant 3x3 is invoked"
                     },
                     "details": {
-                        "name": "Get Determinant 3x 3"
+                        "name": "Get Determinant 3x3"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
@@ -972,7 +1120,6 @@
                 },
                 {
                     "base": "GetColumns",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Columns"
@@ -988,38 +1135,37 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetRows",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Rows"
@@ -1035,32 +1181,31 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetMultipliedByScale",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Multiplied By Scale"
@@ -1074,9 +1219,15 @@
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ],
@@ -1084,14 +1235,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateRotationZ",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create RotationZ"
@@ -1103,18 +1253,25 @@
                     "details": {
                         "name": "Create RotationZ"
                     },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateFromQuaternionAndTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create From Quaternion And Translation"
@@ -1128,9 +1285,15 @@
                     },
                     "params": [
                         {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ],
@@ -1138,26 +1301,31 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetRowAsVector3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Row As Vector 3"
+                        "tooltip": "When signaled, this will invoke Get Row As Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Row As Vector 3 is invoked"
+                        "tooltip": "Signaled after Get Row As Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Get Row As Vector 3"
+                        "name": "Get Row As Vector3"
                     },
                     "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -1169,30 +1337,35 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "MultiplyMatrix3x4",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Multiply Matrix 3x 4"
+                        "tooltip": "When signaled, this will invoke Multiply Matrix3x4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Multiply Matrix 3x 4 is invoked"
+                        "tooltip": "Signaled after Multiply Matrix3x4 is invoked"
                     },
                     "details": {
-                        "name": "Multiply Matrix 3x 4"
+                        "name": "Multiply Matrix3x4"
                     },
                     "params": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -1200,37 +1373,43 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "UnsafeCreateFromMatrix4x4",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Unsafe Create From Matrix 4x 4"
+                        "tooltip": "When signaled, this will invoke Unsafe Create From Matrix4x4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Unsafe Create From Matrix 4x 4 is invoked"
+                        "tooltip": "Signaled after Unsafe Create From Matrix4x4 is invoked"
                     },
                     "details": {
-                        "name": "Unsafe Create From Matrix 4x 4"
+                        "name": "Unsafe Create From Matrix4x4"
                     },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetRows",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Rows"
@@ -1246,32 +1425,31 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "Clone",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clone"
@@ -1283,34 +1461,47 @@
                     "details": {
                         "name": "Clone"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "MultiplyVector3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Multiply Vector 3"
+                        "tooltip": "When signaled, this will invoke Multiply Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Multiply Vector 3 is invoked"
+                        "tooltip": "Signaled after Multiply Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Multiply Vector 3"
+                        "name": "Multiply Vector3"
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ],
@@ -1318,14 +1509,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateIdentity",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Identity"
@@ -1341,14 +1531,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetBasisAndTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Basis And Translation"
@@ -1364,38 +1553,37 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateFromValue",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create From Value"
@@ -1407,18 +1595,25 @@
                     "details": {
                         "name": "Create From Value"
                     },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetElement",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Element"
@@ -1431,6 +1626,12 @@
                         "name": "Get Element"
                     },
                     "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -1455,30 +1656,28 @@
                 },
                 {
                     "base": "Transpose3x3",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Transpose 3x 3"
+                        "tooltip": "When signaled, this will invoke Transpose 3x3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Transpose 3x 3 is invoked"
+                        "tooltip": "Signaled after Transpose 3x3 is invoked"
                     },
                     "details": {
-                        "name": "Transpose 3x 3"
+                        "name": "Transpose 3x3"
                     },
                     "params": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "Transpose",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Transpose"
@@ -1494,14 +1693,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "CreateRotationY",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create RotationY"
@@ -1513,18 +1711,25 @@
                     "details": {
                         "name": "Create RotationY"
                     },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetRow",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Row"
@@ -1540,7 +1745,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -1552,14 +1757,13 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Vector4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetInverseFull",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Inverse Full"
@@ -1571,18 +1775,25 @@
                     "details": {
                         "name": "Get Inverse Full"
                     },
+                    "params": [
+                        {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetColumn",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Column"
@@ -1596,6 +1807,12 @@
                     },
                     "params": [
                         {
+                            "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+                            "details": {
+                                "name": "Matrix3x4"
+                            }
+                        },
+                        {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
                                 "name": "int"
@@ -1606,14 +1823,13 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetTranslation",
-                    "context": "Matrix3x4",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Translation"
@@ -1629,13 +1845,13 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Vector3"
                             }
                         }
                     ]
@@ -1650,19 +1866,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "basisX"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -1670,7 +1874,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "basisX"
                             }
                         }
                     ]
@@ -1685,7 +1889,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -1706,19 +1910,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "basisY"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -1726,7 +1918,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "basisY"
                             }
                         }
                     ]
@@ -1741,7 +1933,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -1762,19 +1954,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "basisZ"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -1782,7 +1962,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "basisZ"
                             }
                         }
                     ]
@@ -1797,7 +1977,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
@@ -1818,19 +1998,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": "translation"
-                            }
-                        },
-                        {
-                            "typeid": "",
-                            "details": {
-                                "name": ""
+                                "name": "Matrix3x4"
                             }
                         }
                     ],
@@ -1838,7 +2006,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "translation"
                             }
                         }
                     ]
@@ -1853,7 +2021,7 @@
                         {
                             "typeid": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
                             "details": {
-                                "name": "Matrix 3x 4"
+                                "name": "Matrix3x4"
                             }
                         },
                         {
