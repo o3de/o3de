@@ -79,14 +79,15 @@ namespace AZ
                 static constexpr uint32_t InvalidCaptureHandle = FrameCaptureRequests::s_InvalidFrameCaptureId;
 
                 FrameCaptureSystemComponent* const m_frameCaptureSystemComponent;
-                const uint32_t m_captureStateIndex;
+                const uint32_t m_captureStateIndex = InvalidCaptureHandle;
             };
             friend CaptureHandle;
 
             CaptureHandle  InternalCapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, 
                                                          const AZStd::string& slotName, 
                                                          const AZStd::string& outputFilePath,
-                                                         RPI::PassAttachmentReadbackOption option);
+                                                         RPI::PassAttachmentReadbackOption option,
+                                                         AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
 
             void CaptureAttachmentCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 

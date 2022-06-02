@@ -66,6 +66,7 @@ namespace AtomToolsFramework
         pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+        m_renderPipeline->RemoveFromRenderTick();
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
@@ -183,7 +184,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    bool PreviewRenderer::StartCapture()
+    uint32_t PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
@@ -214,11 +215,11 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        bool startedCapture = false;
+        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
-        return startedCapture;
+        return frameCaptureId;
     }
 
     void PreviewRenderer::EndCapture()

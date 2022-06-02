@@ -40,6 +40,7 @@
 #include <AzCore/Console/Console.h>
 
 #include <tiffio.h>
+
 namespace AZ
 {
     namespace Render
@@ -387,6 +388,7 @@ namespace AZ
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
+                m_idleCaptures.push_back(captureHandle);
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
 
@@ -395,17 +397,22 @@ namespace AZ
             if (!pass)
             {
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find SwapChainPass for the window");
+                m_idleCaptures.push_back(captureHandle);
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
+                m_idleCaptures.push_back(captureHandle);
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
+            capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
+            capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
 
             capture->m_outputFilePath = ResolvePath(filePath);
             pass->ReadbackSwapChain(capture->m_readback);
+            m_inProgressCaptures.push_back(captureHandle);
 
             return captureHandle.GetCaptureStateIndex();
         }
@@ -438,14 +445,18 @@ namespace AZ
             CaptureState* capture = captureHandle.GetCaptureState();
             if (!capture) // failed to get the capture state ptr, abort
             {
+                m_idleCaptures.push_back(captureHandle);
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
 
             if (!capture->m_readback->IsReady())
             {
                 AZ_Assert(false, "Failed to capture attachment since the readback is not ready");
+                m_idleCaptures.push_back(captureHandle);
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
+            capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
+            capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
 
             capture->m_outputFilePath = ResolvePath(outputFilePath);
 
@@ -463,6 +474,7 @@ namespace AZ
 
             if (!previewPass)
             {
+                m_idleCaptures.push_back(captureHandle);
                 AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
                 return FrameCaptureRequests::s_InvalidFrameCaptureId;
             }
@@ -470,17 +482,20 @@ namespace AZ
             bool result = previewPass->ReadbackOutput(capture->m_readback);
             if (result)
             {
+                m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
 
             AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");
+            m_idleCaptures.push_back(captureHandle);
             return FrameCaptureRequests::s_InvalidFrameCaptureId;
         }
 
         FrameCaptureSystemComponent::CaptureHandle FrameCaptureSystemComponent::InternalCapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, 
                                                                                  const AZStd::string& slot,
                                                                                  const AZStd::string& outputFilePath, 
-                                                                                 RPI::PassAttachmentReadbackOption option)
+                                                                                 RPI::PassAttachmentReadbackOption option,
+                                                                                 AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction)
         {
             if (!CanCapture())
             {
@@ -512,6 +527,8 @@ namespace AZ
                 m_idleCaptures.push_back(captureHandle);
                 return CaptureHandle::Null();
             }
+            capture->m_readback->SetUserIdentifier(captureHandle.GetCaptureStateIndex());
+            capture->m_readback->SetCallback(callbackFunction);
 
             if (!outputFilePath.empty())
             {
@@ -543,7 +560,7 @@ namespace AZ
                                                                 const AZStd::string& outputFilePath, 
                                                                 RPI::PassAttachmentReadbackOption option)
         {
-            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option);
+            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
             if (captureHandle.IsValid())
             {
                 AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
@@ -552,7 +569,6 @@ namespace AZ
                 {
                     return FrameCaptureRequests::s_InvalidFrameCaptureId;
                 }
-                capture->m_readback->SetCallback(AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
@@ -564,7 +580,18 @@ namespace AZ
                                                                             RPI::AttachmentReadback::CallbackFunction callback, 
                                                                             RPI::PassAttachmentReadbackOption option)
         {
-            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slotName, "", option);
+
+            CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slotName, "", option, [this, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+            {
+                CaptureHandle captureHandle(this, readbackResult.m_userIdentifier);
+
+                callback(readbackResult); // call user supplied callback function
+
+                AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
+                CaptureState* capture = captureHandle.GetCaptureState();
+                AZ_Assert(capture && capture->m_result == FrameCaptureResult::None, "Unexpected value for m_result");
+                capture->m_result = FrameCaptureResult::Success; // just need to mark this capture as complete, callback handles the actual processing
+            });
             if (captureHandle.IsValid())
             {
                 AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
@@ -573,7 +600,6 @@ namespace AZ
                 {
                     return FrameCaptureRequests::s_InvalidFrameCaptureId;
                 }
-                capture->m_readback->SetCallback(callback);
                 m_inProgressCaptures.push_back(captureHandle);
                 return captureHandle.GetCaptureStateIndex();
             }
@@ -587,6 +613,12 @@ namespace AZ
             while (m_inProgressCaptures.size())
             {
                 CaptureHandle captureHandle(m_inProgressCaptures.front());
+                if (captureHandle.IsNull())
+                {
+                    // if we find a null handle, remove it from the list
+                    m_inProgressCaptures.pop_front();
+                    continue;
+                }
                 AZStd::scoped_lock<CaptureHandle> scope_lock(captureHandle);
                 CaptureState* capture = captureHandle.GetCaptureState();
                 if (capture->m_result == FrameCaptureResult::None)

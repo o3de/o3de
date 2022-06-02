@@ -447,6 +447,11 @@ namespace AZ
             m_callback = callback;
         }
 
+        void AttachmentReadback::SetUserIdentifier(uint32_t userIdentifier)
+        {
+            m_userIdentifier = userIdentifier;
+        }
+
         void AttachmentReadback::FrameBegin(Pass::FramePrepareParams params)
         {
             if (m_state == AttachmentReadback::ReadbackState::AttachmentSet)
