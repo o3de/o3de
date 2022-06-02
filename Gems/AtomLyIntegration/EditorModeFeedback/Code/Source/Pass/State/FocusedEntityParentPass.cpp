@@ -28,8 +28,8 @@ namespace AZ::Render
         };
     }
 
-    FocusedEntityParentPass::FocusedEntityParentPass(const AZStd::string& stateName)
-        : EditorStateParentPassBase(stateName, CreateFocusedEntityChildPasses())
+    FocusedEntityParentPass::FocusedEntityParentPass()
+        : EditorStateParentPassBase("FocusMode", CreateFocusedEntityChildPasses())
     {
     }
 

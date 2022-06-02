@@ -33,8 +33,8 @@ namespace AZ::Render
     }
     
 
-    SelectedEntityParentPass::SelectedEntityParentPass(const AZStd::string& stateName)
-        : EditorStateParentPassBase(stateName, CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
+    SelectedEntityParentPass::SelectedEntityParentPass()
+        : EditorStateParentPassBase("EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
     {
     }
 

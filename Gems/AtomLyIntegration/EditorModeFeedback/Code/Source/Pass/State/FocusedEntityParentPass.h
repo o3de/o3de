@@ -22,7 +22,7 @@ namespace AZ::Render
         //, private EditorModeFocusModeStateRequestBus::Handler
     {
     public:
-        FocusedEntityParentPass(const AZStd::string& stateName);
+        FocusedEntityParentPass();
 
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(

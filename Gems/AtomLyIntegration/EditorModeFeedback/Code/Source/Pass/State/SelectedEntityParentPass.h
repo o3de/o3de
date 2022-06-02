@@ -18,7 +18,7 @@ namespace AZ::Render
         //, private EditorModeSelectedEntityStateRequestBus::Handler
     {
     public:
-        SelectedEntityParentPass(const AZStd::string& stateName);
+        SelectedEntityParentPass();
 
         // EditorModeSelectedEntityStateRequestBus overrides ...
         //void SetLineWidth(float intensity);
