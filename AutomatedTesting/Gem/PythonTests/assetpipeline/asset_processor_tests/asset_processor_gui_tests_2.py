@@ -193,7 +193,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_Prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle
@@ -299,7 +299,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         extra_params.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={test_ip_address}"')
 
         # Run AP Gui to verify that assets process regardless of the new address
-        result, _ = asset_processor.gui_process(quitonidle=True)
+        result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
     @pytest.mark.test_case_id("C24168802")
@@ -322,8 +322,8 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         # Expected test asset sources and products
         # *.assetinfo and *.fbx files are not produced in cache, and file.fbx produces file.actor in cache
-        expected_test_assets = ["jack.cdf", "Jack.fbx", "Jack.fbx.assetinfo", "Jack.mtl"]
-        expected_cache_assets = ["jack.actor", "jack.cdf", "jack.mtl"]
+        expected_test_assets = ["Jack.fbx", "Jack.fbx.assetinfo"]
+        expected_cache_assets = ["jack.actor"]
 
         # Copy test assets to project folder and verify test assets folder exists
         test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C24168802")
@@ -334,7 +334,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         assert utils.compare_lists(test_assets_list, expected_test_assets), "Test assets are not as expected"
 
         # Run AP Gui
-        result, _ = asset_processor.gui_process(run_until_idle=True)
+        result, _ = asset_processor.gui_process(run_until_idle=True, extra_params="--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"")
         assert result, "AP GUI failed"
 
         # Verify test assets in cache folder
