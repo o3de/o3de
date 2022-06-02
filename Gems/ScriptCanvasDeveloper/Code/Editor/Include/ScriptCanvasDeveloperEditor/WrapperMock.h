@@ -17,7 +17,7 @@
 #include <ScriptCanvasDeveloperEditor/Mock.h>
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
