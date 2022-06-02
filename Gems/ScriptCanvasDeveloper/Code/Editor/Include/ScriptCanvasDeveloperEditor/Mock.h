@@ -20,9 +20,6 @@ namespace ScriptCanvasDeveloper
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
-
         enum class SlotConfigState : AZ::u8
         {
             New,

@@ -31,8 +31,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvas;
-
     EditorAssetSystemComponent::~EditorAssetSystemComponent()
     {
     }

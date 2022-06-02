@@ -17,13 +17,13 @@
 
 namespace ScannerCpp
 {
-    using namespace ScriptCanvas;
-
     void TraverseTree
         ( QModelIndex index
         , AzToolsFramework::AssetBrowser::AssetBrowserFilterModel& model
         , ScriptCanvasEditor::VersionExplorer::ScanResult& result)
     {
+        using namespace ScriptCanvas;
+
         QModelIndex sourceIndex = model.mapToSource(index);
         AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry =
             reinterpret_cast<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>(sourceIndex.internalPointer());

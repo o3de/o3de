@@ -24,8 +24,6 @@ namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
-        using namespace ScriptCanvas;
-
         bool FileSaveResult::IsSuccess() const
         {
             return fileSaveError.empty();

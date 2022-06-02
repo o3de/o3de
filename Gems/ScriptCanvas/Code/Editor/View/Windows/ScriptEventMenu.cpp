@@ -17,13 +17,11 @@
 
 #include <Editor/View/Windows/ScriptEventMenu.h>
 
-using namespace ScriptCanvas;
-
 namespace ScriptEvents
 {
     namespace Editor
     {
-        void ClearStatusAction(const SourceHandle& sourceHandle)
+        void ClearStatusAction(const ScriptCanvas::SourceHandle& sourceHandle)
         {
             if (sourceHandle.Mod())
             {
@@ -31,7 +29,7 @@ namespace ScriptEvents
             }
         }
 
-        AZStd::pair<bool, AZStd::string> MakeHelpersAction(const SourceHandle& sourceHandle)
+        AZStd::pair<bool, AZStd::string> MakeHelpersAction(const ScriptCanvas::SourceHandle& sourceHandle)
         {
             if (!sourceHandle.Mod())
             {
@@ -43,8 +41,10 @@ namespace ScriptEvents
             return { true, "" };
         }
 
-        AZStd::pair<SourceHandle, AZStd::string> OpenAction()
+        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> OpenAction()
         {
+            using namespace ScriptCanvas;
+
             AZ::IO::FixedMaxPath resolvedProjectRoot;
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
 
@@ -153,6 +153,8 @@ namespace ScriptEvents
 
         MenuItemsEnabled UpdateMenuItemsEnabled([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
         {
+            using namespace ScriptCanvas;
+
             auto graph = sourceHandle.Mod();
             MenuItemsEnabled menuItemsEnabled;
             bool isParsed = graph && ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents;

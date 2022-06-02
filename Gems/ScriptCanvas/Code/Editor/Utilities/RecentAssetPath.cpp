@@ -15,8 +15,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvas;
-
     SourceHandle ReadRecentAssetId()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, 

@@ -30,8 +30,6 @@
 
 namespace ScriptCanvasBuilder
 {
-    using namespace ScriptCanvas;
-
     void Worker::Activate(const AssetHandlers& handlers)
     {
         m_runtimeAssetHandler = handlers.m_runtimeAssetHandler;
@@ -40,6 +38,8 @@ namespace ScriptCanvasBuilder
 
     void Worker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
     {
+        using namespace ScriptCanvas;
+
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);

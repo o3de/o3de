@@ -16,12 +16,13 @@
 
 namespace ParsingUtilitiesScriptEventExtensionCpp
 {
-    using namespace ScriptEvents;
-    using namespace ScriptCanvas;
-    using namespace ScriptCanvas::Nodes::Core;
-
-    AZ::Outcome<ScriptEvents::Method, AZStd::string> TranslateToScriptEventMethod(const FunctionDefinitionNode& node)
+    AZ::Outcome<ScriptEvents::Method, AZStd::string> TranslateToScriptEventMethod
+        ( const ScriptCanvas::Nodes::Core::FunctionDefinitionNode& node)
     {
+        using namespace ScriptEvents;
+        using namespace ScriptCanvas;
+        using namespace ScriptCanvas::Nodes::Core;
+
         ScriptEvents::Method method;
         method.GetNameProperty().Set(node.GetDisplayName());
 
@@ -82,9 +83,6 @@ namespace ParsingUtilitiesScriptEventExtensionCpp
 
 namespace ScriptCanvas::ScriptEventGrammar
 {
-    using namespace ScriptCanvas;
-    using namespace ParsingUtilitiesScriptEventExtensionCpp;
-
     GraphToScriptEventsResult ParseMinimumScriptEventArtifacts(const Graph& graph)
     {
         GraphToScriptEventsResult result;
@@ -122,6 +120,8 @@ namespace ScriptCanvas::ScriptEventGrammar
 
     FunctionNodeToScriptEventResult ParseScriptEvent(const Node& node)
     {
+        using namespace ParsingUtilitiesScriptEventExtensionCpp;
+
         FunctionNodeToScriptEventResult result{ false, &node, {}, {} };
 
         auto functionDefinitionNode = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(&node);

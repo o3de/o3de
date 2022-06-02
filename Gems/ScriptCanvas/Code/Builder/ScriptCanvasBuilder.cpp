@@ -19,8 +19,6 @@
 
 namespace ScriptCanvasBuilderCpp
 {
-    using namespace ScriptCanvas;
-
     enum Version
     {
         Original = 1,
@@ -34,6 +32,8 @@ namespace ScriptCanvasBuilderCpp
         ( AZ::SerializeContext& serializeContext
         , AZ::SerializeContext::DataElementNode& rootElement)
     {
+        using namespace ScriptCanvas;
+
         if (rootElement.GetVersion() < Version::EditorAssetRedux)
         {
             auto sourceIndex = rootElement.FindElement(AZ_CRC_CE("source"));

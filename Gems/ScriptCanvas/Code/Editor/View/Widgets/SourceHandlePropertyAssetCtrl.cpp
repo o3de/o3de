@@ -18,8 +18,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvas;
-
     SourceHandlePropertyAssetCtrl::SourceHandlePropertyAssetCtrl(QWidget* parent)
         : AzToolsFramework::PropertyAssetCtrl(parent)
     {

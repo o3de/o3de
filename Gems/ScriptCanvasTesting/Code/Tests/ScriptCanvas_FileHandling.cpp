@@ -14,8 +14,6 @@
 
 namespace ScriptCanvasTests
 {
-    using namespace ScriptCanvas;
-
     struct EntityIdComparer
     {
         bool operator()(AZ::EntityId lhs, AZ::EntityId rhs)

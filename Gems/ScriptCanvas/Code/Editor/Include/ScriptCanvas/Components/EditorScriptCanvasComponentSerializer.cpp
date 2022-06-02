@@ -13,8 +13,6 @@
 
 namespace AZ
 {
-    using namespace ScriptCanvas;
-
     AZ_CLASS_ALLOCATOR_IMPL(EditorScriptCanvasComponentSerializer, SystemAllocator, 0);
 
     JsonSerializationResult::Result EditorScriptCanvasComponentSerializer::Load
@@ -23,6 +21,7 @@ namespace AZ
         , const rapidjson::Value& inputValue
         , JsonDeserializerContext& context)
     {
+        using namespace ScriptCanvas;
         namespace JSR = JsonSerializationResult;
 
         AZ_Assert(outputValueTypeId == azrtti_typeid<ScriptCanvasEditor::EditorScriptCanvasComponent>()

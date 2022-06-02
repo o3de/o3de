@@ -35,7 +35,6 @@ namespace ScriptCanvasEditor
 {
     namespace EditorSettings
     {
-        using namespace ScriptCanvas;;
         /////////////////////////////////
         // ScriptCanvasConstructPresets
         /////////////////////////////////

@@ -31,8 +31,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvas;
-
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
         AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
