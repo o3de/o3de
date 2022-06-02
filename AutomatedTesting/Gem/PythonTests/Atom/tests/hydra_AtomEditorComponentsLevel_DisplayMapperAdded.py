@@ -153,7 +153,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         Report.result(Tests.creation_redo, EditorLevelEntity.has_component(AtomComponentProperties.display_mapper()))
 
         # 4. Set LDR color Grading LUT asset.
-        display_mapper_asset_path = os.path.join("LookupTables", "LUT_Sepia.azasset")
+        display_mapper_asset_path = os.path.join("lookuptables", "lut_sepia.azasset")
         display_mapper_asset = Asset.find_asset_by_path(display_mapper_asset_path, False)
         display_mapper_component.set_component_property_value(
             AtomComponentProperties.display_mapper('LDR color Grading LUT'), display_mapper_asset.id)
