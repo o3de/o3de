@@ -16,7 +16,7 @@ import azlmbr.paths as paths
 import scripting_utils.scripting_tools as tools
 import azlmbr.legacy.general as general
 from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                  SAVE_ASSET_AS, WAIT_TIME_3)
+                                                 SAVE_ASSET_AS, WAIT_TIME_3)
 # fmt: off
 class Tests():
     new_event_created   = ("Successfully created a new event", "Failed to create a new event")
