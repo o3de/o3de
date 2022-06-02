@@ -54,13 +54,12 @@ namespace AZ
         : m_beginElemCB(beginElemCB)
         , m_endElemCB(endElemCB)
         , m_accessFlags(accessFlags)
-        , m_context(context)
     {
         m_errorHandler = errorHandler ? errorHandler : &m_defaultErrorHandler;
 
-        m_elementCallback = [this](void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) -> bool
+        m_elementCallback = [this, context](void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) -> bool
         {
-            return m_context->EnumerateInstance(this, ptr, classId, classData, classElement);
+            return context->EnumerateInstance(this, ptr, classId, classData, classElement);
         };
     }
 

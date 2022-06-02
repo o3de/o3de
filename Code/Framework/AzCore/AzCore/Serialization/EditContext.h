@@ -426,7 +426,6 @@ namespace AZ
             SerializeContext::EndElemEnumCB m_endElemCB; ///< Optional callback when exiting an element's hierarchy.
             unsigned int m_accessFlags; ///< Data access flags for the enumeration, see \ref EnumerationAccessFlags.
             SerializeContext::ErrorHandler* m_errorHandler; ///< Optional user error handler.
-            const EditContext* m_context; ///< Edit context containing class reflection required for data traversal.
 
             SerializeContext::IDataContainer::ElementCB
                 m_elementCallback; ///< Pre-bound functor computed internally to avoid allocating closures during traversal.

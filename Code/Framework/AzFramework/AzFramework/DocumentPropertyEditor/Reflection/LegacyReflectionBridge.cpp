@@ -95,6 +95,11 @@ namespace AZ::Reflection
 
             void Visit()
             {
+                AZ_Assert(m_serializeContext->GetEditContext() != nullptr, "LegacyReflectionBridge relies on EditContext");
+                if (m_serializeContext->GetEditContext() == nullptr)
+                {
+                    return;
+                }
                 EditContext::EnumerateInstanceCallContext context(
                     [this](
                         void* instance, const AZ::SerializeContext::ClassData* classData,
