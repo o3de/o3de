@@ -65,11 +65,9 @@ namespace UnitTest
         {
             AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler::BusDisconnect();
             // One more tick on the spawnable entities manager in order to delete the ticket fully.
-            while (m_manager->ProcessQueue(
-                       AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
-                       AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular) !=
-                   AzFramework::SpawnableEntitiesManager::CommandQueueStatus::NoCommandsLeft)
-                ;
+            m_manager->ProcessQueue(
+                AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
+                AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
             
             m_spawnedTicketAndEntitiesPairs  = {};
 
@@ -81,16 +79,9 @@ namespace UnitTest
 
         void WaitForResponse(AzFramework::Scripts::SpawnableScriptMediator& mediator)
         {
-            for (size_t i=0; i<1000; ++i) // Don't do this indefinitely to avoid deadlocking on a failing test.
-            {
-                if (m_manager->ProcessQueue(
-                        AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
-                        AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular) ==
-                    AzFramework::SpawnableEntitiesManager::CommandQueueStatus::NoCommandsLeft)
-                {
-                    break;
-                }
-            }
+            m_manager->ProcessQueue(
+                AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
+                AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
             // force an additional tick on mediator to synchronize spawn callbacks and dispatch EBus notifications
             mediator.OnTick(0, AZ::ScriptTimePoint());
         }
