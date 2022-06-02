@@ -394,7 +394,7 @@ def AtomEditorComponents_SSAO_AddedToEntity():
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 925. Test IsHidden.
+        # 25. Test IsHidden.
         ssao_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, ssao_entity.is_hidden() is True)
 
