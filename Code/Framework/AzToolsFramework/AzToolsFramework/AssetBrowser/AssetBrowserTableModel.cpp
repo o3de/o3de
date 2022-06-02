@@ -55,6 +55,11 @@ namespace AzToolsFramework
             return createIndex(m_rowMap[sourceIndex], sourceIndex.column());
         }
 
+        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
+        {
+            return m_indexMap.contains(source_row);
+        }
+
         QVariant AssetBrowserTableModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
             if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
