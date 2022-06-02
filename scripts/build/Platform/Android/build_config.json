@@ -8,7 +8,7 @@
     }
   },
   "profile_pipe": {
-    "TAGS": [
+    "TAGS":[
       "default",
       "snapshot"
     ],
@@ -77,8 +77,6 @@
     "TAGS":[
         "default",
         "weekly-build-metrics",
-        "periodic-incremental-daily",
-        "periodic-clean-weekly-internal",
         "snapshot"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",

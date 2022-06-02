@@ -177,9 +177,7 @@
   },
   "asset_profile": {
     "TAGS": [
-      "weekly-build-metrics",
-      "periodic-incremental-daily",
-      "periodic-clean-weekly-internal"
+      "weekly-build-metrics"
     ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
@@ -310,8 +308,6 @@
   "release": {
     "TAGS": [
       "default",
-      "periodic-incremental-daily",
-      "periodic-clean-weekly-internal",
       "weekly-build-metrics",
       "snapshot"
     ],
