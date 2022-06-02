@@ -199,6 +199,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     if (o_debugTerrainLodLevels)
     {
+        // Assign the LOD a color
         float3 debugColors[6] = 
         {
             float3(0.1, 0.0, 0.0),
@@ -212,15 +213,19 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         float3 debugColor = debugColors[lodLevel];
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
 
+        // Draw red wireframe on quad boundaries
         float quadSpacing = ObjectSrg::m_patchData.m_xyScale * rcp(64.0);
         float2 modPos = input.m_worldPosition.xy % quadSpacing;
-        if (any(abs(modPos) < 0.1) || any(abs(modPos) > quadSpacing - 0.1))
+        const float lineWidth = 0.04 * quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
             output.m_diffuseColor.r += 1.0;
         }
+
+        // Draw yellow (red + green) wireframe on quad boundaries of next lod level.
         quadSpacing *= 2.0;
         modPos = input.m_worldPosition.xy % quadSpacing;
-        if (any(abs(modPos) < 0.1) || any(abs(modPos) > quadSpacing - 0.1))
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
             output.m_diffuseColor.g += 1.0;
         }
