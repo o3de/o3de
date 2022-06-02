@@ -60,7 +60,7 @@
             ],
             "Connections": [
                 {
-                    "localSlot": "Output",
+                    "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "FilteredImage"
