@@ -22,6 +22,7 @@ def save_script_event_file(self, file_path):
 
     param self: the script object calling this function
     param file_path: full path to the file as a string
+
     returns: true if the Save action is successful and the * character disappears from the asset editor label
     """
     editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, file_path)
@@ -38,6 +39,8 @@ def initialize_asset_editor_qt_objects(self):
     function for initializing qt objects needed for testing around asset editor
 
     param self: the script object calling this function.
+
+    returns: None
     """
     self.editor_window = pyside_utils.get_editor_main_window()
     self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
@@ -88,6 +91,8 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
     param self: The script calling this function
     param node_name: the name of the node being searched for
     param number_of_retries: the number of times to search (click on the search button)
+
+    returns: None
     """
     self.node_tree_search_box.setText(node_name)
     helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_3)
