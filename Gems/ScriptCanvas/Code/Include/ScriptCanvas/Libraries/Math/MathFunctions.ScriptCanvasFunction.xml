@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
+        Namespace="ScriptCanvas::MathFunctions"
+        Category="Math">
+        
+        <Function Name="MultiplyAndAdd">
+            <Parameter Name="Multiplicand"/>
+            <Parameter Name="Multiplier"/>
+            <Parameter Name="Addend"/>
+        </Function>
+        
+        <Function Name="StringToNumber">
+            <Parameter Name="Value"/>
+        </Function>
+    </Library>
+
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/MathFunctions.h"
+        Namespace="ScriptCanvas::MathRandoms"
+        Category="Math/Random">
+
+        <Function Name="RandomColor">
+            <Parameter Name="MinValue" DefaultValue="Data::ColorType(0.0f, 0.0f, 0.0f, 1.0f)"/>
+            <Parameter Name="MaxValue" DefaultValue="Data::ColorType(1.0f, 1.0f, 1.0f, 1.0f)"/>
+        </Function>
+        
+        <Function Name="RandomGrayscale">
+            <Parameter Name="MinValue" DefaultValue="0.0"/>
+            <Parameter Name="MaxValue" DefaultValue="255.0"/>
+        </Function>
+        
+        <Function Name="RandomInteger">
+            <Parameter Name="MinValue" DefaultValue="0.0"/>
+            <Parameter Name="MaxValue" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomNumber">
+            <Parameter Name="MinValue" DefaultValue="0.0"/>
+            <Parameter Name="MaxValue" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInArc">
+            <Parameter Name="Origin" DefaultValue="Data::Vector3Type(0.f, 0.f, 0.f)"/>
+            <Parameter Name="Direction" DefaultValue="Data::Vector3Type(1.f, 0.f, 0.f)"/>
+            <Parameter Name="Normal" DefaultValue="Data::Vector3Type(0.f, 0.f, 1.f)"/>
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+            <Parameter Name="Angle" DefaultValue="45.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInBox">
+            <Parameter Name="Dimensions" DefaultValue="Data::Vector3Type(1.f, 1.f, 1.f)"/>
+        </Function>
+        
+        <Function Name="RandomPointOnCircle">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInCone">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+            <Parameter Name="Angle" DefaultValue="45.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInCylinder">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+            <Parameter Name="Height" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInCircle">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInEllipsoid">
+            <Parameter Name="Dimensions" DefaultValue="Data::Vector3Type(1.f, 1.f, 1.f)"/>
+        </Function>
+        
+        <Function Name="RandomPointInSphere">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomPointInSquare">
+            <Parameter Name="Dimensions" DefaultValue="Data::Vector2Type(1.f, 1.f)"/>
+        </Function>
+        
+        <Function Name="RandomPointInWedge">
+            <Parameter Name="Origin" DefaultValue="Data::Vector3Type(0.f, 0.f, 0.f)"/>
+            <Parameter Name="Direction" DefaultValue="Data::Vector3Type(1.f, 0.f, 0.f)"/>
+            <Parameter Name="Normal" DefaultValue="Data::Vector3Type(0.f, 0.f, 1.f)"/>
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+            <Parameter Name="Height" DefaultValue="1.0"/>
+            <Parameter Name="Angle" DefaultValue="45.0"/>
+        </Function>
+        
+        <Function Name="RandomPointOnSphere">
+            <Parameter Name="Radius" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="RandomQuaternion">
+            <Parameter Name="MinValue" DefaultValue="0.0"/>
+            <Parameter Name="MaxValue" DefaultValue="Data::NumberType(AZ::Constants::TwoPi)"/>
+        </Function>
+        
+        <Function Name="RandomUnitVector2"/>
+        <Function Name="RandomUnitVector3"/>
+        
+        <Function Name="RandomVector2">
+            <Parameter Name="MinValue" DefaultValue="Data::Vector2Type(0.f, 0.f)"/>
+            <Parameter Name="MaxValue" DefaultValue="Data::Vector2Type(1.f, 1.f)"/>
+        </Function>
+        
+        <Function Name="RandomVector3">
+            <Parameter Name="MinValue" DefaultValue="Data::Vector3Type(0.f, 0.f, 0.f)"/>
+            <Parameter Name="MaxValue" DefaultValue="Data::Vector3Type(1.f, 1.f, 1.f)"/>
+        </Function>
+        
+        <Function Name="RandomVector4">
+            <Parameter Name="MinValue" DefaultValue="Data::Vector4Type(0.f, 0.f, 0.f, 0.f)"/>
+            <Parameter Name="MaxValue" DefaultValue="Data::Vector4Type(1.f, 1.f, 1.f, 1.f)"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

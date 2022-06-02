@@ -12,7 +12,11 @@
                 "description": "Red color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "inG",
@@ -20,7 +24,11 @@
                 "description": "Green color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "inB",
@@ -28,7 +36,11 @@
                 "description": "Blue color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "inA",
@@ -36,7 +48,11 @@
                 "description": "Alpha color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             }
         ],
         "outputSlots": [
