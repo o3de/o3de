@@ -14,6 +14,7 @@ import pytest
 import logging
 import os
 import stat
+import shutil
 
 # Import LyTestTools
 from ly_test_tools.o3de import asset_processor as asset_processor_utils
@@ -309,7 +310,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
     @pytest.mark.SUITE_sandbox
-    def test_AddTwoTexturesWithSameName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
+    def test_TwoAssetsWithSameProductName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
         Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
         recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
@@ -331,21 +332,21 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
         # Launching AP, making sure it is failing
-        result, output = asset_processor.gui_process(capture_output=True, extra_params='--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"')
-        assert result == False, f'AssetProcessorBatch should have failed because there are textures that are generating same output product, output was {output}'
+        result, output = asset_processor.batch_process(capture_output=True)
+        assert result == False, f'AssetProcessorBatch should have failed because the generated output products should share the same name, instead output was {output}'
 
-        # Renaming original files so they won't collide in cache after second processing
-        files_to_rename = os.listdir(asset_processor.project_test_source_folder())
-        logger.info(f"Renaming files: {files_to_rename}")
-        utils.append_to_filename(files_to_rename[0], asset_processor.project_test_source_folder(), '_', False)
-        utils.append_to_filename(files_to_rename[1], asset_processor.project_test_source_folder(), '__', False)
-        logger.info(f"Files renamed to: {os.listdir(asset_processor.project_test_source_folder())}")
+        # Renaming output files so they won't collide in cache after second processing
+        file_to_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo")
+        data_for_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "rename.txt")
+
+        assert os.path.exists(file_to_rename), "An assetinfo file is missing."
+        assert os.path.exists(data_for_rename), "Text file to copy into the assetinfo file is missing."
+
+        shutil.copyfile(data_for_rename, file_to_rename)
 
         # Reprocessing files and making sure there are no failed jobs
         result, output = asset_processor.batch_process(capture_output=True)
-        assert result, "AssetProcessorBatch failed when it should have succeeded after renaming textures"
-        missing_assets, _ = asset_processor.compare_assets_with_cache()
-        assert not missing_assets, 'Following assets were not found in cache {}'.format(missing_assets)
+        assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
         assert num_failed_assets is 0, 'Wrong number of failed assets'
