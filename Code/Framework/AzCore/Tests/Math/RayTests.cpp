@@ -34,6 +34,12 @@ namespace UnitTest
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
         AZ::Ray rayUnused = AZ::Ray(AZ::Vector3(), AZ::Vector3(3, 0, 0));
+#ifdef AZ_DEBUG_BUILD
+        // AZ_MATH_ASSERT only asserts during debug builds, so expect an assert here
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+#else
+        AZ_TEST_STOP_TRACE_SUPPRESSION(0);
+#endif
     }
+
 } // namespace UnitTest
