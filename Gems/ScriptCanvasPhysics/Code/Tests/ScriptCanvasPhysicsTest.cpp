@@ -8,6 +8,7 @@
 
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
@@ -18,26 +19,12 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <WorldNodes.h>
+#include <World.h>
 
 namespace ScriptCanvasPhysics
 {
-    namespace WorldNodes
+    namespace WorldFunctions
     {
-        using Result = AZStd::tuple<
-            bool /*true if an object was hit*/,
-            AZ::Vector3 /*world space position*/,
-            AZ::Vector3 /*surface normal*/,
-            float /*distance to the hit*/,
-            AZ::EntityId /*entity hit, if any*/,
-            AZ::Crc32 /*tag of material surface hit, if any*/
-        >;
-
-        using OverlapResult = AZStd::tuple<
-            bool, /*true if the overlap returned hits*/
-            AZStd::vector<AZ::EntityId> /*list of entityIds*/
-        >;
-
         extern Result RayCastWorldSpaceWithGroup(const AZ::Vector3& start,
             const AZ::Vector3& direction,
             float distance,
@@ -270,7 +257,7 @@ namespace ScriptCanvasPhysicsTests
         AzPhysics::SceneQueryHit m_hit;
         AzPhysics::SceneQueryHits m_hitResult;
 
-        bool ResultIsEqualToHit(const ScriptCanvasPhysics::WorldNodes::Result& result, const AzPhysics::SceneQueryHit& hit)
+        bool ResultIsEqualToHit(const ScriptCanvasPhysics::WorldFunctions::Result& result, const AzPhysics::SceneQueryHit& hit)
         {
             return
                 AZStd::get<0>(result) == hit.IsValid() &&
@@ -297,7 +284,7 @@ namespace ScriptCanvasPhysicsTests
         const AZ::EntityId ignoreEntityId;
 
         // when a raycast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::RayCastWorldSpaceWithGroup(
+        auto result = ScriptCanvasPhysics::WorldFunctions::RayCastWorldSpaceWithGroup(
             start,
             direction,
             distance,
@@ -326,7 +313,7 @@ namespace ScriptCanvasPhysicsTests
         fromEntity->Activate();
 
         // when a raycast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::RayCastLocalSpaceWithGroup(
+        auto result = ScriptCanvasPhysics::WorldFunctions::RayCastLocalSpaceWithGroup(
             fromEntity->GetId(),
             direction,
             distance,
@@ -358,7 +345,7 @@ namespace ScriptCanvasPhysicsTests
         fromEntity->Activate();
 
         // when a raycast is performed
-        auto results = ScriptCanvasPhysics::WorldNodes::RayCastMultipleLocalSpaceWithGroup(
+        auto results = ScriptCanvasPhysics::WorldFunctions::RayCastMultipleLocalSpaceWithGroup(
             fromEntity->GetId(),
             direction,
             distance,
@@ -392,7 +379,7 @@ namespace ScriptCanvasPhysicsTests
         const AZ::Transform pose = AZ::Transform::CreateIdentity();
 
         // when a shapecast is performed
-        auto result = ScriptCanvasPhysics::WorldNodes::ShapecastQuery(
+        auto result = ScriptCanvasPhysics::WorldFunctions::ShapecastQuery(
             distance,
             pose,
             direction,
