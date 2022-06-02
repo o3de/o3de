@@ -83,11 +83,17 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_boundsMax;
     };
 
-    struct MacroMaterialGrid
+    struct MacroMaterialGridInfo
     {
         uint m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
         float m_tileSize; // Size of a tile in meters.
         float2 m_offset; // x/y offset of min x/y corner of grid.
+    };
+
+    struct MacroMaterialRefs
+    {
+        uint m_index12;
+        uint m_index34;
     };
 
     struct ClipmapData
@@ -201,14 +207,15 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
 
     StructuredBuffer<MacroMaterialData> m_macroMaterialData;
-    MacroMaterialGrid m_macroMaterialGrid;
+    StructuredBuffer<MacroMaterialRefs> m_macroMaterialGridRefs;
+    MacroMaterialGridInfo m_macroMaterialGridInfo;
     
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
 
     uint2 GetMacroGridResolution()
     {
-        return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+        return uint2(m_macroMaterialGridInfo.m_resolution >> 16, m_macroMaterialGridInfo.m_resolution & 0xFFFF);
     }
     
     float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
