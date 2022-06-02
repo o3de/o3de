@@ -304,40 +304,6 @@ namespace AZ
                         }
                     }
                 }
-
-                if (dataClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid())
-                {
-                    AZ::DynamicSerializableField* dynamicFieldDesc = reinterpret_cast<AZ::DynamicSerializableField*>(objectPtr);
-                    if (dynamicFieldDesc->IsValid())
-                    {
-                        const AZ::SerializeContext::ClassData* dynamicTypeMetadata = m_serializeContext.FindClassData(dynamicFieldDesc->m_typeId);
-                        if (dynamicTypeMetadata)
-                        {
-                            AZ::SerializeContext::ClassElement dynamicElementData;
-                            dynamicElementData.m_name = "m_data";
-                            dynamicElementData.m_nameCrc = AZ_CRC("m_data", 0x335cc942);
-                            dynamicElementData.m_typeId = dynamicFieldDesc->m_typeId;
-                            dynamicElementData.m_dataSize = sizeof(void*);
-                            dynamicElementData.m_offset =
-                                reinterpret_cast<size_t>(&(reinterpret_cast<AZ::DynamicSerializableField const volatile*>(0)->m_data));
-                            dynamicElementData.m_azRtti = nullptr; // we won't need this because we always serialize top classes.
-                            dynamicElementData.m_genericClassInfo = m_serializeContext.FindGenericClassInfo(dynamicFieldDesc->m_typeId);
-                            dynamicElementData.m_editData = nullptr; // we cannot have element edit data for dynamic fields.
-                            dynamicElementData.m_flags = SerializeContext::ClassElement::FLG_DYNAMIC_FIELD | SerializeContext::ClassElement::FLG_POINTER;
-                            EnumerateInstance(
-                                callContext, &dynamicFieldDesc->m_data, dynamicTypeMetadata->m_typeId, dynamicTypeMetadata,
-                                &dynamicElementData);
-                        }
-                        else
-                        {
-                            AZ_Error(
-                                "Serialization", false,
-                                "Failed to find class data for 'Dynamic Serializable Field' with type=%s address=%p. Make sure this type is reflected, \
-                                otherwise you will lose data during serialization!\n",
-                                dynamicFieldDesc->m_typeId.ToString<AZStd::string>().c_str(), dynamicFieldDesc->m_data);
-                        }
-                    }
-                }
             }
         }
 
