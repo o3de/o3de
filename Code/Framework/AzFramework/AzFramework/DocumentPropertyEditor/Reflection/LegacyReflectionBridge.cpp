@@ -95,7 +95,7 @@ namespace AZ::Reflection
 
             void Visit()
             {
-                SerializeContext::EnumerateInstanceCallContext context(
+                EditContext::EnumerateInstanceCallContext context(
                     [this](
                         void* instance, const AZ::SerializeContext::ClassData* classData,
                         const AZ::SerializeContext::ClassElement* classElement)
@@ -106,11 +106,10 @@ namespace AZ::Reflection
                     {
                         return EndNode();
                     },
-                    m_serializeContext, SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE, nullptr);
-                context.m_enumerateEditElements = true;
+                    m_serializeContext->GetEditContext(), SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE, nullptr);
 
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->GetEditContext()->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             bool BeginNode(
