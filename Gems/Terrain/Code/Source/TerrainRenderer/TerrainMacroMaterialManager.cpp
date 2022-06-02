@@ -335,10 +335,9 @@ namespace Terrain
         for (++shaderDataIdx; shaderDataIdx < MacroMaterialsPerTile; ++shaderDataIdx)
         {
             materialRefs.at(shaderDataIdx - 1) = materialRefs.at(shaderDataIdx);
-            materialRefs.at(shaderDataIdx - 1) = materialRefs.at(shaderDataIdx);
         }
         // Disable the last entry.
-        materialRefs.at(shaderDataIdx - 1) = InvalidMacroMaterialRef;
+        materialRefs.at(MacroMaterialsPerTile - 1) = InvalidMacroMaterialRef;
     }
 
     template<typename Callback>
