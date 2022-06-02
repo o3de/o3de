@@ -251,16 +251,17 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
     spawned_entity_transform = entity.get_world_translation()
     spawned_entity_rotation = entity.get_world_rotation()
 
-    x_rotation_success = math.isclose(spawned_entity_rotation.x, expected_rotation.x,
-                                      rel_tol=1e-5)
-    y_rotation_success = math.isclose(spawned_entity_rotation.y, expected_rotation.y,
-                                      rel_tol=1e-5)
-    z_rotation_success = math.isclose(spawned_entity_rotation.z, expected_rotation.z,
-                                      rel_tol=1e-5)
+    position_success = wait_for_condition(lambda: spawned_entity_transform == expected_position, 3.0)
+    x_rotation_success = wait_for_condition(lambda: math.isclose(spawned_entity_rotation.x, expected_rotation.x,
+                                                                 rel_tol=1e-5), 3.0)
+    y_rotation_success = wait_for_condition(lambda: math.isclose(spawned_entity_rotation.y, expected_rotation.y,
+                                                                 rel_tol=1e-5), 3.0)
+    z_rotation_success = wait_for_condition(lambda: math.isclose(spawned_entity_rotation.z, expected_rotation.z,
+                                                                 rel_tol=1e-5), 3.0)
     rotation_success = x_rotation_success and y_rotation_success and z_rotation_success
     spawned_entity_scale_success = wait_for_condition(lambda: entity.get_local_uniform_scale() == expected_scale, 3.0)
 
-    assert spawned_entity_transform == expected_position, \
+    assert position_success, \
         f"Entity was not spawned in the position expected: Found {spawned_entity_transform}, expected {expected_position}"
     assert rotation_success, \
         f"Entity was not spawned with the rotation expected: Found {spawned_entity_rotation}, expected {expected_rotation}"
