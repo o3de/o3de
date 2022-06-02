@@ -21,6 +21,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float2 m_xyTranslation;
         float m_xyScale;
         uint m_lodLevel;
+        float m_rcpLodLevel;
     };
 
     PatchData m_patchData;
@@ -73,6 +74,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 }
 
 option bool o_useClipmap = false;
+option bool o_useTerrainClod = true;
 
 struct VertexInput
 {
@@ -110,23 +112,21 @@ void CalculateTerrainPosition(
     float heightScale = worldData.m_max.z - worldData.m_min.z;
     float height = worldData.m_min.z + input.m_zPosition * heightScale;
 
-    //float xOffset = (input.m_vertexId % 2) * -1.0f;
-    //float yOffset = (input.m_vertexId >> 6) % 2 * -1.0f;
-
     worldPosition = float3(GetWorldXYPosition(patchData, input.m_xyPosition), height);
     cullDistance = TerrainSrg::CalculateCullDistance(patchData.m_lodLevel, worldPosition);
+    normal = float3(input.m_xyNormal, 0.0);
 
-    //if (input.m_vertexId % 2 == 0 || (input.m_vertexId >> 6) % 2 == 0)
+    if (o_useTerrainClod)
     {
         float quadSize = patchData.m_xyScale * rcp(64.0);
-        float clodPadding = quadSize * sqrt(2.0);
-        float clodBlend = saturate((cullDistance.y - clodPadding) * rcp(quadSize * 8.0));
+        float clodPadding = quadSize * sqrt(2.0) * 2;
+        float clodBlend = saturate((cullDistance.y - clodPadding) * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
         float lodHeight = worldData.m_min.z + input.m_lodZPosition * heightScale;
         worldPosition.z = lerp(lodHeight, height, clodBlend);
 
         normal = float3(lerp(input.m_lodXYNormal, input.m_xyNormal, clodBlend), 0.0);
-        normal.z = saturate(sqrt(1.0 - normal.x * normal.x - normal.y * normal.y));
     }
 
+    normal.z = saturate(sqrt(1.0 - normal.x * normal.x - normal.y * normal.y));
     position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 }

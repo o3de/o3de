@@ -46,7 +46,7 @@ namespace Terrain
             );
 
     TerrainMeshManager::TerrainMeshManager()
-    {   
+    {
     }
 
     TerrainMeshManager::~TerrainMeshManager()
@@ -72,12 +72,15 @@ namespace Terrain
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
     {
-        if (config != m_config)
+        if (m_config.CheckWouldRequireRebuild(config))
         {
-            m_config = config;
             m_rebuildSectors = true;
             OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         }
+        m_config = config;
+
+        // This will trigger a draw packet rebuild later.
+        AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useTerrainClod" }, AZ::RPI::ShaderOptionValue{ m_config.m_clodEnabled });
     }
 
     void TerrainMeshManager::SetMaterial(MaterialInstance materialInstance)
@@ -141,6 +144,7 @@ namespace Terrain
         ShaderMeshData meshData;
         mainView->GetCameraTransform().GetTranslation().StoreToFloat3(meshData.m_mainCameraPosition.data());
         meshData.m_firstLodDistance = m_config.m_firstLodDistance;
+        meshData.m_rcpClodDistance = 1.0f / m_config.m_clodDistance;
         terrainSrg->SetConstant(m_srgMeshDataIndex, meshData);
     }
 
@@ -315,13 +319,22 @@ namespace Terrain
                 uint32_t vertexCount = GridVerts1D * GridVerts1D;
                 sector.m_heightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
                 sector.m_normalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
-                sector.m_lodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
-                sector.m_lodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
                 sector.m_streamBufferViews[0] = CreateStreamBufferView(m_xyPositionsBuffer);
                 sector.m_streamBufferViews[1] = CreateStreamBufferView(sector.m_heightsBuffer);
                 sector.m_streamBufferViews[2] = CreateStreamBufferView(sector.m_normalsBuffer);
-                sector.m_streamBufferViews[3] = CreateStreamBufferView(sector.m_lodHeightsBuffer);
-                sector.m_streamBufferViews[4] = CreateStreamBufferView(sector.m_lodNormalsBuffer);
+
+                if (m_config.m_clodEnabled)
+                {
+                    sector.m_lodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, vertexCount);
+                    sector.m_lodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, vertexCount);
+                    sector.m_streamBufferViews[3] = CreateStreamBufferView(sector.m_lodHeightsBuffer);
+                    sector.m_streamBufferViews[4] = CreateStreamBufferView(sector.m_lodNormalsBuffer);
+                }
+                else
+                {
+                    sector.m_streamBufferViews[3] = CreateStreamBufferView(m_dummyLodHeightsBuffer);
+                    sector.m_streamBufferViews[4] = CreateStreamBufferView(m_dummyLodNormalsBuffer);
+                }
 
                 BuildDrawPacket(sector);
             }
@@ -565,32 +578,35 @@ namespace Terrain
     {
         sector.m_heightsBuffer->UpdateData(heights.data(), heights.size_bytes(), 0);
         sector.m_normalsBuffer->UpdateData(normals.data(), normals.size_bytes(), 0);
+    }
 
+    void TerrainMeshManager::UpdateSectorLodBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals)
+    {
         // Store the height and normal information for the next lod level in each vertex for continuous LOD.
         AZStd::vector<HeightDataType> lodHeights;
         AZStd::vector<NormalDataType> lodNormals;
-        lodHeights.resize_no_construct(heights.size());
-        lodNormals.resize_no_construct(normals.size());
+        lodHeights.resize_no_construct(GridVerts1D * GridVerts1D);
+        lodNormals.resize_no_construct(GridVerts1D * GridVerts1D);
+
+        constexpr uint32_t LodGridVerts1D = (GridVerts1D >> 1) + 1;
 
         for (uint32_t yPos = 0; yPos < GridVerts1D; ++yPos)
         {
             for (uint32_t xPos = 0; xPos < GridVerts1D; ++xPos)
             {
                 uint32_t index = yPos * GridVerts1D + xPos;
-                uint32_t lodIndex1 = index;
-                uint32_t lodIndex2 = index;
+                uint32_t lodIndex1 = (yPos / 2) * LodGridVerts1D + (xPos / 2);
+                uint32_t lodIndex2 = lodIndex1;
 
                 if (xPos % 2 == 1)
                 {
                     // x position is between two vertices in the row
-                    --lodIndex1;
-                    ++lodIndex2;
+                    ++lodIndex1;
                 }
                 if (yPos % 2 == 1)
                 {
                     // y position is between two vertices in the column
-                    lodIndex1 += GridVerts1D;
-                    lodIndex2 -= GridVerts1D;
+                    lodIndex2 += LodGridVerts1D;
                 }
                 lodHeights[index] = (heights[lodIndex1] + heights[lodIndex2]) / 2;
 
@@ -602,6 +618,7 @@ namespace Terrain
 
         sector.m_lodHeightsBuffer->UpdateData(lodHeights.data(), lodHeights.size() * sizeof(HeightDataType), 0);
         sector.m_lodNormalsBuffer->UpdateData(lodNormals.data(), lodNormals.size() * sizeof(NormalDataType), 0);
+
     }
 
     void TerrainMeshManager::InitializeCommonSectorData()
@@ -611,6 +628,9 @@ namespace Terrain
 
         m_xyPositionsBuffer = CreateMeshBufferInstance(XYPositionFormat, patchData.m_xyPositions.size(), patchData.m_xyPositions.data());
         m_indexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16_UINT, patchData.m_indices.size(), patchData.m_indices.data());
+
+        m_dummyLodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, GridSize, nullptr);
+        m_dummyLodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, GridSize, nullptr);
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb)
@@ -718,22 +738,36 @@ namespace Terrain
             {
                 auto& sector = *updateContext.m_sector;
 
-                SectorDataRequest request;
-                request.m_gridSize = GridSize;
-                request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
-                request.m_vertexSpacing = gridMeters / GridSize;
+                {
+                    SectorDataRequest request;
+                    request.m_gridSize = GridSize;
+                    request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
+                    request.m_vertexSpacing = gridMeters / GridSize;
 
-                AZStd::vector<HeightDataType> meshHeights;
-                AZStd::vector<NormalDataType> meshNormals;
-                GatherMeshData(request, meshHeights, meshNormals, sector.m_aabb);
+                    AZStd::vector<HeightDataType> meshHeights;
+                    AZStd::vector<NormalDataType> meshNormals;
+                    GatherMeshData(request, meshHeights, meshNormals, sector.m_aabb);
+                    UpdateSectorBuffers(sector, meshHeights, meshNormals);
+                }
 
-                UpdateSectorBuffers(sector, meshHeights, meshNormals);
+                if (m_config.m_clodEnabled)
+                {
+                    SectorDataRequest request;
+                    request.m_gridSize = GridSize >> 1;
+                    request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
+                    request.m_vertexSpacing = gridMeters / request.m_gridSize;
+
+                    AZStd::vector<HeightDataType> meshLodHeights;
+                    AZStd::vector<NormalDataType> meshLodNormals;
+                    GatherMeshData(request, meshLodHeights, meshLodNormals, sector.m_aabb);
+                    UpdateSectorLodBuffers(sector, meshLodHeights, meshLodNormals);
+                }
 
                 ShaderObjectData objectSrgData;
                 objectSrgData.m_xyTranslation = { sector.m_aabb.GetMin().GetX(), sector.m_aabb.GetMin().GetY()};
                 objectSrgData.m_xyScale = gridMeters;
                 objectSrgData.m_lodLevel = updateContext.m_lodLevel;
-
+                objectSrgData.m_rcpLodLevel = 1.0f / (updateContext.m_lodLevel + 1);
                 sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
                 sector.m_srg->Compile();
 

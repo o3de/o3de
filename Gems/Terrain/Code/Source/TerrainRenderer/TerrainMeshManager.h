@@ -46,16 +46,34 @@ namespace Terrain
 
         float m_renderDistance = 4096.0f;
         float m_firstLodDistance = 128.0f;
+        bool m_clodEnabled = true;
+        float m_clodDistance = 16.0f;
 
         bool operator==(const MeshConfiguration& other) const
         {
-            return m_renderDistance == other.m_renderDistance &&
-                m_firstLodDistance == other.m_firstLodDistance;
+            return m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                && m_clodDistance == other.m_clodDistance
+                ;
+        }
+
+        bool CheckWouldRequireRebuild(const MeshConfiguration& other) const
+        {
+            return !(m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                );
         }
 
         bool operator!=(const MeshConfiguration& other) const
         {
             return !(other == *this);
+        }
+
+        bool IsClodNotEnabled() // Since the edit context attribute is "ReadOnly" instead of "Enabled", the logic needs to be reversed.
+        {
+            return !m_clodEnabled;
         }
 
     };
@@ -137,12 +155,14 @@ namespace Terrain
             AZStd::array<float, 2> m_xyTranslation{ 0.0f, 0.0f };
             float m_xyScale{ 1.0f };
             uint32_t m_lodLevel{ 0 };
+            float m_rcpLodLevel{ 1.0f };
         };
 
         struct ShaderMeshData
         {
             AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
             float m_firstLodDistance;
+            float m_rcpClodDistance;
         };
 
         struct SectorUpdateContext
@@ -192,6 +212,7 @@ namespace Terrain
         void InitializeCommonSectorData();
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr);
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
+        void UpdateSectorLodBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
@@ -213,6 +234,8 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
 
         AZStd::vector<StackData> m_sectorStack;
