@@ -1252,7 +1252,7 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
-    void sv_launch_local_client(const AZ::ConsoleCommandContainer& arguments)
+    void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         // Try finding the game launcher from the executable folder where this server was launched from.
         AZ::IO::FixedMaxPath gameLauncherPath = AZ::Utils::GetExecutableDirectory();
@@ -1263,7 +1263,7 @@ namespace Multiplayer
             return;
         }
 
-        auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get();
+        const auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get();
         if (!multiplayerInterface)
         {
             AZLOG_ERROR("Sv_launch_local_client failed. MultiplayerSystemComponent hasn't been constructed yet.");
@@ -1284,7 +1284,7 @@ namespace Multiplayer
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
         
         // Launch GameLauncher and connect to this server
-        bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+        const bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         if (!launchSuccess)
         {
             AZLOG_ERROR("Failed to launch the local client process.");
