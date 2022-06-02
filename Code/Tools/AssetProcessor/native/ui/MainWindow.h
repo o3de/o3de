@@ -191,6 +191,8 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
+    void ShowIncomingProductDependenciesContextMenu(const QPoint& pos);
 
     void ResetTimers();
     void CheckStartAnalysisTimers();

@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include "AssetDetailsPanel.h"
+#include "ProductDependencyTreeModel.h"
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QDateTime>
@@ -57,9 +58,25 @@ namespace AssetProcessor
         }
 
         void SetScanQueueEnabled(bool enabled);
+        void SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection);
+
+        ProductDependencyTreeModel* GetOutgoingDependencyTreeModel() const
+        {
+            return m_outgoingDependencyTreeModel;
+        }
+
+        ProductDependencyTreeModel* GetIncomingDependencyTreeModel() const
+        {
+            return m_incomingDependencyTreeModel;
+        }
+
+        QTreeView* GetOutgoingProductDependenciesTreeView() const;
+        QTreeView* GetIncomingProductDependenciesTreeView() const;
 
     public Q_SLOTS:
         void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+        void IncomingProductDependencyTreeModelReset();
+        void OutgoingProductDependencyTreeModelReset();
 
     protected:
         struct MissingDependencyScanGUIInfo
@@ -110,5 +127,8 @@ namespace AssetProcessor
         QListWidget* m_missingDependencyScanResults = nullptr;
         // The asset database connection in the AzToolsFramework namespace is read only. The AssetProcessor connection allows writing.
         AZStd::shared_ptr<AssetDatabaseConnection> m_assetDatabaseConnection;
+
+        ProductDependencyTreeModel* m_outgoingDependencyTreeModel = nullptr;
+        ProductDependencyTreeModel* m_incomingDependencyTreeModel = nullptr;
     };
 } // namespace AssetProcessor
