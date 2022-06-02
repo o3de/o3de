@@ -214,7 +214,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
 
         // Draw red wireframe on quad boundaries
-        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * rcp(64.0);
+        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * RcpGridSize;
         float2 modPos = input.m_worldPosition.xy % quadSpacing;
         const float lineWidth = 0.04 * quadSpacing;
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))

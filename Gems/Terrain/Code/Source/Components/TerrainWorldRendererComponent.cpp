@@ -82,7 +82,7 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodNotEnabled)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodDisabled)
                     ;
 
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")

@@ -620,8 +620,6 @@ namespace Terrain
                     lodIndex2 += LodGridVerts1D;
                 }
                 lodHeights[index] = (heights[lodIndex1] + heights[lodIndex2]) / 2;
-
-                // This is technically not correct because the normals are based off of neighbors from this lod, not the next lod.
                 lodNormals[index].first = (normals[lodIndex1].first + normals[lodIndex2].first) / 2;
                 lodNormals[index].second = (normals[lodIndex1].second + normals[lodIndex2].second) / 2;
             }
@@ -642,7 +640,7 @@ namespace Terrain
 
         m_dummyLodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, GridSize, nullptr);
         m_dummyLodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, GridSize, nullptr);
-		
+
         constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
         constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
         m_raytracingPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingPositions");
@@ -727,9 +725,9 @@ namespace Terrain
 
                 const float height = heights.at(queryCoord);
                 const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
-				
-				// For continuous LOD, it needs to be possible to create a height that's exactly in between any other height, so scale to 15 bits
-				// instead of 16, then multiply by 2, ensuring there's always an in-between value available.
+
+                // For continuous LOD, it needs to be possible to create a height that's exactly in between any other height, so scale to 15 bits
+                // instead of 16, then multiply by 2, ensuring there's always an in-between value available.
                 const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint15 + 0.5f); // always positive, so just add 0.5 to round.
                 meshHeights.at(coord) = uint16Height * 2;
 
@@ -780,8 +778,8 @@ namespace Terrain
 
                 {
                     SectorDataRequest request;
-	                request.m_samplesX = GridVerts1D;
-	                request.m_samplesY = GridVerts1D;
+                    request.m_samplesX = GridVerts1D;
+                    request.m_samplesY = GridVerts1D;
                     request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
                     request.m_vertexSpacing = gridMeters / GridSize;
 
@@ -795,8 +793,8 @@ namespace Terrain
                 {
                     SectorDataRequest request;
                     uint16_t gridSizeNextLod = (GridSize >> 1);
-	                request.m_samplesX = gridSizeNextLod + 1;
-	                request.m_samplesY = gridSizeNextLod + 1;
+                    request.m_samplesX = gridSizeNextLod + 1;
+                    request.m_samplesY = gridSizeNextLod + 1;
                     request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
                     request.m_vertexSpacing = gridMeters / gridSizeNextLod;
 

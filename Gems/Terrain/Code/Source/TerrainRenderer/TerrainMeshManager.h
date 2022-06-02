@@ -71,7 +71,7 @@ namespace Terrain
             return !(other == *this);
         }
 
-        bool IsClodNotEnabled() // Since the edit context attribute is "ReadOnly" instead of "Enabled", the logic needs to be reversed.
+        bool IsClodDisabled() // Since the edit context attribute is "ReadOnly" instead of "Enabled", the logic needs to be reversed.
         {
             return !m_clodEnabled;
         }
