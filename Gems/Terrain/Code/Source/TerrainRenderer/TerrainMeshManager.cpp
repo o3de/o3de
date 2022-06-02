@@ -403,7 +403,7 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::Shader::FindOrCreate(shaderItem.GetShaderAsset());
             if (!shader)
             {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to find or create instance", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 continue;
             }
 
@@ -451,7 +451,7 @@ namespace Terrain
             const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
             {
-                AZ_Error("TerrainMeshManager", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
+                AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 return;
             }
 
@@ -505,20 +505,26 @@ namespace Terrain
             m_worldBounds = worldBounds;
             m_sampleSpacing = queryResolution;
 
-            if (!m_rebuildSectors)
+            if (dirtyRegion.IsValid())
             {
-                // Rebuild any sectors in the dirty region if they aren't all being rebuilt
-                AZStd::vector<SectorUpdateContext> sectorsToUpdate;
-                ForOverlappingSectors(dirtyRegion,
-                    [&sectorsToUpdate](StackSectorData& sectorData, uint32_t lodLevel)
-                    {
-                        sectorsToUpdate.push_back({ lodLevel, &sectorData });
-                    }
-                );
-                if (!sectorsToUpdate.empty())
+                AZ::Aabb clampedDirtyRegion = dirtyRegion.GetClamped(m_worldBounds);
+                if (!m_rebuildSectors)
                 {
-                    ProcessSectorUpdates(sectorsToUpdate);
+                    // Rebuild any sectors in the dirty region if they aren't all being rebuilt
+                    AZStd::vector<SectorUpdateContext> sectorsToUpdate;
+                    ForOverlappingSectors(clampedDirtyRegion,
+                        [&sectorsToUpdate](StackSectorData& sectorData, uint32_t lodLevel)
+                        {
+                            sectorsToUpdate.push_back({ lodLevel, &sectorData });
+                        }
+                    );
+                    if (!sectorsToUpdate.empty())
+                    {
+                        ProcessSectorUpdates(sectorsToUpdate);
+                    }
                 }
+
+                UpdateRaytracingData(clampedDirtyRegion);
             }
         }
     }
@@ -562,7 +568,7 @@ namespace Terrain
         }
     }
 
-    AZ::Data::Instance<AZ::RPI::Buffer> TerrainMeshManager::CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData)
+    AZ::Data::Instance<AZ::RPI::Buffer> TerrainMeshManager::CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData, const char* name)
     {
         AZ::RPI::CommonBufferDescriptor desc;
         desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
@@ -570,6 +576,11 @@ namespace Terrain
         desc.m_byteCount = desc.m_elementSize * elementCount;
         desc.m_elementFormat = format;
         desc.m_bufferData = initialData;
+
+        if (name != nullptr)
+        {
+            desc.m_bufferName = name;
+        }
 
         return AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
     }
@@ -631,63 +642,94 @@ namespace Terrain
 
         m_dummyLodHeightsBuffer = CreateMeshBufferInstance(HeightFormat, GridSize, nullptr);
         m_dummyLodNormalsBuffer = CreateMeshBufferInstance(NormalFormat, GridSize, nullptr);
+		
+        constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
+        constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
+        m_raytracingPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingPositions");
+        m_raytracingNormalsBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R16G16_SNORM, rayTracingTotalVertices, nullptr, "TerrainRaytracingNormals");
+
+        constexpr uint32_t rayTracingIndicesCount = RayTracingQuads1D * RayTracingQuads1D * 2 * 3; // 2 triangles per quad, 3 vertices per triangle
+        AZStd::vector<uint32_t> raytracingIndices;
+        raytracingIndices.reserve(rayTracingIndicesCount);
+
+        for (uint32_t y = 0; y < RayTracingQuads1D; ++y)
+        {
+            for (uint32_t x = 0; x < RayTracingQuads1D; ++x)
+            {
+                const uint32_t topLeft = y * RayTracingQuads1D + x;
+                const uint32_t topRight = topLeft + 1;
+                const uint32_t bottomLeft = (y + 1) * RayTracingQuads1D + x;
+                const uint32_t bottomRight = bottomLeft + 1;
+
+                raytracingIndices.emplace_back(topLeft);
+                raytracingIndices.emplace_back(topRight);
+                raytracingIndices.emplace_back(bottomLeft);
+                raytracingIndices.emplace_back(bottomLeft);
+                raytracingIndices.emplace_back(topRight);
+                raytracingIndices.emplace_back(bottomRight);
+            }
+        }
+        m_raytracingIndexBuffer = CreateMeshBufferInstance(AZ::RHI::Format::R32_UINT, rayTracingIndicesCount, raytracingIndices.data(), "TerrainRaytracingIndices");
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb)
     {
         const AZ::Vector2 stepSize(request.m_vertexSpacing);
 
-        uint16_t vertexCount1d = (request.m_gridSize + 1); // grid size is length, need an extra vertex in each dimension to draw the final row / column of quads.
-        uint16_t paddedVertexCount1d = vertexCount1d + 2; // extra row / column on each side for normals.
+        const uint16_t querySamplesX = request.m_samplesX + 2; // extra row / column on each side for normals.
+        const uint16_t querySamplesY = request.m_samplesY + 2; // extra row / column on each side for normals.
+        const uint16_t querySamplesCount = querySamplesX * querySamplesY;
+        const uint16_t outputSamplesCount = request.m_samplesX * request.m_samplesY;
 
-        uint16_t meshVertexCount = vertexCount1d * vertexCount1d;
-        uint16_t queryVertexCount = paddedVertexCount1d * paddedVertexCount1d;
         AZStd::vector<float> heights;
-        heights.resize_no_construct(queryVertexCount);
+        heights.resize_no_construct(querySamplesCount);
 
-        meshHeights.resize_no_construct(meshVertexCount);
-        meshNormals.resize_no_construct(meshVertexCount);
+        meshHeights.resize_no_construct(outputSamplesCount);
+        meshNormals.resize_no_construct(outputSamplesCount);
 
-        auto perPositionCallback = [this, &heights, paddedVertexCount1d]
+        auto perPositionCallback = [this, &heights, querySamplesX]
         (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
-            heights.at(yIndex * paddedVertexCount1d + xIndex) = height;
+            heights.at(yIndex * querySamplesX + xIndex) = height;
         };
 
         AzFramework::Terrain::TerrainQueryRegion queryRegion(
-            request.m_worldStartPosition - stepSize, paddedVertexCount1d, paddedVertexCount1d, stepSize);
+            request.m_worldStartPosition - stepSize, querySamplesX, querySamplesY, stepSize);
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegion,
             queryRegion,
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
             perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP);
+            request.m_samplerType);
 
         const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
 
         // initialize min/max heights to the first height
-        float minHeight = heights.at(paddedVertexCount1d + 1);
-        float maxHeight = heights.at(paddedVertexCount1d + 1);
+        float minHeight = heights.at(querySamplesX + 1);
+        float maxHeight = minHeight;
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
         constexpr float maxUint15 = float(AZStd::numeric_limits<uint16_t>::max() / 2);
         constexpr float maxInt16 = AZStd::numeric_limits<int16_t>::max();
 
-        for (uint16_t y = 0; y < vertexCount1d; ++y)
+        for (uint16_t y = 0; y < request.m_samplesY; ++y)
         {
-            const uint16_t offsetY = y + 1;
+            const uint16_t queryY = y + 1;
 
-            for (uint16_t x = 0; x < vertexCount1d; ++x)
+            for (uint16_t x = 0; x < request.m_samplesX; ++x)
             {
-                const uint16_t offsetX = x + 1;
-                const uint16_t offsetCoord = offsetY * paddedVertexCount1d + offsetX;
-                const uint16_t coord = y * vertexCount1d + x;
+                const uint16_t queryX = x + 1;
+                const uint16_t queryCoord = queryY * querySamplesX + queryX;
+                const uint16_t coord = y * request.m_samplesX + x;
 
-                const float height = heights.at(offsetCoord);
+                const float height = heights.at(queryCoord);
                 const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
+				
+				// For continuous LOD, it needs to be possible to create a height that's exactly in between any other height, so scale to 15 bits
+				// instead of 16, then multiply by 2, ensuring there's always an in-between value available.
                 const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint15 + 0.5f); // always positive, so just add 0.5 to round.
                 meshHeights.at(coord) = uint16Height * 2;
 
@@ -700,13 +742,13 @@ namespace Terrain
                     maxHeight = height;
                 }
 
-                const float leftHeight = heights.at(offsetCoord - 1);
-                const float rightHeight = heights.at(offsetCoord + 1);
+                const float leftHeight = heights.at(queryCoord - 1);
+                const float rightHeight = heights.at(queryCoord + 1);
                 const float xSlope = (leftHeight - rightHeight) / vertexSpacing2;
                 const float normalX = xSlope / sqrt(xSlope * xSlope + 1); // sin(arctan(xSlope)
 
-                const float upHeight = heights.at(offsetCoord - paddedVertexCount1d);
-                const float downHeight = heights.at(offsetCoord + paddedVertexCount1d);
+                const float upHeight = heights.at(queryCoord - querySamplesX);
+                const float downHeight = heights.at(queryCoord + querySamplesX);
                 const float ySlope = (upHeight - downHeight) / vertexSpacing2;
                 const float normalY = ySlope / sqrt(ySlope * ySlope + 1); // sin(arctan(ySlope)
 
@@ -718,12 +760,10 @@ namespace Terrain
             }
         }
 
-
-        AZ::Vector3 aabbMin =
-            AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ());
-        AZ::Vector3 aabbMax = aabbMin + AZ::Vector3(request.m_gridSize * request.m_vertexSpacing);
-        aabbMin.SetZ(minHeight);
-        aabbMax.SetZ(maxHeight);
+        float width = (request.m_samplesX - 1) * request.m_vertexSpacing;
+        float height = (request.m_samplesY - 1) * request.m_vertexSpacing;
+        AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ() + minHeight);
+        AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldBounds.GetMin().GetZ() + maxHeight);
         meshAabb.Set(aabbMin, aabbMax);
     }
 
@@ -740,7 +780,8 @@ namespace Terrain
 
                 {
                     SectorDataRequest request;
-                    request.m_gridSize = GridSize;
+	                request.m_samplesX = GridVerts1D;
+	                request.m_samplesY = GridVerts1D;
                     request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
                     request.m_vertexSpacing = gridMeters / GridSize;
 
@@ -753,13 +794,16 @@ namespace Terrain
                 if (m_config.m_clodEnabled)
                 {
                     SectorDataRequest request;
-                    request.m_gridSize = GridSize >> 1;
+                    uint16_t gridSizeNextLod = (GridSize >> 1);
+	                request.m_samplesX = gridSizeNextLod + 1;
+	                request.m_samplesY = gridSizeNextLod + 1;
                     request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
-                    request.m_vertexSpacing = gridMeters / request.m_gridSize;
+                    request.m_vertexSpacing = gridMeters / gridSizeNextLod;
 
+                    AZ::Aabb dummyAabb = AZ::Aabb::CreateNull(); // don't update the sector aabb based on only the clod vertices.
                     AZStd::vector<HeightDataType> meshLodHeights;
                     AZStd::vector<NormalDataType> meshLodNormals;
-                    GatherMeshData(request, meshLodHeights, meshLodNormals, sector.m_aabb);
+                    GatherMeshData(request, meshLodHeights, meshLodNormals, dummyAabb);
                     UpdateSectorLodBuffers(sector, meshLodHeights, meshLodNormals);
                 }
 
@@ -779,6 +823,66 @@ namespace Terrain
         }
         jobCompletion.StartAndWaitForCompletion();
 
+    }
+
+    void TerrainMeshManager::UpdateRaytracingData(const AZ::Aabb& bounds)
+    {
+        SectorDataRequest request;
+        request.m_worldStartPosition = AZ::Vector2(bounds.GetMin());
+        request.m_vertexSpacing = AZStd::GetMax(m_worldBounds.GetXExtent(), m_worldBounds.GetYExtent()) / RayTracingQuads1D;
+        request.m_samplesX = aznumeric_cast<uint16_t>(bounds.GetXExtent() / request.m_vertexSpacing) + 1;
+        request.m_samplesY = aznumeric_cast<uint16_t>(bounds.GetYExtent() / request.m_vertexSpacing) + 1;
+        request.m_samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT;
+
+        AZStd::vector<HeightDataType> meshHeights;
+        AZStd::vector<NormalDataType> meshNormals;
+        AZ::Aabb outAabb;
+        GatherMeshData(request, meshHeights, meshNormals, outAabb);
+
+        struct Position
+        {
+            float x;
+            float y;
+            float z;
+        };
+
+        struct Normal
+        {
+            int16_t x;
+            int16_t y;
+        };
+
+        Position* positions = reinterpret_cast<Position*>(m_raytracingPositionsBuffer->Map(m_raytracingPositionsBuffer->GetBufferSize(), 0));
+        Normal* normals = reinterpret_cast<Normal*>(m_raytracingNormalsBuffer->Map(m_raytracingNormalsBuffer->GetBufferSize(), 0));
+
+        if (positions == nullptr || normals == nullptr)
+        {
+            AZ_Error(TerrainMeshManagerName, false, "Enable to map buffers for ray tracing mesh.");
+            return;
+        }
+
+        uint32_t xMin = aznumeric_cast<uint32_t>((bounds.GetMin().GetX() - m_worldBounds.GetMin().GetX()) / request.m_vertexSpacing);
+        uint32_t xMax = xMin + request.m_samplesX;
+        uint32_t yMin = aznumeric_cast<uint32_t>((bounds.GetMin().GetY() - m_worldBounds.GetMin().GetY()) / request.m_vertexSpacing);
+        uint32_t yMax = yMin + request.m_samplesY;
+
+        constexpr uint32_t RayTracingVertices1D = RayTracingQuads1D + 1;
+
+        for (uint32_t y = yMin; y < yMax; ++y)
+        {
+            for (uint32_t x = xMin; x < xMax; ++x)
+            {
+                uint32_t index = y * RayTracingVertices1D + x;
+                uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
+                AZ::Vector2 xyPosition = AZ::Vector2(m_worldBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
+                float floatHeight = meshHeights.at(localIndex) / float(AZStd::numeric_limits<uint16_t>::max()) * m_worldBounds.GetZExtent();
+                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), floatHeight };
+                normals[index] = { meshNormals.at(localIndex).first,meshNormals.at(localIndex).second };
+            }
+        }
+
+        m_raytracingPositionsBuffer->Unmap();
+        m_raytracingNormalsBuffer->Unmap();
     }
 
     template<typename Callback>

@@ -175,7 +175,10 @@ namespace Terrain
         {
             AZ::Vector2 m_worldStartPosition;
             float m_vertexSpacing;
-            int16_t m_gridSize;
+            int16_t m_samplesX;
+            int16_t m_samplesY;
+            AzFramework::Terrain::TerrainDataRequests::Sampler m_samplerType =
+                AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
         };
 
         struct CachedDrawData
@@ -193,6 +196,7 @@ namespace Terrain
         static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
+        static constexpr uint32_t RayTracingQuads1D = 200;
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
@@ -210,13 +214,14 @@ namespace Terrain
 
         void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
         void InitializeCommonSectorData();
-        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr);
+        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
         void UpdateSectorLodBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
+        void UpdateRaytracingData(const AZ::Aabb& bounds);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -237,6 +242,12 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
+
+        // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
+        // combine them in the future to support terrain lods in ray tracing.
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingPositionsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<StackData> m_sectorStack;
         uint32_t m_1dSectorCount = 0;
