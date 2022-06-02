@@ -62,6 +62,7 @@ namespace AtomToolsFramework
         bool m_readOnly = false;
         bool m_showThumbnail = false;
         AZStd::function<AZ::u32(const AZStd::any&)> m_dataChangeCallback;
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
         AZ::u32 m_customHandler = 0;
     };
 

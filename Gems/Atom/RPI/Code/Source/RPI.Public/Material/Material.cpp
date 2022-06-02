@@ -620,32 +620,22 @@ namespace AZ
                 AZ::Data::AssetInfo assetInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
 
-                auto assetType = imageAsset.GetType();
-
-                if (assetInfo.m_assetId.IsValid())
-                {
-                    if (assetType != imageAsset.GetType())
-                    {
-                        AZ_Assert(false, "Wrong asset type with input asset");
-                        // Correct the asset type
-                        assetType = assetInfo.m_assetType;
-                    }
-                }
-
                 Data::Instance<Image> image = nullptr;
-                if (assetType == azrtti_typeid<StreamingImageAsset>())
+                if (assetInfo.m_assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset);
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
                     image = StreamingImage::FindOrCreate(streamingImageAsset);
                 }
-                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
+                else if (assetInfo.m_assetType == azrtti_typeid<AttachmentImageAsset>())
                 {
-                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = Data::static_pointer_cast<AttachmentImageAsset>(imageAsset);
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
                     image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
+                    AZ_Error(
+                        s_debugTraceName, false, "Unsupported image asset type: %s",
+                        assetInfo.m_assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
 
