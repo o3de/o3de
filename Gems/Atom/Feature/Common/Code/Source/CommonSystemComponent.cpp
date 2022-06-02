@@ -82,6 +82,7 @@
 
 #include <CoreLights/LightCullingTilePreparePass.h>
 #include <CoreLights/LightCullingPass.h>
+#include <Shadows/FullscreenShadowPass.h>
 #include <CoreLights/LightCullingRemap.h>
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
 #include <ImGui/ImGuiPass.h>
@@ -235,6 +236,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("LightCullingTilePreparePass"), &LightCullingTilePreparePass::Create);
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
+            passSystem->AddPassCreator(Name("FullscreenShadowPass"), &FullscreenShadowPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
