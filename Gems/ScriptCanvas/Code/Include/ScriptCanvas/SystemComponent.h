@@ -74,8 +74,6 @@ namespace ScriptCanvas
         ScriptCanvasId FindScriptCanvasId(AZ::Entity* graphEntity) override;
         ScriptCanvas::Node* GetNode(const AZ::EntityId&, const AZ::Uuid&) override;
         ScriptCanvas::Node* CreateNodeOnEntity(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId, const AZ::Uuid& nodeType) override;
-        ScriptCanvas::Node* CreateNodeOnEntityWithoutUuid(
-            const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId) override;
         SystemComponentConfiguration GetSystemComponentConfiguration() override
         {
             SystemComponentConfiguration configuration;

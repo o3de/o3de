@@ -236,22 +236,61 @@ namespace ScriptCanvas
 
     ScriptCanvas::Node* SystemComponent::CreateNodeOnEntity(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId, const AZ::Uuid& nodeType)
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to retrieve application serialize context");
+        if (!nodeType.IsNull())
+        {
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+            AZ_Assert(serializeContext, "Failed to retrieve application serialize context");
 
-        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(nodeType);
-        AZ_Assert(classData, "Type %s is not registered in the serialization context", nodeType.ToString<AZStd::string>().data());
+            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(nodeType);
+            AZ_Assert(classData, "Type %s is not registered in the serialization context", nodeType.ToString<AZStd::string>().data());
 
-        if (classData)
+            if (classData)
+            {
+                AZ::Entity* nodeEntity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+                ScriptCanvas::Node* node = reinterpret_cast<ScriptCanvas::Node*>(classData->m_factory->Create(classData->m_name));
+                AZ_Assert(node, "ClassData (%s) does not correspond to a supported ScriptCanvas Node", classData->m_name);
+                if (node && nodeEntity)
+                {
+                    nodeEntity->SetName(classData->m_name);
+                    nodeEntity->AddComponent(node);
+                }
+
+                GraphRequestBus::Event(scriptCanvasId, &GraphRequests::AddNode, nodeEntity->GetId());
+                return node;
+            }
+        }
+        else
         {
             AZ::Entity* nodeEntity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            ScriptCanvas::Node* node = reinterpret_cast<ScriptCanvas::Node*>(classData->m_factory->Create(classData->m_name));
-            AZ_Assert(node, "ClassData (%s) does not correspond to a supported ScriptCanvas Node", classData->m_name);
+            ScriptCanvas::Node* node = aznew Node;
+            node->SetNodeName("++");
+
+            DynamicDataSlotConfiguration inputPin;
+
+            inputPin.m_name = " ";
+            inputPin.m_toolTip = "Input";
+            inputPin.SetConnectionType(ConnectionType::Input);
+            inputPin.m_dynamicDataType = DynamicDataType::Any;
+            inputPin.m_displayType = Data::Type::Number();
+
+            node->AddSlot(inputPin, true);
+
+            DynamicDataSlotConfiguration outputPin;
+
+            outputPin.m_name = " ";
+            outputPin.m_toolTip = "Output";
+            outputPin.SetConnectionType(ConnectionType::Output);
+            outputPin.m_dynamicDataType = DynamicDataType::Any;
+            outputPin.m_displayType = Data::Type::Number();
+
+            node->AddSlot(outputPin, true);
+
             if (node && nodeEntity)
             {
-                nodeEntity->SetName(classData->m_name);
+                nodeEntity->SetName(node->GetNodeName());
                 nodeEntity->AddComponent(node);
             }
 
@@ -260,44 +299,6 @@ namespace ScriptCanvas
         }
 
         return nullptr;
-    }
-
-    ScriptCanvas::Node* SystemComponent::CreateNodeOnEntityWithoutUuid(
-        const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId)
-    {
-        AZ::Entity* nodeEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-        ScriptCanvas::Node* node = aznew Node;
-        node->SetNodeName("++");
-
-        DynamicDataSlotConfiguration inputPin;
-
-        inputPin.m_name = " ";
-        inputPin.m_toolTip = "Input";
-        inputPin.SetConnectionType(ConnectionType::Input);
-        inputPin.m_dynamicDataType = DynamicDataType::Any;
-        inputPin.m_displayType = Data::Type::Number();
-
-        node->AddSlot(inputPin, true);
-
-        DynamicDataSlotConfiguration outputPin;
-
-        outputPin.m_name = " ";
-        outputPin.m_toolTip = "Output";
-        outputPin.SetConnectionType(ConnectionType::Output);
-        outputPin.m_dynamicDataType = DynamicDataType::Any;
-        outputPin.m_displayType = Data::Type::Number();
-
-        node->AddSlot(outputPin, true);
-
-        if (node && nodeEntity)
-        {
-            nodeEntity->SetName(node->GetNodeName());
-            nodeEntity->AddComponent(node);
-        }
-
-        GraphRequestBus::Event(scriptCanvasId, &GraphRequests::AddNode, nodeEntity->GetId());
-        return node;
     }
 
     void SystemComponent::AddOwnedObjectReference(const void* object, BehaviorContextObject* behaviorContextObject)

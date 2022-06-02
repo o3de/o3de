@@ -780,15 +780,15 @@ namespace
         }
     }
 
-    void PopulateConfiguredNodeInformationRatherThanMoreClassHierarchy(
+    void PopulateDataDrivenNodes(
         ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
     {
 
         // Create the small operator node information
         ScriptCanvasEditor::RegisterNodeInformation nodeInformation;
-        nodeInformation.m_displayName = "Small Operator";
+        nodeInformation.m_displayName = "++";
         nodeInformation.m_categoryPath = "Math";
-        nodeInformation.m_toolTip = "Perform small operations";
+        nodeInformation.m_toolTip = "Increments a value";
 
         nodePaletteModel.RegisterNode(nodeInformation);
     }
@@ -839,7 +839,7 @@ namespace
         PopulateBehaviorContextGlobalProperties(nodePaletteModel, *behaviorContext);
 
         // Populates the NodePalette with nodes that are instances of the Node class instead of inherited classes of Node
-        PopulateConfiguredNodeInformationRatherThanMoreClassHierarchy(nodePaletteModel);
+        PopulateDataDrivenNodes(nodePaletteModel);
 
     }
 }
@@ -947,7 +947,6 @@ namespace ScriptCanvasEditor
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier("");
 
         customNodeInformation->m_nodeIdentifier = nodeIdentifier;
-        customNodeInformation->m_typeId = "";
         customNodeInformation->m_displayName = nodeInformation.m_displayName;
         customNodeInformation->m_categoryPath = nodeInformation.m_categoryPath;
         customNodeInformation->m_toolTip = nodeInformation.m_toolTip;

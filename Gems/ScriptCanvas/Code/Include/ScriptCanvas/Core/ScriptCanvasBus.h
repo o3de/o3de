@@ -74,8 +74,6 @@ namespace ScriptCanvas
         //! Given the ClassData for a type create a Script Canvas Node Component on the supplied entity
         virtual Node* CreateNodeOnEntity(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId, const AZ::Uuid& nodeType) = 0;
 
-        virtual Node* CreateNodeOnEntityWithoutUuid(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId) = 0;
-
         template <typename NodeType>
         NodeType* GetNode(const AZ::EntityId& nodeId)
         {
