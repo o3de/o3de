@@ -64,7 +64,7 @@ namespace AZ::AttributeDomInteropTests
             }
         }
 
-        template <typename Result = R>
+        template<typename Result = R>
         void TestInvoke(Result expectedResult, Args... args)
         {
             AZ::Dom::Value domArgs(AZ::Dom::Type::Array);
@@ -122,6 +122,16 @@ namespace AZ::AttributeDomInteropTests
         EXPECT_EQ(3, callCount);
     }
 
+    TEST_F(AttributeDomInteropTests, ArgumentOrder)
+    {
+        InvokeTestHelper<bool(int, float, AZStd::string)> tester(
+            [](int i, float f, AZStd::string str)
+            {
+                return i > 0 && f > 0.f && !str.empty();
+            });
+        tester.TestInvoke(true, 1, 2.f, "test");
+    }
+
     TEST_F(AttributeDomInteropTests, PointerArguments)
     {
         InvokeTestHelper<float(AZ::Vector3*)> tester(
@@ -137,18 +147,41 @@ namespace AZ::AttributeDomInteropTests
         tester.TestInvoke(12.2f, &arg);
     }
 
-    TEST_F(AttributeDomInteropTests, ConstRefArguments)
+    TEST_F(AttributeDomInteropTests, RefArguments)
     {
-        InvokeTestHelper<float(const AZ::Vector3&)> tester(
-            [](const AZ::Vector3& arg)
+        int callCount = 0;
+        InvokeTestHelper<float(AZ::Vector3&, int&)> tester(
+            [](AZ::Vector3& arg1, int& arg2)
             {
-                return arg.GetX();
+                ++arg2;
+                arg1.SetX(1.f);
+                return arg1.GetX();
             });
 
         AZ::Vector3 arg;
         arg.SetX(0.f);
-        tester.TestInvoke(0.f, arg);
+        tester.TestInvoke(1.f, arg, callCount);
+        EXPECT_EQ(1.0, arg.GetX());
+        EXPECT_EQ(3, callCount);
         arg.SetX(12.2f);
-        tester.TestInvoke(12.2f, arg);
+        tester.TestInvoke(1.f, arg, callCount);
+        EXPECT_EQ(1.0, arg.GetX());
+        EXPECT_EQ(6, callCount);
+    }
+
+    TEST_F(AttributeDomInteropTests, ConstRefArguments)
+    {
+        InvokeTestHelper<float(const AZ::Vector3&, const int&)> tester(
+            [](const AZ::Vector3& arg, const int& n)
+            {
+                return arg.GetX() + n;
+            });
+
+        AZ::Vector3 arg;
+        int n = 1;
+        arg.SetX(0.f);
+        tester.TestInvoke(1.f, arg, n);
+        arg.SetX(12.2f);
+        tester.TestInvoke(13.2f, arg, n);
     }
 } // namespace AZ::AttributeDomInteropTests

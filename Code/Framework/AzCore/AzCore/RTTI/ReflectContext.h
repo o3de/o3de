@@ -243,7 +243,14 @@ namespace AZ
 
         AZ::Dom::Value GetAsDomValue(void*) override
         {
-            return AZ::Dom::Utils::ValueFromType(m_data);
+            if constexpr (AZStd::is_copy_constructible_v<T>)
+            {
+                return AZ::Dom::Utils::ValueFromType(m_data);
+            }
+            else
+            {
+                return AZ::Dom::Utils::ValueFromType(&m_data);
+            }
         }
     private:
         T   m_data;
@@ -327,19 +334,19 @@ namespace AZ
     template <typename R, typename... Args>
     Dom::Value InvokeFromDomArray(const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray)
     {
-        size_t index = 0;
         if (!domArray.IsArray() || domArray.ArraySize() < sizeof...(Args))
         {
             return {};
         }
+        [[maybe_unused]] size_t index = sizeof...(Args);
         if constexpr (AZStd::is_same_v<R, void>)
         {
-            invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[index++])...);
+            invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[--index])...);
             return {};
         }
         else
         {
-            return AZ::Dom::Utils::ValueFromType<R>(invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[index++])...));
+            return AZ::Dom::Utils::ValueFromType<R>(invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[--index])...));
         }
     }
 

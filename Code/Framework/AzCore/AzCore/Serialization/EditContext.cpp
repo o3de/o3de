@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/DynamicSerializableField.h>
 
 namespace AZ
 {
