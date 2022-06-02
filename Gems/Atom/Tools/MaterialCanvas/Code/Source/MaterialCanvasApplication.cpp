@@ -74,8 +74,8 @@ namespace MaterialCanvas
         m_graphContext->CreateModuleGraphManager();
 
         // Instantiate the dynamic node manager, giving it an extension to enumerate and load node configurations
-        m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager());
-        m_dynamicNodeManager->LoadMatchingConfigFiles({ "materialcanvasnode.azasset" });
+        m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
+        m_dynamicNodeManager->LoadConfigFiles({ "materialcanvasnode.azasset" });
 
         // This callback is passed into the main window and views to populate nude palette items from the dynamic node manager
         AtomToolsFramework::GraphViewConfig graphViewConfig;
@@ -83,9 +83,12 @@ namespace MaterialCanvas
         graphViewConfig.m_styleManagerPath = "MaterialCanvas/StyleSheet/graphcanvas_style.json";
         graphViewConfig.m_nodeMimeType = "MaterialCanvas/node-palette-mime-event";
         graphViewConfig.m_nodeSaveIdentifier = "MaterialCanvas/ContextMenu";
-        graphViewConfig.m_createNodeTreeItemsFn = [this](const AZ::Crc32& toolId)
+        graphViewConfig.m_createNodeTreeItemsFn = [](const AZ::Crc32& toolId)
         {
-            return m_dynamicNodeManager->CreateNodePaletteRootTreeItem(toolId);
+            GraphCanvas::GraphCanvasTreeItem* rootTreeItem = {};
+            AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+                rootTreeItem, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::CreateNodePaletteTree);
+            return rootTreeItem;
         };
 
         // Overriding default document type info to provide a custom view
@@ -116,6 +119,7 @@ namespace MaterialCanvas
     {
         m_window.reset();
         m_viewportSettingsSystem.reset();
+        m_dynamicNodeManager.reset();
         Base::Destroy();
     }
 
