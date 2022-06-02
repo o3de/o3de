@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QProgressBar>
 #include <QLabel>
+#include <QStandardPaths>
 
 #include <AzCore/std/chrono/chrono.h>
 
@@ -658,6 +659,21 @@ namespace O3DE::ProjectManager
 
             return AZ::Success(QString(projectBuildPath.c_str()));
         }
+
+    QString GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
 
         void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
         {

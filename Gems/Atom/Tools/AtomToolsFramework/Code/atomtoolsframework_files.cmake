@@ -85,6 +85,10 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
 
+    Include/AtomToolsFramework/GraphView/GraphView.h
+    Include/AtomToolsFramework/GraphView/GraphViewConfig.h
+    Source/GraphView/GraphView.cpp
+
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
     Include/AtomToolsFramework/Inspector/InspectorNotificationBus.h

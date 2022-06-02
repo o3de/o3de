@@ -918,11 +918,6 @@ namespace ScriptCanvasEditor
                 customNodeInformation->m_displayName = details.m_name;
                 customNodeInformation->m_toolTip = details.m_tooltip;
 
-                if (!details.m_category.empty())
-                {
-                    customNodeInformation->m_categoryPath = details.m_category;
-                }
-
                 if (customNodeInformation->m_displayName.empty())
                 {
                     customNodeInformation->m_displayName = classData->m_editData->m_name;
@@ -939,6 +934,17 @@ namespace ScriptCanvasEditor
                             if (categoryAttributeData->Get(nullptr))
                             {
                                 customNodeInformation->m_styleOverride = categoryAttributeData->Get(nullptr);
+                            }
+                        }
+                    }
+
+                    if (auto categoryNameAttribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::Category))
+                    {
+                        if(auto categoryNameAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryNameAttribute))
+                        {
+                            if (categoryNameAttributeData->Get(nullptr))
+                            {
+                                customNodeInformation->m_categoryPath = categoryNameAttributeData->Get(nullptr);
                             }
                         }
                     }
@@ -967,6 +973,11 @@ namespace ScriptCanvasEditor
                     {
                         customNodeInformation->m_toolTip = classData->m_editData->m_description;
                     }
+                }
+
+                if (!details.m_category.empty())
+                {
+                    customNodeInformation->m_categoryPath = details.m_category;
                 }
             }
 

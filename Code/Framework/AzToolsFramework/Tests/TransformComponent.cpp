@@ -1104,6 +1104,7 @@ R"DELIMITER(<ObjectStream version="1">
     {
         AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
         MoveEntity(entityId);
+        ProcessDeferredUpdates();
         BusConnect(entityId);
 
         // verify that undoing/redoing move operations fires TransformChanged event

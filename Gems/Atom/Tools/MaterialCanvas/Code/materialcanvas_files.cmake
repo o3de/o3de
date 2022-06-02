@@ -12,7 +12,6 @@ set(FILES
     Source/MaterialCanvasApplication.h
     Source/MaterialCanvasTestData.cpp
     Source/MaterialCanvasTestData.h
-    Source/MaterialCanvasUtil.h
 
     Source/Document/MaterialCanvasDocument.cpp
     Source/Document/MaterialCanvasDocument.h

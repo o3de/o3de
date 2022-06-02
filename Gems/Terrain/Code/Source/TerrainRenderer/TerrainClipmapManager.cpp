@@ -10,9 +10,64 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AzCore/Console/Console.h>
 
 namespace Terrain
 {
+    AZ_CVAR(
+        uint32_t,
+        r_terrainClipmapDebugOverlay,
+        0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The clipmap index to be rendered on the screen.\n"
+        "0: off\n"
+        "1: macro clipmap overlay\n"
+        "2: detail clipmap overlay");
+
+    AZ_CVAR(
+        uint32_t,
+        r_terrainClipmapDebugClipmapId,
+        0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The clipmap index to be rendered on the screen.\n"
+        "0: macro color clipmap\n"
+        "1: macro normal clipmap\n"
+        "2: detail color clipmap\n"
+        "3: detail normal clipmap\n"
+        "4: detail height clipmap\n"
+        "5: detail roughness clipmap\n"
+        "6: detail specularF0 clipmap\n"
+        "7: detail metalness clipmap\n"
+        "8: detail occlusion clipmap");
+
+    AZ_CVAR(
+        uint32_t,
+        r_terrainClipmapDebugClipmapLevel,
+        0,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The clipmap level to be rendered on the screen.");
+
+    AZ_CVAR(
+        float,
+        r_terrainClipmapDebugScale,
+        0.5f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "The size multiplier of the clipmap texture's debug display.");
+
+    AZ_CVAR(
+        float,
+        r_terrainClipmapDebugBrightness,
+        1.0f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "A multiplier to the final output of the clipmap texture's debug display.");
+
     namespace
     {
         [[maybe_unused]] static const char* TerrainClipmapManagerName = "TerrainClipmapManager";
@@ -108,9 +163,9 @@ namespace Terrain
         m_isInitialized = false;
     }
 
-    void TerrainClipmapManager::Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    void TerrainClipmapManager::Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        UpdateClipmapData(cameraPosition);
+        UpdateClipmapData(cameraPosition, scene);
         terrainSrg->SetConstant(m_terrainSrgClipmapDataIndex, m_clipmapData);
     }
 
@@ -276,7 +331,7 @@ namespace Terrain
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailOcclusionClipmapName, nullptr, nullptr);
     }
 
-    void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition)
+    void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene)
     {
         const AZStd::array<uint32_t, 4> zero = { 0, 0, 0, 0 };
 
@@ -288,6 +343,35 @@ namespace Terrain
         AZ::Vector2 currentViewPosition = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
         currentViewPosition.StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
+        // Update debug data
+        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        auto viewportContext = viewportContextInterface->GetViewportContextByScene(scene);
+        auto viewportWindowSize = viewportContext->GetViewportSize();
+        m_clipmapData.m_viewportSize[0] = aznumeric_cast<float>(viewportWindowSize.m_width);
+        m_clipmapData.m_viewportSize[1] = aznumeric_cast<float>(viewportWindowSize.m_height);
+
+        m_clipmapData.m_debugClipmapId = uint32_t(r_terrainClipmapDebugClipmapId);
+        m_clipmapData.m_debugClipmapLevel = aznumeric_cast<float>(uint32_t(r_terrainClipmapDebugClipmapLevel));
+        m_clipmapData.m_debugScale = float(r_terrainClipmapDebugScale);
+        m_clipmapData.m_debugBrightness = float(r_terrainClipmapDebugBrightness);
+
+        if (r_terrainClipmapDebugOverlay == 0u)
+        {
+            m_clipmapData.m_macroClipmapOverlayFactor = 0.0f;
+            m_clipmapData.m_detailClipmapOverlayFactor = 0.0f;
+        }
+        else if (r_terrainClipmapDebugOverlay == 1u)
+        {
+            m_clipmapData.m_macroClipmapOverlayFactor = 1.0f;
+            m_clipmapData.m_detailClipmapOverlayFactor = 0.0f;
+        }
+        else
+        {
+            m_clipmapData.m_macroClipmapOverlayFactor = 0.0f;
+            m_clipmapData.m_detailClipmapOverlayFactor = 1.0f;
+        }
+
+        // Update clipmap center
         auto UpdateCenter = [&](ClipmapBounds& clipmapBounds, AZStd::array<uint32_t, 4>& shaderData) -> ClipmapBoundsRegionList
         {
             ClipmapBoundsRegionList updateRegionList = clipmapBounds.UpdateCenter(currentViewPosition);
@@ -459,6 +543,11 @@ namespace Terrain
         outThreadX = m_detailTotalDispatchThreadX;
         outThreadY = m_detailTotalDispatchThreadY;
         outThreadZ = 1;
+    }
+
+    uint32_t TerrainClipmapManager::GetClipmapSize() const
+    {
+        return m_config.m_clipmapSize;
     }
 
     bool TerrainClipmapManager::HasMacroClipmapUpdate() const

@@ -159,8 +159,6 @@ namespace UnitTest
         ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId));
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        ValidateInstanceEntitiesActive(*secondInstance);
-
         //get the entity id
         AZ::EntityId secondEntityId = secondInstance->GetEntityId(newEntityAlias);
         ASSERT_TRUE(secondEntityId.IsValid());
@@ -356,4 +354,4 @@ namespace UnitTest
 
         EXPECT_EQ(secondInstance->FindNestedInstance(addedAlias), AZStd::nullopt);
     }
-}
+} // namespace UnitTest

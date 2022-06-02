@@ -14,7 +14,7 @@
 
 namespace RecastNavigation
 {
-    //! System component for RecastNavigation editor
+    //! System component for RecastNavigation editor.
     class RecastNavigationEditorSystemComponent
         : public RecastNavigationSystemComponent
         , private AzToolsFramework::EditorEvents::Bus::Handler

@@ -55,8 +55,8 @@ void MainCS(
                 float2 positionDdx = ddxPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
                 float2 positionDdy = ddyPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
 
-                float3 macroColor;
-                float3 macroNormal;
+                float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+                float3 macroNormal = float3(0.0, 0.0, 1.0);
                 SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal);
 
                 PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, 1.0);

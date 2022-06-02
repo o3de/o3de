@@ -180,7 +180,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.global_skylight()))
 
         # 8. Set the Cubemap Texture property of the HDRi Skybox component.
-        global_skylight_image_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        global_skylight_image_asset_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path, False)
         hdri_skybox_component.set_component_property_value(
             AtomComponentProperties.hdri_skybox('Cubemap Texture'), global_skylight_image_asset.id)
@@ -192,7 +192,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 9. Set the Diffuse Image property of the Global Skylight (IBL) component.
         # Re-use the same image that was used in the previous test step.
         global_skylight_diffuse_image_asset_path = os.path.join(
-            "LightingPresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
+            "lightingpresets", "default_iblskyboxcm_ibldiffuse.exr.streamingimage")
         global_skylight_diffuse_image_asset = Asset.find_asset_by_path(global_skylight_diffuse_image_asset_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Diffuse Image'), global_skylight_diffuse_image_asset.id)
@@ -204,7 +204,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 10. Set the Specular Image property of the Global Skylight (IBL) component.
         # Re-use the same image that was used in the previous test step.
         global_skylight_specular_image_asset_path = os.path.join(
-            "LightingPresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
+            "lightingpresets", "default_iblskyboxcm_iblspecular.exr.streamingimage")
         global_skylight_specular_image_asset = Asset.find_asset_by_path(
             global_skylight_specular_image_asset_path, False)
         global_skylight_component.set_component_property_value(
@@ -225,7 +225,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 12. Set the Material Asset property of the Material component for the Ground Plane Entity.
         ground_plane_entity.set_local_uniform_scale(32.0)
-        ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
+        ground_plane_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_chrome.azmaterial")
         ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
         ground_plane_material_component.set_component_property_value(
             AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)
@@ -237,7 +237,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Model Asset property.
         ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(AtomComponentProperties.mesh()))
-        ground_plane_model_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
+        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.azmodel")
         ground_plane_model_asset = Asset.find_asset_by_path(ground_plane_model_asset_path, False)
         ground_plane_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), ground_plane_model_asset.id)
@@ -266,7 +266,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.material()))
 
         # 17. Set the Material Asset property of the Material component for the Sphere Entity.
-        sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
+        sphere_material_asset_path = os.path.join("materials", "presets", "pbr", "metal_brass_polished.azmaterial")
         sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
         sphere_material_component.set_component_property_value(
             AtomComponentProperties.material('Material Asset'), sphere_material_asset.id)
@@ -275,7 +275,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 18. Add Mesh component to Sphere Entity and set the Model Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-        sphere_model_asset_path = os.path.join("Models", "sphere.azmodel")
+        sphere_model_asset_path = os.path.join("models", "sphere.azmodel")
         sphere_model_asset = Asset.find_asset_by_path(sphere_model_asset_path, False)
         sphere_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), sphere_model_asset.id)

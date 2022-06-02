@@ -16,6 +16,7 @@
 #include <EngineInfo.h>
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
+#include <ProjectUtils.h>
 
 #include <AzCore/Math/Uuid.h>
 #include <AzQtComponents/Components/FlowLayout.h>
@@ -29,7 +30,7 @@
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QSpacerItem>
-#include <QStandardPaths>
+
 #include <QFrame>
 #include <QScrollArea>
 #include <QAbstractButton>
@@ -42,7 +43,7 @@ namespace O3DE::ProjectManager
         : ProjectSettingsScreen(parent)
     {
         const QString defaultName = GetDefaultProjectName();
-        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
+        const QString defaultPath = QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + defaultName);
 
         m_projectName->lineEdit()->setText(defaultName);
         m_projectPath->lineEdit()->setText(defaultPath);
@@ -149,21 +150,6 @@ namespace O3DE::ProjectManager
         m_horizontalLayout->addWidget(projectTemplateDetails);
     }
 
-    QString NewProjectSettingsScreen::GetDefaultProjectPath()
-    {
-        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
-        if (engineInfoResult.IsSuccess())
-        {
-            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
-            if (path.exists())
-            {
-                defaultPath = path.absolutePath();
-            }
-        }
-        return defaultPath;
-    }
-
     QString NewProjectSettingsScreen::GetDefaultProjectName()
     {
         return "NewProject";
@@ -172,7 +158,7 @@ namespace O3DE::ProjectManager
     QString NewProjectSettingsScreen::GetProjectAutoPath()
     {
         const QString projectName = m_projectName->lineEdit()->text();
-        return QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + projectName);
+        return QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectName);
     }
 
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
@@ -284,7 +270,8 @@ namespace O3DE::ProjectManager
 
     void NewProjectSettingsScreen::OnProjectPathUpdated()
     {
-        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + GetDefaultProjectName());
+        const QString defaultPath =
+            QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + GetDefaultProjectName());
         const QString autoPath = GetProjectAutoPath();
         const QString path = m_projectPath->lineEdit()->text();
         m_userChangedProjectPath = path != defaultPath && path != autoPath;

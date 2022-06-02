@@ -16,9 +16,10 @@
 namespace MaterialCanvas
 {
     MaterialCanvasMainWindow::MaterialCanvasMainWindow(
-        const AZ::Crc32& toolId, const CreateNodePaletteItemsCallback& createNodePaletteItemsCallback, QWidget* parent)
+        const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent)
         : Base(toolId, "MaterialCanvasMainWindow", parent)
-        , m_styleManager(toolId, "MaterialCanvas/StyleSheet/graphcanvas_style.json")
+        , m_graphViewConfig(graphViewConfig)
+        , m_styleManager(toolId, graphViewConfig.m_styleManagerPath)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -62,18 +63,17 @@ namespace MaterialCanvas
         AddDockWidget("Bookmarks", m_bookmarkDockWidget, Qt::BottomDockWidgetArea);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
-        nodePaletteConfig.m_rootTreeItem = createNodePaletteItemsCallback(m_toolId);
+        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = "materialcanvas/node-palette-mime-event";
+        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = false;
-        nodePaletteConfig.m_saveIdentifier = "MaterialCanvas_ContextMenu";
+        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
 
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(
-            "@products@/translation/materialcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_graphViewConfig.m_translationPath.c_str(), unresolvedPath.data(), unresolvedPath.size());
 
         QString translationFilePath(unresolvedPath.data());
         if (m_translator.load(QLocale::Language::English, translationFilePath))

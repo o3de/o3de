@@ -243,6 +243,8 @@ class EditorComponent:
         assert (
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
+        PrefabUtils.wait_for_propagation()
+        self.get_property_tree(True)
 
     def is_enabled(self):
         """
@@ -444,6 +446,7 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
+        PrefabUtils.wait_for_propagation()
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
@@ -575,6 +578,7 @@ class EditorEntity:
         :return: None
         """
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+        PrefabUtils.wait_for_propagation()
 
     def set_visibility_state(self, is_visible: bool) -> None:
         """
@@ -678,6 +682,18 @@ class EditorEntity:
         new_translation = convert_to_azvector3(new_translation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalTranslation", self.id, new_translation)
 
+    def validate_world_translate_position(self, expected_translation) -> bool:
+        """
+        Validates whether the actual world translation of the entity matches the provided translation value.
+        :param expected_translation: The math.Vector3 value to compare against the world translation on the entity.
+        :return: The bool indicating whether the translate position matched or not.
+        """
+        is_entity_at_expected_position = self.get_world_translation().IsClose(expected_translation)
+        assert is_entity_at_expected_position, \
+            f"Translation position of entity '{self.get_name()}' : {self.get_world_translation().ToString()} does not" \
+            f" match the expected value : {expected_translation.ToString()}"
+        return is_entity_at_expected_position
+
     # Use this only when prefab system is enabled as it will fail otherwise.
     def focus_on_owning_prefab(self) -> None:
         """
@@ -770,3 +786,5 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
+
+import editor_python_test_tools.prefab_utils as PrefabUtils

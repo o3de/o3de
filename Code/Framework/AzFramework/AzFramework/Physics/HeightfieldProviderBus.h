@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/Physics/Material.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 
 namespace Physics
 {
@@ -49,10 +50,13 @@ namespace Physics
     using UpdateHeightfieldSampleFunction = AZStd::function<void(int32_t, int32_t, const Physics::HeightMaterialPoint&)>;
 
     //! An interface to provide heightfield values.
-    class HeightfieldProviderRequests
-        : public AZ::ComponentBus
+    //! This EBus supports multiple concurrent requests from different threads.
+    class HeightfieldProviderRequests : public AZ::EBusSharedDispatchTraits<HeightfieldProviderRequests>
     {
     public:
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::EntityId BusIdType;
+
         static void Reflect(AZ::ReflectContext* context);
 
         //! Returns the distance between each height in the map.
@@ -126,10 +130,7 @@ namespace Physics
             Settings = (1 << 0),
             HeightData = (1 << 1),
             SurfaceData = (1 << 2),
-            DestroyBegin = (1 << 3),
-            DestroyEnd = (1 << 4),
-            CreateEnd = (1 << 5),
-            SurfaceMapping = (1 << 6)
+            SurfaceMapping = (1 << 3)
         };
 
         //! Called whenever the heightfield data changes.

@@ -90,6 +90,20 @@ namespace PhysXEditorTests
                     y = 3.0f;
                 });
         ON_CALL(mockShapeRequests, GetMaterialList).WillByDefault(Return(GetMaterialList()));
+
+        ON_CALL(mockShapeRequests, UpdateHeightsAndMaterials)
+            .WillByDefault(
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, [[maybe_unused]]const AZ::Aabb& regionIn)
+                {
+                    auto samples = GetSamples();
+                    for (int32_t row = 0; row < 3; row++)
+                    {
+                        for (int32_t col = 0; col < 3; col++)
+                        {
+                            updateHeightsMaterialsCallback(row, col, samples[(row * 3) + col]);
+                        }
+                    }
+                });
     }
 
     EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
@@ -118,7 +132,7 @@ namespace PhysXEditorTests
             // the corresponding game entity.
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
+                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
             m_gameEntity = TestCreateActiveGameEntityFromEditorEntity(m_editorEntity.get());
             m_gameMockShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockPhysXHeightfieldProvider>>(m_gameEntity->GetId());
@@ -128,7 +142,7 @@ namespace PhysXEditorTests
             // Send the notification a second time so that the game entity gets refreshed as well.
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::CreateEnd);
+                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
         }
 
         void TearDown() override

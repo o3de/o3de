@@ -15,4 +15,5 @@ set(FILES
     tests/PythonBindingsTests.cpp
     tests/main.cpp
     tests/UtilsTests.cpp
+    tests/TextOverflowTests.cpp
 )

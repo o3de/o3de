@@ -18,6 +18,7 @@
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 #include <Source/ScriptCanvasTestBus.h>
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
 using namespace ScriptCanvas;
 using namespace ScriptCanvasTests;
@@ -225,6 +226,30 @@ TEST_F(ScriptCanvasTestFixture, TypeInheritance)
     EXPECT_FALSE(childType.IS_EXACTLY_A(parentType));
     EXPECT_TRUE(childType.IS_A(childType2));
     EXPECT_TRUE(childType.IS_EXACTLY_A(childType2));
+}
+
+TEST_F(ScriptCanvasTestFixture, TestLuaStringHandling)
+{
+    AZ::ScriptContext sc;
+    AZStd::string testingStrings[11] = {
+        "test",
+        "test]",
+        "[test]",
+        "=[test]=",
+        "[=[test]=]",
+        "[==[=[test]=]==]",
+        "==[=[test]=]==",
+        "test]=",
+        "[=[==[test]==]=]",
+        "[===[=[==[test]==]=]===]",
+        "\"\\/.'].["
+    };
+
+    for (AZStd::string item : testingStrings)
+    {
+        AZStd::string safeStringLiteral = Translation::MakeRuntimeSafeStringLiteral(item);
+        EXPECT_TRUE(sc.Execute(AZStd::string::format("print(%s)", safeStringLiteral.c_str()).c_str()));
+    }
 }
 
 // \todo turn this into a unit test nodeable that adds a unit test failure on destruction if it was never triggered (or triggered the required number of times)

@@ -44,6 +44,8 @@ namespace PhysX
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        using MutexType = AZStd::recursive_mutex;
+
         virtual ~SystemRequests() = default;
 
         /// Creates a new convex mesh.

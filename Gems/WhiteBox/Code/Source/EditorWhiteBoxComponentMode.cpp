@@ -479,6 +479,14 @@ namespace WhiteBox
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
 
+        // set button tooltips
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+            m_defaultModeButtonId, WhiteboxModeClusterDefaultTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+            m_edgeRestoreModeButtonId, WhiteboxModeClusterEdgeRestoreTooltip);
+
         auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
         {
             if (buttonId == m_defaultModeButtonId)

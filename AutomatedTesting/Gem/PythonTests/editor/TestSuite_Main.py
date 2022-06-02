@@ -21,17 +21,32 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     # interact with modal dialogs
     global_extra_cmdline_args = []
 
+    # Helper for test level cleanup
+    def cleanup_test_level(self, workspace):
+        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
+                           True, True)
+
     class test_AssetPicker_UI_UX(EditorSharedTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
     class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
+    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
+        from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
+
+    class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSharedTest):
+        from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
+
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
-        # Custom teardown to remove level created during test
+
+        # Custom setup and teardown to remove level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
+
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                               True, True)
+            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
+
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
     @pytest.mark.REQUIRES_gpu
@@ -40,9 +55,12 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         use_null_renderer = False
 
         # Custom teardown to remove level created during test
+        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
+
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
-            file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
-                               True, True)
+            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
+
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
     class test_InputBindings_Add_Remove_Input_Events(EditorSharedTest):

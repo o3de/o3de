@@ -1,0 +1,34 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TerrainClipmapDebugPassTemplate",
+            "PassClass": "TerrainClipmapDebugPass",
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Terrain/TerrainClipmapDebugPass.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            },
+            "Slots": [
+                {
+                    "Name": "InputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "InputOutput",
+                    "AttachmentRef": {
+                        "Pass": "DebugOverlayPass",
+                        "Attachment": "InputOutput"
+                    }
+                }
+            ]
+        }
+    }
+}

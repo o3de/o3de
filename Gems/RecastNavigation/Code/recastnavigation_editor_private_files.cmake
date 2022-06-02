@@ -9,4 +9,11 @@
 set(FILES
     Source/RecastNavigationEditorSystemComponent.cpp
     Source/RecastNavigationEditorSystemComponent.h
+
+    Source/EditorComponents/EditorDetourNavigationComponent.h
+    Source/EditorComponents/EditorDetourNavigationComponent.cpp
+    Source/EditorComponents/EditorRecastNavigationMeshComponent.h
+    Source/EditorComponents/EditorRecastNavigationMeshComponent.cpp
+    Source/EditorComponents/EditorRecastNavigationPhysXProviderComponent.h
+    Source/EditorComponents/EditorRecastNavigationPhysXProviderComponent.cpp
 )

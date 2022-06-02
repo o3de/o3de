@@ -63,6 +63,10 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
     # 1) Load the level
     hydra.open_base_level()
 
+    #1a) Load the level components
+    hydra.add_level_component("Terrain World")
+    hydra.add_level_component("Terrain World Renderer")
+
     # 2) Create test entity
     test_entity = EditorEntity.create_editor_entity_at(azmath.Vector3(0.0, 0.0, 0.0), "TestEntity")
     Report.result(Tests.create_test_entity, test_entity.id.IsValid())

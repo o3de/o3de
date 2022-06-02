@@ -116,6 +116,8 @@ namespace Terrain
     {
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
         m_component.Deactivate();
+        // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        m_component.SetEntity(nullptr);
     }
 
     void EditorTerrainPhysicsColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)

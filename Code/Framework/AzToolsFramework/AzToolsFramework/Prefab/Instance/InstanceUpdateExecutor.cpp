@@ -29,7 +29,12 @@ namespace AzToolsFramework
     {
         InstanceUpdateExecutor::InstanceUpdateExecutor(int instanceCountToUpdateInBatch)
             : m_instanceCountToUpdateInBatch(instanceCountToUpdateInBatch)
-        { 
+            , m_GameModeEventHandler(
+                  [this](GameModeState state)
+                  {
+                      m_shouldPausePropagation = (state == GameModeState::Started);
+                  })
+        {
         }
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
@@ -47,10 +52,13 @@ namespace AzToolsFramework
                 "Check that it is being correctly initialized.");
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
+            m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
@@ -90,11 +98,25 @@ namespace AzToolsFramework
                 return entry == instance;
             });
         }
-
+        void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            
+            if (!m_GameModeEventHandler.IsConnected() && prefabEditorEntityOwnershipInterface)
+            {
+                prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
+            }
+            
+        }
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            LazyConnectGameModeEventHandler();
+
             bool isUpdateSuccessful = true;
-            if (!m_updatingTemplateInstancesInQueue)
+            if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
 
@@ -191,7 +213,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+                        PrefabDomValueConstReference instanceDomFromRoot = *instanceDomFromRootValue;
                         if (!instanceDomFromRoot.has_value())
                         {
                             AZ_Assert(
@@ -206,7 +228,7 @@ namespace AzToolsFramework
                         // If a link was created for a nested instance before the changes were propagated,
                         // then we associate it correctly here
                         instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
@@ -263,6 +285,16 @@ namespace AzToolsFramework
             }
 
             return isUpdateSuccessful;
+        }
+
+        void InstanceUpdateExecutor::RequestWrite(QWidget*)
+        {
+            m_shouldPausePropagation = true;
+        }
+
+        void InstanceUpdateExecutor::OnEditingFinished(QWidget*)
+        {
+            m_shouldPausePropagation = false;
         }
 
         void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()

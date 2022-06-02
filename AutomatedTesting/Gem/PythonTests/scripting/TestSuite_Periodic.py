@@ -319,7 +319,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(

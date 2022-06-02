@@ -954,3 +954,8 @@ TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResultsByValue)
 {
     RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResultsByValue", ExecutionMode::Interpreted);
 }
+
+TEST_F(ScriptCanvasTestFixture, StringFormatSquareBracketTranslation)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_StringFormatSquareBracketTranslation", ExecutionMode::Interpreted);
+}

@@ -28,6 +28,12 @@ namespace AzToolsFramework
         using RootAliasPath = AliasPath;
     }
 
+    enum class GameModeState
+    {
+        Started,
+        Stopped
+    };
+
     class PrefabEditorEntityOwnershipInterface
     {
     public:
@@ -83,5 +89,7 @@ namespace AzToolsFramework
         //! @return True if the iteration was halted by a callback returning true, false otherwise. Also returns false if the path is invalid.
         virtual bool GetInstancesInRootAliasPath(
             Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const = 0;
+
+        virtual void RegisterGameModeEventHandler(AZ::Event<GameModeState>::Handler& handler) = 0;
     };
 }

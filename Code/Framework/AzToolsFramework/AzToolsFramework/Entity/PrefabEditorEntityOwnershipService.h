@@ -174,6 +174,11 @@ namespace AzToolsFramework
         bool GetInstancesInRootAliasPath(
             Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const override;
 
+        void RegisterGameModeEventHandler(AZ::Event<GameModeState>::Handler& handler) override
+        {
+            handler.Connect(m_gameModeEvent);
+        }
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
@@ -222,6 +227,7 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+        AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
     };
 }
