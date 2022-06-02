@@ -571,7 +571,6 @@ namespace AZ::IO
 
         size_t readSlot = FindAvailableReadSlot();
         AZ_Assert(readSlot != InvalidReadSlotIndex, "Active read slot count indicates there's a read slot available, but no read slot was found.");
-
         return ReadRequest(request, readSlot, tasks);
     }
 
@@ -691,6 +690,10 @@ namespace AZ::IO
 
         FileReadStatus& readStatus = m_readSlots_statusInfo[readSlot];
         LPOVERLAPPED overlapped = &readStatus.m_overlapped;
+        ::ZeroMemory(overlapped, sizeof(OVERLAPPED));
+        // Set explicitly to avoid FinalizeRequest thinking a request has completed before it's started. Note that "Internal" is somewhat of
+        // a misnomer and is documented.
+        overlapped->Internal = STATUS_PENDING;
         overlapped->Offset = aznumeric_caster(readOffs);
         overlapped->OffsetHigh = aznumeric_caster(readOffs >> (sizeof(overlapped->Offset) << 3));
         overlapped->hEvent = m_context->GetStreamerThreadSynchronizer().CreateEventHandle();
@@ -703,15 +706,19 @@ namespace AZ::IO
                 [this, file, output, readSize, overlapped, state = &readStatus.m_requestState]()
                 {
                     AZ_PROFILE_SCOPE(AzCore, "::ReadFile WinAPI.");
+                    // Set the state now to avoid a race condition where by the read request completes and wakes up the
+                    // scheduler thread before the state is set. In that case the read won't be finalized as processing
+                    // is skipped and the scheduler thread goes back to sleep waiting for the thread to be woken up again,
+                    // which never happens as the read isn't going to wake it up again. The worst that can happen with
+                    // putting it early like this is that the overlapped status is checked before the read completes.
+                    *state = FileReadStatus::RequestState::SuccessfullyStarted;
+                            
                     if (!::ReadFile(file, output, readSize, nullptr, overlapped))
                     {
                         DWORD error = ::GetLastError();
-                        if (error == ERROR_IO_PENDING)
-                        {
-                            *state = FileReadStatus::RequestState::SuccessfullyStarted;
-                            // The scheduler thread will be woken up by the OS when the read completes.
-                        }
-                        else
+                        // If the result is ERROR_IO_PENDING or ERROR_IO_INCOMPLETE it means the read request has been
+                        // queued with the OS and once completed the OS will wake up the scheduler thread.
+                        if (error != ERROR_IO_PENDING && error != ERROR_IO_INCOMPLETE)
                         {
                             *state = FileReadStatus::RequestState::Error;
                             m_context->WakeUpSchedulingThread();
@@ -722,7 +729,6 @@ namespace AZ::IO
                         // If this scope is reached, it means that ::ReadFile processed the read synchronously.  This can happen if
                         // the OS already had the file in the cache. The OVERLAPPED struct will still be filled out so we proceed as
                         // if the read was fully asynchronous.
-                        *state = FileReadStatus::RequestState::SuccessfullyStarted;
                         m_context->WakeUpSchedulingThread();
                     }
                 });
@@ -1020,7 +1026,6 @@ namespace AZ::IO
                         constexpr bool encounteredError = true;
                         constexpr bool isCanceled = false;
                         FinalizeSingleRequest(status, readSlot, 0, isCanceled, encounteredError, readTasks);
-                        status.m_requestState = FileReadStatus::RequestState::NotStarted;
                     }
                     else if (HasOverlappedIoCompleted(&status.m_overlapped))
                     {
@@ -1044,7 +1049,6 @@ namespace AZ::IO
                             constexpr bool isCanceled = false;
                             FinalizeSingleRequest(status, readSlot, bytesTransferred, false, encounteredError, readTasks);
                         }
-                        status.m_requestState = FileReadStatus::RequestState::NotStarted;
                     }
                 }
             }
@@ -1071,7 +1075,7 @@ namespace AZ::IO
 
             m_activeReads_ByteCount = 0;
         }
-
+        
         FileReadInformation& fileReadInfo = m_readSlots_readInfo[readSlot];
 
         auto readCommand = AZStd::get_if<Requests::ReadData>(&fileReadInfo.m_request->GetCommand());
@@ -1098,9 +1102,10 @@ namespace AZ::IO
 
         m_fileCache_activeReads[status.m_fileHandleIndex]--;
         m_readSlots_active[readSlot] = false;
+        status.m_requestState = FileReadStatus::RequestState::NotStarted;
         m_context->GetStreamerThreadSynchronizer().DestroyEventHandle(status.m_overlapped.hEvent);
         fileReadInfo.Clear();
-
+        
         // There's now a slot available to queue the next request, if there is one.
         if (!m_pendingReadRequests.empty())
         {
