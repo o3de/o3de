@@ -820,8 +820,8 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         // back to integers so that our regions are always in exact multiples of the number of samples to process.
         // This is important because we want the XY values for each point that we're processing to exactly align with
         // 'start + N * (step size)', or else we'll start to process point locations that weren't actually what was requested.
-        const int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
-        const int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
+        const int32_t y0 = aznumeric_cast<int32_t>(AZStd::lround(yJob * ySamplesPerQuery));
+        const int32_t y1 = aznumeric_cast<int32_t>(AZStd::lround((yJob + 1) * ySamplesPerQuery));
         const float inRegionMinY = queryRegion.m_startPoint.GetY() + (y0 * queryRegion.m_stepSize.GetY());
         const int32_t numPointsY = AZStd::min(y1 - y0, aznumeric_cast<int32_t>(numSamplesY) - y0);
 
@@ -830,8 +830,8 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         {
             // Same as above, calculate the start and end of the region, then convert back to integers and create the
             // region based on 'start + n * (step size)'.
-            const int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
-            const int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
+            const int32_t x0 = aznumeric_cast<int32_t>(AZStd::lround(xJob * xSamplesPerQuery));
+            const int32_t x1 = aznumeric_cast<int32_t>(AZStd::lround((xJob + 1) * xSamplesPerQuery));
             const float inRegionMinX = queryRegion.m_startPoint.GetX() + (x0 * queryRegion.m_stepSize.GetX());
             const int32_t numPointsX = AZStd::min(x1 - x0, aznumeric_cast<int32_t>(numSamplesX) - x0);
 
