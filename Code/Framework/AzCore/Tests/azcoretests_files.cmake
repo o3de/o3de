@@ -148,6 +148,7 @@ set(FILES
     Math/IntersectionTestHelpers.h
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/IntersectPointTest.cpp
     Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp

@@ -30,8 +30,11 @@ namespace Benchmark
         void AddNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId);
         void RemoveNestedInstance(benchmark::State& state, TemplateId nestedPrefabTemplateId);
 
-        AZ::Entity* m_entityModify;
+        AZ::Entity* m_entityToModify = nullptr;
         AZStd::unique_ptr<Instance> m_instanceCreated;
+
+        // The prefab instance to modify for the benchmark test. This can be m_instanceCreated or any nested prefab instance within it.
+        Instance* m_instanceToModify = nullptr;
         AZStd::unique_ptr<Instance> m_instanceToUseForPropagation;
     };
 

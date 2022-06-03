@@ -6,11 +6,8 @@
  *
  */
 
-#include <AzCore/Memory/SystemAllocator.h>
-
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include "PhysicsNodeLibrary.h"
-
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
 namespace ScriptCanvasPhysics
@@ -27,11 +24,8 @@ namespace ScriptCanvasPhysics
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
-                    ScriptCanvasPhysicsSystemComponent::CreateDescriptor(),
-                });
-
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(PhysicsNodeLibrary::GetComponentDescriptors());
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+                ScriptCanvasPhysicsSystemComponent::CreateDescriptor(),
+            });
         }
 
         /**
@@ -40,7 +34,7 @@ namespace ScriptCanvasPhysics
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                       azrtti_typeid<ScriptCanvasPhysicsSystemComponent>(),
+                azrtti_typeid<ScriptCanvasPhysicsSystemComponent>(),
             };
         }
     };

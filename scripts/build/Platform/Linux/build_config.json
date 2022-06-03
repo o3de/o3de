@@ -99,8 +99,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "test_profile_gcc_nounity": {
@@ -115,8 +116,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True",
       "LY_MIN_MEMORY_PER_CORE": "2097152"
     }
   },
@@ -129,8 +131,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "asset_profile": {
@@ -193,7 +196,8 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_awsi",
-      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
   },
@@ -210,8 +214,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "sandbox_test_profile": {
@@ -230,7 +235,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error"
+      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "benchmark_test_profile": {
@@ -246,8 +253,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "release": {

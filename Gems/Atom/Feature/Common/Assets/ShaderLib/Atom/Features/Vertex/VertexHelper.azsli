@@ -40,14 +40,4 @@ void VertexHelper(in VSInput IN, inout VSOutput OUT, float3 worldPosition, bool 
 
     ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
     
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && !skipShadowCoords && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            worldPosition,
-            OUT.m_normal,
-            OUT.m_shadowCoords);
-    }
 }
