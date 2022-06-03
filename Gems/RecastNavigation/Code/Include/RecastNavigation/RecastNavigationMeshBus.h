@@ -66,6 +66,8 @@ namespace RecastNavigation
             AZStd::lock_guard<AZStd::mutex> m_lock;
             dtNavMesh* m_mesh = nullptr;
             dtNavMeshQuery* m_query = nullptr;
+
+            AZ_DISABLE_COPY_MOVE(LockGuard);
         };
 
     private:

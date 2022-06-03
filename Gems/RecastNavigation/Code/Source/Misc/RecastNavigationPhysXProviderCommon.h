@@ -24,6 +24,7 @@ namespace RecastNavigation
         //! Use it to configure geometry collection in either Editor PhysX scene or game scene.
         //! @param useEditorScene if true, collect geometry from Editor PhysX scene, otherwise game scene.
         explicit RecastNavigationPhysXProviderCommon(bool useEditorScene);
+        virtual ~RecastNavigationPhysXProviderCommon() = default;
 
         void OnDeactivate();
 
