@@ -158,7 +158,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
         Report.result(Tests.is_visible, global_skylight_entity.is_visible() is True)
 
         # 7. Set the default Diffuse Image asset on the Global Skylight (IBL) entity.
-        diffuse_image_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        diffuse_image_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         diffuse_image_asset = Asset.find_asset_by_path(diffuse_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Diffuse Image'), diffuse_image_asset.id)
@@ -168,7 +168,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
                                           AtomComponentProperties.global_skylight('Diffuse Image')))
 
         # 8. Set the default Specular Image asset on the Global Light (IBL) entity.
-        specular_image_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        specular_image_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         specular_image_asset = Asset.find_asset_by_path(specular_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Specular Image'), specular_image_asset.id)
@@ -193,7 +193,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 11. Set the High Contrast Diffuse Image asset on the Global Skylight (IBL) entity.
         diffuse_image_path = os.path.join(
-            "LightingPresets", "HighContrast", "goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage")
+            "lightingpresets", "highcontrast", "goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage")
         diffuse_image_asset = Asset.find_asset_by_path(diffuse_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Diffuse Image'), diffuse_image_asset.id)
@@ -204,7 +204,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 12. Set the High Contrast Specular Image asset on the Global Light (IBL) entity.
         specular_image_path = os.path.join(
-            "LightingPresets", "HighContrast", "goegap_4k_iblglobalcm_iblspecular.exr.streamingimage")
+            "lightingpresets", "highcontrast", "goegap_4k_iblglobalcm_iblspecular.exr.streamingimage")
         specular_image_asset = Asset.find_asset_by_path(specular_image_path, False)
         global_skylight_component.set_component_property_value(
             AtomComponentProperties.global_skylight('Specular Image'), specular_image_asset.id)

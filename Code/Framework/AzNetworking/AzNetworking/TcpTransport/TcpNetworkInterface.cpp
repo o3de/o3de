@@ -105,7 +105,7 @@ namespace AzNetworking
         return connectionId;
     }
 
-    void TcpNetworkInterface::Update([[maybe_unused]] AZ::TimeMs deltaTimeMs)
+    void TcpNetworkInterface::Update()
     {
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
 

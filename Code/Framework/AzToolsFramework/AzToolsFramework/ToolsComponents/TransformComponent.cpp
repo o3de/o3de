@@ -285,7 +285,12 @@ namespace AzToolsFramework
                 const auto& localTM = GetLocalTM();
                 const auto worldTM = world * localTM;
 
-                UpdateCachedWorldTransform();
+                if (m_parentEntityId.IsValid())
+                {
+                    // If the parent entity is invalid, the world position of the entity shouldn't be cached as this can be later used in
+                    // calculating the local translation of the entity when activated under a different parent.
+                    UpdateCachedWorldTransform();
+                }
 
                 AZ::TransformNotificationBus::Event(
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);
@@ -1206,7 +1211,6 @@ namespace AzToolsFramework
                 serializeContext->Class<Components::TransformComponent, EditorComponentBase>()->
                     Field("Parent Entity", &TransformComponent::m_parentEntityId)->
                     Field("Transform Data", &TransformComponent::m_editorTransform)->
-                    Field("AddNonUniformScaleButton", &TransformComponent::m_addNonUniformScaleButton)->
                     Field("Cached World Transform", &TransformComponent::m_cachedWorldTransform)->
                     Field("Cached World Transform Parent", &TransformComponent::m_cachedWorldTransformParent)->
                     Field("Parent Activation Transform Mode", &TransformComponent::m_parentActivationTransformMode)->
@@ -1232,7 +1236,7 @@ namespace AzToolsFramework
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Button, &TransformComponent::m_addNonUniformScaleButton, "", "")->
+                        UIElement(AZ::Edit::UIHandlers::Button, "", "")->
                             Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &TransformComponent::IsAddNonUniformScaleButtonReadOnly)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->

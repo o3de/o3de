@@ -8,6 +8,15 @@
 
 #include <viewsrg.srgi>
 
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+    
+} o_opacity_mode = OpacityMode::Opaque;
+
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -19,7 +28,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_worldPosition : TEXCOORD0;
     float3 m_worldNormal : NORMAL;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : TEXCOORD1;
 };
 
 struct PSOutput
@@ -50,12 +58,7 @@ VSOutput ShadowCatcherVS(VSInput IN)
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_worldNormal = normalize(mul(ObjectSrg::GetWorldMatrixInverseTranspose(), IN.m_normal));
     
-    // [GFX TODO][ATOM-2012] Add support for multiple directional light shadows
-    DirectionalLightShadow::GetShadowCoords(
-        ViewSrg::m_shadowIndexDirectionalLight,
-        worldPosition,
-        OUT.m_worldNormal,
-        OUT.m_shadowCoords);
+
     
     return OUT;
 }
@@ -63,14 +66,8 @@ VSOutput ShadowCatcherVS(VSInput IN)
 PSOutput ShadowCatcherPS(VSOutput IN)
 {
     PSOutput OUT;
-    
-    DirectionalLightShadow::DebugInfo debugInfo;
-    
-    float litRatio = DirectionalLightShadow::GetVisibility(
-            ViewSrg::m_shadowIndexDirectionalLight,
-            IN.m_shadowCoords,
-            IN.m_worldNormal,
-        debugInfo);
+        
+    float litRatio = DirectionalLightShadow::GetVisibility(ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal, 0);
 
     if (o_shadeAll)
     {
@@ -81,10 +78,7 @@ PSOutput ShadowCatcherPS(VSOutput IN)
         ViewSrg::DirectionalLightShadowDebugColoringBitMask)
     {
         float3 debugColor = float3(1,1,1) * litRatio * 0.5f;
-        debugColor = DirectionalLightShadow::AddDebugColoring(
-            debugColor,
-            ViewSrg::m_shadowIndexDirectionalLight,
-            debugInfo);
+        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal, 0);
         OUT.m_color.rgb = debugColor;
         OUT.m_color.a = 1; 
     }

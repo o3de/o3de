@@ -40,6 +40,9 @@ namespace WhiteBox
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
+        constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
+        constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
+
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
         EditorWhiteBoxComponentMode& operator=(EditorWhiteBoxComponentMode&&) = delete;

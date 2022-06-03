@@ -79,7 +79,7 @@ def TerrainHeightGradientList_AddRemoveGradientWorks():
         helper.wait_for_condition(lambda: terrain_changed_call_count == expected_terrain_changed_calls, 2.0)
 
         # Get the height at the origin.
-        height = terrain.TerrainDataRequestBus(bus.Broadcast, "GetHeightFromFloats", 0.0, 0.0, 0)
+        height, exists = terrain.TerrainDataRequestBus(bus.Broadcast, "GetHeight", math.Vector3(0.0, 0.0, 0.0), 0)
 
         Report.result(test_results, sys_math.isclose(height, expected_height, abs_tol=test_tolerance))
 

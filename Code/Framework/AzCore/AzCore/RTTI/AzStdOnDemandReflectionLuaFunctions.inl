@@ -70,7 +70,7 @@ namespace AZ
         
         // Read a Lua native string as a C++ string class
         template<typename StringType>
-        inline bool StringTypeFromLua(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* stackTempAllocator)
+        inline bool StringTypeFromLua(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* stackTempAllocator)
         {
             const char* str = ScriptValue<const char*>::StackRead(lua, stackIndex);
             if (stackTempAllocator)
@@ -116,18 +116,18 @@ namespace AZ
 
         // Store any string as a Lua native string
         template<typename StringType>
-        inline void StringTypeToLua(lua_State * lua, BehaviorValueParameter & value)
+        inline void StringTypeToLua(lua_State * lua, BehaviorArgument & value)
         {
             ScriptValue<const char*>::StackPush(lua, reinterpret_cast<StringType*>(value.GetValueAddress())->data());
         }
 
         // Reads the value in on top of the stack into an any
-        inline bool AnyFromLua(lua_State* lua, int stackIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* stackTempAllocator)
+        inline bool AnyFromLua(lua_State* lua, int stackIndex, BehaviorArgument& value, BehaviorClass* valueClass, ScriptContext::StackVariableAllocator* stackTempAllocator)
         {
             if (stackTempAllocator)
             {
                 // Note, this is safe to do in this case, even if we are reading an any pointer type
-                // The BehaviorValueParameter remains in scope for the duration of AZ::LuaScriptCaller::Call, so
+                // The BehaviorArgument remains in scope for the duration of AZ::LuaScriptCaller::Call, so
                 // StoreResult, even though it's using temporarily allocated memory, should remain in scope for the lifetime of the CustomReaderWriter invocation
                 value.m_value = stackTempAllocator->allocate(sizeof(AZStd::any), AZStd::alignment_of<AZStd::any>::value);
 
@@ -146,7 +146,7 @@ namespace AZ
         }
 
         // Pushes an any onto the Lua stack
-        inline void AnyToLua(lua_State* lua, BehaviorValueParameter& param)
+        inline void AnyToLua(lua_State* lua, BehaviorArgument& param)
         {
             AZStd::any* value = param.GetAsUnsafe<AZStd::any>();
             if (value)

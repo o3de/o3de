@@ -47,6 +47,8 @@ namespace PhysX
         void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
         AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
 
+        void SetMaterials(const AZStd::vector<AZStd::shared_ptr<Physics::Material>>& materials);
+
         void SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials);
         const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& GetMaterials();
 
@@ -91,7 +93,8 @@ namespace PhysX
         //! Retrieve this shape AABB using local coordinates
         AZ::Aabb GetAabbLocal() const override;
 
-        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) override;
+        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const override;
 
     private:
         void BindMaterialsWithPxShape();

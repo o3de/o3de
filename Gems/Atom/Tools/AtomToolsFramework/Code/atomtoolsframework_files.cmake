@@ -53,6 +53,7 @@ set(FILES
     Include/AtomToolsFramework/DynamicNode/DynamicNode.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeConfig.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeManager.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
     Source/DynamicNode/DynamicNode.cpp
@@ -60,6 +61,8 @@ set(FILES
     Source/DynamicNode/DynamicNodeManager.cpp
     Source/DynamicNode/DynamicNodePaletteItem.cpp
     Source/DynamicNode/DynamicNodeSlotConfig.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
 
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
@@ -84,6 +87,10 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
+
+    Include/AtomToolsFramework/GraphView/GraphView.h
+    Include/AtomToolsFramework/GraphView/GraphViewConfig.h
+    Source/GraphView/GraphView.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h

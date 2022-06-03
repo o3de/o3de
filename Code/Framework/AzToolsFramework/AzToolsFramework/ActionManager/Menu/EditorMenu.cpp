@@ -7,6 +7,8 @@
  */
 
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 #include <QMenu>
 
@@ -22,9 +24,21 @@ namespace AzToolsFramework
     {
     }
 
-    void EditorMenu::AddMenuItem(int sortKey, QAction* action)
+    void EditorMenu::AddSeparator(int sortKey)
     {
-        m_menuItems.insert({ sortKey, action });
+        m_menuItems.insert({ sortKey, MenuItem() });
+        RefreshMenu();
+    }
+    
+    void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, actionIdentifier) });
+        RefreshMenu();
+    }
+
+    void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, menuIdentifier) });
         RefreshMenu();
     }
 
@@ -37,10 +51,57 @@ namespace AzToolsFramework
     {
         m_menu->clear();
 
-        for (auto elem : m_menuItems)
+        for (const auto& elem : m_menuItems)
         {
-            m_menu->addAction(elem.second);
+            switch (elem.second.m_type)
+            {
+            case MenuItemType::Action:
+                {
+                    QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier);
+
+                    if(action)
+                    {
+                        m_menu->addAction(action);
+                    }
+                    break;
+                }
+            case MenuItemType::SubMenu:
+                {
+                    QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier);
+
+                    if(menu)
+                    {
+                        m_menu->addMenu(menu);
+                    }
+                    break;
+                }
+            case MenuItemType::Separator:
+                {
+                    m_menu->addSeparator();
+                    break;
+                }
+            default:
+                break;
+            }
         }
+    }
+
+    EditorMenu::MenuItem::MenuItem(MenuItemType type, AZStd::string identifier)
+        : m_type(type)
+    {
+        if (type != MenuItemType::Separator)
+        {
+            m_identifier = AZStd::move(identifier);
+        }
+    }
+
+    void EditorMenu::Initialize()
+    {
+        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(m_actionManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of ActionManagerInterface");
+
+        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of MenuManagerInterface");
     }
 
 } // namespace AzToolsFramework

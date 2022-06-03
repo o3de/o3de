@@ -60,6 +60,48 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
+    class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
-    
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_SC_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_SimpleSpawnAndDespawn as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_SC_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_EntityClearedOnGameModeExit as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_SC_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_SC_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_NestedSpawn as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_SC_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_DespawnOnEntityDeactivate as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_Lua_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_SimpleSpawnAndDespawn as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_Lua_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_EntityClearedOnGameModeExit as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_Lua_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_Lua_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_NestedSpawn as test_module
+
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/9789")
+    class test_Lua_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_DespawnOnEntityDeactivate as test_module

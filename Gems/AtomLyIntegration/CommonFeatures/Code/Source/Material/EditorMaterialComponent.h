@@ -68,28 +68,16 @@ namespace AZ
 
             // Opens the source material export dialog and updates editor material slots based on
             // selected actions
-            AZ::u32 OpenMaterialExporter();
+            AZ::u32 OpenMaterialExporterFromRPE();
+            AZ::u32 OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 
             AZ::u32 OnLodsToggled();
 
             // Get the visibility of the LOD material slots based on the enable flag
             AZ::Crc32 GetLodVisibility() const;
 
-            // Get the visibility of the default material slot based on the enable flag
-            AZ::Crc32 GetDefaultMaterialVisibility() const;
-
-            // Get the visibility of the entire component interface based on the number of selected entities
-            AZ::Crc32 GetEditorVisibility() const;
-
-            // Get the visibility of the 'multiple entity selected' warning message box
-            AZ::Crc32 GetMessageVisibility() const;
-
-            // Evaluate if materials can be edited
-            bool IsEditingAllowed() const;
-
             AZStd::string GetLabelForLod(int lodIndex) const;
 
-            AZStd::string m_message;
             EditorMaterialComponentSlot m_defaultMaterialSlot;
             EditorMaterialComponentSlotContainer m_materialSlots;
             EditorMaterialComponentSlotsByLodContainer m_materialSlotsByLod;
