@@ -7,6 +7,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/ObjectStream.h>
 
+#include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Utilities/CidrAddress.h>
 
 #include <Source/AutoGen/ToolingConnection.AutoPackets.h>
@@ -57,17 +58,17 @@ namespace ToolingConnection
 
     ToolingConnectionSystemComponent::ToolingConnectionSystemComponent()
     {
-        if (AZ::Interface<AzFramework::IToolingConnection>::Get() == nullptr)
+        if (AzFramework::ToolsConnectionInterface::Get() == nullptr)
         {
-            AZ::Interface<AzFramework::IToolingConnection>::Register(this);
+            AzFramework::ToolsConnectionInterface::Register(this);
         }
     }
 
     ToolingConnectionSystemComponent::~ToolingConnectionSystemComponent()
     {
-        if (AZ::Interface<AzFramework::IToolingConnection>::Get() == this)
+        if (AzFramework::ToolsConnectionInterface::Get() == this)
         {
-            AZ::Interface<AzFramework::IToolingConnection>::Unregister(this);
+            AzFramework::ToolsConnectionInterface::Unregister(this);
         }
     }
 
@@ -91,27 +92,207 @@ namespace ToolingConnection
         // If we're not the host and not connected to one, attempt to connect on a fixed interval
 
 #endif
+    }
 
-        size_t maxMsgsToProcess = m_inbox.size();
-        for (size_t i = 0; i < maxMsgsToProcess; ++i)
+    AzFramework::ToolingServiceKey ToolingConnectionSystemComponent::RegisterToolingService(AZStd::string name, uint16_t port)
+    {
+        AzFramework::ToolingServiceKey key = AZ::Crc32(name + AZStd::string::format("%d", port));
+        m_entryRegistry[key] = ToolingRegistryEntry();
+        m_entryRegistry[key].m_name = name;
+        m_entryRegistry[key].m_port = port;
+
+        return key;
+    }
+
+    const AzFramework::ReceivedToolingMessages* ToolingConnectionSystemComponent::GetReceivedMessages(AzFramework::ToolingServiceKey key) const
+    {
+        if (m_inbox.contains(key))
         {
-            AzFramework::ToolingMessagePointer msg;
-            if (!m_inbox.empty())
-            {
-                AZStd::lock_guard<AZStd::mutex> lock(m_inboxMutex);
-                msg = m_inbox.front();
-                m_inbox.pop_front();
-            }
-            else
-            {
-                break;
-            }
+            return &m_inbox.at(key);
+        }
+        return nullptr;
+    }
 
-            if (msg)
+    void ToolingConnectionSystemComponent::ClearReceivedMessages(AzFramework::ToolingServiceKey key)
+    {
+        if (m_inbox.contains(key))
+        {
+            m_inbox.at(key).clear();
+        }
+    }
+
+    void ToolingConnectionSystemComponent::RegisterToolingEndpointJoinedHandler(
+        AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointStatusEvent::Handler handler)
+    {
+        handler.Connect(m_entryRegistry[key].m_endpointJoinedEvent);
+    }
+
+    void ToolingConnectionSystemComponent::RegisterToolingEndpointLeftHandler(
+        AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointStatusEvent::Handler handler)
+    {
+        handler.Connect(m_entryRegistry[key].m_endpointLeftEvent);
+    }
+
+    void ToolingConnectionSystemComponent::RegisterToolingEndpointConnectedHandler(
+        AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointConnectedEvent::Handler handler)
+    {
+        handler.Connect(m_entryRegistry[key].m_endpointConnectedEvent);
+    }
+
+    void ToolingConnectionSystemComponent::RegisterToolingEndpointChangedHandler(
+        AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointChangedEvent::Handler handler)
+    {
+        handler.Connect(m_entryRegistry[key].m_endpointChangedEvent);
+    }
+
+    void ToolingConnectionSystemComponent::EnumTargetInfos(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointContainer& infos)
+    {
+        if (m_entryRegistry.contains(key))
+        {
+            infos = m_entryRegistry[key].m_availableTargets;
+        }
+        else
+        {
+            infos = AzFramework::ToolingEndpointContainer();
+        }
+    }
+
+    void ToolingConnectionSystemComponent::SetDesiredEndpoint(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID)
+    {
+        AZ_TracePrintf("ToolingConnectionSystemComponent", "Set Target - %u", desiredTargetID);
+        if (m_entryRegistry.contains(key))
+        {
+            ToolingRegistryEntry& entry = m_entryRegistry[key];
+            if (desiredTargetID != entry.m_lastTarget.GetPersistentId())
             {
-                // EBUS_EVENT_ID(msg->GetId(), TmMsgBus, OnReceivedMsg, msg);
+                AzFramework::ToolingEndpointInfo ti = GetEndpointInfo(key, desiredTargetID);
+                AZ::u32 oldTargetID = entry.m_lastTarget.GetPersistentId();
+                entry.m_lastTarget = ti;
+                entry.m_tmpInboundBuffer.clear();
+                entry.m_tmpInboundBufferPos = 0;
+
+                 m_entryRegistry[key].m_endpointChangedEvent.Signal(desiredTargetID, oldTargetID);
+
+
+                if (ti.IsValid() && ti.IsOnline())
+                {
+                    m_entryRegistry[key].m_endpointConnectedEvent.Signal(true);
+                }
+                else
+                {
+                    m_entryRegistry[key].m_endpointConnectedEvent.Signal(false);
+                }
             }
         }
+    }
+
+    void ToolingConnectionSystemComponent::SetDesiredEndpointInfo(AzFramework::ToolingServiceKey key, const AzFramework::ToolingEndpointInfo& targetInfo)
+    {
+        SetDesiredEndpoint(key, targetInfo.GetPersistentId());
+    }
+
+    AzFramework::ToolingEndpointInfo ToolingConnectionSystemComponent::GetDesiredEndpoint(AzFramework::ToolingServiceKey key)
+    {
+        if (m_entryRegistry.contains(key))
+        {
+            return m_entryRegistry[key].m_lastTarget;
+        }
+
+        return AzFramework::ToolingEndpointInfo(); // return an invalid target info.
+    }
+
+    AzFramework::ToolingEndpointInfo ToolingConnectionSystemComponent::GetEndpointInfo(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID)
+    {
+        if (m_entryRegistry.contains(key))
+        {
+            AzFramework::ToolingEndpointContainer container = m_entryRegistry[key].m_availableTargets;
+            AzFramework::ToolingEndpointContainer::const_iterator finder = container.find(desiredTargetID);
+            if (finder != container.end())
+            {
+                return finder->second;
+            }
+        }
+
+        return AzFramework::ToolingEndpointInfo(); // return an invalid target info.
+    }
+
+    bool ToolingConnectionSystemComponent::IsEndpointOnline(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID)
+    {
+        if (m_entryRegistry.contains(key))
+        {
+            AzFramework::ToolingEndpointContainer container = m_entryRegistry[key].m_availableTargets;
+            AzFramework::ToolingEndpointContainer::const_iterator finder = container.find(desiredTargetID);
+            if (finder != container.end())
+            {
+                return finder->second.IsOnline();
+            }
+        }
+
+        return false;
+    }
+
+    void ToolingConnectionSystemComponent::SendToolingMessage(
+        const AzFramework::ToolingEndpointInfo& target, const AzFramework::ToolingMessage& msg)
+    {
+        AZ::SerializeContext* serializeContext;
+        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+
+        // Messages targeted at our own application just transfer right over to the inbox.
+        if (target.IsSelf())
+        {
+            AzFramework::ToolingMessage* inboxMessage = static_cast<AzFramework::ToolingMessage*>(
+                serializeContext->CloneObject(static_cast<const void*>(&msg), msg.RTTI_GetType()));
+            AZ_Assert(inboxMessage, "Failed to clone local loopback message.");
+            inboxMessage->SetSenderTargetId(target.GetPersistentId());
+
+            if (msg.GetCustomBlobSize() > 0)
+            {
+                void* blob = azmalloc(msg.GetCustomBlobSize(), 16, AZ::OSAllocator);
+                memcpy(blob, msg.GetCustomBlob(), msg.GetCustomBlobSize());
+                inboxMessage->AddCustomBlob(blob, msg.GetCustomBlobSize(), true);
+            }
+
+            m_inboxMutex.lock();
+            m_inbox[msg.GetSenderTargetId()].push_back(inboxMessage);
+            m_inboxMutex.unlock();
+
+            return;
+        }
+
+        AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
+        AZ::IO::ByteContainerStream<AZStd::vector<char, AZ::OSStdAllocator>> outMsg(&msgBuffer);
+
+        AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&outMsg, *serializeContext, AZ::ObjectStream::ST_BINARY);
+        objStream->WriteClass(&msg);
+        if (!objStream->Finalize())
+        {
+            AZ_Assert(false, "ObjectStream failed to serialize outbound TmMsg!");
+        }
+
+        size_t customBlobSize = msg.GetCustomBlobSize();
+        if (msg.GetCustomBlobSize() > 0)
+        {
+            outMsg.Write(customBlobSize, msg.GetCustomBlob());
+        }
+
+        AzNetworking::INetworkInterface* networkInterface =
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(
+                AZ::Name(AZStd::string::format("%d", target.GetPersistentId())));
+
+        OutboundToolingDatum datum;
+        datum.first = target.GetPersistentId();
+        datum.second.swap(msgBuffer);
+        m_outboxThread->PushOutboxMessage(
+            networkInterface, static_cast<AzNetworking::ConnectionId>(target.GetNetworkId()), AZStd::move(datum));
+    }
+
+    void ToolingConnectionSystemComponent::OnMessageParsed(
+        AzFramework::ToolingMessage** ppMsg, void* classPtr, const AZ::Uuid& classId, const AZ::SerializeContext* sc)
+    {
+        // Check that classPtr is a ToolingMessage
+        AZ_Assert(*ppMsg == nullptr, "ppMsg is already set! are we deserializing multiple messages in one call?");
+        *ppMsg = sc->Cast<AzFramework::ToolingMessage*>(classPtr, classId);
+        AZ_Assert(*ppMsg, "Failed to downcast msg pointer to a TmMsg. Is RTTI and reflection set up properly?");
     }
 
     bool ToolingConnectionSystemComponent::HandleRequest(
@@ -119,11 +300,20 @@ namespace ToolingConnection
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         const ToolingConnectionPackets::ToolingConnect& packet)
     {
-        const uint32_t persistentId = packet.GetPersistentId();
-        AzFramework::ToolingEndpointContinaer::pair_iter_bool ret = m_availableTargets.insert_key(persistentId);
-        AzFramework::ToolingEndpointInfo& ti = ret.first->second;
-        ti.SetInfo(packet.GetDisplayName(), persistentId, static_cast<uint32_t>(connection->GetConnectionId()));
-        //TODO EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
+        AzNetworking::ByteOrder byteOrder = connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
+            ? AzNetworking::ByteOrder::Host
+            : AzNetworking::ByteOrder::Network;
+        AzFramework::ToolingServiceKey key = connection->GetRemoteAddress().GetPort(byteOrder);
+
+        if (m_entryRegistry.contains(key))
+        {
+            const uint32_t persistentId = packet.GetPersistentId();
+            AzFramework::ToolingEndpointContainer::pair_iter_bool ret =
+                m_entryRegistry[key].m_availableTargets.insert_key(persistentId);
+            AzFramework::ToolingEndpointInfo& ti = ret.first->second;
+            ti.SetInfo(packet.GetDisplayName(), persistentId, static_cast<uint32_t>(connection->GetConnectionId()));
+            m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
+        }
         return true;
     }
 
@@ -132,52 +322,62 @@ namespace ToolingConnection
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] const ToolingConnectionPackets::ToolingPacket& packet)
     {
+        AzFramework::ToolingServiceKey key = packet.GetPersistentId();
+
         // Receive
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
-            /*TODO && static_cast<uint32_t>(connection->GetConnectionId()) != m_settings.m_lastTarget.m_networkId*/)
+            && static_cast<uint32_t>(connection->GetConnectionId()) != m_entryRegistry[key].m_lastTarget.GetNetworkId())
         {
             // Listener should route traffic based on selected target
             return true;
+        }
+      
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = ToolingRegistryEntry();
         }
 
         // If we're a client, set the host to our desired target
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Connector)
         {
-            if (GetEndpointInfo(packet.GetPersistentId()).GetPersistentId() == 0)
+            if (GetEndpointInfo(key, packet.GetPersistentId()).GetPersistentId() == 0)
             {
-                AzFramework::ToolingEndpointContinaer::pair_iter_bool ret = m_availableTargets.insert_key(packet.GetPersistentId());
+                AzFramework::ToolingEndpointContainer::pair_iter_bool ret =
+                    m_entryRegistry[key].m_availableTargets.insert_key(packet.GetPersistentId());
 
                 AzFramework::ToolingEndpointInfo& ti = ret.first->second;
                 ti.SetInfo("Host", packet.GetPersistentId(), static_cast<uint32_t>(connection->GetConnectionId()));
-
-                //TODO EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetJoinedNetwork, ti);
+                m_entryRegistry[key].m_endpointJoinedEvent.Signal(ti);
             }
 
-            if (GetDesiredEndpoint().GetPersistentId() != packet.GetPersistentId())
+            if (GetDesiredEndpoint(key).GetPersistentId() != packet.GetPersistentId())
             {
-                SetDesiredEndpoint(packet.GetPersistentId());
+                SetDesiredEndpoint(key, packet.GetPersistentId());
             }
         }
 
         const uint32_t totalBufferSize = packet.GetSize();
 
         // Messages can be larger than the size of a packet so reserve a buffer for the total message size
-        if (m_tmpInboundBufferPos == 0)
+        if (m_entryRegistry[key].m_tmpInboundBufferPos == 0)
         {
-            m_tmpInboundBuffer.reserve(totalBufferSize);
+            m_entryRegistry[key].m_tmpInboundBuffer.reserve(totalBufferSize);
         }
 
         // Read as much data as the packet can include and append it to the buffer
-        const uint32_t readSize = AZStd::min(totalBufferSize - m_tmpInboundBufferPos, Neighborhood::NeighborBufferSize);
-        memcpy(m_tmpInboundBuffer.begin() + m_tmpInboundBufferPos, packet.GetMessageBuffer().GetBuffer(), readSize);
-        m_tmpInboundBufferPos += readSize;
-        if (m_tmpInboundBufferPos == totalBufferSize)
+        const uint32_t readSize =
+            AZStd::min(totalBufferSize - m_entryRegistry[key].m_tmpInboundBufferPos, Neighborhood::NeighborBufferSize);
+        memcpy(
+            m_entryRegistry[key].m_tmpInboundBuffer.begin() + m_entryRegistry[key].m_tmpInboundBufferPos,
+            packet.GetMessageBuffer().GetBuffer(), readSize);
+        m_entryRegistry[key].m_tmpInboundBufferPos += readSize;
+        if (m_entryRegistry[key].m_tmpInboundBufferPos == totalBufferSize)
         {
             AZ::SerializeContext* serializeContext;
             EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
 
             // Deserialize the complete buffer
-            AZ::IO::MemoryStream msgBuffer(m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);
+            AZ::IO::MemoryStream msgBuffer(m_entryRegistry[key].m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);
             AzFramework::ToolingMessage* msg = nullptr;
             AZ::ObjectStream::ClassReadyCB readyCB(AZStd::bind(
                 &ToolingConnectionSystemComponent::OnMessageParsed, this, &msg, AZStd::placeholders::_1, AZStd::placeholders::_2,
@@ -198,10 +398,10 @@ namespace ToolingConnection
                 msg->SetSenderTargetId(packet.GetPersistentId());
 
                 m_inboxMutex.lock();
-                m_inbox.push_back(msg);
+                m_inbox[msg->GetSenderTargetId()].push_back(msg);
                 m_inboxMutex.unlock();
-                m_tmpInboundBuffer.clear();
-                m_tmpInboundBufferPos = 0;
+                m_entryRegistry[key].m_tmpInboundBuffer.clear();
+                m_entryRegistry[key].m_tmpInboundBufferPos = 0;
             }
         }
 
@@ -218,7 +418,7 @@ namespace ToolingConnection
 
     void ToolingConnectionSystemComponent::OnConnect([[maybe_unused]] AzNetworking::IConnection* connection)
     {
-        // Invoked when a tooling connection is established, handshake logic is handled via TargetConnect message
+        // Invoked when a tooling connection is established, handshake logic is handled via ToolingConnect message
         ;
     }
 
@@ -250,12 +450,18 @@ namespace ToolingConnection
         // If our desired target has left the network, flag it and notify listeners
         if (reason != AzNetworking::DisconnectReason::ConnectionRejected)
         {
-            AzFramework::ToolingEndpointContinaer::iterator it = m_availableTargets.find(static_cast<AZ::u32>(connection->GetConnectionId()));
-            if (it != m_availableTargets.end())
+            for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
             {
-                AzFramework::ToolingEndpointInfo ti = it->second;
-                m_availableTargets.erase(it);
-                //TODO EBUS_QUEUE_EVENT(TargetManagerClient::Bus, TargetLeftNetwork, ti);
+                AzFramework::ToolingEndpointContainer& container = registryIt->second.m_availableTargets;
+                for (auto endpointIt = container.begin(); endpointIt != container.end(); ++endpointIt)
+                {
+                    if (endpointIt->second.GetNetworkId() == static_cast<AZ::u32>(connection->GetConnectionId()))
+                    {
+                        AzFramework::ToolingEndpointInfo ti = endpointIt->second;
+                        container.erase(endpointIt);
+                        registryIt->second.m_endpointLeftEvent.Signal(ti);
+                    }
+                }
             }
         }
     }

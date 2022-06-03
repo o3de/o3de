@@ -19,6 +19,22 @@ namespace ToolingConnectionPackets
 
 namespace ToolingConnection
 {
+    struct ToolingRegistryEntry
+    {
+        AZStd::string m_name;
+        uint16_t m_port;
+
+        AzFramework::ToolingEndpointContainer m_availableTargets;
+        AzFramework::ToolingEndpointInfo m_lastTarget;
+        AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
+        uint32_t m_tmpInboundBufferPos;
+
+        AzFramework::ToolingEndpointStatusEvent m_endpointJoinedEvent;
+        AzFramework::ToolingEndpointStatusEvent m_endpointLeftEvent;
+        AzFramework::ToolingEndpointConnectedEvent m_endpointConnectedEvent;
+        AzFramework::ToolingEndpointChangedEvent m_endpointChangedEvent;
+    };
+
     class ToolingConnectionSystemComponent
         : public AZ::Component
         , public AzFramework::IToolingConnection
@@ -46,8 +62,6 @@ namespace ToolingConnection
             AzNetworking::IConnection* connection,
             const AzNetworking::IPacketHeader& packetHeader,
             const ToolingConnectionPackets::ToolingPacket& packet);
-
-        void SetTargetAsHost(bool isHost);
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -87,37 +101,42 @@ namespace ToolingConnection
 
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::IToolingConnection interface implementation
-        void RegisterToolingMessageClientHandler(
-            const char* hostname, uint16_t port, AzFramework::ToolingMessageEvent::Handler handler) override;
 
-        void RegisterToolingMessageHostHandler(uint16_t port, AzFramework::ToolingMessageEvent::Handler handler) override;
+        AzFramework::ToolingServiceKey RegisterToolingService(AZStd::string name, uint16_t port) override;
 
-        void EnumTargetInfos(AzFramework::ToolingEndpointContinaer& infos) override;
+        const AzFramework::ReceivedToolingMessages* GetReceivedMessages(AzFramework::ToolingServiceKey key) const override;
 
-        void SetDesiredEndpoint(AZ::u32 desiredTargetID) override;
+        void ClearReceivedMessages(AzFramework::ToolingServiceKey key) override;
 
-        void SetDesiredEndpointInfo(const AzFramework::ToolingEndpointInfo& targetInfo) override;
+        void RegisterToolingEndpointJoinedHandler(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointStatusEvent::Handler handler) override;
 
-        virtual AzFramework::ToolingEndpointInfo GetDesiredEndpoint() override;
+        void RegisterToolingEndpointLeftHandler(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointStatusEvent::Handler handler) override;
 
-        AzFramework::ToolingEndpointInfo GetEndpointInfo(AZ::u32 desiredTargetID) override;
+        void RegisterToolingEndpointConnectedHandler(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointConnectedEvent::Handler handler) override;
 
-        bool IsEndpointOnline(AZ::u32 desiredTargetID) override;
+        void RegisterToolingEndpointChangedHandler(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointChangedEvent::Handler handler) override;
+
+        void EnumTargetInfos(AzFramework::ToolingServiceKey key, AzFramework::ToolingEndpointContainer& infos) override;
+
+        void SetDesiredEndpoint(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID) override;
+
+        void SetDesiredEndpointInfo(AzFramework::ToolingServiceKey key, const AzFramework::ToolingEndpointInfo& targetInfo) override;
+
+        AzFramework::ToolingEndpointInfo GetDesiredEndpoint(AzFramework::ToolingServiceKey key) override;
+
+        AzFramework::ToolingEndpointInfo GetEndpointInfo(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID) override;
+
+        bool IsEndpointOnline(AzFramework::ToolingServiceKey key, AZ::u32 desiredTargetID) override;
 
         void SendToolingMessage(const AzFramework::ToolingEndpointInfo& target, const AzFramework::ToolingMessage& msg) override;
-
-        void DispatchMessages(AZ::u64 id) override;
         ////////////////////////////////////////////////////////////////////////
 
         AZStd::unique_ptr<ToolingJoinThread> m_joinThread;
         AZStd::unique_ptr<ToolingOutboxThread> m_outboxThread;
 
-        AzFramework::ToolingEndpointContinaer m_availableTargets;
-        AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
-        uint32_t m_tmpInboundBufferPos;
+        AZStd::unordered_map<AzFramework::ToolingServiceKey, ToolingRegistryEntry> m_entryRegistry;
 
-        AzFramework::ToolingMessageQueue m_inbox;
+        AZStd::unordered_map<AzFramework::ToolingServiceKey, AzFramework::ReceivedToolingMessages> m_inbox;
         AZStd::mutex m_inboxMutex;
     };
-
 } // namespace ToolingConnection

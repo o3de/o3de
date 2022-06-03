@@ -18,6 +18,12 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/string/string.h>
 
+namespace AZ
+{
+    template<typename T>
+    class Interface;
+}
+
 namespace AzFramework
 {
     class ToolingMessage
@@ -47,54 +53,23 @@ namespace AzFramework
         {
         }
 
-        virtual ~ToolingMessage()
-        {
-            if (m_isBlobOwner)
-            {
-                azfree(const_cast<void*>(m_customBlob), AZ::OSAllocator);
-            }
-        }
+        virtual ~ToolingMessage();
 
-        void AddCustomBlob(const void* blob, size_t blobSize, bool ownBlob = false)
-        {
-            m_customBlob = blob;
-            m_customBlobSize = static_cast<AZ::u32>(blobSize);
-            m_isBlobOwner = ownBlob;
-        }
+        void AddCustomBlob(const void* blob, size_t blobSize, bool ownBlob = false);
 
-        void SetImmediateSelfDispatchEnabled(bool immediateSelfDispatchEnabled)
-        {
-            m_immediateSelfDispatch = immediateSelfDispatchEnabled;
-        }
+        void SetImmediateSelfDispatchEnabled(bool immediateSelfDispatchEnabled);
 
-        bool IsImmediateSelfDispatchEnabled() const
-        {
-            return m_immediateSelfDispatch;
-        }
+        bool IsImmediateSelfDispatchEnabled() const;
 
-        const void* GetCustomBlob() const
-        {
-            return m_customBlob;
-        }
-        size_t GetCustomBlobSize() const
-        {
-            return m_customBlobSize;
-        }
+        const void* GetCustomBlob() const;
 
-        AZ::u64 GetId() const
-        {
-            return m_msgId;
-        }
+        size_t GetCustomBlobSize() const;
 
-        AZ::u32 GetSenderTargetId() const
-        {
-            return m_senderTargetId;
-        }
+        AZ::u64 GetId() const;
 
-        void SetSenderTargetId(AZ::u32 senderTargetId)
-        {
-            m_senderTargetId = senderTargetId;
-        }
+        AZ::u32 GetSenderTargetId() const;
+
+        void SetSenderTargetId(AZ::u32 senderTargetId);
 
     protected:
         AZ::u64 m_msgId;
@@ -127,8 +102,7 @@ namespace AzFramework
 
     typedef AZStd::intrusive_ptr<ToolingMessage> ToolingMessagePointer;
     typedef AZStd::deque<ToolingMessagePointer, AZ::OSStdAllocator> ToolingMessageQueue;
-    using ToolingMessageEvent = AZ::Event<ToolingMessagePointer>;
-
+    
     // id for the local application
     static const AZ::u32 s_selfNetworkId = 0xFFFFFFFF;
 
@@ -146,91 +120,80 @@ namespace AzFramework
         {
         }
 
-        bool IsSelf() const
-        {
-            return m_networkId == s_selfNetworkId;
-        }
+        bool IsSelf() const;
 
-        bool IsValid() const
-        {
-            return true;
-        }
+        bool IsOnline() const;
 
-        const char* GetDisplayName() const
-        {
-            return m_displayName.c_str();
-        }
+        bool IsValid() const;
 
-        AZ::u32 GetPersistentId() const
-        {
-            return m_persistentId;
-        }
+        const char* GetDisplayName() const;
 
-        AZ::u32 GetNetworkId() const
-        {
-            return m_networkId;
-        }
+        AZ::u32 GetPersistentId() const;
 
-        bool IsIdentityEqualTo(const ToolingEndpointInfo& other) const
-        {
-            return m_persistentId == other.m_persistentId&& m_networkId == other.m_networkId;
-        }
+        AZ::u32 GetNetworkId() const;
 
-        void SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId)
-        {
-            m_displayName = displayName;
-            m_persistentId = persistentId;
-            m_networkId = networkId;
-        }
+        bool IsIdentityEqualTo(const ToolingEndpointInfo& other) const;
+
+        void SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId);
 
     private:
         AZStd::string m_displayName;
         AZ::u32 m_persistentId; // this string is set by the target and its CRC is currently used to determine desired targets.
         AZ::u32 m_networkId; // this is the actual connection id, used for AzNetworking communications.
+        bool m_isOnline;
     };
 
-    typedef AZStd::unordered_map<AZ::u32, ToolingEndpointInfo> ToolingEndpointContinaer;
+    typedef AZStd::unordered_map<AZ::u32, ToolingEndpointInfo> ToolingEndpointContainer;
+    using ToolingEndpointStatusEvent = AZ::Event<ToolingEndpointInfo>;
+    using ToolingEndpointConnectedEvent = AZ::Event<bool>;
+    using ToolingEndpointChangedEvent = AZ::Event<AZ::u32, AZ::u32>;
+    using ReceivedToolingMessages = AZStd::fixed_vector<ToolingMessagePointer, 64>;
+    using ToolingServiceKey = AZ::u32;
 
     class IToolingConnection
     {
     public:
         AZ_RTTI(IToolingConnection, "{1446BADE-E6F7-4E3C-8D37-669A544DB964}");
 
-        //! Registers a ToolingMessageEvent handler for a client attempting to connect to a server at the designated hostname and port
-        //! @param hostname The hostname the client wants to connect to
-        //! @param port The port the client wants to connect on
-        //! @param handler The ToolingMessageEvent handler to be invoked when the client receives a message from the host
-        virtual void RegisterToolingMessageClientHandler(const char* hostname, uint16_t port, ToolingMessageEvent::Handler handler) = 0;
+        virtual ToolingServiceKey RegisterToolingService(AZStd::string name, uint16_t port) = 0;
 
-        //! Registers a ToolingMessageEvent handler for a host listening for clients on the designated port
-        //! @param port The port the host wants to listen on
-        //! @param handler The ToolingMessageEvent handler to be invoked when the host receives a message from a client
-        virtual void RegisterToolingMessageHostHandler(uint16_t port, ToolingMessageEvent::Handler handler) = 0;
+        virtual const ReceivedToolingMessages* GetReceivedMessages(ToolingServiceKey key) const = 0;
+
+        virtual void ClearReceivedMessages(ToolingServiceKey key) = 0;
+
+        virtual void RegisterToolingEndpointJoinedHandler(ToolingServiceKey key, ToolingEndpointStatusEvent::Handler handler) = 0;
+
+        virtual void RegisterToolingEndpointLeftHandler(ToolingServiceKey key, ToolingEndpointStatusEvent::Handler handler) = 0;
+
+        virtual void RegisterToolingEndpointConnectedHandler(ToolingServiceKey key, ToolingEndpointConnectedEvent::Handler handler) = 0;
+
+        virtual void RegisterToolingEndpointChangedHandler(ToolingServiceKey key, ToolingEndpointChangedEvent::Handler handler) = 0;
 
         // call this function to retrieve the list of currently known targets - this is mainly used for GUIs
         // when they come online and attempt to enum (they won't have been listening for target coming and going)
         // you will only be shown targets that have been seen in a reasonable amount of time.
-        virtual void EnumTargetInfos(ToolingEndpointContinaer& infos) = 0;
+        virtual void EnumTargetInfos(ToolingServiceKey key, ToolingEndpointContainer& infos) = 0;
 
         // set the desired target, which we'll specifically keep track of.
         // the target controls who gets lua commands, tweak stuff, that kind of thing
-        virtual void SetDesiredEndpoint(AZ::u32 desiredTargetID) = 0;
+        virtual void SetDesiredEndpoint(ToolingServiceKey key, AZ::u32 desiredTargetID) = 0;
 
-        virtual void SetDesiredEndpointInfo(const ToolingEndpointInfo& targetInfo) = 0;
+        virtual void SetDesiredEndpointInfo(ToolingServiceKey key, const ToolingEndpointInfo& targetInfo) = 0;
 
         // retrieve what it was set to.
-        virtual ToolingEndpointInfo GetDesiredEndpoint() = 0;
+        virtual ToolingEndpointInfo GetDesiredEndpoint(ToolingServiceKey key) = 0;
 
         // given id, get info.
-        virtual ToolingEndpointInfo GetEndpointInfo(AZ::u32 desiredTargetID) = 0;
+        virtual ToolingEndpointInfo GetEndpointInfo(ToolingServiceKey key, AZ::u32 desiredTargetID) = 0;
 
         // check if target is online
-        virtual bool IsEndpointOnline(AZ::u32 desiredTargetID) = 0;
+        virtual bool IsEndpointOnline(ToolingServiceKey key, AZ::u32 desiredTargetID) = 0;
 
         // send a message to a remote target
         virtual void SendToolingMessage(const ToolingEndpointInfo& target, const ToolingMessage& msg) = 0;
-
-        // manually force messages for a specific id to be delivered.
-        virtual void DispatchMessages(AZ::u64 id) = 0;
     };
-} // namespace AZ
+
+    using ToolsConnectionInterface = AZ::Interface<IToolingConnection>;
+} // namespace AzFramework
+
+#include <AzFramework/Network/IToolingConnection.inl>

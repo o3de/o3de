@@ -179,6 +179,7 @@ set(FILES
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
     Network/IToolingConnection.h
+    Network/IToolingConnection.inl
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp

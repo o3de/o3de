@@ -54,14 +54,12 @@ namespace ToolingConnection
                 const size_t totalSize = outBoxDatum.size();
                 size_t outSize = outBoxDatum.size();
 
-                const AzFramework::ToolingEndpointInfo ti = AZ::Interface<AzFramework::IToolingConnection>::Get()->GetEndpointInfo(static_cast<uint32_t>(outBoxElem.connectionId));
-
                 while (outSize > 0)
                 {
                     // Fragment the message into NeighborMessageBuffer packet sized chunks and send
                     size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(Neighborhood::NeighborBufferSize));
                     ToolingConnectionPackets::ToolingPacket tmPacket;
-                    tmPacket.SetPersistentId(ti.GetPersistentId());
+                    tmPacket.SetPersistentId(outBoxElem.datum.first);
                     tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
                     Neighborhood::NeighborMessageBuffer encodingBuffer;
                     encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
