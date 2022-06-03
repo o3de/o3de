@@ -25,23 +25,24 @@ namespace EditorPythonBindings
         using AllocationHandle = EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle;
         constexpr static Handle NoAllocation{ ~0LL };
 
-        PythonEditorActionHandler();
-        ~PythonEditorActionHandler();
+        PythonActionManagerHandler();
+        ~PythonActionManagerHandler();
+        
 
         // ActionManagerPythonRequestBus overrides ...
-        ActionManagerOperationResult RegisterAction(
+        AzToolsFramework::ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& actionIdentifier,
             const AzToolsFramework::ActionProperties& properties,
             PythonEditorAction handler) override;
-        ActionManagerOperationResult RegisterCheckableAction(
+        AzToolsFramework::ActionManagerOperationResult RegisterCheckableAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& actionIdentifier,
             const AzToolsFramework::ActionProperties& properties,
             PythonEditorAction handler,
             PythonEditorAction updateCallback) override;
-        ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
-        ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
+        AzToolsFramework::ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
+        AzToolsFramework::ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
 
     private:
         AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;

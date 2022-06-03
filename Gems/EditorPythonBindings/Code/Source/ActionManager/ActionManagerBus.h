@@ -17,8 +17,6 @@
 
 namespace EditorPythonBindings
 {
-    using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
-
     //! ActionManagerRequestBus
     //! Bus to register and trigger actions in the Editor via Python.
     //! If writing C++ code, use the ActionManagerInterface instead.
@@ -28,7 +26,7 @@ namespace EditorPythonBindings
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Register a new Action to the Action Manager.
-        virtual ActionManagerOperationResult RegisterAction(
+        virtual AzToolsFramework::ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& identifier,
             const AzToolsFramework::ActionProperties& properties,
@@ -36,7 +34,7 @@ namespace EditorPythonBindings
         ) = 0;
 
         //! Register a new Checkable Action to the Action Manager.
-        virtual ActionManagerOperationResult RegisterCheckableAction(
+        virtual AzToolsFramework::ActionManagerOperationResult RegisterCheckableAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& actionIdentifier,
             const AzToolsFramework::ActionProperties& properties,
@@ -45,10 +43,10 @@ namespace EditorPythonBindings
         ) = 0;
 
         //! Trigger an Action via its identifier.
-        virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
+        virtual AzToolsFramework::ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
 
         //! Update the state of a Checkable Action via its identifier.
-        virtual ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
+        virtual AzToolsFramework::ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
     };
 
     using ActionManagerRequestBus = AZ::EBus<ActionManagerRequests>;
