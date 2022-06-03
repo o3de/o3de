@@ -160,7 +160,7 @@ namespace AZ
             uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
             uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
 
-            // submit the DispatchItems for each DiffuseProbeGrid in this range
+            // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
             for (uint32_t index = startIndex; index < endIndex; ++index)
             {
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
