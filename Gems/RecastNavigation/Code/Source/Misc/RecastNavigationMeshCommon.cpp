@@ -323,8 +323,14 @@ namespace RecastNavigation
         return {};
     }
 
+    void RecastNavigationMeshCommon::OnActivate()
+    {
+        m_deactivating = false;
+    }
+
     void RecastNavigationMeshCommon::OnDeactivate()
     {
+        m_deactivating = true;
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
             // If the tasks are still in progress, wait until the task graph is finished.
@@ -420,6 +426,11 @@ namespace RecastNavigation
                 AZ::TaskToken token = m_taskGraph.AddTask(
                     m_taskDescriptor, [this, tile, &config]()
                     {
+                        if (m_deactivating)
+                        {
+                            return;
+                        }
+
                         AZ_PROFILE_SCOPE(Navigation, "Navigation: task - computing tile");
 
                         NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),

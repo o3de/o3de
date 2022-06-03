@@ -28,6 +28,7 @@ namespace RecastNavigation
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
         virtual ~RecastNavigationMeshCommon() = default;
 
+        void OnActivate();
         void OnDeactivate();
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
@@ -65,6 +66,9 @@ namespace RecastNavigation
 
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
         AZStd::mutex m_tileProcessingMutex;
+
+        //! A way to check if we should stop tile processing because we are deactivating.
+        AZStd::atomic<bool> m_deactivating{ false };
 
         //! Task graph objects to process tile geometry into Recast tiles.
         AZ::TaskGraph m_taskGraph;

@@ -34,8 +34,14 @@ namespace RecastNavigation
     {
     }
 
+    void RecastNavigationPhysXProviderCommon::OnActivate()
+    {
+        m_deactivating = false;
+    }
+
     void RecastNavigationPhysXProviderCommon::OnDeactivate()
     {
+        m_deactivating = true;
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
             // If the tasks are still in progress, wait until the task graph is finished.
@@ -301,12 +307,14 @@ namespace RecastNavigation
                     AZ::TaskToken token = m_taskGraph.AddTask(
                         m_taskDescriptor, [this, geometryData]()
                         {
-                            AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
-                            QueryHits results;
-                            CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
-                            AppendColliderGeometry(*geometryData, results, false);
-                            
-                            geometryData->m_callback(geometryData);
+                            if (!m_deactivating)
+                            {
+                                AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
+                                QueryHits results;
+                                CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
+                                AppendColliderGeometry(*geometryData, results, false);
+                                geometryData->m_callback(geometryData);
+                            }
                         });
 
                     tileTaskTokens.push_back(&token);

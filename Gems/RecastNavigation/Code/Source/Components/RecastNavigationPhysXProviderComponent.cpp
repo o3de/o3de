@@ -41,6 +41,7 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderComponent::Activate()
     {
+        RecastNavigationPhysXProviderCommon::OnActivate();
         RecastNavigationProviderRequestBus::Handler::BusConnect(GetEntityId());
     }
 

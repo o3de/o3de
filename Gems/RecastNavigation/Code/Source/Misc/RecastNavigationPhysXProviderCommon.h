@@ -26,6 +26,7 @@ namespace RecastNavigation
         explicit RecastNavigationPhysXProviderCommon(bool useEditorScene);
         virtual ~RecastNavigationPhysXProviderCommon() = default;
 
+        void OnActivate();
         void OnDeactivate();
 
         //! A container of PhysX overlap scene hits (has PhysX colliders and their position/orientation).
@@ -82,6 +83,9 @@ namespace RecastNavigation
     protected:
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene;
+
+        //! A way to check if we should stop tile processing because we are deactivating.
+        AZStd::atomic<bool> m_deactivating{ false };
 
         //! Task graph objects to collect geometry data in tiles over a grid.
         AZ::TaskGraph m_taskGraph;

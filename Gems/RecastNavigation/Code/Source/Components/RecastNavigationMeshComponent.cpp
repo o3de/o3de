@@ -122,6 +122,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponent::Activate()
     {
+        RecastNavigationMeshCommon::OnActivate();
         m_context = AZStd::make_unique<rcContext>();
 
         // It is safe to create the navigation mesh object now.
