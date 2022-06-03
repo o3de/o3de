@@ -8,16 +8,19 @@
 
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <Source/ActionManager/ActionManagerBus.h>
+#include <Source/ActionManager/MenuManagerBus.h>
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class MenuManagerInterface;
 }
 
 namespace EditorPythonBindings
 {
     class PythonActionManagerHandler final
         : public ActionManagerRequestBus::Handler
+        , public MenuManagerRequestBus::Handler
         , private EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
     {
     public:
@@ -28,6 +31,7 @@ namespace EditorPythonBindings
         PythonActionManagerHandler();
         ~PythonActionManagerHandler();
         
+        static void Reflect(AZ::ReflectContext* context);
 
         // ActionManagerPythonRequestBus overrides ...
         AzToolsFramework::ActionManagerOperationResult RegisterAction(
@@ -43,6 +47,16 @@ namespace EditorPythonBindings
             PythonEditorAction updateCallback) override;
         AzToolsFramework::ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         AzToolsFramework::ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
+        
+        // MenuManagerPythonRequestBus overrides ...
+        AzToolsFramework::MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier,
+            const AzToolsFramework::MenuProperties& properties) override;
+        AzToolsFramework::MenuManagerOperationResult AddActionToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddSeparatorToMenu(
+            const AZStd::string& menuIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddSubMenuToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
 
     private:
         AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;

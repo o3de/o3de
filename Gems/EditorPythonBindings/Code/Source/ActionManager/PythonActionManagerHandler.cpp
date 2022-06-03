@@ -23,6 +23,13 @@ namespace EditorPythonBindings
             EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusConnect(azrtti_typeid<PythonEditorAction>());
             ActionManagerRequestBus::Handler::BusConnect();
         }
+        
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        
+        if (m_menuManagerInterface)
+        {
+            MenuManagerRequestBus::Handler::BusConnect();
+        }
     }
 
     PythonActionManagerHandler::~PythonActionManagerHandler()
@@ -31,6 +38,50 @@ namespace EditorPythonBindings
         {
             ActionManagerRequestBus::Handler::BusDisconnect();
             EditorPythonBindings::CustomTypeBindingNotificationBus::Handler::BusDisconnect();
+        }
+        
+        if (m_menuManagerInterface)
+        {
+            MenuManagerRequestBus::Handler::BusDisconnect();
+        }
+    }
+    
+    void PythonActionManagerHandler::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext
+                ->Class<AzToolsFramework::ActionProperties>("ActionProperties")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Property("name", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_name))
+                ->Property("description", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_description))
+                ->Property("category", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_category))
+                ->Property("iconPath", BehaviorValueProperty(&AzToolsFramework::ActionProperties::m_iconPath))
+                ;
+
+            behaviorContext
+                ->EBus<ActionManagerRequestBus>("ActionManagerPythonRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Event("RegisterAction", &ActionManagerRequestBus::Handler::RegisterAction)
+                ->Event("RegisterCheckableAction", &ActionManagerRequestBus::Handler::RegisterCheckableAction)
+                ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction)
+                ->Event("UpdateAction", &ActionManagerRequestBus::Handler::UpdateAction)
+                ;
+
+            behaviorContext
+                ->EBus<MenuManagerRequestBus>("MenuManagerPythonRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Event("RegisterMenu", &MenuManagerRequestBus::Handler::RegisterMenu)
+                ->Event("AddActionToMenu", &MenuManagerRequestBus::Handler::AddActionToMenu)
+                ->Event("AddSeparatorToMenu", &MenuManagerRequestBus::Handler::AddSeparatorToMenu)
+                ->Event("AddSubMenuToMenu", &MenuManagerRequestBus::Handler::AddSubMenuToMenu)
+                ;
         }
     }
 
@@ -66,25 +117,28 @@ namespace EditorPythonBindings
         PythonEditorAction handler,
         PythonEditorAction updateCallback)
     {
+        PyObject* handlerObject = handler.GetPyObject();
+        PyObject* updateCallbackObject = updateCallback.GetPyObject();
+
         auto outcome = m_actionManagerInterface->RegisterCheckableAction(
             contextIdentifier,
             actionIdentifier,
             properties,
             [h = AZStd::move(handler)]() mutable
             {
-                PyObject_CallObject(h.GetHandler(), nullptr);
+                PyObject_CallObject(h.GetPyObject(), nullptr);
             },
             [u = AZStd::move(updateCallback)]() mutable -> bool
             {
-                PyObject* result = PyObject_CallObject(u.GetHandler(), nullptr);
-                return PyObject_IsTrue(result);
+                return PyObject_IsTrue(PyObject_CallObject(u.GetPyObject(), nullptr));
             }
         );
 
         if (outcome.IsSuccess())
         {
             // Store the callable to handle reference counting correctly.
-            m_actionHandlerMap.insert({ actionIdentifier, PythonActionHandler(handler.GetHandler()) });
+            m_actionHandlerMap.insert({ actionIdentifier, PythonFunctionObject(handlerObject) });
+            m_actionUpdateCallbackMap.insert({ actionIdentifier, PythonFunctionObject(updateCallbackObject) });
         }
 
         return outcome;
@@ -98,6 +152,30 @@ namespace EditorPythonBindings
     AzToolsFramework::ActionManagerOperationResult PythonActionManagerHandler::UpdateAction(const AZStd::string& actionIdentifier)
     {
         return m_actionManagerInterface->UpdateAction(actionIdentifier);
+    }
+    
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::RegisterMenu(const AZStd::string& identifier,
+        const AzToolsFramework::MenuProperties& properties)
+    {
+        return m_menuManagerInterface->RegisterMenu(identifier, properties);
+    }
+
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::AddActionToMenu(
+        const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex)
+    {
+        return m_menuManagerInterface->AddActionToMenu(menuIdentifier, actionIdentifier, sortIndex);
+    }
+
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::AddSeparatorToMenu(
+        const AZStd::string& menuIdentifier, int sortIndex)
+    {
+        return m_menuManagerInterface->AddSeparatorToMenu(menuIdentifier, sortIndex);
+    }
+
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::AddSubMenuToMenu(
+        const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex)
+    {
+        return m_menuManagerInterface->AddSubMenuToMenu(menuIdentifier, subMenuIdentifier, sortIndex);
     }
 
     EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonActionManagerHandler::AllocateDefault()
