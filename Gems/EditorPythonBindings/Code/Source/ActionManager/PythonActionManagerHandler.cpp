@@ -14,8 +14,7 @@
 
 namespace EditorPythonBindings
 {
-
-    PythonEditorActionHandler::PythonEditorActionHandler()
+    PythonActionManagerHandler::PythonActionManagerHandler()
     {
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
@@ -26,7 +25,7 @@ namespace EditorPythonBindings
         }
     }
 
-    PythonEditorActionHandler::~PythonEditorActionHandler()
+    PythonActionManagerHandler::~PythonActionManagerHandler()
     {
         if (m_actionManagerInterface)
         {
@@ -35,7 +34,7 @@ namespace EditorPythonBindings
         }
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
+    AzToolsFramework::ActionManagerOperationResult PythonActionManagerHandler::RegisterAction(
         const AZStd::string& contextIdentifier,
         const AZStd::string& actionIdentifier,
         const AzToolsFramework::ActionProperties& properties,
@@ -60,7 +59,7 @@ namespace EditorPythonBindings
         return outcome;
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterCheckableAction(
+    AzToolsFramework::ActionManagerOperationResult PythonActionManagerHandler::RegisterCheckableAction(
         const AZStd::string& contextIdentifier,
         const AZStd::string& actionIdentifier,
         const AzToolsFramework::ActionProperties& properties,
@@ -91,17 +90,17 @@ namespace EditorPythonBindings
         return outcome;
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
+    AzToolsFramework::ActionManagerOperationResult PythonActionManagerHandler::TriggerAction(const AZStd::string& actionIdentifier)
     {
         return m_actionManagerInterface->TriggerAction(actionIdentifier);
     }
 
-    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::UpdateAction(const AZStd::string& actionIdentifier)
+    AzToolsFramework::ActionManagerOperationResult PythonActionManagerHandler::UpdateAction(const AZStd::string& actionIdentifier)
     {
         return m_actionManagerInterface->UpdateAction(actionIdentifier);
     }
 
-    EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()
+    EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonActionManagerHandler::AllocateDefault()
     {
         AZ::BehaviorObject behaviorObject;
 
@@ -111,7 +110,7 @@ namespace EditorPythonBindings
         return { { reinterpret_cast<Handle>(behaviorObject.m_address), AZStd::move(behaviorObject) } };
     }
 
-    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::PythonToBehavior(
+    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonActionManagerHandler::PythonToBehavior(
         PyObject* pyObj, [[maybe_unused]] AZ::BehaviorParameter::Traits traits, AZ::BehaviorArgument& outValue)
     {
         outValue.ConvertTo<PythonEditorAction>();
@@ -119,20 +118,20 @@ namespace EditorPythonBindings
         return { NoAllocation };
     }
 
-    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonEditorActionHandler::BehaviorToPython(
+    AZStd::optional<EditorPythonBindings::CustomTypeBindingNotifications::ValueHandle> PythonActionManagerHandler::BehaviorToPython(
         const AZ::BehaviorArgument& behaviorValue, PyObject*& outPyObj)
     {
         PythonEditorAction* value = behaviorValue.GetAsUnsafe<PythonEditorAction>();
-        outPyObj = value->GetHandler();
+        outPyObj = value->GetPyObject();
         return { NoAllocation };
     }
 
-    bool PythonEditorActionHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const
+    bool PythonActionManagerHandler::CanConvertPythonToBehavior([[maybe_unused]] AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const
     {
         return PyCallable_Check(pyObj);
     }
 
-    void PythonEditorActionHandler::CleanUpValue(ValueHandle handle)
+    void PythonActionManagerHandler::CleanUpValue(ValueHandle handle)
     {
         if (auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle)); handleEntry != m_allocationMap.end())
         {
@@ -141,57 +140,57 @@ namespace EditorPythonBindings
         }
     }
 
-    PythonEditorActionHandler::PythonActionHandler::PythonActionHandler(PyObject* handler)
-        : m_handler(handler)
+    PythonActionManagerHandler::PythonFunctionObject::PythonFunctionObject(PyObject* handler)
+        : m_functionObject(handler)
     {
         // Increment the reference counter for the handler on the Python side to ensure the function isn't garbage collected.
-        if (m_handler)
+        if (m_functionObject)
         {
-            Py_INCREF(m_handler);
+            Py_INCREF(m_functionObject);
         }
     }
 
-    PythonEditorActionHandler::PythonActionHandler::PythonActionHandler(const PythonActionHandler& obj)
-        : m_handler(obj.m_handler)
+    PythonActionManagerHandler::PythonFunctionObject::PythonFunctionObject(const PythonFunctionObject& obj)
+        : m_functionObject(obj.m_functionObject)
     {
-        if (m_handler)
+        if (m_functionObject)
         {
-            Py_INCREF(m_handler);
+            Py_INCREF(m_functionObject);
         }
     }
 
-    PythonEditorActionHandler::PythonActionHandler::PythonActionHandler(PythonActionHandler&& obj)
-        : m_handler(obj.m_handler)
+    PythonActionManagerHandler::PythonFunctionObject::PythonFunctionObject(PythonFunctionObject&& obj)
+        : m_functionObject(obj.m_functionObject)
     {
         // Reference counter does not need to be touched since we're moving ownership.
-        obj.m_handler = nullptr;
+        obj.m_functionObject = nullptr;
     }
 
-    PythonEditorActionHandler::PythonActionHandler& PythonEditorActionHandler::PythonActionHandler::operator=(
-        const PythonActionHandler& obj)
+    PythonActionManagerHandler::PythonFunctionObject& PythonActionManagerHandler::PythonFunctionObject::operator=(
+        const PythonFunctionObject& obj)
     {
-        if (m_handler)
+        if (m_functionObject)
         {
-            Py_DECREF(m_handler);
+            Py_DECREF(m_functionObject);
         }
 
-        m_handler = obj.m_handler;
+        m_functionObject = obj.m_functionObject;
 
-        if (m_handler)
+        if (m_functionObject)
         {
-            Py_INCREF(m_handler);
+            Py_INCREF(m_functionObject);
         }
 
         return *this;
     }
 
-    PythonEditorActionHandler::PythonActionHandler::~PythonActionHandler()
+    PythonActionManagerHandler::PythonFunctionObject::~PythonFunctionObject()
     {
-        if (m_handler)
+        if (m_functionObject)
         {
-            Py_DECREF(m_handler);
+            Py_DECREF(m_functionObject);
             // Clear the pointer in case the destructor is called multiple times.
-            m_handler = nullptr;
+            m_functionObject = nullptr;
         }
     }
 

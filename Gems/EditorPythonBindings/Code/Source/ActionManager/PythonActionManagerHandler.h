@@ -16,7 +16,7 @@ namespace AzToolsFramework
 
 namespace EditorPythonBindings
 {
-    class PythonEditorActionHandler final
+    class PythonActionManagerHandler final
         : public ActionManagerRequestBus::Handler
         , private EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
     {
@@ -53,22 +53,24 @@ namespace EditorPythonBindings
         bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
         void CleanUpValue(ValueHandle handle) override;
 
-        class PythonActionHandler
+        class PythonFunctionObject
         {
         public:
-            explicit PythonActionHandler(PyObject* handler);
-            PythonActionHandler(const PythonActionHandler& obj);
-            PythonActionHandler(PythonActionHandler&& obj);
-            PythonActionHandler& operator=(const PythonActionHandler& obj);
-            virtual ~PythonActionHandler();
+            explicit PythonFunctionObject(PyObject* handler);
+            PythonFunctionObject(const PythonFunctionObject& obj);
+            PythonFunctionObject(PythonFunctionObject&& obj);
+            PythonFunctionObject& operator=(const PythonFunctionObject& obj);
+            virtual ~PythonFunctionObject();
 
         private:
-            PyObject* m_handler = nullptr;
+            PyObject* m_functionObject = nullptr;
         };
 
-        AZStd::unordered_map<AZStd::string, PythonActionHandler> m_actionHandlerMap;
+        AZStd::unordered_map<AZStd::string, PythonFunctionObject> m_actionHandlerMap;
+        AZStd::unordered_map<AZStd::string, PythonFunctionObject> m_actionUpdateCallbackMap;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
 } // namespace EditorPythonBindings
