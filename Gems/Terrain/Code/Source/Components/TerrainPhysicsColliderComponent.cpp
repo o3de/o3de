@@ -439,6 +439,13 @@ namespace Terrain
             queryRegion = TerrainQueryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
         }
 
+        // If our query region is small enough to fit inside a grid square without touching any vertices, there's nothing
+        // that we need to update.
+        if ((queryRegion.m_numPointsX == 0) || (queryRegion.m_numPointsY == 0))
+        {
+            return;
+        }
+
         const float worldCenterZ = worldSize.GetCenter().GetZ();
         const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
         const float worldHeightBoundsMax = worldSize.GetMax().GetZ();
