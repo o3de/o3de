@@ -10,6 +10,7 @@
 
 #include <Recast.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>

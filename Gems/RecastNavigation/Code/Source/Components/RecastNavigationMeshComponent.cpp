@@ -11,6 +11,7 @@
 #include <DetourDebugDraw.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
