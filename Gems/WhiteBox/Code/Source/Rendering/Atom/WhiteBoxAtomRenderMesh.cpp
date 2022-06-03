@@ -33,6 +33,7 @@ namespace WhiteBox
     AtomRenderMesh::~AtomRenderMesh()
     {
         AZ::Render::MeshHandleStateRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     bool AtomRenderMesh::AreAttributesValid() const
@@ -159,6 +160,11 @@ namespace WhiteBox
         
         if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
         {
+            auto materialOverrideInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
+            auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
+            materialAssignment.m_materialAsset = materialAsset;
+            materialAssignment.m_materialInstance = materialOverrideInstance;
+
             AZ::RPI::ModelMaterialSlot materialSlot;
             materialSlot.m_stableId = OneMaterialSlotId;
             materialSlot.m_defaultMaterialAsset = materialAsset;
@@ -256,46 +262,49 @@ namespace WhiteBox
         m_meshFeatureProcessor->SetTransform(m_meshHandle, worldFromLocal);
     }
 
-    void AtomRenderMesh::UpdateMaterial([[maybe_unused]] const WhiteBoxMaterial& material)
+    void AtomRenderMesh::UpdateMaterial(const WhiteBoxMaterial& material)
     {
-        // colors: vertex colors probs not used.
-        // (use constant color for material -> material editor)
-        //
-        // m_meshFeatureProcessor->SetMaterialAssignmentMap() (not in spectra mainline yet)
-        //
-        // for now:
-        // m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        // MaterialAssignmentMap materialMap;
-        // materialMap[DefaultMaterialAssignmentId] = (see below)
-        // m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset, materialMap)
+        if (m_meshFeatureProcessor)
+        {
+            auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
+            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.color")] = AZ::Color(material.m_tint);
+            materialAssignment.m_propertyOverrides[AZ::Name("baseColor.useTexture")] = material.m_useTexture;
+            // if ApplyProperties fails, defer updating the material assignment map 
+            // on the next tick, and try applying properties again
+            if (materialAssignment.ApplyProperties())
+            {
+                if (AZ::TickBus::Handler::BusIsConnected())
+                {
+                    AZ::TickBus::Handler::BusDisconnect();
+                }
+                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+            }
+            else if (!AZ::TickBus::Handler::BusIsConnected())
+            {
+                AZ::TickBus::Handler::BusConnect();
+            }
+        }
+    }
 
-        // from tommy (SkinnedMeshContainer.cpp)
-        /*
-            auto materialAsset =
-           AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(SkinnedMeshMaterial); auto
-           materialOverrideInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
+    void AtomRenderMesh::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        auto& materialAssignment = m_materialMap[AZ::Render::DefaultMaterialAssignmentId];
+        if (materialAssignment.ApplyProperties())
+        {
+            m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, m_materialMap);
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+    }
 
-            AZ::Render::MaterialAssignmentMap materialMap;
-            materialMap[AZ::Render::DefaultMaterialAssignmentId].m_materialAsset = materialAsset;
-            materialMap[AZ::Render::DefaultMaterialAssignmentId].m_materialInstance = materialOverrideInstance;
-        */
-
-        /*
-            changing material properties:
-
-            (todo)
-        */
+    void AtomRenderMesh::SetVisiblity(bool visibility)
+    {
+        m_visible = visibility;
+        m_meshFeatureProcessor->SetVisible(m_meshHandle, m_visible);
     }
 
     bool AtomRenderMesh::IsVisible() const
     {
-        return true;
-    }
-
-    void AtomRenderMesh::SetVisiblity([[maybe_unused]] bool visibility)
-    {
-        // hide: m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-        // show: m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_modelAsset);
+        return m_visible;
     }
 
     const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* AtomRenderMesh::GetMeshHandle() const

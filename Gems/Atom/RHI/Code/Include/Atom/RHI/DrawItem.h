@@ -151,7 +151,7 @@ namespace AZ
             const Viewport* m_viewports = nullptr;
         };
 
-        using DrawItemSortKey = int64_t;
+        using DrawItemSortKey = AZ::s64;
 
         // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
         using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;

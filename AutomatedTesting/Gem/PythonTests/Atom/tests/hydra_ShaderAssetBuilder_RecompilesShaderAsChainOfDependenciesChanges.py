@@ -95,7 +95,7 @@ def ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges():
     game_asset_path = os.path.join(game_root_path, "Assets")
 
     base_dir = os.path.dirname(__file__)
-    src_assets_subdir = os.path.join(base_dir, "TestAssets", "ShaderAssetBuilder") 
+    src_assets_subdir = os.path.join(base_dir, "TestAssets", "ShaderAssetBuilder")
 
     with Tracer() as error_tracer:
         # The script drives the execution of the test, to return the flow back to the editor,

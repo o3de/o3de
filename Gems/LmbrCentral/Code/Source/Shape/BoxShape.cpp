@@ -315,8 +315,11 @@ namespace LmbrCentral
 
         if (shapeDrawParams.m_filled)
         {
+            auto state = debugDisplay.GetState();
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
+            debugDisplay.DepthWriteOff();
             debugDisplay.DrawSolidBox(boxMin, boxMax);
+            debugDisplay.SetState(state);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
