@@ -39,10 +39,6 @@ namespace AzToolsFramework
         QSize sizeHint() const override;
         QSize minimumSize() const override;
         void setGeometry(const QRect& rect) override;
-        Qt::Orientations QLayoutItem::expandingDirections() const override
-        {
-            return Qt::Horizontal;
-        }
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
@@ -55,7 +51,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        DPERowWidget(int depth, QWidget* parentWidget = nullptr);
+        explicit DPERowWidget(int depth, QWidget* parentWidget = nullptr);
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
@@ -69,7 +65,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE();
-        DPERowWidget* GetLastDescendentInLayout();
+        DPERowWidget* GetLastDescendantInLayout();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         QBoxLayout* m_columnLayout = nullptr;
@@ -88,7 +84,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
 
-        DocumentPropertyEditor(QWidget* parentWidget = nullptr);
+        explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
 
         //! set the DOM adapter for this DPE to inspect
@@ -97,7 +93,7 @@ namespace AzToolsFramework
         {
             return m_adapter;
         }
-        void addAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
+        void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
