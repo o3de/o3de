@@ -1591,13 +1591,17 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
             builderRef.release();
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
 
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
-                            oldBuilderId.c_str(),
-                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                            retryCount+1,
-                            delay);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
+            
+            if (builderRef)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                oldBuilderId.c_str(),
+                                builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                retryCount+1,
+                                delay);
+            }
         }
         else
         {
@@ -1692,6 +1696,12 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
                 do
                 {
+                    if (jobCancelListener.IsCancelled())
+                    {
+                        // do not attempt to continue to retry or spawn
+                        // new builders during shut down.
+                        break;
+                    }
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
