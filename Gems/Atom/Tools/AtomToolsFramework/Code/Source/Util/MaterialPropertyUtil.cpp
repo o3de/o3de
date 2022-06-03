@@ -88,10 +88,11 @@ namespace AtomToolsFramework
 
         // Update the description for material properties to include script name assuming id is set beforehand
         propertyConfig.m_description = AZStd::string::format(
-            "%s%s(Script Name = '%s')",
+            "%s%s(Script Name = '%s')\n\n%s",
             propertyConfig.m_description.c_str(),
             propertyConfig.m_description.empty() ? "" : "\n",
-            propertyConfig.m_id.GetCStr());
+            propertyConfig.m_id.GetCStr(),
+            "Modified properties will have an indicator icon displayed on the left.");
     }
 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData)
