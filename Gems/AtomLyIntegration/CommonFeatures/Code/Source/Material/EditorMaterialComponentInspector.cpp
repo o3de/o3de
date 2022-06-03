@@ -212,14 +212,9 @@ namespace AZ
                     return;
                 }
 
-                QFileInfo materialFileInfo(AZ::RPI::AssetUtils::GetProductPathByAssetId(m_editData.m_materialAsset.GetId()).c_str());
-                QFileInfo materialSourceFileInfo(m_editData.m_materialSourcePath.c_str());
-                QFileInfo materialTypeSourceFileInfo(m_editData.m_materialTypeSourcePath.c_str());
-                QFileInfo materialParentSourceFileInfo(
-                    AZ::RPI::AssetUtils::GetSourcePathByAssetId(m_editData.m_materialParentAsset.GetId()).c_str());
-
                 AZStd::string entityName;
-                AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_primaryEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, m_primaryEntityId);
 
                 AZStd::string slotName;
                 MaterialComponentRequestBus::EventResult(
@@ -233,28 +228,57 @@ namespace AZ
                 materialInfo += m_materialAssignmentId.IsDefault() || m_materialAssignmentId.IsSlotIdOnly()
                     ? tr("<tr><td><b>Material Slot LOD&emsp;</b></td><td>%1</td></tr>").arg(-1)
                     : tr("<tr><td><b>Material Slot LOD&emsp;</b></td><td>%1</td></tr>").arg(m_materialAssignmentId.m_lodIndex);
-                if (!materialFileInfo.fileName().isEmpty())
+
+                if (m_editData.m_materialAsset.GetId().IsValid())
                 {
-                    materialInfo += tr("<tr><td><b>Material&emsp;</b></td><td>%1</td></tr>").arg(materialFileInfo.fileName());
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, m_editData.m_materialAsset.GetId());
+
+                    materialInfo += tr("<tr><td><b>Material Asset&emsp;</b></td><td>%1</td></tr>").arg(assetInfo.m_relativePath.c_str());
                 }
-                if (!materialTypeSourceFileInfo.fileName().isEmpty())
+                if (!m_editData.m_materialSourcePath.empty())
                 {
-                    materialInfo +=
-                        tr("<tr><td><b>Material Type&emsp;</b></td><td>%1</td></tr>").arg(materialTypeSourceFileInfo.fileName());
+                    // Inserting links that will be used to open the material/type in the material editor
+                    const auto& materialSourceRelativePath = GetRelativePath(m_editData.m_materialSourcePath);
+                    if (IsSourceMaterial(m_editData.m_materialSourcePath))
+                    {
+                        materialInfo += tr("<tr><td><b>Material Source&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
+                                            .arg(m_editData.m_materialSourcePath.c_str())
+                                            .arg(materialSourceRelativePath.c_str());
+                    }
+                    else
+                    {
+                        // Materials that come from other sources like FBX files will not have the link
+                        materialInfo += tr("<tr><td><b>Material Source&emsp;</b></td><td>%1</td></tr>")
+                                            .arg(materialSourceRelativePath.c_str());
+                    }
                 }
-                if (!materialSourceFileInfo.fileName().isEmpty())
+                if (IsSourceMaterial(m_editData.m_materialParentSourcePath))
                 {
-                    materialInfo += tr("<tr><td><b>Material Source&emsp;</b></td><td>%1</td></tr>").arg(materialSourceFileInfo.fileName());
+                    // Inserting links that will be used to open the material/type in the material editor
+                    const auto& materialParentSourceRelativePath = GetRelativePath(m_editData.m_materialParentSourcePath);
+                    materialInfo += tr("<tr><td><b>Material Parent&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
+                                        .arg(m_editData.m_materialParentSourcePath.c_str())
+                                        .arg(materialParentSourceRelativePath.c_str());
                 }
-                if (!materialParentSourceFileInfo.fileName().isEmpty())
+                if (!m_editData.m_materialTypeSourcePath.empty())
                 {
-                    materialInfo +=
-                        tr("<tr><td><b>Material Parent&emsp;</b></td><td>%1</td></tr>").arg(materialParentSourceFileInfo.fileName());
+                    // Inserting links that will be used to open the material/type in the material editor
+                    const auto& materialTypeSourceRelativePath = GetRelativePath(m_editData.m_materialTypeSourcePath);
+                    materialInfo += tr("<tr><td><b>Material Type&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
+                                        .arg(m_editData.m_materialTypeSourcePath.c_str())
+                                        .arg(materialTypeSourceRelativePath.c_str());
                 }
                 materialInfo += tr("</table>");
 
                 m_overviewText->setText(materialInfo);
                 m_overviewText->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignTop);
+                m_overviewText->setOpenExternalLinks(false);
+                connect(m_overviewText, &QLabel::linkActivated, this, [](const QString& link) {
+                    EditorMaterialSystemComponentRequestBus::Broadcast(
+                        &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, link.toUtf8().constData());
+                });
 
                 // Update the overview image with the last rendered preview of the primary entity's material.
                 QPixmap pixmap;
@@ -648,12 +672,25 @@ namespace AZ
                 return ":/Icons/blank.png";
             }
 
-            bool MaterialPropertyInspector::SaveMaterial() const
+            AZStd::string MaterialPropertyInspector::GetRelativePath(const AZStd::string& path) const
             {
-                const auto& defaultPath = AtomToolsFramework::GetUniqueFilePath(AZStd::string::format(
-                    "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), AZ::RPI::MaterialSourceData::Extension));
+                bool pathFound = false;
+                AZStd::string rootFolder;
+                AZStd::string relativePath;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath, path, relativePath,
+                    rootFolder);
+                return relativePath;
+            }
 
-                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(defaultPath);
+            inline bool MaterialPropertyInspector::IsSourceMaterial(const AZStd::string& path) const
+            {
+                return !path.empty() && AZ::StringFunc::Path::IsExtension(path.c_str(), AZ::RPI::MaterialSourceData::Extension);
+            }
+
+            bool MaterialPropertyInspector::SaveMaterial(const AZStd::string& path) const
+            {
+                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(path);
                 if (saveFilePath.empty())
                 {
                     return false;
@@ -666,65 +703,39 @@ namespace AZ
                 }
 
                 return true;
-            }
-
-            bool MaterialPropertyInspector::SaveMaterialToSource() const
-            {
-                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(m_editData.m_materialSourcePath);
-                if (saveFilePath.empty())
-                {
-                    return false;
-                }
-
-                if (!EditorMaterialComponentUtil::SaveSourceMaterialFromEditData(saveFilePath, m_editData))
-                {
-                    AZ_Warning("AZ::Render::EditorMaterialComponentInspector", false, "Failed to save material data.");
-                    return false;
-                }
-
-                return true;
-            }
-
-            bool MaterialPropertyInspector::HasMaterialSource() const
-            {
-                return IsLoaded() && !m_editData.m_materialSourcePath.empty() &&
-                    AZ::StringFunc::Path::IsExtension(m_editData.m_materialSourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
-            }
-
-            bool MaterialPropertyInspector::HasMaterialParentSource() const
-            {
-                return IsLoaded() && !m_editData.m_materialParentSourcePath.empty() &&
-                    AZ::StringFunc::Path::IsExtension(
-                        m_editData.m_materialParentSourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
-            }
-
-            void MaterialPropertyInspector::OpenMaterialSourceInEditor() const
-            {
-                if (HasMaterialSource())
-                {
-                    EditorMaterialSystemComponentRequestBus::Broadcast(
-                        &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, m_editData.m_materialSourcePath);
-                }
-            }
-
-            void MaterialPropertyInspector::OpenMaterialParentSourceInEditor() const
-            {
-                if (HasMaterialParentSource())
-                {
-                    EditorMaterialSystemComponentRequestBus::Broadcast(
-                        &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, m_editData.m_materialParentSourcePath);
-                }
             }
 
             void MaterialPropertyInspector::OpenMenu()
             {
+                if (!IsLoaded())
+                {
+                    return;
+                }
+
                 QAction* action = nullptr;
 
                 QMenu menu(this);
+
+                action = menu.addAction(tr("Save As..."), [this] {
+                    const auto& defaultPath = AtomToolsFramework::GetUniqueFilePath(AZStd::string::format(
+                        "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), AZ::RPI::MaterialSourceData::Extension));
+                    SaveMaterial(defaultPath);
+                });
+
+                if (IsSourceMaterial(m_editData.m_materialSourcePath))
+                {
+                    const auto& materialSourceRelativePath = GetRelativePath(m_editData.m_materialSourcePath);
+                    action = menu.addAction(tr("Save Over \"%1\"...").arg(materialSourceRelativePath.c_str()), [this] {
+                        SaveMaterial(m_editData.m_materialSourcePath);
+                    });
+                }
+
+                menu.addSeparator();
+
                 action = menu.addAction("Clear Overrides", [this] {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Clear material property overrides.");
-                        m_editData.m_materialPropertyOverrideMap.clear();
-                        for (const AZ::EntityId& entityId : m_entityIdsToEdit)
+                    m_editData.m_materialPropertyOverrideMap.clear();
+                    for (const AZ::EntityId& entityId : m_entityIdsToEdit)
                     {
                         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
@@ -736,23 +747,6 @@ namespace AZ
                     m_updateUI = true;
                     m_updatePreview = true;
                 });
-                action->setEnabled(IsLoaded());
-
-                menu.addSeparator();
-
-                action = menu.addAction("Save Material", [this] { SaveMaterial(); });
-                action->setEnabled(IsLoaded());
-
-                action = menu.addAction("Save Material To Source", [this] { SaveMaterialToSource(); });
-                action->setEnabled(HasMaterialSource());
-
-                menu.addSeparator();
-
-                action = menu.addAction("Open Source Material In Editor", [this] { OpenMaterialSourceInEditor(); });
-                action->setEnabled(HasMaterialSource());
-
-                action = menu.addAction("Open Parent Material In Editor", [this] { OpenMaterialParentSourceInEditor(); });
-                action->setEnabled(HasMaterialParentSource());
 
                 menu.exec(QCursor::pos());
             }
