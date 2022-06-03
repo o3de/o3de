@@ -1418,12 +1418,12 @@ namespace PhysX
                         const AZ::Vector3 v3(aznumeric_cast<float>(x + 1) * geometry.rowScale, aznumeric_cast<float>(y + 1) * geometry.columnScale, height);
 
                         vertices.push_back(v0);
-                        vertices.push_back(v2);
                         vertices.push_back(v1);
+                        vertices.push_back(v2);
 
                         vertices.push_back(v1);
-                        vertices.push_back(v2);
                         vertices.push_back(v3);
+                        vertices.push_back(v2);
                     }
                 }
             }
