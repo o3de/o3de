@@ -92,8 +92,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
 
     struct MacroMaterialRefs
     {
-        uint m_index12;
-        uint m_index34;
+        uint m_index01;
+        uint m_index23;
     };
 
     struct ClipmapData

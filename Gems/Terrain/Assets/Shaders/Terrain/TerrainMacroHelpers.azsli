@@ -27,16 +27,16 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
     TerrainSrg::MacroMaterialRefs refs = TerrainSrg::m_macroMaterialGridRefs[macroTileIndex];
     uint materialIndices[4] = 
     {
-        refs.m_index12 & 0x0000FFFF,
-        refs.m_index12 >> 16,
-        refs.m_index34 & 0x0000FFFF,
-        refs.m_index34 >> 16,
+        refs.m_index01 & 0x0000FFFF,
+        refs.m_index01 >> 16,
+        refs.m_index23 & 0x0000FFFF,
+        refs.m_index23 >> 16,
     };
     
     for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
     {
         uint ref = materialIndices[i];
-        if (ref == 0xFFFF)
+        if (ref == InvalidMacroMaterialRef)
         {
             break; // No more macro materials for this tile
         }
