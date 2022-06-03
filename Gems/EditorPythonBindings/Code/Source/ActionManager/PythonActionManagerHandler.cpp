@@ -37,13 +37,13 @@ namespace EditorPythonBindings
 
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterAction(
         const AZStd::string& contextIdentifier,
-        const AZStd::string& identifier,
+        const AZStd::string& actionIdentifier,
         const AzToolsFramework::ActionProperties& properties,
         PythonEditorAction handler)
     {
         auto outcome = m_actionManagerInterface->RegisterAction(
             contextIdentifier,
-            identifier,
+            actionIdentifier,
             properties,
             [h = AZStd::move(handler)]() mutable
             {
@@ -54,7 +54,38 @@ namespace EditorPythonBindings
         if (outcome.IsSuccess())
         {
             // Store the callable to handle reference counting correctly.
-            m_actionHandlerMap.insert({ identifier, PythonActionHandler(handler.GetHandler()) });
+            m_actionHandlerMap.insert({ actionIdentifier, PythonActionHandler(handler.GetHandler()) });
+        }
+
+        return outcome;
+    }
+
+    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::RegisterCheckableAction(
+        const AZStd::string& contextIdentifier,
+        const AZStd::string& actionIdentifier,
+        const AzToolsFramework::ActionProperties& properties,
+        PythonEditorAction handler,
+        PythonEditorAction updateCallback)
+    {
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction(
+            contextIdentifier,
+            actionIdentifier,
+            properties,
+            [h = AZStd::move(handler)]() mutable
+            {
+                PyObject_CallObject(h.GetHandler(), nullptr);
+            },
+            [u = AZStd::move(updateCallback)]() mutable -> bool
+            {
+                PyObject* result = PyObject_CallObject(u.GetHandler(), nullptr);
+                return PyObject_IsTrue(result);
+            }
+        );
+
+        if (outcome.IsSuccess())
+        {
+            // Store the callable to handle reference counting correctly.
+            m_actionHandlerMap.insert({ actionIdentifier, PythonActionHandler(handler.GetHandler()) });
         }
 
         return outcome;
@@ -63,6 +94,11 @@ namespace EditorPythonBindings
     AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::TriggerAction(const AZStd::string& actionIdentifier)
     {
         return m_actionManagerInterface->TriggerAction(actionIdentifier);
+    }
+
+    AzToolsFramework::ActionManagerOperationResult PythonEditorActionHandler::UpdateAction(const AZStd::string& actionIdentifier)
+    {
+        return m_actionManagerInterface->UpdateAction(actionIdentifier);
     }
 
     EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle PythonEditorActionHandler::AllocateDefault()

@@ -378,7 +378,9 @@ namespace EditorPythonBindings
                 ->Attribute(AZ::Script::Attributes::Category, "Action")
                 ->Attribute(AZ::Script::Attributes::Module, "action")
                 ->Event("RegisterAction", &ActionManagerRequestBus::Handler::RegisterAction)
+                ->Event("RegisterCheckableAction", &ActionManagerRequestBus::Handler::RegisterCheckableAction)
                 ->Event("TriggerAction", &ActionManagerRequestBus::Handler::TriggerAction)
+                ->Event("UpdateAction", &ActionManagerRequestBus::Handler::UpdateAction)
                 ;
         }
     }

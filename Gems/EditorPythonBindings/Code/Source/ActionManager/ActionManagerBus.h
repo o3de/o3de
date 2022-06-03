@@ -35,8 +35,20 @@ namespace EditorPythonBindings
             PythonEditorAction handler
         ) = 0;
 
+        //! Register a new Checkable Action to the Action Manager.
+        virtual ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const AzToolsFramework::ActionProperties& properties,
+            PythonEditorAction handler,
+            PythonEditorAction updateCallback
+        ) = 0;
+
         //! Trigger an Action via its identifier.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Update the state of a Checkable Action via its identifier.
+        virtual ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
     };
 
     using ActionManagerRequestBus = AZ::EBus<ActionManagerRequests>;

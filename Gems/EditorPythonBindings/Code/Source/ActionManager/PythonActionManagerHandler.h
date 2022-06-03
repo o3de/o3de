@@ -31,10 +31,17 @@ namespace EditorPythonBindings
         // ActionManagerPythonRequestBus overrides ...
         ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
-            const AZStd::string& identifier,
+            const AZStd::string& actionIdentifier,
             const AzToolsFramework::ActionProperties& properties,
             PythonEditorAction handler) override;
+        ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const AzToolsFramework::ActionProperties& properties,
+            PythonEditorAction handler,
+            PythonEditorAction updateCallback) override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
+        ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
 
     private:
         AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;
