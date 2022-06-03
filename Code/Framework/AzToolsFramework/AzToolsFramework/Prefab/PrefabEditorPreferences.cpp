@@ -15,7 +15,7 @@ namespace AzToolsFramework
 
     bool IsHotReloadEnabled()
     {
-        bool isHotReloadEnabled = true;
+        bool isHotReloadEnabled = false;
 
         // Retrieve new setting
         if (auto* registry = AZ::SettingsRegistry::Get())
