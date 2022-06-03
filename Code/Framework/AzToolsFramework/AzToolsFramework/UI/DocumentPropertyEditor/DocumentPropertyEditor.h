@@ -10,15 +10,14 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzCore/Interface/Interface.h>
 
-#include <QScrollArea>
 #include <QHBoxLayout>
-
-class QVBoxLayout;
+#include <QPointer>
+#include <QScrollArea>
 
 #endif // Q_MOC_RUN
 
@@ -26,25 +25,29 @@ namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
 
-    class DPELayout : public QLayout
+    class DPELayout : public QHBoxLayout
     {
-    public:
-        DPELayout(QWidget* parentWidget) : QLayout(parentWidget) {}
         // todo: look into caching and QLayoutItem::invalidate()
+    public:
+        DPELayout(int depth, QWidget* parentWidget = nullptr)
+            : QHBoxLayout(parentWidget)
+            , m_depth(depth)
+        {
+        }
 
         // QLayout overrides
-        void addItem(QLayoutItem* item) override;
         QSize sizeHint() const override;
         QSize minimumSize() const override;
-        int count() const override;
-        QLayoutItem* itemAt(int itemIndex) const override;
-        QLayoutItem* takeAt(int itemIndex) override;
         void setGeometry(const QRect& rect) override;
+        Qt::Orientations QLayoutItem::expandingDirections() const override
+        {
+            return Qt::Horizontal;
+        }
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
 
-        QVector<QLayoutItem*> m_layoutItems;
+        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
     };
 
     class DPERowWidget : public QWidget
@@ -52,7 +55,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        DPERowWidget(QWidget* parentWidget);
+        DPERowWidget(int depth, QWidget* parentWidget = nullptr);
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
@@ -66,27 +69,35 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE();
+        DPERowWidget* GetLastDescendentInLayout();
 
-        DPELayout* m_columnLayout = nullptr;
-        AZStd::deque<QWidget*> m_domOrderedChildren;
+        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        QBoxLayout* m_columnLayout = nullptr;
+
+        //! widget children in DOM specified order; mix of row and column widgets
+        AZStd::deque<QPointer<QWidget>> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
-    class DocumentPropertyEditor : public QScrollArea
+    class DocumentPropertyEditor : public QFrame
     {
         Q_OBJECT
 
     public:
         AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
 
-        DocumentPropertyEditor(QWidget* parentWidget);
+        DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
 
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
-        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter() { return m_adapter; }
+        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter()
+        {
+            return m_adapter;
+        }
+        void addAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
     protected:
         QVBoxLayout* GetVerticalLayout();

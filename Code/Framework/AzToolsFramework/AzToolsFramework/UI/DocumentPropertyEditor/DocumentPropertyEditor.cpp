@@ -31,58 +31,48 @@ namespace AzToolsFramework
         }
     }
 
-    void DPELayout::addItem(QLayoutItem* item)
-    {
-        m_layoutItems.append(item);
-    }
-
     QSize DPELayout::sizeHint() const
     {
-        return minimumSize();
+        int cumulativeWidth = 0;
+        int preferredHeight = 0;
+
+        // sizeHint for this horizontal layout is the sum of the preferred widths,
+        // and the maximum of the preferred heights
+        for (int layoutIndex = 0; layoutIndex < count(); ++layoutIndex)
+        {
+            QWidget* widgetChild = itemAt(layoutIndex)->widget();
+            if (widgetChild)
+            {
+                auto widgetSizeHint = widgetChild->sizeHint();
+                cumulativeWidth += widgetSizeHint.width();
+                preferredHeight = qMax(widgetSizeHint.height(), preferredHeight);
+            }
+        }
+        return { cumulativeWidth, preferredHeight };
     }
 
     QSize DPELayout::minimumSize() const
     {
-        int cumulativeHeight = 0;
+        int cumulativeWidth = 0;
+        int minimumHeight = 0;
 
-        // sum up all the desired heights from the sub-widgets and make that the row's minimum
-        for (const auto item : m_layoutItems)
+        // minimumSize for this horizontal layout is the sum of the min widths,
+        // and the maximum of the preferred heights
+        for (int layoutIndex = 0; layoutIndex < count(); ++layoutIndex)
         {
-            QWidget* widgetChild = item->widget();
+            QWidget* widgetChild = itemAt(layoutIndex)->widget();
             if (widgetChild)
             {
-                cumulativeHeight += widgetChild->sizeHint().height();
+                const auto minWidth = widgetChild->minimumSizeHint().width();
+                ;
+                if (minWidth > 0)
+                {
+                    cumulativeWidth += minWidth;
+                }
+                minimumHeight = qMax(widgetChild->sizeHint().height(), minimumHeight);
             }
         }
-        return { 0, cumulativeHeight };
-    }
-
-    int DPELayout::count() const
-    {
-        return m_layoutItems.size();
-    }
-
-    QLayoutItem* DPELayout::itemAt(int itemIndex) const
-    {
-        QLayoutItem* returnedItem = nullptr;
-
-        if (itemIndex < m_layoutItems.size())
-        {
-            returnedItem = m_layoutItems[itemIndex];
-        }
-        return returnedItem;
-    }
-
-    QLayoutItem* DPELayout::takeAt(int itemIndex)
-    {
-        QLayoutItem* currentItem = nullptr;
-        if (itemIndex < m_layoutItems.size())
-        {
-            auto itemLocation = m_layoutItems.begin() + itemIndex;
-            currentItem = *itemLocation;
-            m_layoutItems.erase(itemLocation);
-        }
-        return currentItem;
+        return { cumulativeWidth, minimumHeight };
     }
 
     void DPELayout::setGeometry(const QRect& rect)
@@ -91,14 +81,23 @@ namespace AzToolsFramework
 
         // for now, just divide evenly horizontally. Later, we'll implement QSplitter-like
         // functionality to allow the user to resize columns within a DPE
-        int perItemWidth = rect.width() / m_layoutItems.size();
+        int perItemWidth = rect.width() / count();
 
         // iterate over the items, laying them left to right
         QRect itemGeometry(rect);
-        for (const auto item : m_layoutItems)
+
+        constexpr int indentSize = 15; // child indent of first item, in pixels
+        for (int layoutIndex = 0; layoutIndex < count(); ++layoutIndex)
         {
             itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-            item->setGeometry(itemGeometry);
+
+            // add indent for the first entry
+            if (m_depth && layoutIndex == 0)
+            {
+                itemGeometry.setLeft(m_depth * indentSize);
+            }
+
+            itemAt(layoutIndex)->setGeometry(itemGeometry);
             itemGeometry.setLeft(itemGeometry.right() + 1);
         }
     }
@@ -110,13 +109,13 @@ namespace AzToolsFramework
         return myDPE;
     }
 
-    DPERowWidget::DPERowWidget(QWidget* parentWidget)
+    DPERowWidget::DPERowWidget(int depth, QWidget* parentWidget)
         : QWidget(parentWidget)
+        , m_depth(depth)
+        , m_columnLayout(new DPELayout(depth, this))
     {
-        // allow horizontal stretching, but use the vertical sizehint exactly
+        // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-        m_columnLayout = new DPELayout(this);
     }
 
     DPERowWidget::~DPERowWidget()
@@ -135,78 +134,97 @@ namespace AzToolsFramework
         m_widgetToPropertyHandler.clear();
 
         DestroyLayoutContents(m_columnLayout);
-        m_domOrderedChildren.clear();
+
+        // delete all child rows, this will also remove them from the layout
+        for (auto entry : m_domOrderedChildren)
+        {
+            DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(entry.data());
+            if (rowChild)
+            {
+                rowChild->deleteLater();
+            }
+        }
     }
 
     void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex)
     {
+        // create a child widget from the given DOM value and add it to the correct layout
         auto childType = childValue.GetNodeName();
 
-        // create a child widget from the given DOM value and add it to the correct layout
-        QLayout* layoutForWidget = nullptr;
-        QWidget* addedWidget = nullptr;
         if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
-            // if it's a row, recursively populate the children from the DOM array in the passed value
-            auto newRow = new DPERowWidget(this);
-            newRow->SetValueFromDom(childValue);
-            addedWidget = newRow;
-            layoutForWidget = m_childRowLayout;
-        }
-        else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
-        {
-            auto labelString = childValue[AZ::DocumentPropertyEditor::Nodes::Label::Value.GetName()].GetString();
-            addedWidget =
-                new AzQtComponents::ElidingLabel(QString::fromUtf8(labelString.data(), static_cast<int>(labelString.size())), this);
-            layoutForWidget = m_columnLayout;
-            addedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        }
-        else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
-        {
-            auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
-            auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
+            // determine where to put this new row in the main DPE layout
+            auto newRow = new DPERowWidget(m_depth + 1);
+            DPERowWidget* priorWidgetInLayout = nullptr;
 
-            // if we found a valid handler, grab its widget and add it to our column layout
-            if (handlerId)
+            // search for an existing row sibling with a lower dom index
+            for (int priorWidgetIndex = domIndex - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
             {
-                // store, then reference the unique_ptr that will manage the handler's lifetime
-                auto handler = dpeSystem->CreateHandlerInstance(handlerId);
-                handler->SetValueFromDom(childValue);
-                addedWidget = handler->GetWidget();
-                addedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-                m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
-                layoutForWidget = m_columnLayout;
+                priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
             }
+
+            // if we found a prior DPERowWidget, put this one after the last of its children,
+            // if not, put this new row immediately after its parent -- this
+            if (priorWidgetInLayout)
+            {
+                priorWidgetInLayout = priorWidgetInLayout->GetLastDescendentInLayout();
+            }
+            else
+            {
+                priorWidgetInLayout = this;
+            }
+            m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, newRow);
+            GetDPE()->addAfterWidget(priorWidgetInLayout, newRow);
+
+            // if it's a row, recursively populate the children from the DOM array in the passed value
+            newRow->SetValueFromDom(childValue);
         }
         else
         {
-            AZ_Assert(0, "unknown node type for DPE");
-        }
-
-        // insert this new widget into the dom order, even if it's an empty widget to ensure the order is correct
-        auto insertIterator = m_domOrderedChildren.begin() + domIndex;
-        insertIterator = m_domOrderedChildren.insert(insertIterator, addedWidget);
-
-        // properly place the new widget in its given layout, correctly ordered by DOM index
-        if (addedWidget && layoutForWidget)
-        {
-            // search subsequent dom entries for the first occurrence of a widget in the same layout,
-            // then insert this new widget right before it. If there aren't any, then append this to the layout
-            ++insertIterator;
-            bool inserted = false;
-            while (!inserted && insertIterator != m_domOrderedChildren.end())
+            QWidget* addedWidget = nullptr;
+            if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
             {
-                const int insertIndex = layoutForWidget->indexOf(*insertIterator);
-                if (insertIndex != -1)
+                auto labelString = childValue[AZ::DocumentPropertyEditor::Nodes::Label::Value.GetName()].GetString();
+                addedWidget =
+                    new AzQtComponents::ElidingLabel(QString::fromUtf8(labelString.data(), static_cast<int>(labelString.size())), this);
+            }
+            else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
+            {
+                auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
+                auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
+
+                // if we found a valid handler, grab its widget to add to the column layout
+                if (handlerId)
                 {
-                    layoutForWidget->insertWidget(insertIndex, addedWidget);
-                    inserted = true;
+                    // store, then reference the unique_ptr that will manage the handler's lifetime
+                    auto handler = dpeSystem->CreateHandlerInstance(handlerId);
+                    handler->SetValueFromDom(childValue);
+                    addedWidget = handler->GetWidget();
+                    m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
+                }
+                else
+                {
+                    addedWidget = new QLabel("Missing handler for dom node!");
                 }
             }
-            if (!inserted)
+            else
             {
-                layoutForWidget->insertWidget(static_cast<int>(childCount), addedWidget);
+                AZ_Assert(0, "unknown node type for DPE");
+                return;
             }
+
+            addedWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+            // search for an existing column sibling with a lower dom index
+            int priorColumnIndex = -1;
+            for (int searchIndex = domIndex - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+            {
+                priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
+            }
+            // insert after the found index; even if nothing were found and priorIndex is still -1,
+            // still insert one after it, at position 0
+            m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
+            m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, addedWidget);
         }
     }
 
@@ -276,11 +294,13 @@ namespace AzToolsFramework
             {
                 return;
             }
+
             QWidget* childWidget = m_domOrderedChildren[childIndex];
-            if (m_childRowLayout->indexOf(childWidget) != -1)
+            DPERowWidget* widgetAsDPERow = qobject_cast<DPERowWidget*>(childWidget);
+            if (widgetAsDPERow)
             {
-                // child is a DPERowWidget if it's in this layout, pass patch processing to it
-                static_cast<DPERowWidget*>(childWidget)->HandleOperationAtPath(domOperation, pathIndex + 1);
+                // child is a DPERowWidget, pass patch processing to it
+                widgetAsDPERow->HandleOperationAtPath(domOperation, pathIndex + 1);
             }
             else // child must be a label or a PropertyEditor
             {
@@ -291,7 +311,23 @@ namespace AzToolsFramework
                     subPath.Pop();
                 }
                 const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-                m_widgetToPropertyHandler[childWidget]->SetValueFromDom(valueAtSubPath);
+
+                // check if it's a PropertyHandler; if it is, just set it from the DOM directly
+                auto foundEntry = m_widgetToPropertyHandler.find(childWidget);
+                if (foundEntry != m_widgetToPropertyHandler.end())
+                {
+                    foundEntry->second->SetValueFromDom(valueAtSubPath);
+                }
+                else
+                {
+                    QLabel* changedLabel = qobject_cast<QLabel*>(childWidget);
+                    AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
+                    if (changedLabel)
+                    {
+                        auto labelString = valueAtSubPath[AZ::DocumentPropertyEditor::Nodes::Label::Value.GetName()].GetString();
+                        changedLabel->setText(QString::fromUtf8(labelString.data()));
+                    }
+                }
             }
         }
     }
@@ -309,13 +345,30 @@ namespace AzToolsFramework
         return theDPE;
     }
 
-    DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
-        : QScrollArea(parentWidget)
+    DPERowWidget* DPERowWidget::GetLastDescendentInLayout()
     {
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        QWidget* centralWidget = new QFrame(this);
-        setWidget(centralWidget);
-        m_layout = new QVBoxLayout(centralWidget);
+        DPERowWidget* lastDescendent = nullptr;
+        for (auto childIter = m_domOrderedChildren.rbegin(); (lastDescendent == nullptr && childIter != m_domOrderedChildren.rend());
+             ++childIter)
+        {
+            lastDescendent = qobject_cast<DPERowWidget*>(childIter->data());
+        }
+        if (lastDescendent)
+        {
+            lastDescendent = lastDescendent->GetLastDescendentInLayout();
+        }
+        else
+        {
+            // didn't find any relevant children, this row widget is the last descendent
+            lastDescendent = this;
+        }
+        return lastDescendent;
+    }
+
+    DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
+        : QFrame(parentWidget)
+    {
+        m_layout = new QVBoxLayout(this);
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
@@ -344,6 +397,15 @@ namespace AzToolsFramework
         HandleReset();
     }
 
+    void DocumentPropertyEditor::addAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
+    {
+        int foundIndex = m_layout->indexOf(precursor);
+        if (foundIndex >= 0)
+        {
+            m_layout->insertWidget(foundIndex + 1, widgetToAdd);
+        }
+    }
+
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
     {
         return m_layout;
@@ -351,9 +413,9 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex)
     {
-        auto newRow = new DPERowWidget(this);
-        newRow->SetValueFromDom(domValue);
+        auto newRow = new DPERowWidget(0, this);
         m_layout->insertWidget(rowIndex, newRow);
+        newRow->SetValueFromDom(domValue);
     }
 
     void DocumentPropertyEditor::HandleReset()
