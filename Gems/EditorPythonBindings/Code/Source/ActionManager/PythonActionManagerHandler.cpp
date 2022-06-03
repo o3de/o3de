@@ -47,14 +47,14 @@ namespace EditorPythonBindings
             properties,
             [h = AZStd::move(handler)]() mutable
             {
-                PyObject_CallObject(h.GetHandler(), nullptr);
+                PyObject_CallObject(h.GetPyObject(), nullptr);
             }
         );
 
         if (outcome.IsSuccess())
         {
             // Store the callable to handle reference counting correctly.
-            m_actionHandlerMap.insert({ actionIdentifier, PythonActionHandler(handler.GetHandler()) });
+            m_actionHandlerMap.insert({ actionIdentifier, PythonFunctionObject(handler.GetPyObject()) });
         }
 
         return outcome;
