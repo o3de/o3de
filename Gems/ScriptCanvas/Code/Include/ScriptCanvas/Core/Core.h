@@ -317,10 +317,13 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     class EditorGraph;
-    
+
     using GraphPtr = EditorGraph*;
     using GraphPtrConst = const EditorGraph*;
+}
 
+namespace ScriptCanvas
+{
     class SourceDescription
     {
     public:
@@ -366,10 +369,12 @@ namespace ScriptCanvasEditor
 
         void Clear();
 
+        DataPtr Data() const;
+
         // return a SourceHandle with only the Id and Path, but without a pointer to the data
         SourceHandle Describe() const;
 
-        GraphPtrConst Get() const;
+        ScriptCanvasEditor::GraphPtrConst Get() const;
 
         const AZ::Uuid& Id() const;
 
@@ -377,7 +382,7 @@ namespace ScriptCanvasEditor
 
         bool IsGraphValid() const;
 
-        GraphPtr Mod() const;
+        ScriptCanvasEditor::GraphPtr Mod() const;
 
         AZStd::string Name() const;
 
@@ -394,17 +399,14 @@ namespace ScriptCanvasEditor
         AZStd::string ToString() const;
 
     private:
-        ScriptCanvas::DataPtr m_data;
+        DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_absolutePath;
         AZ::IO::Path m_relativePath;
 
         void SanitizePaths();
     };
-}
 
-namespace ScriptCanvas
-{
     class ScriptCanvasData
         : public AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
     {
@@ -436,6 +438,12 @@ namespace ScriptCanvas
     };
 }
 
+namespace ScriptCanvasEditor
+{
+    using SourceHandle = ScriptCanvas::SourceHandle;
+    using SourceDescription = ScriptCanvas::SourceDescription;
+}
+
 namespace AZStd
 {
     template<>
@@ -451,9 +459,9 @@ namespace AZStd
     };
 
     template<>
-    struct hash<ScriptCanvasEditor::SourceHandle>
+    struct hash<ScriptCanvas::SourceHandle>
     {
-        using argument_type = ScriptCanvasEditor::SourceHandle;
+        using argument_type = ScriptCanvas::SourceHandle;
         using result_type = AZStd::size_t;
 
         inline size_t operator()(const argument_type& handle) const
@@ -466,5 +474,6 @@ namespace AZStd
         }
     };
 }
+
 
 #define SCRIPT_CANVAS_INFINITE_LOOP_DETECTION_COUNT (2000000)

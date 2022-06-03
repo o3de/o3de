@@ -9,6 +9,7 @@
 #include <AzCore/DOM/DomUtils.h>
 
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 
 namespace AZ::Dom::Utils
 {
@@ -57,6 +58,64 @@ namespace AZ::Dom::Utils
             return AZ::Failure(result.GetError().FormatVisitorErrorMessage());
         }
         return AZ::Success(AZStd::move(value));
+    }
+
+    Value TypeIdToDomValue(const AZ::TypeId& typeId)
+    {
+        rapidjson::Document buffer;
+        JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId);
+        if (!buffer.IsString())
+        {
+            return ValueFromType(typeId);
+        }
+        AZ_Assert(buffer.IsString(), "TypeId should be stored as a string");
+        return Value(AZStd::string_view(buffer.GetString(), buffer.GetStringLength()), true);
+    }
+
+    AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId)
+    {
+        if (value.IsString())
+        {
+            AZ::TypeId result = AZ::TypeId::CreateNull();
+            rapidjson::Value buffer;
+            buffer.SetString(value.GetString().data(), aznumeric_caster(value.GetStringLength()));
+            JsonSerialization::LoadTypeId(result, buffer, baseClassId);
+            return result;
+        }
+        else
+        {
+            return ValueToType<AZ::TypeId>(value).value_or(AZ::TypeId::CreateNull());
+        }
+    }
+
+    JsonSerializationResult::ResultCode LoadViaJsonSerialization(
+        void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings)
+    {
+        rapidjson::Document buffer;
+        auto convertToRapidjsonResult = Json::WriteToRapidJsonValue(buffer, buffer.GetAllocator(), [&root](Visitor& visitor)
+            {
+                const bool copyStrings = false;
+                return root.Accept(visitor, copyStrings);
+            });
+        if (!convertToRapidjsonResult.IsSuccess())
+        {
+            return JsonSerializationResult::ResultCode(JsonSerializationResult::Tasks::Convert, JsonSerializationResult::Outcomes::Catastrophic);
+        }
+        return JsonSerialization::Load(object, typeId, buffer, settings);
+    }
+
+    JsonSerializationResult::ResultCode StoreViaJsonSerialization(
+        const void* object, const void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings)
+    {
+        rapidjson::Document buffer;
+        auto result = JsonSerialization::Store(buffer, buffer.GetAllocator(), object, defaultObject, typeId, settings);
+        auto outputWriter = output.GetWriteHandler();
+        auto convertToAzDomResult = Json::VisitRapidJsonValue(buffer, *outputWriter, Lifetime::Temporary);
+        if (!convertToAzDomResult.IsSuccess())
+        {
+            result.Combine(JsonSerializationResult::ResultCode(JsonSerializationResult::Tasks::Convert, JsonSerializationResult::Outcomes::Catastrophic));
+        }
+        return result;
     }
 
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters)
@@ -243,6 +302,8 @@ namespace AZ::Dom::Utils
         case Type::Object:
         case Type::Node:
             return azrtti_typeid<Value>();
+        case Type::Opaque:
+            return value.GetOpaqueValue().get_type_info().m_id;
         default:
             return azrtti_typeid<void>();
         }

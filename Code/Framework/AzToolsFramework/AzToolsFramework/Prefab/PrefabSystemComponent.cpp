@@ -320,10 +320,12 @@ namespace AzToolsFramework
 
             auto newInstance = AZStd::make_unique<Instance>(parent);
             EntityList newEntities;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
+                    *newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom(),
+                    PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
             {
-                AZ_Error("Prefab", false,
-                    "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
+                AZ_Error(
+                    "Prefab", false, "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
                     instantiatingTemplate->get().GetFilePath().c_str());
                 return nullptr;
             }
@@ -732,6 +734,7 @@ namespace AzToolsFramework
                 instancesValue->get().AddMember(
                     rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
                     targetTemplateDom.GetAllocator());
+                SetTemplateDirtyFlag(linkTargetId, true);
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();

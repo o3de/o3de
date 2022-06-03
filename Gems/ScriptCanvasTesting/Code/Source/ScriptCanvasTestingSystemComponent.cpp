@@ -15,6 +15,9 @@
 #include "Nodes/BehaviorContextObjectTestNode.h"
 
 #include <Source/Nodes/Nodeables/NodeableTestingLibrary.h>
+#include <TestAutoGenFunctionRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTesting
 {
@@ -40,6 +43,7 @@ namespace ScriptCanvasTesting
 
         ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
         ScriptCanvasTesting::Reflect(context);
+        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, context);
     }
 
     void ScriptCanvasTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

@@ -270,11 +270,10 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
-        var_types = ["Boolean", "Color", "EntityID", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
-        expected_lines = [f"Success: {var_type} variable is created" for var_type in var_types]
-        expected_lines.extend([f"Success: {var_type} variable is deleted" for var_type in var_types])
+        var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+        expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
+        expected_lines.extend([f"{var_type} variable is deleted: True" for var_type in var_types])
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
@@ -320,7 +319,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
@@ -348,7 +346,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
