@@ -277,11 +277,8 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     @pytest.mark.test_case_id("C4874114")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
     def test_AllSupportedPlatforms_InvalidAddress_AssetsProcessed(self, workspace, request, asset_processor):
         """
-        Sandboxed: Flaky Test
-
         Launch AP with invalid address in bootstrap.cfg
         Assets should process regardless of the new address
 
@@ -303,7 +300,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         assert result, "AP GUI failed"
 
     @pytest.mark.test_case_id("C24168802")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_ModifyAssetInfo_AssetsReprocessed(self, ap_setup_fixture, asset_processor):
