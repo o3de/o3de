@@ -294,7 +294,7 @@ namespace AzToolsFramework
                                 );
                             }
                         }
-                        else
+                        else if (selectedEntity != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
                         {
                             // Close Prefab
                             QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));

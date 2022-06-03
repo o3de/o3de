@@ -7,5 +7,7 @@
 #
 
 set(FILES
+    Tests/MockInterfaces.h
+    Tests/NavigationMeshTest.cpp
     Tests/RecastNavigationTest.cpp
 )
