@@ -252,7 +252,7 @@ namespace AzToolsFramework
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
             if (value.has_value())
             {
-                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value();
+                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
             }
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
