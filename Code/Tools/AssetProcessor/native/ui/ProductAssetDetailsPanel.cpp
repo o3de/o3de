@@ -39,6 +39,12 @@ namespace AssetProcessor
 
         connect(m_ui->ClearMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFileClicked);
         connect(m_ui->ClearScanFolderButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFolderClicked);
+        connect(
+            m_ui->OutgoingProductDependenciesTreeView, &QAbstractItemView::clicked, this,
+            &ProductAssetDetailsPanel::OnDependentProductClicked);
+        connect(
+            m_ui->IncomingProductDependenciesTreeView, &QAbstractItemView::clicked, this,
+            &ProductAssetDetailsPanel::OnDependentProductClicked);
     }
 
     ProductAssetDetailsPanel::~ProductAssetDetailsPanel()
@@ -608,6 +614,11 @@ namespace AssetProcessor
             return;
         }
         ClearMissingDependenciesForFolder(*m_currentItem);
+    }
+
+    void ProductAssetDetailsPanel::OnDependentProductClicked(const QModelIndex& index)
+    {
+        GoToProduct((static_cast<ProductDependencyTreeItem*>(index.internalPointer()))->GetData()->m_productName);
     }
 
     void ProductAssetDetailsPanel::ClearMissingDependenciesForFile(const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData)

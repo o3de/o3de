@@ -93,6 +93,7 @@ namespace AssetProcessor
         void OnScanFolderClicked(bool checked);
         void OnClearScanFileClicked(bool checked);
         void OnClearScanFolderClicked(bool checked);
+        void OnDependentProductClicked(const QModelIndex &index);
 
         void ScanFolderForMissingDependencies(QString scanName, AssetTreeItem& folder);
         void ScanFileForMissingDependencies(QString scanName, const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData);
