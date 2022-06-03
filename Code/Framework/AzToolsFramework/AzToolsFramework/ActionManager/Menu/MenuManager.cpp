@@ -19,6 +19,8 @@ namespace AzToolsFramework
         AZ_Assert(m_actionManagerInterface, "MenuManager - Could not retrieve instance of ActionManagerInterface");
 
         AZ::Interface<MenuManagerInterface>::Register(this);
+
+        EditorMenu::Initialize();
     }
 
     MenuManager::~MenuManager()
@@ -62,7 +64,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        m_menus[menuIdentifier].AddAction(sortIndex, action);
+        m_menus[menuIdentifier].AddAction(sortIndex, actionIdentifier);
         return AZ::Success();
     }
 
@@ -85,18 +87,18 @@ namespace AzToolsFramework
         if (!m_menus.contains(menuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add submenu \"%s\" to menu \"%s\" - menu has not been registered.", subMenuIdentifier.c_str(),
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - menu has not been registered.", subMenuIdentifier.c_str(),
                 menuIdentifier.c_str()));
         }
 
         if (!m_menus.contains(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add submenu \"%s\" to menu \"%s\" - submenu has not been registered.", subMenuIdentifier.c_str(),
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - sub-menu has not been registered.", subMenuIdentifier.c_str(),
                 menuIdentifier.c_str()));
         }
 
-        m_menus[menuIdentifier].AddSubMenu(sortIndex, m_menus[subMenuIdentifier].GetMenu());
+        m_menus[menuIdentifier].AddSubMenu(sortIndex, subMenuIdentifier);
 
         return AZ::Success();
     }

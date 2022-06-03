@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_Substring",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Substring",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_Substring",
+                    "details": {
+                        "name": "Substring",
+                        "tooltip": "The substring is the portion of source string that starts at character position pos and spans len characters."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "Source string to construct substring."
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "From",
+                                "tooltip": "Position of the first character to be copied as a substring."
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Length",
+                                "tooltip": "Number of characters to include in the substring."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The substring of the source string."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

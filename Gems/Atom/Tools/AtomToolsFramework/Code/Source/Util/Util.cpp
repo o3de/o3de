@@ -321,4 +321,16 @@ namespace AtomToolsFramework
         AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
         return saved;
     }
+
+    AZStd::string ConvertAliasToPath(const AZStd::string& path)
+    {
+        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ path });
+        return convertedPath ? convertedPath->StringAsPosix() : path;
+    }
+
+    AZStd::string ConvertPathToAlias(const AZStd::string& path)
+    {
+        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(AZ::IO::PathView{ path });
+        return convertedPath ? convertedPath->StringAsPosix() : path;
+    }
 } // namespace AtomToolsFramework
