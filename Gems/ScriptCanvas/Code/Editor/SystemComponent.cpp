@@ -26,6 +26,8 @@
 #include <Editor/View/Windows/MainWindow.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <LyViewPaneNames.h>
+#include <QFileInfo>
+#include <QDir>
 #include <QMenu>
 #include <QMessageBox>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
@@ -307,6 +309,55 @@ namespace ScriptCanvasEditor
 
         // not one of our types.
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
+    }
+
+    void SystemComponent::AddSourceFileCreators
+        ( [[maybe_unused]] const char* fullSourceFolderName
+        , [[maybe_unused]] const AZ::Uuid& sourceUUID
+        , AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+    {
+        auto scriptCavnasAssetCreator = [](const char* fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+        {
+            QString defaultFilename = "NewScript";
+            QString scriptCanvasExtension = ScriptCanvasEditor::SourceDescription::GetFileExtension();
+
+            // Passing the path through QFileInfo to fix the separators because AZ::IO::Path
+            // will remove the last directory in the path otherwise
+            QFileInfo fileInfo;
+            fileInfo.setFile(QDir(fullSourceFolderNameInCallback), defaultFilename + scriptCanvasExtension);
+
+            AZ::IO::Path fullAzFilePath = fileInfo.absoluteFilePath().toStdString().c_str();
+            ScriptCanvas::DataPtr graph = EditorGraph::Create();
+            const AZ::Uuid assetId = AZ::Uuid::CreateRandom();
+            SourceHandle source = SourceHandle(graph, assetId, fullAzFilePath);
+
+            AZ::IO::FileIOStream fileStream(fullAzFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            if (fileStream.IsOpen())
+            {
+                auto serializeResult = Serialize(*source.Data(), fileStream);
+                if (!serializeResult)
+                {
+                    AZ_Error("ScriptCanvasCreator", false, "Failed to save new ScriptCanvas file: %s", serializeResult.m_errors.c_str());
+                }
+                else
+                {
+                    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::NotifyAssetWasCreatedInEditor,
+                        source.Path().Native());
+                }
+
+                fileStream.Close();
+            }
+            else
+            {
+                AZ_Error("ScriptCanvasCreator", false, "Asset creation failed because file failed to open: %s", fullAzFilePath.c_str());
+            }
+        };
+
+        creators.push_back({ "ScriptCanvas_creator"
+            , "ScriptCanvas"
+            , QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath())
+            , scriptCavnasAssetCreator });
     }
 
     void SystemComponent::AddSourceFileOpeners
