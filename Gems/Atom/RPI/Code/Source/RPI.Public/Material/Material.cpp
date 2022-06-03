@@ -617,25 +617,29 @@ namespace AZ
             }
             else
             {
-                AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                AZ::Data::AssetType assetType = imageAsset.GetType();
+                if (assetType != azrtti_typeid<StreamingImageAsset>() && assetType != azrtti_typeid<AttachmentImageAsset>())
+                {
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                    assetType = assetInfo.m_assetType;
+                }
 
                 Data::Instance<Image> image = nullptr;
-                if (assetInfo.m_assetType == azrtti_typeid<StreamingImageAsset>())
+                if (assetType == azrtti_typeid<StreamingImageAsset>())
                 {
                     Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
                     image = StreamingImage::FindOrCreate(streamingImageAsset);
                 }
-                else if (assetInfo.m_assetType == azrtti_typeid<AttachmentImageAsset>())
+                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
                 {
                     Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
                     image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(
-                        s_debugTraceName, false, "Unsupported image asset type: %s",
-                        assetInfo.m_assetType.ToString<AZStd::string>().c_str());
+                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type: %s", assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
 
