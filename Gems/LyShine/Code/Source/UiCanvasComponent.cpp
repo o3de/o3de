@@ -1906,8 +1906,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTargetAsset(const AZ::Data::As
     AZ::RHI::AttachmentId attachmentId = AZ::RHI::AttachmentId{};
 
     // Check that the attachment image asset's properties are compatible for rendering a UI canvas
-    bool isCompatible = IsAttachmentImageAssetCompatible(attachmentImageAsset);
-    if (isCompatible)
+    if (IsAttachmentImageAssetCompatible(attachmentImageAsset))
     {
         // Instantiate or get an existing image instance for the specified asset
         auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
