@@ -68,7 +68,12 @@ namespace AZ::DocumentPropertyEditor
         {
             // Otherwise, compare the new contents to the old contents and send the difference as patches.
             Dom::Value newContents = GenerateContents();
-            Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents);
+
+            Dom::DeltaPatchGenerationParameters patchGenerationParams;
+            // Prefer more expensive patch generation that produces fewer replace patches, we want as minimal a GUI
+            // update as possible, as that's the really expensive side of this
+            patchGenerationParams.m_replaceThreshold = Dom::DeltaPatchGenerationParameters::NoReplace;
+            Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);
             m_cachedContents = newContents;
             m_changedEvent.Signal(patches.m_forwardPatches);
         }
