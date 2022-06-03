@@ -175,11 +175,13 @@ namespace RecastNavigation
     {
         if (tile)
         {
+            // Store tile data until we received all of them.
             AZStd::lock_guard lock(m_tileProcessingMutex);
             m_tilesToBeProcessed.push_back(tile);
         }
         else
         {
+            // The async operation to receive all tiled has finished. Kick off processing of received tiles on the main thread.
             m_receivedAllNewTilesEvent.Enqueue(AZ::TimeMs{ 0 });
         }
     }

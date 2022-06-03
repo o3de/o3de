@@ -34,14 +34,11 @@ namespace RecastNavigation
     {
     }
 
-    RecastNavigationPhysXProviderCommon::~RecastNavigationPhysXProviderCommon()
-    {
-    }
-
     void RecastNavigationPhysXProviderCommon::OnDeactivate()
     {
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
+            // If the tasks are still in progress, wait until the task graph is finished.
             m_taskGraphEvent->Wait();
         }
     }
@@ -98,12 +95,9 @@ namespace RecastNavigation
         }
     }
 
-    static void AddDebugDrawIfEnabled(
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& transformed,
-        [[maybe_unused]] const AZStd::vector<AZ::u32>& indices,
-        [[maybe_unused]] bool debugDrawInputData)
+    static void AddDebugDrawIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZStd::vector<AZ::u32>& indices, bool debugDrawInputData)
     {
-        /*if (cl_navmesh_showInputData || debugDrawInputData)
+        if (cl_navmesh_showInputData || debugDrawInputData)
         {
             for (size_t i = 2; i < indices.size(); i += 3)
             {
@@ -114,7 +108,7 @@ namespace RecastNavigation
                 DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
                     transformed[indices[i - 0]], transformed[indices[i - 2]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
             }
-        }*/
+        }
     }
 
     void RecastNavigationPhysXProviderCommon::AppendColliderGeometry(

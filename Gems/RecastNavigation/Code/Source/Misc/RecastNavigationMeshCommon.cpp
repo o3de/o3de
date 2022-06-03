@@ -327,6 +327,7 @@ namespace RecastNavigation
     {
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
+            // If the tasks are still in progress, wait until the task graph is finished.
             m_taskGraphEvent->Wait();
         }
     }

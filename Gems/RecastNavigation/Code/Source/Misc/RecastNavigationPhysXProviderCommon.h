@@ -24,7 +24,6 @@ namespace RecastNavigation
         //! Use it to configure geometry collection in either Editor PhysX scene or game scene.
         //! @param useEditorScene if true, collect geometry from Editor PhysX scene, otherwise game scene.
         explicit RecastNavigationPhysXProviderCommon(bool useEditorScene);
-        virtual ~RecastNavigationPhysXProviderCommon();
 
         void OnDeactivate();
 
@@ -83,8 +82,9 @@ namespace RecastNavigation
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene;
 
-        AZ::TaskExecutor m_taskExecutor;
+        //! Task graph objects to collect geometry data in tiles over a grid.
         AZ::TaskGraph m_taskGraph;
+        AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Collect Geometry", "Recast Navigation" };
     };

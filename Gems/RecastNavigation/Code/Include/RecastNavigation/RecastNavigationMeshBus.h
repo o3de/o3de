@@ -29,13 +29,13 @@ namespace RecastNavigation
             m_query.reset(navQuery);
         }
 
-        //! In order to access underlying objects, acquire a lock object.
+        //! In order to access the underlying navigation objects, acquire a lock.
         LockGuard AcquireLock()
         {
             return LockGuard(*this);
         }
 
-        //! An lock guard object with accessors for navigation mesh and query objects.
+        //! A lock guard class with accessors for navigation mesh and query objects.
         //! A lock is held in place until this object goes out of scope.
         //! Release this object as soon as you are done working with the navigation mesh.
         class LockGuard
@@ -87,6 +87,7 @@ namespace RecastNavigation
         //! Re-calculates the navigation mesh within the defined world area. Blocking call.
         virtual void UpdateNavigationMeshBlockUntilCompleted() = 0;
 
+        //! Re-calculates the navigation mesh within the defined world area. Notifies when completed using @RecastNavigationMeshNotificationBus.
         virtual void UpdateNavigationMeshAsync() = 0;
 
         //! @returns the underlying navigation objects with the associated synchronization object.

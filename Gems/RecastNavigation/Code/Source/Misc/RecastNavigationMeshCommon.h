@@ -48,6 +48,11 @@ namespace RecastNavigation
         //! @returns the tile data that can be attached to the navigation mesh using @AttachNavigationTileToMesh
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
 
+        //! Creates a task graph with tasks to process received tile data.
+        //! @param config navigation mesh configuration to apply to the tile data
+        //! @param sendNotificationEvent once all the tiles are processed and added to the navigation update notify on the main thread
+        void ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent);
+
     protected:
         //! Debug draw object for Recast navigation mesh.
         RecastNavigationDebugDraw m_customDebugDraw;
@@ -61,12 +66,11 @@ namespace RecastNavigation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
         AZStd::mutex m_tileProcessingMutex;
 
-        AZ::TaskExecutor m_taskExecutor;
+        //! Task graph objects to process tile geometry into Recast tiles.
         AZ::TaskGraph m_taskGraph;
+        AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
-
-        void ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent);
 
         struct RecastProcessing
         {
