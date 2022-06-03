@@ -39,7 +39,6 @@ namespace ScriptCanvas
                 }
             }
 
-            ScriptCanvas::Nodeables::Time::BaseTimer::Reflect(reflection);
             ScriptCanvas::Nodes::Internal::BaseTimerNode::Reflect(reflection);
         }
 
@@ -51,12 +50,6 @@ namespace ScriptCanvas
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TickDelay>(nodeRegistry);
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TimeDelay>(nodeRegistry);
             AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Timer>(nodeRegistry);
-
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::DelayNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::DurationNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::HeartBeatNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimeDelayNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::TimerNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Time::GetComponentDescriptors()
@@ -68,12 +61,6 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Time::Duration::CreateDescriptor(),
                 ScriptCanvas::Nodes::Time::HeartBeat::CreateDescriptor(),
                 ScriptCanvas::Nodes::Time::Timer::CreateDescriptor(),
-
-                ScriptCanvas::Nodes::DelayNodeableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::DurationNodeableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::HeartBeatNodeableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::TimeDelayNodeableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::TimerNodeableNode::CreateDescriptor(),
                 });
         }
     }

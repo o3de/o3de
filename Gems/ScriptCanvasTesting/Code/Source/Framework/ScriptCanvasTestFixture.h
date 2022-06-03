@@ -130,6 +130,7 @@ namespace ScriptCanvasTests
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
             ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+
             REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
             REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, m_behaviorContext);
         }

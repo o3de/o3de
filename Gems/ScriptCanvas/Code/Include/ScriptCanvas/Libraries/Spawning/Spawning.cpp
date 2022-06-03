@@ -93,20 +93,13 @@ namespace ScriptCanvas
             HashContainerReflector<Scripts::SpawnableScriptAssetRef>::Reflect(reflection);
         }
 
-        void Spawning::InitNodeRegistry(NodeRegistry& nodeRegistry)
+        void Spawning::InitNodeRegistry([[maybe_unused]] NodeRegistry& nodeRegistry)
         {
-            AddNodeToRegistry<Spawning, Nodes::CreateSpawnTicketNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Spawning, Nodes::SpawnNodeableNode>(nodeRegistry);
-            AddNodeToRegistry<Spawning, Nodes::DespawnNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Spawning::GetComponentDescriptors()
         {
-            return AZStd::vector<AZ::ComponentDescriptor*>({
-                Nodes::CreateSpawnTicketNodeableNode::CreateDescriptor(),
-                Nodes::SpawnNodeableNode::CreateDescriptor(),
-                Nodes::DespawnNodeableNode::CreateDescriptor(),
-                });
+            return AZStd::vector<AZ::ComponentDescriptor*>();
         }
     }
 }

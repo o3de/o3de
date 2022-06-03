@@ -112,8 +112,6 @@ namespace ScriptCanvas
             AddNodeToRegistry<Core, Repeater>(nodeRegistry);
             AddNodeToRegistry<Core, FunctionCallNode>(nodeRegistry);
             AddNodeToRegistry<Core, FunctionDefinitionNode>(nodeRegistry);
-            // Nodeables
-            AddNodeToRegistry<Core, Nodes::RepeaterNodeableNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
@@ -133,8 +131,6 @@ namespace ScriptCanvas
                 ScriptCanvas::Nodes::Core::Repeater::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::FunctionCallNode::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::FunctionDefinitionNode::CreateDescriptor(),
-                // Nodeables
-                ScriptCanvas::Nodes::RepeaterNodeableNode::CreateDescriptor(),
             });
         }
     }

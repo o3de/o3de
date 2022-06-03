@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistryLibrary.h>
 
 #define REFLECT_GENERIC_FUNCTION_NODE(GenericFunction, Guid)\
     struct GenericFunction\
@@ -36,57 +37,8 @@ namespace AZ
 
 namespace ScriptCanvas
 {
-    struct NodeRegistry final
-    {
-        AZ_TYPE_INFO(NodeRegistry, "{C1613BD5-3104-44E4-98FE-A917A90B2014}");
-
-        using NodeList = AZStd::vector<AZStd::pair<AZ::Uuid, AZStd::string>>;
-
-        AZStd::unordered_map<AZ::Uuid, NodeList> m_nodeMap;
-    };
-
-    // Call once to initialize Node Registry
-    void InitNodeRegistry();
-    // Call to reset Node Registry
-    void ResetNodeRegistry();
-    AZ::EnvironmentVariable<NodeRegistry> GetNodeRegistry();
-    static const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
-
     namespace Library
     {
-        struct LibraryDefinition
-        {
-            AZ_RTTI(LibraryDefinition, "{C7A74062-1577-4925-897F-BB7600D2016D}");
-
-            virtual ~LibraryDefinition() = default;
-
-            static const NodeRegistry::NodeList GetNodes(const AZ::Uuid& libraryType)
-            {
-                NodeRegistry& registry = (*GetNodeRegistry());
-                const auto& libraryIterator = registry.m_nodeMap.find(libraryType);
-                if (libraryIterator != registry.m_nodeMap.end())
-                {
-                    const NodeRegistry::NodeList& nodeTypes = libraryIterator->second;
-                    return nodeTypes;
-                }
-
-                return NodeRegistry::NodeList();
-            }
-
-            static bool HasNode(const AZ::Uuid& libraryId, const AZ::Uuid& nodeId)
-            {
-                NodeRegistry::NodeList nodes = GetNodes(libraryId);
-                for (const auto& node : nodes)
-                {
-                    if (node.first == nodeId)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        };
-
         template<typename NodeGroup, typename NodeType>
         void AddNodeToRegistry(NodeRegistry& nodeRegistry, const AZStd::string_view& nameOverride = {})
         {
@@ -188,6 +140,10 @@ namespace ScriptCanvas
 
         };
     }
+
+    void InitLibraries();
+
+    void ResetLibraries();
 
     void ReflectLibraries(AZ::ReflectContext*);
 

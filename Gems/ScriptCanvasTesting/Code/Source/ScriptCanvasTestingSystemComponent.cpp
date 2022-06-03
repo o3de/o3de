@@ -68,7 +68,7 @@ namespace ScriptCanvasTesting
 
     void ScriptCanvasTestingSystemComponent::Init()
     {
-        NodeableTestingLibrary::InitNodeRegistry(ScriptCanvas::GetNodeRegistry().Get());
+        NodeableTestingLibrary::InitNodeRegistry(*ScriptCanvas::GetNodeRegistry());
     }
 
     void ScriptCanvasTestingSystemComponent::Activate()

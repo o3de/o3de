@@ -5,6 +5,7 @@
          QualifiedName="ScriptCanvas::Nodeables::Time::BaseTimer"
          PreferredClassName="BaseTimer"
            Uuid="{64814C82-DAE5-9B04-B375-5E47D51ECD26}"
+           BaseClass="True"
            Base="ScriptCanvas::Nodeable"
            Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Utilities"

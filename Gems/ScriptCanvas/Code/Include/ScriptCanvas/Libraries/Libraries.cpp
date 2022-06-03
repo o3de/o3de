@@ -17,34 +17,27 @@
 
 namespace ScriptCanvas
 {
-    static AZ::EnvironmentVariable<NodeRegistry> g_nodeRegistry;
-
-    void InitNodeRegistry()
+    void InitLibraries()
     {
-        g_nodeRegistry = AZ::Environment::CreateVariable<NodeRegistry>(s_nodeRegistryName);
+        auto nodeRegistry = GetNodeRegistry();
         using namespace Library;
-        Core::InitNodeRegistry(*g_nodeRegistry);
-        Math::InitNodeRegistry(*g_nodeRegistry);
-        Logic::InitNodeRegistry(*g_nodeRegistry);
-        Comparison::InitNodeRegistry(*g_nodeRegistry);
-        Time::InitNodeRegistry(*g_nodeRegistry);
-        Spawning::InitNodeRegistry(*g_nodeRegistry);
-        String::InitNodeRegistry(*g_nodeRegistry);
-        Operators::InitNodeRegistry(*g_nodeRegistry);
+        Core::InitNodeRegistry(*nodeRegistry);
+        Math::InitNodeRegistry(*nodeRegistry);
+        Logic::InitNodeRegistry(*nodeRegistry);
+        Comparison::InitNodeRegistry(*nodeRegistry);
+        Time::InitNodeRegistry(*nodeRegistry);
+        Spawning::InitNodeRegistry(*nodeRegistry);
+        String::InitNodeRegistry(*nodeRegistry);
+        Operators::InitNodeRegistry(*nodeRegistry);
 
 #ifndef _RELEASE
-        Library::UnitTesting::InitNodeRegistry(*g_nodeRegistry);
+        Library::UnitTesting::InitNodeRegistry(*nodeRegistry);
 #endif
     }
 
-    void ResetNodeRegistry()
+    void ResetLibraries()
     {
-        g_nodeRegistry.Reset();
-    }
-
-    AZ::EnvironmentVariable<NodeRegistry> GetNodeRegistry()
-    {
-        return AZ::Environment::FindVariable<NodeRegistry>(s_nodeRegistryName);
+        ResetNodeRegistry();
     }
 
     void ReflectLibraries(AZ::ReflectContext* reflectContext)
@@ -59,6 +52,7 @@ namespace ScriptCanvas
         Spawning::Reflect(reflectContext);
         String::Reflect(reflectContext);
         Operators::Reflect(reflectContext);
+        CustomLibrary::Reflect(reflectContext);
 
         DeprecatedNodeLibrary::Reflect(reflectContext);
 

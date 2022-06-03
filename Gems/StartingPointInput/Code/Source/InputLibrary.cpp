@@ -42,14 +42,12 @@ namespace StartingPointInput
     void InputLibrary::InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry)
     {
         ScriptCanvas::Library::AddNodeToRegistry<InputLibrary, StartingPointInput::InputNode>(nodeRegistry);
-        ScriptCanvas::Library::AddNodeToRegistry<InputLibrary, StartingPointInput::Nodes::InputHandlerNodeableNode>(nodeRegistry);
     }
 
     AZStd::vector<AZ::ComponentDescriptor*> InputLibrary::GetComponentDescriptors()
     {
         return AZStd::vector<AZ::ComponentDescriptor*>({
             StartingPointInput::InputNode::CreateDescriptor(),
-            StartingPointInput::Nodes::InputHandlerNodeableNode::CreateDescriptor(),
         });
     }
 
