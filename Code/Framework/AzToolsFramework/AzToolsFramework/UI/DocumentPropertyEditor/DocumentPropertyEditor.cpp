@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QTimer>
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -25,7 +26,7 @@ namespace AzToolsFramework
             auto subWidget = layoutItem->widget();
             if (subWidget)
             {
-                delete subWidget;
+                subWidget->deleteLater();
             }
             delete layoutItem;
         }
@@ -40,6 +41,15 @@ namespace AzToolsFramework
         m_mainLayout->addLayout(m_columnLayout);
         m_childRowLayout = new QVBoxLayout();
         m_mainLayout->addLayout(m_childRowLayout);
+
+        m_handlerCleanupTimer = new QTimer;
+        m_handlerCleanupTimer->setSingleShot(true);
+        connect(
+            m_handlerCleanupTimer, &QTimer::timeout, this,
+            [this]()
+            {
+                m_handlersPendingCleanup.clear();
+            });
     }
 
     DPERowWidget::~DPERowWidget()
@@ -55,6 +65,12 @@ namespace AzToolsFramework
         {
             m_columnLayout->removeWidget(propertyWidgetIter->first);
         }
+
+        for (auto& entry : m_widgetToPropertyHandler)
+        {
+            m_handlersPendingCleanup.emplace_back(AZStd::move(entry.second));
+        }
+        m_handlerCleanupTimer->start();
         m_widgetToPropertyHandler.clear();
 
         DestroyLayoutContents(m_columnLayout);
@@ -301,41 +317,23 @@ namespace AzToolsFramework
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
         {
             const auto& patchPath = operationIterator->GetDestinationPath();
-            auto firstAddressEntry = patchPath[0];
-
-            AZ_Assert(
-                firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray(),
-                "first entry in a DPE patch must be the index of the first row");
-            auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : rowLayout->count());
-            AZ_Assert(
-                rowIndex < rowLayout->count() ||
-                    (rowIndex <= rowLayout->count() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
-                "received a patch for a row that doesn't exist");
 
             // if the patch points at our root, this operation is for the top level layout
             if (patchPath.IsEmpty())
             {
-                if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
-                {
-                    AddRowFromValue(operationIterator->GetValue(), static_cast<int>(rowIndex));
-                }
-                else
-                {
-                    auto rowWidget =
-                        static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());
-                    if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
-                    {
-                        rowWidget->SetValueFromDom(operationIterator->GetValue());
-                    }
-                    else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
-                    {
-                        rowLayout->removeWidget(rowWidget);
-                        delete rowWidget;
-                    }
-                }
+                HandleReset();
             }
             else
             {
+                auto firstAddressEntry = patchPath[0];
+                AZ_Assert(
+                    firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray(),
+                    "first entry in a DPE patch must be the index of the first row");
+                auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : rowLayout->count());
+                AZ_Assert(
+                    rowIndex < rowLayout->count() ||
+                        (rowIndex <= rowLayout->count() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
+                    "received a patch for a row that doesn't exist");
                 // delegate the action th the rowWidget, which will, in turn, delegate to the next row in the path, if available
                 auto rowWidget =
                     static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(static_cast<int>(firstAddressEntry.GetIndex()))->widget());

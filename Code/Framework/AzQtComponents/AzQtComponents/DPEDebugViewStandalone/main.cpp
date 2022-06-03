@@ -31,6 +31,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ExampleAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
@@ -212,9 +213,9 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
-#if 0 // change this to test with a reflection adapter instead
+#if 1 // change this to test with a reflection adapter instead
     // create a default cvar adapter to expose the local CVar settings to edit
-    AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
+    AZStd::shared_ptr<AZ::DocumentPropertyEditor::ExampleAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>();
 #else
     // create a reflection adapter for a TestContainer
     AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> adapter =

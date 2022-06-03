@@ -18,6 +18,7 @@
 
 class QVBoxLayout;
 class QHBoxLayout;
+class QTimer;
 
 #endif // Q_MOC_RUN
 
@@ -53,6 +54,8 @@ namespace AzToolsFramework
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
+        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_handlersPendingCleanup;
+        QTimer* m_handlerCleanupTimer;
     };
 
     class DocumentPropertyEditor : public QFrame

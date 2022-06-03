@@ -26,7 +26,7 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_cachedContents.IsNull())
         {
-            m_cachedContents = GenerateContents();
+            m_cachedContents = const_cast<DocumentAdapter*>(this)->GenerateContents();
         }
         return m_cachedContents;
     }
