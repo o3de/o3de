@@ -144,9 +144,6 @@ namespace AZ
             // The root of the pass tree hierarchy
             Ptr<ParentPass> m_rootPass = nullptr;
 
-            // Whether the Pass System is currently hot reloading passes 
-            bool m_isHotReloading = false;
-
             // Name of the pass targeted for debugging
             AZ::Name m_targetedPassDebugName;
 
