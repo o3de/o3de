@@ -63,6 +63,7 @@ def run_and_check_output(workspace, project, error_expected, error_search_terms,
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_main
 class TestsAssetProcessorBatch_AllPlatforms(object):
     """
     Platform Agnostic Tests for Asset Processor Batch
@@ -71,7 +72,6 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C3594360")
     @pytest.mark.test_case_id("C3688013")
-    @pytest.mark.SUITE_periodic
     # fmt:off
     def test_AllSupportedPlatforms_FastScanWorks_FasterThanFullScan(self, workspace, asset_processor, ap_setup_fixture):
         # fmt:on
@@ -262,6 +262,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_main
 class TestsAssetProcessorBatch_Windows(object):
     """
     Specific Tests for Asset Processor Batch To Only Run on Windows
@@ -270,7 +271,6 @@ class TestsAssetProcessorBatch_Windows(object):
     @pytest.mark.test_case_id("C1564068")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_periodic
     def test_WindowsPlatforms_RunAPBatchAndConnectGui_RunsWithoutEditor(self, asset_processor):
         """
         Verify the AP batch and Gui can run and process assets independent of the Editor
