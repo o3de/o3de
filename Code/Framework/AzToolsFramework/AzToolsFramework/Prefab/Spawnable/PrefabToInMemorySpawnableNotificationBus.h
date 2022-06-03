@@ -18,6 +18,12 @@ namespace AzToolsFramework::Prefab
         : public AZ::EBusTraits
     {
     public:
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        //////////////////////////////////////////////////////////////////////////
+
         //! Notification to allow systems to access a spawnable before it's been modified, for example, by aliasing
         //! @param spawnable the spawnable that is being prepared
         //! @param assetHint the spawnable asset name
