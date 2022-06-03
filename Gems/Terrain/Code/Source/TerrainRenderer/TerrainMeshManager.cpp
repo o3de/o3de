@@ -892,7 +892,9 @@ namespace Terrain
         for (uint32_t lodLevel = 0; lodLevel < m_sectorStack.size(); ++lodLevel)
         {
             // Expand the bounds by the spacing of the lod since vertex normals are affected by neighbors.
-            const AZ::Vector2 lodSpacing = AZ::Vector2(m_sampleSpacing * (1 << lodLevel));
+            // The bounds needs to be 2x what's expected because clod also encodes information about the normals
+            // for the next lod level in the current lod level (which has vertices spaced 2x as far apart)
+            const AZ::Vector2 lodSpacing = AZ::Vector2(m_sampleSpacing * (1 << lodLevel) * 2.0f);
             const AZ::Vector2 lodBoundsMin2d = boundsMin2d - lodSpacing;
             const AZ::Vector2 lodBoundsMax2d = boundsMax2d + lodSpacing;
 
