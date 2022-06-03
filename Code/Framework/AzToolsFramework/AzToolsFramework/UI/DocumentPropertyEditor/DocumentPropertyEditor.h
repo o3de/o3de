@@ -21,6 +21,8 @@
 
 #endif // Q_MOC_RUN
 
+class QTimer;
+
 namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
@@ -94,6 +96,7 @@ namespace AzToolsFramework
             return m_adapter;
         }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
+        void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
@@ -101,10 +104,14 @@ namespace AzToolsFramework
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
+        void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
+
+        QTimer* m_handlerCleanupTimer;
+        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
     };
 } // namespace AzToolsFramework
