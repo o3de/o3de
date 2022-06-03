@@ -9,8 +9,6 @@
 #pragma once
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/function/function_template.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace RecastNavigation
 {
@@ -64,12 +62,11 @@ namespace RecastNavigation
         int m_tileX = 0; // tile coordinate within the navigation grid along X-axis
         int m_tileY = 0; // tile coordinate within the navigation grid along Y-axis
 
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_callback;
+
         //! Indexed vertices.
         AZStd::vector<RecastVector3> m_vertices;
         AZStd::vector<AZ::s32> m_indices;
-
-        //! Callback to the navigation mesh component that should process this tile.
-        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
 
         //! @returns true if there are no vertices in this tile.
         bool IsEmpty() const

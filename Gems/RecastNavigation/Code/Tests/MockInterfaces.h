@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Time/ITime.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -93,6 +94,9 @@ namespace RecastNavigationTests
             AZ::TimeMs current{ 0 };
             while (current < timeout && m_calls == 0)
             {
+                // Some nav mesh notifications occurs on ticks.
+                AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.1f, AZ::ScriptTimePoint{});
+
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(static_cast<int>(timeStep)));
                 current += timeStep;
             }

@@ -10,6 +10,9 @@
 
 #include <Recast.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Task/TaskDescriptor.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <Misc/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
@@ -24,6 +27,8 @@ namespace RecastNavigation
     public:
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
         virtual ~RecastNavigationMeshCommon() = default;
+
+        void OnDeactivate();
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
@@ -52,6 +57,16 @@ namespace RecastNavigation
 
         //! Recast navigation objects.
         AZStd::shared_ptr<NavMeshQuery> m_navObject;
+
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
+        AZStd::mutex m_tileProcessingMutex;
+
+        AZ::TaskExecutor m_taskExecutor;
+        AZ::TaskGraph m_taskGraph;
+        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
+        AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
+
+        void ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent);
 
         struct RecastProcessing
         {

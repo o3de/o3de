@@ -24,7 +24,9 @@ namespace RecastNavigation
         //! Use it to configure geometry collection in either Editor PhysX scene or game scene.
         //! @param useEditorScene if true, collect geometry from Editor PhysX scene, otherwise game scene.
         explicit RecastNavigationPhysXProviderCommon(bool useEditorScene);
-        virtual ~RecastNavigationPhysXProviderCommon() = default;
+        virtual ~RecastNavigationPhysXProviderCommon();
+
+        void OnDeactivate();
 
         //! A container of PhysX overlap scene hits (has PhysX colliders and their position/orientation).
         using QueryHits = AZStd::vector<AzPhysics::SceneQueryHit>;
@@ -41,6 +43,28 @@ namespace RecastNavigation
             const AZ::Aabb& worldVolume,
             bool debugDrawInputData);
 
+        //! Async variant of @CollectGeometryImpl. Tiles are returned via a callback @tileCallback.
+        //!   Calls on @tileCallback will come from a task graph (not a main thread).
+        //!   Is expected that the context for callback function will persist until all the tiles are processed.
+        //!
+        //! Note: the callback will be called at least once and one time for each tile geometry.
+        //! For example if two tiles are found the following callbacks will be made:
+        //!      tileCallback(tile1);
+        //!      tileCallback(tile2);
+        //!      tileCallback({}); //-- this indicates the end of the operation
+        //!
+        //! @param tileSize the result is packaged in tiles, which are squares covering the provided volume of @worldVolume
+        //! @param borderSize an additional extend in all direction around the tile volume, this additional geometry will allow Recast to connect tiles together
+        //! @param worldVolume worldVolume the overall volume to collect static PhysX geometry
+        //! @param debugDrawInputData debugDrawInputData if true, debug draw will show the geometry collected
+        //! @param tileCallback an empty tile indicates the end of the operation, otherwise a valid shared_ptr is returned with tile geometry
+        void CollectGeometryAsyncImpl(
+            float tileSize,
+            float borderSize,
+            const AZ::Aabb& worldVolume,
+            bool debugDrawInputData,
+            AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback);
+
         //! Finds all the static PhysX colliders within a given volume.
         //! @param volume the world to look for static colliders
         //! @param overlapHits (out) found colliders will be attached to this container
@@ -55,8 +79,14 @@ namespace RecastNavigation
         //! Returns the built-in names for the PhysX scene, either Editor or game scene.
         const char* GetSceneName() const;
 
+    protected:
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene;
+
+        AZ::TaskExecutor m_taskExecutor;
+        AZ::TaskGraph m_taskGraph;
+        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
+        AZ::TaskDescriptor m_taskDescriptor{ "Collect Geometry", "Recast Navigation" };
     };
 
 } // namespace RecastNavigation

@@ -24,9 +24,9 @@ namespace RecastNavigation
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create tile");
 
         RecastProcessing recast;
-        recast.vertices = geom->m_vertices.front().m_xyz;
+        recast.vertices = geom->m_vertices.empty() ? nullptr : geom->m_vertices.front().m_xyz;
         recast.vertexCount = static_cast<int>(geom->m_vertices.size());
-        recast.triangleData = &geom->m_indices[0];
+        recast.triangleData = geom->m_indices.empty() ? nullptr : &geom->m_indices[0];
         recast.triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
         recast.context = context;
         
@@ -323,13 +323,20 @@ namespace RecastNavigation
         return {};
     }
 
+    void RecastNavigationMeshCommon::OnDeactivate()
+    {
+        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        {
+            m_taskGraphEvent->Wait();
+        }
+    }
+
     bool RecastNavigationMeshCommon::CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create mesh");
 
-        m_navObject = AZStd::make_shared<NavMeshQuery>();
-        m_navObject->m_mesh.reset(dtAllocNavMesh());
-        if (!m_navObject->m_mesh)
+        RecastPointer<dtNavMesh> navMesh(dtAllocNavMesh());
+        if (!navMesh)
         {
             AZ_Error("Navigation", false, "Could not create Detour navmesh");
             return false;
@@ -349,21 +356,23 @@ namespace RecastNavigation
         params.tileWidth = tileSize;
         params.tileHeight = tileSize;
 
-        dtStatus status = m_navObject->m_mesh->init(&params);
+        dtStatus status = navMesh->init(&params);
         if (dtStatusFailed(status))
         {
             AZ_Error("Navigation", false, "Could not init Detour navmesh");
             return false;
         }
 
-        m_navObject->m_query.reset(dtAllocNavMeshQuery());
+        RecastPointer<dtNavMeshQuery> navQuery(dtAllocNavMeshQuery());
 
-        status = m_navObject->m_query->init(m_navObject->m_mesh.get(), 2048);
+        status = navQuery->init(navMesh.get(), 2048);
         if (dtStatusFailed(status))
         {
             AZ_Error("Navigation", false, "Could not init Detour navmesh query");
             return false;
         }
+
+        m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
 
         return true;
     }
@@ -372,8 +381,10 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: addTile");
 
+        NavMeshQuery::LockGuard lock = m_navObject->AcquireLock();
+
         dtTileRef tileRef = 0;
-        const dtStatus status = m_navObject->m_mesh->addTile(
+        const dtStatus status = lock.GetNavMesh()->addTile(
             navigationTileData.m_data, navigationTileData.m_size,
             DT_TILE_FREE_DATA, 0, &tileRef);
         if (dtStatusFailed(status))
@@ -383,5 +394,67 @@ namespace RecastNavigation
         }
 
         return true;
+    }
+
+    void RecastNavigationMeshCommon::ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent)
+    {
+        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: OnReceivedAllNewTiles");
+
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraph.Reset();
+
+            AZStd::vector<AZ::TaskToken*> tileTaskTokens;
+
+            AZStd::vector<AZStd::shared_ptr<TileGeometry>> tilesToBeProcessed;
+            {
+                AZStd::lock_guard lock(m_tileProcessingMutex);
+                m_tilesToBeProcessed.swap(tilesToBeProcessed);
+            }
+
+            // Create tasks for each tile and a finish task.
+            for (AZStd::shared_ptr<TileGeometry> tile : tilesToBeProcessed)
+            {
+                AZ::TaskToken token = m_taskGraph.AddTask(
+                    m_taskDescriptor, [this, tile, &config]()
+                    {
+                        AZ_PROFILE_SCOPE(Navigation, "Navigation: task - computing tile");
+
+                        NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
+                            config, m_context.get());
+
+                        if (navigationTileData.IsValid())
+                        {
+                            AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync - tile callback");
+
+                            NavMeshQuery::LockGuard lock = m_navObject->AcquireLock();
+                            if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                            {
+                                lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                            }
+                            if (navigationTileData.IsValid())
+                            {
+                                AttachNavigationTileToMesh(navigationTileData);
+                            }
+                        }
+                    });
+
+                tileTaskTokens.push_back(&token);
+            }
+
+            AZ::TaskToken finishToken = m_taskGraph.AddTask(
+                m_taskDescriptor, [&sendNotificationEvent]()
+                {
+                    sendNotificationEvent.Enqueue(AZ::TimeMs{ 0 });
+                });
+
+            for (AZ::TaskToken* task : tileTaskTokens)
+            {
+                task->Precedes(finishToken);
+            }
+
+            m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+        }
     }
 } // namespace RecastNavigation
