@@ -22,10 +22,7 @@ namespace GraphSerializationCpp
 {
     void AppendTabs(AZStd::string& result, size_t depth)
     {
-        for (size_t i = 0; i < depth; ++i)
-        {
-            result += "\t";
-        }
+        AZStd::fill_n(AZStd::back_inserter(result), depth, '\t');
     }
 
     void CollectNodes(const ScriptCanvas::GraphData::NodeContainer& container, ScriptCanvas::SerializationListeners& listeners)

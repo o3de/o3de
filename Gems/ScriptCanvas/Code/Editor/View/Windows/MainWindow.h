@@ -117,13 +117,13 @@ namespace ScriptCanvasEditor
     class OnSaveToast
     {
     public:
-        OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful, AZStd::optional<AZStd::string> discriptionOverride = AZStd::nullopt)
+        OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful, AZStd::optional<AZStd::string> descriptionOverride = AZStd::nullopt)
         {
             auto initDescription = [&]()->AZStd::string
             {
-                if (discriptionOverride)
+                if (descriptionOverride)
                 {
-                    return *discriptionOverride;
+                    return *descriptionOverride;
                 }
                 else if (saveSuccessful)
                 {

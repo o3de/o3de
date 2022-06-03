@@ -12,8 +12,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
-
     namespace VersionExplorer
     {
         struct FileSaveResult

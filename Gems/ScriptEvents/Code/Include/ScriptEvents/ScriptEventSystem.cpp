@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -102,15 +103,15 @@ namespace ScriptEvents
     {
         AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
         {
-            AZ::IO::FileIOStream filestream(path.c_str(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(filestream))
+            AZ::IO::FileReader fileReader;
+            if (!fileReader.Open(nullptr, path.c_str()))
             {
                 return AZ::Failure(AZStd::string::format("Failed to open input file %s", path.c_str()));
             }
 
-            AZStd::vector<AZ::u8> fileBuffer(filestream.GetLength());
-            const size_t bytesRead = filestream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != filestream.GetLength())
+            AZStd::vector<AZ::u8> fileBuffer(fileReader.Length());
+            const auto bytesRead = fileReader.Read(fileBuffer.size(), fileBuffer.data());
+            if (bytesRead != fileReader.Length())
             {
                 return AZ::Failure(AZStd::string::format("Failed to read source file: %s", path.c_str()));
             }

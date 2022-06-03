@@ -23,7 +23,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
+    using SourceHandle = ScriptCanvas::SourceHandle;
 
     /// <summary>
     /// Configuration provides user-facing facilities for selecting a ScriptCanvas source file, monitoring its status, and exposing its

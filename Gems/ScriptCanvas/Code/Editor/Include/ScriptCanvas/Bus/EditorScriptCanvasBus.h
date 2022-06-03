@@ -34,8 +34,6 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
-
     //=========================================================================
     // EditorGraphBus
     //=========================================================================

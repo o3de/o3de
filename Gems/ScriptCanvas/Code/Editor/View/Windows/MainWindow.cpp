@@ -61,22 +61,23 @@
 #include <Editor/Settings.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/std/containers/array.h>
-#include <AzCore/std/containers/set.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Serialization/IdUtils.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -1880,13 +1881,10 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        AZ::IO::FixedMaxPath resolvedProjectRoot;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedProjectRoot, "@projectroot@");
-
-        const AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", resolvedProjectRoot.c_str());
+        const auto sourcePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "scriptcanvas";
         const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
 
-        QFileDialog dialog(nullptr, tr("Open..."), assetPath.c_str());
+        QFileDialog dialog(nullptr, tr("Open..."), sourcePath.c_str());
         dialog.setFileMode(QFileDialog::ExistingFiles);
         dialog.setNameFilters(nameFilters);
 

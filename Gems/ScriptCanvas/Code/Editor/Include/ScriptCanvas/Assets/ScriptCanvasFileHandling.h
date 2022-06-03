@@ -34,7 +34,7 @@ namespace ScriptCanvas
         DeserializeResult m_deserializeResult;
         AZStd::string m_fileReadErrors;
 
-        inline operator bool() const
+        operator bool() const
         {
             return m_isSuccess && m_deserializeResult.m_isSuccessful;
         }

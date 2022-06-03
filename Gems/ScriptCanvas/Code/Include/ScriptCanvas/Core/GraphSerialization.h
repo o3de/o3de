@@ -55,6 +55,11 @@ namespace ScriptCanvas
         {
             return m_isSuccessful;
         }
+
+        inline bool operator!() const
+        {
+            return !m_isSuccessful;
+        }
     };
 
     DeserializeResult Deserialize
@@ -69,6 +74,11 @@ namespace ScriptCanvas
         inline operator bool() const
         {
             return m_isSuccessful;
+        }
+
+        inline bool operator!() const
+        {
+            return !m_isSuccessful;
         }
     };
 

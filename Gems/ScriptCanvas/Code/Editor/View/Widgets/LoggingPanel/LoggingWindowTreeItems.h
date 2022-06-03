@@ -30,7 +30,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
+    using SourceHandle = ScriptCanvas::SourceHandle;
 
     class DebugLogFilter
     {

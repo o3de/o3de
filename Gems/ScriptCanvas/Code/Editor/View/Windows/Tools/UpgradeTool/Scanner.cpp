@@ -54,8 +54,6 @@ namespace ScannerCpp
 
 namespace ScriptCanvasEditor
 {
-    using namespace ScriptCanvas;
-
     namespace VersionExplorer
     {
         Scanner::Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete)
@@ -106,7 +104,7 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto result = LoadFromFile(ModCurrentAsset().Path().c_str());
+            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().Path().c_str());
             if (result)
             {
                 return result.m_handle;

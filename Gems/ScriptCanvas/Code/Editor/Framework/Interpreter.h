@@ -23,7 +23,7 @@ namespace AZ
 
 namespace ScriptCanvasEditor
 {
-    using SourceHandle = SourceHandle;
+    using SourceHandle = ScriptCanvas::SourceHandle;
 
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(InterpreterStatus, AZ::u8,
         Waiting,            // no configuration
