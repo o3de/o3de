@@ -98,10 +98,10 @@ namespace AzToolsFramework
     void EditorMenu::Initialize()
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-        AZ_Assert(m_actionManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of ActionManagerInterface");
+        AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
 
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-        AZ_Assert(m_menuManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of MenuManagerInterface");
+        AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
     }
 
 } // namespace AzToolsFramework

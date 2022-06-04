@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 class QMenu;
+class QMenuBar;
 
 namespace AzToolsFramework
 {
@@ -35,22 +36,32 @@ namespace AzToolsFramework
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
 
         //! Register a new Menu to the Menu Manager.
-        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) = 0;
+        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties) = 0;
 
-        //! Bind an action to a menu.
+        //! Register a new Menu Bar to the Menu Manager.
+        virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Bind an Action to a Menu.
         virtual MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
-        //! Add a separator to a menu.
+        //! Add a Separator to a Menu.
         virtual MenuManagerOperationResult AddSeparatorToMenu(
             const AZStd::string& menuIdentifier, int sortIndex) = 0;
 
-        //! Add a sub-menu to a menu.
+        //! Add a Sub-Menu to a Menu.
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 
+        //! Add a Menu to a Menu Bar.
+        virtual MenuManagerOperationResult AddMenuToMenuBar(
+            const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) = 0;
+
         //! Retrieve a QMenu from its identifier.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
+
+        //! Retrieve a QMenuBar from its identifier.
+        virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
