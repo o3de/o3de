@@ -491,11 +491,12 @@ namespace AZ
             return FrameCaptureRequests::s_InvalidFrameCaptureId;
         }
 
-        FrameCaptureSystemComponent::CaptureHandle FrameCaptureSystemComponent::InternalCapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, 
-                                                                                 const AZStd::string& slot,
-                                                                                 const AZStd::string& outputFilePath, 
-                                                                                 RPI::PassAttachmentReadbackOption option,
-                                                                                 AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction)
+        FrameCaptureSystemComponent::CaptureHandle FrameCaptureSystemComponent::InternalCapturePassAttachment(
+            const AZStd::vector<AZStd::string>& passHierarchy, 
+            const AZStd::string& slot,
+            const AZStd::string& outputFilePath, 
+            RPI::PassAttachmentReadbackOption option,
+            AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction)
         {
             if (!CanCapture())
             {
@@ -545,7 +546,7 @@ namespace AZ
                 return CaptureHandle::Null();
             }
 
-            if (pass->ReadbackAttachment(capture->m_readback, Name(slot), option))
+            if (pass->ReadbackAttachment(capture->m_readback, captureHandle.GetCaptureStateIndex(), Name(slot), option))
             {
                 return captureHandle;
             }
@@ -556,9 +557,9 @@ namespace AZ
         }
 
         uint32_t FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy,
-                                                                const AZStd::string& slot,
-                                                                const AZStd::string& outputFilePath, 
-                                                                RPI::PassAttachmentReadbackOption option)
+                                                                    const AZStd::string& slot,
+                                                                    const AZStd::string& outputFilePath, 
+                                                                    RPI::PassAttachmentReadbackOption option)
         {
             CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
             if (captureHandle.IsValid())
@@ -817,7 +818,7 @@ namespace AZ
 
         void FrameCaptureSystemComponent::CaptureState::Reset()
         {
-            m_readback->Reset();
+            //m_readback->Reset();
             m_outputFilePath.clear();
             m_latestCaptureInfo.clear();
             m_result = FrameCaptureResult::None;

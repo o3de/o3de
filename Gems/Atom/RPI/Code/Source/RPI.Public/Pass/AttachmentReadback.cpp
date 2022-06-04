@@ -366,6 +366,11 @@ namespace AZ
             {
                 // copy image to read back buffer since only buffer can be accessed by host
                 const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
+                if (!image)
+                {
+                    AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
+                    return;
+                }
                 m_imageDescriptor = image->GetDescriptor();
 
                 // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the mipmaps, array and planars
@@ -548,10 +553,13 @@ namespace AZ
                 }
 
                 readbackBufferCurrent->Unmap();
+                m_isReadbackComplete[readbackBufferIndex] = true;
+                return true;
             }
-
-            m_isReadbackComplete[readbackBufferIndex] = true;
-            return true;
+            else
+            {
+                return false;
+            }
         }
     }   // namespace RPI
 }   // namespace AZ
