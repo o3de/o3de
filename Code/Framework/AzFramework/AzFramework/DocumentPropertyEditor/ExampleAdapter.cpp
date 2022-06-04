@@ -25,6 +25,8 @@ namespace AZ::DocumentPropertyEditor
 
         AdapterBuilder builder;
         builder.BeginAdapter();
+
+        builder.BeginRow();
         builder.Label("Config");
         builder.BeginRow();
         builder.Label("Row Count");
@@ -45,6 +47,7 @@ namespace AZ::DocumentPropertyEditor
                 ResizeMatrix();
             });
         builder.EndPropertyEditor();
+        builder.EndRow();
         builder.EndRow();
 
         builder.BeginRow();
@@ -75,7 +78,6 @@ namespace AZ::DocumentPropertyEditor
         }
         builder.EndRow();
 
-        builder.BeginRow();
         struct EntryToProcess
         {
             ColorTreeNode* m_node = nullptr;
@@ -145,7 +147,6 @@ namespace AZ::DocumentPropertyEditor
                 nodesToProcess.push_front({ &node, AZStd::string::format("%i", i) });
             }
         }
-        builder.EndRow();
 
         builder.EndAdapter();
 
