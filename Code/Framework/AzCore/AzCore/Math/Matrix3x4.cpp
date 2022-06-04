@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 
@@ -230,9 +231,7 @@ namespace AZ
 
         AZStd::string Matrix3x4ToString(const Matrix3x4& t)
         {
-            return AZStd::string::format("%s,%s,%s,%s",
-                Vector3ToString(t.GetColumn(0)).c_str(), Vector3ToString(t.GetColumn(1)).c_str(),
-                Vector3ToString(t.GetColumn(2)).c_str(), Vector3ToString(t.GetColumn(3)).c_str());
+            return AZStd::to_string(t, AZStd::MathStringFormat::Matrix3x4ScriptFormat);
         }
     } // namespace Internal
 

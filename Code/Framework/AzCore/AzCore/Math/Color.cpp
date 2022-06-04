@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
+#include "AzCore/std/string/conversions.h"
 #include "Color.h"
 #include <AzCore/Math/MathScriptHelpers.h>
 
@@ -217,7 +219,7 @@ namespace AZ
 
         AZStd::string ColorToString(const Color& c)
         {
-            return AZStd::string::format("(r=%.7f,g=%.7f,b=%.7f,a=%.7f)", static_cast<float>(c.GetR()), static_cast<float>(c.GetG()), static_cast<float>(c.GetB()), static_cast<float>(c.GetA()));
+            return AZStd::to_string(c, AZStd::MathStringFormat::ColorScriptFormat);
         }
     }
 

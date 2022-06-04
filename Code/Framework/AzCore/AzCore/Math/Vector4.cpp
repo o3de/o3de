@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 #include <AzCore/Math/MathUtils.h>
@@ -197,6 +198,11 @@ namespace AZ
                 AZ_Error("Script", false, "Vector4.Set only supports Set(number,number,number,number), Set(number), Set(Vector3), Set(Vector3,float)");
             }
         }
+
+        AZStd::string Vector4ToString(const Vector4& v)
+        {
+            return AZStd::to_string(v, AZStd::MathStringFormat::Vector4ScriptFormat);
+        }
     }
 
 
@@ -227,7 +233,7 @@ namespace AZ
                 Property("w", &Vector4::GetW, &Vector4::SetW)->
                 Method<Vector4(Vector4::*)() const>("Unary", &Vector4::operator-)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Unary)->
-                Method("ToString", &Vector4ToString)->
+                Method("ToString", &Internal::Vector4ToString)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::ToString)->
                 Method<Vector4(Vector4::*)(float) const>("MultiplyFloat", &Vector4::operator*)->
                     Attribute(Script::Attributes::MethodOverride, &Internal::Vector4MultiplyGeneric)->

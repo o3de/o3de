@@ -22,8 +22,14 @@ namespace AZ
     class Quaternion;
     class Transform;
 
+    // O3DE_DEPRECATION_NOTICE(GHI-XX)
+    //! @deprecated replace with AZStd::to_string(v, MathStringFormat::Vector3ScriptFormat)
     AZStd::string Vector3ToString(const Vector3& v);
+    // O3DE_DEPRECATION_NOTICE(GHI-XX)
+    //! @deprecated replace with AZStd::to_string(v, MathStringFormat::Vector4ScriptFormat)
     AZStd::string Vector4ToString(const Vector4& v);
+    // O3DE_DEPRECATION_NOTICE(GHI-XX)
+    //! @deprecated replace with AZStd::to_string(v, MathStringFormat::QuaternionScriptFormat)
     AZStd::string QuaternionToString(const Quaternion& v);
     AZStd::string TransformToString(const Transform& t);
 

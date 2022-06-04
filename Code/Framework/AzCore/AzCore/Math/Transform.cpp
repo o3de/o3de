@@ -6,6 +6,8 @@
  *
  */
 
+#include "AzCore/std/string/conversions.h"
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -140,6 +142,14 @@ namespace AZ
                 , Vector4(v10, v11, v12, v13)
                 , Vector4(v20, v21, v22, v23)));
         }
+
+        AZStd::string TransformToString(const Transform& transform)
+        {
+             return AZStd::string::format("%s,%s,%s,%s",
+                AZStd::to_string(transform.GetBasisX(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(), AZStd::to_string(transform.GetBasisY(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(),
+                AZStd::to_string(transform.GetBasisZ(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(), AZStd::to_string(transform.GetTranslation(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str());
+        }
+
     } // namespace Internal
 
     const Transform g_transformIdentity = Transform::CreateIdentity();
@@ -303,7 +313,7 @@ namespace AZ
                 Method("GetBasisZ", &Transform::GetBasisZ)->
                 Property<const Vector3&(Transform::*)() const, void (Transform::*)(const Vector3&)>("translation", &Transform::GetTranslation, &Transform::SetTranslation)->
                 Property<const Quaternion&(Transform::*)() const, void (Transform::*)(const Quaternion&)>("rotation", &Transform::GetRotation, &Transform::SetRotation)->
-                Method("ToString", &TransformToString)->
+                Method("ToString", &Internal::TransformToString)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::ToString)->
                 Method<Vector3(Transform::*)(const Vector3&) const>("Multiply", &Transform::TransformPoint)->
                     Attribute(Script::Attributes::MethodOverride, &Internal::TransformMultiplyGeneric)->

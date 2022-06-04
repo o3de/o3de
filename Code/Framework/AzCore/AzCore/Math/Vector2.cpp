@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -76,7 +77,7 @@ namespace AZ
 
         AZStd::string Vector2ToString(const Vector2* thisPtr)
         {
-            return AZStd::string::format("(x=%.7f,y=%.7f)", static_cast<float>(thisPtr->GetX()), static_cast<float>(thisPtr->GetY()));
+            return AZStd::to_string(*thisPtr, AZStd::MathStringFormat::Vector2ScriptFormat);
         }
 
 

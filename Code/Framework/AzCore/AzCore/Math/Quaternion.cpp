@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/MathUtils.h>
@@ -152,6 +153,11 @@ namespace AZ
                 AZ_Error("Script", false, "Quaternion.Set only supports Set(number), Set(number, number, number, number), Set(Vector3, number)");
             }
         }
+        
+        AZStd::string QuaternionToString(const Quaternion& transform)
+        {
+            return AZStd::to_string(transform, AZStd::MathStringFormat::QuaternionScriptFormat);
+        }
     }
 
 
@@ -182,7 +188,7 @@ namespace AZ
                 Property("w", &Quaternion::GetW, &Quaternion::SetW)->
                 Method<Quaternion(Quaternion::*)() const>("Unary", &Quaternion::operator-)->
                     Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Unary)->
-                Method("ToString", &QuaternionToString)->
+                Method("ToString", &Internal::QuaternionToString)->
                     Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)->
                 Method<Quaternion(Quaternion::*)(float) const>("MultiplyFloat", &Quaternion::operator*)->
                     Attribute(AZ::Script::Attributes::MethodOverride, &Internal::QuaternionMultiplyGeneric)->

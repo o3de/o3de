@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 #include <AzCore/Math/MathUtils.h>
@@ -179,6 +180,11 @@ namespace AZ
             dc.PushResult(v1);
             dc.PushResult(v2);
         }
+
+        AZStd::string Vector3ToString(const Vector3& v)
+        {
+            return AZStd::to_string(v, AZStd::MathStringFormat::Vector3ScriptFormat);
+        }
     }
 
     Vector3::Vector3(const Vector2& source)
@@ -217,7 +223,7 @@ namespace AZ
                 Property("z", &Vector3::GetZ, &Vector3::SetZ)->
                 Method<Vector3(Vector3::*)() const>("Unary", &Vector3::operator-)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::Unary)->
-                Method("ToString",&Vector3ToString)->
+                Method("ToString",&Internal::Vector3ToString)->
                     Attribute(Script::Attributes::Operator, Script::Attributes::OperatorType::ToString)->
                 Method<Vector3(Vector3::*)(float) const>("MultiplyFloat",&Vector3::operator*)->
                     Attribute(Script::Attributes::MethodOverride, &Internal::Vector3MultiplyGeneric)->

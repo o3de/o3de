@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
@@ -42,10 +43,10 @@ namespace AZ
         AZStd::string ObbToString(const Obb& obb)
         {
             return AZStd::string::format("Position %s AxisX %s AxisY %s AxisZ %s halfLengthX=%.7f halfLengthY=%.7f halfLengthZ=%.7f",
-                Vector3ToString(obb.GetPosition()).c_str(),
-                Vector3ToString(obb.GetAxisX()).c_str(),
-                Vector3ToString(obb.GetAxisY()).c_str(),
-                Vector3ToString(obb.GetAxisZ()).c_str(),
+                AZStd::to_string(obb.GetPosition(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(),
+                AZStd::to_string(obb.GetAxisX(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(),
+                AZStd::to_string(obb.GetAxisY(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(),
+                AZStd::to_string(obb.GetAxisZ(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(),
                 obb.GetHalfLengthX(),
                 obb.GetHalfLengthY(),
                 obb.GetHalfLengthZ());

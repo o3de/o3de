@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 
@@ -124,7 +125,7 @@ namespace AZ
 
         AZStd::string PlaneToString(const Plane& p)
         {
-            return AZStd::string::format("%s", Vector4ToString(p.GetPlaneEquationCoefficients()).c_str());
+            return AZStd::to_string(p.GetPlaneEquationCoefficients(), AZStd::MathStringFormat::Vector4ScriptFormat);
         }
     }
 

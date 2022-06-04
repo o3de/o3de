@@ -17,6 +17,7 @@ namespace AZ
     class Aabb;
     class Color;
     class Matrix3x3;
+    class Matrix3x4;
     class Matrix4x4;
     class Quaternion;
     class Transform;
@@ -27,23 +28,53 @@ namespace AZ
 
 namespace AZStd
 {
+    namespace MathStringFormat
+    {
+        static const char* Vector2DefaultFormat = "%.8f,%.8f";
+        static const char* Vector2ScriptFormat = "(x=%.7f,y=%.7f)";
+
+        static const char* Vector3DefaultFormat = "%.8f,%.8f,%.8f";
+        static const char* Vector3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f)";
+        
+        static const char* Vector4DefaultFormat = "%.8f,%.8f,%.8f,%.8f";
+        static const char* Vector4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+        
+        static const char* QuaternionDefaultFormat = "%.8f,%.8f,%.8f,%.8f";
+        static const char* QuaternionScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+
+        static const char* Matrix3x3DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
+        static const char* Matrix3x3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
+        
+        static const char* Matrix4x4DefaultFormat = "%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f";
+        static const char* Matrix4x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+
+        static const char* Matrix3x4DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
+        static const char* Matrix3x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
+
+        static const char* ColorDefaultFormat = "R:%d, G:%d, B:%d A:%d";
+        static const char* ColorScriptFormat = "(r=%.7f,g=%.7f,b=%.7f,a=%.7f)";
+    }; // namespace MathStringFormat
+
     //! Prints a Vector2 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector2& value);
+    void to_string(string& str, const AZ::Vector2& value, const char* format = MathStringFormat::Vector2DefaultFormat);
 
     //! Prints a Vector3 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector3& value);
+    void to_string(string& str, const AZ::Vector3& value, const char* format = MathStringFormat::Vector3DefaultFormat);
 
     //! Prints a Vector4 with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Vector4& value);
+    void to_string(string& str, const AZ::Vector4& value, const char* format = MathStringFormat::Vector4DefaultFormat);
 
     //! Prints a Quaternion with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Quaternion& value);
+    void to_string(string& str, const AZ::Quaternion& value, const char* format = MathStringFormat::QuaternionDefaultFormat);
 
     //! Prints a 3x3 matrix in row major order over three lines with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Matrix3x3& value);
+    void to_string(string& str, const AZ::Matrix3x3& value, const char* format = MathStringFormat::Matrix3x3DefaultFormat);
 
     //! Prints a 4x4 matrix in row major order over four lines with precision to 8 decimal places.
-    void to_string(string& str, const AZ::Matrix4x4& value);
+    void to_string(string& str, const AZ::Matrix4x4& value, const char* format = MathStringFormat::Matrix4x4DefaultFormat);
+
+    //! Prints a 3x4 matrix in row major order over four lines with precision to 8 decimal places.
+    void to_string(string& str, const AZ::Matrix3x4& value, const char* format = MathStringFormat::Matrix3x4ScriptFormat);
 
     //! Prints a transform as a 3x4 matrix in row major order over four lines with precision to 8 decimal places.
     void to_string(string& str, const AZ::Transform& value);
@@ -52,47 +83,54 @@ namespace AZStd
     void to_string(string& str, const AZ::Aabb& value);
 
     //! Prints a Color as four unsigned ints representing RGBA.
-    void to_string(string& str, const AZ::Color& value);
+    void to_string(string& str, const AZ::Color& value, const char* format = MathStringFormat::ColorDefaultFormat);
 
-    inline AZStd::string to_string(const AZ::Vector2& val)
+    inline AZStd::string to_string(const AZ::Vector2& val, const char* format = MathStringFormat::Vector2DefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Vector3& val)
+    inline AZStd::string to_string(const AZ::Vector3& val, const char* format = MathStringFormat::Vector3DefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Vector4& val)
+    inline AZStd::string to_string(const AZ::Vector4& val, const char* format = MathStringFormat::Vector4DefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Quaternion& val)
+    inline AZStd::string to_string(const AZ::Quaternion& val, const char* format = MathStringFormat::QuaternionDefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Matrix3x3& val)
+    inline AZStd::string to_string(const AZ::Matrix3x3& val, const char* format = MathStringFormat::Matrix3x3DefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Matrix4x4& val)
+    inline AZStd::string to_string(const AZ::Matrix4x4& val, const char* format = MathStringFormat::Matrix4x4DefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
+        return str;
+    }
+    
+    inline AZStd::string to_string(const AZ::Matrix3x4& val, const char* format = MathStringFormat::Matrix3x4DefaultFormat)
+    {
+        AZStd::string str;
+        to_string(str, val, format);
         return str;
     }
     inline AZStd::string to_string(const AZ::Transform& val)
@@ -109,10 +147,10 @@ namespace AZStd
         return str;
     }
 
-    inline AZStd::string to_string(const AZ::Color& val)
+    inline AZStd::string to_string(const AZ::Color& val, const char* format = MathStringFormat::ColorDefaultFormat)
     {
         AZStd::string str;
-        to_string(str, val);
+        to_string(str, val, format);
         return str;
     }
 } // namespace AZStd

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Aabb.h>
 
 #include <AzCore/Math/Obb.h>
@@ -14,67 +15,72 @@
 
 namespace AZ
 {
-    //Script Wrappers for Axis Aligned Bounding Box
-    void AabbDefaultConstructor(AZ::Aabb* thisPtr)
-    {
-        new (thisPtr) AZ::Aabb(AZ::Aabb::CreateNull());
-    }
 
-
-    void AabbSetGeneric(Aabb* thisPtr, ScriptDataContext& dc)
-    {
-        if (dc.GetNumArguments() == 2 && dc.IsClass<Vector3>(0) && dc.IsClass<Vector3>(1))
+    namespace Internal {
+        //Script Wrappers for Axis Aligned Bounding Box
+        void AabbDefaultConstructor(AZ::Aabb* thisPtr)
         {
-            Vector3 min, max;
-            dc.ReadArg<Vector3>(0, min);
-            dc.ReadArg<Vector3>(1, max);
-            thisPtr->Set(min, max);
+            new (thisPtr) AZ::Aabb(AZ::Aabb::CreateNull());
         }
-        else
+
+
+        void AabbSetGeneric(Aabb* thisPtr, ScriptDataContext& dc)
         {
-            AZ_Error("Script", false, "ScriptAabb Set only supports two arguments: Vector3 min, Vector3 max");
-        }
-    }
-
-
-    void AabbGetAsSphereMultipleReturn(const Aabb* thisPtr, ScriptDataContext& dc)
-    {
-        Vector3 center;
-        float radius;
-        thisPtr->GetAsSphere(center, radius);
-        dc.PushResult(center);
-        dc.PushResult(radius);
-    }
-
-
-    void AabbContainsGeneric(const Aabb* thisPtr, ScriptDataContext& dc)
-    {
-        if (dc.GetNumArguments() == 1)
-        {
-            if (dc.IsClass<Vector3>(0))
+            if (dc.GetNumArguments() == 2 && dc.IsClass<Vector3>(0) && dc.IsClass<Vector3>(1))
             {
-                Vector3 v = Vector3::CreateZero();
-                dc.ReadArg<Vector3>(0, v);
-                dc.PushResult<bool>(thisPtr->Contains(v));
+                Vector3 min, max;
+                dc.ReadArg<Vector3>(0, min);
+                dc.ReadArg<Vector3>(1, max);
+                thisPtr->Set(min, max);
             }
-            else if (dc.IsClass<Aabb>(0))
+            else
             {
-                Aabb aabb = Aabb::CreateNull();
-                dc.ReadArg<Aabb>(0, aabb);
-                dc.PushResult<bool>(thisPtr->Contains(aabb));
+                AZ_Error("Script", false, "ScriptAabb Set only supports two arguments: Vector3 min, Vector3 max");
             }
         }
 
-        if (dc.GetNumResults() == 0)
+
+        void AabbGetAsSphereMultipleReturn(const Aabb* thisPtr, ScriptDataContext& dc)
         {
-            AZ_Error("Script", false, "ScriptAabb Contains expects one argument: Either Vector3 or Aabb");
+            Vector3 center;
+            float radius;
+            thisPtr->GetAsSphere(center, radius);
+            dc.PushResult(center);
+            dc.PushResult(radius);
         }
-    }
 
 
-    AZStd::string AabbToString(const Aabb& aabb)
-    {
-        return AZStd::string::format("Min %s Max %s", Vector3ToString(aabb.GetMin()).c_str(), Vector3ToString(aabb.GetMax()).c_str());
+        void AabbContainsGeneric(const Aabb* thisPtr, ScriptDataContext& dc)
+        {
+            if (dc.GetNumArguments() == 1)
+            {
+                if (dc.IsClass<Vector3>(0))
+                {
+                    Vector3 v = Vector3::CreateZero();
+                    dc.ReadArg<Vector3>(0, v);
+                    dc.PushResult<bool>(thisPtr->Contains(v));
+                }
+                else if (dc.IsClass<Aabb>(0))
+                {
+                    Aabb aabb = Aabb::CreateNull();
+                    dc.ReadArg<Aabb>(0, aabb);
+                    dc.PushResult<bool>(thisPtr->Contains(aabb));
+                }
+            }
+
+            if (dc.GetNumResults() == 0)
+            {
+                AZ_Error("Script", false, "ScriptAabb Contains expects one argument: Either Vector3 or Aabb");
+            }
+        }
+
+
+        AZStd::string AAbbToString(const Aabb& aabb)
+        {
+            return AZStd::string::format("Min %s Max %s", 
+                AZStd::to_string(aabb.GetMin(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str(), 
+                AZStd::to_string(aabb.GetMax(), AZStd::MathStringFormat::Vector3ScriptFormat).c_str());
+        }
     }
 
 
@@ -96,10 +102,10 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::Module, "math")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
-                ->Attribute(AZ::Script::Attributes::GenericConstructorOverride, &AabbDefaultConstructor)
+                ->Attribute(AZ::Script::Attributes::GenericConstructorOverride, &Internal::AabbDefaultConstructor)
                 ->Property("min", &Aabb::GetMin, &Aabb::SetMin)
                 ->Property("max", &Aabb::GetMax, &Aabb::SetMax)
-                ->Method("ToString", &AabbToString)
+                ->Method("ToString", &Internal::AAbbToString)
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ->Method("CreateNull", &Aabb::CreateNull)
                 ->Method("IsValid", &Aabb::IsValid)
@@ -111,17 +117,17 @@ namespace AZ
                 ->Method("GetExtents", &Aabb::GetExtents)
                 ->Method("GetCenter", &Aabb::GetCenter)
                 ->Method("Set", &Aabb::Set)
-                ->Attribute(AZ::Script::Attributes::MethodOverride, &AabbSetGeneric)
+                ->Attribute(AZ::Script::Attributes::MethodOverride, &Internal::AabbSetGeneric)
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                 ->Method("CreateFromObb", &Aabb::CreateFromObb)
                 ->Method("GetXExtent", &Aabb::GetXExtent)
                 ->Method("GetYExtent", &Aabb::GetYExtent)
                 ->Method("GetZExtent", &Aabb::GetZExtent)
                 ->Method("GetAsSphere", &Aabb::GetAsSphere, nullptr, "() -> Vector3(center) and float(radius)")
-                ->Attribute(AZ::Script::Attributes::MethodOverride, &AabbGetAsSphereMultipleReturn)
+                ->Attribute(AZ::Script::Attributes::MethodOverride, &Internal::AabbGetAsSphereMultipleReturn)
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                 ->Method<bool (Aabb::*)(const Aabb&) const>("Contains", &Aabb::Contains, nullptr, "const Vector3& or const Aabb&")
-                ->Attribute(AZ::Script::Attributes::MethodOverride, &AabbContainsGeneric)
+                ->Attribute(AZ::Script::Attributes::MethodOverride, &Internal::AabbContainsGeneric)
                 ->Method<bool (Aabb::*)(const Vector3&) const>("ContainsVector3", &Aabb::Contains, nullptr, "const Vector3&")
                 ->Attribute(AZ::Script::Attributes::Ignore, 0) // ignore for script since we already got the generic contains above
                 ->Method("Overlaps", &Aabb::Overlaps)
