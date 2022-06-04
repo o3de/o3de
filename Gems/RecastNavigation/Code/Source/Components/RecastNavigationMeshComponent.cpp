@@ -73,7 +73,7 @@ namespace RecastNavigation
             m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
 
         {
-            NavMeshQuery::LockGuard lock = GetNavigationObject()->AcquireLock();
+            NavMeshQuery::LockGuard lock(*m_navObject);
 
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
             {
@@ -156,7 +156,7 @@ namespace RecastNavigation
     }
     void RecastNavigationMeshComponent::OnDebugDrawTick()
     {
-        NavMeshQuery::LockGuard lock = m_navObject->AcquireLock();
+        NavMeshQuery::LockGuard lock(*m_navObject);
 
         if (lock.GetNavMesh() && (cl_navmesh_debug || m_showNavigationMesh))
         {

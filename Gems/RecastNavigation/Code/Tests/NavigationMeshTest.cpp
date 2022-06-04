@@ -221,7 +221,7 @@ namespace RecastNavigationTests
 
         AZStd::shared_ptr<RecastNavigation::NavMeshQuery> navMeshQuery;
         RecastNavigationMeshRequestBus::EventResult(navMeshQuery, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
-        RecastNavigation::NavMeshQuery::LockGuard lock = navMeshQuery->AcquireLock();
+        RecastNavigation::NavMeshQuery::LockGuard lock(*navMeshQuery);
         /*
          * We updated the navigation mesh using a blocking call. We should have access to the native Recast object now.
          */
@@ -262,7 +262,7 @@ namespace RecastNavigationTests
 
         AZStd::shared_ptr<RecastNavigation::NavMeshQuery> navMeshQuery;
         RecastNavigationMeshRequestBus::EventResult(navMeshQuery, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
-        RecastNavigation::NavMeshQuery::LockGuard lock = navMeshQuery->AcquireLock();
+        RecastNavigation::NavMeshQuery::LockGuard lock(*navMeshQuery);
 
         EXPECT_NE(lock.GetNavQuery(), nullptr);
     }

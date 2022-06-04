@@ -71,7 +71,7 @@ namespace RecastNavigation
             return {};
         }
 
-        NavMeshQuery::LockGuard lock = navMeshQuery->AcquireLock();
+        NavMeshQuery::LockGuard lock(*navMeshQuery);
         if (!lock.GetNavQuery())
         {
             return {};

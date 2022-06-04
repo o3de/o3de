@@ -388,7 +388,7 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: addTile");
 
-        NavMeshQuery::LockGuard lock = m_navObject->AcquireLock();
+        NavMeshQuery::LockGuard lock(*m_navObject);
 
         dtTileRef tileRef = 0;
         const dtStatus status = lock.GetNavMesh()->addTile(
@@ -440,7 +440,7 @@ namespace RecastNavigation
                         {
                             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync - tile callback");
 
-                            NavMeshQuery::LockGuard lock = m_navObject->AcquireLock();
+                            NavMeshQuery::LockGuard lock(*m_navObject);
                             if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
                             {
                                 lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);

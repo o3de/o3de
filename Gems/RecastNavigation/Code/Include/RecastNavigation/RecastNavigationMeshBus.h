@@ -17,7 +17,7 @@ namespace RecastNavigation
 {
     //! Holds a pointer to Recast navigation mesh and the associated mutex.
     //! This structure is to be used when performing operations on a navigation mesh.
-    //! In order to access NavMesh or NavMeshQuery objects, use the object returned by @AcquireLock.
+    //! In order to access NavMesh or NavMeshQuery objects, use the object LockGuard(NavMeshQuery&)
     class NavMeshQuery
     {
     public:
@@ -27,12 +27,6 @@ namespace RecastNavigation
         {
             m_mesh.reset(navMesh);
             m_query.reset(navQuery);
-        }
-
-        //! In order to access the underlying navigation objects, acquire a lock.
-        LockGuard AcquireLock()
-        {
-            return LockGuard(*this);
         }
 
         //! A lock guard class with accessors for navigation mesh and query objects.
