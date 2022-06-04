@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
 
     public:
         explicit ProjectsScreen(QWidget* parent = nullptr);
-        ~ProjectsScreen();
+        ~ProjectsScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;
         QString GetTabText() override;

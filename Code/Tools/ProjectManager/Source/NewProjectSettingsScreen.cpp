@@ -231,7 +231,7 @@ namespace O3DE::ProjectManager
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
             connect(configureGemsButton, &QPushButton::clicked, this, [=]()
                     {
-                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+                        emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
                     });
             templateDetailsLayout->addWidget(configureGemsButton);
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED 

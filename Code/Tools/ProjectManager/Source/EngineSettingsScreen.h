@@ -24,6 +24,8 @@ namespace O3DE::ProjectManager
         ~EngineSettingsScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;
+        bool IsTab() override;
+        QString GetTabText() override;
 
     protected slots:
         void OnTextChanged();

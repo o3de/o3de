@@ -12,7 +12,7 @@
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
-#include <GemCatalog/GemCatalogScreen.h>
+#include <ProjectGemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <ProjectUtils.h>
 #include <DownloadController.h>
@@ -47,21 +47,21 @@ namespace O3DE::ProjectManager
         m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
         m_stack->addWidget(m_newProjectSettingsScreen);
 
-        m_gemCatalogScreen = new GemCatalogScreen(this);
-        m_stack->addWidget(m_gemCatalogScreen);
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(this);
+        m_stack->addWidget(m_projectGemCatalogScreen);
 
         m_gemRepoScreen = new GemRepoScreen(this);
         m_stack->addWidget(m_gemRepoScreen);
 
         vLayout->addWidget(m_stack);
 
-        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
+        connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
             {
-                const GemModel* gemModel = m_gemCatalogScreen->GetGemModel();
+                const GemModel* gemModel = m_projectGemCatalogScreen->GetGemModel();
                 const QVector<QModelIndex> toBeAdded = gemModel->GatherGemsToBeAdded();
                 const QVector<QModelIndex> toBeRemoved = gemModel->GatherGemsToBeRemoved();
                 if (!toBeAdded.isEmpty() || !toBeRemoved.isEmpty())
@@ -167,7 +167,7 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::Update()
     {
-        if (m_stack->currentWidget() == m_gemCatalogScreen)
+        if (m_stack->currentWidget() == m_projectGemCatalogScreen)
         {
             m_header->setSubTitle(tr("Configure project with Gems"));
             m_secondaryButton->setVisible(false);
@@ -191,7 +191,7 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
     {
-        if (screen == ProjectManagerScreen::GemCatalog)
+        if (screen == ProjectManagerScreen::ProjectGemCatalog)
         {
             HandleSecondaryButton();
         }
@@ -252,7 +252,7 @@ namespace O3DE::ProjectManager
     {
         if (m_newProjectSettingsScreen->Validate())
         {
-            if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
+            if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
                 QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
                 return;
@@ -268,12 +268,12 @@ namespace O3DE::ProjectManager
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
-                if (gemResult == GemCatalogScreen::EnableDisableGemsResult::Failed)
+                const ProjectGemCatalogScreen::EnableDisableGemsResult gemResult = m_projectGemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+                if (gemResult == ProjectGemCatalogScreen::EnableDisableGemsResult::Failed)
                 {
                     QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
                 }
-                if (gemResult != GemCatalogScreen::EnableDisableGemsResult::Success)
+                if (gemResult != ProjectGemCatalogScreen::EnableDisableGemsResult::Success)
                 {
                     return;
                 }
@@ -298,6 +298,6 @@ namespace O3DE::ProjectManager
     void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
     {
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
+        m_projectGemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
 } // namespace O3DE::ProjectManager
