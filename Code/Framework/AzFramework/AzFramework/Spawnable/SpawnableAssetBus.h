@@ -32,12 +32,6 @@ namespace AzFramework
         //!     an asset for loading.
         virtual void OnResolveAliases(
             Spawnable::EntityAliasVisitor& aliases, const SpawnableMetaData& metadata, const Spawnable::EntityList& entities) = 0;
-
-        //! Notification to allow systems to access a spawnable before it's been modified, for example, by aliasing
-        //! @param spawnable the spawnable that is being prepared
-        //! @param assetHint the spawnable asset name
-        virtual void OnPreparingSpawnable(
-            [[maybe_unused]] const Spawnable& spawnable, [[maybe_unused]] const AZStd::string& assetHint) {}
     };
 
     using SpawnableAssetEventsBus = AZ::EBus<SpawnableAssetEvents>;

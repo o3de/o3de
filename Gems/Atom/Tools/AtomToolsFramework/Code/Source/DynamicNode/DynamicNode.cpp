@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Slot.h>
@@ -22,20 +23,30 @@ namespace AtomToolsFramework
         {
             serializeContext->Class<DynamicNode, GraphModel::Node>()
                 ->Version(0)
-                ->Field("config", &DynamicNode::m_config);
+                ->Field("toolId", &DynamicNode::m_toolId)
+                ->Field("configId", &DynamicNode::m_configId);
         }
     }
 
-    DynamicNode::DynamicNode(GraphModel::GraphPtr ownerGraph, const DynamicNodeConfig& config)
+    DynamicNode::DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZStd::string& configId)
         : GraphModel::Node(ownerGraph)
-        , m_config(config)
+        , m_toolId(toolId)
+        , m_configId(configId)
     {
+        m_config = {};
+        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
+
         RegisterSlots();
         CreateSlotData();
     }
 
     void DynamicNode::PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id)
     {
+        m_config = {};
+        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
+
         Node::PostLoadSetup(ownerGraph, id);
     }
 
@@ -64,9 +75,10 @@ namespace AtomToolsFramework
 
             if (!dataTypes.empty())
             {
+                const AZStd::any& defaultValue =
+                    !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataTypes.front()->GetDefaultValue();
                 RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
-                    slotConfig.m_name, slotConfig.m_displayName, dataTypes, dataTypes.front()->GetDefaultValue(),
-                    slotConfig.m_description));
+                    slotConfig.m_name, slotConfig.m_displayName, dataTypes, defaultValue, slotConfig.m_description));
             }
         }
 
@@ -78,6 +90,21 @@ namespace AtomToolsFramework
                 {
                     RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
                         slotConfig.m_name, slotConfig.m_displayName, dataType, slotConfig.m_description));
+                    break;
+                }
+            }
+        }
+
+        for (const auto& slotConfig : m_config.m_propertySlots)
+        {
+            for (const auto& supportedDataType : slotConfig.m_supportedDataTypes)
+            {
+                if (auto dataType = GetGraphContext()->GetDataType(supportedDataType))
+                {
+                    const AZStd::any& defaultValue =
+                        !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataType->GetDefaultValue();
+                    RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+                        slotConfig.m_name, slotConfig.m_displayName, dataType, defaultValue, slotConfig.m_description));
                     break;
                 }
             }

@@ -19,39 +19,40 @@ namespace MaterialCanvas
     {
         AZStd::string baseName = AZ::RPI::AssetUtils::SanitizeFileName(nodeConfig.m_title);
         AZStd::to_lower(baseName.begin(), baseName.end());
-        auto resolvedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ AZStd::string::format(
-            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/%s.materialcanvasnode.azasset", baseName.c_str()) });
-        return resolvedPath ? resolvedPath->Native().c_str() : AZStd::string();
+        return AZStd::string::format(
+            "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/%s.materialcanvasnode.azasset", baseName.c_str());
     }
 
     void CreateTestNodes()
     {
+        const AZ::Color defaultColor = AZ::Color::CreateOne();
+
         AtomToolsFramework::DynamicNodeConfig nodeConfig;
         nodeConfig.m_category = "Color Operations";
         nodeConfig.m_title = "Combine Color Channels";
-        nodeConfig.m_inputSlots.emplace_back("Data", "inR", "R", "Red color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_inputSlots.emplace_back("Data", "inG", "G", "Green color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_inputSlots.emplace_back("Data", "inB", "B", "Blue color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_inputSlots.emplace_back("Data", "inA", "A", "Alpha color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_outputSlots.emplace_back("Data", "outColor", "Color", "Color", AZStd::vector<AZStd::string>{ "Color" }, "");
+        nodeConfig.m_inputSlots.emplace_back("inR", "R", "Red color channel", AZStd::any(defaultColor.GetR()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_inputSlots.emplace_back("inG", "G", "Green color channel", AZStd::any(defaultColor.GetG()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_inputSlots.emplace_back("inB", "B", "Blue color channel", AZStd::any(defaultColor.GetB()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_inputSlots.emplace_back("inA", "A", "Alpha color channel", AZStd::any(defaultColor.GetA()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_outputSlots.emplace_back("outColor", "Color", "Color", AZStd::any(""), AZStd::vector<AZStd::string>{ "Color" }, AtomToolsFramework::DynamicNodeSettingsMap());
         nodeConfig.Save(GetTestDataPathForNodeConfig(nodeConfig));
 
         nodeConfig = {};
         nodeConfig.m_category = "Color Operations";
         nodeConfig.m_title = "Split Color";
-        nodeConfig.m_outputSlots.emplace_back("Data", "outR", "R", "Red color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_outputSlots.emplace_back("Data", "outG", "G", "Green color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_outputSlots.emplace_back("Data", "outB", "B", "Blue color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_outputSlots.emplace_back("Data", "outA", "A", "Alpha color channel", AZStd::vector<AZStd::string>{ "float" }, "");
-        nodeConfig.m_inputSlots.emplace_back("Data", "inColor", "Color", "Color", AZStd::vector<AZStd::string>{ "Color" }, "");
+        nodeConfig.m_outputSlots.emplace_back("outR", "R", "Red color channel", AZStd::any(defaultColor.GetR()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_outputSlots.emplace_back("outG", "G", "Green color channel", AZStd::any(defaultColor.GetG()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_outputSlots.emplace_back("outB", "B", "Blue color channel", AZStd::any(defaultColor.GetB()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_outputSlots.emplace_back("outA", "A", "Alpha color channel", AZStd::any(defaultColor.GetA()), AZStd::vector<AZStd::string>{ "float" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_inputSlots.emplace_back("inColor", "Color", "Color", AZStd::any(defaultColor), AZStd::vector<AZStd::string>{ "Color" }, AtomToolsFramework::DynamicNodeSettingsMap());
         nodeConfig.Save(GetTestDataPathForNodeConfig(nodeConfig));
 
         nodeConfig = {};
         nodeConfig.m_category = "Color Operations";
         nodeConfig.m_title = "Add Color";
-        nodeConfig.m_inputSlots.emplace_back("Data", "inColor1", "Color1", "Color1", AZStd::vector<AZStd::string>{ "Color" }, "");
-        nodeConfig.m_inputSlots.emplace_back("Data", "inColor2", "Color2", "Color2", AZStd::vector<AZStd::string>{ "Color" }, "");
-        nodeConfig.m_outputSlots.emplace_back("Data", "outColor", "Color", "Color", AZStd::vector<AZStd::string>{ "Color" }, "");
+        nodeConfig.m_inputSlots.emplace_back("inColor1", "Color1", "Color1", AZStd::any(defaultColor), AZStd::vector<AZStd::string>{ "Color" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_inputSlots.emplace_back("inColor2", "Color2", "Color2", AZStd::any(defaultColor), AZStd::vector<AZStd::string>{ "Color" }, AtomToolsFramework::DynamicNodeSettingsMap());
+        nodeConfig.m_outputSlots.emplace_back("outColor", "Color", "Color", AZStd::any(defaultColor), AZStd::vector<AZStd::string>{ "Color" }, AtomToolsFramework::DynamicNodeSettingsMap());
         nodeConfig.Save(GetTestDataPathForNodeConfig(nodeConfig));
 
         nodeConfig.m_title = "Subtract Color";

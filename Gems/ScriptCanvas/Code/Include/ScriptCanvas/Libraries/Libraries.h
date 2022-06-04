@@ -13,15 +13,15 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
-#define REFLECT_MATH_LIBRARY_TYPE(MathType, Guid)\
-    struct MathType\
+#define REFLECT_GENERIC_FUNCTION_NODE(GenericFunction, Guid)\
+    struct GenericFunction\
     {\
-        AZ_TYPE_INFO(MathType, Guid);\
+        AZ_TYPE_INFO(GenericFunction, Guid);\
         static void Reflect(AZ::ReflectContext* reflection)\
         {\
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))\
             {\
-                serializeContext->Class<MathType>()\
+                serializeContext->Class<GenericFunction>()\
                 ->Version(0)\
                 ;\
             }\
@@ -127,18 +127,6 @@ namespace ScriptCanvas
             static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~Logic() override = default;
-
-        };
-
-        struct Entity : public LibraryDefinition
-        {
-            AZ_RTTI(Entity, "{C9789111-6A18-4C6E-81A7-87D057D59D2C}", LibraryDefinition);
-
-            static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
-
-            ~Entity() override = default;
 
         };
 
