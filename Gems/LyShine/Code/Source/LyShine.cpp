@@ -342,9 +342,9 @@ ISprite* CLyShine::LoadSprite(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
+ISprite* CLyShine::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    return CSprite::CreateSprite(renderTargetName);
+    return CSprite::CreateSprite(attachmentImageAsset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

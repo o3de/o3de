@@ -138,11 +138,8 @@ namespace Multiplayer
             }
 
             // We only care about Root.spawnable and Root.network.spawnable
-            if (!assetHint.starts_with(AzFramework::Spawnable::DefaultMainSpawnableName))
-            {
-                AZ_Assert(false, "Editor sent the server more than just the root (level) spawnable. Ensure the editor code only sends Root.");
-            }
-            
+            AZ_Assert(assetHint.starts_with(AzFramework::Spawnable::DefaultMainSpawnableName), "Editor sent the server more than just the root (level) spawnable. Ensure the editor code only sends Root.");
+
             AZ::Data::AssetInfo spawnableAssetInfo;
             spawnableAssetInfo.m_sizeBytes = m_byteStream.GetCurPos() - assetSize;
             spawnableAssetInfo.m_assetId = assetId;

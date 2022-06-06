@@ -89,7 +89,19 @@ namespace AzFramework
 
             AZ::Data::AssetCatalogRequestBus::Broadcast(
                 &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, assetInfo.m_assetId, assetInfo);
-            spawnableAssetData.m_assets.emplace_back(assetInfo.m_assetId, assetData, AZ::Data::AssetLoadBehavior::Default);
+
+            // The asset Id may not already be set in the asset data in which case we will pass it to the asset creation.
+            // For example, spawnable asset data is serialized and sent to the server, but the asset Id is not included
+            // in the serialization
+            if (assetData->GetId().IsValid())
+            {
+                AZ_Assert(assetData->GetId() == assetInfo.m_assetId, "Asset data already has an asset Id but it's different from the Id set in the corresponding assetInfo.");
+                spawnableAssetData.m_assets.emplace_back(assetData, AZ::Data::AssetLoadBehavior::Default);
+            }
+            else
+            {
+                spawnableAssetData.m_assets.emplace_back(assetInfo.m_assetId, assetData, AZ::Data::AssetLoadBehavior::Default);
+            }
 
             // Ensure the product asset is registered with the AssetManager
             // Hold on to the returned asset to keep ref count alive until we assign it the latest data
