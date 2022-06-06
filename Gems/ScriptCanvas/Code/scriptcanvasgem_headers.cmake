@@ -37,6 +37,7 @@ set(FILES
     Include/ScriptCanvas/Core/Endpoint.h
     Include/ScriptCanvas/Core/Graph.h
     Include/ScriptCanvas/Core/GraphData.h
+    Include/ScriptCanvas/Core/GraphSerialization.h
     Include/ScriptCanvas/Core/GraphScopedTypes.h
     Include/ScriptCanvas/Core/MethodConfiguration.h
     Include/ScriptCanvas/Core/ModifiableDatumView.h
@@ -115,6 +116,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h
     Include/ScriptCanvas/Grammar/ParsingUtilities.h
+    Include/ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h
     Include/ScriptCanvas/Grammar/Primitives.h
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.h
     Include/ScriptCanvas/Grammar/PrimitivesExecution.h
