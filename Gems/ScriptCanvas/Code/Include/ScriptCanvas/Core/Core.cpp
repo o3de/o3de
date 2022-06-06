@@ -316,6 +316,19 @@ namespace ScriptCanvas
                 ->Field("id", &SourceHandle::m_id)
                 ->Field("path", &SourceHandle::m_relativePath)
                 ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<SourceHandle>("Source File", "Script Canvas Source File")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
+                    ;
+            }
         }
         else if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {

@@ -195,6 +195,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
                         ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeSource)
+                        // ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren) // or just ::Hide
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_propertyOverrides, "Properties", "Script Canvas Graph Properties")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeProperties)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
