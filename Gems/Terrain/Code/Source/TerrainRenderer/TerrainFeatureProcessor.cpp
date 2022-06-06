@@ -34,11 +34,6 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
-    namespace SceneSrgInputs
-    {
-        static const char* const TerrainWorldData("m_terrainWorldData");
-    }
-
     namespace TerrainSrgInputs
     {
         static const char* const Textures("m_textures");
@@ -68,9 +63,6 @@ namespace Terrain
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
         
-        m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
-        AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
-
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -352,8 +344,9 @@ namespace Terrain
             m_terrainBoundsNeedUpdate = false;
 
             WorldShaderData worldData;
-            m_terrainBounds.GetMin().StoreToFloat3(worldData.m_min.data());
-            m_terrainBounds.GetMax().StoreToFloat3(worldData.m_max.data());
+            worldData.m_zMin = m_terrainBounds.GetMin().GetZ();
+            worldData.m_zMax = m_terrainBounds.GetMax().GetZ();
+            worldData.m_zExtents = m_terrainBounds.GetZExtent();
 
             auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
             sceneSrg->SetConstant(m_worldDataIndex, worldData);
