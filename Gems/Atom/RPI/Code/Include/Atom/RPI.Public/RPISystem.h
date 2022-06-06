@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Material/MaterialSystem.h>
 #include <Atom/RPI.Public/Model/ModelSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 #include <Atom/RHI/RHISystem.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -93,6 +94,10 @@ namespace AZ
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
 
+            //Register/Unregister xr system with RPI and RHI
+            void RegisterXRSystem(XRRenderingInterface* xrSystemInterface);
+            void UnRegisterXRSystem();
+
         private:
             // Initializes the system assets for tests. Should only be called from tests
             void InitializeSystemAssetsForTests();
@@ -142,6 +147,9 @@ namespace AZ
 
             // Application multisample state
             RHI::MultisampleState m_multisampleState;
+
+            //XR System
+            XRRenderingInterface* m_xrSystem = nullptr;
         };
 
     } // namespace RPI
