@@ -91,8 +91,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # Prepare the test environment.
         env = ap_setup_fixture
         source_dir, _ = asset_processor.prepare_test_environment(env["tests_dir"], "test_AllSupportedPlatforms_FastScanWorks_FasterThanFullScan")
-        assets_name = "manyfiles_forscanning"
-        test_assets_zip = f"""{os.path.join(workspace.paths.project(), "TestAssets", assets_name)}.zip"""
+        assets_name = "manyfiles_forscanning.zip"
+        test_assets_zip = os.path.join(source_dir, assets_name)
         destination_path = source_dir
 
         # Extract test assets to the project folder.
