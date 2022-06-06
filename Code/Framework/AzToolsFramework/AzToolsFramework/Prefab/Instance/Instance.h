@@ -19,6 +19,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AZ
@@ -229,6 +230,9 @@ namespace AzToolsFramework
 
             static InstanceAlias GenerateInstanceAlias();
 
+            PrefabDomValueConstReference GetCachedInstanceDom() const;
+            void SetCachedInstanceDom(PrefabDomValueConstReference instanceDom);
+
         private:
             static constexpr const char s_aliasPathSeparator = '/';
 
@@ -244,6 +248,7 @@ namespace AzToolsFramework
             bool GetAllEntitiesInHierarchyConst_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const;
 
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
+            bool UnregisterEntity(AZ::EntityId entityId);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);
 
             // Provide access to private data members in the serializer
@@ -272,6 +277,10 @@ namespace AzToolsFramework
 
             // The source path of the template this instance represents
             AZ::IO::Path m_templateSourcePath;
+
+            //! This can be used to set the DOM that was last used for building the instance object through deserialization.
+            //! This is optional and will only be set when asked explicitly through SetCachedInstanceDom().
+            PrefabDom m_cachedInstanceDom;
 
             // The unique ID of the template this Instance belongs to.
             TemplateId m_templateId = InvalidTemplateId;

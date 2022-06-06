@@ -13,7 +13,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
 namespace AzFramework
@@ -77,8 +76,6 @@ namespace AzFramework
             {
                 auto spawnable = azrtti_cast<Spawnable*>(assetData);
 
-                SpawnableAssetEventsBus::Broadcast(&SpawnableAssetEvents::OnPreparingSpawnable,
-                    *spawnable, assetInfo.m_relativePath);
                 spawnables.push_back(AZStd::make_pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
 
                 if (assetInfo.m_relativePath == rootProductId)
@@ -190,11 +187,11 @@ namespace AzFramework
 
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : spawnable.m_assets)
         {
-            auto callback = [&blockingAssets](
+            auto callback = [sc, &blockingAssets](
                                 void* object, const AZ::SerializeContext::ClassData* classData,
-                                [[maybe_unused]]const AZ::SerializeContext::ClassElement* elementData) -> bool
+                                const AZ::SerializeContext::ClassElement* elementData) -> bool
             {
-                if (classData->m_typeId == AZ::GetAssetClassId())
+                if (const auto* genericInfo = elementData ? elementData->m_genericClassInfo : sc->FindGenericClassInfo(classData->m_typeId); genericInfo && genericInfo->GetGenericTypeId() == AZ::GetAssetClassId())
                 {
                     auto asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(object);
 

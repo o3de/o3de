@@ -14,6 +14,9 @@ set(FILES
     Source/Framework/ScriptCanvasTestVerify.cpp
     Source/Framework/ScriptCanvasTestVerify.h
     Source/Nodes/BehaviorContextObjectTestNode.h
+    Source/Nodes/TestAutoGenFunctions.h
+    Source/Nodes/TestAutoGenFunctions.cpp
+    Source/Nodes/TestAutoGenFunctions.ScriptCanvasFunction.xml
     Source/Nodes/Nodeables/NodeableTestingLibrary.h
     Source/Nodes/Nodeables/NodeableTestingLibrary.cpp
     Source/Nodes/Nodeables/SharedDataSlotExample.h
