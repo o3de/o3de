@@ -182,7 +182,7 @@
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"windows-gpu-test"
+      "NODE_LABEL":"windows-gpu"
     },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
