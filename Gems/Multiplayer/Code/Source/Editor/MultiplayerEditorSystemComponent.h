@@ -20,7 +20,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
 
 namespace AzNetworking
 {
@@ -51,7 +51,7 @@ namespace Multiplayer
         , private IEditorNotifyListener
         , private MultiplayerEditorServerRequestBus::Handler
         , private AZ::TickBus::Handler
-        , private AzFramework::SpawnableAssetEventsBus::Handler
+        , private AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
@@ -96,9 +96,9 @@ namespace Multiplayer
         void OnStartPlayInEditor() override;
         //! @
 
-        //! AzFramework::SpawnableAssetEventsBus::Handler overrides
+        //! AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler overrides
         //! @{
-        void OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
+        void OnPreparingInMemorySpawnableFromPrefab(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
         //! @
         
         //! EditorEvents::Handler overrides

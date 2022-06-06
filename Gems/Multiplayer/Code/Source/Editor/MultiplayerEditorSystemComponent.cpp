@@ -141,7 +141,7 @@ namespace Multiplayer
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
@@ -193,7 +193,7 @@ namespace Multiplayer
 
             // SpawnableAssetEventsBus would already be disconnected once OnStartPlayInEditor happens, but it's possible to
             // exit gamemode before the OnStartPlayInEditor is called if the user hits CTRL+G and then ESC really fast.
-            AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+            AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusDisconnect();
 
             // Rebuild the library to clear temporary in-memory spawnable assets
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
@@ -429,7 +429,8 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerEditorSystemComponent::OnPreparingSpawnable(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
+    void MultiplayerEditorSystemComponent::OnPreparingInMemorySpawnableFromPrefab(
+        const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint)
     {
         // Only grab the level (Root.spawnable or Root.network.spawnable)
         // We'll receive OnPreparingSpawnable for other spawnables that are referenced by components in the level,
@@ -461,7 +462,7 @@ namespace Multiplayer
         }
 
         AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
-        AzFramework::SpawnableAssetEventsBus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::OnStartPlayInEditor()
@@ -473,7 +474,7 @@ namespace Multiplayer
             return;
         }
 
-        AzFramework::SpawnableAssetEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusDisconnect();
 
         if (editorsv_launch)
         {
