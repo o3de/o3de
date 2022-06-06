@@ -29,16 +29,13 @@ namespace AzToolsFramework
     {
         // todo: look into caching and QLayoutItem::invalidate()
     public:
-        DPELayout(int depth, QWidget* parentWidget = nullptr)
-            : QHBoxLayout(parentWidget)
-            , m_depth(depth)
-        {
-        }
+        DPELayout(int depth, QWidget* parentWidget = nullptr);
 
         // QLayout overrides
         QSize sizeHint() const override;
         QSize minimumSize() const override;
         void setGeometry(const QRect& rect) override;
+        Qt::Orientations expandingDirections() const override;
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
@@ -63,9 +60,11 @@ namespace AzToolsFramework
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
+        //! returns the last descendent of this row in its own layout
+        DPERowWidget* GetLastDescendantInLayout();
+
     protected:
         DocumentPropertyEditor* GetDPE();
-        DPERowWidget* GetLastDescendantInLayout();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         QBoxLayout* m_columnLayout = nullptr;
@@ -106,5 +105,10 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
+
+        QTimer* m_handlerCleanupTimer;
+        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
+
+        AZStd::deque<QPointer<DPERowWidget>> m_domOrderedRows;
     };
 } // namespace AzToolsFramework

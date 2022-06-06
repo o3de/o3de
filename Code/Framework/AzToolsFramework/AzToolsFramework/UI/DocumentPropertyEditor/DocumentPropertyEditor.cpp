@@ -31,6 +31,12 @@ namespace AzToolsFramework
         }
     }
 
+    DPELayout::DPELayout(int depth, QWidget* parentWidget)
+        : QHBoxLayout(parentWidget)
+        , m_depth(depth)
+    {
+    }
+
     QSize DPELayout::sizeHint() const
     {
         int cumulativeWidth = 0;
@@ -98,6 +104,11 @@ namespace AzToolsFramework
                 itemAt(layoutIndex)->setGeometry(itemGeometry);
             }
         }
+    }
+
+    Qt::Orientations DPELayout::expandingDirections() const
+    {
+        return Qt::Vertical | Qt::Horizontal;
     }
 
     DocumentPropertyEditor* DPELayout::GetDPE() const
@@ -416,9 +427,26 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex)
     {
-        auto newRow = new DPERowWidget(0, this);
-        m_layout->insertWidget(rowIndex, newRow);
-        newRow->SetValueFromDom(domValue);
+        const bool indexInRange = (rowIndex <= m_domOrderedRows.size());
+        AZ_Assert(indexInRange, "rowIndex cannot be more than one past the existing end!")
+
+        if (indexInRange)
+        {
+            auto newRow = new DPERowWidget(0, this);
+
+            if (rowIndex == 0)
+            {
+                m_domOrderedRows.push_front(newRow);
+                m_layout->insertWidget(0, newRow);
+            }
+            else
+            {
+                auto priorRowPosition = m_domOrderedRows.begin() + (rowIndex - 1);
+                AddAfterWidget((*priorRowPosition)->GetLastDescendantInLayout(), newRow);
+                m_domOrderedRows.insert(priorRowPosition + 1, newRow);
+            }
+            newRow->SetValueFromDom(domValue);
+        }
     }
 
     void DocumentPropertyEditor::HandleReset()
@@ -452,10 +480,10 @@ namespace AzToolsFramework
             AZ_Assert(
                 firstAddressEntry.IsIndex() || firstAddressEntry.IsEndOfArray(),
                 "first entry in a DPE patch must be the index of the first row");
-            auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : m_layout->count());
+            auto rowIndex = (firstAddressEntry.IsIndex() ? firstAddressEntry.GetIndex() : m_domOrderedRows.size());
             AZ_Assert(
-                rowIndex < m_layout->count() ||
-                    (rowIndex <= m_layout->count() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
+                rowIndex < m_domOrderedRows.size() ||
+                    (rowIndex <= m_domOrderedRows.size() && operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add),
                 "received a patch for a row that doesn't exist");
 
             // if the patch points at our root, this operation is for the top level layout
@@ -467,24 +495,21 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    auto rowWidget =
-                        static_cast<DPERowWidget*>(GetVerticalLayout()->itemAt(aznumeric_cast<int>(firstAddressEntry.GetIndex()))->widget());
+                    auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
                     if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
                     {
                         rowWidget->SetValueFromDom(operationIterator->GetValue());
                     }
                     else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                     {
-                        m_layout->removeWidget(rowWidget);
                         delete rowWidget;
                     }
                 }
             }
             else
             {
-                // delegate the action th the rowWidget, which will, in turn, delegate to the next row in the path, if available
-                auto rowWidget = static_cast<DPERowWidget*>(m_layout->itemAt(aznumeric_cast<int>(firstAddressEntry.GetIndex()))->widget());
-
+                // delegate the action to the rowWidget, which will, in turn, delegate to the next row in the path, if available
+                auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];;
                 constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
