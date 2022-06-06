@@ -100,7 +100,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
-    struct UIElement : NodeWithVisiblityControl
+    struct UIElement : PropertyEditor
     {
         static constexpr AZStd::string_view Name = "UIElement";
         static constexpr auto Handler = NamedCrcAttributeDefinition("Handler");

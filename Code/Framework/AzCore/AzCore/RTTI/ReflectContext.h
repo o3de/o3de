@@ -331,6 +331,21 @@ namespace AZ
         return (CanInvokeFromDomArrayEntry<T>(domArray, index++) && ...);
     }
 
+    template <typename R, typename... Args, size_t... Is>
+    Dom::Value InvokeFromDomArrayInternal(
+        const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray, AZStd::index_sequence<Is...>)
+    {
+        if constexpr (AZStd::is_same_v<R, void>)
+        {
+            invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[Is])...);
+            return {};
+        }
+        else
+        {
+            return AZ::Dom::Utils::ValueFromType(invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[Is])...));
+        }
+    }
+
     template <typename R, typename... Args>
     Dom::Value InvokeFromDomArray(const AZStd::function<R(Args...)>& invokeFunction, const AZ::Dom::Value& domArray)
     {
@@ -338,16 +353,9 @@ namespace AZ
         {
             return {};
         }
-        [[maybe_unused]] size_t index = sizeof...(Args);
-        if constexpr (AZStd::is_same_v<R, void>)
-        {
-            invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[--index])...);
-            return {};
-        }
-        else
-        {
-            return AZ::Dom::Utils::ValueFromType<R>(invokeFunction(AZ::Dom::Utils::ValueToTypeUnsafe<Args>(domArray[--index])...));
-        }
+
+        auto indexSequence = AZStd::make_index_sequence<sizeof...(Args)>{};
+        return InvokeFromDomArrayInternal<R, Args...>(invokeFunction, domArray, indexSequence);
     }
 
     template <typename T>
