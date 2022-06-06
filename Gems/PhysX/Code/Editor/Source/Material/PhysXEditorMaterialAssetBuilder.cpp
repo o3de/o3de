@@ -6,10 +6,11 @@
  *
  */
 
-#include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/IOUtils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
