@@ -57,7 +57,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
 
-        system->RegisterPropertyEditor<UIElement, NodeWithVisiblityControl>();
+        system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
