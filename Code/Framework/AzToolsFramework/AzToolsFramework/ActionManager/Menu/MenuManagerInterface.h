@@ -49,31 +49,43 @@ namespace AzToolsFramework
         //! Bind an Action to a Menu.
         //! @param menuIdentifier The identifier for the menu the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the menu.
-        //! @param sortIndex A positive integer describing the position the action should appear in in the menu.
+        //! @param sortIndex An integer defining the position the action should appear in on the menu.
         //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
         //! Add a Separator to a Menu.
+        //! @param menuIdentifier The identifier for the menu the separator is being added to.
+        //! @param sortIndex An integer defining the position the separator should appear in on the menu.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult AddSeparatorToMenu(
             const AZStd::string& menuIdentifier, int sortIndex) = 0;
 
         //! Add a Sub-Menu to a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menu is being added to.
+        //! @param subMenuIdentifier The identifier for the sub-menu to add to the menu.
+        //! @param sortIndex An integer defining the position the sub-menu should appear in on the menu.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 
         //! Add a Menu to a Menu Bar.
+        //! @param menuBarIdentifier The identifier for the menu bar the menu is being added to.
+        //! @param menuIdentifier The identifier for the menu to add to the menu bar.
+        //! @param sortIndex An integer defining the position the menu should appear in on the menu bar.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult AddMenuToMenuBar(
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) = 0;
 
         //! Retrieve a QMenu from its identifier.
+        //! @param menuIdentifier The identifier for the menu to retrieve.
+        //! @return A raw pointer to the QMenu object.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
 
         //! Retrieve a QMenuBar from its identifier.
+        //! @param menuBarIdentifier The identifier for the menu bar to retrieve.
+        //! @return A raw pointer to the QMenuBar object.
         virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
-
-        //! Get the sort key for an action in a menu.
-        virtual int GetSortKey(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
