@@ -139,7 +139,7 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
-          - 'Actor asset' Asset.id of the hair TressFX asset.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -531,7 +531,7 @@ class AtomComponentProperties:
         """
         Atom Hair component properties. Requires Actor component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'Hair Asset'
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.

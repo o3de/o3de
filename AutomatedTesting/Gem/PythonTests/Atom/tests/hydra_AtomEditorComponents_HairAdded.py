@@ -83,8 +83,6 @@ def AtomEditorComponents_Hair_AddedToEntity():
     """
 
     import azlmbr.legacy.general as general
-    # import azlmbr.bus as bus
-    # import azlmbr.render as render
 
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
