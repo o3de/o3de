@@ -139,6 +139,8 @@ namespace Terrain
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+
+            bool m_hasData = false;
         };
 
         struct StackData
@@ -216,8 +218,10 @@ namespace Terrain
         void InitializeCommonSectorData();
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
-        void UpdateSectorLodBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
-        void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
+        void UpdateSectorLodBuffers(StackSectorData& sector,
+            const AZStd::span<const HeightDataType> originalHeights, const AZStd::span<const NormalDataType> originalNormals,
+            const AZStd::span<const HeightDataType> lodHeights, const AZStd::span<const NormalDataType> lodNormals);
+        void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);

@@ -105,7 +105,7 @@ void CalculateTerrainPosition(
     out float3 worldPosition, out float4 position, out float2 cullDistance, out float3 normal)
 {
     float2 worldXyPosition = GetWorldXYPosition(ObjectSrg::m_patchData, input.m_xyPosition);
-    if (IsVertexOutsideOfTerrainBounds(worldXyPosition, worldData.m_min.xy, worldData.m_max.xy))
+    if (input.m_zPosition == 1.0 || IsVertexOutsideOfTerrainBounds(worldXyPosition, worldData.m_min.xy, worldData.m_max.xy))
     {
         // Output a NaN to remove this vertex.
         position = 1.0 / 0.0;
