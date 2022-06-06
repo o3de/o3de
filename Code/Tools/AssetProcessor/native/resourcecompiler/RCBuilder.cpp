@@ -239,19 +239,6 @@ namespace AssetProcessor
         m_isShuttingDown = true;
     }
 
-    bool InternalRecognizerBasedBuilder::FindRC(QString& rcAbsolutePathOut)
-    {
-        AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
-        executableDirectory /= ASSETPROCESSOR_TRAIT_LEGACY_RC_RELATIVE_PATH;
-        if (AZ::IO::SystemFile::Exists(executableDirectory.c_str()))
-        {
-            rcAbsolutePathOut = QString::fromUtf8(executableDirectory.c_str(), static_cast<int>(executableDirectory.Native().size()));
-            return true;
-        }
-
-        return false;
-    }
-
     bool InternalRecognizerBasedBuilder::Initialize(const RecognizerConfiguration& recognizerConfig)
     {
         InitializeAssetRecognizers(recognizerConfig.GetAssetRecognizerContainer());
@@ -464,79 +451,44 @@ namespace AssetProcessor
             return;
         }
 
-        // First pass
+        // First pass, check for simple jobs like 'copy'
         for (const InternalAssetRecognizer* recognizer : recognizers)
         {
-            if (recognizer->m_supportsCreateJobs)
+            bool skippedByPlatform = false;
+
+            // Iterate through the platform specific specs and apply the ones that match the platform flag
+            for (auto iterPlatformSpec = recognizer->m_platformSpecsByPlatform.cbegin();
+                iterPlatformSpec != recognizer->m_platformSpecsByPlatform.cend();
+                iterPlatformSpec++)
             {
-                // The recognizer's builder id must match the job requests' builder id
-                if (recognizer->m_builderId.compare(requestedBuilderID) != 0)
+                if (request.HasPlatform(iterPlatformSpec.key().toUtf8().constData()))
                 {
-                    continue;
-                }
+                    QString rcParam = iterPlatformSpec.value().m_extraRCParams;
 
-                AssetBuilderSDK::CreateJobsResponse rcResponse;
-
-                CreateLegacyRCJob(request, "", rcResponse);
-
-                if (rcResponse.m_result != AssetBuilderSDK::CreateJobsResultCode::Success)
-                {
-                    // Error is already printed out by CreateLegacyRCJob
-                    continue;
-                }
-
-                for (auto& descriptor : rcResponse.m_createJobOutputs)
-                {
-                    descriptor.m_jobParameters[recognizer->m_paramID] = descriptor.m_jobKey;
-                }
-
-                // Move-append the response outputs
-                response.m_createJobOutputs.reserve(response.m_createJobOutputs.size() + rcResponse.m_createJobOutputs.size());
-                response.m_createJobOutputs.reserve(response.m_sourceFileDependencyList.size() + rcResponse.m_sourceFileDependencyList.size());
-
-                AZStd::move(rcResponse.m_createJobOutputs.begin(), rcResponse.m_createJobOutputs.end(), AZStd::back_inserter(response.m_createJobOutputs));
-                AZStd::move(rcResponse.m_sourceFileDependencyList.begin(), rcResponse.m_sourceFileDependencyList.end(), AZStd::back_inserter(response.m_sourceFileDependencyList));
-
-                response.m_result = rcResponse.m_result;
-            }
-            else
-            {
-                bool skippedByPlatform = false;
-
-                // Iterate through the platform specific specs and apply the ones that match the platform flag
-                for (auto iterPlatformSpec = recognizer->m_platformSpecsByPlatform.cbegin();
-                    iterPlatformSpec != recognizer->m_platformSpecsByPlatform.cend();
-                    iterPlatformSpec++)
-                {
-                    if (request.HasPlatform(iterPlatformSpec.key().toUtf8().constData()))
+                    // Check if this is the 'skip' parameter
+                    if (rcParam.compare(ASSET_PROCESSOR_CONFIG_KEYWORD_SKIP) == 0)
                     {
-                        QString rcParam = iterPlatformSpec.value().m_extraRCParams;
+                        skippedByPlatform = true;
+                    }
+                    // The recognizer's builder id must match the job requests' builder id
+                    else if (recognizer->m_builderId.compare(requestedBuilderID) == 0)
+                    {
+                        AssetBuilderSDK::JobDescriptor descriptor;
+                        Internal::PopulateCommonDescriptorParams(descriptor, iterPlatformSpec.key(), iterPlatformSpec.value(), recognizer);
+                        // Job Parameter Value can be any arbitrary string since we are relying on the key to lookup
+                        // the parameter in the process job
+                        descriptor.m_jobParameters[recognizer->m_paramID] = descriptor.m_jobKey;
 
-                        // Check if this is the 'skip' parameter
-                        if (rcParam.compare(ASSET_PROCESSOR_CONFIG_KEYWORD_SKIP) == 0)
-                        {
-                            skippedByPlatform = true;
-                        }
-                        // The recognizer's builder id must match the job requests' builder id
-                        else if (recognizer->m_builderId.compare(requestedBuilderID) == 0)
-                        {
-                            AssetBuilderSDK::JobDescriptor descriptor;
-                            Internal::PopulateCommonDescriptorParams(descriptor, iterPlatformSpec.key(), iterPlatformSpec.value(), recognizer);
-                            // Job Parameter Value can be any arbitrary string since we are relying on the key to lookup
-                            // the parameter in the process job
-                            descriptor.m_jobParameters[recognizer->m_paramID] = descriptor.m_jobKey;
-
-                            response.m_createJobOutputs.push_back(descriptor);
-                            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-                        }
+                        response.m_createJobOutputs.push_back(descriptor);
+                        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
                     }
                 }
+            }
 
-                // Adjust response if we did not get any jobs, but one or more platforms were marked as skipped
-                if ((response.m_result == AssetBuilderSDK::CreateJobsResultCode::Failed) && (skippedByPlatform))
-                {
-                    response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-                }
+            // Adjust response if we did not get any jobs, but one or more platforms were marked as skipped
+            if ((response.m_result == AssetBuilderSDK::CreateJobsResultCode::Failed) && (skippedByPlatform))
+            {
+                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
             }
         }
     }
@@ -614,14 +566,6 @@ namespace AssetProcessor
         }
     }
 
-    void InternalRecognizerBasedBuilder::CreateLegacyRCJob(
-        [[maybe_unused]] const AssetBuilderSDK::CreateJobsRequest& request,
-        [[maybe_unused]] QString rcParam,
-        AssetBuilderSDK::CreateJobsResponse& response)
-    {
-        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-    }
-
     bool InternalRecognizerBasedBuilder::SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request)
     {
         AZStd::string finalFullPath;
@@ -633,232 +577,6 @@ namespace AssetProcessor
         }
 
         return true;
-    }
-
-    bool InternalRecognizerBasedBuilder::LoadProcessJobResponseFile(const char* responseFileDir, const char* responseFileName, AssetBuilderSDK::ProcessJobResponse& response, bool& responseLoaded)
-    {
-        responseLoaded = false;
-        AZStd::string finalFullPath;
-        AzFramework::StringFunc::Path::Join(responseFileDir, responseFileName, finalFullPath);
-        if (AZ::IO::FileIOBase::GetInstance()->Exists(finalFullPath.c_str()))
-        {
-            // make a new one in case of pollution.
-            response = AssetBuilderSDK::ProcessJobResponse();
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Loading the response from '%s' emitted by RC.EXE.\n", finalFullPath.c_str());
-            if (!AZ::Utils::LoadObjectFromFileInPlace(finalFullPath.c_str(), response))
-            {
-                // rc TRIED to make a response file and failed somehow!
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                AZ_Error(AssetProcessor::DebugChannel, false, "Failed to deserialize '%s' despite RC.EXE having written it.", finalFullPath.c_str());
-                return false;
-            }
-            else
-            {
-                // we loaded it.
-                responseLoaded = true;
-            }
-        }
-        // either way, its not a failure if the file doesn't exist or loaded successfully
-        return true;
-    }
-
-    void InternalRecognizerBasedBuilder::ProcessLegacyRCJob(const AssetBuilderSDK::ProcessJobRequest& request, QString rcParam,
-        AZ::Uuid productAssetType, const AssetBuilderSDK::JobCancelListener& jobCancelListener, AssetBuilderSDK::ProcessJobResponse& response)
-    {
-        // Process this job
-        QString inputFile = QString(request.m_fullPath.c_str());
-        QString platformIdentifier = request.m_jobDescription.GetPlatformIdentifier().c_str();
-        QString dest = request.m_tempDirPath.c_str();
-        QString watchFolder = request.m_watchFolder.c_str();
-
-        QDir workDir(dest);
-
-        if (!SaveProcessJobRequestFile(dest.toUtf8().constData(), AssetBuilderSDK::s_processJobRequestFileName, request))
-        {
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-            return;
-        }
-
-        // did the rc Compiler output a response file?
-        bool responseFromRCCompiler = false;
-        if (!LoadProcessJobResponseFile(dest.toUtf8().constData(), AssetBuilderSDK::s_processJobResponseFileName, response, responseFromRCCompiler))
-        {
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-            return;
-        }
-
-        if (!responseFromRCCompiler)
-        {
-            // if the response was NOT loaded from a response file, we assume success (since RC did not crash or anything)
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        }
-
-        if (jobCancelListener.IsCancelled())
-        {
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-            return;
-        }
-
-        if (response.m_requiresSubIdGeneration)
-        {
-            ProcessRCResultFolder(dest, productAssetType, responseFromRCCompiler, response);
-        }
-    }
-
-    void InternalRecognizerBasedBuilder::ProcessRCResultFolder(const QString &dest, const AZ::Uuid& productAssetType, bool responseFromRCCompiler, AssetBuilderSDK::ProcessJobResponse &response)
-    {
-        // Get all of the files from the dest folder
-        QFileInfoList   originalFiles = GetFilesInDirectory(dest);
-        QFileInfoList   filteredFiles;
-
-        // Filter out the log files and add to the result products
-        AZStd::unordered_set<AZ::u32> m_alreadyAssignedSubIDs;
-
-        bool hasSubIdCollision = false;
-
-        // for legacy compatibility, we generate the list of output Products ourselves so that we can
-        // assign legacy SubIDs to them:
-        AZStd::vector<AssetBuilderSDK::JobProduct> generatedOutputProducts;
-
-        for (const auto& file : originalFiles)
-        {
-            if (MatchTempFileToSkip(file.fileName()))
-            {
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "RC created temporary file: (%s), ignoring.\n", file.absoluteFilePath().toUtf8().data());
-                continue;
-            }
-
-            AZStd::string productName = file.fileName().toUtf8().constData();
-
-            // convert to abs path:
-            if (AzFramework::StringFunc::Path::IsRelative(productName.c_str()))
-            {
-                // convert to absolute path.
-                AZStd::string joinedPath;
-                AzFramework::StringFunc::Path::Join(dest.toUtf8().constData(), productName.c_str(), joinedPath);
-                productName.swap(joinedPath);
-            }
-            else
-            {
-                AzFramework::StringFunc::Path::Normalize(productName);
-            }
-
-            // this kind of job can output multiple products.
-            // we are going to generate SUBIds for them if they collide, here!
-            // ideally, the builder SDK builder written for this asset type would deal with it.
-
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "RC created product file: (%s).\n", productName.c_str());
-            generatedOutputProducts.push_back(AssetBuilderSDK::JobProduct(productName, productAssetType));
-            hasSubIdCollision |= (m_alreadyAssignedSubIDs.insert(generatedOutputProducts.back().m_productSubID).second == false); // insert returns pair<iter, bool> where the bool is false if it was already there.
-        }
-
-        // now fix any subid collisions, but only if we have an actual collision.
-        // previously these would be the real subids, but now they are legacy subids if the response was given.
-        if (hasSubIdCollision)
-        {
-            m_alreadyAssignedSubIDs.clear();
-            for (AssetBuilderSDK::JobProduct& product : generatedOutputProducts)
-            {
-                AZ_TracePrintf("RC Builder", "SubId collision detected for product file: (%s).\n", product.m_productFileName.c_str());
-                AZ::u32 seedValue = 0;
-                while (m_alreadyAssignedSubIDs.find(product.m_productSubID) != m_alreadyAssignedSubIDs.end())
-                {
-                    // its already in!  pick another one.  For now, lets pick something based on the name so that ordering doesn't mess it up
-                    QFileInfo productFileInfo(product.m_productFileName.c_str());
-                    QString filePart = productFileInfo.fileName(); // the file part only (blah.dds) - not the path.
-                    AZ::u32 fullCRC = AZ::Crc32(filePart.toUtf8().data());
-                    AZ::u32 maskedCRC = (fullCRC + seedValue) & AssetBuilderSDK::SUBID_MASK_ID;
-
-                    // preserve the LOD and the other flags, but replace the CRC:
-                    product.m_productSubID = AssetBuilderSDK::ConstructSubID(maskedCRC, AssetBuilderSDK::GetSubID_LOD(product.m_productSubID), product.m_productSubID);
-                    ++seedValue;
-                }
-
-                m_alreadyAssignedSubIDs.insert(product.m_productSubID);
-            }
-        }
-
-        // now that we have generated both the legacy product subIDs and have potentially gotten a response from RC.EXE, we reconcile them
-        if (!responseFromRCCompiler)
-        {
-            // If we get here, it means that RC.EXE did no generate a response file for us, so its 100% up to our heuristic to decide on subIds.
-            response.m_outputProducts = generatedOutputProducts;
-
-            // its fine for RC to decide there are no outputs.  The only factor is what its exit code is.
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        }
-        else
-        {
-            // otherwise, if we get here it means that RC.EXE output a valid response file for us, including a list of canonical products
-            // all we need to do thus is match up the generated products with the ones it made to fill out the legacy SubID field.
-
-            // this is also our opportunity to clean and check for problems such as duplicate product files and duplicate subIDs.
-            AZStd::unordered_set<AZStd::string> productsToCheckForDuplicates;
-            AZStd::unordered_map<AZ::u32, AZStd::string> subIdsToCheckForDuplicates;
-
-            for (AssetBuilderSDK::JobProduct& product : response.m_outputProducts)
-            {
-                AZStd::string productName = product.m_productFileName;
-
-                if (productName.empty())
-                {
-                    AZ_Error(AssetProcessor::DebugChannel, false, "The RC Builder responded with a processJobResult.xml but that xml contained an empty product name.");
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    return; // its a failure to do this!
-                }
-
-                // now clean it, normalize it, and make it absolute so that its unambiguous.
-                // do not convert its case - this has to work on Operating Systems which have case sensitivy.
-                // we'll insert a lowercase copy into the set to check.
-                if (AzFramework::StringFunc::Path::IsRelative(productName.c_str()))
-                {
-                    // convert to absolute path.
-                    AZStd::string joinedPath;
-                    AzFramework::StringFunc::Path::Join(dest.toUtf8().constData(), productName.c_str(), joinedPath);
-                    productName.swap(joinedPath);
-                }
-
-                // update it in the structure to be absolute normalized path.
-                product.m_productFileName = productName;
-
-                AZStd::string productNameLowerCase = productName;
-                AZStd::to_lower(productNameLowerCase.begin(), productNameLowerCase.end());
-
-                if (subIdsToCheckForDuplicates.find(product.m_productSubID) != subIdsToCheckForDuplicates.end())
-                {
-                    AZStd::string collidingFileName = subIdsToCheckForDuplicates[product.m_productSubID];
-                    AZ_Error(AssetProcessor::DebugChannel, false, "Duplicate subID emitted by builder: '%s' with subID 0x%08x was in the outputProducts array more than once.", collidingFileName.c_str(), product.m_productSubID);
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    return; // its a failure to do this!
-                }
-                subIdsToCheckForDuplicates.insert(product.m_productSubID);
-
-                if (productsToCheckForDuplicates.find(productNameLowerCase) != productsToCheckForDuplicates.end())
-                {
-                    AZ_Error(AssetProcessor::DebugChannel, false, "Duplicate product emitted by builder: '%s' was in the outputProducts array more than once.", productName.c_str());
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    return; // its a failure to do this!
-                }
-                productsToCheckForDuplicates.insert(productNameLowerCase);
-
-                // we are through the gauntlet.  Now reconcile this with the previously generated legacy subIDs.
-                for (AssetBuilderSDK::JobProduct& generatedProduct : generatedOutputProducts)
-                {
-                    AZStd::string generatedPath = generatedProduct.m_productFileName;
-                    // (this is already absolute path and already normalized)
-
-                    // this is icase compare and is being done in utf8 strings.
-                    if (AzFramework::StringFunc::Equal(generatedPath.c_str(), productName.c_str()))
-                    {
-                        // found it.
-                        if (AZStd::find(product.m_legacySubIDs.begin(), product.m_legacySubIDs.end(), generatedProduct.m_productSubID) == product.m_legacySubIDs.end())
-                        {
-                            product.m_legacySubIDs.push_back(generatedProduct.m_productSubID);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     void InternalRecognizerBasedBuilder::ProcessCopyJob(

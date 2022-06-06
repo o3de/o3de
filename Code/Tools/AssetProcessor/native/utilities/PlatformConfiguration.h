@@ -165,10 +165,10 @@ namespace AssetProcessor
         AZStd::stack<AZStd::string> m_excludeNameStack;
     };
 
-    struct RCVisitor
+    struct SimpleJobVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
-        RCVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
+        SimpleJobVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
             : m_registry(settingsRegistry)
             , m_enabledPlatforms(enabledPlatforms)
         {
@@ -181,17 +181,17 @@ namespace AssetProcessor
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
-        struct RCAssetRecognizer
+        struct SimpleJobAssetRecognizer
         {
             AssetRecognizer m_recognizer;
             AZStd::string m_defaultParams;
             bool m_ignore{};
         };
-        AZStd::vector<RCAssetRecognizer> m_assetRecognizers;
+        AZStd::vector<SimpleJobAssetRecognizer> m_assetRecognizers;
     private:
         void ApplyParamsOverrides(AZStd::string_view path);
 
-        AZStd::stack<AZStd::string> m_rcNameStack;
+        AZStd::stack<AZStd::string> m_simpleJobNameStack;
         const AZ::SettingsRegistryInterface& m_registry;
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
     };

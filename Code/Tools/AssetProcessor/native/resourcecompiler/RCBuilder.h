@@ -114,29 +114,6 @@ namespace AssetProcessor
         //! unit testing.
         InternalRecognizerBasedBuilder(QHash<QString, BuilderIdAndName> inputBuilderByIdMap, AZ::Uuid internalBuilderUuid);
 
-        // overridden in unit tests.  Searches for RC.EXE
-        virtual bool FindRC(QString& rcAbsolutePathOut);
-
-        void CreateLegacyRCJob(
-            const AssetBuilderSDK::CreateJobsRequest& request,
-            QString rcParam,
-            AssetBuilderSDK::CreateJobsResponse& response);
-
-        void ProcessLegacyRCJob(
-            const AssetBuilderSDK::ProcessJobRequest& request,
-            QString rcParam,
-            AZ::Uuid productAssetType,
-            const AssetBuilderSDK::JobCancelListener& jobCancelListener,
-            AssetBuilderSDK::ProcessJobResponse& response);
-
-        //! Given a folder (dest) containing the aftermath of a RC process, generate a response structure.
-        //! if responseFromRCCompiler is true it means that the response is an already-populated response struct
-        //! that was loaded from a response file and we should just append legacy SubIDs to it (responses are used INSTEAD of
-        //! heuristics).
-        //! otherwise it means that we know nothing about the files that were produced and should perform heuristics to determine.
-        //! productAssetType is what uuid type (or nulls) to apply to the generated products for when responseFromRCCompiler is false.
-        void ProcessRCResultFolder(const QString &dest, const AZ::Uuid& productAssetType, bool responseFromRCCompiler, AssetBuilderSDK::ProcessJobResponse &response);
-
         void ProcessCopyJob(
             const AssetBuilderSDK::ProcessJobRequest& request,
             AZ::Uuid productAssetType,
@@ -149,9 +126,6 @@ namespace AssetProcessor
 
         // overridable so we can unit-test override it.
         virtual bool SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request);
-
-        // returns false only if there is a critical failure.
-        virtual bool LoadProcessJobResponseFile(const char* responseFileDir, const char* responseFileName, AssetBuilderSDK::ProcessJobResponse& response, bool& responseLoaded);
 
         volatile bool                           m_isShuttingDown;
         InternalRecognizerContainer             m_assetRecognizerDictionary;

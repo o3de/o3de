@@ -48,11 +48,6 @@ struct MockRecognizerConfiguration
 struct TestInternalRecognizerBasedBuilder
     : public InternalRecognizerBasedBuilder
 {
-    bool FindRC([[maybe_unused]] QString& rcPathOut) override
-    {
-        return true;
-    }
-
     QFileInfoList GetFilesInDirectory([[maybe_unused]] const QString& directoryPath) override
     {
         QFileInfoList   mockFileInfoList;
@@ -65,28 +60,11 @@ struct TestInternalRecognizerBasedBuilder
         m_savedProcessJob = true;
         return true;
     }
-    
-    // returns false only if there is a critical failure.
-    bool LoadProcessJobResponseFile(const char* /*responseFileDir*/, const char* /*responseFileName*/, AssetBuilderSDK::ProcessJobResponse& /*response*/, bool& /*responseLoaded*/) override
-    {
-        m_loadedProcessJob = true;
-        return true;
-    }
-
 
     void TestProcessJob(const AssetBuilderSDK::ProcessJobRequest& request,
         AssetBuilderSDK::ProcessJobResponse& response)
     {
         InternalRecognizerBasedBuilder::ProcessJob(request, response);
-    }
-
-    void TestProcessLegacyRCJob(const AssetBuilderSDK::ProcessJobRequest& request,
-        QString rcParam,
-        AZ::Uuid productAssetType,
-        const AssetBuilderSDK::JobCancelListener& jobCancelListener,
-        AssetBuilderSDK::ProcessJobResponse& response)
-    {
-        InternalRecognizerBasedBuilder::ProcessLegacyRCJob(request, rcParam, productAssetType, jobCancelListener, response);
     }
 
     void TestProcessCopyJob(const AssetBuilderSDK::ProcessJobRequest& request,
@@ -123,11 +101,6 @@ struct TestInternalRecognizerBasedBuilder
         InternalAssetRecognizer* pTestInternalRecognizer = new InternalAssetRecognizer(baseAssetRecognizer, builderID, assetPlatformSpecByPlatform);
         this->m_assetRecognizerDictionary[pTestInternalRecognizer->m_paramID] = pTestInternalRecognizer;
         return pTestInternalRecognizer->m_paramID;
-    }
-
-    void TestProcessRCResultFolder(const QString &dest, const AZ::Uuid& productAssetType, bool responseFromRCCompiler, AssetBuilderSDK::ProcessJobResponse &response)
-    {
-        ProcessRCResultFolder(dest, productAssetType, responseFromRCCompiler, response);
     }
 
     QList<QFileInfo>    m_testFileInfo;
