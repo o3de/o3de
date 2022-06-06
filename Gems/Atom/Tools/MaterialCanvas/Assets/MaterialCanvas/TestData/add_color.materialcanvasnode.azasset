@@ -12,7 +12,16 @@
                 "description": "Color1",
                 "supportedDataTypes": [
                     "Color"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
             },
             {
                 "name": "inColor2",
@@ -20,7 +29,16 @@
                 "description": "Color2",
                 "supportedDataTypes": [
                     "Color"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
             }
         ],
         "outputSlots": [
@@ -30,7 +48,16 @@
                 "description": "Color",
                 "supportedDataTypes": [
                     "Color"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
             }
         ]
     }

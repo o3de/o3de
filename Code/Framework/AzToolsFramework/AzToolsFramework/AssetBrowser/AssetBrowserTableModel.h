@@ -44,6 +44,7 @@ namespace AzToolsFramework
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
         protected:
+            bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
             void timerEvent(QTimerEvent* event) override;
             ////////////////////////////////////////////////////////////////////

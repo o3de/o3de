@@ -27,6 +27,7 @@ NODE_TEST_METHOD = "test_method_name"
 """
 Constants for Asset Editor
 """
+SAVE_ASSET_AS = "SaveAssetAs"
 DEFAULT_SCRIPT_EVENT = "EventName"
 DEFAULT_METHOD_NAME = "MethodName"
 
@@ -37,15 +38,20 @@ Different from window/tab names because they do not have spaces
 NODE_PALETTE_QT = "NodePalette"
 TREE_VIEW_QT = "treeView"
 EVENTS_QT = "Events"
+EVENT_NAME_QT = "EventName"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
 GRAPH_VARIABLES_QT = "graphVariables"
 ADD_BUTTON_QT = "addButton"
+SEARCH_FRAME_QT ="searchFrame"
+SEARCH_FILTER_QT = "searchFilter"
+PARAMETERS_QT = "Parameters"
 
 """
 General constants
 """
 SAVE_STRING = "Save"
+NAME_STRING = "Name"
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]

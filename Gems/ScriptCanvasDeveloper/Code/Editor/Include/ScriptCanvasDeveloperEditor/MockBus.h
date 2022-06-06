@@ -9,7 +9,7 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {

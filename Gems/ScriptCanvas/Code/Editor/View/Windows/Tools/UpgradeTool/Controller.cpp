@@ -246,7 +246,7 @@ namespace ScriptCanvasEditor
             AddLogEntries();
         }
 
-        void Controller::OnGraphUpgradeComplete(ScriptCanvasEditor::SourceHandle& asset, bool skipped)
+        void Controller::OnGraphUpgradeComplete(SourceHandle& asset, bool skipped)
         {
             ModificationResult result;
             result.asset = asset;
