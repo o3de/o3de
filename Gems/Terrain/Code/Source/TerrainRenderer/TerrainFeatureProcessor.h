@@ -109,7 +109,7 @@ namespace Terrain
 
         AZ::RHI::ShaderInputNameIndex m_worldDataIndex = "m_terrainWorldData";
 
-        AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
+        AZ::Vector2 m_zBounds{ AZ::Vector2::CreateZero() };
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
         float m_sampleSpacing{ 0.0f };
