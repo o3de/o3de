@@ -1524,8 +1524,8 @@ bool ApplicationManagerBase::Activate()
     // Start up a thread which will request a builder to start to handle the registration of gems/builders
     // Builder info will be sent back to the AP via the network connection, start up will wait for the info before continuing
     // See ApplicationManagerBase::InitConnectionManager BuilderRegistrationRequest for the resume point here
-    // Note that we can't wait here because the message comes back as a network message, which requires the main thread to process it
-    // Since we can't wait here, this also means the thread object will go out of scope, so we have to detach it before exiting
+    // Waiting here is not possible because the message comes back as a network message, which requires the main thread to process it
+    // Since execution has to continue, this also means the thread object will go out of scope, so it must be detached before exiting.
     AZStd::thread_desc desc;
     desc.m_name = "Builder Component Registration";
     AZStd::thread builderRegistrationThread(
