@@ -36,12 +36,21 @@ namespace AzToolsFramework
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
 
         //! Register a new Menu to the Menu Manager.
+        //! @param menuIdentifier The identifier for the menu that is being registered.
+        //! @param properties The properties object for the newly registered menu.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties) = 0;
 
         //! Register a new Menu Bar to the Menu Manager.
+        //! @param menuBarIdentifier The identifier for the menu bar that is being registered.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
 
         //! Bind an Action to a Menu.
+        //! @param menuIdentifier The identifier for the menu the action is being added to.
+        //! @param actionIdentifier The identifier for the action to add to the menu.
+        //! @param sortIndex A positive integer describing the position the action should appear in in the menu.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
         virtual MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
@@ -62,6 +71,9 @@ namespace AzToolsFramework
 
         //! Retrieve a QMenuBar from its identifier.
         virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Get the sort key for an action in a menu.
+        virtual int GetSortKey(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
