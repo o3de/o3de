@@ -222,7 +222,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -306,7 +306,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::QueryListAsync, inPositions,
@@ -413,7 +413,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -491,7 +491,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::QueryListAsync, inPositions,
@@ -596,7 +596,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -674,7 +674,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::QueryListAsync, inPositions,
@@ -780,7 +780,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
@@ -858,7 +858,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
                     = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::QueryListAsync, inPositions,
@@ -1077,7 +1077,7 @@ namespace UnitTest
 
                 AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams =
                     AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
-                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::NumJobsMax;
+                asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
                 asyncParams->m_completionCallback = completionCallback;
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                     &AzFramework::Terrain::TerrainDataRequests::QueryListAsync, inPositions,
