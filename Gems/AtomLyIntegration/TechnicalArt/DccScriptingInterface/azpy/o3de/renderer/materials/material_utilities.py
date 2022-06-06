@@ -71,16 +71,23 @@ def process_object_materials(controller, operation, output_path, source):
     source_file = helpers.get_clean_path(controller.get_current_scene().__str__())
     process_dictionary = Box({source_file: {}})
     target_objects = source if source else controller.get_selected_objects()
-
     for target_object in target_objects:
-        temp_dict = {}
-        target_object = target_object[1:] if target_object.startswith('|') else target_object
-        object_export_path, object_materials = controller.prepare_material_export(target_object, output_path)
-        for target_material in object_materials:
-            temp_dict[target_material] = controller.get_material_info(target_material)
-            temp_dict[target_material].update({'mesh_export_location': object_export_path})
-            temp_dict[target_material].update({'parent_hierarchy': controller.get_object_hierarchy(target_object)})
-        process_dictionary[source_file].update({target_object: temp_dict})
+        try:
+            _LOGGER.info(f'TargetObject: {target_object}')
+            temp_dict = {}
+            target_object = target_object[1:] if target_object.startswith('|') else target_object
+            object_export_path, object_materials = controller.prepare_material_export(target_object, output_path)
+            _LOGGER.info(f'ExportPath: {object_export_path}  Materials: {object_materials}')
+            for target_material in object_materials:
+                temp_dict[target_material] = controller.get_material_info(target_material)
+                temp_dict[target_material].update({'mesh_export_location': object_export_path})
+                temp_dict[target_material].update({'parent_hierarchy': controller.get_object_hierarchy(target_object)})
+            process_dictionary[source_file].update({target_object: temp_dict})
+            _LOGGER.info(f'TempDict: {temp_dict}')
+        except Exception as e:
+            _LOGGER.info(f'ProcessObjectMaterials Fail [{type(e)}]: {e}')
+
+    _LOGGER.info(f'ProcessDictionary: {process_dictionary}')
     # controller.run_operation(process_dictionary, operation, output)
     controller.cleanup(target_objects)
 
@@ -98,7 +105,6 @@ def process_scene_materials(controller, operation, output_path, source):
 
 def process_directory_materials(controller, operation, output_path, source):
     process_dictionary = None
-
     return process_dictionary
 
 
@@ -113,6 +119,9 @@ def get_source_type(source):
 
 
 def get_master_paths(process_dictionary):
+    """! This collects all paths being used for texture assignments in a conversion. With this information, when
+    copying assets across to the destination folder, the system will filter duplicate copies to save on disk space,
+     also re-pathing all subsequent instances in other materials to this single asset."""
     master_paths = {}
     for scene_file, scene_values in process_dictionary.items():
         for object_name, material_values in scene_values.items():
@@ -151,6 +160,7 @@ def get_material_templates_location():
         with open(str(registry_bootstrap_file), 'r') as data:
             contents = json.loads(data.read())
             current_project_path = contents['Amazon']['AzCore']['Bootstrap']['project_path']
+            _LOGGER.info(Path(current_project_path) / 'Cache/pc/materials/types')
             return Path(current_project_path) / 'Cache/pc/materials/types'
     except FileNotFoundError:
         return None
@@ -175,13 +185,13 @@ def get_default_material_settings(target_application: str, material_type):
     return controller.get_default_material_settings(material_type)
 
 
-def export_mesh(dcc_application, mesh_name, mesh_export_location, export_options):
+def export_mesh(dcc_application, target, mesh_export_location, export_options):
     controller = get_dcc_controller(dcc_application)
-    controller.export_mesh(mesh_name, mesh_export_location, export_options)
+    if isinstance(target, list):
+        controller.export_grouped_meshes(target, mesh_export_location, export_options)
+    else:
+        controller.export_mesh(target, mesh_export_location, export_options)
 
 
 if __name__ == '__main__':
     run_cli()
-
-
-

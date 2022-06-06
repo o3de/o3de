@@ -287,7 +287,10 @@ class MaterialsHelper(QtWidgets.QWidget):
                 for object_name, object_properties in object_list.items():
                     output_string += self.get_formatted_object_name(object_name)
                     for material_name, material_properties in object_properties.items():
-                        output_string += f'MATERIAL NAME: {material_name}\n'
+                        _LOGGER.info(f'MaterialNameProcessing: {material_name}')
+                        output_string += '\n\n+---------\n'
+                        output_string += '+------------------\n+---------------------------------------------'
+                        output_string += f'\nMATERIAL NAME: {material_name}\n'
                         output_string += f"MATERIAL TYPE: {material_properties['material_type']}\n"
                         output_string += f'\nASSIGNED TEXTURES:\n'
                         for texture_key, texture_values in material_properties['textures'].items():
@@ -298,6 +301,8 @@ class MaterialsHelper(QtWidgets.QWidget):
                         output_string += f'\nSETTINGS:\n'
                         for property_name, property_value in material_properties['settings'].items():
                             output_string += f'{property_name} ::: {property_value}\n'
+                        output_string += '+---------------------------------------------\n+------------------'
+                        output_string += '\n+---------'
             except AttributeError as e:
                 _LOGGER.info(f'Error/Exception in get_formatted_output: {type(e)}   ::  {e}')
             output_string += '\n\n'
@@ -306,7 +311,7 @@ class MaterialsHelper(QtWidgets.QWidget):
     @staticmethod
     def get_formatted_object_name(object_name):
         separator = '#' * (len(object_name) + 6)
-        formatted_string = f'\n{separator}\nMESH: {object_name}\n{separator}\n\n'
+        formatted_string = f'\n{separator}\nMESH: {object_name}\n{separator}'
         return formatted_string
 
     # +++++++++++++++++++++++++-->
@@ -372,4 +377,3 @@ def show_ui(operation):
     delete_instances()
     ui = MaterialsHelper(operation, mayaMainWindow)
     ui.show()
-

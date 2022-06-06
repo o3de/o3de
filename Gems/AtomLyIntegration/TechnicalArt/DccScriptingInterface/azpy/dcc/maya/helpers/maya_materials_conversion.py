@@ -141,19 +141,24 @@ def run_operation(process_dictionary, operation, output):
 
 
 def get_object_hierarchy(target_object):
-    object_hierarchy = []
+    object_hierarchy = [[get_object_type(target_object), target_object]]
     while True:
         parent = mc.listRelatives(target_object, allParents=True)
         if parent:
-            mc.select(parent[0], hi=True)
-            current_shape = mc.ls(sl=True, shapes=True)[0]
-            if mc.objectType(current_shape, isType='mesh'):
-                object_hierarchy.append(parent[0])
+            parent_type = get_object_type(parent[0])
+            if parent_type in ['mesh', 'locator']:
+                object_hierarchy.append([parent_type, parent[0]])
                 target_object = parent[0]
             else:
                 return object_hierarchy
         else:
             return object_hierarchy
+
+
+def get_object_type(target_object):
+    mc.select(target_object, hi=True)
+    current_shape = mc.ls(sl=True, shapes=True)[0]
+    return mc.objectType(current_shape)
 
 
 def get_materials_in_scene():
@@ -227,9 +232,9 @@ def get_scene_material_information():
             'shading_group': get_shading_group(material_name),
             'material_type': mc.nodeType(material_name),
             'assigned_geo': material_assignments[material_name],
-            # 'material_textures': get_material_textures(mc.nodeType(material_name), {'shading_group':
-            #                                                                         get_shading_group(material_name),
-            #                                                                         'name': material_name})
+            'material_textures': get_material_textures(mc.nodeType(material_name), {'shading_group':
+                                                                                    get_shading_group(material_name),
+                                                                                    'name': material_name})
         }
         material_information[material_name] = material_listing
     return material_information
@@ -257,13 +262,15 @@ def get_mesh_materials(target_mesh):
     @param target_mesh The target mesh to pull attached material information from.
     @return list - Attached material name.
     """
+    material_list = []
     mc.select(target_mesh, r=True)
-    for object in mc.ls(sl=True, s=1, dag=1):
-        transform_node = mc.listRelatives(object, parent=True, fullPath=True)[0]
-        mesh_selection = transform_node.split('|')[-1]
-        if mesh_selection == target_mesh:
-            sg = mc.listConnections(object, type='shadingEngine')
-            return mc.listConnections(sg[0] + '.surfaceShader')
+    children = mc.listRelatives(ad=1)
+    for child in children:
+        shader_groups = mc.listConnections(mc.listHistory(child))
+        if shader_groups is not None:
+            for material in mc.ls(mc.listConnections(shader_groups), materials=1):
+                material_list.append(material)
+    return list(set(material_list))
 
 
 def get_all_mesh_materials(target_mesh):
@@ -487,6 +494,12 @@ def export_mesh(target_object, mesh_export_location, export_options):
         return True
     except Exception as e:
         _LOGGER.info(f'ExportMesh failed [type(e)]: {e}')
+
+
+def export_grouped_meshes(mesh_list, mesh_export_location, export_options):
+    for mesh in mesh_list:
+        mc.select(mesh, add=True)
+    mc.file(str(mesh_export_location), force=True, type='FBX export', exportSelected=True)
 
 
 def cleanup(target_objects):
