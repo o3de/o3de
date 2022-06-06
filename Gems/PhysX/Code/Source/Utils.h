@@ -199,6 +199,21 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId);
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
 
+        //! Refresh a portion of the heightfield shape in the given scene based on the data in the HeightfieldShapeConfiguration.
+        //! @param physicsScene The scene that the shape is located in. (Needed for write-locking the scene in the thread)
+        //! @param heightfieldShape The shape containing the heightfield in the scene.
+        //! @param heightfield The updated shape configuration that contains the new data for the heightfieldShape.
+        //! @param startRow The starting row of the heightfield to refresh
+        //! @param startCol The starting column of the heightfield to refresh
+        //! @param numRowsToUpdate The number of rows to refresh in the heightfieldShape
+        //! @param numColsToUpdate The number of columns to refresh in the heightfieldShape
+        void RefreshHeightfieldShape(
+            AzPhysics::Scene* physicsScene,
+            Physics::Shape* heightfieldShape,
+            Physics::HeightfieldShapeConfiguration& heightfield,
+            const int32_t startRow, const int32_t startCol,
+            const int32_t numRowsToUpdate, const int32_t numColsToUpdate);
+
         void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection);
 
         namespace Geometry
