@@ -7,12 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/IO/FileIO.h>
-
 namespace AZ
 {
     namespace IO
-    {
+    {        
+        class FileIOStream;
+
+        enum class OpenMode : AZ::u32;
+
         int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode);
 
         /**
