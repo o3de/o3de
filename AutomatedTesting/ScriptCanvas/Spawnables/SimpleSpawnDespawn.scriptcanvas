@@ -322,7 +322,7 @@
                                                     }
                                                 ],
                                                 "slotName": "SpawnedEntitiesList",
-                                                "toolTip": "List of spawned entities sorted by hierarchy with the root being first",
+                                                "toolTip": "List of spawned entities sorted by hierarchy with the root being first.",
                                                 "DisplayDataType": {
                                                     "m_type": 4,
                                                     "m_azType": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}"
