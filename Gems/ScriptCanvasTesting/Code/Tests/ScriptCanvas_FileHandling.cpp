@@ -10,6 +10,7 @@
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
 
 namespace ScriptCanvasTests
 {
@@ -23,14 +24,23 @@ namespace ScriptCanvasTests
 
     void PopulateEntityIdsFromFile(AZStd::set<AZ::EntityId, EntityIdComparer>& sortedEntityIds, const char* fileName, bool makeEntityIdsUnique)
     {
+        using namespace ScriptCanvas;
         AZ::IO::FixedMaxPath filePath = ScriptCanvasTests::GetUnitTestDirPathRelative();
         filePath /= fileName;
-        auto result = ScriptCanvasEditor::LoadFromFile(filePath.c_str(), makeEntityIdsUnique);
-        EXPECT_TRUE(result.IsSuccess());
-        const ScriptCanvas::GraphData* graphData = result.GetValue().handle.Get()->GetGraphDataConst();
-        for (auto& entityNode : graphData->m_nodes)
+        auto result = ScriptCanvasEditor::LoadFromFile
+        (filePath.c_str()
+            , makeEntityIdsUnique
+            ? MakeInternalGraphEntitiesUnique::Yes
+            : MakeInternalGraphEntitiesUnique::No);
+
+        EXPECT_TRUE(result.m_isSuccess);
+        if (result.m_isSuccess)
         {
-            sortedEntityIds.insert(entityNode->GetId());
+            const ScriptCanvas::GraphData* graphData = result.m_handle.Get()->GetGraphDataConst();
+            for (auto& entityNode : graphData->m_nodes)
+            {
+                sortedEntityIds.insert(entityNode->GetId());
+            }
         }
     }
 
