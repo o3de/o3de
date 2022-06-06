@@ -83,6 +83,7 @@ namespace AZ
                     {
                         m_sectionName = AZStd::string::format(sectionNameFormat, args...);
                         ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
+                        m_shouldEndSection = true;
                     }
 #endif
                 }
@@ -91,6 +92,7 @@ namespace AZ
 
             private:
                 AZStd::string m_sectionName;
+                bool m_shouldEndSection = false;
             };
 
         private:
