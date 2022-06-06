@@ -37,8 +37,8 @@ namespace Multiplayer
         {
             serializeContext->Class<NetBindComponent, AZ::Component>()
                 ->Version(2)
-                ->Field("prefabEntityId", &NetBindComponent::m_prefabEntityId)
-                ->Field("prefabAssetId", &NetBindComponent::m_prefabAssetId)
+                ->Field("Prefab EntityId", &NetBindComponent::m_prefabEntityId)
+                ->Field("Prefab AssetId", &NetBindComponent::m_prefabAssetId)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -160,13 +160,14 @@ namespace Multiplayer
             // The component hasn't been pre-setup with NetworkEntityManager yet. Setup now.
             const AZ::Name netSpawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(m_prefabAssetId);
 
-            if (!netSpawnableName.IsEmpty())
-            {
-                PrefabEntityId prefabEntityId;
-                prefabEntityId.m_prefabName = netSpawnableName;
-                prefabEntityId.m_entityOffset = m_prefabEntityId.m_entityOffset;
-                netEntityManager->SetupNetEntity(GetEntity(), prefabEntityId, NetEntityRole::Authority);
-            }
+            AZ_Assert(!netSpawnableName.IsEmpty(),
+                "Could not locate net spawnable on Init for Prefab AssetId: %s",
+                m_prefabAssetId.ToFixedString().c_str());
+
+            PrefabEntityId prefabEntityId;
+            prefabEntityId.m_prefabName = netSpawnableName;
+            prefabEntityId.m_entityOffset = m_prefabEntityId.m_entityOffset;
+            netEntityManager->SetupNetEntity(GetEntity(), prefabEntityId, NetEntityRole::Authority);
         }
     }
 

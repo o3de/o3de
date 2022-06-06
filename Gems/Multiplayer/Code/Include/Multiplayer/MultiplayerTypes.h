@@ -164,8 +164,8 @@ namespace Multiplayer
         {
             serializeContext->Class<PrefabEntityId>()
                 ->Version(1)
-                ->Field("prefabName", &PrefabEntityId::m_prefabName)
-                ->Field("entityOffset", &PrefabEntityId::m_entityOffset)
+                ->Field("Prefab Name", &PrefabEntityId::m_prefabName)
+                ->Field("Entity Offset", &PrefabEntityId::m_entityOffset)
                 ;
         }
     }

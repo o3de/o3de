@@ -22,7 +22,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     public:
         AZ_RTTI(EntityIdPathMapperInterface, "{1D1E032C-EEBA-449B-A265-03A8DE937EC9}");
 
+        //! Fetches the hashed path used for generation of entity id during deserialization for a given entity id.
+        //! This map is needed when there is a many-to-one relationship between entity ids and hashed paths.
+        //! @param AZ::EntityId The Entity Id to fetch a hashed path for
         virtual AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) = 0;
+
+        //! Sets the hashed path used for generation of entity id during deserialization for a given entity id.
+        //! This map is needed when there is a many-to-one relationship between entity ids and hashed paths.
+        //! @param AZ::EntityId The Entity Id to set a hashed path for
+        //! @param AZ::IO::PathView The hashed path to set for the given Entity Id
         virtual void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) = 0;
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
