@@ -318,6 +318,13 @@ namespace UnitTest
                 }
             }
         }
+
+        // Bounds check for bounds that should and shouldn't have a terrain area inside
+        AZ::Aabb boundsCheckCollides = spawnerBox.GetTranslated(AZ::Vector3(5.0, 5.0, 5.0));
+        EXPECT_TRUE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckCollides));
+
+        AZ::Aabb boundsCheckDoesNotCollide = spawnerBox.GetTranslated(AZ::Vector3(15.0, 15.0, 15.0));
+        EXPECT_FALSE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckDoesNotCollide));
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithExactSamplersIgnoreQueryGrid)

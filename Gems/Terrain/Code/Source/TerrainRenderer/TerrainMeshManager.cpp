@@ -771,22 +771,21 @@ namespace Terrain
         for (SectorUpdateContext& updateContext : sectorUpdates)
         {
             const float gridMeters = (GridSize * m_sampleSpacing) * (1 << updateContext.m_lodLevel);
+            StackSectorData* sector = updateContext.m_sector;
 
-            const auto jobLambda = [this, updateContext, gridMeters]() -> void
+            const auto jobLambda = [this, sector, gridMeters]() -> void
             {
-                auto& sector = *updateContext.m_sector;
-
                 {
                     SectorDataRequest request;
                     request.m_samplesX = GridVerts1D;
                     request.m_samplesY = GridVerts1D;
-                    request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
+                    request.m_worldStartPosition = AZ::Vector2(sector->m_worldX * gridMeters, sector->m_worldY * gridMeters);
                     request.m_vertexSpacing = gridMeters / GridSize;
 
                     AZStd::vector<HeightDataType> meshHeights;
                     AZStd::vector<NormalDataType> meshNormals;
-                    GatherMeshData(request, meshHeights, meshNormals, sector.m_aabb);
-                    UpdateSectorBuffers(sector, meshHeights, meshNormals);
+                    GatherMeshData(request, meshHeights, meshNormals, sector->m_aabb);
+                    UpdateSectorBuffers(*sector, meshHeights, meshNormals);
                 }
 
                 if (m_config.m_clodEnabled)
@@ -795,29 +794,38 @@ namespace Terrain
                     uint16_t gridSizeNextLod = (GridSize >> 1);
                     request.m_samplesX = gridSizeNextLod + 1;
                     request.m_samplesY = gridSizeNextLod + 1;
-                    request.m_worldStartPosition = AZ::Vector2(sector.m_worldX * gridMeters, sector.m_worldY * gridMeters);
+                    request.m_worldStartPosition = AZ::Vector2(sector->m_worldX * gridMeters, sector->m_worldY * gridMeters);
                     request.m_vertexSpacing = gridMeters / gridSizeNextLod;
 
                     AZ::Aabb dummyAabb = AZ::Aabb::CreateNull(); // don't update the sector aabb based on only the clod vertices.
                     AZStd::vector<HeightDataType> meshLodHeights;
                     AZStd::vector<NormalDataType> meshLodNormals;
                     GatherMeshData(request, meshLodHeights, meshLodNormals, dummyAabb);
-                    UpdateSectorLodBuffers(sector, meshLodHeights, meshLodNormals);
+                    UpdateSectorLodBuffers(*sector, meshLodHeights, meshLodNormals);
                 }
-
-                ShaderObjectData objectSrgData;
-                objectSrgData.m_xyTranslation = { sector.m_aabb.GetMin().GetX(), sector.m_aabb.GetMin().GetY()};
-                objectSrgData.m_xyScale = gridMeters;
-                objectSrgData.m_lodLevel = updateContext.m_lodLevel;
-                objectSrgData.m_rcpLodLevel = 1.0f / (updateContext.m_lodLevel + 1);
-                sector.m_srg->SetConstant(m_patchDataIndex, objectSrgData);
-                sector.m_srg->Compile();
-
             };
 
-            AZ::Job* executeGroupJob = aznew AZ::JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
-            executeGroupJob->SetDependent(&jobCompletion);
-            executeGroupJob->Start();
+            ShaderObjectData objectSrgData;
+            objectSrgData.m_xyTranslation = { sector->m_worldX * gridMeters, sector->m_worldY * gridMeters };
+            objectSrgData.m_xyScale = gridMeters;
+            objectSrgData.m_lodLevel = updateContext.m_lodLevel;
+            objectSrgData.m_rcpLodLevel = 1.0f / (updateContext.m_lodLevel + 1);
+            sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
+            sector->m_srg->Compile();
+
+            // Check against the area of terrain that could appear in this sector for any terrain areas. If none exist then skip updating the mesh.
+            bool hasTerrain = false;
+            AZ::Vector3 minAabb = AZ::Vector3(sector->m_worldX * gridMeters, sector->m_worldY * gridMeters, m_worldBounds.GetMin().GetZ());
+            AZ::Aabb sectorBounds = AZ::Aabb::CreateFromMinMax(minAabb, minAabb + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent()));
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                hasTerrain, &AzFramework::Terrain::TerrainDataRequests::TerrainAreaExistsInBounds, sectorBounds);
+
+            if (hasTerrain)
+            {
+                AZ::Job* executeGroupJob = aznew AZ::JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
+                executeGroupJob->SetDependent(&jobCompletion);
+                executeGroupJob->Start();
+            }
         }
         jobCompletion.StartAndWaitForCompletion();
 
