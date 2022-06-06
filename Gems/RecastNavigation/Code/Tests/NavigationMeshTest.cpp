@@ -650,7 +650,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderCommon"), 0);
     }
 
-    TEST_F(NavigationTest, Async)
+    TEST_F(NavigationTest, AsyncOnNavigationMeshUpdatedIsCalled)
     {
         Entity e;
         PopulateEntity(e);
