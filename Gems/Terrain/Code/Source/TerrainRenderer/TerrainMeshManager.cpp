@@ -618,6 +618,7 @@ namespace Terrain
 
                 if (lodHeights[lodIndex1] == 0xFFFF || lodHeights[lodIndex2] == 0xFFFF)
                 {
+                    // One of the neighboring vertices has no data, so use the original height and normal
                     clodHeights[index] = originalHeights[index];
                     clodNormals[index] = originalNormals[index];
                 }
@@ -690,7 +691,7 @@ namespace Terrain
         meshNormals.resize_no_construct(outputSamplesCount);
 
         auto perPositionCallback = [this, &heights, querySamplesX, &terrainExistsAnywhere]
-        (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
             heights.at(yIndex * querySamplesX + xIndex) = terrainExists ? height : -1.0f; // store terrain doesn't exist as a -1.0
@@ -706,6 +707,12 @@ namespace Terrain
             AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
             perPositionCallback,
             request.m_samplerType);
+
+        if (!terrainExistsAnywhere)
+        {
+            // No height data, so just return
+            return;
+        }
 
         const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
@@ -825,7 +832,10 @@ namespace Terrain
                     request.m_vertexSpacing = gridMeters / GridSize;
 
                     GatherMeshData(request, meshHeights, meshNormals, sector->m_aabb, sector->m_hasData);
-                    UpdateSectorBuffers(*sector, meshHeights, meshNormals);
+                    if (sector->m_hasData)
+                    {
+                        UpdateSectorBuffers(*sector, meshHeights, meshNormals);
+                    }
                 }
 
                 if (m_config.m_clodEnabled && sector->m_hasData)
@@ -838,10 +848,16 @@ namespace Terrain
                     request.m_vertexSpacing = gridMeters / gridSizeNextLod;
 
                     AZ::Aabb dummyAabb = AZ::Aabb::CreateNull(); // Don't update the sector aabb based on only the clod vertices.
-                    bool dummyTerrainExists = false; // Terrain must have data, no need to check again.
+                    bool terrainExists = false;
                     AZStd::vector<HeightDataType> meshLodHeights;
                     AZStd::vector<NormalDataType> meshLodNormals;
-                    GatherMeshData(request, meshLodHeights, meshLodNormals, dummyAabb, dummyTerrainExists);
+                    GatherMeshData(request, meshLodHeights, meshLodNormals, dummyAabb, terrainExists);
+                    if (!terrainExists)
+                    {
+                        // It's unlikely but possible for the higher lod to have data and the lower lod to not. In that case 
+                        // meshLodHeights will be empty, so fill it with values that represent "no data".
+                        AZStd::fill(meshLodHeights.begin(), meshLodHeights.end(), uint16_t(0xFFFF));
+                    }
                     UpdateSectorLodBuffers(*sector, meshHeights, meshNormals, meshLodHeights, meshLodNormals);
                 }
             };
@@ -889,7 +905,7 @@ namespace Terrain
         AZStd::vector<HeightDataType> meshHeights;
         AZStd::vector<NormalDataType> meshNormals;
         AZ::Aabb outAabb;
-        bool terrainExistsAnywhere = false;
+        bool terrainExistsAnywhere = false; // ignored by ray tracing for now
         GatherMeshData(request, meshHeights, meshNormals, outAabb, terrainExistsAnywhere);
 
         struct Position
