@@ -99,7 +99,7 @@ void MainCS(
                         GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
                     );
 
-                    macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel).rgb;
+                    macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel, 0.0).rgb;
                 }
                 else
                 {
@@ -117,7 +117,7 @@ void MainCS(
                         GetCurrentMacroClipmapCenter(macroClipmapLevel.m_nextLevel)
                     );
 
-                    macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel).rgb;
+                    macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel, 0.0).rgb;
                 }
 
                 bool hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);

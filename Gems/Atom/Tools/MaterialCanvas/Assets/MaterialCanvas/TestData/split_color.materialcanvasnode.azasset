@@ -12,7 +12,16 @@
                 "description": "Color",
                 "supportedDataTypes": [
                     "Color"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "Color",
+                    "Value": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
             }
         ],
         "outputSlots": [
@@ -22,7 +31,11 @@
                 "description": "Red color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "outG",
@@ -30,7 +43,11 @@
                 "description": "Green color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "outB",
@@ -38,7 +55,11 @@
                 "description": "Blue color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             },
             {
                 "name": "outA",
@@ -46,7 +67,11 @@
                 "description": "Alpha color channel",
                 "supportedDataTypes": [
                     "float"
-                ]
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
             }
         ]
     }

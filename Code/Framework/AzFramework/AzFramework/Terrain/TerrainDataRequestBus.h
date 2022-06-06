@@ -26,6 +26,108 @@ namespace AzFramework
         typedef AZStd::function<void(size_t xIndex, size_t yIndex, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
         typedef AZStd::function<void(const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
 
+        //! Helper structure that defines a query region to use with the QueryRegion / QueryRegionAsync APIs.
+        struct TerrainQueryRegion
+        {
+            AZ_TYPE_INFO(TerrainQueryRegion, "{DE3F634D-9689-4FBC-9F43-A39CFDF425D0}");
+
+            TerrainQueryRegion() = default;
+            ~TerrainQueryRegion() = default;
+
+            TerrainQueryRegion(const AZ::Vector3& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize);
+            TerrainQueryRegion(const AZ::Vector2& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize);
+
+            static TerrainQueryRegion CreateFromAabbAndStepSize(const AZ::Aabb& region, const AZ::Vector2& stepSize);
+
+            AZ::Vector3 m_startPoint{ 0.0f }; //! The starting point for the region query
+            AZ::Vector2 m_stepSize{ 0.0f }; //! The step size to use for advancing to the next point to query
+            size_t m_numPointsX{ 0 }; //! The total number of points to query in the X direction
+            size_t m_numPointsY{ 0 }; //! The total number of points to query in the Y direction
+        };
+
+        //! A JobContext used to run jobs spawned by calls to the various Query*Async functions.
+        class TerrainJobContext : public AZ::JobContext
+        {
+        public:
+            TerrainJobContext(AZ::JobManager& jobManager, int numJobsToComplete)
+                : JobContext(jobManager)
+                , m_numJobsToComplete(numJobsToComplete)
+            {
+                AZ_Assert(numJobsToComplete > 0, "Invalid number of jobs: %d", numJobsToComplete);
+            }
+
+            // When a terrain job context is cancelled, all associated
+            // jobs are still guaranteed to at least begin processing,
+            // and if any QueryAsyncParams::m_completionCallback was
+            // set it's guaranteed to be called even in the event of a
+            // cancellation. If a job only begins processing after its
+            // associated job context has been cancelled, no processing
+            // will occur and the callback will be invoked immediately,
+            // otherwise the job may either run to completion or cease
+            // processing early; the callback is invoked in all cases,
+            // provided one was specified with the original request.
+            void Cancel()
+            {
+                m_isCancelled = true;
+            }
+
+            // Was this TerrainJobContext cancelled?
+            bool IsCancelled() const
+            {
+                return m_isCancelled;
+            }
+
+            // Called by the TerrainSystem when a job associated with
+            // this TerrainJobContext completes. Returns true if this
+            // was the final job to be completed, or false otherwise.
+            bool OnJobCompleted()
+            {
+                return (--m_numJobsToComplete <= 0);
+            }
+
+        private:
+            AZStd::atomic_int m_numJobsToComplete = 0;
+            AZStd::atomic_bool m_isCancelled = false;
+        };
+
+        //! Alias for an optional callback function to invoke when the various Query*Async functions complete.
+        //! The TerrainJobContext, returned from the original Query*Async function call, is passed as a param
+        //! to the callback function so it can be queried to see if the job was cancelled or completed normally.
+        typedef AZStd::function<void(AZStd::shared_ptr<TerrainJobContext>)> QueryAsyncCompleteCallback;
+
+        //! A parameter group struct that can optionally be passed to the various Query*Async API functions.
+        struct QueryAsyncParams
+        {
+            //! This constant can be used with m_desiredNumberOfJobs to request the maximum
+            //! number of jobs possible for splitting up async terrain requests based on the
+            //! maximum number of cores / job threads on the current PC. It's a symbolic number,
+            //! not a literal one, since the maximum number of available jobs will change from
+            //! machine to machine.
+            static constexpr int32_t UseMaxJobs = -1;
+
+            //! This constant is used with m_desiredNumberOfJobs to set the default number of jobs
+            //! for splitting up async terrain requests. By default, we use a single job so that the
+            //! request runs asynchronously but only consumes a single thread.
+            static constexpr int32_t NumJobsDefault = 1;
+
+            //! The desired maximum number of jobs to split async terrain requests into.
+            //! The actual number of jobs used will be clamped based on the number of available job manager threads,
+            //! the desired number of jobs, and the minimum number of positions that should be processed per job.
+            int32_t m_desiredNumberOfJobs = NumJobsDefault;
+
+            //! This constant is used with m_minPositionsPerJob to set the default minimum number
+            //! of positions to process per async terrain request job. The higher the number, the more it will
+            //! limit the maximum number of simultaneous jobs per async terrain request.
+            static constexpr int32_t MinPositionsPerJobDefault = 8;
+
+            //! The minimum number of positions per async terrain request job.
+            int32_t m_minPositionsPerJob = MinPositionsPerJobDefault;
+
+            //! The callback function that will be invoked when a call to a Query*Async function completes.
+            //! If the job is cancelled, the completion callback will not be invoked.
+            QueryAsyncCompleteCallback m_completionCallback = nullptr;
+        };
+
         //! Shared interface for terrain system implementations
         class TerrainDataRequests
             : public AZ::EBusSharedDispatchTraits<TerrainDataRequests>
@@ -140,54 +242,32 @@ namespace AzFramework
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
 
+            //! Flags for selecting the combination of data to query when querying a list or region.
+            //! The flags determine which subset of data in the SurfacePoint struct will be valid in the FillCallback.
+            enum TerrainDataMask : uint8_t
+            {
+                Heights     = 0b00000001,   //! Query height data
+                Normals     = 0b00000010,   //! Query normal data
+                SurfaceData = 0b00000100,   //! Query surface types and weights
+                All         = 0b11111111    //! Query for every available data channel (heights, normals, surface data)
+            };
+
             //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
             //! XY coordinate in the list.
-            virtual void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+            virtual void QueryList(const AZStd::span<const AZ::Vector3>& inPositions,
+                TerrainDataMask requestedData,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+            virtual void QueryListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
+                TerrainDataMask requestedData,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
-            //! Returns the number of samples for a given region and step size. The first and second
-            //! elements of the pair correspond to the X and Y sample counts respectively.
-            virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize, Sampler samplerType) const = 0;
-
-            //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
+            //! Given a terrain query region, call the provided callback function with terrain data corresponding to the
             //! coordinates in the region.
-            virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
-            virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+            virtual void QueryRegion(
+                const TerrainQueryRegion& queryRegion,
+                TerrainDataMask requestedData,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
@@ -197,139 +277,26 @@ namespace AzFramework
             //! Given a ray, return the closest intersection with terrain.
             virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
-            //! A JobContext used to run jobs spawned by calls to the various Process*Async functions.
-            class TerrainJobContext : public AZ::JobContext
-            {
-            public:
-                TerrainJobContext(AZ::JobManager& jobManager,
-                                  int numJobsToComplete)
-                    : JobContext(jobManager)
-                    , m_numJobsToComplete(numJobsToComplete)
-                {
-                }
-
-                // When a terrain job context is cancelled, all associated
-                // jobs are still guaranteed to at least begin processing,
-                // and if any ProcessAsyncParams::m_completionCallback was
-                // set it's guaranteed to be called even in the event of a
-                // cancellation. If a job only begins processing after its
-                // associated job context has been cancelled, no processing
-                // will occur and the callback will be invoked immediately,
-                // otherwise the job may either run to completion or cease
-                // processing early; the callback is invoked in all cases,
-                // provided one was specified with the original request.
-                void Cancel() { m_isCancelled = true; }
-
-                // Was this TerrainJobContext cancelled?
-                bool IsCancelled() const { return m_isCancelled; }
-
-                // Called by the TerrainSystem when a job associated with
-                // this TerrainJobContext completes. Returns true if this
-                // was the final job to be completed, or false otherwise.
-                bool OnJobCompleted() { return (--m_numJobsToComplete == 0); }
-
-            private:
-                AZStd::atomic_int m_numJobsToComplete = 0;
-                AZStd::atomic_bool m_isCancelled = false;
-            };
-
-            //! Alias for an optional callback function to invoke when the various Process*Async functions complete.
-            //! The TerrainJobContext, returned from the original Process*Async function call, is passed as a param
-            //! to the callback function so it can be queried to see if the job was cancelled or completed normally.
-            typedef AZStd::function<void(AZStd::shared_ptr<TerrainJobContext>)> ProcessAsyncCompleteCallback;
-
-            //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
-            struct ProcessAsyncParams
-            {
-                //! The default minimum number of positions per async terrain request job.
-                static constexpr int32_t MinPositionsPerJobDefault = 8;
-
-                //! The maximum number of jobs which async terrain requests will be split into.
-                //! This is not the value itself, rather a constant that can be used to request
-                //! the work be split into the maximum number of job manager threads available.
-                static constexpr int32_t NumJobsMax = -1;
-
-                //! The default number of jobs which async terrain requests will be split into.
-                static constexpr int32_t NumJobsDefault = 1;
-
-                //! The desired number of jobs to split async terrain requests into.
-                //! The actual value used will be clamped to the number of available job manager threads.
-                int32_t m_desiredNumberOfJobs = NumJobsDefault;
-
-                //! The minimum number of positions per async terrain request job.
-                int32_t m_minPositionsPerJob = MinPositionsPerJobDefault;
-
-                //! The callback function that will be invoked when a call to a Process*Async function completes.
-                //! If the job is cancelled, the completion callback will not be invoked.
-                ProcessAsyncCompleteCallback m_completionCallback = nullptr;
-            };
-
-            //! Asynchronous versions of the various 'Process*' API functions declared above.
+            //! Asynchronous versions of the various 'Query*' API functions declared above.
             //! It's the responsibility of the caller to ensure all callbacks are threadsafe.
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListAsync(
+            virtual AZStd::shared_ptr<TerrainJobContext> QueryListAsync(
                 const AZStd::span<const AZ::Vector3>& inPositions,
+                TerrainDataMask requestedData,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListAsync(
-                const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListAsync(
-                const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListAsync(
-                const AZStd::span<const AZ::Vector3>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListOfVector2Async(
+                AZStd::shared_ptr<QueryAsyncParams> params = nullptr) const = 0;
+            virtual AZStd::shared_ptr<TerrainJobContext> QueryListOfVector2Async(
                 const AZStd::span<const AZ::Vector2>& inPositions,
+                TerrainDataMask requestedData,
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListOfVector2Async(
-                const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListOfVector2Async(
-                const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListOfVector2Async(
-                const AZStd::span<const AZ::Vector2>& inPositions,
-                SurfacePointListFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromRegionAsync(
-                const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+                AZStd::shared_ptr<QueryAsyncParams> params = nullptr) const = 0;
+            virtual AZStd::shared_ptr<TerrainJobContext> QueryRegionAsync(
+                const TerrainQueryRegion& queryRegion,
+                TerrainDataMask requestedData,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromRegionAsync(
-                const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromRegionAsync(
-                const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
-            virtual AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromRegionAsync(
-                const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
-                SurfacePointRegionFillCallback perPositionCallback,
-                Sampler sampleFilter = Sampler::DEFAULT,
-                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+                AZStd::shared_ptr<QueryAsyncParams> params = nullptr) const = 0;
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 

@@ -7,5 +7,21 @@
 #
 
 set(FILES
+    Tests/Framework/ScriptCanvasUnitTestFixture.h
+    Tests/Libraries/Entity/ScriptCanvasUnitTest_EntityFunctions.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_AABB.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Color.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_CRC.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_MathFunctions.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Matrix3x3.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Matrix4x4.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_OBB.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Plane.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Quaternion.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Transform.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Vector2.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Vector3.cpp
+    Tests/Libraries/Math/ScriptCanvasUnitTest_Vector4.cpp
+    Tests/Libraries/String/ScriptCanvasUnitTest_StringFunctions.cpp
     Tests/ScriptCanvasTest.cpp
 )
