@@ -6,10 +6,11 @@
  *
  */
 
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/Attributes.h>
-#include <ScriptCanvas/Internal/Nodes/ExpressionNodeBase.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
-#include <ScriptCanvas/Libraries/Math/MathExpression.h>
 
 namespace ScriptCanvas
 {
@@ -33,23 +34,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-
-            Nodes::Internal::ExpressionNodeBase::Reflect(reflection);
-        }
-
-        void Math::InitNodeRegistry(NodeRegistry& nodeRegistry)
-        {
-            using namespace ScriptCanvas::Nodes::Math;
-
-            AddNodeToRegistry<Math, MathExpression>(nodeRegistry);
-        }
-
-        AZStd::vector<AZ::ComponentDescriptor*> Math::GetComponentDescriptors()
-        {
-            AZStd::vector<AZ::ComponentDescriptor*> descriptors = {
-                ScriptCanvas::Nodes::Math::MathExpression::CreateDescriptor()
-            };
-            return descriptors;
         }
     }
 }

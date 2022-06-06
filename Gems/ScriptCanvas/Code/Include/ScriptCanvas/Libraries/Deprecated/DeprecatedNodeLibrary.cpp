@@ -31,11 +31,8 @@
 #include <Libraries/Deprecated/Vector2Nodes.h>
 #include <Libraries/Deprecated/Vector3Nodes.h>
 #include <Libraries/Deprecated/Vector4Nodes.h>
-#include <Libraries/Deprecated/Contains.h>
-#include <Libraries/Deprecated/Replace.h>
 #include <Libraries/Deprecated/StringGenerics.h>
 #include <Libraries/Deprecated/StringMethods.h>
-#include <Libraries/Deprecated/Utilities.h>
 #include <Libraries/Libraries.h>
 
 namespace ScriptCanvas
@@ -93,12 +90,6 @@ namespace ScriptCanvas
             ScriptCanvas::Nodes::Math::Multiply::CreateDescriptor(),
             ScriptCanvas::Nodes::Math::Subtract::CreateDescriptor(),
             ScriptCanvas::Nodes::Math::Sum::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::Replace::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::Contains::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::StartsWith::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::EndsWith::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::Split::CreateDescriptor(),
-            ScriptCanvas::Nodes::String::Join::CreateDescriptor()
         };
 
         EntityNodes::Registrar::AddDescriptors(descriptors);

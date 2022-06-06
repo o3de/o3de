@@ -16,6 +16,7 @@ namespace ScriptCanvas
 {
     static constexpr const char ScriptCanvasAutoGenFunctionRegistrySuffix[] = "FunctionRegistry";
     static constexpr const char ScriptCanvasAutoGenNodeableRegistrySuffix[] = "NodeableRegistry";
+    static constexpr const char ScriptCanvasAutoGenGrammarRegistrySuffix[] = "GrammarRegistry";
     static constexpr const char ScriptCanvasAutoGenRegistryName[] = "AutoGenRegistryManager";
     static constexpr int MaxMessageLength = 4096;
     static constexpr const char ScriptCanvasAutoGenRegistrationWarningMessage[] = "[Warning] Registry name %s is occupied already, ignore AutoGen registry registration.\n";
@@ -38,6 +39,7 @@ namespace ScriptCanvas
         AZStd::vector<AZStd::string> result;
         result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenFunctionRegistrySuffix).c_str());
         result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenNodeableRegistrySuffix).c_str());
+        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenGrammarRegistrySuffix).c_str());
         return result;
     }
 

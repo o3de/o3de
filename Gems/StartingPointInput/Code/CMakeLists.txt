@@ -28,6 +28,8 @@ ly_add_target(
     AUTOGEN_RULES
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Header.jinja,AutoGenGrammarRegistry.generated.h
+        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Source.jinja,AutoGenGrammarRegistry.generated.cpp
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,AutoGenNodeableRegistry.generated.h

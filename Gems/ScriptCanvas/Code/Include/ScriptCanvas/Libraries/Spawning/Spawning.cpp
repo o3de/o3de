@@ -92,14 +92,5 @@ namespace ScriptCanvas
             HashContainerReflector<EntitySpawnTicket>::Reflect(reflection);
             HashContainerReflector<Scripts::SpawnableScriptAssetRef>::Reflect(reflection);
         }
-
-        void Spawning::InitNodeRegistry([[maybe_unused]] NodeRegistry& nodeRegistry)
-        {
-        }
-
-        AZStd::vector<AZ::ComponentDescriptor*> Spawning::GetComponentDescriptors()
-        {
-            return AZStd::vector<AZ::ComponentDescriptor*>();
-        }
     }
 }

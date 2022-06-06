@@ -25,6 +25,8 @@ namespace AZ
     static ScriptCanvas::LIBRARY##FunctionRegistry s_AutoGenFunctionRegistry;
 #define REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(LIBRARY)\
     static ScriptCanvas::LIBRARY##NodeableRegistry s_AutoGenNodeableRegistry;
+#define REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(LIBRARY)\
+    static ScriptCanvas::LIBRARY##GrammarRegistry s_AutoGenGrammarRegistry;
 
 //! AutoGen registry util macros
 #define INIT_SCRIPTCANVAS_AUTOGEN(LIBRARY)\

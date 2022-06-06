@@ -45,43 +45,6 @@ namespace ScriptCanvas
             ScriptCanvas::UnitTesting::Auxiliary::EBusTraits::Reflect(reflection);
             ScriptCanvas::UnitTesting::Auxiliary::TypeExposition::Reflect(reflection);
         }
-
-        void UnitTesting::InitNodeRegistry(NodeRegistry& nodeRegistry)
-        {
-            using namespace ScriptCanvas::Nodes::UnitTesting;
-            AddNodeToRegistry<UnitTesting, MarkComplete>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, AddFailure>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, AddSuccess>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, Checkpoint>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectEqual>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectFalse>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectGreaterThan>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectGreaterThanEqual>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectLessThan>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectLessThanEqual>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectNotEqual>(nodeRegistry);
-            AddNodeToRegistry<UnitTesting, ExpectTrue>(nodeRegistry);
-        }
-
-        AZStd::vector<AZ::ComponentDescriptor*> UnitTesting::GetComponentDescriptors()
-        {
-            using namespace ScriptCanvas::Nodes::UnitTesting;
-            AZStd::vector<AZ::ComponentDescriptor*> descriptors = AZStd::vector<AZ::ComponentDescriptor*>({
-                MarkComplete::CreateDescriptor(),
-                AddFailure::CreateDescriptor(),
-                AddSuccess::CreateDescriptor(),
-                Checkpoint::CreateDescriptor(),
-                ExpectEqual::CreateDescriptor(),
-                ExpectFalse::CreateDescriptor(),
-                ExpectGreaterThan::CreateDescriptor(),
-                ExpectGreaterThanEqual::CreateDescriptor(),
-                ExpectLessThan::CreateDescriptor(),
-                ExpectLessThanEqual::CreateDescriptor(),
-                ExpectNotEqual::CreateDescriptor(),
-                ExpectTrue::CreateDescriptor(),
-            });
-            return descriptors;
-        }
     }
 } 
 

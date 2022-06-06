@@ -271,7 +271,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Comparison/Greater.h
     Include/ScriptCanvas/Libraries/Comparison/LessEqual.h
     Include/ScriptCanvas/Libraries/Comparison/GreaterEqual.h
-    Include/ScriptCanvas/Libraries/Time/Time.h
     Include/ScriptCanvas/Libraries/Time/Countdown.h
     Include/ScriptCanvas/Libraries/Time/Countdown.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Time/DelayNodeable.h

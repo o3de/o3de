@@ -22,17 +22,9 @@ namespace ScriptCanvas
         auto nodeRegistry = GetNodeRegistry();
         using namespace Library;
         Core::InitNodeRegistry(*nodeRegistry);
-        Math::InitNodeRegistry(*nodeRegistry);
         Logic::InitNodeRegistry(*nodeRegistry);
         Comparison::InitNodeRegistry(*nodeRegistry);
-        Time::InitNodeRegistry(*nodeRegistry);
-        Spawning::InitNodeRegistry(*nodeRegistry);
-        String::InitNodeRegistry(*nodeRegistry);
         Operators::InitNodeRegistry(*nodeRegistry);
-
-#ifndef _RELEASE
-        Library::UnitTesting::InitNodeRegistry(*nodeRegistry);
-#endif
     }
 
     void ResetLibraries()
@@ -67,22 +59,10 @@ namespace ScriptCanvas
 
         AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors(Core::GetComponentDescriptors());
         
-        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(Math::GetComponentDescriptors());
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-        
-        componentDescriptors = Logic::GetComponentDescriptors();
+        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors = Logic::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = Comparison::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Time::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Spawning::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = String::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = Operators::GetComponentDescriptors();
@@ -90,12 +70,6 @@ namespace ScriptCanvas
 
         componentDescriptors = DeprecatedNodeLibrary::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-#ifndef _RELEASE
-        componentDescriptors = Library::UnitTesting::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-#endif
-
 
         return libraryDescriptors;
     }

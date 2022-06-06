@@ -6,11 +6,11 @@
  *
  */
 
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/Attributes.h>
-#include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
-#include <ScriptCanvas/Libraries/String/Format.h>
-#include <ScriptCanvas/Libraries/String/Print.h>
 
 namespace ScriptCanvas
 {
@@ -36,24 +36,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-            Nodes::Internal::StringFormatted::Reflect(reflection);
-        }
-
-        void String::InitNodeRegistry(NodeRegistry& nodeRegistry)
-        {
-            using namespace ScriptCanvas::Nodes::String;
-            AddNodeToRegistry<String, Format>(nodeRegistry);
-            AddNodeToRegistry<String, Print>(nodeRegistry);
-        }
-
-        AZStd::vector<AZ::ComponentDescriptor*> String::GetComponentDescriptors()
-        {
-            AZStd::vector<AZ::ComponentDescriptor*> descriptors = {
-                ScriptCanvas::Nodes::String::Format::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Print::CreateDescriptor()
-            };
-
-            return descriptors;
         }
     }
 }

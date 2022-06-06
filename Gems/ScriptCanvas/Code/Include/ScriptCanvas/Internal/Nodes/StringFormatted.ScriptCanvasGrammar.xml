@@ -5,6 +5,7 @@
            QualifiedName="ScriptCanvas::Nodes::Internal::StringFormatted"
            PreferredClassName="StringFormatted"
            Uuid="{0B1577E0-339D-4573-93D1-6C311AD12A13}"
+           BaseClass="True"
            Base="ScriptCanvas::Node"
            Category="Internal"
            Version="1"

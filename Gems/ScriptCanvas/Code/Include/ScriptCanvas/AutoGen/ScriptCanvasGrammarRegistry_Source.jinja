@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 // This code was produced with AzAutoGen, any modifications made will not be preserved.
 // If you need to modify this code see:
 //
-// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasNodeableRegistry_Source.jinja
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammarRegistry_Source.jinja
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -26,71 +26,86 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 namespace ScriptCanvas
 {
-    {{autogenTargetName}}NodeableRegistry::{{autogenTargetName}}NodeableRegistry()
+    {{autogenTargetName}}GrammarRegistry::{{autogenTargetName}}GrammarRegistry()
     {
         ScriptCanvas::AutoGenRegistryManager::GetInstance()->RegisterRegistry(GetRegistryName(), this);
     }
 
-    {{autogenTargetName}}NodeableRegistry::~{{autogenTargetName}}NodeableRegistry()
+    {{autogenTargetName}}GrammarRegistry::~{{autogenTargetName}}GrammarRegistry()
     {
         ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry(GetRegistryName());
     }
 
-    const char* {{autogenTargetName}}NodeableRegistry::GetRegistryName() {
-        return "{{autogenTargetName}}NodeableRegistry";
+    const char* {{autogenTargetName}}GrammarRegistry::GetRegistryName() {
+        return "{{autogenTargetName}}GrammarRegistry";
     }
 
-    void {{autogenTargetName}}NodeableRegistry::Init(NodeRegistry* nodeRegistry)
+    void {{autogenTargetName}}GrammarRegistry::Init(NodeRegistry* nodeRegistry)
     {
         if (nodeRegistry)
         {
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
-{%         set nodeName = Class.attrib['Name'] %}
 {%         set namespaceName = '::' %}
 {%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
 {%             set namespaceName = Class.attrib['Namespace'] + '::' %}
 {%         endif %}
 {%         if Class.attrib['BaseClass'] is not defined or Class.attrib['BaseClass'].lower() == "false" %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
             {
                 auto& nodes = nodeRegistry->m_nodeMap[AZ::AzTypeInfo<Library::CustomLibrary>::Uuid()];
-                nodes.push_back({ AZ::AzTypeInfo<{{namespaceName}}Nodes::{{nodeName}}Node>::Uuid(),
-                                  AZ::AzTypeInfo<{{namespaceName}}Nodes::{{nodeName}}Node>::Name() });
+                nodes.push_back({ AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Uuid(),
+                                  AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Name() });
             }
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
+{%         endif %}
 {%         endif %}
 {%     endfor %}
 {% endfor %}
         }
     }
 
-    void {{autogenTargetName}}NodeableRegistry::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    void {{autogenTargetName}}GrammarRegistry::Reflect([[maybe_unused]] AZ::ReflectContext* context)
     {
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
-{%         set nodeName = Class.attrib['Name'] %}
 {%         set namespaceName = '::' %}
 {%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
 {%             set namespaceName = Class.attrib['Namespace'] + '::' %}
 {%         endif %}
 {%         if Class.attrib['BaseClass'] is defined and Class.attrib['BaseClass'].lower() == "true" %}
-        {{Class.attrib['QualifiedName']}}::Reflect(context);
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
+        {{namespaceName}}{{Class.attrib['QualifiedName']}}::Reflect(context);
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
+{%         endif %}
 {%         endif %}
 {%     endfor %}
 {% endfor %}
     }
 
-    AZStd::vector<AZ::ComponentDescriptor*> {{autogenTargetName}}NodeableRegistry::GetComponentDescriptors()
+    AZStd::vector<AZ::ComponentDescriptor*> {{autogenTargetName}}GrammarRegistry::GetComponentDescriptors()
     {
         return AZStd::vector<AZ::ComponentDescriptor*>({
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
-{%         set nodeName = Class.attrib['Name'] %}
 {%         set namespaceName = '::' %}
 {%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
 {%             set namespaceName = Class.attrib['Namespace'] + '::' %}
 {%         endif %}
 {%         if Class.attrib['BaseClass'] is not defined or Class.attrib['BaseClass'].lower() == "false" %}
-            {{namespaceName}}Nodes::{{nodeName}}Node::CreateDescriptor(),
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
+            {{namespaceName}}{{Class.attrib['QualifiedName']}}::CreateDescriptor(),
+{%         endif %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
 {%         endif %}
 {%     endfor %}
 {% endfor %}

@@ -6,13 +6,11 @@
  *
  */
 
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <Libraries/Libraries.h>
-
-#include "Time.h"
 #include <ScriptCanvas/Core/Attributes.h>
-
-#include <ScriptCanvas/Internal/Nodeables/BaseTimer.h>
-#include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 
 namespace ScriptCanvas
 {
@@ -38,31 +36,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-
-            ScriptCanvas::Nodes::Internal::BaseTimerNode::Reflect(reflection);
-        }
-
-        void Time::InitNodeRegistry(NodeRegistry& nodeRegistry)
-        {
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Countdown>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Duration>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::HeartBeat>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TickDelay>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::TimeDelay>(nodeRegistry);
-            AddNodeToRegistry<Time, ScriptCanvas::Nodes::Time::Timer>(nodeRegistry);
-        }
-
-        AZStd::vector<AZ::ComponentDescriptor*> Time::GetComponentDescriptors()
-        {
-            return AZStd::vector<AZ::ComponentDescriptor*>({
-                ScriptCanvas::Nodes::Time::Countdown::CreateDescriptor(),
-                ScriptCanvas::Nodes::Time::TickDelay::CreateDescriptor(),
-                ScriptCanvas::Nodes::Time::TimeDelay::CreateDescriptor(),
-                ScriptCanvas::Nodes::Time::Duration::CreateDescriptor(),
-                ScriptCanvas::Nodes::Time::HeartBeat::CreateDescriptor(),
-                ScriptCanvas::Nodes::Time::Timer::CreateDescriptor(),
-                });
         }
     }
-
 }

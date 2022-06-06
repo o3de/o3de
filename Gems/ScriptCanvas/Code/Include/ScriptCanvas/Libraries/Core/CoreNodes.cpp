@@ -75,8 +75,6 @@ namespace ScriptCanvas
             Nodes::Core::EBusEventEntry::Reflect(reflection);
             Nodes::Core::AzEventEntry::Reflect(reflection);
             Nodes::Core::Internal::ScriptEventEntry::Reflect(reflection);
-            Nodes::Core::Internal::ScriptEventBase::Reflect(reflection);
-            Nodes::Core::Internal::Nodeling::Reflect(reflection);
 
             ContainerTypeReflection::ReflectOnDemandTargets::Reflect(reflection);
             
@@ -100,18 +98,6 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Nodes::Core;
             AddNodeToRegistry<Core, Method>(nodeRegistry);
             AddNodeToRegistry<Core, MethodOverloaded>(nodeRegistry);
-            AddNodeToRegistry<Core, Start>(nodeRegistry);            
-            AddNodeToRegistry<Core, EBusEventHandler>(nodeRegistry);
-            AddNodeToRegistry<Core, AzEventHandler>(nodeRegistry);
-            AddNodeToRegistry<Core, ExtractProperty>(nodeRegistry);
-            AddNodeToRegistry<Core, ForEach>(nodeRegistry);
-            AddNodeToRegistry<Core, GetVariableNode>(nodeRegistry);
-            AddNodeToRegistry<Core, SetVariableNode>(nodeRegistry);
-            AddNodeToRegistry<Core, ReceiveScriptEvent>(nodeRegistry);
-            AddNodeToRegistry<Core, SendScriptEvent>(nodeRegistry);
-            AddNodeToRegistry<Core, Repeater>(nodeRegistry);
-            AddNodeToRegistry<Core, FunctionCallNode>(nodeRegistry);
-            AddNodeToRegistry<Core, FunctionDefinitionNode>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Core::GetComponentDescriptors()
@@ -119,18 +105,6 @@ namespace ScriptCanvas
             return AZStd::vector<AZ::ComponentDescriptor*>({
                 ScriptCanvas::Nodes::Core::Method::CreateDescriptor(),
                 ScriptCanvas::Nodes::Core::MethodOverloaded::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::Start::CreateDescriptor(),                
-                ScriptCanvas::Nodes::Core::EBusEventHandler::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::AzEventHandler::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ExtractProperty::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ForEach::CreateDescriptor(),                
-                ScriptCanvas::Nodes::Core::GetVariableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::SetVariableNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::ReceiveScriptEvent::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::SendScriptEvent::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::Repeater::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::FunctionCallNode::CreateDescriptor(),
-                ScriptCanvas::Nodes::Core::FunctionDefinitionNode::CreateDescriptor(),
             });
         }
     }

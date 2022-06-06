@@ -12,17 +12,6 @@
 // shared code
 
 #include "EBusEventHandler.h"
-#include "ExtractProperty.h"
-#include "FunctionDefinitionNode.h"
-#include "ForEach.h"
-#include "FunctionCallNode.h"
-#include "GetVariable.h"
 #include "Method.h"
 #include "MethodOverloaded.h"
-#include "ReceiveScriptEvent.h"
-#include "Repeater.h"
-#include "RepeaterNodeable.h"
 #include "ScriptEventBase.h"
-#include "SendScriptEvent.h"
-#include "SetVariable.h"
-#include "Start.h"

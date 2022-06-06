@@ -5,6 +5,7 @@
          QualifiedName="ScriptCanvas::Nodes::Core::Internal::Nodeling"
          PreferredClassName="Nodeling"
          Uuid="{4413EEA0-8D81-4D61-A1E1-3C1A437F3643}"
+         BaseClass="True"
          Base="ScriptCanvas::Node"
          Icon="Icons/ScriptCanvas/Start.png"
          Category="Core"

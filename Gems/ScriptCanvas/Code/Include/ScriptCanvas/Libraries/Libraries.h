@@ -63,11 +63,8 @@ namespace ScriptCanvas
             AZ_RTTI(Math, "{76898795-2B30-4645-B6D4-67568ECC889F}", LibraryDefinition);
 
             static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~Math() override = default;
-
         };
 
         struct Logic : public LibraryDefinition
@@ -79,7 +76,6 @@ namespace ScriptCanvas
             static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~Logic() override = default;
-
         };
 
         struct Time : public LibraryDefinition
@@ -87,11 +83,8 @@ namespace ScriptCanvas
             AZ_RTTI(Time, "{13B4FC85-CAC5-4DBF-B973-73EBE5CB18DC}", LibraryDefinition);
 
             static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~Time() override = default;
-
         };
 
         struct Spawning : public LibraryDefinition
@@ -99,8 +92,6 @@ namespace ScriptCanvas
             AZ_RTTI(Spawning, "{41E910AE-FBD2-41AD-9173-5105141F0466}", LibraryDefinition);
 
             static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~Spawning() override = default;
         };
@@ -110,8 +101,6 @@ namespace ScriptCanvas
             AZ_RTTI(String, "{5B700838-21A2-4579-9303-F4A4822AFEF4}", LibraryDefinition);
 
             static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~String() override = default;
         };
@@ -121,11 +110,8 @@ namespace ScriptCanvas
             AZ_RTTI(UnitTesting, "{50EB4F9F-CB8E-4946-A389-23216083FC4B}", LibraryDefinition);
 
             static void Reflect(AZ::ReflectContext*);
-            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
-            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
 
             ~UnitTesting() override = default;
-
         };
 
         struct Operators : public LibraryDefinition

@@ -5,6 +5,7 @@
 	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorBase"
 	       PreferredClassName="OperatorBase"
            Uuid="{30FED030-71ED-4498-AB2C-F5586DFA490E}"
+           BaseClass="True"
            Base="ScriptCanvas::Node"
            Category="Operators"
            Version="2"

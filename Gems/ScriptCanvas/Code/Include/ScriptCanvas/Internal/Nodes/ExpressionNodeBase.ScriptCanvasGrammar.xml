@@ -5,6 +5,7 @@
 	       QualifiedName="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
 	       PreferredClassName="ExpressionNodeBase"
            Uuid="{797C800D-8C96-4675-B5B5-2A321AC09433}"
+           BaseClass="True"
            Base="ScriptCanvas::Node"
            Category="Internal"
            Version="0"
