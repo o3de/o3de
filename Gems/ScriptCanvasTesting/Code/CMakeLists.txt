@@ -32,12 +32,15 @@ ly_add_target(
             Gem::ScriptCanvas.Editor
             Gem::GraphCanvasWidgets
             Gem::ScriptEvents.Editor
+            Gem::ScriptCanvas.Extensions
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
         AUTOGEN_RULES
+            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,TestAutoGenFunctionRegistry.generated.h
+            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,TestAutoGenFunctionRegistry.generated.cpp
             *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
             *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h

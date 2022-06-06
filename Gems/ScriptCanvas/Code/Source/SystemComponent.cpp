@@ -32,6 +32,10 @@
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
 
+#include <AutoGenFunctionRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
+
 namespace ScriptCanvasSystemComponentCpp
 {
 #if !defined(_RELEASE)
@@ -59,8 +63,10 @@ namespace ScriptCanvas
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        AutoGenRegistry::Reflect(context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
+        SourceHandle::Reflect(context);
         ReflectLibraries(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))

@@ -21,10 +21,12 @@ VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
 
-    float3 worldPosition;
+    float3 worldPosition; // ignored
+    float3 normal; // ignored
+
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        worldPosition, output.m_position, output.m_cullDistance // output params
+        worldPosition, output.m_position, output.m_cullDistance, normal // output params
         );
 
     return output;
