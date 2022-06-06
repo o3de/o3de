@@ -78,8 +78,13 @@ namespace AZ
                 template<typename ... Args>
                 ScopedSection(const char* sectionNameFormat, Args... args)
                 {
-                    m_sectionName = AZStd::string::format(sectionNameFormat, args...);
-                    ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
+#ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
+                    if (IsEnabled())
+                    {
+                        m_sectionName = AZStd::string::format(sectionNameFormat, args...);
+                        ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
+                    }
+#endif
                 }
 
                 ~ScopedSection();
