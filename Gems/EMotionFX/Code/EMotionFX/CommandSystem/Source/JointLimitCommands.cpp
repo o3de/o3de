@@ -22,7 +22,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorIdJointName, EMotionFX::CommandAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustJointLimit, EMotionFX::CommandAllocator, 0);
 
-    const char* CommandAdjustJointLimit::s_commandName = "AdjustJointLimit";
+    const char* CommandAdjustJointLimit::CommandName = "AdjustJointLimit";
 
     ParameterMixinActorIdJointName::ParameterMixinActorIdJointName(AZ::u32 actorId, const AZStd::string& jointName)
         : ParameterMixinActorId(actorId)
@@ -62,13 +62,13 @@ namespace EMotionFX
     }
 
     CommandAdjustJointLimit::CommandAdjustJointLimit(MCore::Command* orgCommand)
-        : MCore::Command(s_commandName, orgCommand)
+        : MCore::Command(CommandName, orgCommand)
         , m_oldIsDirty(false)
     {
     }
 
     CommandAdjustJointLimit::CommandAdjustJointLimit(AZ::u32 actorId, const AZStd::string& jointName, MCore::Command* orgCommand)
-        : MCore::Command(s_commandName, orgCommand)
+        : MCore::Command(CommandName, orgCommand)
         , ParameterMixinActorIdJointName(actorId, jointName)
         , m_oldIsDirty(false)
     {

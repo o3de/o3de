@@ -61,9 +61,10 @@ namespace EMotionFX
         CommandAdjustJointLimit(AZ::u32 actorId, const AZStd::string& jointName, MCore::Command* orgCommand = nullptr);
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // MCore::Command overrides ...
         bool Execute(const MCore::CommandLine& parameters, AZStd::string& outResult) override;
         bool Undo(const MCore::CommandLine& parameters, AZStd::string& outResult) override;
-
         bool GetIsUndoable() const override { return true; }
         const char* GetHistoryName() const override { return "Adjust joint limit"; }
         const char* GetDescription() const override { return "Adjust properties of the given joint limit"; }
@@ -72,13 +73,13 @@ namespace EMotionFX
         void SetJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
         void SetOldJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
 
-        static const char* s_commandName;
+        static const char* CommandName;
 
     private:
         AzPhysics::JointConfiguration* GetJointConfiguration(Actor** outActor, AZStd::string& outResult) const;
 
         AZStd::optional<AZStd::string> m_oldContents;
-        bool m_oldIsDirty;
+        bool m_oldIsDirty = false;
     };
 
 } // namespace EMotionFX

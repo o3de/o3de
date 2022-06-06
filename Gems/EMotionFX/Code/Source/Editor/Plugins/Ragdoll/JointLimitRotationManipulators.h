@@ -46,11 +46,12 @@ namespace EMotionFX
         void BeginEditing();
         void FinishEditing();
 
+        AZ::Quaternion& GetLocalOrientation();
+        const AZ::Quaternion& GetLocalOrientation() const;
+
         AzToolsFramework::RotationManipulators m_rotationManipulators;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         JointLimitFrame m_jointLimitFrame = JointLimitFrame::Parent;
-        AZ::Quaternion& GetLocalOrientation();
-        const AZ::Quaternion& GetLocalOrientation() const;
         MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustJointLimitCallback;
     };
