@@ -51,7 +51,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RegisterCheckableActionToUnregisteredContext)
     {
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -59,7 +59,7 @@ namespace UnitTest
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
 
         EXPECT_TRUE(outcome.IsSuccess());
     }
@@ -67,8 +67,8 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, RegisterCheckableActionTwice)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
 
         EXPECT_FALSE(outcome.IsSuccess());
     }
@@ -144,9 +144,9 @@ namespace UnitTest
             {
                 actionToggle = !actionToggle;
             },
-            [&](QAction* action)
+            [&]() -> bool
             {
-                action->setChecked(actionToggle);
+                return actionToggle;
             }
         );
 
@@ -183,9 +183,9 @@ namespace UnitTest
             {
                 actionToggle = !actionToggle;
             },
-            [&](QAction* action)
+            [&]() -> bool
             {
-                action->setChecked(actionToggle);
+                return actionToggle;
             }
         );
         
