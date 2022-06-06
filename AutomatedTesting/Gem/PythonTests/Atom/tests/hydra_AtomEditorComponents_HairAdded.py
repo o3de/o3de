@@ -71,13 +71,14 @@ def AtomEditorComponents_Hair_AddedToEntity():
     5) Verify Hair component not enabled.
     6) Add Actor component since it is required by the Hair component.
     7) Verify Hair component is enabled.
-    8) Enter/Exit game mode.
-    9) Test IsHidden.
-    10) Test IsVisible.
-    11) Delete Hair entity.
-    12) UNDO deletion.
-    13) REDO deletion.
-    14) Look for errors or asserts.
+    8) Set assets for Actor and Hair
+    9) Enter/Exit game mode.
+    10) Test IsHidden.
+    11) Test IsVisible.
+    12) Delete Hair entity.
+    13) UNDO deletion.
+    14) REDO deletion.
+    15) Look for errors or asserts.
 
     :return: None
     """
@@ -141,35 +142,35 @@ def AtomEditorComponents_Hair_AddedToEntity():
             Tests.hair_asset,
             hair_component.get_component_property_value(AtomComponentProperties.hair('Hair Asset')) == hair_asset.id)
 
-        # 23. Enter/Exit game mode.
+        # 9. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 24. Test IsHidden.
+        # 10. Test IsHidden.
         hair_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, hair_entity.is_hidden() is True)
 
-        # 25. Test IsVisible.
+        # 11. Test IsVisible.
         hair_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, hair_entity.is_visible() is True)
 
-        # 26. Delete Hair entity.
+        # 12. Delete Hair entity.
         hair_entity.delete()
         Report.result(Tests.entity_deleted, not hair_entity.exists())
 
-        # 27. UNDO deletion.
+        # 13. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, hair_entity.exists())
 
-        # 28. REDO deletion.
+        # 14. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not hair_entity.exists())
 
-        # 29. Look for errors or asserts.
+        # 15. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
