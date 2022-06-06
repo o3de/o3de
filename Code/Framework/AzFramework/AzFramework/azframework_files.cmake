@@ -178,8 +178,8 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
-    Network/IToolingConnection.h
-    Network/IToolingConnection.inl
+    Network/IRemoteTools.h
+    Network/IRemoteTools.inl
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
