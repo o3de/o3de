@@ -17,7 +17,6 @@
 
 #include <QHBoxLayout>
 #include <QPointer>
-#include <QScrollArea>
 
 #endif // Q_MOC_RUN
 

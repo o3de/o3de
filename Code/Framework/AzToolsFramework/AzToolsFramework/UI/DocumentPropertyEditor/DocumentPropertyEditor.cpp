@@ -48,7 +48,7 @@ namespace AzToolsFramework
         {
             auto widgetSizeHint = itemAt(layoutIndex)->sizeHint();
             cumulativeWidth += widgetSizeHint.width();
-            preferredHeight = qMax(widgetSizeHint.height(), preferredHeight);
+            preferredHeight = AZStd::max(widgetSizeHint.height(), preferredHeight);
         }
         return { cumulativeWidth, preferredHeight };
     }
@@ -70,7 +70,7 @@ namespace AzToolsFramework
                 {
                     cumulativeWidth += minWidth;
                 }
-                minimumHeight = qMax(widgetChild->sizeHint().height(), minimumHeight);
+                minimumHeight = AZStd::max(widgetChild->sizeHint().height(), minimumHeight);
             }
         }
         return { cumulativeWidth, minimumHeight };
@@ -259,12 +259,12 @@ namespace AzToolsFramework
         const auto& fullPath = domOperation.GetDestinationPath();
         auto pathEntry = fullPath[pathIndex];
         AZ_Assert(pathEntry.IsIndex() || pathEntry.IsEndOfArray(), "the direct children of a row must be referenced by index");
-        const int childCount = aznumeric_cast<int>(m_domOrderedChildren.size());
+        auto childCount = m_domOrderedChildren.size();
 
         // if we're on the last entry in the path, this row widget is the direct owner
         if (pathIndex == fullPath.Size() - 1)
         {
-            int childIndex = 0;
+            size_t childIndex = 0;
             if (pathEntry.IsIndex())
             {
                 // remove and replace operations must match an existing index. Add operations can be one past the current end.
@@ -302,7 +302,7 @@ namespace AzToolsFramework
         else // not the direct owner of the entry to patch
         {
             // find the next widget in the path and delegate the operation to them
-            const int childIndex = (pathEntry.IsIndex() ? aznumeric_cast<int>(pathEntry.GetIndex()) : childCount - 1);
+            auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
             AZ_Assert(childIndex <= childCount, "DPE: Patch failed to apply, invalid child index specified");
             if (childIndex > childCount)
             {
@@ -310,11 +310,11 @@ namespace AzToolsFramework
             }
 
             QWidget* childWidget = m_domOrderedChildren[childIndex];
-            DPERowWidget* widgetAsDPERow = qobject_cast<DPERowWidget*>(childWidget);
-            if (widgetAsDPERow)
+            DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
+            if (widgetAsDpeRow)
             {
                 // child is a DPERowWidget, pass patch processing to it
-                widgetAsDPERow->HandleOperationAtPath(domOperation, pathIndex + 1);
+                widgetAsDpeRow->HandleOperationAtPath(domOperation, pathIndex + 1);
             }
             else // child must be a label or a PropertyEditor
             {
