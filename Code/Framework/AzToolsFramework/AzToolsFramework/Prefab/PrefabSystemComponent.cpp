@@ -25,6 +25,34 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        namespace Internal
+        {
+            struct PrefabPublicNotificationBusHandler final
+                : public PrefabPublicNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(PrefabPublicNotificationBusHandler, "{F6F8C610-F780-45FA-8DC2-742E3FA427B5}", AZ::SystemAllocator,
+                    OnPrefabInstancePropagationBegin,
+                    OnPrefabInstancePropagationEnd,
+                    OnRootPrefabInstanceLoaded);
+
+                void OnPrefabInstancePropagationBegin() override
+                {
+                    Call(FN_OnPrefabInstancePropagationBegin);
+                }
+
+                void OnPrefabInstancePropagationEnd() override
+                {
+                    Call(FN_OnPrefabInstancePropagationEnd);
+                }
+
+                void OnRootPrefabInstanceLoaded() override
+                {
+                    Call(FN_OnRootPrefabInstanceLoaded);
+                }
+            };
+        }
+
         void PrefabSystemComponent::Init()
         {
         }
@@ -76,8 +104,18 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
-                ;
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString)
+                    ;
+
+                behaviorContext->EBus<PrefabPublicNotificationBus>("PrefabPublicNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                    ->Handler<Internal::PrefabPublicNotificationBusHandler>()
+                    ->Event("OnPrefabInstancePropagationBegin", &PrefabPublicNotifications::OnPrefabInstancePropagationBegin)
+                    ->Event("OnPrefabInstancePropagationEnd", &PrefabPublicNotifications::OnPrefabInstancePropagationEnd)
+                    ->Event("OnRootPrefabInstanceLoaded", &PrefabPublicNotifications::OnRootPrefabInstanceLoaded)
+                    ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
@@ -320,12 +358,10 @@ namespace AzToolsFramework
 
             auto newInstance = AZStd::make_unique<Instance>(parent);
             EntityList newEntities;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
-                    *newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom(),
-                    PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
             {
-                AZ_Error(
-                    "Prefab", false, "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
+                AZ_Error("Prefab", false,
+                    "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
                     instantiatingTemplate->get().GetFilePath().c_str());
                 return nullptr;
             }
@@ -734,7 +770,6 @@ namespace AzToolsFramework
                 instancesValue->get().AddMember(
                     rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
                     targetTemplateDom.GetAllocator());
-                SetTemplateDirtyFlag(linkTargetId, true);
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();
