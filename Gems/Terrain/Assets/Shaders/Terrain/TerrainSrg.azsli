@@ -30,6 +30,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     {
         float3 m_mainCameraPosition;
         float m_firstLodDistance;
+        float m_rcpClodDistance;
     };
 
     struct DetailMaterialData

@@ -733,6 +733,9 @@ namespace AssetBuilderSDK
 
         bool Succeeded() const;
 
+        //! Detects if any products ids created by the builder collide. Call this once the builder has completed processing. Any colliding ids will be logged.
+        bool ReportProductCollisions() const;
+
         static void Reflect(AZ::ReflectContext* context);
     };
 

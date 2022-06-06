@@ -46,16 +46,34 @@ namespace Terrain
 
         float m_renderDistance = 4096.0f;
         float m_firstLodDistance = 128.0f;
+        bool m_clodEnabled = true;
+        float m_clodDistance = 16.0f;
 
         bool operator==(const MeshConfiguration& other) const
         {
-            return m_renderDistance == other.m_renderDistance &&
-                m_firstLodDistance == other.m_firstLodDistance;
+            return m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                && m_clodDistance == other.m_clodDistance
+                ;
+        }
+
+        bool CheckWouldRequireRebuild(const MeshConfiguration& other) const
+        {
+            return !(m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                );
         }
 
         bool operator!=(const MeshConfiguration& other) const
         {
             return !(other == *this);
+        }
+
+        bool IsClodDisabled() // Since the edit context attribute is "ReadOnly" instead of "Enabled", the logic needs to be reversed.
+        {
+            return !m_clodEnabled;
         }
 
     };
@@ -86,7 +104,9 @@ namespace Terrain
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
-        static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr int32_t GridSizeExponent = 6; // 2^6 = 64
+        static constexpr int32_t GridSize{ 1 << GridSizeExponent }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr int32_t GridVerts1D = GridSize + 1;
 
     private:
         
@@ -113,7 +133,9 @@ namespace Terrain
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, 3> m_streamBufferViews;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsBuffer;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_lodNormalsBuffer;
+            AZStd::array<AZ::RHI::StreamBufferView, 5> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
@@ -133,12 +155,14 @@ namespace Terrain
             AZStd::array<float, 2> m_xyTranslation{ 0.0f, 0.0f };
             float m_xyScale{ 1.0f };
             uint32_t m_lodLevel{ 0 };
+            float m_rcpLodLevel{ 1.0f };
         };
 
         struct ShaderMeshData
         {
             AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
             float m_firstLodDistance;
+            float m_rcpClodDistance;
         };
 
         struct SectorUpdateContext
@@ -192,6 +216,7 @@ namespace Terrain
         void InitializeCommonSectorData();
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
+        void UpdateSectorLodBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
@@ -214,6 +239,8 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
 
         // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
