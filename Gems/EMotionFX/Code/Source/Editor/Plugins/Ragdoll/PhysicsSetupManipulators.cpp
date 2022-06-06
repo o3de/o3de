@@ -31,7 +31,4 @@ namespace EMotionFX
     {
         m_viewportId = viewportId;
     }
-
-
-
 } // namespace EMotionFX
