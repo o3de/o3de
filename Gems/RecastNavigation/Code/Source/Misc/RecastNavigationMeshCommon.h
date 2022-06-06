@@ -68,8 +68,8 @@ namespace RecastNavigation
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
         AZStd::mutex m_tileProcessingMutex;
 
-        //! A way to check if we should stop tile processing because we are deactivating.
-        AZStd::atomic<bool> m_deactivating{ false };
+        //! A way to check if we should stop tile processing (because we might be deactivating, for example).
+        AZStd::atomic<bool> m_shouldProcessTiles{ true };
 
         //! Task graph objects to process tile geometry into Recast tiles.
         AZ::TaskGraph m_taskGraph;
