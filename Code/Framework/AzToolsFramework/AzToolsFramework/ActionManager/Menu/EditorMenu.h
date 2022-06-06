@@ -55,7 +55,6 @@ namespace AzToolsFramework
 
         QMenu* m_menu = nullptr;
         AZStd::multimap<int, MenuItem> m_menuItems;
-        AZStd::unordered_map<AZStd::string, int> m_menuItemIdentifierToSortKey;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;

@@ -34,7 +34,6 @@ namespace AzToolsFramework
 
         QMenuBar* m_menuBar = nullptr;
         AZStd::multimap<int, AZStd::string> m_menus;
-        AZStd::unordered_map<AZStd::string, int> m_menuIdentifierToSortKey;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
