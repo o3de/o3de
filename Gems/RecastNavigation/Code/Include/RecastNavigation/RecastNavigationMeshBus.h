@@ -57,7 +57,7 @@ namespace RecastNavigation
             }
 
         private:
-            AZStd::lock_guard<AZStd::mutex> m_lock;
+            AZStd::lock_guard<AZStd::recursive_mutex> m_lock;
             dtNavMesh* m_mesh = nullptr;
             dtNavMeshQuery* m_query = nullptr;
 
@@ -72,7 +72,7 @@ namespace RecastNavigation
         RecastPointer<dtNavMeshQuery> m_query;
 
         //! A mutex for accessing and modifying the navigation mesh.
-        AZStd::mutex m_mutex;
+        AZStd::recursive_mutex m_mutex;
     };
 
     //! The interface for request API of @RecastNavigationMeshRequestBus.

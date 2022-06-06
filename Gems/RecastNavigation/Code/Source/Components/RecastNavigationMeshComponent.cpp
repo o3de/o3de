@@ -73,7 +73,6 @@ namespace RecastNavigation
             m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
 
         {
-            NavMeshQuery::LockGuard lock(*m_navObject);
 
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
             {
@@ -86,10 +85,13 @@ namespace RecastNavigation
                 NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
                     m_meshConfig, m_context.get());
 
-                // If a tile at the location already exists, remove it before update the data.
-                if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
                 {
-                    lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                    NavMeshQuery::LockGuard lock(*m_navObject);
+                    // If a tile at the location already exists, remove it before update the data.
+                    if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                    {
+                        lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                    }
                 }
 
                 // A tile might have no geometry at all if no objects were found there.

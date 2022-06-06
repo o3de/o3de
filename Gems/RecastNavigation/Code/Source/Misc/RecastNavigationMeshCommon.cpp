@@ -440,10 +440,12 @@ namespace RecastNavigation
                         {
                             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync - tile callback");
 
-                            NavMeshQuery::LockGuard lock(*m_navObject);
-                            if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
                             {
-                                lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                                NavMeshQuery::LockGuard lock(*m_navObject);
+                                if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                                {
+                                    lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                                }
                             }
                             if (navigationTileData.IsValid())
                             {
