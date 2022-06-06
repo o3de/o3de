@@ -63,7 +63,7 @@ namespace RecastNavigation
         float borderSize,
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
-        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData, tileCallback);
+        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData, AZStd::move(tileCallback));
     }
 
     AZ::Aabb RecastNavigationPhysXProviderComponent::GetWorldBounds() const

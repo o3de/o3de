@@ -88,7 +88,7 @@ namespace RecastNavigationTests
             m_calls = 0;
         }
 
-        void BlockUntilCalled(AZ::TimeMs timeout = AZ::TimeMs{ 100 }) const
+        void BlockUntilCalled(AZ::TimeMs timeout = AZ::TimeMs{ 2000 }) const
         {
             const AZ::TimeMs timeStep{ 5 };
             AZ::TimeMs current{ 0 };

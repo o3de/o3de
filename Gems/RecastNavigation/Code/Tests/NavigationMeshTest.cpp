@@ -665,7 +665,7 @@ namespace RecastNavigationTests
 
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
-        wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+        wait.BlockUntilCalled();
     }
 
     TEST_F(NavigationTest, AsyncDeactivateRightAfterCallingUpdate)
@@ -701,7 +701,7 @@ namespace RecastNavigationTests
 
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
-        wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+        wait.BlockUntilCalled();
     }
 
     TEST_F(NavigationTest, AsyncRerun)
@@ -721,7 +721,7 @@ namespace RecastNavigationTests
         {
             const Wait wait(AZ::EntityId(1));
             RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
-            wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+            wait.BlockUntilCalled();
         }
     }
 
@@ -741,7 +741,7 @@ namespace RecastNavigationTests
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
-        wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+        wait.BlockUntilCalled();
 
         EXPECT_EQ(wait.m_calls, 1);
     }
@@ -765,11 +765,11 @@ namespace RecastNavigationTests
 
         AZStd::vector<AZ::Vector3> waypoints;
         DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
-            AZ::Vector3(0.f, 0, 0), AZ::Vector3(2.f, 2, 0));
+            AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
         // We should not get the path yet since the async update operation is still in progress.
         EXPECT_EQ(waypoints.size(), 0);
 
-        wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+        wait.BlockUntilCalled();
     }
 
     TEST_F(NavigationTest, CollectGeometryCornerCaseZeroTileSize)

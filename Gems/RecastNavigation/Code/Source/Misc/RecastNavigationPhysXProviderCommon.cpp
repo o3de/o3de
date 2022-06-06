@@ -298,7 +298,7 @@ namespace RecastNavigation
                     AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
                     AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
                     AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
-                    geometryData->m_callback = tileCallback;
+                    geometryData->m_tileCallback = tileCallback;
                     geometryData->m_worldBounds = tileVolume;
                     geometryData->m_scanBounds = scanVolume;
                     geometryData->m_tileX = x;
@@ -313,7 +313,7 @@ namespace RecastNavigation
                                 QueryHits results;
                                 CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
                                 AppendColliderGeometry(*geometryData, results, false);
-                                geometryData->m_callback(geometryData);
+                                geometryData->m_tileCallback(geometryData);
                             }
                         });
 
