@@ -17,6 +17,7 @@
 
 #include <QHBoxLayout>
 #include <QPointer>
+#include <QFrame>
 
 #endif // Q_MOC_RUN
 
