@@ -191,10 +191,9 @@ namespace AzToolsFramework
             if (role == Qt::EditRole)
             {
                 const AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
-                QString editName = item->GetDisplayName();
-                QString editName2 = QFileInfo(editName).baseName();
-                QString extension = QFileInfo(editName).completeSuffix();
-                return editName2;
+                QString displayFileName = item->GetDisplayName();
+                QString baseFileName = QFileInfo(displayFileName).baseName();
+                return baseFileName;
             }
 
             return QVariant();
@@ -211,30 +210,16 @@ namespace AzToolsFramework
             newPath.ReplaceFilename(newFile);
             newPath.ReplaceExtension(extension);
             using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
-            m_result = waiting;
             SCCommandBus::Broadcast(
                 &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
-                [this, item, newFile, extension](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                [this, index, item, newFile, extension](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
                 {
                     if (success)
                     {
                         item->SetFileData(newFile, extension);
-                        m_result = succeeded;
-                    }
-                    else
-                    {
-                        m_result = failed;
+                        emit dataChanged(index, index);
                     }
                 });
-            while(m_result == waiting)
-            {
-                QApplication::processEvents();
-            }
-            if (m_result == succeeded)
-            {
-                emit dataChanged(index, index);
-                return true;
-            }
             return false;
         }
 

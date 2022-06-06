@@ -100,15 +100,7 @@ namespace AzToolsFramework
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
-            enum Result
-            {
-                waiting,
-                succeeded,
-                failed
-            };
-            void WaitForBlocker();
-            Result m_result;
-
+ 
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
         };
     } // namespace AssetBrowser
