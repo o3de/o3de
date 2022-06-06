@@ -106,9 +106,6 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
 
-        QTimer* m_handlerCleanupTimer;
-        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
-
         AZStd::deque<QPointer<DPERowWidget>> m_domOrderedRows;
     };
 } // namespace AzToolsFramework
