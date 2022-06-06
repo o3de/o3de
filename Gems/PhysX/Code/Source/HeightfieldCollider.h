@@ -146,6 +146,9 @@ namespace PhysX
 
         //! Cached entity name for the entity this collider is attached to.
         AZStd::string m_entityName;
+
+        //! Track the current dirty region for async heightfield refreshes.
+        AZ::Aabb m_dirtyRegion;
     };
 
 } // namespace PhysX
