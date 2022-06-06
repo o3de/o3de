@@ -154,8 +154,8 @@ namespace EditorPythonBindings
         return m_actionManagerInterface->UpdateAction(actionIdentifier);
     }
     
-    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::RegisterMenu(const AZStd::string& identifier,
-        const AzToolsFramework::MenuProperties& properties)
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::RegisterMenu(
+        const AZStd::string& identifier, const AzToolsFramework::MenuProperties& properties)
     {
         return m_menuManagerInterface->RegisterMenu(identifier, properties);
     }

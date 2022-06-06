@@ -25,8 +25,8 @@ namespace EditorPythonBindings
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Register a new Menu to the Menu Manager.
-        virtual AzToolsFramework::MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier,
-            const AzToolsFramework::MenuProperties& properties) = 0;
+        virtual AzToolsFramework::MenuManagerOperationResult RegisterMenu(
+            const AZStd::string& identifier, const AzToolsFramework::MenuProperties& properties) = 0;
 
         //! Bind an action to a menu.
         virtual AzToolsFramework::MenuManagerOperationResult AddActionToMenu(
