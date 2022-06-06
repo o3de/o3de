@@ -199,6 +199,7 @@ namespace Terrain
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
         static constexpr uint32_t RayTracingQuads1D = 200;
+        static constexpr HeightDataType NoTerrainVertexHeight = AZStd::numeric_limits<HeightDataType>::max();
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;

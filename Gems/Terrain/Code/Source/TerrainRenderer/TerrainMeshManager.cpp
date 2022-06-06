@@ -693,8 +693,9 @@ namespace Terrain
         auto perPositionCallback = [this, &heights, querySamplesX, &terrainExistsAnywhere]
         (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
+            static constexpr float HeightDoesNotExistValue = -1.0f;
             const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
-            heights.at(yIndex * querySamplesX + xIndex) = terrainExists ? height : -1.0f; // store terrain doesn't exist as a -1.0
+            heights.at(yIndex * querySamplesX + xIndex) = terrainExists ? height : HeightDoesNotExistValue;
             terrainExistsAnywhere = terrainExistsAnywhere || terrainExists;
         };
 
@@ -738,8 +739,10 @@ namespace Terrain
                 const float height = heights.at(queryCoord);
                 if (height < 0.0)
                 {
-                    // Terrain doesn't exist at this point
-                    meshHeights.at(coord) = 0xFFFF;
+                    // Primary terrain height is limited to every-other bit, and clod heights can be in-between or the same
+                    // as any of the primary heights. This leaves the max value as the single value that is never used by a
+                    // legitimate height.
+                    meshHeights.at(coord) = NoTerrainVertexHeight;
                     continue;
                 }
 
@@ -763,14 +766,14 @@ namespace Terrain
                 {
                     if (height1 < 0.0f)
                     {
-                        if (height2 >= 0.0f)
-                        {
-                            return (height - height2) / request.m_vertexSpacing;
-                        }
-                        else
+                        if (height2 < 0.0f)
                         {
                             // Assume no slope if the left and right vertices both don't exist.
                             return 0.0f;
+                        }
+                        else
+                        {
+                            return (height - height2) / request.m_vertexSpacing;
                         }
                     }
                     else
@@ -856,7 +859,7 @@ namespace Terrain
                     {
                         // It's unlikely but possible for the higher lod to have data and the lower lod to not. In that case 
                         // meshLodHeights will be empty, so fill it with values that represent "no data".
-                        AZStd::fill(meshLodHeights.begin(), meshLodHeights.end(), uint16_t(0xFFFF));
+                        AZStd::fill(meshLodHeights.begin(), meshLodHeights.end(), NoTerrainVertexHeight);
                     }
                     UpdateSectorLodBuffers(*sector, meshHeights, meshNormals, meshLodHeights, meshLodNormals);
                 }
