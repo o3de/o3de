@@ -4493,6 +4493,7 @@ namespace ScriptCanvasEditor
         auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
         ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
         ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
+        ui->actionParse_As_Script_Event->setEnabled(result.m_parse);
         ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
     }
 
@@ -4519,6 +4520,11 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnScriptEventParseAs()
     {
+        if (!m_activeGraph.IsGraphValid())
+        {
+            return;
+        }
+
         AZStd::pair<bool, AZStd::vector<AZStd::string>> result = ScriptEvents::Editor::ParseAsAction(m_activeGraph);
 
         if (result.first)
