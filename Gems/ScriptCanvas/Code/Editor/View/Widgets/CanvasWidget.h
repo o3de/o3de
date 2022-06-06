@@ -47,13 +47,13 @@ namespace ScriptCanvasEditor
             Q_OBJECT
         public:
             AZ_CLASS_ALLOCATOR(CanvasWidget, AZ::SystemAllocator, 0);
-            CanvasWidget(const ScriptCanvasEditor::SourceHandle& assetId, QWidget* parent = nullptr);
+            CanvasWidget(const SourceHandle& assetId, QWidget* parent = nullptr);
             ~CanvasWidget() override;
 
             void SetDefaultBorderColor(AZ::Color defaultBorderColor);
             void ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
-            void SetAssetId(const ScriptCanvasEditor::SourceHandle& assetId);
+            void SetAssetId(const SourceHandle& assetId);
 
             const GraphCanvas::ViewId& GetViewId() const;
 
@@ -70,7 +70,7 @@ namespace ScriptCanvasEditor
 
             void SetupGraphicsView();
             
-            ScriptCanvasEditor::SourceHandle m_assetId;
+            SourceHandle m_assetId;
 
             AZStd::unique_ptr<Ui::CanvasWidget> ui;
 

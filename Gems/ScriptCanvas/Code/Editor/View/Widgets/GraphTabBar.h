@@ -26,6 +26,8 @@ class QVBoxLayout;
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = SourceHandle;
+
     namespace Widget
     {
         class CanvasWidget;
@@ -49,22 +51,22 @@ namespace ScriptCanvasEditor
             ~GraphTabBar() override = default;
 
             AZStd::optional<GraphTabMetadata> GetTabData(int index) const;
-            AZStd::optional<GraphTabMetadata> GetTabData(ScriptCanvasEditor::SourceHandle assetId) const;
+            AZStd::optional<GraphTabMetadata> GetTabData(SourceHandle assetId) const;
             void SetTabData(const GraphTabMetadata& data, int index);
-            void SetTabData(const GraphTabMetadata& data, ScriptCanvasEditor::SourceHandle assetId);
+            void SetTabData(const GraphTabMetadata& data, SourceHandle assetId);
 
-            void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
+            void AddGraphTab(SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
             void CloseTab(int index);
             void CloseAllTabs();
 
-            int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
-            bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
+            int InsertGraphTab(int tabIndex, SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
+            bool SelectTab(SourceHandle assetId);
 
-            int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
+            int FindTab(SourceHandle assetId) const;
             int FindTab(ScriptCanvasEditor::GraphPtrConst graph) const;
-            int FindSaveOverMatch(ScriptCanvasEditor::SourceHandle assetId) const;
-            ScriptCanvasEditor::SourceHandle FindTabByPath(AZStd::string_view path) const;
-            ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
+            int FindSaveOverMatch(SourceHandle assetId) const;
+            SourceHandle FindTabByPath(AZStd::string_view path) const;
+            SourceHandle FindAssetId(int tabIndex);
             ScriptCanvas::ScriptCanvasId FindScriptCanvasIdFromGraphCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const;
 
             void ClearTabView(int tabIndex);
@@ -79,7 +81,7 @@ namespace ScriptCanvasEditor
             // The host widget field of the tabMetadata is not used and will not overwrite the tab data
             void SetTabText(int tabIndex, const QString& path, Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID);
 
-            void UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
+            void UpdateFileState(const SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
 
         Q_SIGNALS:
             void TabInserted(int index);

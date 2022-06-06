@@ -65,7 +65,7 @@ namespace ScriptCanvasBuilder
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         /// Makes an on-demand request for the compiled builder data of the source
-        virtual BuilderSourceResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) = 0;
+        virtual BuilderSourceResult CompileBuilderData(SourceHandle sourceHandle) = 0;
     };
     using DataSystemSourceRequestsBus = AZ::EBus<DataSystemSourceRequests>;
 
@@ -117,7 +117,7 @@ namespace ScriptCanvasBuilder
         /// the status is 'Ready', the asset can be executed immediately.
         /// If it is 'Pending', the system is waiting on results of processing since the source
         /// has recently changed.
-        virtual BuilderAssetResult LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle) = 0;
+        virtual BuilderAssetResult LoadAsset(SourceHandle sourceHandle) = 0;
     };
     using DataSystemAssetRequestsBus = AZ::EBus<DataSystemAssetRequests>;
 }

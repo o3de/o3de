@@ -7,6 +7,9 @@
 #
 
 set(FILES
+    Source/AtomToolsFrameworkSystemComponent.cpp
+    Source/AtomToolsFrameworkSystemComponent.h
+
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Source/Application/AtomToolsApplication.cpp
 
@@ -53,6 +56,7 @@ set(FILES
     Include/AtomToolsFramework/DynamicNode/DynamicNode.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeConfig.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeManager.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
     Source/DynamicNode/DynamicNode.cpp
@@ -60,6 +64,8 @@ set(FILES
     Source/DynamicNode/DynamicNodeManager.cpp
     Source/DynamicNode/DynamicNodePaletteItem.cpp
     Source/DynamicNode/DynamicNodeSlotConfig.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
 
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
@@ -123,8 +129,6 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
-    Source/PropertyEditor/PropertyImageAssetCtrl.cpp
-    Source/PropertyEditor/PropertyImageAssetCtrl.h
 
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
