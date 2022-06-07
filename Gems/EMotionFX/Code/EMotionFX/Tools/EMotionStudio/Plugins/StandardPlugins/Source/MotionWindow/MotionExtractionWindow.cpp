@@ -6,9 +6,9 @@
  *
  */
 
-#include "MotionExtractionWindow.h"
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../SceneManager/ActorPropertiesWindow.h"
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionExtractionWindow.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/ActorPropertiesWindow.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
@@ -27,13 +27,6 @@ namespace EMStudio
     MotionExtractionWindow::MotionExtractionWindow(QWidget* parent)
         : QWidget(parent)
     {
-        m_warningWidget = nullptr;
-        m_mainVerticalLayout = nullptr;
-        m_childVerticalLayout = nullptr;
-        m_motionExtractionNodeSelectionWindow = nullptr;
-        m_warningSelectNodeLink = nullptr;
-        m_captureHeight = nullptr;
-        m_warningShowed = false;
     }
 
     MotionExtractionWindow::~MotionExtractionWindow()

@@ -1277,8 +1277,7 @@ namespace CommandSystem
             commandGroup->AddCommandString(command);
         }
 
-        EMotionFX::MotionSet* defaultMotionSet = EMotionFX::GetMotionManager().FindMotionSetByName(s_defaultMotionSetName);
-        if (defaultMotionSet)
+        if (EMotionFX::MotionSet* defaultMotionSet = EMotionFX::GetMotionManager().FindMotionSetByName(s_defaultMotionSetName))
         {
             // Unset the dirty flag as an empty default motion set should not ask users to save when closing.
             defaultMotionSet->SetDirtyFlag(false);

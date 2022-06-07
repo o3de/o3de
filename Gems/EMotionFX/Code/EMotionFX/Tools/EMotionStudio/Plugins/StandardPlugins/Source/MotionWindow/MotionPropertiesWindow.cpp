@@ -38,7 +38,7 @@ namespace EMStudio
         // Clear the inspector in case this window is currently shown.
         EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, this);
 
-        for (auto callback : m_callbacks)
+        for (auto* callback : m_callbacks)
         {
             GetCommandManager()->RemoveCommandCallback(callback, true);
         }

@@ -10,6 +10,7 @@
 
 #include "CommandSystemConfig.h"
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/optional.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/CommandGroup.h>
@@ -149,5 +150,5 @@ public:
     void COMMANDSYSTEM_API LoadMotionsCommand(const AZStd::vector<AZStd::string>& filenames, bool reload = false);
     void COMMANDSYSTEM_API RemoveMotions(const AZStd::vector<EMotionFX::Motion*>& motions, AZStd::vector<EMotionFX::Motion*>* outFailedMotions, MCore::CommandGroup* commandGroup = nullptr, bool forceRemove = false);
     void COMMANDSYSTEM_API ClearMotions(MCore::CommandGroup* commandGroup = nullptr, bool forceRemove = false);
-    void COMMANDSYSTEM_API PlayMotions(const AZStd::vector<EMotionFX::Motion*>& motions);
+    void COMMANDSYSTEM_API PlayMotions(const AZStd::span<EMotionFX::Motion*> motions);
 } // namespace CommandSystem

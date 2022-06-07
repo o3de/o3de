@@ -2210,7 +2210,7 @@ namespace EMStudio
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
 
                 // clear everything before laoding a new workspace file
-                Reset(true, true, true, true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
+                Reset(/*clearActors=*/true, /*clearMotionSets=*/true, /*clearMotions=*/true, /*clearAnimGraphs=*/true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
                 workspaceCommandGroup.SetReturnFalseAfterError(true);
 
                 // load the first workspace of the list as more doesn't make sense anyway

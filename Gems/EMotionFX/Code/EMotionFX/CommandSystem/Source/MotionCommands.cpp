@@ -1214,7 +1214,7 @@ namespace CommandSystem
         }
     }
 
-    void PlayMotions(const AZStd::vector<EMotionFX::Motion*>& motions)
+    void PlayMotions(const AZStd::span<EMotionFX::Motion*> motions)
     {
         AZStd::string command, commandParameters;
         MCore::CommandGroup commandGroup("Play motions");

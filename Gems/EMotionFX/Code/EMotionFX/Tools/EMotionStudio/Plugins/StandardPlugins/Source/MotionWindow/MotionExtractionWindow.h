@@ -9,8 +9,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "../../../../EMStudioSDK/Source/NodeSelectionWindow.h"
-#include "../StandardPluginsConfig.h"
+#include <EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -53,18 +53,18 @@ namespace EMStudio
         void CreateWarningWidget();
 
         // flags widget
-        QWidget* m_flagsWidget;
-        QCheckBox* m_captureHeight;
+        QWidget* m_flagsWidget = nullptr;
+        QCheckBox* m_captureHeight = nullptr;
 
         //
-        QVBoxLayout* m_mainVerticalLayout;
-        QVBoxLayout* m_childVerticalLayout;
-        QWidget* m_warningWidget;
-        bool m_warningShowed;
+        QVBoxLayout* m_mainVerticalLayout = nullptr;
+        QVBoxLayout* m_childVerticalLayout = nullptr;
+        QWidget* m_warningWidget = nullptr;
+        bool m_warningShowed = false;
 
         // motion extraction node selection
-        NodeSelectionWindow* m_motionExtractionNodeSelectionWindow;
-        AzQtComponents::BrowseEdit* m_warningSelectNodeLink;
+        NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;
+        AzQtComponents::BrowseEdit* m_warningSelectNodeLink = nullptr;
 
         // Command callbacks
         class SelectActorCallback : public MCore::Command::Callback

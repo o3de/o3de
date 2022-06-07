@@ -124,7 +124,7 @@ namespace EMStudio
 
         // get the time track on which we dropped the preset
         TimeTrack* timeTrack = m_timeViewPlugin->GetTrackAt(position.y());
-        if (!timeTrack || !motion)
+        if (!timeTrack)
         {
             return;
         }

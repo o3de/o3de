@@ -381,18 +381,18 @@ namespace CommandSystem
 
         m_cachedSelectedMotionInstances.clear();
 
-        for (size_t i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t actorInstanceIndex = 0; actorInstanceIndex < numSelectedActorInstances; ++actorInstanceIndex)
         {
-            EMotionFX::ActorInstance* actorInstance = GetActorInstance(i);
+            EMotionFX::ActorInstance* actorInstance = GetActorInstance(actorInstanceIndex);
             EMotionFX::MotionSystem* motionSystem = actorInstance->GetMotionSystem();
             const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
 
-            for (size_t j = 0; j < numSelectedMotions; ++j)
+            for (size_t motionIndex = 0; motionIndex < numSelectedMotions; ++motionIndex)
             {
-                EMotionFX::Motion* motion = GetMotion(j);
-                for (size_t k = 0; k < numMotionInstances; ++k)
+                EMotionFX::Motion* motion = GetMotion(motionIndex);
+                for (size_t motionInstanceIndex = 0; motionInstanceIndex < numMotionInstances; ++motionInstanceIndex)
                 {
-                    EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(k);
+                    EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(motionInstanceIndex);
                     if (motionInstance->GetMotion() == motion)
                     {
                         m_cachedSelectedMotionInstances.push_back(motionInstance);
