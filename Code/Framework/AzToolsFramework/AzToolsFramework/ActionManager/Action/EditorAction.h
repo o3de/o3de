@@ -26,7 +26,7 @@ namespace AzToolsFramework
             AZStd::string description,
             AZStd::string category,
             AZStd::function<void()> handler,
-            AZStd::function<void(QAction*)> updateCallback = nullptr
+            AZStd::function<bool()> updateCallback = nullptr
         );
 
         // Returns the pointer to the action.
@@ -46,7 +46,7 @@ namespace AzToolsFramework
         AZStd::string m_description;
         AZStd::string m_category;
 
-        AZStd::function<void(QAction*)> m_updateCallback = nullptr;
+        AZStd::function<bool()> m_updateCallback = nullptr;
 
         AZStd::string m_parentIdentifier;
     };
