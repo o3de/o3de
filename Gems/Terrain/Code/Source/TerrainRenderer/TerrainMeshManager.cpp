@@ -616,7 +616,7 @@ namespace Terrain
                     lodIndex2 += LodGridVerts1D;
                 }
 
-                if (lodHeights[lodIndex1] == 0xFFFF || lodHeights[lodIndex2] == 0xFFFF)
+                if (lodHeights[lodIndex1] == NoTerrainVertexHeight || lodHeights[lodIndex2] == NoTerrainVertexHeight)
                 {
                     // One of the neighboring vertices has no data, so use the original height and normal
                     clodHeights[index] = originalHeights[index];
@@ -720,7 +720,7 @@ namespace Terrain
 
         // initialize min/max heights to the max/min possible values so they're immediately updated when a valid point is found.
         float minHeight = m_worldBounds.GetExtents().GetZ();
-        float maxHeight = 0.0;
+        float maxHeight = 0.0f;
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
         constexpr float maxUint15 = float(AZStd::numeric_limits<uint16_t>::max() / 2);
@@ -737,7 +737,7 @@ namespace Terrain
                 const uint16_t coord = y * request.m_samplesX + x;
 
                 const float height = heights.at(queryCoord);
-                if (height < 0.0)
+                if (height < 0.0f)
                 {
                     // Primary terrain height is limited to every-other bit, and clod heights can be in-between or the same
                     // as any of the primary heights. This leaves the max value as the single value that is never used by a

@@ -151,7 +151,7 @@ void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
     m_terrainSettingsDirty = true;
 }
 
-bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds)
+bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
 {
     for (const auto& area : m_registeredAreas)
     {
