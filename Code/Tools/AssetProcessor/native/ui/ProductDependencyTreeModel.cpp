@@ -28,7 +28,7 @@ namespace AssetProcessor
         , m_sharedDbConnection(sharedDbConnection)
         , m_productFilterModel(productFilterModel)
         , m_treeType(treeType)
-        , m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
+        , m_fileIcon(QIcon(QStringLiteral(":/AssetProcessor_goto.svg")))
     {        
         m_root.reset(new ProductDependencyTreeItem(AZStd::make_shared<ProductDependencyTreeItemData>("", "")));
     }
