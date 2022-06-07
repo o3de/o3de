@@ -155,23 +155,7 @@ namespace AzToolsFramework
 
         AssetSelectionModel AssetSelectionModel::AssetTypeSelection(const AZ::Data::AssetType& assetType, bool multiselect)
         {
-            AssetSelectionModel selection;
-
-            AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
-            assetTypeFilter->SetAssetType(assetType);
-            assetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            auto assetTypeFilterPtr = FilterConstType(assetTypeFilter);
-
-            selection.SetDisplayFilter(assetTypeFilterPtr);
-
-            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            compFilter->AddFilter(assetTypeFilterPtr);
-            compFilter->AddFilter(EntryTypeNoFoldersFilter());
-
-            selection.SetSelectionFilter(FilterConstType(compFilter));
-            selection.SetMultiselect(multiselect);
-
-            return selection;
+            return AssetTypesSelection({ assetType }, multiselect);
         }
 
         AssetSelectionModel AssetSelectionModel::AssetTypeSelection(const char* assetTypeName, bool multiselect)

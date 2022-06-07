@@ -8,6 +8,9 @@
 
 #include <RecastNavigationModuleInterface.h>
 #include <RecastNavigationEditorSystemComponent.h>
+#include <EditorComponents/EditorDetourNavigationComponent.h>
+#include <EditorComponents/EditorRecastNavigationMeshComponent.h>
+#include <EditorComponents/EditorRecastNavigationPhysXProviderComponent.h>
 
 namespace RecastNavigation
 {
@@ -26,11 +29,14 @@ namespace RecastNavigation
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 RecastNavigationEditorSystemComponent::CreateDescriptor(),
+                EditorDetourNavigationComponent::CreateDescriptor(),
+                EditorRecastNavigationMeshComponent::CreateDescriptor(),
+                EditorRecastNavigationPhysXProviderComponent::CreateDescriptor(),
             });
         }
 
         //! Add required SystemComponents to the SystemEntity.
-        //! Non-SystemComponents should not be added here
+        //! Non-SystemComponents should not be added here.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {

@@ -10,6 +10,7 @@
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/std/parallel/semaphore.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -626,7 +627,7 @@ namespace Terrain
             const auto index = getIndex(indexName);
             if (index.IsValid())
             {
-                // GetValue<T>() expects the actaul type, not a reference type, so the reference needs to be removed.
+                // GetValue<T>() expects the actual type, not a reference type, so the reference needs to be removed.
                 using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
                 ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
             }
@@ -948,16 +949,34 @@ namespace Terrain
             {
                 float totalWeight = firstWeight + secondWeight;
                 float blendWeight = 1.0f - (firstWeight / totalWeight);
-                pixel.m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                pixel.m_blend = aznumeric_cast<uint8_t>(blendWeight * 255.0f + 0.5f);
             }
         };
             
         AZ::Vector2 stepSize(m_detailTextureScale);
         AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
+        AZStd::binary_semaphore wait;
+
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
+        asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
+        asyncParams->m_minPositionsPerJob = 4 * m_detailTextureSize; // do at least 4 rows per job.
+        asyncParams->m_completionCallback = [&wait](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>)
+        {
+            wait.release();
+        };
+
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(offsetWorldAabb.GetMin(), width, height, stepSize);
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
-            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,
+            queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::SurfaceData,
+            perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT,
+            asyncParams);
+
+        wait.acquire();
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
