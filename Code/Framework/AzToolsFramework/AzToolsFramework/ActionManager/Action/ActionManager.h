@@ -44,7 +44,7 @@ namespace AzToolsFramework
             const AZStd::string& actionIdentifier,
             const ActionProperties& properties,
             AZStd::function<void()> handler,
-            AZStd::function<void(QAction*)> updateCallback
+            AZStd::function<bool()> updateCallback
         ) override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;

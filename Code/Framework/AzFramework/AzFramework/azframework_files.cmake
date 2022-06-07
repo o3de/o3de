@@ -142,6 +142,7 @@ set(FILES
     DocumentPropertyEditor/BasicAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
     DocumentPropertyEditor/DocumentAdapter.h
+    DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
