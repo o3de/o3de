@@ -15,6 +15,7 @@
 
 #include <AssetDatabase/AssetDatabase.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <AzCore/std/algorithm.h>
 
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_ProductAssetDetailsPanel.h>
@@ -257,8 +258,10 @@ namespace AssetProcessor
             ++productPathDependencyCount;
         }
 
-
-        m_ui->outgoingUnmetPathProductDependenciesList->setMinimumHeight(m_ui->outgoingUnmetPathProductDependenciesList->sizeHintForRow(0) * productPathDependencyCount + 2 * m_ui->outgoingUnmetPathProductDependenciesList->frameWidth());
+        int height = m_ui->outgoingUnmetPathProductDependenciesList->sizeHintForRow(0) * AZStd::min<int>(productPathDependencyCount, 4) +
+            2 * m_ui->outgoingUnmetPathProductDependenciesList->frameWidth();
+        m_ui->outgoingUnmetPathProductDependenciesList->setMinimumHeight(height);
+        m_ui->outgoingUnmetPathProductDependenciesList->setMaximumHeight(height);
         m_ui->outgoingUnmetPathProductDependenciesList->adjustSize();
     }
 
@@ -385,7 +388,9 @@ namespace AssetProcessor
             m_ui->missingDependencyErrorIcon->setVisible(hasMissingDependency);
         }
 
-        m_ui->MissingProductDependenciesTable->setMinimumHeight(m_ui->MissingProductDependenciesTable->rowHeight(0) * missingDependencyRowCount + 2 * m_ui->MissingProductDependenciesTable->frameWidth());
+        m_ui->MissingProductDependenciesTable->setMinimumHeight(
+            m_ui->MissingProductDependenciesTable->rowHeight(0) * AZStd::min<int>(missingDependencyRowCount, 4) +
+            2 * m_ui->MissingProductDependenciesTable->frameWidth());
         m_ui->MissingProductDependenciesTable->adjustSize();
     }
 
