@@ -316,6 +316,30 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Camera Entity' an EditorEntity.id reference to the Camera component required for this effect.
             Must be a different entity than the one which hosts Depth of Field component.\n
+          - 'CameraEntityId Override' Override enable for CameraEntityId, bool.
+          - 'Enabled Override' Override enable for Enabled, bool.
+          - 'QualityLevel Override' Override enable for QualityLevel, bool.
+          - 'ApertureF Override' Override enable for ApertureF, range 0.0-1.0.
+          - 'FocusDistance Override' Override enable for Focus Distance, range 0.0-1.0.
+          - 'EnableAutoFocus Override' Override enable for EnableAutoFocus, bool.
+          - 'AutoFocusScreenPosition Override' Override enable for AutoFocusScreenPosition, range 0.0-1.0.
+          - 'AutoFocusSensitivity Override' Override enable for AutoFocusSensitivity, range 0.0-1.0.
+          - 'AutoFocusSpeed Override' Override enable for AutoFocusSpeed, range 0.0-1.0.
+          - 'AutoFocusDelay Override' Override enable for AutoFocusDelay, range 0.0-1.0.
+          - 'EnableDebugColoring Override' Override enable for EnableDebugColoring, bool.
+          - 'Enable Depth of Field' Enables ot disables depth of field, bool.
+          - 'Quality Level' 0 or 1, 0 is standard Bokeh blur, 1 is high quality Bokeh blur.
+          - 'Aperture F' The higher the value the larger the aperture opening, range 0.0 to 1.0.
+          - 'F Number' The ratio of the system's focal length to the diameter of the aperture.
+          - 'Focus Distance' The distance from the camera to the focused object.
+          - 'Enable Auto Focus' Enables or disables auto focus.
+          - 'Focus Screen Position' XY value of the focus position on screen.
+          - 'Auto Focus Sensitivity' Higher value is more responsive, lower needs greater distance depth to refocus,
+             range 0.0 to 1.0.
+          - 'Auto Focus Speed' Distance that focus moves per second, normalizing the distance from view near to view far
+            at the value of 1, range 0.0 to 2.0.
+          - 'Auto Focus Delay' Specifies a delay time for focus to shift from one target to another, range 0.0 to 1.0.
+          - 'Enable Debug Color' Enables or disables debug color overlay, bool.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -323,6 +347,27 @@ class AtomComponentProperties:
             'name': 'DepthOfField',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
+            'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'QualityLevel Override': 'Controller|Configuration|Overrides|QualityLevel Override',
+            'ApertureF Override': 'Controller|Configuration|Aperture F',
+            'FocusDistance Override': 'Controller|Configuration|Overrides|FocusDistance Override',
+            'EnableAutoFocus Override': 'Controller|Configuration|Overrides|EnableAutoFocus Override',
+            'AutoFocusScreenPosition Override': 'Controller|Configuration|Overrides|AutoFocusScreenPosition Override',
+            'AutoFocusSensitivity Override': 'Controller|Configuration|Overrides|AutoFocusSensitivity Override',
+            'AutoFocusSpeed Override': 'Controller|Configuration|Overrides|AutoFocusSpeed Override',
+            'AutoFocusDelay Override': 'Controller|Configuration|Overrides|AutoFocusDelay Override',
+            'EnableDebugColoring Override': 'Controller|Configuration|Overrides|EnableDebugColoring Override',
+            'Enable Depth of Field': 'Controller|Configuration|Enable Depth of Field',
+            'Quality Level': 'Controller|Configuration|Quality Level',
+            'Aperture F': 'Controller|Configuration|Aperture F',
+            'Focus Distance': 'Controller|Configuration|Focus Distance',
+            'Enable Auto Focus': 'Controller|Configuration|Auto Focus|Enable Auto Focus',
+            'Focus Screen Position': 'Controller|Configuration|Auto Focus|Focus Screen Position',
+            'Auto Focus Sensitivity': 'Controller|Configuration|Auto Focus|Auto Focus Sensitivity',
+            'Auto Focus Speed': 'Controller|Configuration|Auto Focus|Auto Focus Speed',
+            'Auto Focus Delay': 'Controller|Configuration|Auto Focus|Auto Focus Delay',
+            'Enable Debug Color': 'Controller|Configuration|Debugging|Enable Debug Color'
         }
         return properties[property]
 
