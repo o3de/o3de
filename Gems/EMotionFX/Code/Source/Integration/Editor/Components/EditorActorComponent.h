@@ -80,7 +80,6 @@ namespace EMotionFX
             // AZ::Data::AssetBus overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-            void OnAssetDependencyReloaded(AZ::Data::AssetId assetId) override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;

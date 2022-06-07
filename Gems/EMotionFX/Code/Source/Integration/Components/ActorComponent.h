@@ -174,7 +174,6 @@ namespace EMotionFX
             // AZ::Data::AssetBus::Handler
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-            void OnAssetDependencyReloaded(AZ::Data::AssetId assetId) override;
 
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
