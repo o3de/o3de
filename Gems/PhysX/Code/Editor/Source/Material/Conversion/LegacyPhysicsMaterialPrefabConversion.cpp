@@ -25,6 +25,7 @@ namespace PhysX
 {
     static const AZ::TypeId EditorBlastFamilyComponentTypeId = AZ::TypeId::CreateString("{ECB1689A-2B65-44D1-9227-9E62962A7FF7}");
     static const AZ::TypeId EditorTerrainPhysicsColliderComponentTypeId = AZ::TypeId::CreateString("{C43FAB8F-3968-46A6-920E-E84AEDED3DF5}");
+    static const AZ::TypeId EditorWhiteBoxColliderComponentTypeId = AZ::TypeId::CreateString("{4EF53472-6ED4-4740-B956-F6AE5B4A4BB1}");
 
     bool FixPhysicsMaterialSelection(
         Physics::Utils::PrefabInfo& prefabInfo,
@@ -224,6 +225,15 @@ namespace PhysX
                 {
                     if (FixPhysicsMaterialSelection(prefabInfo, *component, legacyMaterialIdToNewAssetIdMap,
                         { "Configuration", "Material" },
+                        { "Configuration", "MaterialSlots" }))
+                    {
+                        prefabModified = true;
+                    }
+                }
+                else if (componentTypeId == EditorWhiteBoxColliderComponentTypeId)
+                {
+                    if (FixPhysicsMaterialSelection(prefabInfo, *component, legacyMaterialIdToNewAssetIdMap,
+                        { "Configuration", "MaterialSelection" },
                         { "Configuration", "MaterialSlots" }))
                     {
                         prefabModified = true;
