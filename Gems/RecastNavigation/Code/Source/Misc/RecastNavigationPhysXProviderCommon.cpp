@@ -276,7 +276,7 @@ namespace RecastNavigation
 
             const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
 
-            AZStd::vector<AZ::TaskToken*> tileTaskTokens;
+            AZStd::vector<AZ::TaskToken> tileTaskTokens;
 
             // Create tasks for each tile and a finish task.
             for (int y = 0; y < tilesAlongY; ++y)
@@ -317,7 +317,7 @@ namespace RecastNavigation
                             }
                         });
 
-                    tileTaskTokens.push_back(&token);
+                    tileTaskTokens.push_back(AZStd::move(token));
                 }
             }
 
@@ -327,9 +327,9 @@ namespace RecastNavigation
                     tileCallback({}); // Notifies the caller that the operation is done.
                 });
 
-            for (AZ::TaskToken* task : tileTaskTokens)
+            for (AZ::TaskToken& task : tileTaskTokens)
             {
-                task->Precedes(finishToken);
+                task.Precedes(finishToken);
             }
 
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
