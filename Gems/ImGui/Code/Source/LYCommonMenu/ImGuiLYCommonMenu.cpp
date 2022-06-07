@@ -11,6 +11,7 @@
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -18,7 +19,6 @@
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
-#include "AzCore/StringFunc/StringFunc.h"
 
 namespace ImGui
 {
