@@ -5,8 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Material",
-                "category": "Rendering"
+                "name": "Material Component Request Bus"
             },
             "methods": [
                 {
@@ -26,7 +25,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -34,7 +34,7 @@
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Property Override Map"
                             }
                         }
                     ]
@@ -56,13 +56,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Property Override Map"
                             }
                         }
                     ]
@@ -84,13 +85,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ]
@@ -112,7 +114,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
@@ -121,26 +124,27 @@
                     "base": "GetPropertyOverrideVector4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 4"
+                        "tooltip": "When signaled, this will invoke Get Property Override Vector4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 4 is invoked"
+                        "tooltip": "Signaled after Get Property Override Vector4 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 4"
+                        "name": "Get Property Override Vector4"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -148,7 +152,7 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -157,26 +161,27 @@
                     "base": "GetPropertyOverrideUInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property OverrideU Int 32"
+                        "tooltip": "When signaled, this will invoke Get Property Override UInt32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property OverrideU Int 32 is invoked"
+                        "tooltip": "Signaled after Get Property Override UInt32 is invoked"
                     },
                     "details": {
-                        "name": "Get Property OverrideU Int 32"
+                        "name": "Get Property Override UInt32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -184,7 +189,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -206,13 +211,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -220,7 +226,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -242,19 +248,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -263,32 +270,33 @@
                     "base": "SetPropertyOverrideVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 2"
+                        "tooltip": "When signaled, this will invoke Set Property Override Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 2 is invoked"
+                        "tooltip": "Signaled after Set Property Override Vector2 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 2"
+                        "name": "Set Property Override Vector2"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector 2"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -310,13 +318,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -324,7 +333,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -344,6 +353,37 @@
                     }
                 },
                 {
+                    "base": "GetActiveMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Active Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Active Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Active Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "GetMaterialSlotLabel",
                     "entry": {
                         "name": "In",
@@ -360,7 +400,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -368,7 +409,7 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Label"
                             }
                         }
                     ]
@@ -377,32 +418,33 @@
                     "base": "SetPropertyOverrideVector3",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 3"
+                        "tooltip": "When signaled, this will invoke Set Property Override Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 3 is invoked"
+                        "tooltip": "Signaled after Set Property Override Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 3"
+                        "name": "Set Property Override Vector3"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -438,19 +480,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -486,19 +529,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -520,7 +564,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset"
                             }
                         }
                     ]
@@ -542,7 +586,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset"
                             }
                         }
                     ]
@@ -564,7 +608,7 @@
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
@@ -586,13 +630,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -600,7 +645,7 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -622,7 +667,7 @@
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
@@ -644,7 +689,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -652,7 +698,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset"
                             }
                         }
                     ]
@@ -661,32 +707,33 @@
                     "base": "SetPropertyOverrideVector4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 4"
+                        "tooltip": "When signaled, this will invoke Set Property Override Vector4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 4 is invoked"
+                        "tooltip": "Signaled after Set Property Override Vector4 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 4"
+                        "name": "Set Property Override Vector4"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -695,32 +742,33 @@
                     "base": "SetPropertyOverrideUInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property OverrideU Int 32"
+                        "tooltip": "When signaled, this will invoke Set Property Override UInt32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property OverrideU Int 32 is invoked"
+                        "tooltip": "Signaled after Set Property Override UInt32 is invoked"
                     },
                     "details": {
-                        "name": "Set Property OverrideU Int 32"
+                        "name": "Set Property Override UInt32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -742,13 +790,15 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u 64"
+                                "name": "LOD Index",
+                                "tooltip": "Specifies which LOD index will be used to look up the Material Assignment Id. -1 should be used for the default material or model materials."
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Label Search String",
+                                "tooltip": "The function will return the first Material Assignment Id with a matching LOD index and a label containing this search string."
                             }
                         }
                     ],
@@ -756,7 +806,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
@@ -765,26 +816,27 @@
                     "base": "GetPropertyOverrideInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Int 32"
+                        "tooltip": "When signaled, this will invoke Get Property Override Int32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Int 32 is invoked"
+                        "tooltip": "Signaled after Get Property Override Int32 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Int 32"
+                        "name": "Get Property Override Int32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -792,7 +844,7 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -814,13 +866,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -828,7 +881,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -850,19 +903,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -884,7 +938,7 @@
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
@@ -906,13 +960,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -920,7 +975,7 @@
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -956,7 +1011,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -964,7 +1020,7 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset"
                             }
                         }
                     ]
@@ -973,32 +1029,33 @@
                     "base": "SetPropertyOverrideInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Int 32"
+                        "tooltip": "When signaled, this will invoke Set Property Override Int32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Int 32 is invoked"
+                        "tooltip": "Signaled after Set Property Override Int32 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Int 32"
+                        "name": "Set Property Override Int32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1020,19 +1077,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1041,26 +1099,27 @@
                     "base": "GetPropertyOverrideVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 2"
+                        "tooltip": "When signaled, this will invoke Get Property Override Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 2 is invoked"
+                        "tooltip": "Signaled after Get Property Override Vector2 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 2"
+                        "name": "Get Property Override Vector2"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1068,7 +1127,7 @@
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector 2"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1104,13 +1163,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1118,7 +1178,7 @@
                         {
                             "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
                             "details": {
-                                "name": "Color"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1140,19 +1200,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1174,7 +1235,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Num Materials Updated "
                             }
                         }
                     ]
@@ -1196,7 +1257,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
@@ -1233,26 +1295,27 @@
                     "base": "GetPropertyOverrideVector3",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 3"
+                        "tooltip": "When signaled, this will invoke Get Property Override Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 3 is invoked"
+                        "tooltip": "Signaled after Get Property Override Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 3"
+                        "name": "Get Property Override Vector3"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1260,7 +1323,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1296,19 +1359,20 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
                             "details": {
-                                "name": "Color"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -1330,13 +1394,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset"
                             }
                         }
                     ]
@@ -1358,13 +1423,14 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1372,7 +1438,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Property Value"
                             }
                         }
                     ]
