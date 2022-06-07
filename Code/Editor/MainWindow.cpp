@@ -15,7 +15,6 @@
 #ifdef Q_OS_WIN
 #include <QAbstractEventDispatcher>
 #endif
-#include <QDebug>
 #include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QInputDialog>
@@ -2453,11 +2452,6 @@ void MainWindow::InitializeMenus()
             }
             else
             {
-                static const int versionStringSize = 128;
-                char productVersionString[versionStringSize];
-                const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
-                productVersion.ToString(productVersionString, versionStringSize);
-
                 QUrl docSearchUrl("https://www.o3de.org/search/");
                 QUrlQuery docSearchQuery;
                 docSearchQuery.addQueryItem("query", text);
@@ -2474,7 +2468,6 @@ void MainWindow::InitializeMenus()
         connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
 
         m_menuManagerInterface->AddWidgetToMenu(HelpMenuIdentifier, containerWidget, 100);
-        
     }
 
     // Help

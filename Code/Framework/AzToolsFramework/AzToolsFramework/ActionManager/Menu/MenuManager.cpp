@@ -106,7 +106,8 @@ namespace AzToolsFramework
     MenuManagerOperationResult MenuManager::AddWidgetToMenu(
         const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex)
     {
-        if (!m_menus.contains(menuIdentifier))
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not add widget to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
@@ -118,7 +119,7 @@ namespace AzToolsFramework
                 "Menu Manager - Could not add widget to menu \"%s\" - nullptr widget.", menuIdentifier.c_str()));
         }
 
-        m_menus[menuIdentifier].AddWidget(sortIndex, widget);
+        menuIterator->second.AddWidget(sortIndex, widget);
 
         return AZ::Success();
     }

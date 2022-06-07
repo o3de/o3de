@@ -774,7 +774,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 char productVersionString[versionStringSize];
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
-                
+
                 QUrl docSearchUrl("https://www.o3de.org/search/");
                 QUrlQuery docSearchQuery;
                 docSearchQuery.addQueryItem("query", text);
