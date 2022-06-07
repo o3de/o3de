@@ -33,7 +33,6 @@ _BOOT_INFO = True
 # -------------------------------------------------------------------------
 # built in's
 import os
-#import sys
 import site
 import inspect
 import traceback
