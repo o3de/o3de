@@ -140,11 +140,11 @@ namespace AZ::DocumentPropertyEditor
                 });
             builder.EndPropertyEditor();
 
-            int i = 0;
+            int i = aznumeric_cast<int>(entry.m_node->m_children.size()) - 1;
             nodesToProcess.push_front({});
-            for (ColorTreeNode& node : entry.m_node->m_children)
+            for (auto it = entry.m_node->m_children.rbegin(); it != entry.m_node->m_children.rend(); ++it)
             {
-                nodesToProcess.push_front({ &node, AZStd::string::format("%i", i) });
+                nodesToProcess.push_front({ &(*it), AZStd::string::format("%i", i--) });
             }
         }
 
