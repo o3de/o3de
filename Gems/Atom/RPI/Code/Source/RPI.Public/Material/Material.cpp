@@ -617,35 +617,29 @@ namespace AZ
             }
             else
             {
-                AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
-
-                auto assetType = imageAsset.GetType();
-
-                if (assetInfo.m_assetId.IsValid())
+                AZ::Data::AssetType assetType = imageAsset.GetType();
+                if (assetType != azrtti_typeid<StreamingImageAsset>() && assetType != azrtti_typeid<AttachmentImageAsset>())
                 {
-                    if (assetType != imageAsset.GetType())
-                    {
-                        AZ_Assert(false, "Wrong asset type with input asset");
-                        // Correct the asset type
-                        assetType = assetInfo.m_assetType;
-                    }
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                    assetType = assetInfo.m_assetType;
                 }
 
                 Data::Instance<Image> image = nullptr;
                 if (assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset);
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
                     image = StreamingImage::FindOrCreate(streamingImageAsset);
                 }
                 else if (assetType == azrtti_typeid<AttachmentImageAsset>())
                 {
-                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = Data::static_pointer_cast<AttachmentImageAsset>(imageAsset);
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
                     image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
+                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type: %s", assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
 

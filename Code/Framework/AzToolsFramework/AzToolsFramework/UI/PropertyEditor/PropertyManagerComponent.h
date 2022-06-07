@@ -67,6 +67,7 @@ namespace AzToolsFramework
             // PropertyEditorGUIMessages::Bus::Handler
             void RequestWrite(QWidget* editorGUI) override;
             void OnEditingFinished(QWidget* editorGUI) override;
+            void RequestPropertyNotify(QWidget* editorGUI) override;
             //////////////////////////////////////////////////////////////////////////
 
             typedef AZStd::unordered_multimap<AZ::u32, PropertyHandlerBase*> HandlerMap;

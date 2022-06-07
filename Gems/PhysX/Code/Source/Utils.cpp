@@ -136,8 +136,8 @@ namespace PhysX
 
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
-            const int32_t numCols = heightfieldConfig.GetNumColumns();
-            const int32_t numRows = heightfieldConfig.GetNumRows();
+            const int32_t numCols = heightfieldConfig.GetNumColumnVertices();
+            const int32_t numRows = heightfieldConfig.GetNumRowVertices();
 
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
@@ -397,11 +397,11 @@ namespace PhysX
                             static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
 
                         // PhysX heightfields have the origin at the corner, not the center, so add an offset to the passed-in transform
-                        // to account for this difference.
+                        // to account for this difference. 
                         const AZ::Vector2 gridSpacing = heightfieldConfig.GetGridResolution();
                         AZ::Vector3 offset(
-                            -(gridSpacing.GetX() * heightfieldConfig.GetNumColumns() / 2.0f),
-                            -(gridSpacing.GetY() * heightfieldConfig.GetNumRows() / 2.0f),
+                            -(gridSpacing.GetX() * heightfieldConfig.GetNumColumnSquares() / 2.0f),
+                            -(gridSpacing.GetY() * heightfieldConfig.GetNumRowSquares() / 2.0f),
                             0.0f);
 
                         // PhysX heightfields are always defined to have the height in the Y direction, not the Z direction, so we need
@@ -1581,8 +1581,12 @@ namespace PhysX
             Physics::HeightfieldProviderRequestsBus::Event(
                 entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
-            configuration.SetNumRows(numRows);
-            configuration.SetNumColumns(numColumns);
+            // The heightfield needs to be at least 2 x 2 vertices to define a single heightfield square.
+            if ((numRows >= 2) && (numColumns >= 2))
+            {
+                configuration.SetNumRowVertices(numRows);
+                configuration.SetNumColumnVertices(numColumns);
+            }
 
             float minHeightBounds = 0.0f;
             float maxHeightBounds = 0.0f;

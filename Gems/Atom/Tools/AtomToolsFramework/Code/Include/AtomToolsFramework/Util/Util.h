@@ -124,6 +124,10 @@ namespace AtomToolsFramework
         return nullptr;
     }
 
+    //! Helper function to get a value from the settings registry
+    //! @param path Path of the setting to be retrieved
+    //! @param defaultValue Value returned if the setting does not exist in the registry
+    //! @returns The value of the setting if it was found, otherwise defaultValue
     template<typename T>
     T GetSettingsValue(AZStd::string_view path, const T& defaultValue = {})
     {
@@ -132,6 +136,10 @@ namespace AtomToolsFramework
         return (settingsRegistry && settingsRegistry->Get(result, path)) ? result : defaultValue;
     }
 
+    //! Helper function to set a value in the settings registry
+    //! @param path Path of the setting to be assigned
+    //! @param value Value to be assigned in the registry
+    //! @returns True if the value was successfully assigned, otherwise false
     template<typename T>
     bool SetSettingsValue(AZStd::string_view path, const T& value)
     {
@@ -139,6 +147,10 @@ namespace AtomToolsFramework
         return settingsRegistry && settingsRegistry->Set(path, value);
     }
 
+    //! Helper function to get an object from the settings registry
+    //! @param path Path of the setting to be retrieved
+    //! @param defaultValue Value returned if the setting does not exist in the registry
+    //! @returns The value of the setting if it was found, otherwise defaultValue
     template<typename T>
     T GetSettingsObject(AZStd::string_view path, const T& defaultValue = {})
     {
@@ -147,6 +159,10 @@ namespace AtomToolsFramework
         return (settingsRegistry && settingsRegistry->GetObject<T>(result, path)) ? result : defaultValue;
     }
 
+    //! Helper function to set an object in the settings registry
+    //! @param path Path of the setting to be assigned
+    //! @param value Value to be assigned in the registry
+    //! @returns True if the value was successfully assigned, otherwise false
     template<typename T>
     bool SetSettingsObject(AZStd::string_view path, const T& value)
     {
@@ -154,5 +170,15 @@ namespace AtomToolsFramework
         return settingsRegistry && settingsRegistry->SetObject<T>(path, value);
     }
 
+    //! Saves registry settings matching a filter
+    //! @param savePath File where registry settings will be saved
+    //! @param filters Container of substrains used to filter registry settings by path
+    //! @returns True if the settings were saved, otherwise false
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters);
+
+    //! Helper function to convert a path containing an alias into a full path
+    AZStd::string ConvertAliasToPath(const AZStd::string& path);
+
+    //! Helper function to convert a full path into one containing an alias
+    AZStd::string ConvertPathToAlias(const AZStd::string& path);
 } // namespace AtomToolsFramework

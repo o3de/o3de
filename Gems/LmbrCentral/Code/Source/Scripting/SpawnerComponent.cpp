@@ -14,6 +14,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Asset/AssetManager.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipServiceBus.h>
 
@@ -129,35 +130,38 @@ namespace LmbrCentral
                 ->Field("DestroyOnDeactivate", &SpawnerComponent::m_destroyOnDeactivate)
                 ;
         }
- 
-        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-        if (behaviorContext)
+
+        bool usePrefabSystem = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        if (!usePrefabSystem)
         {
-            behaviorContext->EBus<SpawnerComponentRequestBus>("SpawnerComponentRequestBus")
-                ->Event("Spawn", &SpawnerComponentRequestBus::Events::Spawn)
-                ->Event("SpawnRelative", &SpawnerComponentRequestBus::Events::SpawnRelative)
-                ->Event("SpawnAbsolute", &SpawnerComponentRequestBus::Events::SpawnAbsolute)
-                ->Event("DestroySpawnedSlice", &SpawnerComponentRequestBus::Events::DestroySpawnedSlice)
-                ->Event("DestroyAllSpawnedSlices", &SpawnerComponentRequestBus::Events::DestroyAllSpawnedSlices)
-                ->Event("GetCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::GetCurrentlySpawnedSlices)
-                ->Event("HasAnyCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::HasAnyCurrentlySpawnedSlices)
-                ->Event("GetCurrentEntitiesFromSpawnedSlice", &SpawnerComponentRequestBus::Events::GetCurrentEntitiesFromSpawnedSlice)
-                ->Event("GetAllCurrentlySpawnedEntities", &SpawnerComponentRequestBus::Events::GetAllCurrentlySpawnedEntities)
-                ->Event("SetDynamicSlice", &SpawnerComponentRequestBus::Events::SetDynamicSliceByAssetId)
-                ->Event("IsReadyToSpawn", &SpawnerComponentRequestBus::Events::IsReadyToSpawn)
-                ;
+            AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+            if (behaviorContext)
+            {
+                behaviorContext->EBus<SpawnerComponentRequestBus>("SpawnerComponentRequestBus")
+                    ->Event("Spawn", &SpawnerComponentRequestBus::Events::Spawn)
+                    ->Event("SpawnRelative", &SpawnerComponentRequestBus::Events::SpawnRelative)
+                    ->Event("SpawnAbsolute", &SpawnerComponentRequestBus::Events::SpawnAbsolute)
+                    ->Event("DestroySpawnedSlice", &SpawnerComponentRequestBus::Events::DestroySpawnedSlice)
+                    ->Event("DestroyAllSpawnedSlices", &SpawnerComponentRequestBus::Events::DestroyAllSpawnedSlices)
+                    ->Event("GetCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::GetCurrentlySpawnedSlices)
+                    ->Event("HasAnyCurrentlySpawnedSlices", &SpawnerComponentRequestBus::Events::HasAnyCurrentlySpawnedSlices)
+                    ->Event("GetCurrentEntitiesFromSpawnedSlice", &SpawnerComponentRequestBus::Events::GetCurrentEntitiesFromSpawnedSlice)
+                    ->Event("GetAllCurrentlySpawnedEntities", &SpawnerComponentRequestBus::Events::GetAllCurrentlySpawnedEntities)
+                    ->Event("SetDynamicSlice", &SpawnerComponentRequestBus::Events::SetDynamicSliceByAssetId)
+                    ->Event("IsReadyToSpawn", &SpawnerComponentRequestBus::Events::IsReadyToSpawn);
 
-            behaviorContext->EBus<SpawnerComponentNotificationBus>("SpawnerComponentNotificationBus")
-                ->Handler<BehaviorSpawnerComponentNotificationBusHandler>()
-                ;
+                behaviorContext->EBus<SpawnerComponentNotificationBus>("SpawnerComponentNotificationBus")
+                    ->Handler<BehaviorSpawnerComponentNotificationBusHandler>();
 
-            behaviorContext->Constant("SpawnerComponentTypeId", BehaviorConstant(SpawnerComponentTypeId));
+                behaviorContext->Constant("SpawnerComponentTypeId", BehaviorConstant(SpawnerComponentTypeId));
 
-            behaviorContext->Class<SpawnerConfig>()
-                //->Property("sliceAsset", BehaviorValueProperty(&SpawnerConfig::m_sliceAsset))
-                ->Property("spawnOnActivate", BehaviorValueProperty(&SpawnerConfig::m_spawnOnActivate))
-                ->Property("destroyOnDeactivate", BehaviorValueProperty(&SpawnerConfig::m_destroyOnDeactivate))
-                ;
+                behaviorContext
+                    ->Class<SpawnerConfig>()
+                    //->Property("sliceAsset", BehaviorValueProperty(&SpawnerConfig::m_sliceAsset))
+                    ->Property("spawnOnActivate", BehaviorValueProperty(&SpawnerConfig::m_spawnOnActivate))
+                    ->Property("destroyOnDeactivate", BehaviorValueProperty(&SpawnerConfig::m_destroyOnDeactivate));
+            }
         }
     }
 

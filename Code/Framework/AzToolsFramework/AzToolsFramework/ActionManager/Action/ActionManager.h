@@ -39,9 +39,17 @@ namespace AzToolsFramework
             const ActionProperties& properties,
             AZStd::function<void()> handler
         ) override;
+        ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const ActionProperties& properties,
+            AZStd::function<void()> handler,
+            AZStd::function<bool()> updateCallback
+        ) override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;
+        ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
 
         void ClearActionContextMap();
 
