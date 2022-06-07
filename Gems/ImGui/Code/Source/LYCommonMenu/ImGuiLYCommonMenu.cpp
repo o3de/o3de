@@ -287,7 +287,7 @@ namespace ImGui
                                 // Filter out network spawnables from the level list, 
                                 // but keep track of which levels require networking so they can be tagged as "(Networked)" in the level selection menu. 
                                 constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
-                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + Spawnable::DotFileExtension;
+                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
 
                                 if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
                                 {   
