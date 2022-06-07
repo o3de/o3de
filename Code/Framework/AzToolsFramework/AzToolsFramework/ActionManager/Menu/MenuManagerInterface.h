@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 class QMenu;
+class QWidget;
 
 namespace AzToolsFramework
 {
