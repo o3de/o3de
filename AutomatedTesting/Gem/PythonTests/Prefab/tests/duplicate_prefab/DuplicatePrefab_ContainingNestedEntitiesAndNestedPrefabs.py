@@ -45,7 +45,6 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     # Asserts if creation didn't succeed
     nested_entities_root = prefab_test_utils.create_linear_nested_entities(
         NESTED_ENTITIES_NAME_PREFIX, NUM_NESTED_ENTITIES_LEVELS, CREATION_POSITION)
-    nested_entities_root_parent = nested_entities_root.get_parent_id()
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITIES_LEVELS,
                                                       CREATION_POSITION)
     nested_entities_root_name = nested_entities_root.get_name()
@@ -94,7 +93,6 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     search_filter.names = ["Entity_2"]
     child_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
     assert child_entities_found == 1, "Undo failed: Found duplicated child entities"
-
 
     general.redo()
     wait_for_propagation()
