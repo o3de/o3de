@@ -32,7 +32,7 @@ namespace AzToolsFramework
             return InvalidHandlerId;
         }
 
-        // If the Type is empty of unspecified, check the default handler list
+        // If the Type is empty or unspecified, check the default handler list
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");
         if (typeName.empty())
         {
