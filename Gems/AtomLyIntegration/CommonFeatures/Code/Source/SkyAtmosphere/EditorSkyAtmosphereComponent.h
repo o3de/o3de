@@ -28,7 +28,8 @@ namespace AZ::Render
 
     private:
         //! EditorRenderComponentAdapter
-        //! we override OnConfigurationChanged to avoid deactivating and activating unnecessarily
+        //! we override OnEntityVisibilityChanged to avoid deactivating and activating unnecessarily
         AZ::u32 OnConfigurationChanged() override;
+        void OnEntityVisibilityChanged(bool visibility) override;
     };
 } // namespace AZ::Render

@@ -148,4 +148,21 @@ namespace AZ::Render
 
         return Edit::PropertyRefreshLevels::AttributesAndValues;
     }
+
+    void EditorSkyAtmosphereComponent::OnEntityVisibilityChanged(bool visibility)
+    {
+        if(auto featureProcessor = m_controller.m_featureProcessorInterface)
+        {
+            if (visibility && m_controller.m_atmosphereId.IsNull())
+            {
+                m_controller.m_atmosphereId = featureProcessor->CreateAtmosphere();
+                featureProcessor->SetAtmosphereParams(m_controller.m_atmosphereId, m_controller.GetUpdatedSkyAtmosphereParams());
+            }
+            else if (!visibility && !m_controller.m_atmosphereId.IsNull())
+            {
+                featureProcessor->ReleaseAtmosphere(m_controller.m_atmosphereId);
+                m_controller.m_atmosphereId.Reset();
+            }
+        }
+    }
 }
