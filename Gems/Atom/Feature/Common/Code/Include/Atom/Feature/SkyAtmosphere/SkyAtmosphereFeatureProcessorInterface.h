@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <AzCore/Math/Color.h>
 
 namespace AZ::Render
 {
