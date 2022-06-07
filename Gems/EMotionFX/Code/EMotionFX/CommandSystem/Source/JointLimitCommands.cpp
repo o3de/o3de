@@ -22,8 +22,6 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(ParameterMixinActorIdJointName, EMotionFX::CommandAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustJointLimit, EMotionFX::CommandAllocator, 0);
 
-    const char* CommandAdjustJointLimit::CommandName = "AdjustJointLimit";
-
     ParameterMixinActorIdJointName::ParameterMixinActorIdJointName(AZ::u32 actorId, const AZStd::string& jointName)
         : ParameterMixinActorId(actorId)
         , ParameterMixinJointName(jointName)
@@ -41,12 +39,13 @@ namespace EMotionFX
         serializeContext->Class<ParameterMixinActorIdJointName, ParameterMixinActorId, ParameterMixinJointName>()->Version(1);
     }
 
-    AzPhysics::JointConfiguration* CommandAdjustJointLimit::GetJointConfiguration(Actor** outActor, AZStd::string& outResult) const
+    AzPhysics::JointConfiguration* CommandAdjustJointLimit::GetJointConfiguration(Actor** outActor, AZStd::string& outResult)
     {
         Actor* actor = GetActor(this, outResult);
         if (!actor)
         {
             *outActor = nullptr;
+            outResult = "Could not get actor.";
             return nullptr;
         }
         *outActor = actor;
@@ -58,12 +57,12 @@ namespace EMotionFX
             const Physics::RagdollNodeConfiguration* ragdollNodeConfig = ragdollConfig.FindNodeConfigByName(m_jointName);
             return ragdollNodeConfig ? ragdollNodeConfig->m_jointConfig.get() : nullptr;
         }
+        outResult = "Could not get physics setup.";
         return nullptr;
     }
 
     CommandAdjustJointLimit::CommandAdjustJointLimit(MCore::Command* orgCommand)
         : MCore::Command(CommandName, orgCommand)
-        , m_oldIsDirty(false)
     {
     }
 
@@ -76,7 +75,7 @@ namespace EMotionFX
 
     void CommandAdjustJointLimit::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
         {
             return;

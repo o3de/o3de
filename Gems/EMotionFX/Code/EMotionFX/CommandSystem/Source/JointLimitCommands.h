@@ -43,6 +43,7 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext * context);
     };
 
+    //! Provides support for undoing and redoing modifications to joint limit configurations, and recording them in the Action History.
     class CommandAdjustJointLimit
         : public MCore::Command
         , public ParameterMixinActorIdJointName
@@ -73,10 +74,10 @@ namespace EMotionFX
         void SetJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
         void SetOldJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
 
-        static const char* CommandName;
+        static constexpr const char* const CommandName = "AdjustJointLimit";
 
     private:
-        AzPhysics::JointConfiguration* GetJointConfiguration(Actor** outActor, AZStd::string& outResult) const;
+        AzPhysics::JointConfiguration* GetJointConfiguration(Actor** outActor, AZStd::string& outResult);
 
         AZStd::optional<AZStd::string> m_oldContents;
         bool m_oldIsDirty = false;

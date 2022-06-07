@@ -16,8 +16,7 @@
 namespace EMotionFX
 {
     JointLimitRotationManipulators::JointLimitRotationManipulators(JointLimitFrame jointLimitFrame)
-        : m_rotationManipulators(AZ::Transform::Identity())
-        , m_jointLimitFrame(jointLimitFrame)
+        : m_jointLimitFrame(jointLimitFrame)
     {
         m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
         EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustJointLimitCallback.get());
@@ -148,9 +147,7 @@ namespace EMotionFX
 
     AZ::Quaternion& JointLimitRotationManipulators::GetLocalOrientation()
     {
-        return m_jointLimitFrame == JointLimitFrame::Parent
-            ? m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation
-            : m_physicsSetupManipulatorData.m_jointConfiguration->m_childLocalRotation;
+        return const_cast<AZ::Quaternion&>(static_cast<const JointLimitRotationManipulators&>(*this).GetLocalOrientation());
     }
 
     const AZ::Quaternion& JointLimitRotationManipulators::GetLocalOrientation() const

@@ -49,7 +49,8 @@ namespace EMotionFX
         AZ::Quaternion& GetLocalOrientation();
         const AZ::Quaternion& GetLocalOrientation() const;
 
-        AzToolsFramework::RotationManipulators m_rotationManipulators;
+        AzToolsFramework::RotationManipulators m_rotationManipulators =
+            AzToolsFramework::RotationManipulators(AZ::Transform::CreateIdentity());
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         JointLimitFrame m_jointLimitFrame = JointLimitFrame::Parent;
         MCore::CommandGroup m_commandGroup;
