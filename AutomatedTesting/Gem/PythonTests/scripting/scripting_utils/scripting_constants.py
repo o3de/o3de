@@ -13,6 +13,7 @@ Constants for window and tab names
 """
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
+NODE_INSPECTOR_UI = "Node Inspector"
 ASSET_EDITOR_UI = "Asset Editor"
 SCRIPT_EVENT_UI = "Script Events"
 VARIABLE_MANAGER_UI = "Variable Manager"
@@ -36,6 +37,7 @@ Constants for QtWidgets.
 Different from window/tab names because they do not have spaces
 """
 NODE_PALETTE_QT = "NodePalette"
+NODE_INSPECTOR_QT = "NodeInspector"
 TREE_VIEW_QT = "treeView"
 EVENTS_QT = "Events"
 EVENT_NAME_QT = "EventName"
@@ -50,6 +52,7 @@ PARAMETERS_QT = "Parameters"
 """
 General constants
 """
+TITLE_STRING = "Title"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
 WAIT_TIME_3 = 3
