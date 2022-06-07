@@ -100,7 +100,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AssetBuilderSDK
                 AZ::AzQtComponents
-                AZ::GFxFramework
                 AZ::SceneCore
                 AZ::SceneData
                 AZ::SceneUI
