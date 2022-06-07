@@ -41,11 +41,13 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderComponent::Activate()
     {
+        RecastNavigationPhysXProviderCommon::OnActivate();
         RecastNavigationProviderRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void RecastNavigationPhysXProviderComponent::Deactivate()
     {
+        RecastNavigationPhysXProviderCommon::OnDeactivate();
         RecastNavigationProviderRequestBus::Handler::BusDisconnect();
     }
 
@@ -54,6 +56,14 @@ namespace RecastNavigation
     {
         // Blocking call.
         return CollectGeometryImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData);
+    }
+
+    void RecastNavigationPhysXProviderComponent::CollectGeometryAsync(
+        float tileSize,
+        float borderSize,
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData, AZStd::move(tileCallback));
     }
 
     AZ::Aabb RecastNavigationPhysXProviderComponent::GetWorldBounds() const

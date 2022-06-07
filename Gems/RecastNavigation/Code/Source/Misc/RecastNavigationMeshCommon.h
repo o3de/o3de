@@ -10,6 +10,10 @@
 
 #include <Recast.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/ScheduledEvent.h>
+#include <AzCore/Task/TaskDescriptor.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <Misc/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
@@ -23,7 +27,11 @@ namespace RecastNavigation
     {
     public:
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
+        RecastNavigationMeshCommon();
         virtual ~RecastNavigationMeshCommon() = default;
+
+        void OnActivate();
+        void OnDeactivate();
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
@@ -43,6 +51,11 @@ namespace RecastNavigation
         //! @returns the tile data that can be attached to the navigation mesh using @AttachNavigationTileToMesh
         NavigationTileData CreateNavigationTile(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig, rcContext* context);
 
+        //! Creates a task graph with tasks to process received tile data.
+        //! @param config navigation mesh configuration to apply to the tile data
+        //! @param sendNotificationEvent once all the tiles are processed and added to the navigation update notify on the main thread
+        void ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent);
+
     protected:
         //! Debug draw object for Recast navigation mesh.
         RecastNavigationDebugDraw m_customDebugDraw;
@@ -52,6 +65,18 @@ namespace RecastNavigation
 
         //! Recast navigation objects.
         AZStd::shared_ptr<NavMeshQuery> m_navObject;
+
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
+        AZStd::recursive_mutex m_tileProcessingMutex;
+
+        //! A way to check if we should stop tile processing (because we might be deactivating, for example).
+        AZStd::atomic<bool> m_shouldProcessTiles{ true };
+
+        //! Task graph objects to process tile geometry into Recast tiles.
+        AZ::TaskGraph m_taskGraph;
+        AZ::TaskExecutor m_taskExecutor;
+        AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
+        AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
 
         struct RecastProcessing
         {
