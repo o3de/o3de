@@ -115,7 +115,6 @@ namespace AZ
                 // Add material functors that are in the top-level functors list. Other functors are also added per-property-group elsewhere.
                 AddEditorMaterialFunctors(m_editData.m_materialTypeSourceData.m_materialFunctorSourceData, AZ::RPI::MaterialNameContext{});
 
-
                 Populate();
                 LoadOverridesFromEntity();
                 return true;
@@ -457,7 +456,7 @@ namespace AZ
 
                         // This first converts to an acceptable runtime type in case the value came from script
                         const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
-                        if (!propertyIndex.IsNull())
+                        if (propertyIndex.IsValid())
                         {
                             const auto runtimeValue = AtomToolsFramework::ConvertToRuntimeType(editValue);
                             if (runtimeValue.IsValid())
@@ -638,7 +637,7 @@ namespace AZ
                 }
 
                 const auto propertyIndex = m_materialInstance->FindPropertyIndex(property.GetId());
-                if (!propertyIndex.IsNull())
+                if (propertyIndex.IsValid())
                 {
                     m_dirtyPropertyFlags.set(propertyIndex.GetIndex());
 
