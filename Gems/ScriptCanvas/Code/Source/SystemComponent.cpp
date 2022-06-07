@@ -27,6 +27,7 @@
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
@@ -273,7 +274,6 @@ namespace ScriptCanvas
             inputPin.m_name = " ";
             inputPin.m_toolTip = "Input";
             inputPin.SetConnectionType(ConnectionType::Input);
-            inputPin.m_dynamicDataType = DynamicDataType::Any;
             inputPin.m_displayType = Data::Type::Number();
 
             node->AddSlot(inputPin, true);
@@ -283,7 +283,6 @@ namespace ScriptCanvas
             outputPin.m_name = " ";
             outputPin.m_toolTip = "Output";
             outputPin.SetConnectionType(ConnectionType::Output);
-            outputPin.m_dynamicDataType = DynamicDataType::Any;
             outputPin.m_displayType = Data::Type::Number();
 
             node->AddSlot(outputPin, true);

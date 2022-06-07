@@ -431,6 +431,7 @@ namespace ScriptCanvas
                 ->Field("Slots", &Node::m_slots)
                 ->Field("Datums", &Node::m_slotDatums)
                 ->Field("NodeDisabledFlag", &Node::m_disabledFlag)
+                ->Field("Name", &Node::m_name)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
