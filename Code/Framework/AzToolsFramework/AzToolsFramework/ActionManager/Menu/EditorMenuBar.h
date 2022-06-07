@@ -28,6 +28,7 @@ namespace AzToolsFramework
         
         // Returns the pointer to the menu bar.
         QMenuBar* GetMenuBar();
+        const QMenuBar* GetMenuBar() const;
 
     private:
         void RefreshMenuBar();

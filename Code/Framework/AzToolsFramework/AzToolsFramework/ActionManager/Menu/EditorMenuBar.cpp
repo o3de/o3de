@@ -20,11 +20,16 @@ namespace AzToolsFramework
     
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
-        m_menus.insert({ sortKey, menuIdentifier });
+        m_menus.insert({ sortKey, AZStd::move(menuIdentifier) });
         RefreshMenuBar();
     }
 
     QMenuBar* EditorMenuBar::GetMenuBar()
+    {
+        return m_menuBar;
+    }
+
+    const QMenuBar* EditorMenuBar::GetMenuBar() const
     {
         return m_menuBar;
     }
@@ -35,9 +40,7 @@ namespace AzToolsFramework
 
         for (const auto& elem : m_menus)
         {
-            QMenu* menu = m_menuManagerInterface->GetMenu(elem.second);
-
-            if(menu)
+            if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second))
             {
                 m_menuBar->addMenu(menu);
             }
