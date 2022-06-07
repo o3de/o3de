@@ -295,6 +295,8 @@ set(FILES
     Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
+    Math/LineSegment.cpp
+    Math/LineSegment.h
     Math/MathIntrinsics.h
     Math/MathReflection.cpp
     Math/MathReflection.h
@@ -331,6 +333,8 @@ set(FILES
     Math/Quaternion.inl
     Math/Quaternion.h
     Math/Random.h
+    Math/Ray.cpp
+    Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
     Math/ShapeIntersection.h
