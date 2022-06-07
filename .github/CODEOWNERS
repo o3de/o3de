@@ -1,4 +1,3 @@
-
 /cmake/LYTestWrappers.cmake @o3de/sig-testing-reviewers
 
 /Code/Framework/AzTest @o3de/sig-testing-reviewers
@@ -49,6 +48,7 @@
 /AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/ @o3de/sig-content-maintainers
 /AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
+/Code/Framework/AzCore/AzCore/Asset/ @o3de/sig-content-maintainers
 
 # SIG-Content Viewport ownership area
 /Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers
