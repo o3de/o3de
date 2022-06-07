@@ -17,11 +17,13 @@ namespace AZ::DocumentPropertyEditor
         Nodes::Reflect(this);
 
         AZ::Interface<PropertyEditorSystemInterface>::Register(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
     }
 
     PropertyEditorSystem::~PropertyEditorSystem()
     {
         AZ::Interface<PropertyEditorSystemInterface>::Unregister(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
     }
 
     void PropertyEditorSystem::RegisterNode(NodeMetadata metadata)
