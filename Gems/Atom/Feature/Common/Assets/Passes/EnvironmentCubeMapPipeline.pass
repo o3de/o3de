@@ -30,76 +30,7 @@
                         }
                     ]
                 },
-                {
-                    "Name": "CascadedShadowmapsPass",
-                    "TemplateName": "CascadedShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "shadow",
-                        "PipelineViewTag": "DirectionalLightView"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ProjectedShadowmapsPass",
-                    "TemplateName": "ProjectedShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "shadow",
-                        "PipelineViewTag": "ProjectedShadowView"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "EsmShadowmapsPassDirectional",
-                    "TemplateName": "EsmShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "EsmShadowmapsPassData",
-                        "LightType": "directional"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthShadowmaps",
-                            "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "EsmShadowmapsPassProjected",
-                    "TemplateName": "EsmShadowmapsTemplate",
-                    "PassData": {
-                        "$type": "EsmShadowmapsPassData",
-                        "LightType": "projected"
-                    },
-                    "Connections": [
-                        {
-                            "LocalSlot": "DepthShadowmaps",
-                            "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
-                            }
-                        }
-                    ]
-                },
+
                 {
                     "Name": "DepthPrePass",
                     "TemplateName": "DepthMSAAParentTemplate",
@@ -148,35 +79,62 @@
                     ]
                 },
                 {
+                    "Name": "ShadowPass",
+                    "TemplateName": "ShadowParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA" 
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "ForwardMSAAPass",
                     "TemplateName": "EnvironmentCubeMapForwardMSAAPassTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "DirectionalLightShadowmap",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapDirectional",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassDirectional",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassProjected",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -217,29 +175,29 @@
                         {
                             "LocalSlot": "DirectionalLightShadowmap",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapDirectional",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassDirectional",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
-                                "Attachment": "Shadowmap"
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassProjected",
-                                "Attachment": "EsmShadowmaps"
+                                "Pass": "ShadowPass",
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -364,20 +322,61 @@
                     ]
                 },
                 {
-                    "Name": "ReflectionCompositePass",
-                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Name": "SkyAtmosphereParentPass",
+                    "TemplateName": "SkyAtmosphereParentTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "ReflectionInput",
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
                             "AttachmentRef": {
                                 "Pass": "ForwardMSAAPass",
                                 "Attachment": "SpecularF0Output"
                             }
                         },
                         {
-                            "LocalSlot": "SpecularInputOutput",
+                            "LocalSlot": "SkyBoxDepth",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "ShadowPass",
+                                "Attachment": "DirectionalESM"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionCompositePass",
+                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
                                 "Attachment": "SpecularInputOutput"
                             }
                         },
