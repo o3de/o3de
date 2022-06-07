@@ -13,6 +13,7 @@
 
 class QMenu;
 class QMenuBar;
+class QWidget;
 
 namespace AzToolsFramework
 {
@@ -68,6 +69,14 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
+
+        //! Add a Widget to a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menu is being added to.
+        //! @param widget A pointer to the widget to add to the menu.
+        //! @param sortIndex An integer defining the position the widget should appear in the menu.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) = 0;
 
         //! Add a Menu to a Menu Bar.
         //! @param menuBarIdentifier The identifier for the menu bar the menu is being added to.

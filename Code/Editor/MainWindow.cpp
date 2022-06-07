@@ -12,14 +12,17 @@
 #include <algorithm>
 
 // Qt
-#include <QMenuBar>
-#include <QDebug>
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QHBoxLayout>
 #ifdef Q_OS_WIN
 #include <QAbstractEventDispatcher>
 #endif
+#include <QDebug>
+#include <QDesktopServices>
+#include <QHBoxLayout>
+#include <QInputDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QUrl>
+#include <QUrlQuery>
 
 // Atom
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -58,8 +61,9 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
@@ -2436,24 +2440,62 @@ void MainWindow::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 60);
     }
 
+    // Help - Search Documentation Widget
+    {
+        auto containerWidget = new QWidget(this);
+        auto lineEdit = new AzQtComponents::SearchLineEdit(this);
+        QHBoxLayout* layout = new QHBoxLayout;
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->addWidget(lineEdit);
+        containerWidget->setLayout(layout);
+        containerWidget->setContentsMargins(2, 0, 2, 0);
+        lineEdit->setPlaceholderText(tr("Search documentation..."));
+
+        auto searchAction = [lineEdit]()
+        {
+            auto text = lineEdit->text();
+            if (text.isEmpty())
+            {
+                QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/"));
+            }
+            else
+            {
+                QUrl docSearchUrl("https://www.o3de.org/search/");
+                QUrlQuery docSearchQuery;
+                docSearchQuery.addQueryItem("query", text);
+                docSearchUrl.setQuery(docSearchQuery);
+                QDesktopServices::openUrl(docSearchUrl);
+            }
+            lineEdit->clear();
+        };
+        connect(lineEdit, &QLineEdit::returnPressed, this, searchAction);
+
+        QMenu* helpMenu = m_menuManagerInterface->GetMenu(HelpMenuIdentifier);
+
+        connect(helpMenu, &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
+        connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
+
+        m_menuManagerInterface->AddWidgetToMenu(HelpMenuIdentifier, containerWidget, 100);
+    }
+
     // Help
     {
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.tutorials", 20);
-        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpDocumentationMenuIdentifier, 40);
+        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.tutorials", 200);
+        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpDocumentationMenuIdentifier, 300);
         {
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.o3de", 20);
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.gamelift", 40);
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.releasenotes", 60);
+            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.o3de", 100);
+            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.gamelift", 200);
+            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.releasenotes", 300);
         }
-        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpGameDevResourcesMenuIdentifier, 60);
+        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpGameDevResourcesMenuIdentifier, 400);
         {
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 20);
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 40);
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 60);
+            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
+            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
+            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
         }
-        m_menuManagerInterface->AddSeparatorToMenu(HelpMenuIdentifier, 80);
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 100);
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 120);
+        m_menuManagerInterface->AddSeparatorToMenu(HelpMenuIdentifier, 500);
+        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
+        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
 }
 
