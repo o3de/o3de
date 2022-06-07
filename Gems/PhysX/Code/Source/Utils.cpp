@@ -70,8 +70,8 @@ namespace PhysX
 
         AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
             const AZStd::vector<Physics::HeightMaterialPoint>& samples,
-            const int32_t row, const int32_t col,
-            const int32_t numRows, const int32_t numCols)
+            const size_t col, const size_t row, 
+            const size_t numCols, const size_t numRows)
         {
             uint8_t materialIndex0 = 0;
             uint8_t materialIndex1 = 0;
@@ -87,7 +87,7 @@ namespace PhysX
                 return { materialIndex0, materialIndex1 };
             }
             
-            auto GetIndex = [numCols](int32_t row, int32_t col)
+            auto GetIndex = [numCols](size_t col, size_t row)
             {
                 return (row * numCols) + col;
             };
@@ -106,17 +106,17 @@ namespace PhysX
             // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
             // causes incorrect or unpredictable physics material mappings.
 
-            const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(row, col)];
+            const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(col, row)];
 
             switch (currentSample.m_quadMeshType)
             {
             case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
-                materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
-                materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
+                materialIndex0 = samples[GetIndex(col, row + 1)].m_materialIndex;
+                materialIndex1 = samples[GetIndex(col + 1, row)].m_materialIndex;
                 break;
             case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
                 materialIndex0 = currentSample.m_materialIndex;
-                materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
+                materialIndex1 = samples[GetIndex(col + 1, row + 1)].m_materialIndex;
                 break;
             case Physics::QuadMeshType::Hole:
                 materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
@@ -133,12 +133,12 @@ namespace PhysX
         //! Convert a subset of a heightfield shape configuration to a vector of PhysX Heightfield samples.
         AZStd::vector<physx::PxHeightFieldSample> ConvertHeightfieldSamples(
             const Physics::HeightfieldShapeConfiguration& heightfield,
-            const int32_t startRow, const int32_t startCol,
-            const int32_t numRowsToUpdate, const int32_t numColsToUpdate)
+            const size_t startCol, const size_t startRow, 
+            const size_t numColsToUpdate, const size_t numRowsToUpdate)
 
         {
-            const int32_t numCols = heightfield.GetNumColumnVertices();
-            const int32_t numRows = heightfield.GetNumRowVertices();
+            const size_t numCols = heightfield.GetNumColumnVertices();
+            const size_t numRows = heightfield.GetNumRowVertices();
 
             AZ_Assert(startRow < numRows, "Invalid starting row (%d vs %d total rows)", startRow, numRows);
             AZ_Assert(startCol < numCols, "Invalid starting columm (%d vs %d total columns)", startCol, numCols);
@@ -180,12 +180,12 @@ namespace PhysX
 
             AZStd::vector<physx::PxHeightFieldSample> physxSamples(numRowsToUpdate * numColsToUpdate);
 
-            for (int32_t row = 0; row < numRowsToUpdate; row++)
+            for (size_t row = 0; row < numRowsToUpdate; row++)
             {
-                for (int32_t col = 0; col < numColsToUpdate; col++)
+                for (size_t col = 0; col < numColsToUpdate; col++)
                 {
-                    const int32_t sampleIndex = ((row + startRow) * numCols) + (col + startCol);
-                    const int32_t pxSampleIndex = (row * numColsToUpdate) + col;
+                    const size_t sampleIndex = ((row + startRow) * numCols) + (col + startCol);
+                    const size_t pxSampleIndex = (row * numColsToUpdate) + col;
 
                     const Physics::HeightMaterialPoint& currentSample = samples[sampleIndex];
                     physx::PxHeightFieldSample& currentPhysxSample = physxSamples[pxSampleIndex];
@@ -194,7 +194,7 @@ namespace PhysX
                         AZ::GetClamp(currentSample.m_height, minHeightBounds, maxHeightBounds) * scaleFactor);
 
                     auto [materialIndex0, materialIndex1] =
-                        GetPhysXMaterialIndicesFromHeightfieldSamples(samples, row + startRow, col + startCol, numRows, numCols);
+                        GetPhysXMaterialIndicesFromHeightfieldSamples(samples, col + startCol, row + startRow, numCols, numRows);
                     currentPhysxSample.materialIndex0 = materialIndex0;
                     currentPhysxSample.materialIndex1 = materialIndex1;
 
@@ -216,8 +216,8 @@ namespace PhysX
 
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
-            const int32_t numCols = heightfieldConfig.GetNumColumnVertices();
-            const int32_t numRows = heightfieldConfig.GetNumRowVertices();
+            const size_t numCols = heightfieldConfig.GetNumColumnVertices();
+            const size_t numRows = heightfieldConfig.GetNumRowVertices();
 
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
@@ -248,11 +248,11 @@ namespace PhysX
             // Delete the cached heightfield object if it is there, and create a new one and save in the shape configuration
             heightfieldConfig.SetCachedNativeHeightfield(nullptr);
 
-            AZStd::vector<physx::PxHeightFieldSample> physxSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numRows, numCols);
+            AZStd::vector<physx::PxHeightFieldSample> physxSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
 
             if (!physxSamples.empty())
             {
-                SystemRequestsBus::BroadcastResult(heightfield, &SystemRequests::CreateHeightField, physxSamples.data(), numRows, numCols);
+                SystemRequestsBus::BroadcastResult(heightfield, &SystemRequests::CreateHeightField, physxSamples.data(), numCols, numRows);
             }
             if (heightfield)
             {
@@ -268,8 +268,8 @@ namespace PhysX
             AzPhysics::Scene* physicsScene,
             Physics::Shape* heightfieldShape,
             Physics::HeightfieldShapeConfiguration& heightfield,
-            const int32_t startRow, const int32_t startCol,
-            const int32_t numRowsToUpdate, const int32_t numColsToUpdate)
+            const size_t startCol, const size_t startRow,
+            const size_t numColsToUpdate, const size_t numRowsToUpdate)
         {
             auto* pxScene = static_cast<physx::PxScene*>(physicsScene->GetNativePointer());
             AZ_Assert(pxScene, "Attempting to reference a null physics scene");
@@ -283,13 +283,13 @@ namespace PhysX
             // Convert the generic heightfield samples in the heigthfield shape to PhysX heightfield samples.
             // This can be done outside the scene lock because we aren't modifying anything yet.
             AZStd::vector<physx::PxHeightFieldSample> physxSamples =
-                ConvertHeightfieldSamples(heightfield, startRow, startCol, numRowsToUpdate, numColsToUpdate);
+                ConvertHeightfieldSamples(heightfield, startCol, startRow, numColsToUpdate, numRowsToUpdate);
 
             // Create a descriptor for the subregion that we're updating.
             physx::PxHeightFieldDesc desc;
             desc.format = physx::PxHeightFieldFormat::eS16_TM;
-            desc.nbColumns = numColsToUpdate;
-            desc.nbRows = numRowsToUpdate;
+            desc.nbColumns = static_cast<physx::PxU32>(numColsToUpdate);
+            desc.nbRows = static_cast<physx::PxU32>(numRowsToUpdate);
             desc.samples.data = physxSamples.data();
             desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
@@ -299,7 +299,7 @@ namespace PhysX
                 PHYSX_SCENE_WRITE_LOCK(pxScene);
 
                 constexpr bool shrinkBounds = false;
-                pxHeightfield->modifySamples(startCol, startRow, desc, shrinkBounds);
+                pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
                 physx::PxHeightFieldGeometry hfGeom;
                 pxShape->getHeightFieldGeometry(hfGeom);
                 hfGeom.heightField = pxHeightfield;
@@ -1665,8 +1665,8 @@ namespace PhysX
 
             configuration.SetGridResolution(gridSpacing);
 
-            int32_t numRows = 0;
-            int32_t numColumns = 0;
+            size_t numRows = 0;
+            size_t numColumns = 0;
             Physics::HeightfieldProviderRequestsBus::Event(
                 entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 

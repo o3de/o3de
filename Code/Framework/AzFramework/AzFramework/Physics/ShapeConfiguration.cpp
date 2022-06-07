@@ -388,12 +388,12 @@ namespace Physics
         m_gridResolution = gridResolution;
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumColumnVertices() const
+    size_t HeightfieldShapeConfiguration::GetNumColumnVertices() const
     {
         return m_numColumns;
     }
 
-    void HeightfieldShapeConfiguration::SetNumColumnVertices(int32_t numColumns)
+    void HeightfieldShapeConfiguration::SetNumColumnVertices(size_t numColumns)
     {
         AZ_Assert(
             (numColumns == 0) || (numColumns >= 2),
@@ -406,12 +406,12 @@ namespace Physics
         }
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumRowVertices() const
+    size_t HeightfieldShapeConfiguration::GetNumRowVertices() const
     {
         return m_numRows;
     }
 
-    void HeightfieldShapeConfiguration::SetNumRowVertices(int32_t numRows)
+    void HeightfieldShapeConfiguration::SetNumRowVertices(size_t numRows)
     {
         AZ_Assert(
             (numRows == 0) || (numRows >= 2),
@@ -424,16 +424,16 @@ namespace Physics
         }
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
+    size_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
     {
         // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
-        return AZStd::max(0, m_numColumns - 1);
+        return (m_numColumns > 1) ? m_numColumns - 1 : 0;
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumRowSquares() const
+    size_t HeightfieldShapeConfiguration::GetNumRowSquares() const
     {
         // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
-        return AZStd::max(0, m_numRows - 1);
+        return (m_numRows > 1) ? m_numRows - 1 : 0;
     }
 
     const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
@@ -441,9 +441,9 @@ namespace Physics
         return m_samples;
     }
 
-    void HeightfieldShapeConfiguration::ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point)
+    void HeightfieldShapeConfiguration::ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point)
     {
-        const int32_t index = row * m_numColumns + column;
+        const size_t index = row * m_numColumns + column;
         if (row < m_numRows && column < m_numColumns && index < m_samples.size())
         {
             m_samples[index] = point;

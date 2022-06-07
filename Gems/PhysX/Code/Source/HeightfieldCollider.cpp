@@ -314,35 +314,33 @@ namespace PhysX
                     AZ::Vector3(x, y, dirtyRegion.GetMin().GetZ()),
                     AZ::Vector3(xMax, yMax, dirtyRegion.GetMax().GetZ()));
 
-                int32_t minRow = m_shapeConfig->GetNumRowVertices();
-                int32_t maxRow = 0;
-                int32_t minCol = m_shapeConfig->GetNumColumnVertices();
-                int32_t maxCol = 0;
+                size_t startRow = 0;
+                size_t startColumn = 0;
+                size_t numRows = 0;
+                size_t numColumns = 0;
 
-                // Update the shape configuration with the new height and material data for the heightfield.
-                // This makes the assumption that the shape configuration already has been created with the correct number
-                // of samples.
                 Physics::HeightfieldProviderRequestsBus::Event(
-                    m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
-                    [this, &minRow, &maxRow, &minCol, &maxCol](int32_t row, int32_t col, const Physics::HeightMaterialPoint& point)
-                    {
-                        m_shapeConfig->ModifySample(row, col, point);
-                        minRow = AZStd::min(minRow, row);
-                        maxRow = AZStd::max(maxRow, row);
-                        minCol = AZStd::min(minCol, col);
-                        maxCol = AZStd::max(maxCol, col);
-                    },
-                    subRegion);
+                    m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldIndicesFromRegion,
+                    subRegion, startColumn, startRow, numColumns, numRows);
 
-                int32_t numRowsToUpdate = AZStd::max(0, maxRow - minRow + 1);
-                int32_t numColsToUpdate = AZStd::max(0, maxCol - minCol + 1);
-                if ((numRowsToUpdate > 0) && (numColsToUpdate > 0))
+                if ((numRows > 0) && (numColumns > 0))
                 {
+                    // Update the shape configuration with the new height and material data for the heightfield.
+                    // This makes the assumption that the shape configuration already has been created with the correct number
+                    // of samples.
+                    Physics::HeightfieldProviderRequestsBus::Event(
+                        m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
+                        [this](size_t col, size_t row, const Physics::HeightMaterialPoint& point)
+                        {
+                            m_shapeConfig->ModifySample(col, row, point);
+                        },
+                        startColumn, startRow, numColumns, numRows);
+
                     auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
                     auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
 
                     auto shape = GetHeightfieldShape();
-                    Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, minRow, minCol, numRowsToUpdate, numColsToUpdate);
+                    Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, startColumn, startRow, numColumns, numRows);
                 }
 
                 m_dirtyRegion.SetMin(AZ::Vector3(dirtyRegion.GetMin().GetX(), yMax, dirtyRegion.GetMin().GetZ()));
