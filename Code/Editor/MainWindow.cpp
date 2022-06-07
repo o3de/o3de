@@ -116,16 +116,18 @@ using namespace AzToolsFramework;
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
 
-static constexpr const char* EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
-static constexpr const char* FileMenuIdentifier = "o3de.menu.editor.file";
-static constexpr const char* EditMenuIdentifier = "o3de.menu.editor.edit";
-static constexpr const char* GameMenuIdentifier = "o3de.menu.editor.game";
-static constexpr const char* ToolsMenuIdentifier = "o3de.menu.editor.tools";
-static constexpr const char* ViewMenuIdentifier = "o3de.menu.editor.view";
-static constexpr const char* HelpMenuIdentifier = "o3de.menu.editor.help";
-static constexpr const char* HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
-static constexpr const char* HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
+static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
+
+static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
+static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
+static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
+static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
+static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
+static constexpr AZStd::string_view HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
+static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -2368,6 +2370,9 @@ void MainWindow::InitializeActions()
 
 void MainWindow::InitializeMenus()
 {
+    // Register MenuBar
+    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier);
+
     // Initialize Menus
     {
         MenuProperties menuProperties;
@@ -2411,14 +2416,16 @@ void MainWindow::InitializeMenus()
     }
 
     // Add Menus to MenuBar
-    QMenuBar* menuBar = this->menuBar();
-    menuBar->clear();
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(FileMenuIdentifier));
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(EditMenuIdentifier));
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(GameMenuIdentifier));
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(ToolsMenuIdentifier));
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(ViewMenuIdentifier));
-    menuBar->addMenu(m_menuManagerInterface->GetMenu(HelpMenuIdentifier));
+    // We space the sortkeys by 100 to allow external systems to add menus in-between.
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, FileMenuIdentifier, 100);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, EditMenuIdentifier, 200);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, GameMenuIdentifier, 300);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ToolsMenuIdentifier, 400);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ViewMenuIdentifier, 500);
+    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
+
+    // Set the menu bar for this window
+    setMenuBar(m_menuManagerInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
 
     // Add actions to each menu
 
