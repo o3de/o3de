@@ -419,17 +419,7 @@ namespace AssetProcessor
         m_ui->sourceAssetValueLabel->setVisible(visible);
         m_ui->gotoAssetButton->setVisible(visible);
 
-        m_ui->outgoingProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->outgoingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->OutgoingProductDependenciesTreeView->setVisible(visible);
-
-        m_ui->outgoingUnmetPathProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->outgoingUnmetPathProductDependenciesValueLabel->setVisible(visible);
-        m_ui->outgoingUnmetPathProductDependenciesList->setVisible(visible);
-
-        m_ui->incomingProductDependenciesTitleLabel->setVisible(visible);
-        m_ui->incomingProductDependenciesValueLabel->setVisible(visible);
-        m_ui->IncomingProductDependenciesTreeView->setVisible(visible);
+        m_ui->dependenciesSplitter->setVisible(visible);
 
         m_ui->MissingProductDependenciesTitleLabel->setVisible(visible);
         m_ui->MissingProductDependenciesValueLabel->setVisible(visible);
