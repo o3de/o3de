@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
+#include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {

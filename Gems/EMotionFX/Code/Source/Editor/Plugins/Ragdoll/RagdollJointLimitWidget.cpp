@@ -36,11 +36,6 @@ namespace EMotionFX
     int RagdollJointLimitWidget::s_leftMargin = 13;
     int RagdollJointLimitWidget::s_textColumnWidth = 142;
 
-    RagdollJointLimitPropertyNotify::RagdollJointLimitPropertyNotify(RagdollJointLimitWidget* ragdollJointLimitWidget)
-        : m_ragdollJointLimitWidget(ragdollJointLimitWidget)
-    {
-    }
-
     void RagdollJointLimitPropertyNotify::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
     {
         PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
@@ -50,7 +45,7 @@ namespace EMotionFX
         : AzQtComponents::Card(parent)
         , m_cardHeaderIcon(SkeletonModel::s_ragdollJointLimitIconPath)
         , m_copiedJointLimits(copiedJointLimits)
-        , m_propertyNotify(AZStd::make_unique<RagdollJointLimitPropertyNotify>(this))
+        , m_propertyNotify(AZStd::make_unique<RagdollJointLimitPropertyNotify>())
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);

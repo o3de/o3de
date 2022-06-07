@@ -30,17 +30,12 @@ namespace EMotionFX
         : public AzToolsFramework::IPropertyEditorNotify
     {
     public:
-        RagdollJointLimitPropertyNotify(RagdollJointLimitWidget* ragdollJointLimitWidget);
-
         // AzToolsFramework::IPropertyEditorNotify overrides ...
         void BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {};
         void AfterPropertyModified(AzToolsFramework::InstanceDataNode* node) override;
         void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {}
         void SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {};
         void SealUndoStack() override {}
-
-    private:
-        RagdollJointLimitWidget* m_ragdollJointLimitWidget = nullptr;
     };
 
     class RagdollJointLimitWidget
