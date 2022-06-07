@@ -1,11 +1,12 @@
 # coding:utf-8
 #!/usr/bin/python
-"""
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 # -------------------------------------------------------------------------
 """! @brief This is the entry point for the DCCsi Launcher. Come up with a better description """
 
@@ -21,6 +22,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # You can export selected static meshes or rigged animated
 # meshes within the capabilities of the .FBX format and O3DE
 # actor entity.
+#
 # You have options to export textures with the mesh,
 # or with the mesh within a sub folder ‘textures’.
 # This will work for Blender Scenes with or without packed textures.

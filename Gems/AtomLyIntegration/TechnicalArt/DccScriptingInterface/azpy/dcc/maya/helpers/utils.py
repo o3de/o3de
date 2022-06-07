@@ -7,10 +7,10 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
 
 """
-azpy.dcc.maya utility module 
+azpy.dcc.maya.helpers.utils utility module 
 """
 # -------------------------------------------------------------------------
 # built in's
@@ -37,7 +37,7 @@ _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya.helpers.undo_context'
+    _PACKAGENAME = 'azpy.dcc.maya.helpers.utils'
 
 _LOGGER = initialize_logger(_PACKAGENAME, default_log_level=int(20))
 _LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))
