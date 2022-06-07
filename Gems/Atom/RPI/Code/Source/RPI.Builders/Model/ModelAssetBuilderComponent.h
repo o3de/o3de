@@ -196,7 +196,7 @@ namespace AZ
             //! This product list is not 1:1 but it is as close as we can get with minimal processing.
             //! Since a SouceMeshContent object may have faces that have multiple materials we have to break 
             //! that into a ProductMeshContent object for each material. No further processing is done
-            ProductMeshContentList SourceMeshListToProductMeshList(
+            AZ::Outcome<ProductMeshContentList> SourceMeshListToProductMeshList(
                 const ModelAssetBuilderContext& context,
                 const SourceMeshContentList& sourceMeshContentList,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
@@ -209,7 +209,7 @@ namespace AZ
             void PadVerticesForSkinning(ProductMeshContentList& productMeshList);
 
             //! Takes in a ProductMeshContentList and merges all elements that share the same MaterialUid.
-            ProductMeshContentList MergeMeshesByMaterialUid(
+            AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> MergeMeshesByMaterialUid(
                 const ProductMeshContentList& productMeshList);
 
             //! Simple helper to create a MeshView that views an entire given ProductMeshContent object as one mesh.
@@ -277,10 +277,10 @@ namespace AZ
 
             //! Checks to see if a data buffer is the expected size
             template<typename T>
-            void ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
+            bool ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
 
             //! Checks to see if the vertex count for each stream within a mesh is the same
-            void ValidateStreamAlignment(const ProductMeshContent& mesh) const;
+            bool ValidateStreamAlignment(const ProductMeshContent& mesh) const;
 
             //! Takes a ProductMeshContent object, produces BufferAsset objects for each
             //! stream and then applies those to the given ModelLodAssetCreator as the
