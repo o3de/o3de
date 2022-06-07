@@ -243,6 +243,7 @@ int main(int argc, char** argv)
     dpeInstance->SetAdapter(adapter.get());
     QScrollArea dpeScrollArea;
     dpeScrollArea.setWidget(dpeInstance);
+    dpeScrollArea.setWidgetResizable(true);
     dpeScrollArea.show();
 
     return qtApp.exec();

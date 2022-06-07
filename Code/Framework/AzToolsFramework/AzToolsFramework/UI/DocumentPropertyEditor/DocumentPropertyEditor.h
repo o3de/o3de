@@ -67,7 +67,6 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE();
-        DPERowWidget* GetLastDescendantInLayout();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         QBoxLayout* m_columnLayout = nullptr;
