@@ -84,8 +84,8 @@ namespace RecastNavigation
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene;
 
-        //! A way to check if we should stop tile processing because we are deactivating.
-        AZStd::atomic<bool> m_deactivating{ false };
+        //! A way to check if we should stop tile processing (because we might be deactivating, for example).
+        AZStd::atomic<bool> m_shouldProcessTiles{ true };
 
         //! Task graph objects to collect geometry data in tiles over a grid.
         AZ::TaskGraph m_taskGraph;

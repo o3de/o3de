@@ -36,12 +36,12 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderCommon::OnActivate()
     {
-        m_deactivating = false;
+        m_shouldProcessTiles = true;
     }
 
     void RecastNavigationPhysXProviderCommon::OnDeactivate()
     {
-        m_deactivating = true;
+        m_shouldProcessTiles = false;
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
         {
             // If the tasks are still in progress, wait until the task graph is finished.
@@ -307,7 +307,7 @@ namespace RecastNavigation
                     AZ::TaskToken token = m_taskGraph.AddTask(
                         m_taskDescriptor, [this, geometryData]()
                         {
-                            if (!m_deactivating)
+                            if (m_shouldProcessTiles)
                             {
                                 AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
                                 QueryHits results;
