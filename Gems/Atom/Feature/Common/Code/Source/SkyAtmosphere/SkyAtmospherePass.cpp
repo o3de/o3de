@@ -22,9 +22,6 @@ namespace AZ::Render
         : RPI::ParentPass(descriptor)
         , m_atmosphereId(id)
     {
-        o_enableShadows = AZ::Name("o_enableShadows");
-        o_enableFastSky = AZ::Name("o_enableFastSky");
-        o_enableSun = AZ::Name("o_enableSun");
     }
 
     RPI::Ptr<SkyAtmospherePass> SkyAtmospherePass::CreateWithPassRequest(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
@@ -56,8 +53,6 @@ namespace AZ::Render
         passConnection.m_attachmentRef.m_attachment = Name{ "DirectionalESM" };
         childRequest.m_connections.emplace_back(passConnection);
 
-
-        // Get the template
         const AZStd::shared_ptr<const RPI::PassTemplate> childTemplate =
             RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
         AZ_Assert(
@@ -78,52 +73,32 @@ namespace AZ::Render
         image = AZ::RPI::AttachmentImage::Create(*pool.get(), desc, Name(imageName), &clearValue, nullptr);
     }
 
-    void SkyAtmospherePass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::ShaderVariant& shaderVariant)
-    {
-        BuildShaderData(); 
-
-        for (auto passData : m_passData)
-        {
-            passData.m_srg->SetConstant(passData.m_index, m_constants);
-            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
-            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
-        }
-    }
-
-    void SkyAtmospherePass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
-    {
-        BuildShaderData(); 
-
-        for (auto passData : m_passData)
-        {
-            passData.m_srg->SetConstant(passData.m_index, m_constants);
-            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
-            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
-        }
-
-        if (m_skyTransmittanceLUTPass)
-        {
-            // enable the LUT child pass to update the LUT render target
-            m_skyTransmittanceLUTPass->SetEnabled(true);
-        }
-    }
-
-    void SkyAtmospherePass::RegisterForShaderNotifications()
-    {
-        RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-
-        for (const auto passData : m_passData)
-        {
-            RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(passData.m_shader->GetAssetId());
-        }
-    }
-
     void SkyAtmospherePass::BindLUTs()
     {
+        auto bindImageToSlot = [&](const ImageInstance& image, const AZ::Name& slotName, const AZ::Name& passName)
+        {
+            auto pass = FindChildPass(passName);
+            if (!pass)
+            {
+                AZ_Warning("SkyAtmospherePass", false, "Failed to find pass %s", passName.GetCStr());
+                return;
+            }
+
+            auto binding = pass->FindAttachmentBinding(slotName);
+            if (!binding)
+            {
+                AZ_Warning("SkyAtmospherePass", false, "Failed to find binding for slot %s", slotName.GetCStr());
+                return;
+            }
+
+            if (!binding->GetAttachment())
+            {
+                pass->AttachImageToSlot(slotName, image);
+            }
+        };
+
         {
             // create and bind transmittance LUT
-
-            // this may be possible to do in the Pass file somehow...
             constexpr AZ::u32 width = 256;
             constexpr AZ::u32 height = 64;
             RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2D(
@@ -134,30 +109,13 @@ namespace AZ::Render
                 CreateImage(Name("TransmittanceLUTImageAttachment"), imageDesc, m_transmittanceLUTImage);
             }
 
-            // bind attachment to child slots
-            auto childPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
-            if (childPass)
-            {
-                childPass->AttachImageToSlot(Name("SkyTransmittanceLUTOutput"), m_transmittanceLUTImage);
-            }
-
-            childPass = FindChildPass(Name("SkyViewLUTPass"));
-            if (childPass)
-            {
-                childPass->AttachImageToSlot(Name("SkyTransmittanceLUTInput"), m_transmittanceLUTImage);
-            }
-
-            childPass = FindChildPass(Name("SkyRayMarchingPass"));
-            if (childPass)
-            {
-                childPass->AttachImageToSlot(Name("SkyTransmittanceLUTInput"), m_transmittanceLUTImage);
-            }
+            bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTOutput"), Name("SkyTransmittanceLUTPass"));
+            bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyViewLUTPass"));
+            bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyRayMarchingPass"));
         }
 
         {
             // create and bind sky view LUT
-
-            // this may be possible to do in the Pass file somehow...
             constexpr AZ::u32 width = 192;
             constexpr AZ::u32 height = 108;
             RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2D(
@@ -167,24 +125,15 @@ namespace AZ::Render
                 CreateImage(Name("SkyViewLUTImageAttachment"), imageDesc, m_skyViewLUTImage);
             }
 
-            // bind attachment to child slots
-            auto childPass = FindChildPass(Name("SkyViewLUTPass"));
-            if (childPass)
-            {
-                childPass->AttachImageToSlot(Name("SkyViewLUTOutput"), m_skyViewLUTImage);
-            }
-
-            childPass = FindChildPass(Name("SkyRayMarchingPass"));
-            if (childPass)
-            {
-                childPass->AttachImageToSlot(Name("SkyViewLUTInput"), m_skyViewLUTImage);
-            }
+            bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTOutput"), Name("SkyViewLUTPass"));
+            bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTInput"), Name("SkyRayMarchingPass"));
         }
-
     }
 
     void SkyAtmospherePass::BuildShaderData()
     {
+        m_passData.clear();
+
         for (auto child : m_children)
         {
             if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(child.get()))
@@ -217,7 +166,7 @@ namespace AZ::Render
                 }
 
                 RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
-                m_passData.push_back({ index, srg, AZStd::move(shader), AZStd::move(shaderOptionGroup) });
+                m_passData.push_back({ index, srg, AZStd::move(shaderOptionGroup) });
             }
         }
     }
@@ -230,24 +179,49 @@ namespace AZ::Render
 
         m_skyTransmittanceLUTPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
 
-        RegisterForShaderNotifications();
-
         BindLUTs();
+
+        m_updateConstants = true;
+        m_enableLUTPass = true;
+    }
+
+    void SkyAtmospherePass::UpdatePassData()
+    {
+        for (auto passData : m_passData)
+        {
+            passData.m_srg->SetConstant(passData.m_index, m_constants);
+
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableShadows"), AZ::RPI::ShaderOptionValue{ m_enableShadows });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastSky"), AZ::RPI::ShaderOptionValue{ m_enableFastSky });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableSun"), AZ::RPI::ShaderOptionValue{ m_enableSun });
+
+            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
+            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+        }
     }
 
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
     {
-        Base::FrameBeginInternal(params); 
-    }
-
-    void SkyAtmospherePass::FrameEndInternal()
-    {
-        Base::FrameEndInternal(); 
-
-        if (m_skyTransmittanceLUTPass && m_skyTransmittanceLUTPass->IsEnabled())
+        if (m_updateConstants && !m_passData.empty())
         {
-            m_skyTransmittanceLUTPass->SetEnabled(false);
+            m_updateConstants = false;
+            UpdatePassData();
         }
+
+        if (m_skyTransmittanceLUTPass)
+        {
+            if (m_enableLUTPass)
+            {
+                m_skyTransmittanceLUTPass->SetEnabled(true);
+                m_enableLUTPass = false;
+            }
+            else if (m_skyTransmittanceLUTPass->IsEnabled())
+            {
+                m_skyTransmittanceLUTPass->SetEnabled(false);
+            }
+        }
+
+        Base::FrameBeginInternal(params); 
     }
 
     bool SkyAtmospherePass::LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const
@@ -326,26 +300,17 @@ namespace AZ::Render
             m_constants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
             m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
 
-            if (m_skyTransmittanceLUTPass)
-            {
-                m_skyTransmittanceLUTPass->SetEnabled(true);
-            }
+            m_enableLUTPass = true;
         }
 
         m_atmosphereParams = params;
+        m_enableShadows = params.m_shadowsEnabled;
+        m_enableFastSky = params.m_fastSkyEnabled;
+        m_enableSun = params.m_sunEnabled;
 
-        for (auto passData : m_passData)
-        {
-            passData.m_srg->SetConstant(passData.m_index, m_constants);
-
-            passData.m_shaderOptionGroup.SetValue(o_enableShadows, AZ::RPI::ShaderOptionValue{ params.m_shadowsEnabled });
-            passData.m_shaderOptionGroup.SetValue(o_enableFastSky, AZ::RPI::ShaderOptionValue{ params.m_fastSkyEnabled });
-            passData.m_shaderOptionGroup.SetValue(o_enableSun, AZ::RPI::ShaderOptionValue{ params.m_sunEnabled });
-
-            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
-
-            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
-        }
+        // UpdateRenderPassSRG can be called before the child passes are ready
+        // so we store the constants and set them in FrameBeginInternal 
+        m_updateConstants = true;
     }
 
     void SkyAtmospherePass::ResetInternal()

@@ -41,19 +41,21 @@ namespace AZ::Render
         void UpdateRenderPassSRG(const SkyAtmosphereParams& params);
 
     protected:
+        explicit SkyAtmospherePass(const RPI::PassDescriptor& descriptor, SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);
+
+        void FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params) override;
         void BuildInternal() override;
         void ResetInternal() override;
 
-        explicit SkyAtmospherePass(const RPI::PassDescriptor& descriptor, SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);
-
-         void FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params) override;
-         void FrameEndInternal() override;
     private:
         SkyAtmospherePass() = delete;
 
-        using ImageInstance = Data::Instance<RPI::AttachmentImage>;
-		using AttachmentInstance = Data::Instance<RPI::PassAttachment>;
+        void BindLUTs();
+        void BuildShaderData();
+        bool LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const;
+        void UpdatePassData();
 
+        using ImageInstance = Data::Instance<RPI::AttachmentImage>;
         void CreateImage(const Name& slotName, const RHI::ImageDescriptor& desc, ImageInstance& image);
 
         struct AtmosphereGPUParams 
@@ -102,15 +104,6 @@ namespace AZ::Render
             float m_pad4 = 0.f;
         };
 
-        //! ShaderReloadNotificationBus
-        void OnShaderReinitialized(const RPI::Shader& shader) override;
-        void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
-
-        void RegisterForShaderNotifications();
-        void BindLUTs();
-        void BuildShaderData();
-        bool LutParamsEqual(const SkyAtmosphereParams& lhs, const SkyAtmosphereParams& rhs) const;
-
         SkyAtmosphereFeatureProcessorInterface::AtmosphereId m_atmosphereId;
 
         ImageInstance m_transmittanceLUTImage;
@@ -122,18 +115,20 @@ namespace AZ::Render
         {
             RHI::ShaderInputConstantIndex m_index;
             Data::Instance<RPI::ShaderResourceGroup> m_srg;
-            Data::Instance<RPI::Shader> m_shader;
             RPI::ShaderOptionGroup m_shaderOptionGroup;
         };
         AZStd::vector<PassData> m_passData;
+
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
         SkyAtmosphereParams m_atmosphereParams;
         bool m_lutUpdateRequired = true;
+        bool m_updateConstants = false;
 
-        AZ::Name o_enableShadows;
-        AZ::Name o_enableFastSky;
-        AZ::Name o_enableSun;
+        bool m_enableLUTPass = false;
+        bool m_enableFastSky = true;
+        bool m_enableShadows = false;
+        bool m_enableSun = true;
     };
 } // namespace AZ::Render
