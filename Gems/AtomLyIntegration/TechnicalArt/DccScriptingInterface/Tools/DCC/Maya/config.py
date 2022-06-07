@@ -31,7 +31,6 @@ import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'Tools.DCC.Maya.config'
-_MODULENAME = 'Tools.DCC.Maya.setup'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
@@ -39,27 +38,21 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
 # -------------------------------------------------------------------------
 # Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
 # module path when frozen
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_MAYA = Path(_MODULE_PATH.parent)
 _PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
 _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
 _PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
 _PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
 site.addsitedir(_PATH_DCCSIG.as_posix())
@@ -77,7 +70,7 @@ from azpy.constants import FRMT_LOG_LONG
 # -------------------------------------------------------------------------
 # _settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.as_posix()):
-    """Convenience method to set and retreive settings directly from module."""
+    """Convenience method to set and retrieve settings directly from module."""
     
     _PATH_DCCSIG = Path(PATH_DCCSIG)
     _PATH_DCCSI_CONFIG = Path(PATH_DCCSIG, "config.py")
