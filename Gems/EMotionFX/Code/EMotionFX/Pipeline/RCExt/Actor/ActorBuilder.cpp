@@ -32,7 +32,6 @@
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <MCore/Source/AzCoreConversions.h>
 
-#include <GFxFramework/MaterialIO/Material.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Quaternion.h>
@@ -40,7 +39,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-
 
 namespace EMotionFX
 {
