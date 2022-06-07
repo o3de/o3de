@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include "AssetDetailsPanel.h"
 #include "ProductDependencyTreeModel.h"
+#include "ProductDependencyTreeDelegate.h"
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QDateTime>
@@ -131,5 +132,6 @@ namespace AssetProcessor
 
         ProductDependencyTreeModel* m_outgoingDependencyTreeModel = nullptr;
         ProductDependencyTreeModel* m_incomingDependencyTreeModel = nullptr;
+        ProductDependencyTreeDelegate* m_dependencyTreeDelegate = nullptr;
     };
 } // namespace AssetProcessor

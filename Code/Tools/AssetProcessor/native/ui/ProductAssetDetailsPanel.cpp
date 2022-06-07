@@ -39,12 +39,6 @@ namespace AssetProcessor
 
         connect(m_ui->ClearMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFileClicked);
         connect(m_ui->ClearScanFolderButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFolderClicked);
-        connect(
-            m_ui->OutgoingProductDependenciesTreeView, &QAbstractItemView::clicked, this,
-            &ProductAssetDetailsPanel::OnDependentProductClicked);
-        connect(
-            m_ui->IncomingProductDependenciesTreeView, &QAbstractItemView::clicked, this,
-            &ProductAssetDetailsPanel::OnDependentProductClicked);
     }
 
     ProductAssetDetailsPanel::~ProductAssetDetailsPanel()
@@ -54,9 +48,11 @@ namespace AssetProcessor
 
     void ProductAssetDetailsPanel::SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
     {
+        m_dependencyTreeDelegate = new ProductDependencyTreeDelegate(nullptr, this);
         m_outgoingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Outgoing, this);
         m_ui->OutgoingProductDependenciesTreeView->setModel(m_outgoingDependencyTreeModel);
+        m_ui->OutgoingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_outgoingDependencyTreeModel,
             &ProductDependencyTreeModel::AssetDataSelectionChanged);
@@ -64,6 +60,7 @@ namespace AssetProcessor
         m_incomingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Incoming, this);
         m_ui->IncomingProductDependenciesTreeView->setModel(m_incomingDependencyTreeModel);
+        m_ui->IncomingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
             &ProductDependencyTreeModel::AssetDataSelectionChanged);

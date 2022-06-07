@@ -49,6 +49,8 @@ set(FILES
     native/ui/ProductDependencyTreeItemData.cpp
     native/ui/ProductDependencyTreeModel.h
     native/ui/ProductDependencyTreeModel.cpp
+    native/ui/ProductDependencyTreeDelegate.h
+    native/ui/ProductDependencyTreeDelegate.cpp
     native/ui/SourceAssetDetailsPanel.h
     native/ui/SourceAssetDetailsPanel.cpp
     native/ui/SourceAssetDetailsPanel.ui
