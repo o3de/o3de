@@ -64,10 +64,15 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: FindPathBetweenPositions");
 
-        AZStd::shared_ptr<NavMeshQuery> nav;
-        RecastNavigationMeshRequestBus::EventResult(nav, m_navQueryEntityId, &RecastNavigationMeshRequests::GetNavigationObject);
+        AZStd::shared_ptr<NavMeshQuery> navMeshQuery;
+        RecastNavigationMeshRequestBus::EventResult(navMeshQuery, m_navQueryEntityId, &RecastNavigationMeshRequests::GetNavigationObject);
+        if (!navMeshQuery)
+        {
+            return {};
+        }
 
-        if (!nav)
+        NavMeshQuery::LockGuard lock(*navMeshQuery);
+        if (!lock.GetNavQuery())
         {
             return {};
         }
@@ -84,13 +89,13 @@ namespace RecastNavigation
 
         // Find nearest points on the navigation mesh given the positions provided.
         // We are allowing some flexibility where looking for a point just a bit outside of the navigation mesh would still work.
-        dtStatus result = nav->m_query->findNearestPoly(startRecast.GetData(), halfExtents, &filter, &startPoly, nearestStartPoint.GetData());
+        dtStatus result = lock.GetNavQuery()->findNearestPoly(startRecast.GetData(), halfExtents, &filter, &startPoly, nearestStartPoint.GetData());
         if (dtStatusFailed(result) || startPoly == 0)
         {
             return {};
         }
 
-        result = nav->m_query->findNearestPoly(endRecast.GetData(), halfExtents, &filter, &endPoly, nearestEndPoint.GetData());
+        result = lock.GetNavQuery()->findNearestPoly(endRecast.GetData(), halfExtents, &filter, &endPoly, nearestEndPoint.GetData());
         if (dtStatusFailed(result) || endPoly == 0)
         {
             return {};
@@ -103,7 +108,7 @@ namespace RecastNavigation
         int pathLength = 0;
 
         // Find an approximate path first. In Recast, an approximate path is a collection of polygons, where a polygon covers an area.
-        result = nav->m_query->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(),
+        result = lock.GetNavQuery()->findPath(startPoly, endPoly, nearestStartPoint.GetData(), nearestEndPoint.GetData(),
             &filter, path.data(), &pathLength, MaxPathLength);
         if (dtStatusFailed(result))
         {
@@ -116,7 +121,7 @@ namespace RecastNavigation
         int detailedPathCount = 0;
 
         // Then the detailed path. This gives us actual specific waypoints along the path over the polygons found earlier.
-        result = nav->m_query->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
+        result = lock.GetNavQuery()->findStraightPath(startRecast.GetData(), endRecast.GetData(), path.data(), pathLength,
             detailedPath[0].GetData(), detailedPathFlags.data(), detailedPolyPathRefs.data(),
             &detailedPathCount, MaxPathLength, DT_STRAIGHTPATH_ALL_CROSSINGS);
         if (dtStatusFailed(result))
