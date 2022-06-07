@@ -362,6 +362,11 @@ namespace AZ::Data
         HandleReadyAsset(asset);
     }
 
+    void AssetContainer::OnAssetReloaded(Asset<AssetData> asset)
+    {
+        HandleReadyAsset(asset);
+    }
+
     void AssetContainer::OnAssetError(Asset<AssetData> asset)
     {
         AZ_Warning("AssetContainer", false, "Error loading asset %s", asset->GetId().ToString<AZStd::string>().c_str());
@@ -414,7 +419,7 @@ namespace AZ::Data
             }
         }
         auto thisAsset = GetAssetData(waiterId);
-        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, m_isReload, nullptr);
+        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, waiterId == this->m_containerAssetId ? m_isReload : false, nullptr);
     }
 
     void AssetContainer::RemoveFromAllWaitingPreloads(const AssetId& thisId)

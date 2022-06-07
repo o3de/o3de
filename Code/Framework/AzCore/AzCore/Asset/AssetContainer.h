@@ -75,6 +75,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // AssetBus
             void OnAssetReady(Asset<AssetData> asset) override;
+            void OnAssetReloaded(Asset<AssetData> asset) override;
             void OnAssetError(Asset<AssetData> asset) override;
 
             //////////////////////////////////////////////////////////////////////////

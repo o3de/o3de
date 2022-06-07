@@ -1133,30 +1133,29 @@ namespace AZ::Data
         constexpr bool isReload = true;
         if (loadInfo.IsValid())
         {
-             // Create the AssetDataStream instance here so it can claim an asset reference inside the lock (for a total
-             // count of 2 before starting the load), otherwise the refcount will be 1, and the load could be canceled
-             // before it is started, which creates state consistency issues.
+            // Create the AssetDataStream instance here so it can claim an asset reference inside the lock (for a total
+            // count of 2 before starting the load), otherwise the refcount will be 1, and the load could be canceled
+            // before it is started, which creates state consistency issues.
 
             dataStream = AZStd::make_shared<AssetDataStream>(handler->GetAssetBufferAllocator());
             if (dataStream)
             {
                 // Currently there isn't a clear use case for needing to adjust priority for reloads so the default load priority is used
-                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload,
-                    handler, {}, signalLoaded);
+                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, {}, signalLoaded);
             }
             else
             {
-                AZ_Assert(false, "Failed to create dataStream to reload asset %s (%s)",
-                    newAsset.GetId().ToString<AZ::OSString>().c_str(),
+                AZ_Assert(
+                    false, "Failed to create dataStream to reload asset %s (%s)", newAsset.GetId().ToString<AZ::OSString>().c_str(),
                     newAsset.GetHint().c_str());
             }
         }
-         else
+        else
         {
             // Asset creation was successful, but asset loading isn't, so trigger the OnAssetError notification
-            AZ_Error("AssetDatabase", false, "Failed to retrieve required information for asset %s (%s)",
-                newAsset.GetId().ToString<AZ::OSString>().c_str(),
-                newAsset.GetHint().c_str());
+            AZ_Error(
+                "AssetDatabase", false, "Failed to retrieve required information for asset %s (%s)",
+                newAsset.GetId().ToString<AZ::OSString>().c_str(), newAsset.GetHint().c_str());
 
             constexpr bool loadSucceeded = false;
             AssetManager::Instance().PostLoad(newAsset, loadSucceeded, isReload, handler);
@@ -1446,7 +1445,7 @@ namespace AZ::Data
                     newAssetData->RegisterWithHandler(handler);
                 }
             }
-            
+
             if (newAssetData)
             {
                 // For reloaded assets, we need to hold an internal reference to ensure the data
@@ -1460,7 +1459,7 @@ namespace AZ::Data
                 m_reloads[newAsset.GetId()] = newAsset;
 
                 UpdateDebugStatus(newAsset);
-                
+
                 //AZStd::shared_ptr<AssetDataStream> dataStream;
                 //AssetStreamInfo loadInfo = GetModifiedLoadStreamInfoForAsset(newAsset, handler);
                 //constexpr bool isReload = true;
@@ -2241,7 +2240,7 @@ namespace AZ::Data
         if (curIter != m_assetContainers.end())
         {
             auto newRef = curIter->second.lock();
-            if (newRef && newRef->IsValid())
+            if (newRef && newRef->IsValid() && !isReload) // Reloads already handle when to allow duplicate requests.  Avoid de-duplication here
             {
                 return newRef;
             }
