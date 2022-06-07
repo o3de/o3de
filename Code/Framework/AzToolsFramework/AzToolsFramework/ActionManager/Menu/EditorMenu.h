@@ -33,6 +33,7 @@ namespace AzToolsFramework
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();
+        const QMenu* GetMenu() const;
 
     private:
         void RefreshMenu();

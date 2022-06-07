@@ -139,11 +139,13 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Actor',
+            'Actor asset': 'Actor asset',
         }
         return properties[property]
 
@@ -521,6 +523,23 @@ class AtomComponentProperties:
             'name': 'Grid',
             'Grid Size': 'Controller|Configuration|Grid Size',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
+        }
+        return properties[property]
+
+    @staticmethod
+    def hair(property: str = 'name') -> str:
+        """
+        Atom Hair component properties. Requires Actor component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Hair Asset' Asset.id of the hair TressFX asset.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Atom Hair',
+            'requires': [AtomComponentProperties.actor()],
+            'Hair Asset': 'Controller|Configuration|Hair Asset',
         }
         return properties[property]
 
