@@ -57,8 +57,6 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 
 # -------------------------------------------------------------------------
 # Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
 # module path when frozen
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
@@ -215,8 +213,6 @@ from box import Box
 
 # -------------------------------------------------------------------------
 # Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
 # module path when frozen
 _MODULE_PATH = os.path.abspath(inspect.getfile(inspect.currentframe()))
 _MODULE_PATH = os.path.dirname(_MODULE_PATH)
