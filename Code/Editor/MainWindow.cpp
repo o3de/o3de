@@ -15,6 +15,7 @@
 #ifdef Q_OS_WIN
 #include <QAbstractEventDispatcher>
 #endif
+#include <QDebug>
 #include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QInputDialog>
