@@ -29,7 +29,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 #os.environ['PYTHONINSPECT'] = 'True'
 # global scope
-_MODULENAME = 'Tools.DCC.Blender.start'
+_MODULENAME = 'Tools.DCC.Blender.config'
 
 _START = timeit.default_timer() # start tracking
 
