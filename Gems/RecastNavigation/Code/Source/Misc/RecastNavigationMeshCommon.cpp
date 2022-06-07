@@ -16,6 +16,10 @@
 
 AZ_DEFINE_BUDGET(Navigation);
 
+AZ_CVAR(
+    AZ::u32, bg_navmesh_threads, 2, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Number of threads to use to process tiles for each RecastNavigationMeshComponent");
+
 namespace RecastNavigation
 {
     NavigationTileData RecastNavigationMeshCommon::CreateNavigationTile(TileGeometry* geom,
@@ -323,6 +327,11 @@ namespace RecastNavigation
         return {};
     }
 
+    RecastNavigationMeshCommon::RecastNavigationMeshCommon()
+        : m_taskExecutor(bg_navmesh_threads)
+    {
+    }
+
     void RecastNavigationMeshCommon::OnActivate()
     {
         m_shouldProcessTiles = true;
@@ -412,7 +421,7 @@ namespace RecastNavigation
             m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
             m_taskGraph.Reset();
 
-            AZStd::vector<AZ::TaskToken*> tileTaskTokens;
+            AZStd::vector<AZ::TaskToken> tileTaskTokens;
 
             AZStd::vector<AZStd::shared_ptr<TileGeometry>> tilesToBeProcessed;
             {
@@ -454,7 +463,7 @@ namespace RecastNavigation
                         }
                     });
 
-                tileTaskTokens.push_back(&token);
+                tileTaskTokens.push_back(AZStd::move(token));
             }
 
             AZ::TaskToken finishToken = m_taskGraph.AddTask(
@@ -463,9 +472,9 @@ namespace RecastNavigation
                     sendNotificationEvent.Enqueue(AZ::TimeMs{ 0 });
                 });
 
-            for (AZ::TaskToken* task : tileTaskTokens)
+            for (AZ::TaskToken& task : tileTaskTokens)
             {
-                task->Precedes(finishToken);
+                task.Precedes(finishToken);
             }
 
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());

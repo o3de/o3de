@@ -27,6 +27,7 @@ namespace RecastNavigation
     {
     public:
         AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
+        RecastNavigationMeshCommon();
         virtual ~RecastNavigationMeshCommon() = default;
 
         void OnActivate();
@@ -66,7 +67,7 @@ namespace RecastNavigation
         AZStd::shared_ptr<NavMeshQuery> m_navObject;
 
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> m_tilesToBeProcessed;
-        AZStd::mutex m_tileProcessingMutex;
+        AZStd::recursive_mutex m_tileProcessingMutex;
 
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
