@@ -11,7 +11,7 @@
 #include <ScriptCanvasDeveloperEditor/WrapperMock.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Libraries
     {

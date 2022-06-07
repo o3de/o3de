@@ -63,6 +63,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -165,13 +166,13 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_AllPlatforms(object):
     """
     Tests for Asset Processor GUI To Run on All Supported Host Platforms
     """
 
     @pytest.mark.test_case_id("C1591337")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
@@ -192,7 +193,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle
@@ -216,7 +217,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_AddScanFolder_AssetsProcessed(

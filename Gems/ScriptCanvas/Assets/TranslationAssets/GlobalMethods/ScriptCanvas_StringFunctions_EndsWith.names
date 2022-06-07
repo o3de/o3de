@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_EndsWith",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Ends With",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_EndsWith",
+                    "details": {
+                        "name": "Ends With",
+                        "tooltip": "Checks if the string ends with the given pattern."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The string to search in."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "true if the string ends with the provided suffix, false otherwise."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

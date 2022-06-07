@@ -66,12 +66,24 @@ namespace AzToolsFramework
             AZStd::function<void()> handler
         ) = 0;
 
+        //! Register a new Checkable Action to the Action Manager.
+        virtual ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const ActionProperties& properties,
+            AZStd::function<void()> handler,
+            AZStd::function<bool()> updateCallback
+        ) = 0;
+
         //! Trigger an Action via its identifier.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
 
         //! Retrieve a QAction via its identifier.
         virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
         virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
+
+        //! Update the state of a Checkable Action via its identifier.
+        virtual ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
