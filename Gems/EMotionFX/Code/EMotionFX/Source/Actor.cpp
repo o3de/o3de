@@ -1443,6 +1443,13 @@ namespace EMotionFX
             {
                 m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
             }
+            else
+            {
+                AZ_Error(
+                    "Actor", false,
+                    "Actor finalization: skinMetaAsset was expected to be ready but is not ready yet.  Cannot complete finalizing actor %s",
+                    this->m_name.c_str());
+            }
             ConstructMeshes();
 
             if (m_morphTargetMetaAsset.IsReady())
