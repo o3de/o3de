@@ -109,6 +109,8 @@ namespace AzToolsFramework
 
         AZ::Data::AssetType m_currentAssetType;
 
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
+
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
 
         AZStd::string m_defaultAssetHint;
@@ -240,6 +242,10 @@ namespace AzToolsFramework
         // If enabled, replaces the thumbnail widget content with a custom pixmap
         void SetCustomThumbnailEnabled(bool enabled);
         void SetCustomThumbnailPixmap(const QPixmap& pixmap);
+
+        void SetSupportedAssetTypes(const AZStd::vector<AZ::Data::AssetType>& supportedAssetTypes);
+        const AZStd::vector<AZ::Data::AssetType>& GetSupportedAssetTypes() const;
+        AZStd::vector<AZ::Data::AssetType> GetSelectableAssetTypes() const;
 
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);

@@ -27,6 +27,7 @@ set(FILES
     Include/ScriptCanvas/Core/Endpoint.cpp
     Include/ScriptCanvas/Core/Graph.cpp
     Include/ScriptCanvas/Core/GraphData.cpp
+    Include/ScriptCanvas/Core/GraphSerialization.cpp
     Include/ScriptCanvas/Core/MethodConfiguration.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.cpp
     Include/ScriptCanvas/Core/Node.cpp
@@ -88,6 +89,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
     Include/ScriptCanvas/Grammar/ParsingUtilities.cpp
+    Include/ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.cpp
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp

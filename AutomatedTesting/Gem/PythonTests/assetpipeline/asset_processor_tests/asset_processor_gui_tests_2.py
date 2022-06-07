@@ -193,7 +193,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "Working_Prefab"))
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle

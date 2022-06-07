@@ -35,7 +35,8 @@ namespace AzToolsFramework
         AZ_RTTI(MenuManagerInterface, "{D70B7989-62BD-447E-ADF6-0971EC4B7DEE}");
 
         //! Register a new Menu to the Menu Manager.
-        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier, const MenuProperties& properties) = 0;
+        virtual MenuManagerOperationResult RegisterMenu(const AZStd::string& identifier,
+            const MenuProperties& properties) = 0;
 
         //! Bind an action to a menu.
         virtual MenuManagerOperationResult AddActionToMenu(

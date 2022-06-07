@@ -82,8 +82,8 @@ class TestsAssetBuilder_WindowsAndMac(object):
         # Add test assets to project folder and save the new file paths
         temp_project_source, _ = asset_processor.prepare_test_environment(env["tests_dir"], "TestAssets",
                                                                           use_current_root=True)
-        INTACT_PREFAB_PATH = os.path.join(temp_project_source, "Working Prefab", "Working_Prefab.prefab")
-        CORRUPTED_PREFAB_PATH = os.path.join(temp_project_source, "Corrupted Prefab", "Corrupted_Prefab.prefab")
+        INTACT_PREFAB_PATH = os.path.join(temp_project_source, "single_working_prefab", "working_prefab.prefab")
+        CORRUPTED_PREFAB_PATH = os.path.join(temp_project_source, "single_corrupted_prefab", "corrupted_prefab.prefab")
 
         # Verify test assets were added to the project folder
         assert os.path.exists(INTACT_PREFAB_PATH), "Intact prefab was not added to the project folder"
