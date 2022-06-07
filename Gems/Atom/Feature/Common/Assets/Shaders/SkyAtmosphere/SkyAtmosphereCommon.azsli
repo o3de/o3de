@@ -18,7 +18,6 @@
 #define USE_NON_LINEAR_SKY_LUT 1 // improve precision at sunset angles
 #define USE_MULTI_SCATTERING_POWER_SERIES 1
 #define USE_MULTI_SCATTERING_APPROX 0
-#define USE_SINGLE_SHADOW_SAMPLE 0 // sampling furthest cascade is fastest but requires cascade param tuning
 
 #define PLANET_RADIUS_OFFSET_KM 0.01f // offset when starting raycast to avoid artifacts 
 
@@ -35,6 +34,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Texture2D<float4> m_skyViewLUT; 
     Texture2DArray<float> m_directionalLightShadowmap;
     Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    Texture2D<float> m_fullscreenShadow;
 
     Sampler LinearSampler
     {
@@ -108,7 +108,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 #include <Atom/RPI/Math.azsli>
 
 #if ENABLE_ATMOSPHERE_SHADOWS
-//#include <Atom/Features/PBR/LightingOptions.azsli>
+// Needed for DirectionalLightShadow.azsli - o_opacity_mode exists in most shaders but not this one.
+option enum class OpacityMode 
+{
+    Opaque, 
+    Cutout, 
+    Blended, 
+    TintedTransparent
+
+} o_opacity_mode = OpacityMode::Blended;
+
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
@@ -523,38 +532,12 @@ SingleScatteringResult IntegrateScatteredLuminance(
 #if ENABLE_ATMOSPHERE_SHADOWS
         if (o_enableShadows && earthShadow == 1.0f)
         {
-            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-            float3 shadowCoords[ViewSrg::MaxCascadeCount];
-
             const float3 shadowworldPosition = (P + Atmosphere.PlanetOrigin) * 1000.f;
-            DirectionalLightShadow::GetShadowCoords(
-                shadowIndex,
+            shadow = DirectionalLightShadow::GetVisibility(
+                ViewSrg::m_shadowIndexDirectionalLight,
                 shadowworldPosition,
                 upVector,
-                shadowCoords);
-
-#if USE_SINGLE_SHADOW_SAMPLE
-            // sampling one cascade is slightly faster ~1ms
-            DirectionalLightShadow dlShadow;
-            dlShadow.m_lightIndex = shadowIndex;
-            dlShadow.m_shadowCoords = shadowCoords;
-            dlShadow.m_normalVector = upVector;
-
-            const uint cascadeIndex = ViewSrg::m_directionalLightShadows[shadowIndex].m_cascadeCount - 1;
-            const bool2 checkedShadowed = dlShadow.IsShadowed(shadowCoords[cascadeIndex], cascadeIndex);
-            if(checkedShadowed.y)
-            {
-                shadow = 0.f;
-            }
-#else
-            DirectionalLightShadow::DebugInfo debugInfo;
-            shadow = DirectionalLightShadow::GetVisibility(
-                shadowIndex,
-                shadowCoords,
-                upVector,
-                debugInfo);
-#endif
-
+                float4(pixPos.x, pixPos.y, 0.0, 0.0));
         }
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
