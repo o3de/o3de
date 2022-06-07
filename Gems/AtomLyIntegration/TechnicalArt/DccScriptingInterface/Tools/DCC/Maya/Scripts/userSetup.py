@@ -64,21 +64,17 @@ _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
 _DCCSI_TOOLS_MAYA_SCRIPTS_PATH = Path(_MODULE_PATH.parent.as_posix())
 _LOGGER.debug('_DCCSI_TOOLS_MAYA_SCRIPTS_PATH: {}'.format(_DCCSI_TOOLS_MAYA_SCRIPTS_PATH))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_MAYA = Path(_DCCSI_TOOLS_MAYA_SCRIPTS_PATH.parent)
 _PATH_DCCSI_TOOLS_MAYA = Path(os.getenv('PATH_DCCSI_TOOLS_MAYA', _PATH_DCCSI_TOOLS_MAYA.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_MAYA.as_posix())
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS_DCC = Path(_PATH_DCCSI_TOOLS_MAYA.parent)
 _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
 site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
 _PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
 
-# we need to set up basic access to the DCCsi
 _PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
 _PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
 site.addsitedir(_PATH_DCCSIG.as_posix())
