@@ -2784,6 +2784,10 @@ namespace AZ
 
             // if we get here, its a FLG_POINTER
             const void* dataPtr = *reinterpret_cast<void* const*>(element);
+            if (dataPtr == nullptr)
+            {
+                return; // Pointer element is nullptr, nothing to delete
+            }
             if (classData->m_factory)
             {
                 classData->m_factory->Destroy(dataPtr);
