@@ -682,7 +682,7 @@ namespace AZ
                 return relativePath;
             }
 
-            inline bool MaterialPropertyInspector::IsSourceMaterial(const AZStd::string& path) const
+            bool MaterialPropertyInspector::IsSourceMaterial(const AZStd::string& path) const
             {
                 return !path.empty() && AZ::StringFunc::Path::IsExtension(path.c_str(), AZ::RPI::MaterialSourceData::Extension);
             }
