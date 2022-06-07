@@ -19,6 +19,21 @@ static const float RenderDistanceBias = 1.001;
 // e.g. 0.8 means the point should blend the next layer when it is off 80% from the current clipmap center.
 static const float BlendingStartFactor = 0.8;
 
+// Used for the debug overlay color for each clipmap level.
+// Only use 5 for better contrast, and we don't really care about far away maps.
+static const uint ClipmapLevelDebugColorCount = 6;
+static const float3 ClipmapLevelDebugColor[ClipmapLevelDebugColorCount] = 
+{
+    {1.0, 0.0, 0.0},
+    {1.0, 1.0, 0.0},
+    {0.0, 1.0, 0.0},
+    {0.0, 1.0, 1.0},
+    {0.0, 0.0, 1.0},
+    {1.0, 0.0, 1.0}
+};
+
+#define USE_DEBUG_OVERLAY 1
+
 // Clipmap levels
 //         |<- clipmap size ->|
 // --------|------------------|-------- level 0
@@ -139,6 +154,24 @@ float3 UnpackNormal(float2 packedNormal)
     return float3(packedNormal.xy, z);
 }
 
+void ApplyDebugOverlaySingleLevel(inout float3 color, uint clipmapLevel, float debugOverlayFactor)
+{
+#if USE_DEBUG_OVERLAY
+    float3 overlayColor = ClipmapLevelDebugColor[clipmapLevel % ClipmapLevelDebugColorCount];
+    color.xyz = lerp(color.xyz, overlayColor, debugOverlayFactor * 0.25);
+#endif
+}
+
+void ApplyDebugOverlayDoubleLevel(inout float3 color, uint clipmapLevel1, uint clipmapLevel2, float blendWeight, float debugOverlayFactor)
+{
+#if USE_DEBUG_OVERLAY
+    float3 overlayColor = lerp(ClipmapLevelDebugColor[clipmapLevel1 % ClipmapLevelDebugColorCount],
+                            ClipmapLevelDebugColor[clipmapLevel2 % ClipmapLevelDebugColorCount],
+                            blendWeight);
+    color.xyz = lerp(color.xyz, overlayColor, debugOverlayFactor * 0.25);
+#endif
+}
+
 struct BilinearUvs
 {
     uint2 m_u0v0;
@@ -169,7 +202,8 @@ ClipmapLevel CalculateClosestClipmapLevel(
     // The top clipmap's render distance
     float2 minRenderSize = maxRenderSize / pow(clipmapScaleBase, (float)(clipmapStackSize - 1u));
 
-    float2 clampedDistance = clamp(minRenderSize, abs(distanceFromViewPosition) * RenderDistanceBias, maxRenderSize);
+    float2 absDistance = abs(distanceFromViewPosition);
+    float2 clampedDistance = clamp(absDistance * RenderDistanceBias, minRenderSize, maxRenderSize);
     float2 distanceRatio = maxRenderSize / clampedDistance;
     // Due to clamping, the max result of log is (clipmapStackSize - 1u), which falls into the first clipmap
     clipmapLevel.m_closestLevel = clipmapStackSize - 1u - uint(floor(log(min(distanceRatio.x, distanceRatio.y))/log(clipmapScaleBase)));
@@ -177,7 +211,7 @@ ClipmapLevel CalculateClosestClipmapLevel(
     float renderDistance = maxRenderDistance / pow(clipmapScaleBase, (float)(clipmapStackSize - 1u - clipmapLevel.m_closestLevel));
     float blendingStart = renderDistance * BlendingStartFactor;
     float blendingEnd = renderDistance / RenderDistanceBias;
-    float blendingValue = max(clampedDistance.x, clampedDistance.y);
+    float blendingValue = max(absDistance.x, absDistance.y);
 
     if (blendingValue > blendingStart && blendingValue < blendingEnd)
     {
@@ -229,10 +263,14 @@ BilinearUvs CalculateClipmapUv(
     return uvs;
 }
 
-float4 ColorPointSampling(Texture2DArray<float4> colorClipmap, uint2 uv, uint clipmapLevel)
+float4 ColorPointSampling(Texture2DArray<float4> colorClipmap, uint2 uv, uint clipmapLevel, float debugOverlayFactor)
 {
     uint3 texelIndex = uint3(uv, clipmapLevel);
-    return colorClipmap[texelIndex];
+    float4 color = colorClipmap[texelIndex];
+    // Debug option
+    ApplyDebugOverlaySingleLevel(color.xyz, clipmapLevel, debugOverlayFactor);
+
+    return color;
 }
 
 float3 NormalPointSampling(Texture2DArray<float2> normalClipmap, uint2 uv, uint clipmapLevel)
@@ -248,7 +286,7 @@ float GeneralFloatPointSampling(Texture2DArray<float> clipmap, uint2 uv, uint cl
     return clipmap[texelIndex];
 }
 
-float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs, uint clipmapLevel)
+float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs, uint clipmapLevel, float debugOverlayFactor)
 {
     float4 color00 = colorClipmap[uint3(uvs.m_u0v0, clipmapLevel)];
     float4 color10 = colorClipmap[uint3(uvs.m_u1v0, clipmapLevel)];
@@ -263,7 +301,11 @@ float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uv
     float alpha0 = min(color00.a, color01.a);
     float alpha1 = min(color10.a, color11.a);
 
-    return float4(lerp(color0, color1, uvs.m_weight.y), min(alpha0, alpha1));
+    float4 color = float4(lerp(color0, color1, uvs.m_weight.y), min(alpha0, alpha1));
+    // Debug option
+    ApplyDebugOverlaySingleLevel(color.xyz, clipmapLevel, debugOverlayFactor);
+
+    return color;
 }
 
 float3 NormalBilinearSampling(Texture2DArray<float2> normalClipmap, BilinearUvs uvs, uint clipmapLevel)
@@ -290,16 +332,20 @@ float GeneralFloatBilinearSampling(Texture2DArray<float> clipmap, BilinearUvs uv
     return lerp(value0, value1, uvs.m_weight.y);
 }
 
-float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel)
+float4 ColorTrilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel, float debugOverlayFactor)
 {
-    float4 color1 = ColorBilinearSampling(colorClipmap, uvs1, clipmapLevel.m_closestLevel);
-    float4 color2 = ColorBilinearSampling(colorClipmap, uvs2, clipmapLevel.m_nextLevel);
+    float4 color1 = ColorBilinearSampling(colorClipmap, uvs1, clipmapLevel.m_closestLevel, 0.0);
+    float4 color2 = ColorBilinearSampling(colorClipmap, uvs2, clipmapLevel.m_nextLevel, 0.0);
 
     // Alpha for detail color clipmap is used to represent "has detail material" using 0.0 and 1.0.
     // Detail is only valid when 4 adjecent texels are all valid. So using min is the proper choice.
     float alpha = min(color1.a, color2.a);
 
-    return float4(lerp(color1.rgb, color2.rgb, clipmapLevel.m_weight), alpha);
+    float4 color = float4(lerp(color1.rgb, color2.rgb, clipmapLevel.m_weight), alpha);
+    // Debug option
+    ApplyDebugOverlayDoubleLevel(color.xyz, clipmapLevel.m_closestLevel, clipmapLevel.m_nextLevel, clipmapLevel.m_weight, debugOverlayFactor);
+
+    return color;
 }
 
 float3 NormalTrilinearSampling(Texture2DArray<float2> normalClipmap, BilinearUvs uvs1, BilinearUvs uvs2, ClipmapLevel clipmapLevel)
@@ -348,7 +394,9 @@ ClipmapSample SampleClipmap(float2 worldPosition)
             GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
         );
 
-        data.m_macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel).rgb;
+        data.m_macroColor = ColorBilinearSampling(
+            TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel,
+            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay).rgb;
         data.m_macroNormal = NormalBilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel);
     }
     else
@@ -367,7 +415,9 @@ ClipmapSample SampleClipmap(float2 worldPosition)
             GetCurrentMacroClipmapCenter(macroClipmapLevel.m_nextLevel)
         );
 
-        data.m_macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel).rgb;
+        data.m_macroColor = ColorTrilinearSampling(
+            TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel,
+            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay).rgb;
         data.m_macroNormal = NormalTrilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel);
     }
 
@@ -393,7 +443,9 @@ ClipmapSample SampleClipmap(float2 worldPosition)
                 GetCurrentDetailClipmapCenter(detailClipmapLevel.m_closestLevel)
             );
 
-            float4 detailColor = ColorBilinearSampling(TerrainSrg::m_detailColorClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel);
+            float4 detailColor = ColorBilinearSampling(
+                TerrainSrg::m_detailColorClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel,
+                TerrainSrg::m_clipmapData.m_enableDetailClipmapOverlay);
             // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
             data.m_hasDetail = detailColor.a == 1.0;
 
@@ -424,7 +476,9 @@ ClipmapSample SampleClipmap(float2 worldPosition)
                 GetCurrentDetailClipmapCenter(detailClipmapLevel.m_nextLevel)
             );
 
-            float4 detailColor = ColorTrilinearSampling(TerrainSrg::m_detailColorClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel);
+            float4 detailColor = ColorTrilinearSampling(
+                TerrainSrg::m_detailColorClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel,
+                TerrainSrg::m_clipmapData.m_enableDetailClipmapOverlay);
             // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
             data.m_hasDetail = detailColor.a == 1.0;
 

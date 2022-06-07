@@ -40,7 +40,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
@@ -232,7 +231,6 @@ namespace EMStudio
         RegisterPlugin(new MotionSetsWindowPlugin());
         RegisterPlugin(new NodeGroupsPlugin());
         RegisterPlugin(new AnimGraphPlugin());
-        RegisterPlugin(new OpenGLRenderPlugin());
         RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
         RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
         RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());

@@ -1060,9 +1060,6 @@ protected:
 
         template<typename ResultType, typename t_Traits, typename>
         friend struct Internal::OutputSlotHelper;
-
-        template<size_t... inputDatumIndices>
-        friend struct SetDefaultValuesByIndex;
     };
 
     namespace Internal

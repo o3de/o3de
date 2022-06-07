@@ -6,11 +6,11 @@
  *
  */
 
+#include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Internal/Nodes/StringFormatted.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
-#include <ScriptCanvas/Core/Attributes.h>
-
-#include "String.h"
+#include <ScriptCanvas/Libraries/String/Format.h>
+#include <ScriptCanvas/Libraries/String/Print.h>
 
 namespace ScriptCanvas
 {
@@ -24,7 +24,7 @@ namespace ScriptCanvas
                 serializeContext->Class<String, LibraryDefinition>()
                     ->Version(0)
                     ;
-
+                
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
@@ -36,13 +36,7 @@ namespace ScriptCanvas
                         ;
                 }
             }
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
-            {
-                SCRIPT_CANVAS_GENERICS_TO_VM(StringNodes::Registrar, String, behaviorContext, StringNodes::k_categoryName);
-            }
-
             Nodes::Internal::StringFormatted::Reflect(reflection);
-            StringMethods::Reflect(reflection);
         }
 
         void String::InitNodeRegistry(NodeRegistry& nodeRegistry)
@@ -50,30 +44,14 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Nodes::String;
             AddNodeToRegistry<String, Format>(nodeRegistry);
             AddNodeToRegistry<String, Print>(nodeRegistry);
-            AddNodeToRegistry<String, Replace>(nodeRegistry);
-            AddNodeToRegistry<String, Contains>(nodeRegistry);
-            AddNodeToRegistry<String, StartsWith>(nodeRegistry);
-            AddNodeToRegistry<String, EndsWith>(nodeRegistry);
-            AddNodeToRegistry<String, Split>(nodeRegistry);
-            AddNodeToRegistry<String, Join>(nodeRegistry);
-
-            StringNodes::Registrar::AddToRegistry<String>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> String::GetComponentDescriptors()
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors = {
                 ScriptCanvas::Nodes::String::Format::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Print::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Replace::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Contains::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::StartsWith::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::EndsWith::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Split::CreateDescriptor(),
-                ScriptCanvas::Nodes::String::Join::CreateDescriptor()
+                ScriptCanvas::Nodes::String::Print::CreateDescriptor()
             };
-
-            StringNodes::Registrar::AddDescriptors(descriptors);
 
             return descriptors;
         }

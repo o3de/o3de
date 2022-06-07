@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
 
@@ -21,8 +22,11 @@ namespace AtomToolsFramework
                 ->Field("category", &DynamicNodeConfig::m_category)
                 ->Field("title", &DynamicNodeConfig::m_title)
                 ->Field("subTitle", &DynamicNodeConfig::m_subTitle)
+                ->Field("settings", &DynamicNodeConfig::m_settings)
                 ->Field("inputSlots", &DynamicNodeConfig::m_inputSlots)
-                ->Field("outputSlots", &DynamicNodeConfig::m_outputSlots);
+                ->Field("outputSlots", &DynamicNodeConfig::m_outputSlots)
+                ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
+                ;
         }
     }
 
@@ -30,24 +34,28 @@ namespace AtomToolsFramework
         const AZStd::string& category,
         const AZStd::string& title,
         const AZStd::string& subTitle,
+        const DynamicNodeSettingsMap& settings,
         const AZStd::vector<DynamicNodeSlotConfig>& inputSlots,
-        const AZStd::vector<DynamicNodeSlotConfig>& outputSlots)
+        const AZStd::vector<DynamicNodeSlotConfig>& outputSlots,
+        const AZStd::vector<DynamicNodeSlotConfig>& propertySlots)
         : m_category(category)
         , m_title(title)
         , m_subTitle(subTitle)
+        , m_settings(settings)
         , m_inputSlots(inputSlots)
         , m_outputSlots(outputSlots)
+        , m_propertySlots(propertySlots)
     {
     }
 
     bool DynamicNodeConfig::Save(const AZStd::string& path) const
     {
-        return AZ::JsonSerializationUtils::SaveObjectToFile(this, path).IsSuccess();
+        return AZ::JsonSerializationUtils::SaveObjectToFile(this, ConvertAliasToPath(path)).IsSuccess();
     }
 
     bool DynamicNodeConfig::Load(const AZStd::string& path)
     {
-        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(path);
+        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(ConvertAliasToPath(path));
         if (loadResult && loadResult.GetValue().is<DynamicNodeConfig>())
         {
             *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());

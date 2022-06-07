@@ -35,9 +35,11 @@ namespace Terrain
                 ;
 
             serialize->Class<MeshConfiguration>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("RenderDistance", &MeshConfiguration::m_renderDistance)
                 ->Field("FirstLodDistance", &MeshConfiguration::m_firstLodDistance)
+                ->Field("ClodEnabled", &MeshConfiguration::m_clodEnabled)
+                ->Field("ClodDistance", &MeshConfiguration::m_clodDistance)
                 ;
 
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
@@ -75,6 +77,12 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshConfiguration::m_clodEnabled, "Continuous LOD (CLOD)", "Enables the use of continuous level of detail, which smoothly blends geometry between terrain lods.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_clodDistance, "CLOD Distance", "Distance in meters over which the first lod will blend into the next lod. Subsequent lod blend distances will double with each lod for a consistent visual appearance.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodDisabled)
                     ;
 
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
