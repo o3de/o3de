@@ -111,11 +111,11 @@ namespace AZ
             // when called below. This is important when Init() is actually a re-initialize.
             m_propertyValues.clear();
 
-            // Initialize the shader runtime data like shader constant buffers and shader variants by applying the 
+            // Initialize the shader runtime data like shader constant buffers and shader variants by applying the
             // material's property values. This will feed through the normal runtime material value-change data flow, which may
             // include custom property change handlers provided by the material type.
             //
-            // This baking process could be more efficient by doing it at build-time rather than run-time. However, the 
+            // This baking process could be more efficient by doing it at build-time rather than run-time. However, the
             // architectural complexity of supporting separate asset/runtime paths for assigning buffers/images is prohibitive.
             {
                 m_propertyValues.resize(materialAsset.GetPropertyValues().size());
@@ -159,7 +159,6 @@ namespace AZ
             Compile();
 
             Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
-            MaterialReloadNotificationBus::Handler::BusConnect(m_materialAsset.GetId());
 
             return RHI::ResultCode::Success;
         }
@@ -167,7 +166,6 @@ namespace AZ
         Material::~Material()
         {
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            MaterialReloadNotificationBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
         }
 
@@ -257,24 +255,12 @@ namespace AZ
             if (newMaterialAsset)
             {
                 Init(*newMaterialAsset);
-                MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
             }
         }
 
-        ///////////////////////////////////////////////////////////////////
-        // MaterialReloadNotificationBus overrides...
-        void Material::OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset)
+        void Material::OnAssetDependencyReloaded([[maybe_unused]] Data::AssetId assetId)
         {
-            // It's important that we don't just pass materialAsset to Init() because when reloads occur,
-            // it's possible for old Asset objects to hang around and report reinitialization, so materialAsset
-            // might be stale data.
-
-            if (materialAsset.Get() == m_materialAsset.Get())
-            {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
-
-                OnAssetReloaded(m_materialAsset);
-            }
+            OnAssetReloaded(m_materialAsset);
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -415,9 +401,9 @@ namespace AZ
             if (!index.IsValid())
             {
                 Name renamedId = propertyId;
-                
+
                 if (m_materialAsset->GetMaterialTypeAsset()->ApplyPropertyRenames(renamedId))
-                {                                
+                {
                     index = m_layout->FindPropertyIndex(renamedId);
 
                     if (wasRenamed)
