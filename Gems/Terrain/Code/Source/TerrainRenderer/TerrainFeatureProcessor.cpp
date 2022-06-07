@@ -67,7 +67,7 @@ namespace Terrain
         m_imageArrayHandler = AZStd::make_shared<AZ::Render::BindlessImageArrayHandler>();
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
-        
+
         m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
         AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
 
@@ -81,7 +81,6 @@ namespace Terrain
                 if (success)
                 {
                     m_materialInstance = AZ::RPI::Material::FindOrCreate(assetData);
-                    AZ::RPI::MaterialReloadNotificationBus::Handler::BusConnect(materialAsset->GetId());
                     if (!materialAsset->GetObjectSrgLayout())
                     {
                         AZ_Error("TerrainFeatureProcessor", false, "No per-object ShaderResourceGroup found on terrain material.");
@@ -90,6 +89,8 @@ namespace Terrain
                     {
                         PrepareMaterialData();
                     }
+
+                    AZ::Data::AssetBus::Handler::BusConnect(assetData->GetId());
                 }
             }
         );
@@ -99,9 +100,9 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Deactivate()
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
-        
+
         DisableSceneNotification();
         OnTerrainDataDestroyBegin();
 
@@ -119,12 +120,26 @@ namespace Terrain
         ProcessSurfaces(packet);
     }
 
+    void TerrainFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        PrepareMaterialData();
+        m_forceRebuildDrawPackets = true;
+        m_terrainBoundsNeedUpdate = true;
+    }
+
+    void TerrainFeatureProcessor::OnAssetDependencyReloaded([[maybe_unused]] AZ::Data::AssetId assetId)
+    {
+        PrepareMaterialData();
+        m_forceRebuildDrawPackets = true;
+        m_terrainBoundsNeedUpdate = true;
+    }
+
     void TerrainFeatureProcessor::OnTerrainDataDestroyBegin()
     {
         m_terrainBounds = AZ::Aabb::CreateNull();
         m_dirtyRegion = AZ::Aabb::CreateNull();
     }
-    
+
     void TerrainFeatureProcessor::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
@@ -245,7 +260,7 @@ namespace Terrain
             {
                 m_macroMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg);
             }
-            
+
             if (m_detailMaterialManager.IsInitialized())
             {
                 m_detailMaterialManager.UpdateSrgIndices(m_terrainSrg);
@@ -277,7 +292,7 @@ namespace Terrain
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
     {
         AZ_PROFILE_FUNCTION(AzRender);
-        
+
         if (!m_terrainBounds.IsValid())
         {
             return;
@@ -358,22 +373,22 @@ namespace Terrain
         }
     }
 
-    void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
-    {
-        PrepareMaterialData();
-        m_terrainBoundsNeedUpdate = true;
-    }
+    //void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
+    //{
+    //    PrepareMaterialData();
+    //    m_terrainBoundsNeedUpdate = true;
+    //}
 
     void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
     {
         m_detailMaterialManager.SetDetailMaterialConfiguration(config);
     }
-    
+
     void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
         m_meshManager.SetConfiguration(config);
     }
-    
+
     void TerrainFeatureProcessor::CachePasses()
     {
         m_passes.clear();

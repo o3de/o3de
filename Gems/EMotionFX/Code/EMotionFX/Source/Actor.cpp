@@ -1420,7 +1420,7 @@ namespace EMotionFX
                     morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
             }
 
-            //if (loadReq == LoadRequirement::RequireBlockingLoad)
+            if (loadReq == LoadRequirement::RequireBlockingLoad)
             {
                 if (m_skinMetaAsset.IsLoading())
                 {
