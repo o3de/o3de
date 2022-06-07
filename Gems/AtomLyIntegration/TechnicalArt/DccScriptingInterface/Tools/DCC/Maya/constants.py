@@ -40,8 +40,6 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
 # -------------------------------------------------------------------------
 # Maya is frozen
-#_MODULE_PATH = Path(__file__)
-# https://tinyurl.com/y49t3zzn
 # module path when frozen
 _MODULE_PATH = Path(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _LOGGER.debug('_MODULE_PATH: {}'.format(_MODULE_PATH))
@@ -195,6 +193,7 @@ DCCSI_MAYA_PLUG_IN_PATH = Path(PATH_DCCSI_TOOLS_MAYA,'plugins').as_posix()
 
 # is a maya envar
 MAYA_PLUG_IN_PATH = Path(DCCSI_MAYA_PLUG_IN_PATH).as_posix() # extend %MAYA_PLUG_IN_PATH%
+# to do: remove or extend next PR, technically there can be more then one plugin path
 #while MAYA_PLUG_IN_PATH:
     #if ENVAR_MAYA_PLUG_IN_PATH in os.environ:
         #maya_plug_pathlist = os.getenv(ENVAR_MAYA_PLUG_IN_PATH).split(os.pathsep)
@@ -214,6 +213,7 @@ DCCSI_MAYA_XBMLANGPATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Prefs', 'icons').as_posix(
 # is a maya envar
 # maya resources, very oddly named
 XBMLANGPATH = Path(DCCSI_MAYA_XBMLANGPATH).as_posix() # extend %XBMLANGPATH%
+# to do: remove or extend next PR, technically there can be more then one resource path specified
 #while XBMLANGPATH:
     #if ENVAR_XBMLANGPATH in os.environ:
         #maya_xbm_pathlist = os.getenv(ENVAR_XBMLANGPATH).split(os.pathsep)
@@ -231,6 +231,7 @@ DCCSI_MAYA_SCRIPT_MEL_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Scripts', 'Mel').as_po
 DCCSI_MAYA_SCRIPT_PY_PATH = Path(PATH_DCCSI_TOOLS_MAYA, 'Scripts', 'Python').as_posix()
 
 MAYA_SCRIPT_PATH = Path(DCCSI_MAYA_SCRIPT_PATH).as_posix() # extend %MAYA_SCRIPT_PATH%
+# to do: remove or extend next PR, technically there can be more then one script path specified
 #while MAYA_SCRIPT_PATH:
     #if ENVAR_MAYA_SCRIPT_PATH in os.environ:
         #maya_script_pathlist = os.getenv(ENVAR_MAYA_SCRIPT_PATH).split(os.pathsep)
