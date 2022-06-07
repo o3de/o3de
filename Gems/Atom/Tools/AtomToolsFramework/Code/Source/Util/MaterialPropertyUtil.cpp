@@ -92,7 +92,7 @@ namespace AtomToolsFramework
             propertyConfig.m_description.c_str(),
             propertyConfig.m_description.empty() ? "" : "\n",
             propertyConfig.m_id.GetCStr(),
-            "Modified properties will have an indicator icon displayed on the left.");
+            "An indicator icon will be shown to the left of properties with overridden values.");
     }
 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData)
