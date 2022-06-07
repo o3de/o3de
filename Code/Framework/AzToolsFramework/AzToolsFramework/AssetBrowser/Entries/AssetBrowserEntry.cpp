@@ -289,7 +289,7 @@ namespace AzToolsFramework
             m_fullPath.ReplaceFilename(filename);
             m_fullPath.ReplaceExtension(extension);
             m_relativePath.ReplaceFilename(filename);
-            m_relativePath.ReplaceExtension(filename);
+            m_relativePath.ReplaceExtension(extension);
         }
 
 
