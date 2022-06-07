@@ -33,6 +33,8 @@ namespace AzToolsFramework
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) override;
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
 

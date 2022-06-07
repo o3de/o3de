@@ -50,6 +50,14 @@ namespace AzToolsFramework
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
 
+        //! Add a Widget to a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menu is being added to.
+        //! @param widget A pointer to the widget to add to the menu.
+        //! @param sortIndex An integer defining the position the widget should appear in on the menu.
+        //! @return An void outcome if successful, or a string with a message detailing the error otherwise.
+        virtual MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) = 0;
+
         //! Retrieve a QMenu from its identifier.
         virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
     };
