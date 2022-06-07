@@ -88,7 +88,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Benchmark_GPU
-        TEST_SUITE main
+        TEST_SUITE benchmark
         TEST_REQUIRES gpu
         TEST_SERIAL
         TIMEOUT 700
