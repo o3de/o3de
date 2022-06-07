@@ -394,12 +394,7 @@ namespace EMotionFX
         {
             OnAssetReady(asset);
         }
-#pragma optimize("", off)
-        void ActorComponent::OnAssetDependencyReloaded(AZ::Data::AssetId assetId)
-        {
-            AZ_TracePrintf("ActorComponent", "Actor component dependency reload event fired %s\n", assetId.ToFixedString().c_str());
-        }
-#pragma optimize("", on)
+
         bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
         {
             return m_sceneFinishSimHandler.IsConnected();

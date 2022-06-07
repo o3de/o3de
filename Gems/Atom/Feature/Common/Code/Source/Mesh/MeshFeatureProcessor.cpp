@@ -84,7 +84,7 @@ namespace AZ
 
             return TransformServiceFeatureProcessorInterface::ObjectId::Null;
         }
-#pragma optimize("", off)
+
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
@@ -159,7 +159,7 @@ namespace AZ
 
             m_forceRebuildDrawPackets = false;
         }
-#pragma optimize("", on)
+
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
@@ -240,7 +240,7 @@ namespace AZ
 
             return {};
         }
-        
+
         const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
@@ -703,7 +703,7 @@ namespace AZ
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-            
+
             MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);

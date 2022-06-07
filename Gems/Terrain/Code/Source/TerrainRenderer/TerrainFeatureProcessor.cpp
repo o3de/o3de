@@ -123,14 +123,12 @@ namespace Terrain
     void TerrainFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         PrepareMaterialData();
-        m_forceRebuildDrawPackets = true;
         m_terrainBoundsNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::OnAssetDependencyReloaded([[maybe_unused]] AZ::Data::AssetId assetId)
     {
         PrepareMaterialData();
-        m_forceRebuildDrawPackets = true;
         m_terrainBoundsNeedUpdate = true;
     }
 
