@@ -38,13 +38,16 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     void Reflect(PropertyEditorSystemInterface* system)
     {
-        system->RegisterNode<Adapter>();
-        system->RegisterNode<Row>();
+        system->RegisterNode<NodeWithVisiblityControl>();
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
 
-        system->RegisterNode<Label>();
+        system->RegisterNode<Adapter, NodeWithVisiblityControl>();
+        system->RegisterNode<Row, NodeWithVisiblityControl>();
+
+        system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
 
-        system->RegisterNode<PropertyEditor>();
+        system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
@@ -52,6 +55,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+
+        system->RegisterPropertyEditor<UIElement>();
+        system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
         system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);
@@ -65,7 +72,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterPropertyEditor<Slider<>, NumericEditor<>>();
         system->RegisterPropertyEditor<SpinBox<>, NumericEditor<>>();
+
         system->RegisterPropertyEditor<Button>();
+        system->RegisterNodeAttribute<Button>(Button::ButtonText);
+
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();
