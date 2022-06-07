@@ -62,11 +62,11 @@ namespace LandscapeCanvas
         GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
-            PREVIEW_BOUNDS_SLOT_ID,
-            PREVIEW_BOUNDS_SLOT_LABEL.toUtf8().constData(),
+            INPUT_BOUNDS_SLOT_ID,
+            INPUT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
             { boundsDataType, invalidEntityDataType },
             boundsDataType->GetDefaultValue(),
-            PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
