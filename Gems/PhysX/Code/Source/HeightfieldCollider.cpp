@@ -13,7 +13,6 @@
 #include <AzCore/std/utility/as_const.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -22,6 +21,7 @@
 #include <Source/RigidBodyStatic.h>
 #include <Source/Shape.h>
 #include <Source/Utils.h>
+#include <PhysX/Material/PhysXMaterial.h>
 
 
 namespace PhysX
@@ -171,7 +171,7 @@ namespace PhysX
             m_colliderConfig->m_rotation.TransformVector(transform.GetTranslation() - baseTransform.GetTranslation());
 
         // Update material selection from the mapping
-        Utils::SetMaterialsFromHeightfieldProvider(m_entityId, m_colliderConfig->m_materialSelection);
+        Utils::SetMaterialsFromHeightfieldProvider(m_entityId, m_colliderConfig->m_materialSlots);
 
         // Create a new simulated body in the world from the given collision / shape configuration.
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -189,15 +189,15 @@ namespace PhysX
         // If the change is only about heightfield materials mapping, we can simply update material selection in the heightfield shape
         if (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping)
         {
-            Physics::MaterialSelection updatedMaterialSelection;
-            Utils::SetMaterialsFromHeightfieldProvider(m_entityId, updatedMaterialSelection);
+            Physics::MaterialSlots updatedMaterialSlots;
+            Utils::SetMaterialsFromHeightfieldProvider(m_entityId, updatedMaterialSlots);
 
             // Make sure the number of slots is the same.
             // Otherwise the heightfield needs to be rebuilt to support updated indices.
-            if (updatedMaterialSelection.GetMaterialIdsAssignedToSlots().size() ==
-                m_colliderConfig->m_materialSelection.GetMaterialIdsAssignedToSlots().size())
+            if (updatedMaterialSlots.GetSlotsCount() ==
+                m_colliderConfig->m_materialSlots.GetSlotsCount())
             {
-                UpdateHeightfieldMaterialSelection(updatedMaterialSelection);
+                UpdateHeightfieldMaterialSlots(updatedMaterialSlots);
                 return;
             }
         }
@@ -334,7 +334,7 @@ namespace PhysX
         runningJob->Start();
     }
 
-    void HeightfieldCollider::UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection)
+    void HeightfieldCollider::UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots)
     {
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AzPhysics::SimulatedBody* simulatedBody =
@@ -357,14 +357,12 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Shape> shape = rigidBody->GetShape(0);
         PhysX::Shape* physxShape = azdynamic_cast<PhysX::Shape*>(shape.get());
 
-        AZStd::vector<AZStd::shared_ptr<Physics::Material>> materials;
+        AZStd::vector<AZStd::shared_ptr<Material>> materials =
+            Material::FindOrCreateMaterials(updatedMaterialSlots);
 
-        Physics::PhysicsMaterialRequestBus::Broadcast(
-            &Physics::PhysicsMaterialRequestBus::Events::GetMaterials, updatedMaterialSelection, materials);
+        physxShape->SetPhysXMaterials(materials);
 
-        physxShape->SetMaterials(materials);
-
-        m_colliderConfig->m_materialSelection = updatedMaterialSelection;
+        m_colliderConfig->m_materialSlots = updatedMaterialSlots;
     }
 
     // SimulatedBodyComponentRequestsBus
