@@ -27,21 +27,5 @@ namespace AzToolsFramework
                     ;
             }
         }
-
-        void PrefabPublicNotificationHandler::OnPrefabInstancePropagationBegin()
-        {
-            Call(FN_OnPrefabInstancePropagationBegin);
-        }
-
-        void PrefabPublicNotificationHandler::OnPrefabInstancePropagationEnd()
-        {
-            Call(FN_OnPrefabInstancePropagationEnd);
-        }
-
-        void PrefabPublicNotificationHandler::OnRootPrefabInstanceLoaded()
-        {
-            Call(FN_OnRootPrefabInstanceLoaded);
-        }
-
     } // namespace Prefab
 } // namespace AzToolsFramework
