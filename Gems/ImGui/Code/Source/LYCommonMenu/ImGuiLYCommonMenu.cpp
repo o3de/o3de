@@ -285,7 +285,7 @@ namespace ImGui
                             {
                                 // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
                                 // Filter out network spawnables from the level list, 
-                                // but keep track of which levels require networking so they can be tagged as "(Networked)" in the level selection menu. 
+                                // but keep track of which levels require networking so they can be recognized in the level selection menu. 
                                 constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
                                 constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
 
