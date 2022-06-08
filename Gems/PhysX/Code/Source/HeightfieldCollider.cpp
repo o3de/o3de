@@ -115,6 +115,11 @@ namespace PhysX
         m_jobContext.reset();
     }
 
+    void HeightfieldCollider::BlockOnPendingJobs()
+    {
+        m_jobContext->BlockUntilComplete();
+    }
+
     // ColliderShapeRequestBus
     AZ::Aabb HeightfieldCollider::GetColliderShapeAabb()
     {

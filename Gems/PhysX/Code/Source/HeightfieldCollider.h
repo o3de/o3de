@@ -60,6 +60,8 @@ namespace PhysX
         //! @return Pointer to the simulated body.
         const AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
+        void BlockOnPendingJobs();
+
         // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;

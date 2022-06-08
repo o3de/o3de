@@ -124,6 +124,8 @@ namespace PhysXEditorTests
         ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
         ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldAabb).WillByDefault(
+            Return(AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, -3.0f, 3.0f, 3.0f, 3.0f)));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
             .WillByDefault(
                 [](size_t& numColumns, size_t& numRows)
@@ -139,6 +141,17 @@ namespace PhysXEditorTests
                     y = 3.0f;
                 });
         ON_CALL(mockShapeRequests, GetMaterialList).WillByDefault(Return(GetMaterialList()));
+
+        ON_CALL(mockShapeRequests, GetHeightfieldIndicesFromRegion)
+            .WillByDefault(
+                []([[maybe_unused]] const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows)
+                {
+                    startColumn = 0;
+                    startRow = 0;
+                    numColumns = 3;
+                    numRows = 3;
+                });
+
 
         ON_CALL(mockShapeRequests, UpdateHeightsAndMaterials)
             .WillByDefault(
@@ -192,6 +205,12 @@ namespace PhysXEditorTests
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
+
+            // The updates are performed asynchronously, so block on the jobs until they're completed.
+            auto editorHeightfieldComponent = m_editorEntity->FindComponent<PhysX::EditorHeightfieldColliderComponent>();
+            editorHeightfieldComponent->BlockOnPendingJobs();
+            auto runtimeHeightfieldComponent = m_gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>();
+            runtimeHeightfieldComponent->BlockOnPendingJobs();
         }
 
         void TearDown() override
