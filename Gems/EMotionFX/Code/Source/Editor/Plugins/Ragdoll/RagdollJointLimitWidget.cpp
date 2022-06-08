@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/ObjectEditor.h>
@@ -35,10 +36,16 @@ namespace EMotionFX
     int RagdollJointLimitWidget::s_leftMargin = 13;
     int RagdollJointLimitWidget::s_textColumnWidth = 142;
 
+    void RagdollJointLimitPropertyNotify::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+    {
+        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
+    }
+
     RagdollJointLimitWidget::RagdollJointLimitWidget(const AZStd::string& copiedJointLimits, QWidget* parent)
         : AzQtComponents::Card(parent)
         , m_cardHeaderIcon(SkeletonModel::s_ragdollJointLimitIconPath)
         , m_copiedJointLimits(copiedJointLimits)
+        , m_propertyNotify(AZStd::make_unique<RagdollJointLimitPropertyNotify>())
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -98,7 +105,7 @@ namespace EMotionFX
             }
 
             // Reflected property editor for joint limit
-            m_objectEditor = new EMotionFX::ObjectEditor(serializeContext, innerWidget);
+            m_objectEditor = new EMotionFX::ObjectEditor(serializeContext, m_propertyNotify.get(), innerWidget);
             vLayout->addWidget(m_objectEditor);
         }
 
@@ -170,6 +177,11 @@ namespace EMotionFX
             m_typeComboBox->hide();
             m_objectEditor->hide();
         }
+    }
+
+    void RagdollJointLimitWidget::InvalidateValues()
+    {
+        m_objectEditor->InvalidateValues();
     }
 
     Physics::RagdollNodeConfiguration* RagdollJointLimitWidget::GetRagdollNodeConfig() const
@@ -273,6 +285,7 @@ namespace EMotionFX
 
             Update();
         }
+        emit JointLimitTypeChanged();
     }
 
     void RagdollJointLimitWidget::ChangeLimitType(int supportedTypeIndex)

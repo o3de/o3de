@@ -12,7 +12,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
 
 namespace Physics
@@ -101,7 +101,7 @@ namespace Physics
 
         //! Returns the list of materials used by the height field.
         //! @return returns a vector of all materials.
-        virtual AZStd::vector<MaterialId> GetMaterialList() const = 0;
+        virtual AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> GetMaterialList() const = 0;
 
         //! Returns the list of heights used by the height field.
         //! @return the rows*columns vector of the heights.
