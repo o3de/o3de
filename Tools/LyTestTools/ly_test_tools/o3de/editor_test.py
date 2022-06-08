@@ -535,7 +535,7 @@ class EditorTestSuite:
 
                     result_func = make_func(shared_test_spec)
                     if hasattr(shared_test_spec, "pytestmark"):
-                        result_func.pytestmark = test_spec.pytestmark
+                        result_func.pytestmark = shared_test_spec.pytestmark
                     setattr(self.obj, shared_test_spec.__name__, result_func)
                 runners.append(target_runner)
 
