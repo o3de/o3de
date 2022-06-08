@@ -151,6 +151,18 @@ void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
     m_terrainSettingsDirty = true;
 }
 
+bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
+{
+    for (const auto& area : m_registeredAreas)
+    {
+        if (area.second.m_areaBounds.Overlaps(bounds))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void TerrainSystem::SetTerrainHeightQueryResolution(float queryResolution)
 {
     m_requestedSettings.m_heightQueryResolution = queryResolution;

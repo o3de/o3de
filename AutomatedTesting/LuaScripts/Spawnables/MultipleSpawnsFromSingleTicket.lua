@@ -15,14 +15,14 @@ local MultipleSpawnsFromSingleTicket =
     {
         Prefab = { default=SpawnableScriptAssetRef(), description="Prefab to spawn" },
         SpawnCount = { default=3, description="How many prefabs to spawn" },
-        Offset = { default=Vector3(0, 2, 0), description="Translation offset for each spawn" }
+        Offset = { default=Vector3(0.0, 2.0, 0.0), description="Translation offset for each spawn" }
     },
 }
 
 function MultipleSpawnsFromSingleTicket:OnActivate()
     self.entityCount = 0
     self.spawnsRemaining = self.Properties.SpawnCount
-    self.translation = Vector3(0, 0, 0)
+    self.translation = Vector3(0.0, 0.0, 0.0)
     self.spawnableMediator = SpawnableScriptMediator()
     self.ticket = self.spawnableMediator:CreateSpawnTicket(self.Properties.Prefab)
     self.spawnableNotificationsBusHandler = SpawnableScriptNotificationsBus.Connect(self, self.ticket:GetId())
@@ -46,7 +46,7 @@ end
 function MultipleSpawnsFromSingleTicket:Spawn()
     self.spawnsRemaining = self.spawnsRemaining - 1
     self.translation = self.translation + self.Properties.Offset
-    self.spawnableMediator:SpawnAndParentAndTransform(self.ticket, self.entityId, self.translation, Vector3(0,0,0), 1.0 )
+    self.spawnableMediator:SpawnAndParentAndTransform(self.ticket, self.entityId, self.translation, Vector3(0.0, 0.0, 0.0), 1.0 )
 end
 
 return MultipleSpawnsFromSingleTicket

@@ -85,7 +85,7 @@ namespace PhysX
         void ClearHeightfield();
         void InitStaticRigidBody(const AZ::Transform& baseTransform);
 
-        void UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection);
+        void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
     private:
         //! Helper class to manage the spawned physics update jobs.

@@ -77,7 +77,6 @@ namespace CommandSystem
         RegisterCommand(new CommandPlayMotion());
         RegisterCommand(new CommandAdjustMotionInstance());
         RegisterCommand(new CommandAdjustDefaultPlayBackInfo());
-        RegisterCommand(new CommandStopMotionInstances());
         RegisterCommand(new CommandStopAllMotionInstances());
         RegisterCommand(aznew CommandAdjustMotion());
 
