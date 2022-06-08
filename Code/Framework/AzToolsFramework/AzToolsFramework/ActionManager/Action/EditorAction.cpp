@@ -96,6 +96,11 @@ namespace AzToolsFramework
     {
         m_iconPath = AZStd::move(iconPath);
         RetrieveIconFromPath();
+
+        if (!m_icon.isNull())
+        {
+            m_action->setIcon(m_icon);
+        }
     }
 
     QAction* EditorAction::GetAction()
