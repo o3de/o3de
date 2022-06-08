@@ -44,7 +44,7 @@ def check_selected_bone_names():
                     if not check_re.match(pb.name):
                         # If any in the ARMATURE are named invalid return will fail.
                         return False
-            
+                      
 def selected_hierarchy_and_rig_animation():
     """!
     This function will check to see if an animation armature rig has been selected.
