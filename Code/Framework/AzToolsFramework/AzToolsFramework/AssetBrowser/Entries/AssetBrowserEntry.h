@@ -129,6 +129,8 @@ namespace AzToolsFramework
             void SetThumbnailKey(SharedThumbnailKey thumbnailKey);
             virtual SharedThumbnailKey CreateThumbnailKey() = 0;
 
+            void SetFileData(AZ::IO::PathView filename, AZ::IO::PathView extension);
+
         protected:
             AZStd::string m_name;
             QString m_displayName;

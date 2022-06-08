@@ -8,14 +8,19 @@
 
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <QMimeData>
+#include <QFileInfo>
+#include <QThread>
+#include <QApplication>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
@@ -183,12 +188,44 @@ namespace AzToolsFramework
                 return QVariant::fromValue(item);
             }
 
+            if (role == Qt::EditRole)
+            {
+                const AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                QString displayFileName = item->GetDisplayName();
+                QString baseFileName = QFileInfo(displayFileName).baseName();
+                return baseFileName;
+            }
+
             return QVariant();
+        }
+
+        bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
+        {
+            using namespace AZ::IO;
+            AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+            Path oldPath = item->GetFullPath();
+            PathView extension = oldPath.Extension();
+            PathView newFile = value.toString().toUtf8().data();
+            Path newPath = oldPath;
+            newPath.ReplaceFilename(newFile);
+            newPath.ReplaceExtension(extension);
+            using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+            SCCommandBus::Broadcast(
+                &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
+                [this, index, item, newFile, extension](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                {
+                    if (success)
+                    {
+                        item->SetFileData(newFile, extension);
+                        emit dataChanged(index, index);
+                    }
+                });
+            return false;
         }
 
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
-            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 
             if (index.isValid())
             {

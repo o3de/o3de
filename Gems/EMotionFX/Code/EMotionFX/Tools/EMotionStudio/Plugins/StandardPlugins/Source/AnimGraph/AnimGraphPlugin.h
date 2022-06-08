@@ -226,6 +226,7 @@ namespace EMStudio
 
         void SetActionFilter(const AnimGraphActionFilter& actionFilter);
         const AnimGraphActionFilter& GetActionFilter() const;
+        void FileOpen(AZStd::string filename);
 
     private:
         enum EDockWindowOptionFlag
