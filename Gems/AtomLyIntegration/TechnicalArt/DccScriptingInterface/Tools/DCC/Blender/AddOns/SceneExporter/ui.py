@@ -48,7 +48,7 @@ class WikiButton(bpy.types.Operator):
         return{'FINISHED'}
 class ExportFiles(bpy.types.Operator):
     """!
-    This function will send to selected GLB to an O3DE Project Path.
+    This function will send to selected mesh to an O3DE Project Path.
     """
     bl_idname = "vin.o3defilexport"
     bl_label = "SENDFILES"
@@ -75,10 +75,7 @@ class ExportFiles(bpy.types.Operator):
         if len(selected_name) > 1:
             if bpy.types.Scene.multi_file_export_o3de:
                 for obj_name in selected_name:
-                    active_selection = bpy.context.scene.objects[obj_name]
-                    bpy.ops.object.select_all(action='DESELECT')
-                    bpy.context.view_layer.objects.active = active_selection
-                    active_selection.select_set(True)
+                    bpy.data.objects[obj_name].select_set(True)
                     # Remove some nasty invalid char
                     file_name = re.sub(r'\W+', '', obj_name)
                     # Export file
@@ -263,6 +260,8 @@ class O3deTools(Panel):
         o3de_projects, engine_is_installed = o3de_utils.LookatEngineManifest()
         # Validate a selection
         valid_selection, selected_name = utils.check_selected()
+        # Validate selection bone names if any
+        bone_names = utils.check_selected_bone_names()
 
         if engine_is_installed: # Checks to see if O3DE is installed
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
@@ -330,6 +329,12 @@ class O3deTools(Panel):
             elif not bpy.types.Scene.export_good_o3de:
                 export_files_row.enabled = False
                 export_ready_row.label(text='Not Ready for Export.')
+            elif not valid_selection:
+                export_files_row.enabled = False
+                export_ready_row.label(text='Nothing Selected.')
+            elif bone_names == False:
+                export_files_row.enabled = False
+                export_ready_row.label(text='Invalid Char in Bone Names.')
             else:
                 export_files_row.enabled = True
                 
