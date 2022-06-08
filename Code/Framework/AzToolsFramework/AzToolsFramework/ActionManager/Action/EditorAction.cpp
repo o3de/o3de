@@ -16,15 +16,17 @@ namespace AzToolsFramework
         AZStd::string name,
         AZStd::string description,
         AZStd::string category,
+        AZStd::string iconPath,
         AZStd::function<void()> handler,
-        AZStd::function<bool()> updateCallback
-        )
+        AZStd::function<bool()> checkStateCallback)
         : m_identifier(AZStd::move(identifier))
         , m_name(AZStd::move(name))
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
+        , m_iconPath(AZStd::move(iconPath))
     {
-        m_action = new QAction(m_name.c_str(), nullptr);
+        RetrieveIconFromPath();
+        m_action = new QAction(m_icon, m_name.c_str(), nullptr);
 
         QObject::connect(
             m_action, &QAction::triggered, parentWidget,
@@ -34,15 +36,15 @@ namespace AzToolsFramework
             }
         );
 
-        if (updateCallback)
+        if (checkStateCallback)
         {
             m_action->setCheckable(true);
-            m_updateCallback = AZStd::move(updateCallback);
+            m_checkStateCallback = AZStd::move(checkStateCallback);
 
             // Trigger it to set the starting value correctly.
-            m_action->setChecked(m_updateCallback());
+            m_action->setChecked(m_checkStateCallback());
 
-            AZStd::function<bool()> callbackCopy = m_updateCallback;
+            AZStd::function<bool()> callbackCopy = m_checkStateCallback;
 
             // Trigger the update after the handler is called.
             QObject::connect(
@@ -55,6 +57,47 @@ namespace AzToolsFramework
         }
     }
 
+    const AZStd::string& EditorAction::GetName()
+    {
+        return m_name;
+    }
+
+    void EditorAction::SetName(AZStd::string name)
+    {
+        m_name = AZStd::move(name);
+    }
+
+    const AZStd::string& EditorAction::GetDescription()
+    {
+        return m_description;
+    }
+
+    void EditorAction::SetDescription(AZStd::string description)
+    {
+        m_description = AZStd::move(description);
+    }
+
+    const AZStd::string& EditorAction::GetCategory()
+    {
+        return m_category;
+    }
+
+    void EditorAction::SetCategory(AZStd::string category)
+    {
+        m_category = AZStd::move(category);
+    }
+
+    const AZStd::string& EditorAction::GetIconPath()
+    {
+        return m_iconPath;
+    }
+
+    void EditorAction::SetIconPath(AZStd::string iconPath)
+    {
+        m_iconPath = AZStd::move(iconPath);
+        RetrieveIconFromPath();
+    }
+
     QAction* EditorAction::GetAction()
     {
         // Update the action to ensure it is visualized correctly.
@@ -62,19 +105,30 @@ namespace AzToolsFramework
 
         return m_action;
     }
-    
+
     void EditorAction::Update()
     {
-        if (m_updateCallback)
+        if (m_checkStateCallback)
         {
             // Refresh checkable action value.
-            m_action->setChecked(m_updateCallback());
+            m_action->setChecked(m_checkStateCallback());
         }
     }
-    
+
     bool EditorAction::IsCheckable()
     {
         return m_action->isCheckable();
+    }
+
+    void EditorAction::RetrieveIconFromPath()
+    {
+        m_icon = QIcon(m_iconPath.c_str());
+
+        // If no icon was found at path, clear the path variable.
+        if (m_icon.isNull())
+        {
+            m_iconPath.clear();
+        }
     }
 
 } // namespace AzToolsFramework
