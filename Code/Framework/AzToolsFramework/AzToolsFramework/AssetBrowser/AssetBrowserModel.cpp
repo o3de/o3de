@@ -16,6 +16,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <QMimeData>
 #include <QFileInfo>
@@ -206,6 +207,10 @@ namespace AzToolsFramework
             Path oldPath = item->GetFullPath();
             PathView extension = oldPath.Extension();
             PathView newFile = value.toString().toUtf8().data();
+            if (newFile.Native().empty() || !AzQtComponents::FileDialog::IsValidFileName(newFile.Native().data()))
+            {
+                return false;
+            }
             Path newPath = oldPath;
             newPath.ReplaceFilename(newFile);
             newPath.ReplaceExtension(extension);
