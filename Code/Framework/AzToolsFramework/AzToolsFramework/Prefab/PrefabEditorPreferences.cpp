@@ -9,21 +9,21 @@
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-namespace AzToolsFramework
+namespace AzToolsFramework::prefab
 {
     static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
-    bool IsHotReloadEnabled()
+    bool IsHotReloadingEnabled()
     {
-        bool isHotReloadEnabled = false;
+        bool isHotReloadingEnabled = false;
 
-        // Retrieve new setting
+        
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(isHotReloadEnabled, HotReloadToggleKey);
+            registry->Get(isHotReloadingEnabled, HotReloadToggleKey);
         }
 
-        return isHotReloadEnabled;
+        return isHotReloadingEnabled;
     }
 
-} // namespace AzToolsFramework
+} //namespace AzToolsFramework::prefab

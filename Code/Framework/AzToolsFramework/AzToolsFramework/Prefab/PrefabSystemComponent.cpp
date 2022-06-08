@@ -13,16 +13,15 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzCore/Utils/Utils.h>
 
 namespace AzToolsFramework
 {
@@ -42,7 +41,7 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::IsHotReloadEnabled())
+            if (AzToolsFramework::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusConnect();
             }
@@ -51,9 +50,9 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::IsHotReloadEnabled())
+            if (AzToolsFramework::IsHotReloadingEnabled())
             {
-                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+                AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             }
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
@@ -177,15 +176,13 @@ namespace AzToolsFramework
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
             if (found != m_templateFilePathToIdMap.end())
             {
-                AZ_Error("Prefab", false, "File changed", relativePath.c_str());
                 m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
             }
-            return;
         }
         void PrefabSystemComponent::SourceFileRemoved(
             AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
-            AZ_Error("Prefab", false, "File removed", relativePath.c_str());
+           //TODO notify user when file is removed for next steps
         }
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {

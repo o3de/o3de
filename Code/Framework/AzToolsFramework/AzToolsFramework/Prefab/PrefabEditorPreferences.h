@@ -10,6 +10,6 @@
 
 namespace AzToolsFramework
 {
-    bool IsHotReloadEnabled();
+    bool IsHotReloadingEnabled();
 
 } // namespace AzToolsFramework
