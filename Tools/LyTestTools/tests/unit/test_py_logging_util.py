@@ -50,7 +50,9 @@ class TestTerminateLogging(object):
 
 class TestInitializeLogging(object):
 
-    @mock.patch("logging.getLogger", scope='module')
+    @mock.patch("logging.getLogger", scope='function')
+    @mock.patch("logging.StreamHandler", mock.MagicMock())
+    @mock.patch("logging.FileHandler", mock.MagicMock())
     def test_InitializeLogging_AddHandlerCalled_CalledThrice(self, mock_get_logger):
         dummy_log_path = "dummy_log_path"
         dummy_info_path = "dummy_info_path"
@@ -62,15 +64,16 @@ class TestInitializeLogging(object):
         assert mock_add_handler.call_count == 3
         py_logging_util.terminate_logging()
 
-
-    @mock.patch("logging.getLogger", scope='module')
+    @mock.patch("logging.getLogger", scope='function')
+    @mock.patch("logging.FileHandler", mock.MagicMock())
     def test_InitializeLogging_CheckLoggerCalled_LoggerCalledOnce(self, mock_get_logger):
         dummy_log_path = "dummy_path"
         dummy_info_path = "dummy_path"
         py_logging_util.initialize_logging(dummy_info_path, dummy_log_path)
         mock_get_logger.assert_called_once()
 
-    @mock.patch("logging.getLogger", scope='module')
+    @mock.patch("logging.getLogger", scope='function')
+    @mock.patch("logging.FileHandler", mock.MagicMock())
     def test_InitializeLogging_SetLogLevelValidArgs_ValidArgsPassed(self, mock_get_logger):
         dummy_log_path = "dummy_path"
         dummy_info_path = "dummy_path"
@@ -78,6 +81,7 @@ class TestInitializeLogging(object):
         py_logging_util.initialize_logging(dummy_info_path, dummy_log_path)
         mock_setLevel.assert_called_with(10)  # logging.DEBUG = 10
 
+    @mock.patch("logging.FileHandler", mock.MagicMock())
     def test_InitializeLogging_CheckHandlerInitialized_HandlerNotNone(self):
         dummy_log_path = "dummy_path"
         dummy_info_path = "dummy_path"
@@ -86,7 +90,8 @@ class TestInitializeLogging(object):
         assert py_logging_util._info_file_handler is not None
         assert py_logging_util._stream_handler is not None
 
-    @mock.patch("logging.StreamHandler.setFormatter", scope='module')
+    @mock.patch("logging.StreamHandler.setFormatter", scope='function')
+    @mock.patch("logging.FileHandler", mock.MagicMock())
     def test_InitializeLogging_CheckFormatting_HandlerFormattingIsCorrect(self,mock_stream_handler_formatter):
         dummy_log_path = "dummy_path"
         dummy_info_path = "dummy_path"
