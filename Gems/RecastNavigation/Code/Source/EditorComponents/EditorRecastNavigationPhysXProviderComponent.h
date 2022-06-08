@@ -12,13 +12,14 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Components/RecastNavigationPhysXProviderComponent.h>
 #include <Misc/RecastNavigationPhysXProviderComponentController.h>
+#include <ToolsComponents/EditorComponentAdapter.h>
 
 namespace RecastNavigation
 {
     //! Editor version of @RecastNavigationPhysXProviderComponent
     class EditorRecastNavigationPhysXProviderComponent final
         : public AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationPhysXProviderComponentController,
-                RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderConfig>
+                                                                      RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderConfig>
     {
     public:
         using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationPhysXProviderComponentController, RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderConfig>;

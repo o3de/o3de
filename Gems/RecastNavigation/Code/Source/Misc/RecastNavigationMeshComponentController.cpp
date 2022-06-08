@@ -8,16 +8,24 @@
 
 #include "RecastProcessing.h"
 
+#include <DetourDebugDraw.h>
 #include <DetourNavMeshBuilder.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <Misc/RecastNavigationMeshComponentController.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
 
 AZ_DEFINE_BUDGET(Navigation);
 
+AZ_CVAR(
+    bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "If enabled, draw debug visual information about a navigation mesh");
+AZ_CVAR(
+    float, cl_navmesh_debugRadius, 25.f, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Limit debug draw to within a specified distance from the active camera");
 AZ_CVAR(
     AZ::u32, bg_navmesh_threads, 2, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Number of threads to use to process tiles for each RecastNavigationMeshComponentController");

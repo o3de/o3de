@@ -8,23 +8,8 @@
 
 #include "RecastNavigationMeshComponent.h"
 
-#include <DetourDebugDraw.h>
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Debug/Budget.h>
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Preprocessor/CodeGen.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Components/CameraBus.h>
-#include <RecastNavigation/RecastNavigationProviderBus.h>
-
-AZ_CVAR(
-    bool, cl_navmesh_debug, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If enabled, draw debug visual information about a navigation mesh");
-AZ_CVAR(
-    float, cl_navmesh_debugRadius, 25.f, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Limit debug draw to within a specified distance from the active camera");
-
-AZ_DECLARE_BUDGET(Navigation);
 
 namespace RecastNavigation
 {
