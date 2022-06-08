@@ -46,6 +46,32 @@ namespace AzToolsFramework
         }
     }
 
+    void DPELayout::setExpanderShown(bool shouldShow)
+    {
+        if (m_showExpander != shouldShow)
+        {
+            m_showExpander = shouldShow;
+            update();
+        }
+    }
+
+    void DPELayout::setExpanded(bool expanded)
+    {
+        if (m_expanded != expanded)
+        {
+            m_expanded = expanded;
+            if (m_expanderWidget)
+            {
+                Qt::CheckState newCheckState = (expanded ? Qt::Checked : Qt::Unchecked);
+                if (m_expanderWidget->checkState() != newCheckState)
+                {
+                    m_expanderWidget->setCheckState(newCheckState);
+                }
+            }
+            emit expanderChanged(expanded);
+        }
+    }
+
     QSize DPELayout::sizeHint() const
     {
         int cumulativeWidth = 0;
@@ -109,8 +135,9 @@ namespace AzToolsFramework
                 if (!m_expanderWidget)
                 {
                     m_expanderWidget = new QCheckBox(parentWidget());
+                    m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
                     AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
-                    connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::expanderChanged);
+                    connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
                 }
                 m_expanderWidget->move(itemGeometry.topLeft());
                 m_expanderWidget->show();
@@ -132,6 +159,11 @@ namespace AzToolsFramework
     Qt::Orientations DPELayout::expandingDirections() const
     {
         return Qt::Vertical | Qt::Horizontal;
+    }
+
+    void DPELayout::onCheckstateChanged(int expanderState)
+    {
+        setExpanded(expanderState == Qt::Checked);
     }
 
     // space to leave for expander, whether it's there or not
@@ -156,6 +188,7 @@ namespace AzToolsFramework
     {
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
     }
 
     DPERowWidget::~DPERowWidget()
@@ -215,6 +248,8 @@ namespace AzToolsFramework
             }
             m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, newRow);
             GetDPE()->AddAfterWidget(priorWidgetInLayout, newRow);
+
+            m_columnLayout->setExpanderShown(true);
 
             // if it's a row, recursively populate the children from the DOM array in the passed value
             newRow->SetValueFromDom(childValue);
@@ -314,6 +349,7 @@ namespace AzToolsFramework
             if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
+                // <apm> check if the last row widget child was removed, and hide the expander if necessary
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
                 delete *childIterator; // deleting the widget also automatically removes it from the layout
                 m_domOrderedChildren.erase(childIterator);
@@ -403,6 +439,27 @@ namespace AzToolsFramework
             lastDescendant = this;
         }
         return lastDescendant;
+    }
+
+    void DPERowWidget::onExpanderChanged(int expanderState)
+    {
+        if (expanderState == Qt::Unchecked)
+        {
+            // expander is collapsed; search for row children and delete them,
+            // which will zero out their QPointer in the deque, and remove them from the layout
+            for (auto currentChild : m_domOrderedChildren)
+            {
+                DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(currentChild.data());
+                if (rowChild)
+                {
+                    delete rowChild;
+                }
+            }
+        }
+        else
+        {
+            // <apm>
+        }
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)

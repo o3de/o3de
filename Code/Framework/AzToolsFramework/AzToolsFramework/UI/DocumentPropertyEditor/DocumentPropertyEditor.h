@@ -32,12 +32,14 @@ namespace AzToolsFramework
         Q_OBJECT
 
         signals:
-        void expanderChanged(int newState);
+        void expanderChanged(bool expanded);
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
         virtual ~DPELayout();
+        void setExpanderShown(bool shouldShow);
+        void setExpanded(bool expanded);
 
         // QLayout overrides
         QSize sizeHint() const override;
@@ -45,11 +47,15 @@ namespace AzToolsFramework
         void setGeometry(const QRect& rect) override;
         Qt::Orientations expandingDirections() const override;
 
+    protected slots:
+        void onCheckstateChanged(int expanderState);
+
     protected:
         DocumentPropertyEditor* GetDPE() const;
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
-        bool m_showExpander = true;
+        bool m_showExpander = false;
+        bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
 
         static int s_expanderWidth; //!< width to leave for expander, whether it's there or not
@@ -75,12 +81,15 @@ namespace AzToolsFramework
         //! returns the last descendent of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
+    protected slots:
+        void onExpanderChanged(int expanderState);
+
     protected:
         DocumentPropertyEditor* GetDPE();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
 
-        QBoxLayout* m_columnLayout = nullptr;
+        DPELayout* m_columnLayout = nullptr;
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QPointer<QWidget>> m_domOrderedChildren;
