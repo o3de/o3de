@@ -25,6 +25,9 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
+    //! Helper method to retrieve an absolute path given a relative source path
+    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath, const AZStd::string& productExtension);
+
     //! A control for representing an AZ::IO::Path field with
     //! a BrowseEdit whose popup button triggers a native
     //! file dialog.

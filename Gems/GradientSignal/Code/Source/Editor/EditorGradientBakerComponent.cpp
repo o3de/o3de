@@ -8,13 +8,10 @@
 
 #include "EditorGradientBakerComponent.h"
 
+#include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 
 #include <OpenImageIO/imageio.h>
-
-// TODO: Remove these after refactoring out the logic in PropertyFilePathCtrl
-#include <AzCore/IO/SystemFile.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace GradientSignal
 {
@@ -219,59 +216,8 @@ namespace GradientSignal
             return;
         }
 
-        // TODO: Move this logic out of PropertyFilePathCtrl so we can re-use it
-        AZStd::string relativePath = m_configuration.m_outputImagePath.Native() + ".streamingimage";
-        AZStd::string fullPath;
-        bool fullPathIsValid = false;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            fullPathIsValid, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath,
-            fullPath);
-
-        // The full source path asset exists on disk, so use that as
-        // the pre-selected file when the user opens the file picker dialog
-        QString outputFilePath;
-        AZ::IO::Path fullPathIO;
-        if (fullPathIsValid)
-        {
-            fullPathIO = fullPath;
-            outputFilePath = QString::fromUtf8(fullPath.c_str(), static_cast<int>(fullPath.size()));
-        }
-        // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet
-        // So we need to find it by searching in the asset safe folders
-        else
-        {
-            bool assetSafeFoldersRetrieved = false;
-            AZStd::vector<AZStd::string> assetSafeFolders;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                assetSafeFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetSafeFolders);
-
-            if (!assetSafeFoldersRetrieved)
-            {
-                AZ_Error("PropertyFilePathCtrl", false, "Could not acquire a list of asset safe folders from the database.");
-                return;
-            }
-
-            // Find an asset safe folder that already has the existing parent-path that
-            // would satisfy the relative path currently stored.
-            //
-            // Example: m_currentFilePath has a value of "my/sub/folder/image.png"
-            // It will keep looking until it finds an asset safe folder that has
-            // a matching sub-directory structure that exists:
-            //      <ASSET_SAFE_FOLDER>/my/sub/folder
-            for (AZ::IO::Path candidateFilePath : assetSafeFolders)
-            {
-                candidateFilePath /= m_configuration.m_outputImagePath;
-
-                if (AZ::IO::FixedMaxPath parentCandidatePath = candidateFilePath.ParentPath();
-                    AZ::IO::SystemFile::IsDirectory(parentCandidatePath.c_str()))
-                {
-                    fullPathIO = candidateFilePath;
-                    outputFilePath = QString::fromUtf8(candidateFilePath.c_str(), static_cast<int>(candidateFilePath.Native().size()));
-                    break;
-                }
-            }
-        }
-        // END TODO
+        // Get the absolute path for our stored relative path
+        AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath, ".streamingimage");
 
         // Get the actual resolution of our image.  Note that this might be non-square, depending on how the window is sized.
         const int imageResolutionX = aznumeric_cast<int>(m_configuration.m_outputResolution.GetX());
