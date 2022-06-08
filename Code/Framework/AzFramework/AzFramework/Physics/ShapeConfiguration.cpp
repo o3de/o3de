@@ -398,7 +398,7 @@ namespace Physics
         AZ_Assert(
             (numColumns == 0) || (numColumns >= 2),
             "A non-empty heightfield must have at least 2 column vertices to define 1 square. Num columns provided: %d", numColumns);
-        m_numColumns = numColumns;
+        m_numColumns = aznumeric_cast<uint32_t>(numColumns);
 
         if (m_numColumns < 2)
         {
@@ -416,7 +416,7 @@ namespace Physics
         AZ_Assert(
             (numRows == 0) || (numRows >= 2),
             "A non-empty heightfield must have at least 2 row vertices to define 1 square. Num rows provided: %d", numRows);
-        m_numRows = numRows;
+        m_numRows = aznumeric_cast<uint32_t>(numRows);
 
         if (m_numRows < 2)
         {

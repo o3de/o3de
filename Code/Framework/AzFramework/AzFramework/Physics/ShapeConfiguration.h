@@ -251,9 +251,9 @@ namespace Physics
         //! The number of meters between each heightfield sample in x and y.
         AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.
-        size_t m_numColumns{ 0 };
+        uint32_t m_numColumns{ 0 };
         //! The number of rows in the heightfield sample grid.
-        size_t m_numRows{ 0 };
+        uint32_t m_numRows{ 0 };
         //! The minimum and maximum heights that can be used by this heightfield.
         //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
         float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};
