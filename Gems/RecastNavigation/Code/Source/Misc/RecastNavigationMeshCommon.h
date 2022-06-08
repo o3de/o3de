@@ -22,9 +22,6 @@
 
 namespace RecastNavigation
 {
-    static constexpr const char* const RecastNavigationMeshComponentTypeId = "{a281f314-a525-4c05-876d-17eb632f14b4}";
-    static constexpr const char* const EditorRecastNavigationMeshComponentTypeId = "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}";
-
     //! Common navigation mesh logic for Recast navigation components. Recommended use is as a base class.
     //! The method provided are not thread-safe. Use the mutex from @m_navObject to synchronize as necessary at the higher level.
     class RecastNavigationMeshComponentController

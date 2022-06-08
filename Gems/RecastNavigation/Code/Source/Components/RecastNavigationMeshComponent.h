@@ -13,6 +13,7 @@
 #include <AzFramework/Components/ComponentAdapter.h>
 #include <Misc/RecastNavigationMeshCommon.h>
 #include <Misc/RecastNavigationMeshConfig.h>
+#include <RecastNavigation/RecastNavigationConstants.h>
 
 namespace RecastNavigation
 {

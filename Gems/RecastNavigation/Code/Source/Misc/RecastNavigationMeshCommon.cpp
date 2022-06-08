@@ -257,6 +257,7 @@ namespace RecastNavigation
 
     RecastNavigationMeshComponentController::RecastNavigationMeshComponentController(const RecastNavigationMeshConfig& config)
         : m_meshConfig(config)
+        , m_taskExecutor(bg_navmesh_threads)
     {
     }
 

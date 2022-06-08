@@ -12,7 +12,9 @@
 #include <AzCore/Math/Aabb.h>
 #include <Misc/RecastHelpers.h>
 #include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <Misc/RecastNavigationPhysXProviderConfig.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
+#include <RecastNavigation/RecastNavigationConstants.h>
 
 namespace RecastNavigation
 {
@@ -24,38 +26,14 @@ namespace RecastNavigation
     //!       If you do, in your component's @GetProvidedServices specify AZ_CRC_CE("RecastNavigationProviderService"),
     //!       which is needed by @RecastNavigationMeshComponent.
     class RecastNavigationPhysXProviderComponent final
-        : public AZ::Component
-        , public RecastNavigationProviderRequestBus::Handler
-        , public RecastNavigationPhysXProviderCommon
+        : public AzFramework::Components::ComponentAdapter<RecastNavigationPhysXProviderComponentController, RecastNavigationPhysXProviderConfig>
     {
+        using BaseClass = AzFramework::Components::ComponentAdapter<RecastNavigationPhysXProviderComponentController, RecastNavigationPhysXProviderConfig>;
     public:
-        AZ_COMPONENT(RecastNavigationPhysXProviderComponent, "{4bc92ce5-e179-4985-b0b1-f22bff6006dd}");
-
-        //! Can be invoked by the Editor version of this component to pass the configuration.
-        //! @param debugDrawInputData if enabled, debug draw is enabled to show the triangles collected
-        explicit RecastNavigationPhysXProviderComponent(bool debugDrawInputData = false);
+        AZ_COMPONENT(RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderComponentTypeId, BaseClass);
+        RecastNavigationPhysXProviderComponent() = default;
+        explicit RecastNavigationPhysXProviderComponent(const RecastNavigationPhysXProviderConfig& config);
+        
         static void Reflect(AZ::ReflectContext* context);
-
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-
-        //! AZ::Component overrides ...
-        //! @{
-        void Activate() override;
-        void Deactivate() override;
-        //! @}
-
-        //! RecastNavigationProviderRequestBus overrides ...
-        //! @{
-        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
-        void CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
-        AZ::Aabb GetWorldBounds() const override;
-        int GetNumberOfTiles(float tileSize) const override;
-        //! @}
-
-    private:
-        //! If enabled, debug draw is enabled to show the triangles collected in the Editor scene for the navigation mesh
-        bool m_debugDrawInputData = false;
     };
 } // namespace RecastNavigation

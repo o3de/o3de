@@ -17,90 +17,29 @@ AZ_DECLARE_BUDGET(Navigation);
 
 namespace RecastNavigation
 {
-    RecastNavigationPhysXProviderComponent::RecastNavigationPhysXProviderComponent(bool debugDrawInputData)
-        : RecastNavigationPhysXProviderCommon(false)
-        , m_debugDrawInputData(debugDrawInputData)
+    RecastNavigationPhysXProviderComponent::RecastNavigationPhysXProviderComponent(const RecastNavigationPhysXProviderConfig& config)
+        : BaseClass(config)
     {
     }
 
     void RecastNavigationPhysXProviderComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        BaseClass::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationPhysXProviderComponent, AZ::Component>()
-                ->Field("Debug Draw Input Data" , &RecastNavigationPhysXProviderComponent::m_debugDrawInputData)
-                ->Version(1)
-                ;
+            serializeContext->Class<RecastNavigationPhysXProviderComponent, BaseClass>()
+                ->Version(1);
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->ConstantProperty("RecastNavigationPhysXProviderComponentTypeId",
+                BehaviorConstant(AZ::Uuid(RecastNavigationPhysXProviderComponentTypeId)))
+                ->Attribute(AZ::Script::Attributes::Module, "navigation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
+
             behaviorContext->Class<RecastNavigationPhysXProviderComponent>()->RequestBus("RecastNavigationProviderRequestBus");
         }
-    }
-
-    void RecastNavigationPhysXProviderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        // This can be used to depend on this specific component.
-        provided.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponent"));
-        // Or be able to satisfy requirements of @RecastNavigationMeshComponent, as one of geometry data providers for the navigation mesh.
-        provided.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
-    }
-
-    void RecastNavigationPhysXProviderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponent"));
-        incompatible.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
-    }
-
-    void RecastNavigationPhysXProviderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        required.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
-    }
-
-    void RecastNavigationPhysXProviderComponent::Activate()
-    {
-        RecastNavigationPhysXProviderCommon::OnActivate();
-        RecastNavigationProviderRequestBus::Handler::BusConnect(GetEntityId());
-    }
-
-    void RecastNavigationPhysXProviderComponent::Deactivate()
-    {
-        RecastNavigationPhysXProviderCommon::OnDeactivate();
-        RecastNavigationProviderRequestBus::Handler::BusDisconnect();
-    }
-
-    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponent::CollectGeometry(
-        float tileSize, float borderSize)
-    {
-        // Blocking call.
-        return CollectGeometryImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData);
-    }
-
-    void RecastNavigationPhysXProviderComponent::CollectGeometryAsync(
-        float tileSize,
-        float borderSize,
-        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
-    {
-        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), m_debugDrawInputData, AZStd::move(tileCallback));
-    }
-
-    AZ::Aabb RecastNavigationPhysXProviderComponent::GetWorldBounds() const
-    {
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, GetEntityId(),
-            &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        return worldBounds;
-    }
-
-    int RecastNavigationPhysXProviderComponent::GetNumberOfTiles(float tileSize) const
-    {
-        const AZ::Aabb worldVolume = GetWorldBounds();
-
-        const AZ::Vector3 extents = worldVolume.GetExtents();
-        const int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
-        const int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
-
-        return tilesAlongX * tilesAlongY;
     }
 } // namespace RecastNavigation

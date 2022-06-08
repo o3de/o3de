@@ -16,6 +16,7 @@
 #include <Misc/RecastNavigationMeshConfig.h>
 #include <ToolsComponents/EditorComponentAdapter.h>
 #include <ToolsComponents/EditorComponentBase.h>
+#include <RecastNavigation/RecastNavigationConstants.h>
 
 namespace RecastNavigation
 {

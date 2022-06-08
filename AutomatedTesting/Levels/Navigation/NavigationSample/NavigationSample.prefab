@@ -91,9 +91,13 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 150648677486490270
                 },
-                "Component_[4379622669632667618]": {
+                "Component_[15323900898074703000]": {
+                    "$type": "EditorRecastNavigationMeshComponent",
+                    "Id": 15323900898074703000
+                },
+                "Component_[15394602174106695453]": {
                     "$type": "EditorRecastNavigationPhysXProviderComponent",
-                    "Id": 4379622669632667618
+                    "Id": 15394602174106695453
                 },
                 "Component_[490606516712228268]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -122,10 +126,6 @@
                 "Component_[8930479850758593776]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 8930479850758593776
-                },
-                "Component_[9045427951041584082]": {
-                    "$type": "EditorRecastNavigationMeshComponent",
-                    "Id": 9045427951041584082
                 },
                 "Component_[9462087624732730280]": {
                     "$type": "EditorEntitySortComponent",

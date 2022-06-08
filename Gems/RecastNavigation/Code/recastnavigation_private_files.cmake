@@ -27,6 +27,8 @@ set(FILES
     Source/Misc/RecastNavigationMeshConfig.cpp
     Source/Misc/RecastNavigationPhysXProviderCommon.h
     Source/Misc/RecastNavigationPhysXProviderCommon.cpp
+    Source/Misc/RecastNavigationPhysXProviderConfig.h
+    Source/Misc/RecastNavigationPhysXProviderConfig.cpp
     Source/Misc/RecastProcessing.h
     Source/Misc/RecastProcessing.cpp
     Source/Misc/RecastSmartPointer.h
