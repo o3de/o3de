@@ -36,6 +36,10 @@ namespace RecastNavigation
         explicit RecastNavigationPhysXProviderComponent(bool debugDrawInputData = false);
         static void Reflect(AZ::ReflectContext* context);
 
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
         //! AZ::Component overrides ...
         //! @{
         void Activate() override;

@@ -122,7 +122,7 @@ namespace RecastNavigationTests
             e.CreateComponent<RecastNavigation::RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
             e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
-            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{}, true);
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{});
         }
 
         void SetupNavigationMesh()
@@ -626,10 +626,10 @@ namespace RecastNavigationTests
     /*
      * Just for code coverage!
      */
-    TEST_F(NavigationTest, RecastNavigationMeshCommonTests)
+    TEST_F(NavigationTest, RecastNavigationMeshComponentControllerTests)
     {
-        RecastNavigation::RecastNavigationMeshCommon common;
-        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshCommon"), 0);
+        RecastNavigation::RecastNavigationMeshComponentController common;
+        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshComponentController"), 0);
     }
 
     /*

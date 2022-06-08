@@ -39,6 +39,25 @@ namespace RecastNavigation
         }
     }
 
+    void RecastNavigationPhysXProviderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        // This can be used to depend on this specific component.
+        provided.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponent"));
+        // Or be able to satisfy requirements of @RecastNavigationMeshComponent, as one of geometry data providers for the navigation mesh.
+        provided.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
+    }
+
+    void RecastNavigationPhysXProviderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponent"));
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
+    }
+
+    void RecastNavigationPhysXProviderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+    }
+
     void RecastNavigationPhysXProviderComponent::Activate()
     {
         RecastNavigationPhysXProviderCommon::OnActivate();
