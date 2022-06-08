@@ -757,6 +757,7 @@ namespace AzFramework
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
                 ->Event("IsStaticTransform", &AZ::TransformBus::Events::IsStaticTransform)
+                ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ;
 
             behaviorContext->Constant("TransformComponentTypeId", BehaviorConstant(AZ::TransformComponentTypeId));
