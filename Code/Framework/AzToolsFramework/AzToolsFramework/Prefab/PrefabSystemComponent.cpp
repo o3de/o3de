@@ -19,40 +19,13 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        namespace Internal
-        {
-            struct PrefabPublicNotificationBusHandler final
-                : public PrefabPublicNotificationBus::Handler
-                , public AZ::BehaviorEBusHandler
-            {
-                AZ_EBUS_BEHAVIOR_BINDER(PrefabPublicNotificationBusHandler, "{F6F8C610-F780-45FA-8DC2-742E3FA427B5}", AZ::SystemAllocator,
-                    OnPrefabInstancePropagationBegin,
-                    OnPrefabInstancePropagationEnd,
-                    OnRootPrefabInstanceLoaded);
-
-                void OnPrefabInstancePropagationBegin() override
-                {
-                    Call(FN_OnPrefabInstancePropagationBegin);
-                }
-
-                void OnPrefabInstancePropagationEnd() override
-                {
-                    Call(FN_OnPrefabInstancePropagationEnd);
-                }
-
-                void OnRootPrefabInstanceLoaded() override
-                {
-                    Call(FN_OnRootPrefabInstanceLoaded);
-                }
-            };
-        }
-
         void PrefabSystemComponent::Init()
         {
         }
@@ -99,7 +72,6 @@ namespace AzToolsFramework
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-
                 behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
@@ -111,7 +83,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
-                    ->Handler<Internal::PrefabPublicNotificationBusHandler>()
+                    ->Handler<PrefabPublicNotificationHandler>()
                     ->Event("OnPrefabInstancePropagationBegin", &PrefabPublicNotifications::OnPrefabInstancePropagationBegin)
                     ->Event("OnPrefabInstancePropagationEnd", &PrefabPublicNotifications::OnPrefabInstancePropagationEnd)
                     ->Event("OnRootPrefabInstanceLoaded", &PrefabPublicNotifications::OnRootPrefabInstanceLoaded)
