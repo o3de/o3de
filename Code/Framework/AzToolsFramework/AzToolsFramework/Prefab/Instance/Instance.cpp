@@ -216,7 +216,7 @@ namespace AzToolsFramework
                         "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
                         "This happens when the entity is not correctly removed from all the prefab system entity maps.",
                         entityId.ToString().c_str(), m_templateSourcePath.c_str());
-				}
+                }
             }
 
             return DetachEntity(entityAliasToRemove);
