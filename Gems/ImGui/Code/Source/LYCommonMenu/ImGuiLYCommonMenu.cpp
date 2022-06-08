@@ -313,7 +313,7 @@ namespace ImGui
                         for (int i = 0; i < levelNames.size(); i++)
                         {
                             bool isNetworked = networkedLevelNames.contains(levelNames[i]);
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Networked)":"").c_str()))
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
                             {
                                 AZ::TickBus::QueueFunction(
                                     [lvlSystem, levelNames, i]()
