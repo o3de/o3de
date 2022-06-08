@@ -25,7 +25,7 @@ namespace AzToolsFramework
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
     {
-        RetrieveIconFromPath();
+        UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), nullptr);
 
         QObject::connect(
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         }
     }
 
-    const AZStd::string& EditorAction::GetName()
+    const AZStd::string& EditorAction::GetName() const
     {
         return m_name;
     }
@@ -67,7 +67,7 @@ namespace AzToolsFramework
         m_name = AZStd::move(name);
     }
 
-    const AZStd::string& EditorAction::GetDescription()
+    const AZStd::string& EditorAction::GetDescription() const
     {
         return m_description;
     }
@@ -77,7 +77,7 @@ namespace AzToolsFramework
         m_description = AZStd::move(description);
     }
 
-    const AZStd::string& EditorAction::GetCategory()
+    const AZStd::string& EditorAction::GetCategory() const
     {
         return m_category;
     }
@@ -87,7 +87,7 @@ namespace AzToolsFramework
         m_category = AZStd::move(category);
     }
 
-    const AZStd::string& EditorAction::GetIconPath()
+    const AZStd::string& EditorAction::GetIconPath() const
     {
         return m_iconPath;
     }
@@ -95,7 +95,7 @@ namespace AzToolsFramework
     void EditorAction::SetIconPath(AZStd::string iconPath)
     {
         m_iconPath = AZStd::move(iconPath);
-        RetrieveIconFromPath();
+        UpdateIconFromPath();
 
         if (!m_icon.isNull())
         {
@@ -125,7 +125,7 @@ namespace AzToolsFramework
         return m_action->isCheckable();
     }
 
-    void EditorAction::RetrieveIconFromPath()
+    void EditorAction::UpdateIconFromPath()
     {
         m_icon = QIcon(m_iconPath.c_str());
 

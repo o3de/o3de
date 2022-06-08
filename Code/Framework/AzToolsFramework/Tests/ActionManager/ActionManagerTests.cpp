@@ -117,7 +117,7 @@ namespace UnitTest
 
         auto outcome = m_actionManagerInterface->GetActionName("o3de.action.test");
         EXPECT_TRUE(outcome.IsSuccess());
-        EXPECT_EQ(outcome.GetValue(), "Test Name");
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Name"));
     }
 
     TEST_F(ActionManagerFixture, SetActionName)
@@ -132,7 +132,7 @@ namespace UnitTest
         EXPECT_TRUE(setOutcome.IsSuccess());
 
         auto getOutcome = m_actionManagerInterface->GetActionName("o3de.action.test");
-        EXPECT_EQ(getOutcome.GetValue(), "Correct Name");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Name"));
     }
 
     TEST_F(ActionManagerFixture, GetActionDescription)
@@ -145,7 +145,7 @@ namespace UnitTest
 
         auto outcome = m_actionManagerInterface->GetActionDescription("o3de.action.test");
         EXPECT_TRUE(outcome.IsSuccess());
-        EXPECT_EQ(outcome.GetValue(), "Test Description");
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Description"));
     }
 
     TEST_F(ActionManagerFixture, SetActionDescription)
@@ -160,7 +160,7 @@ namespace UnitTest
         EXPECT_TRUE(setOutcome.IsSuccess());
 
         auto getOutcome = m_actionManagerInterface->GetActionDescription("o3de.action.test");
-        EXPECT_EQ(getOutcome.GetValue(), "Correct Description");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Description"));
     }
 
     TEST_F(ActionManagerFixture, GetActionCategory)
@@ -173,7 +173,7 @@ namespace UnitTest
 
         auto outcome = m_actionManagerInterface->GetActionCategory("o3de.action.test");
         EXPECT_TRUE(outcome.IsSuccess());
-        EXPECT_EQ(outcome.GetValue(), "Test Category");
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Category"));
     }
 
     TEST_F(ActionManagerFixture, SetActionCategory)
@@ -188,7 +188,7 @@ namespace UnitTest
         EXPECT_TRUE(setOutcome.IsSuccess());
 
         auto getOutcome = m_actionManagerInterface->GetActionCategory("o3de.action.test");
-        EXPECT_EQ(getOutcome.GetValue(), "Correct Category");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Category"));
     }
 
     TEST_F(ActionManagerFixture, VerifyIncorrectIconPath)

@@ -31,13 +31,13 @@ namespace AzToolsFramework
             AZStd::function<bool()> checkStateCallback = nullptr
         );
 
-        const AZStd::string& GetName();
+        const AZStd::string& GetName() const;
         void SetName(AZStd::string name);
-        const AZStd::string& GetDescription();
+        const AZStd::string& GetDescription() const;
         void SetDescription(AZStd::string description);
-        const AZStd::string& GetCategory();
+        const AZStd::string& GetCategory() const;
         void SetCategory(AZStd::string category);
-        const AZStd::string& GetIconPath();
+        const AZStd::string& GetIconPath() const;
         void SetIconPath(AZStd::string iconPath);
 
         //! Returns the pointer to the action.
@@ -50,7 +50,7 @@ namespace AzToolsFramework
         bool IsCheckable();
 
     private:
-        void RetrieveIconFromPath();
+        void UpdateIconFromPath();
 
         QAction* m_action = nullptr;
         QIcon m_icon;
