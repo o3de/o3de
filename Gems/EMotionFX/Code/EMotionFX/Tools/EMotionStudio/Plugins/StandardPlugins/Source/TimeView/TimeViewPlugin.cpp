@@ -15,8 +15,6 @@
 #include "TimeInfoWidget.h"
 #include "TimeViewToolBar.h"
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetsWidget.h>
@@ -79,9 +77,7 @@ namespace EMStudio
         m_eventEmitterNode   = nullptr;
 
         m_mainWidget                 = nullptr;
-        m_motionWindowPlugin         = nullptr;
         m_motionEventsPlugin         = nullptr;
-        m_motionListWindow           = nullptr;
         m_motionSetPlugin           = nullptr;
         m_motion                     = nullptr;
 
@@ -137,11 +133,6 @@ namespace EMStudio
     // on before remove plugin
     void TimeViewPlugin::OnBeforeRemovePlugin(uint32 classID)
     {
-        if (classID == MotionWindowPlugin::CLASS_ID)
-        {
-            m_motionWindowPlugin = nullptr;
-        }
-
         if (classID == MotionEventsPlugin::CLASS_ID)
         {
             m_motionEventsPlugin = nullptr;
@@ -820,11 +811,11 @@ namespace EMStudio
                 }
                 else
                 {
-                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                    if (motionInstances.size() == 1 &&
-                        motionInstances[0]->GetMotion() == m_motion)
+                    const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                    if (selectedMotionInstances.size() == 1 &&
+                        selectedMotionInstances[0]->GetMotion() == m_motion)
                     {
-                        EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                        EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                         if (!AZ::IsClose(aznumeric_cast<float>(m_curTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
                         {
                             newCurrentTime = motionInstance->GetCurrentTime();
@@ -1065,20 +1056,10 @@ namespace EMStudio
 
     void TimeViewPlugin::ValidatePluginLinks()
     {
-        m_motionWindowPlugin = nullptr;
-        m_motionListWindow = nullptr;
         m_motionEventsPlugin = nullptr;
         m_motionSetPlugin = nullptr;
 
         EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
-
-        EMStudioPlugin* motionBasePlugin = pluginManager->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        if (motionBasePlugin)
-        {
-            m_motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-            m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
-            connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
-        }
 
         EMStudioPlugin* motionSetBasePlugin = pluginManager->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
         if (motionSetBasePlugin)
@@ -1099,8 +1080,8 @@ namespace EMStudio
     void TimeViewPlugin::MotionSelectionChanged()
     {
         ValidatePluginLinks();
-        if ((m_motionListWindow && m_motionListWindow->isVisible()) ||
-            (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() && m_motionSetPlugin->GetMotionSetWindow()->isVisible()))
+        if (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() &&
+            m_motionSetPlugin->GetMotionSetWindow()->isVisible())
         {
             SetMode(TimeViewMode::Motion);
         }
