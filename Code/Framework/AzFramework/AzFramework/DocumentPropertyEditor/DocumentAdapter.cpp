@@ -90,7 +90,7 @@ namespace AZ::DocumentPropertyEditor
                 Dom::Utils::ComparisonParameters comparisonParameters;
                 // Because callbacks are often dynamically generated as opaque attributes, only do type-level comparison when validating patches
                 comparisonParameters.m_treatOpaqueValuesOfSameTypeAsEqual = true;
-                const bool valuesMatch = Dom::Utils::DeepCompareIsEqual(actualContents, m_cachedContents, comparisonParameters);
+                [[maybe_unused]] const bool valuesMatch = Dom::Utils::DeepCompareIsEqual(actualContents, m_cachedContents, comparisonParameters);
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }

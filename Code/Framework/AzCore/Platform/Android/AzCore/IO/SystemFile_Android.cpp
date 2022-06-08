@@ -107,17 +107,14 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
         CreatePath(m_fileName.c_str());
     }
 
-    int errorCode = 0;
     if (isApkFile)
     {
         AZ::u64 size = 0;
         m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
-        errorCode = EACCES; // general error when a file can't be opened from inside the APK
     }
     else
     {
         m_handle = fopen(m_fileName.c_str(), openMode);
-        errorCode = errno;
     }
 
     if (m_handle == PlatformSpecificInvalidHandle)

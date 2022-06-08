@@ -12,6 +12,7 @@
 
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
@@ -61,6 +62,7 @@ namespace EMotionFX
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
         AZ::UserSettingsComponent,
+        Physics::MaterialSystemComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent
     >;

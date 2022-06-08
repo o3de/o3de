@@ -85,9 +85,6 @@ namespace PhysX
         m_cacheOutdated = false;
     }
 
-    // BaseColliderComponent
-    const Physics::ColliderConfiguration BaseColliderComponent::s_defaultColliderConfig = Physics::ColliderConfiguration();
-
     void BaseColliderComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

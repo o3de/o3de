@@ -18,6 +18,8 @@ set(FILES
     ActionManager/Action/EditorActionContext.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
+    ActionManager/Menu/EditorMenuBar.cpp
+    ActionManager/Menu/EditorMenuBar.h
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
     ActionManager/Menu/MenuManagerInterface.h
@@ -761,6 +763,7 @@ set(FILES
     Prefab/Spawnable/PrefabDocument.h
     Prefab/Spawnable/PrefabDocument.inl
     Prefab/Spawnable/PrefabDocument.cpp
+    Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h
@@ -825,6 +828,10 @@ set(FILES
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.cpp
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

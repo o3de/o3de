@@ -138,13 +138,13 @@ namespace AZ::DocumentPropertyEditor
         }
 
         //! Converts a value of this attribute's type to a DOM value.
-        Dom::Value ValueToDom(const AttributeType& attribute) const
+        virtual Dom::Value ValueToDom(const AttributeType& attribute) const
         {
             return Dom::Utils::ValueFromType(attribute);
         }
 
         //! Converts a DOM value to an instance of AttributeType.
-        AZStd::optional<AttributeType> DomToValue(const Dom::Value& value) const
+        virtual AZStd::optional<AttributeType> DomToValue(const Dom::Value& value) const
         {
             return Dom::Utils::ValueToType<AttributeType>(value);
         }
@@ -213,6 +213,37 @@ namespace AZ::DocumentPropertyEditor
         AZStd::fixed_string<128> m_name;
     };
 
+    //! Represents an attribute that should resolve to an AZ::TypeId with a string representation.
+    class TypeIdAttributeDefinition final : public AttributeDefinition<AZ::TypeId>
+    {
+    public:
+        explicit constexpr TypeIdAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<AZ::TypeId>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const AZ::TypeId& attribute) const override;
+        AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+    };
+
+    //! Represents an attribute that should be stored as an AZ::Name, but legacy attribute instances (AZ::Attribute*)
+    //! will marshal the attribute as a CRC32 that needs to be translated back into a Name.
+    class NamedCrcAttributeDefinition final : public AttributeDefinition<AZ::Name>
+    {
+    public:
+        explicit constexpr NamedCrcAttributeDefinition(AZStd::string_view name)
+            : AttributeDefinition<AZ::Name>(name)
+        {
+        }
+
+        Dom::Value ValueToDom(const AZ::Name& attribute) const override;
+        AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
+    };
+
     //! Defines a callback applicable to a Node.
     //! Callbacks are stored as attributes and accept an AZStd::function<CallbackSignature> stored as an
     //! opaque value. Callbacks can be validated and invokved from DOM values using InvokeOnDomValue
@@ -241,6 +272,22 @@ namespace AZ::DocumentPropertyEditor
             {
                 return AZ::Success(fn(args...));
             }
+
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            {
+                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(attribute->DomInvoke(instance, args)));
+            }
+
+            static FunctionType InvokeOnAttribute(void* instance, AZ::Attribute* attribute)
+            {
+                return [instance, attribute](Args... args)
+                {
+                    AttributeReader reader(instance, attribute);
+                    Result result;
+                    reader.Read<Result>(result, args...);
+                    return result;
+                };
+            }
         };
 
         template<typename... Args>
@@ -253,6 +300,21 @@ namespace AZ::DocumentPropertyEditor
                 fn(args...);
                 return AZ::Success();
             }
+
+            static ResultType InvokeOnAttribute(AZ::Attribute* attribute, void* instance, const Dom::Value& args)
+            {
+                attribute->DomInvoke(instance, args);
+                return AZ::Success();
+            }
+
+            static FunctionType InvokeOnAttribute(void* instance, AZ::Attribute* attribute)
+            {
+                return [instance, attribute](Args... args)
+                {
+                    AttributeReader reader(instance, attribute);
+                    reader.Invoke<void>(args...);
+                };
+            }
         };
 
         using CallbackTraits = Traits<CallbackSignature>;
@@ -262,6 +324,33 @@ namespace AZ::DocumentPropertyEditor
         template<typename... Args>
         typename CallbackTraits::ResultType InvokeOnDomValue(const AZ::Dom::Value& value, Args... args) const
         {
+            // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
+            if (value.IsObject())
+            {
+                auto typeField = value.FindMember(AZ::Attribute::s_typeField);
+                if (typeField != value.MemberEnd() && typeField->second.IsString() &&
+                    typeField->second.GetString() == Attribute::s_typeName)
+                {
+                    void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
+                    AZ::Attribute* attribute = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
+
+                    if (!attribute->IsInvokable())
+                    {
+                        return AZ::Failure<ErrorType>("Attempted to invoke a non-invokable attribute");
+                    }
+
+                    AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
+                    (marshalledArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(args)), ...);
+
+                    if (!attribute->CanDomInvoke(marshalledArguments))
+                    {
+                        return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
+                    }
+
+                    return CallbackTraits::InvokeOnAttribute(attribute, instance, marshalledArguments);
+                }
+            }
+
             if (!value.IsOpaqueValue())
             {
                 return AZ::Failure<ErrorType>("This property is holding a value and not a callback");
@@ -287,6 +376,33 @@ namespace AZ::DocumentPropertyEditor
                 return AZ::Failure<ErrorType>(ErrorType::format("No \"%s\" attribute found", this->m_name.data()));
             }
             return this->InvokeOnDomValue(attributeIt->second, args...);
+        }
+
+        AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override
+        {
+            // If we're already an attribute, return a non-owning shared_ptr
+            if (value.IsOpaqueValue() && value.GetOpaqueValue().is<AZ::Attribute*>())
+            {
+                AZ::Attribute* attribute = AZStd::any_cast<AZ::Attribute*>(value.GetOpaqueValue());
+                return AZStd::shared_ptr<AZ::Attribute>(
+                    attribute,
+                    [](AZ::Attribute*)
+                    {
+                    });
+            }
+
+            // Otherwise, try to store an AZStd::function with our signature
+            auto function = Dom::Utils::ValueToType<FunctionType>(value);
+            if (!function.has_value())
+            {
+                return {};
+            }
+            return AZStd::make_shared<AZ::AttributeInvocable<CallbackSignature>>(function.value());
+        }
+
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
+        {
+            return attribute->GetAsDomValue(instance);
         }
     };
 } // namespace AZ::DocumentPropertyEditor

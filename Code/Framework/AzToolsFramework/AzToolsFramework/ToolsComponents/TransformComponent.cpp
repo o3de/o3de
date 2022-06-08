@@ -285,7 +285,12 @@ namespace AzToolsFramework
                 const auto& localTM = GetLocalTM();
                 const auto worldTM = world * localTM;
 
-                UpdateCachedWorldTransform();
+                if (m_parentEntityId.IsValid())
+                {
+                    // If the parent entity is invalid, the world position of the entity shouldn't be cached as this can be later used in
+                    // calculating the local translation of the entity when activated under a different parent.
+                    UpdateCachedWorldTransform();
+                }
 
                 AZ::TransformNotificationBus::Event(
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);

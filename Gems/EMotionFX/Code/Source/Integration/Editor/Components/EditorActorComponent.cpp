@@ -301,6 +301,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::DestroyActorInstance()
         {
+            DetachFromEntity();
+
             if (m_actorInstance)
             {
                 ActorComponentNotificationBus::Event(
@@ -979,6 +981,9 @@ namespace EMotionFX
                 }
             }
 
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
             {
@@ -1052,8 +1057,8 @@ namespace EMotionFX
             if (attachedTo)
             {
                 attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
             }
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
         }
 
         void EditorActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
@@ -1083,6 +1088,9 @@ namespace EMotionFX
             {
                 return;
             }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
 
             DetachFromEntity();
             Attachment* attachmentSkin = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());

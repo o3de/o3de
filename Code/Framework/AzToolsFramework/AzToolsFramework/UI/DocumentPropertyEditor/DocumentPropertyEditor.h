@@ -10,14 +10,14 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
-#include <AzCore/Interface/Interface.h>
-#include <QFrame>
 
-class QVBoxLayout;
-class QHBoxLayout;
+#include <QHBoxLayout>
+#include <QPointer>
+#include <QFrame>
 
 #endif // Q_MOC_RUN
 
@@ -25,12 +25,30 @@ namespace AzToolsFramework
 {
     class DocumentPropertyEditor;
 
+    class DPELayout : public QHBoxLayout
+    {
+        // todo: look into caching and QLayoutItem::invalidate()
+    public:
+        DPELayout(int depth, QWidget* parentWidget = nullptr);
+
+        // QLayout overrides
+        QSize sizeHint() const override;
+        QSize minimumSize() const override;
+        void setGeometry(const QRect& rect) override;
+        Qt::Orientations expandingDirections() const override;
+
+    protected:
+        DocumentPropertyEditor* GetDPE() const;
+
+        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+    };
+
     class DPERowWidget : public QWidget
     {
         Q_OBJECT
 
     public:
-        DPERowWidget(QWidget* parentWidget);
+        explicit DPERowWidget(int depth, QWidget* parentWidget = nullptr);
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
@@ -42,14 +60,17 @@ namespace AzToolsFramework
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
 
+        //! returns the last descendent of this row in its own layout
+        DPERowWidget* GetLastDescendantInLayout();
+
     protected:
         DocumentPropertyEditor* GetDPE();
 
-        QVBoxLayout* m_mainLayout = nullptr;
-        QHBoxLayout* m_columnLayout = nullptr;
-        QVBoxLayout* m_childRowLayout = nullptr;
+        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        QBoxLayout* m_columnLayout = nullptr;
 
-        AZStd::deque<QWidget*> m_domOrderedChildren;
+        //! widget children in DOM specified order; mix of row and column widgets
+        AZStd::deque<QPointer<QWidget>> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
@@ -62,12 +83,16 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
 
-        DocumentPropertyEditor(QWidget* parentWidget);
+        explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
 
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
-        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter() { return m_adapter; }
+        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter()
+        {
+            return m_adapter;
+        }
+        void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
@@ -79,5 +104,8 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
+        QVBoxLayout* m_layout = nullptr;
+
+        AZStd::deque<QPointer<DPERowWidget>> m_domOrderedRows;
     };
 } // namespace AzToolsFramework
