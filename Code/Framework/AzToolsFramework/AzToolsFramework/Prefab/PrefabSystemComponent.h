@@ -381,10 +381,10 @@ namespace AzToolsFramework
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
 
-            //! Called by the AssetProcessor when a source of an asset has been removed.
+            //! Called by the AssetProcessor when a source file has been changed.
             void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
 
-            //! Called by the AssetProcessor when a source of an asset has been removed.
+            //! Called by the AssetProcessor when a source file has been removed.
             void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
 
             // A container for mapping Templates to the Links they may propagate changes to.

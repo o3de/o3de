@@ -171,6 +171,7 @@ namespace AzToolsFramework
                 newInstance->SetTemplateId(newTemplateId);
             }
         }
+
         void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
@@ -179,11 +180,13 @@ namespace AzToolsFramework
                 m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
             }
         }
+
         void PrefabSystemComponent::SourceFileRemoved(
             AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
            //TODO notify user when file is removed for next steps
         }
+
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
             TemplateReference findTemplateResult = FindTemplate(templateId);
