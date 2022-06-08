@@ -196,25 +196,20 @@ namespace AssetProcessor
             AZStd::rtti_pointer_cast<const ProductAssetTreeItemData>(assetTreeItem->GetData());
         beginResetModel();
 
-        m_root.reset(new ProductDependencyTreeItem(AZStd::make_shared<ProductDependencyTreeItemData>("", "")));
+        ProductDependencyTreeItem* productDependencies =
+            new ProductDependencyTreeItem(ProductDependencyTreeItemData::MakeShared(productItemData->m_name, ""));
+        m_root.reset(productDependencies);
         m_trackedProductIds.clear();
-
-        ProductDependencyTreeItem* parentItem = m_root.get();
-
-        // Purposely don't put the product asset database name in, so the right click menu disables. No reason to go to the root object.
-        AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData = ProductDependencyTreeItemData::MakeShared(
-            productItemData->m_name, "");
-        ProductDependencyTreeItem* productDependenciesChild = parentItem->CreateChild(productDepTreeItemData);
-        createIndex(0, 0, productDependenciesChild);
+        createIndex(0, 0, productDependencies);
         m_trackedProductIds.insert(productItemData->m_databaseInfo.m_productID);
 
         switch (m_treeType)
         {
         case DependencyTreeType::Outgoing:
-            PopulateOutgoingProductDependencies(productDependenciesChild, productItemData->m_databaseInfo.m_productID);
+            PopulateOutgoingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID);
             break;
         case DependencyTreeType::Incoming:
-            PopulateIncomingProductDependencies(productDependenciesChild, productItemData->m_databaseInfo.m_productID);
+            PopulateIncomingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID);
             break;
         }
         endResetModel();

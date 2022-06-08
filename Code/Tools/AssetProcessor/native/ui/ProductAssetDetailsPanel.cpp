@@ -53,6 +53,7 @@ namespace AssetProcessor
         m_outgoingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Outgoing, this);
         m_ui->OutgoingProductDependenciesTreeView->setModel(m_outgoingDependencyTreeModel);
+        m_ui->OutgoingProductDependenciesTreeView->setRootIsDecorated(true);
         m_ui->OutgoingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_outgoingDependencyTreeModel,
@@ -61,6 +62,7 @@ namespace AssetProcessor
         m_incomingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Incoming, this);
         m_ui->IncomingProductDependenciesTreeView->setModel(m_incomingDependencyTreeModel);
+        m_ui->IncomingProductDependenciesTreeView->setRootIsDecorated(true);
         m_ui->IncomingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
@@ -91,12 +93,12 @@ namespace AssetProcessor
 
     void ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset()
     {
-        m_ui->IncomingProductDependenciesTreeView->expandToDepth(0);
+        //m_ui->IncomingProductDependenciesTreeView->expandToDepth(0);
     }
 
     void ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset()
     {
-        m_ui->OutgoingProductDependenciesTreeView->expandToDepth(0);
+        //m_ui->OutgoingProductDependenciesTreeView->expandToDepth(0);
     }
 
     void ProductAssetDetailsPanel::SetScanQueueEnabled(bool enabled)
