@@ -65,8 +65,10 @@ namespace AssetProcessor
         if (childItem)
         {
             QModelIndex index = createIndex(row, column, childItem);
-            Q_ASSERT(checkIndex(index));
-            return index;
+            if (checkIndex(index))
+            {
+                return index;
+            }
         }
         return QModelIndex();
     }
@@ -151,8 +153,11 @@ namespace AssetProcessor
             return QModelIndex();
         }
         QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
-        Q_ASSERT(checkIndex(parentIndex));
-        return parentIndex;
+        if (checkIndex(parentIndex))
+        {
+            return parentIndex;
+        }
+        return QModelIndex();
     }
 
     bool ProductDependencyTreeModel::hasChildren(const QModelIndex& parent) const
