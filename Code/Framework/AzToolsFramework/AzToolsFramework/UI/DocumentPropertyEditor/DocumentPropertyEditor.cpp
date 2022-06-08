@@ -10,10 +10,12 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QCheckBox>
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 namespace AzToolsFramework
 {
@@ -35,6 +37,13 @@ namespace AzToolsFramework
         : QHBoxLayout(parentWidget)
         , m_depth(depth)
     {
+    }
+    DPELayout::~DPELayout()
+    {
+        if (m_expanderWidget)
+        {
+            delete m_expanderWidget;
+        }
     }
 
     QSize DPELayout::sizeHint() const
@@ -94,6 +103,20 @@ namespace AzToolsFramework
             QRect itemGeometry(rect);
             itemGeometry.setRight(itemCount == 2 ? itemGeometry.width() - perItemWidth : perItemWidth);
             itemGeometry.setLeft(itemGeometry.left() + (m_depth * indentSize));
+
+            if (m_showExpander)
+            {
+                if (!m_expanderWidget)
+                {
+                    m_expanderWidget = new QCheckBox(parentWidget());
+                    AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
+                    connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::expanderChanged);
+                }
+                m_expanderWidget->move(itemGeometry.topLeft());
+                m_expanderWidget->show();
+            }
+
+            itemGeometry.setLeft(itemGeometry.left() + s_expanderWidth);
             itemAt(0)->setGeometry(itemGeometry);
 
             // iterate over the remaining items, laying them left to right
@@ -110,6 +133,9 @@ namespace AzToolsFramework
     {
         return Qt::Vertical | Qt::Horizontal;
     }
+
+    // space to leave for expander, whether it's there or not
+    int DPELayout::s_expanderWidth = 16;
 
     DocumentPropertyEditor* DPELayout::GetDPE() const
     {
@@ -380,9 +406,12 @@ namespace AzToolsFramework
     }
 
     DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
-        : QFrame(parentWidget)
+        : QScrollArea(parentWidget)
     {
-        m_layout = new QVBoxLayout(this);
+        QWidget* scrollSurface = new QWidget(this);
+        m_layout = new QVBoxLayout(scrollSurface);
+        setWidget(scrollSurface);
+        setWidgetResizable(true);
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()

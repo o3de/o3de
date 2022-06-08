@@ -237,9 +237,7 @@ int main(int argc, char** argv)
     // create a real DPE on the same adapter as the debug adapter for testing purposes
     AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
     dpeInstance->SetAdapter(adapter.get());
-    QScrollArea dpeScrollArea;
-    dpeScrollArea.setWidget(dpeInstance);
-    dpeScrollArea.show();
+    dpeInstance->show();
 
     return qtApp.exec();
 }

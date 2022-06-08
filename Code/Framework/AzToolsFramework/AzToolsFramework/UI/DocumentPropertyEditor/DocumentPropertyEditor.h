@@ -17,9 +17,11 @@
 
 #include <QHBoxLayout>
 #include <QPointer>
-#include <QFrame>
+#include <QScrollArea>
 
 #endif // Q_MOC_RUN
+
+class QCheckBox;
 
 namespace AzToolsFramework
 {
@@ -27,9 +29,15 @@ namespace AzToolsFramework
 
     class DPELayout : public QHBoxLayout
     {
+        Q_OBJECT
+
+        signals:
+        void expanderChanged(int newState);
+
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
+        virtual ~DPELayout();
 
         // QLayout overrides
         QSize sizeHint() const override;
@@ -41,6 +49,10 @@ namespace AzToolsFramework
         DocumentPropertyEditor* GetDPE() const;
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        bool m_showExpander = true;
+        QCheckBox* m_expanderWidget = nullptr;
+
+        static int s_expanderWidth; //!< width to leave for expander, whether it's there or not
     };
 
     class DPERowWidget : public QWidget
@@ -67,6 +79,7 @@ namespace AzToolsFramework
         DocumentPropertyEditor* GetDPE();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+
         QBoxLayout* m_columnLayout = nullptr;
 
         //! widget children in DOM specified order; mix of row and column widgets
@@ -76,7 +89,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
-    class DocumentPropertyEditor : public QFrame
+    class DocumentPropertyEditor : public QScrollArea
     {
         Q_OBJECT
 
