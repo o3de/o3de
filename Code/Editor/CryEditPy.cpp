@@ -99,6 +99,8 @@ namespace
 
     bool PyOpenLevel(const char* pLevelName)
     {
+        AZ_Printf("ViewBookmarkDebug", "PyOpenLevel\n");
+
         const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
         const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
@@ -235,6 +237,8 @@ namespace
 
     void PySetCurrentViewPosition(float x, float y, float z)
     {
+        AZ_Printf("ViewBookmarkDebug", "PySetCurrentViewPosition\n");
+
         auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
         if (viewportContextRequests)
         {
