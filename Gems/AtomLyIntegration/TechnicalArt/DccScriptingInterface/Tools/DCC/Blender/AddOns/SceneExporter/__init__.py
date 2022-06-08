@@ -13,19 +13,18 @@
 ##
 # @file main.py
 #
-# @brief The Blender O3DE Scene exporter is a convenience tool
-#  for one click exporter from Blender to O3DE.
+# @brief The Blender O3DE Scene exporter is a convenience tool for one click
+# exporter from Blender to O3DE.
 #
-# @section This DCCsi tool is non-destructive to your scene,
-# as it will export selected copies of your mesh and textures,
-# re-path texture links to your mesh during file export.
-# You can export selected static meshes or rigged animated
-# meshes within the capabilities of the .FBX format and O3DE
-# actor entity.
+# @section This DCCsi tool is non-destructive to your scene, as it will export
+# selected copies of your mesh and textures, re-path texture links to your mesh
+# during file export. You can export selected static meshes or rigged animated
+# meshes within the capabilities of the .FBX format and O3DE actor entity.
 #
-# You have options to export textures with the mesh,
-# or with the mesh within a sub folder ‘textures’.
-# This will work for Blender Scenes with or without packed textures.
+# You have options to export textures with the mesh, or with the mesh within
+# a sub folder ‘textures’. This will work for Blender Scenes with or without
+# packed textures.
+#
 # Hardware and Software Requirements:
 #
 # Support for Blender 3.+ Windows 10/11 64-bit version
@@ -70,7 +69,7 @@ def register():
     bpy.utils.register_class(ui.ExportOptionsListDropDown)
     bpy.utils.register_class(ui.AnimationOptionsListDropDown)
     bpy.types.Scene.export_file_name_o3de = bpy.props.StringProperty \
-    (
+        (
         name = "",
         description = "Export File Name",
         default = "o3de_export"
