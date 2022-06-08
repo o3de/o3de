@@ -28,20 +28,11 @@ namespace AzToolsFramework
                 OnPrefabInstancePropagationEnd,
                 OnRootPrefabInstanceLoaded);
 
-            void OnPrefabInstancePropagationBegin() override
-            {
-                Call(FN_OnPrefabInstancePropagationBegin);
-            }
+            static void Reflect(AZ::ReflectContext* context);
 
-            void OnPrefabInstancePropagationEnd() override
-            {
-                Call(FN_OnPrefabInstancePropagationEnd);
-            }
-
-            void OnRootPrefabInstanceLoaded() override
-            {
-                Call(FN_OnRootPrefabInstanceLoaded);
-            }
+            void OnPrefabInstancePropagationBegin() override;
+            void OnPrefabInstancePropagationEnd() override;
+            void OnRootPrefabInstanceLoaded() override;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

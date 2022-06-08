@@ -61,6 +61,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabPublicNotificationHandler::Reflect(context);
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
@@ -77,16 +78,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
                     ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString)
-                    ;
-
-                behaviorContext->EBus<PrefabPublicNotificationBus>("PrefabPublicNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Attribute(AZ::Script::Attributes::Module, "prefab")
-                    ->Handler<PrefabPublicNotificationHandler>()
-                    ->Event("OnPrefabInstancePropagationBegin", &PrefabPublicNotifications::OnPrefabInstancePropagationBegin)
-                    ->Event("OnPrefabInstancePropagationEnd", &PrefabPublicNotifications::OnPrefabInstancePropagationEnd)
-                    ->Event("OnRootPrefabInstanceLoaded", &PrefabPublicNotifications::OnRootPrefabInstanceLoaded)
                     ;
             }
 
