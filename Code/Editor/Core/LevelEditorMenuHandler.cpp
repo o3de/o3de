@@ -758,7 +758,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     layout->addWidget(lineEdit);
     containerWidget->setLayout(layout);
     containerWidget->setContentsMargins(2, 0, 2, 0);
-    lineEdit->setPlaceholderText(tr("Search documentation"));
+    lineEdit->setPlaceholderText(tr("Search documentation..."));
     lineEditSearchAction->setDefaultWidget(containerWidget);
 
     auto searchAction = [lineEdit]()
@@ -766,7 +766,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+                QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/"));
             }
             else
             {
@@ -775,7 +775,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
 
-                QUrl docSearchUrl("https://o3de.org/docs/");
+                QUrl docSearchUrl("https://www.o3de.org/search/");
                 QUrlQuery docSearchQuery;
                 docSearchQuery.addQueryItem("query", text);
                 docSearchUrl.setQuery(docSearchQuery);

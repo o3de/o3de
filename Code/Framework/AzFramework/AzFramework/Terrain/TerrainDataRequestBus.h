@@ -162,6 +162,9 @@ namespace AzFramework
             virtual AZ::Aabb GetTerrainAabb() const = 0;
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
 
+            // Returns true if any terrain area spawner intersects with the provided bounds
+            virtual bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const = 0;
+
             //! Returns terrains height in meters at location x,y.
             //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
             //!  a terrain HOLE then *terrainExistsPtr will become false, otherwise *terrainExistsPtr will become true.
