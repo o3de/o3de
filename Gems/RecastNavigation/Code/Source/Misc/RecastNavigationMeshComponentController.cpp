@@ -13,7 +13,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsScene.h>
-#include <Misc/RecastNavigationMeshCommon.h>
+#include <Misc/RecastNavigationMeshComponentController.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
 
 AZ_DEFINE_BUDGET(Navigation);
@@ -31,7 +31,7 @@ namespace RecastNavigation
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<RecastNavigationMeshComponentController>()
-                ->Field("Config", &RecastNavigationMeshComponentController::m_meshConfig)
+                ->Field("Configuration", &RecastNavigationMeshComponentController::m_configuration)
                 ->Version(1)
                 ;
         }
@@ -60,10 +60,9 @@ namespace RecastNavigation
         // Blocking call.
         RecastNavigationProviderRequestBus::EventResult(tiles, m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationProviderRequests::CollectGeometry,
-            m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize);
+            m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize);
 
         {
-
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
             {
                 if (tile->IsEmpty())
@@ -73,7 +72,7 @@ namespace RecastNavigation
 
                 // Given geometry create Recast tile structure.
                 NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
-                    m_meshConfig, m_context.get());
+                    m_configuration, m_context.get());
 
                 {
                     NavMeshQuery::LockGuard lock(*m_navObject);
@@ -102,7 +101,7 @@ namespace RecastNavigation
 
         RecastNavigationProviderRequestBus::Event(m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationProviderRequests::CollectGeometryAsync,
-            m_meshConfig.m_tileSize, aznumeric_cast<float>(m_meshConfig.m_borderSize) * m_meshConfig.m_cellSize,
+            m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
             [this](AZStd::shared_ptr<TileGeometry> tile)
             {
                 OnTileProcessedEvent(tile);
@@ -121,9 +120,9 @@ namespace RecastNavigation
 
         // It is safe to create the navigation mesh object now.
         // The actual navigation data will be passed at a later time.
-        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId(), m_meshConfig.m_tileSize);
+        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId(), m_configuration.m_tileSize);
 
-        if (cl_navmesh_debug || m_meshConfig.m_enableDebugDraw)
+        if (cl_navmesh_debug || m_configuration.m_enableDebugDraw)
         {
             m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
@@ -151,12 +150,12 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::SetConfiguration(const RecastNavigationMeshConfig& config)
     {
-        m_meshConfig = config;
+        m_configuration = config;
     }
 
     const RecastNavigationMeshConfig& RecastNavigationMeshComponentController::GetConfiguration() const
     {
-        return m_meshConfig;
+        return m_configuration;
     }
 
     void RecastNavigationMeshComponentController::OnSendNotificationTick()
@@ -168,7 +167,7 @@ namespace RecastNavigation
     {
         NavMeshQuery::LockGuard lock(*m_navObject);
 
-        if (lock.GetNavMesh() && (cl_navmesh_debug || m_meshConfig.m_enableDebugDraw))
+        if (lock.GetNavMesh() && (cl_navmesh_debug || m_configuration.m_enableDebugDraw))
         {
             AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();
             Camera::ActiveCameraRequestBus::BroadcastResult(cameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
@@ -180,7 +179,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::OnReceivedAllNewTiles()
     {
-        ReceivedAllNewTilesImpl(m_meshConfig, m_sendNotificationEvent);
+        ReceivedAllNewTilesImpl(m_configuration, m_sendNotificationEvent);
     }
 
     void RecastNavigationMeshComponentController::OnTileProcessedEvent(AZStd::shared_ptr<TileGeometry> tile)
@@ -204,11 +203,11 @@ namespace RecastNavigation
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create tile");
 
         RecastProcessing recast;
-        recast.vertices = geom->m_vertices.empty() ? nullptr : geom->m_vertices.front().m_xyz;
-        recast.vertexCount = static_cast<int>(geom->m_vertices.size());
-        recast.triangleData = geom->m_indices.empty() ? nullptr : &geom->m_indices[0];
-        recast.triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
-        recast.context = context;
+        recast.m_vertices = geom->m_vertices.empty() ? nullptr : geom->m_vertices.front().m_xyz;
+        recast.m_vertexCount = static_cast<int>(geom->m_vertices.size());
+        recast.m_triangleData = geom->m_indices.empty() ? nullptr : &geom->m_indices[0];
+        recast.m_triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
+        recast.m_context = context;
         
         // Step 1. Initialize build config.
         recast.InitializeMeshConfig(geom, meshConfig);
@@ -256,7 +255,7 @@ namespace RecastNavigation
     }
 
     RecastNavigationMeshComponentController::RecastNavigationMeshComponentController(const RecastNavigationMeshConfig& config)
-        : m_meshConfig(config)
+        : m_configuration(config)
         , m_taskExecutor(bg_navmesh_threads)
     {
     }

@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <Misc/RecastNavigationMeshCommon.h>
+#include <Misc/RecastNavigationMeshComponentController.h>
 #include <Misc/RecastNavigationMeshConfig.h>
 #include <RecastNavigation/RecastNavigationConstants.h>
 

@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Aabb.h>
 #include <Misc/RecastHelpers.h>
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <Misc/RecastNavigationPhysXProviderComponentController.h>
 #include <Misc/RecastNavigationPhysXProviderConfig.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
 #include <RecastNavigation/RecastNavigationConstants.h>

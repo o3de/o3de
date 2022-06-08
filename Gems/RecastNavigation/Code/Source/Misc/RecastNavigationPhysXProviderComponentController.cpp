@@ -12,7 +12,8 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <DebugDraw/DebugDrawBus.h>
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <Misc/RecastNavigationPhysXProviderComponentController.h>
 
 AZ_CVAR(
     bool, cl_navmesh_showInputData, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -74,7 +75,7 @@ namespace RecastNavigation
     void RecastNavigationPhysXProviderComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         m_entityComponentIdPair = entityComponentIdPair;
-        OnActivate();
+        m_shouldProcessTiles = true;
         RecastNavigationProviderRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
@@ -90,7 +91,13 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderComponentController::Deactivate()
     {
-        OnDeactivate();
+        m_shouldProcessTiles = false;
+        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        {
+            // If the tasks are still in progress, wait until the task graph is finished.
+            m_taskGraphEvent->Wait();
+        }
+
         RecastNavigationProviderRequestBus::Handler::BusDisconnect();
     }
 
@@ -126,21 +133,6 @@ namespace RecastNavigation
         const int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
 
         return tilesAlongX * tilesAlongY;
-    }
-
-    void RecastNavigationPhysXProviderComponentController::OnActivate()
-    {
-        m_shouldProcessTiles = true;
-    }
-
-    void RecastNavigationPhysXProviderComponentController::OnDeactivate()
-    {
-        m_shouldProcessTiles = false;
-        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
-        {
-            // If the tasks are still in progress, wait until the task graph is finished.
-            m_taskGraphEvent->Wait();
-        }
     }
 
     const char* RecastNavigationPhysXProviderComponentController::GetSceneName() const

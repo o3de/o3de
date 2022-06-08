@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -48,9 +49,6 @@ namespace RecastNavigation
         AZ::Aabb GetWorldBounds() const override;
         int GetNumberOfTiles(float tileSize) const override;
         //! @}
-
-        void OnActivate();
-        void OnDeactivate();
 
         //! A container of PhysX overlap scene hits (has PhysX colliders and their position/orientation).
         using QueryHits = AZStd::vector<AzPhysics::SceneQueryHit>;

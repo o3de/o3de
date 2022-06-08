@@ -9,14 +9,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/EBus/ScheduledEvent.h>
-#include <AzCore/Task/TaskGraph.h>
 #include <Components/RecastNavigationMeshComponent.h>
-#include <Misc/RecastNavigationMeshCommon.h>
+#include <Misc/RecastNavigationMeshComponentController.h>
 #include <Misc/RecastNavigationMeshConfig.h>
+#include <RecastNavigation/RecastNavigationConstants.h>
 #include <ToolsComponents/EditorComponentAdapter.h>
 #include <ToolsComponents/EditorComponentBase.h>
-#include <RecastNavigation/RecastNavigationConstants.h>
 
 namespace RecastNavigation
 {

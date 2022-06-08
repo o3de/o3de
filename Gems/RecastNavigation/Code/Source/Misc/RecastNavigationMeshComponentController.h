@@ -27,6 +27,7 @@ namespace RecastNavigation
     class RecastNavigationMeshComponentController
         : public RecastNavigationMeshRequestBus::Handler
     {
+        friend class EditorRecastNavigationMeshComponent;
     public:
         AZ_CLASS_ALLOCATOR(RecastNavigationMeshComponentController, AZ::SystemAllocator, 0);
         AZ_RTTI(RecastNavigationMeshComponentController, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
@@ -79,7 +80,7 @@ namespace RecastNavigation
         AZ::EntityComponentIdPair m_entityComponentIdPair;
 
         //! In-game navigation mesh configuration.
-        RecastNavigationMeshConfig m_meshConfig;
+        RecastNavigationMeshConfig m_configuration;
 
         void OnSendNotificationTick();
 

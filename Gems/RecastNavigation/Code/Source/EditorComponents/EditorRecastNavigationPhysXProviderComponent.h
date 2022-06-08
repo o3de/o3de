@@ -11,8 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Components/RecastNavigationPhysXProviderComponent.h>
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
-#include <RecastNavigation/RecastNavigationProviderBus.h>
+#include <Misc/RecastNavigationPhysXProviderComponentController.h>
 
 namespace RecastNavigation
 {

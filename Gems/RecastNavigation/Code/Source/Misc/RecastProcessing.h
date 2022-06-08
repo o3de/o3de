@@ -17,20 +17,20 @@ namespace RecastNavigation
 {
     struct RecastProcessing
     {
-        rcConfig config = {};
-        AZStd::vector<AZ::u8> trianglesAreas;
-        RecastPointer<rcHeightfield> solid;
-        RecastPointer<rcCompactHeightfield> compactHeightfield;
-        RecastPointer<rcContourSet> contourSet;
-        RecastPointer<rcPolyMesh> polyMesh;
-        RecastPointer<rcPolyMeshDetail> polyMeshDetail;
+        rcConfig m_config = {};
+        AZStd::vector<AZ::u8> m_trianglesAreas;
+        RecastPointer<rcHeightfield> m_solid;
+        RecastPointer<rcCompactHeightfield> m_compactHeightfield;
+        RecastPointer<rcContourSet> m_contourSet;
+        RecastPointer<rcPolyMesh> m_polyMesh;
+        RecastPointer<rcPolyMeshDetail> m_polyMeshDetail;
 
-        const float* vertices = nullptr;
-        int vertexCount = 0;
-        const int* triangleData = nullptr;
-        int triangleCount = 0;
+        const float* m_vertices = nullptr;
+        int m_vertexCount = 0;
+        const int* m_triangleData = nullptr;
+        int m_triangleCount = 0;
 
-        rcContext* context = nullptr;
+        rcContext* m_context = nullptr;
 
         void InitializeMeshConfig(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig);
 

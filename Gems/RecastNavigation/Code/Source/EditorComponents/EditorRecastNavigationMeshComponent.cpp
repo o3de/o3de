@@ -29,6 +29,14 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+
+                editContext->Class<RecastNavigationMeshComponentController>(
+                    "MeshComponentController", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationMeshComponentController::m_configuration, "Configuration", "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ;
             }
         }
 
