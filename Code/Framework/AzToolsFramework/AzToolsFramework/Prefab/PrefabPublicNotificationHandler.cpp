@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab

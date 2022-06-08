@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/RTTI/ReflectContext.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
