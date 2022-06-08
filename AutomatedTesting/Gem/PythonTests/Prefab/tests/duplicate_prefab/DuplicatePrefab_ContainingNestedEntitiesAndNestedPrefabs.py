@@ -18,7 +18,6 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     """
 
     from pathlib import Path
-    import copy
 
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
@@ -68,7 +67,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     nested_entities_root_on_instance = new_prefab.get_direct_child_entities()[0]
     nested_prefabs_root_container_entity_on_instance = new_prefab.get_direct_child_entities()[1]
-    if new_prefab.get_direct_child_entities()[0].get_name() != nested_entities_root_name:
+    if nested_entities_root_on_instance.get_name() != nested_entities_root_name:
         nested_entities_root_on_instance, nested_prefabs_root_container_entity_on_instance = \
             nested_prefabs_root_container_entity_on_instance, nested_entities_root_on_instance
 
