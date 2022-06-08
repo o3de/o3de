@@ -63,7 +63,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG   
+from azpy.constants import FRMT_LOG_LONG
 
 # these allow these ENVARs to be set externally
 # defaults can be overriden/forced here for development
@@ -105,7 +105,6 @@ os.environ[ENVAR_PATH_DCCSI_BLENDER_EXE] = PATH_DCCSI_BLENDER_EXE.as_posix()
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
 from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
 os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = DCCSI_BLENDER_PY_EXE.as_posix()
-
 # --- END -----------------------------------------------------------------
 
 
@@ -113,25 +112,25 @@ os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = DCCSI_BLENDER_PY_EXE.as_posix()
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline)"""    
+    """Run this file as main (external commandline)"""
     STR_CROSSBAR = f"{'-' * 74}"
-    
+
     if _DCCSI_GDEBUG:
         # override loglevel if runnign debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
-        
+
     # set up module logging
     #for handler in _logging.root.handlers[:]:
         #_logging.root.removeHandler(handler)
-        
+
     FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-    
+
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
-    
+
     _LOGGER = _logging.getLogger(_MODULENAME)
 
     _LOGGER.info(STR_CROSSBAR)
@@ -139,50 +138,50 @@ if __name__ == '__main__':
     _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
     _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
-    
+
     # commandline interface
     import argparse
     parser = argparse.ArgumentParser(
         description='O3DE DCCsi.Tools.DCC.Blender.start',
         epilog="Attempts to start Blender with the DCCsi and O3DE bootstrapping")
-    
+
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
-    
+
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables dev mode for early auto attaching debugger.')
-    
+
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
                         required=False,
                         default='WING',
                         help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
-    
+
     parser.add_argument('-be', '--blender-executable',
                         type=str,
                         required=False,
-                        default='Blender', 
+                        default='Blender',
                         help="Name of exe to start, options are: 'Blender', 'Launcher' (aka Blender-Launcher.exe),'Python' (blenders python) ")
-    
+
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
                         default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
-    
+
     args = parser.parse_args()
 
     # easy overrides
     if args.global_debug:
         _DCCSI_GDEBUG = True
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-        
+
     if args.developer_mode:
         _DCCSI_DEV_MODE = True
         attach_debugger()  # attempts to start debugger
@@ -190,25 +189,25 @@ if __name__ == '__main__':
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
         # To Do: implement debugger plugin pattern
-    
+
     if args.blender_executable:
         if args.blender_executable == 'Blender':
             _blender_exe = str(PATH_DCCSI_BLENDER_EXE.as_posix())
             subprocess.Popen(f'{_blender_exe}',
                              env=os.environ.copy(), shell=True)
-            
+
         elif args.blender_executable == 'Launcher':
             _LOGGER.warn(f'Not Implemented Yet')
-            
+
         elif args.blender_executable == 'Python':
-            _LOGGER.warn(f'Not Implemented Yet')    
-        
+            _LOGGER.warn(f'Not Implemented Yet')
+
         else:
             _LOGGER.error(f'Specified option {args.blender_executable}, is not supported!')
-        
+
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)
-    
+
     _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 
     if args.exit:
