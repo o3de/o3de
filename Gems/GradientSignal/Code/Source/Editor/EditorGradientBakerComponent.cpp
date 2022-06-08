@@ -379,13 +379,13 @@ namespace GradientSignal
                     {
                         int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
                         AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
-                        pixels[index] = value;
+                        pixels[index] = value; // R
 
                         if (channels == 4)
                         {
-                            pixels[index + 1] = value;
-                            pixels[index + 2] = value;
-                            pixels[index + 3] = std::numeric_limits<AZ::u8>::max();
+                            pixels[index + 1] = value; // G
+                            pixels[index + 2] = value; // B
+                            pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
                         }
                         break;
                     }
@@ -394,13 +394,13 @@ namespace GradientSignal
                         auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
                         int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
                         AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
-                        actualMem[index] = value;
+                        actualMem[index] = value; // R
 
                         if (channels == 4)
                         {
-                            actualMem[index + 1] = value;
-                            actualMem[index + 2] = value;
-                            actualMem[index + 3] = std::numeric_limits<AZ::u16>::max();
+                            actualMem[index + 1] = value; // G
+                            actualMem[index + 2] = value; // B
+                            actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
                         }
                         break;
                     }
@@ -408,13 +408,13 @@ namespace GradientSignal
                     {
                         auto actualMem = reinterpret_cast<float*>(pixels.data());
                         int index = (((centeringOffsetY + y) * imageResolutionX * channels) + (centeringOffsetX + x)) * channels;
-                        actualMem[index] = sample;
+                        actualMem[index] = sample; // R
 
                         if (channels == 4)
                         {
-                            actualMem[index + 1] = sample;
-                            actualMem[index + 2] = sample;
-                            actualMem[index + 3] = 1.0f;
+                            actualMem[index + 1] = sample; // G
+                            actualMem[index + 2] = sample; // B
+                            actualMem[index + 3] = 1.0f; // A
                         }
                         break;
                     }
