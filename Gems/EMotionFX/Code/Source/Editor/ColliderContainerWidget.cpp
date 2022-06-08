@@ -105,9 +105,9 @@ namespace EMotionFX
                 {
                     command->SetOldRotation(colliderConfig->m_rotation);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("MaterialSelection", 0xfebd6d15))
+                if (elementData->m_nameCrc == AZ_CRC_CE("MaterialSlots"))
                 {
-                    command->SetOldMaterial(colliderConfig->m_materialSelection);
+                    command->SetOldMaterialSlots(colliderConfig->m_materialSlots);
                 }
                 if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
                 {
@@ -208,9 +208,9 @@ namespace EMotionFX
                 {
                     command->SetRotation(colliderConfig->m_rotation);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("MaterialSelection", 0xfebd6d15))
+                if (elementData->m_nameCrc == AZ_CRC_CE("MaterialSlots"))
                 {
-                    command->SetMaterial(colliderConfig->m_materialSelection);
+                    command->SetMaterialSlots(colliderConfig->m_materialSlots);
                 }
                 if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
                 {

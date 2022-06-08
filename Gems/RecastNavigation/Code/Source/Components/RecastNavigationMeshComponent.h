@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include <DetourNavMesh.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <Misc/RecastNavigationMeshCommon.h>
 #include <Misc/RecastNavigationMeshConfig.h>
@@ -39,6 +37,7 @@ namespace RecastNavigation
         //! RecastNavigationRequestBus overrides ...
         //! @{
         void UpdateNavigationMeshBlockUntilCompleted() override;
+        void UpdateNavigationMeshAsync() override;
         AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() override;
         //! @}
 
@@ -49,17 +48,32 @@ namespace RecastNavigation
         //! @}
 
     private:
-        //! Tick event for the optional debug draw.
-        AZ::ScheduledEvent m_tickEvent{ [this]() { OnDebugDrawTick(); }, AZ::Name("RecastNavigationDebugViewTick")};
-
-        //! If debug draw was specified, then this call will be invoked every frame.
-        void OnDebugDrawTick();
 
         //! In-game navigation mesh configuration.
         RecastNavigationMeshConfig m_meshConfig;
 
         //! Debug draw option.
         bool m_showNavigationMesh = false;
+
+        void OnSendNotificationTick();
+
+        //! Tick event to notify on navigation mesh updates from the main thread.
+        //! This is often needed for script environment, such as Script Canvas.
+        AZ::ScheduledEvent m_sendNotificationEvent{ [this]() { OnSendNotificationTick(); }, AZ::Name("RecastNavigationMeshUpdated") };
+
+        //! If debug draw was specified, then this call will be invoked every frame.
+        void OnDebugDrawTick();
+
+        //! Tick event for the optional debug draw.
+        AZ::ScheduledEvent m_tickEvent{ [this]() { OnDebugDrawTick(); }, AZ::Name("RecastNavigationDebugViewTick") };
+
+        void OnReceivedAllNewTiles();
+
+        //! Tick event to notify on navigation mesh updates from the main thread.
+        //! This is often needed for script environment, such as Script Canvas.
+        AZ::ScheduledEvent m_receivedAllNewTilesEvent{ [this]() { OnReceivedAllNewTiles(); }, AZ::Name("RecastNavigationReceivedTiles") };
+
+        void OnTileProcessedEvent(AZStd::shared_ptr<TileGeometry> tile);
     };
 
 } // namespace RecastNavigation

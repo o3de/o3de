@@ -34,11 +34,6 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
-    namespace SceneSrgInputs
-    {
-        static const char* const TerrainWorldData("m_terrainWorldData");
-    }
-
     namespace TerrainSrgInputs
     {
         static const char* const Textures("m_textures");
@@ -68,9 +63,6 @@ namespace Terrain
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
         
-        m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
-        AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
-
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -121,7 +113,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainDataDestroyBegin()
     {
-        m_terrainBounds = AZ::Aabb::CreateNull();
+        m_zBounds = AZ::Vector2::CreateZero();
         m_dirtyRegion = AZ::Aabb::CreateNull();
     }
     
@@ -148,10 +140,16 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
-        if (m_terrainBounds != worldBounds || m_sampleSpacing != queryResolution)
+        AZ::Vector2 worldZBounds = AZ::Vector2
+        (
+            worldBounds.GetMin().GetZ(),
+            worldBounds.GetMax().GetZ()
+        );
+
+        if (m_zBounds != worldZBounds || m_sampleSpacing != queryResolution)
         {
             m_terrainBoundsNeedUpdate = true;
-            m_terrainBounds = worldBounds;
+            m_zBounds = worldZBounds;
             m_sampleSpacing = queryResolution;
         }
     }
@@ -294,7 +292,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
         
-        if (!m_terrainBounds.IsValid())
+        if (m_zBounds.IsZero())
         {
             return;
         }
@@ -352,8 +350,9 @@ namespace Terrain
             m_terrainBoundsNeedUpdate = false;
 
             WorldShaderData worldData;
-            m_terrainBounds.GetMin().StoreToFloat3(worldData.m_min.data());
-            m_terrainBounds.GetMax().StoreToFloat3(worldData.m_max.data());
+            worldData.m_zMin = m_zBounds.GetX();
+            worldData.m_zMax = m_zBounds.GetY();
+            worldData.m_zExtents = worldData.m_zMax - worldData.m_zMin;
 
             auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
             sceneSrg->SetConstant(m_worldDataIndex, worldData);
