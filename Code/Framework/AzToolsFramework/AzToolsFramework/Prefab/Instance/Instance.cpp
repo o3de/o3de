@@ -209,7 +209,7 @@ namespace AzToolsFramework
                     }
                 }
                 else
-				{
+                {
                     [[maybe_unused]] bool isEntityRemoved =
                         m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
                     AZ_Assert(isEntityRemoved,

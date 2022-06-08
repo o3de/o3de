@@ -10,17 +10,13 @@
 
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
 #include <AzCore/IO/ByteContainerStream.h>
-#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzNetworking
 {
     class INetworkInterface;
-}
-
-namespace AzFramework
-{
-    class InMemorySpawnableAssetContainer;
 }
 
 namespace Multiplayer

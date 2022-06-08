@@ -6,10 +6,12 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/numeric.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/typetraits/typetraits.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 
 namespace AzFramework
