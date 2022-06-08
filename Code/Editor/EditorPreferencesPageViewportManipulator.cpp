@@ -31,7 +31,8 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
         ->Field("ScaleManipulatorBoxHalfExtent", &Manipulators::m_scaleManipulatorBoxHalfExtent)
         ->Field("RotationManipulatorRadius", &Manipulators::m_rotationManipulatorRadius)
         ->Field("ManipulatorViewBaseScale", &Manipulators::m_manipulatorViewBaseScale)
-        ->Field("FlipManipulatorAxesTowardsView", &Manipulators::m_flipManipulatorAxesTowardsView);
+        ->Field("FlipManipulatorAxesTowardsView", &Manipulators::m_flipManipulatorAxesTowardsView)
+        ->Field("ManipulatorMouseWrap", &Manipulators::m_manipulatorMouseWrap);
 
     serialize.Class<CEditorPreferencesPage_ViewportManipulator>()->Version(2)->Field(
         "Manipulators", &CEditorPreferencesPage_ViewportManipulator::m_manipulators);
@@ -96,7 +97,10 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
             ->Attribute(AZ::Edit::Attributes::Max, AzToolsFramework::MaxManipulatorViewBaseScale)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Manipulators::m_flipManipulatorAxesTowardsView, "Flip Manipulator Axes Towards View",
-                "Determines whether Planar and Linear Manipulators should switch to face the view (camera) in the Editor");
+                "Determines whether Planar and Linear Manipulators should switch to face the view (camera) in the Editor")
+            ->DataElement(
+                AZ::Edit::UIHandlers::CheckBox, &Manipulators::m_manipulatorMouseWrap, "Manipulator Mouse Wrap",
+                "Determines whether the cursor is going to wrap around the soruce widget.");
 
         editContext
             ->Class<CEditorPreferencesPage_ViewportManipulator>("Manipulator Viewport Preferences", "Manipulator Viewport Preferences")
@@ -142,6 +146,7 @@ void CEditorPreferencesPage_ViewportManipulator::OnApply()
 {
     SandboxEditor::SetManipulatorLineBoundWidth(m_manipulators.m_manipulatorLineBoundWidth);
     SandboxEditor::SetManipulatorCircleBoundWidth(m_manipulators.m_manipulatorCircleBoundWidth);
+    SandboxEditor::SetManipulatorMouseWrap(m_manipulators.m_manipulatorMouseWrap);
 
     AzToolsFramework::SetLinearManipulatorAxisLength(m_manipulators.m_linearManipulatorAxisLength);
     AzToolsFramework::SetPlanarManipulatorAxisLength(m_manipulators.m_planarManipulatorAxisLength);
@@ -159,6 +164,7 @@ void CEditorPreferencesPage_ViewportManipulator::InitializeSettings()
 {
     m_manipulators.m_manipulatorLineBoundWidth = SandboxEditor::ManipulatorLineBoundWidth();
     m_manipulators.m_manipulatorCircleBoundWidth = SandboxEditor::ManipulatorCircleBoundWidth();
+    m_manipulators.m_manipulatorMouseWrap = SandboxEditor::ManipulatorMouseWrap();
 
     m_manipulators.m_linearManipulatorAxisLength = AzToolsFramework::LinearManipulatorAxisLength();
     m_manipulators.m_planarManipulatorAxisLength = AzToolsFramework::PlanarManipulatorAxisLength();
