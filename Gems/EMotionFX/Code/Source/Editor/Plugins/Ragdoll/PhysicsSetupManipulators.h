@@ -15,23 +15,32 @@ namespace Physics
     class CharacterColliderNodeConfiguration;
 } // namespace Physics
 
+namespace AzPhysics
+{
+    struct JointConfiguration;
+} // namespace AzPhysics
+
 namespace EMotionFX
 {
     class Actor;
     class Node;
     class ObjectEditor;
     class ColliderContainerWidget;
+    class RagdollJointLimitWidget;
 
     struct PhysicsSetupManipulatorData
     {
         bool HasColliders() const;
         bool HasCapsuleCollider() const;
+        bool HasJointLimit() const;
 
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         Physics::CharacterColliderNodeConfiguration* m_colliderNodeConfiguration = nullptr;
+        AzPhysics::JointConfiguration* m_jointConfiguration = nullptr;
         Actor* m_actor = nullptr;
         Node* m_node = nullptr;
         ColliderContainerWidget* m_collidersWidget = nullptr;
+        RagdollJointLimitWidget* m_jointLimitWidget = nullptr;
         bool m_valid = false;
     };
 

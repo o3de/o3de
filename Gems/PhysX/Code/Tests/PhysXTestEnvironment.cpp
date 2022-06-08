@@ -16,7 +16,9 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <ComponentDescriptors.h>
 
 #include <SystemComponent.h>
@@ -50,6 +52,10 @@ namespace PhysX
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
+
+                azrtti_typeid<AzFramework::AssetCatalogComponent>(),
+                azrtti_typeid<Physics::MaterialSystemComponent>(),
+
                 azrtti_typeid<PhysX::SystemComponent>()
             });
 
@@ -59,6 +65,17 @@ namespace PhysX
     void PhysXApplication::CreateReflectionManager()
     {
         AZ::ComponentApplication::CreateReflectionManager();
+
+        const AZStd::list<AZ::ComponentDescriptor*> azFrameworkSystemDescriptors =
+        {
+            AzFramework::AssetCatalogComponent::CreateDescriptor(),
+            Physics::MaterialSystemComponent::CreateDescriptor()
+        };
+
+        for (AZ::ComponentDescriptor* descriptor : azFrameworkSystemDescriptors)
+        {
+            RegisterComponentDescriptor(descriptor);
+        }
 
         for (AZ::ComponentDescriptor* descriptor : GetDescriptors())
         {

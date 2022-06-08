@@ -9,6 +9,7 @@
 
 #include <Components/TerrainPhysicsColliderComponent.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -21,8 +22,6 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AzFramework/Physics/Material.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
@@ -65,23 +64,12 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsSurfaceMaterialMapping>()
-                ->Version(1)
+                ->Version(3)
                 ->Field("Surface", &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag)
-                ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_materialId);
+                ->Field("MaterialAsset", &TerrainPhysicsSurfaceMaterialMapping::m_materialAsset)
+                ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_legacyMaterialId)
+            ;
         }
-    }
-
-
-    AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
-    {
-        if (const auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
-            {
-                return physicsConfiguration->m_materialLibraryAsset.GetId();
-            }
-        }
-        return {};
     }
 
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
@@ -91,8 +79,9 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderConfig>()
-                ->Version(3)
-                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
+                ->Version(5)
+                ->Field("DefaultMaterialAsset", &TerrainPhysicsColliderConfig::m_defaultMaterialAsset)
+                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_legacyDefaultMaterialSelection)
                 ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
             ;
         }
@@ -359,9 +348,11 @@ namespace Terrain
             perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
-    uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
+    uint8_t TerrainPhysicsColliderComponent::GetMaterialIndex(
+        const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset,
+        const AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>>& materialList) const
     {
-        const auto& materialIter = AZStd::find(materialList.begin(), materialList.end(), materialId);
+        const auto& materialIter = AZStd::find(materialList.begin(), materialList.end(), materialAsset);
         if (materialIter != materialList.end())
         {
             return static_cast<uint8_t>(materialIter - materialList.begin());
@@ -370,23 +361,23 @@ namespace Terrain
         return 0;
     }
 
-    Physics::MaterialId TerrainPhysicsColliderComponent::FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const
+    AZ::Data::Asset<Physics::MaterialAsset> TerrainPhysicsColliderComponent::FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const
     {
         AZStd::shared_lock lock(m_stateMutex);
-
+        
         uint8_t index = 0;
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
             if (mapping.m_surfaceTag == tag)
             {
-                return mapping.m_materialId;
+                return mapping.m_materialAsset;
             }
             index++;
         }
 
         // If this surface isn't mapped, use the default material.
-        return m_configuration.m_defaultMaterialSelection.GetMaterialId();
+        return m_configuration.m_defaultMaterialAsset;
     }
 
     void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
@@ -446,7 +437,7 @@ namespace Terrain
         int32_t gridWidth, gridHeight;
         GetHeightfieldGridSize(gridWidth, gridHeight);
 
-        AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList = GetMaterialList();
 
         auto perPositionCallback = [xOffset, yOffset, &updateHeightsMaterialsCallback, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
@@ -472,8 +463,8 @@ namespace Terrain
             Physics::HeightMaterialPoint point;
             point.m_height = height - worldCenterZ;
             point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
-            Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
-            point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
+            AZ::Data::Asset<Physics::MaterialAsset> materialAsset = FindMaterialAssetForSurfaceTag(surfaceWeight.m_surfaceType);
+            point.m_materialIndex = GetMaterialIndex(materialAsset, materialList);
 
             int32_t column = aznumeric_cast<int32_t>(xOffset + xIndex);
             int32_t row = aznumeric_cast<int32_t>(yOffset + yIndex);
@@ -557,21 +548,22 @@ namespace Terrain
         return aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsY);
     }
 
-    AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
+    AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> TerrainPhysicsColliderComponent::GetMaterialList() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-
-        AZStd::vector<Physics::MaterialId> materialList;
+        
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
+        materialList.reserve(m_configuration.m_surfaceMaterialMappings.size() + 1); // +1 for default material asset
 
         // Ensure the list contains the default material as the first entry.
-        materialList.emplace_back(m_configuration.m_defaultMaterialSelection.GetMaterialId());
+        materialList.push_back(m_configuration.m_defaultMaterialAsset);
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
-            const auto& existingInstance = AZStd::find(materialList.begin(), materialList.end(), mapping.m_materialId);
-            if (existingInstance == materialList.end())
+            const auto& existingInstance = AZStd::find(materialList.begin(), materialList.end(), mapping.m_materialAsset);
+            if (existingInstance == materialList.end()) // Avoid having the same asset more than once
             {
-                materialList.emplace_back(mapping.m_materialId);
+                materialList.push_back(mapping.m_materialAsset);
             }
         }
 

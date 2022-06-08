@@ -9,7 +9,6 @@
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -190,33 +189,6 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD1(SetContactOffset, void(float));
     };
 
-    class MockPhysicsMaterial
-        : public Physics::Material
-    {
-    public:
-        virtual ~MockPhysicsMaterial() = default;
-
-        MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
-        MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
-        MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));
-        MOCK_CONST_METHOD0(GetDynamicFriction, float());
-        MOCK_METHOD1(SetDynamicFriction, void(float));
-        MOCK_CONST_METHOD0(GetStaticFriction, float());
-        MOCK_METHOD1(SetStaticFriction, void(float));
-        MOCK_CONST_METHOD0(GetRestitution, float());
-        MOCK_METHOD1(SetRestitution, void(float));
-        MOCK_CONST_METHOD0(GetFrictionCombineMode, CombineMode());
-        MOCK_METHOD1(SetFrictionCombineMode, void(CombineMode));
-        MOCK_CONST_METHOD0(GetRestitutionCombineMode, CombineMode());
-        MOCK_METHOD1(SetRestitutionCombineMode, void(CombineMode));
-        MOCK_CONST_METHOD0(GetCryEngineSurfaceId, AZ::u32());
-        MOCK_METHOD0(GetNativePointer, void*());
-        MOCK_CONST_METHOD0(GetDensity, float());
-        MOCK_METHOD1(SetDensity, void(float));
-        MOCK_CONST_METHOD0(GetDebugColor, AZ::Color());
-        MOCK_METHOD1(SetDebugColor, void(const AZ::Color&));
-    };
-
     class ScriptCanvasPhysicsTestEnvironment
         : public AZ::Test::GemTestEnvironment
     {
@@ -234,14 +206,11 @@ namespace ScriptCanvasPhysicsTests
         {
             ::testing::Test::SetUp();
 
-            ON_CALL(m_material, GetSurfaceType())
-                .WillByDefault(Return(AZ::Crc32("CustomSurface")));
-
             m_hit.m_position = AZ::Vector3(1.f, 2.f, 3.f);
             m_hit.m_distance = 2.5f;
             m_hit.m_normal = AZ::Vector3(-1.f, 3.5f, 0.5f);
             m_hit.m_shape = &m_shape;
-            m_hit.m_material = &m_material;
+            m_hit.m_physicsMaterialId = Physics::MaterialId::CreateName("Default");
             m_hit.m_resultFlags = AzPhysics::SceneQuery::ResultFlags::Position |
                 AzPhysics::SceneQuery::ResultFlags::Distance |
                 AzPhysics::SceneQuery::ResultFlags::Normal |
@@ -252,7 +221,6 @@ namespace ScriptCanvasPhysicsTests
 
         NiceMock<MockSimulatedBody> m_worldBody;
         NiceMock<MockShape> m_shape;
-        NiceMock<MockPhysicsMaterial> m_material;
         NiceMock<MockPhysicsSceneInterface> m_sceneInterfaceMock;
         AzPhysics::SceneQueryHit m_hit;
         AzPhysics::SceneQueryHits m_hitResult;
@@ -265,7 +233,7 @@ namespace ScriptCanvasPhysicsTests
                 AZStd::get<2>(result) == hit.m_normal &&
                 AZStd::get<3>(result) == hit.m_distance &&
                 AZStd::get<4>(result) == hit.m_entityId &&
-                AZStd::get<5>(result) == (hit.m_material ? hit.m_material->GetSurfaceType() : AZ::Crc32())
+                AZStd::get<5>(result) == AZ::Crc32(hit.m_physicsMaterialId.ToString<AZStd::string>())
                 ;
         }
     };
@@ -359,7 +327,7 @@ namespace ScriptCanvasPhysicsTests
         for (auto result : results)
         {
             EXPECT_EQ(result.m_distance, m_hit.m_distance);
-            EXPECT_EQ(result.m_material, m_hit.m_material);
+            EXPECT_EQ(result.m_physicsMaterialId, m_hit.m_physicsMaterialId);
             EXPECT_EQ(result.m_normal, m_hit.m_normal);
             EXPECT_EQ(result.m_position, m_hit.m_position);
             EXPECT_EQ(result.m_shape, m_hit.m_shape);
