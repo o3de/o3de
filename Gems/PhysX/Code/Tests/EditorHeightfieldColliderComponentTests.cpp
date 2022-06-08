@@ -399,7 +399,7 @@ namespace PhysXEditorTests
         {
             for (size_t sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
             {
-                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
+                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(static_cast<physx::PxU32>(sampleRow), static_cast<physx::PxU32>(sampleColumn));
 
                 auto [materialIndex0, materialIndex1] =
                     PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleColumn, sampleRow, numColumns, numRows);

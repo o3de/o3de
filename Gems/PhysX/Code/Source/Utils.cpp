@@ -175,7 +175,6 @@ namespace PhysX
             // Note that the scaleFactor choice here affects overall precision.  For each bit that the integer part of our max
             // height uses, that's one less bit for the fractional part.
             const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
-            const float heightScale{ 1.0f / scaleFactor };
 
             [[maybe_unused]] constexpr uint8_t physxMaximumMaterialIndex = 0x7f;
 
