@@ -882,6 +882,10 @@ void MainWindow::ShowOutgoingProductDependenciesContextMenu(const QPoint& pos)
     auto productAt = [this](const QPoint& pos)
     {
         const QModelIndex assetIndex = ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->indexAt(pos);
+        if (!assetIndex.isValid())
+        {
+            return static_cast<ProductDependencyTreeItem*>(nullptr);
+        }
         return static_cast<ProductDependencyTreeItem*>(assetIndex.internalPointer());
     };
     const ProductDependencyTreeItem* cachedAsset = productAt(pos);
@@ -918,6 +922,10 @@ void MainWindow::ShowIncomingProductDependenciesContextMenu(const QPoint& pos)
     auto productAt = [this](const QPoint& pos)
     {
         const QModelIndex assetIndex = ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->indexAt(pos);
+        if (!assetIndex.isValid())
+        {
+            return static_cast<ProductDependencyTreeItem*>(nullptr);
+        }
         return static_cast<ProductDependencyTreeItem*>(assetIndex.internalPointer());
     };
     const ProductDependencyTreeItem* cachedAsset = productAt(pos);
