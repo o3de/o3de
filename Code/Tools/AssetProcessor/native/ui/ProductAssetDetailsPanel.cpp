@@ -68,14 +68,6 @@ namespace AssetProcessor
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
             &ProductDependencyTreeModel::AssetDataSelectionChanged);
 
-        
-        connect(
-            m_outgoingDependencyTreeModel, &QAbstractItemModel::modelReset, this,
-            &ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset);
-        connect(
-            m_incomingDependencyTreeModel, &QAbstractItemModel::modelReset, this,
-            &ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset);
-
         AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
         AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
     }
@@ -89,16 +81,6 @@ namespace AssetProcessor
     QTreeView* ProductAssetDetailsPanel::GetIncomingProductDependenciesTreeView() const
     {
         return m_ui->IncomingProductDependenciesTreeView;
-    }
-
-    void ProductAssetDetailsPanel::IncomingProductDependencyTreeModelReset()
-    {
-        //m_ui->IncomingProductDependenciesTreeView->expandToDepth(0);
-    }
-
-    void ProductAssetDetailsPanel::OutgoingProductDependencyTreeModelReset()
-    {
-        //m_ui->OutgoingProductDependenciesTreeView->expandToDepth(0);
     }
 
     void ProductAssetDetailsPanel::SetScanQueueEnabled(bool enabled)
@@ -608,11 +590,6 @@ namespace AssetProcessor
             return;
         }
         ClearMissingDependenciesForFolder(*m_currentItem);
-    }
-
-    void ProductAssetDetailsPanel::OnDependentProductClicked(const QModelIndex& index)
-    {
-        GoToProduct((static_cast<ProductDependencyTreeItem*>(index.internalPointer()))->GetData()->m_productName);
     }
 
     void ProductAssetDetailsPanel::ClearMissingDependenciesForFile(const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData)

@@ -26,7 +26,6 @@ namespace AssetProcessor
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
-            
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
             const QWidget* widget = option.widget;
             QStyle* style;
@@ -35,16 +34,9 @@ namespace AssetProcessor
             // As a workaround, I get the icon area by fetching TextRect and set width to be the same as height.
             QRect rect = style->subElementRect(QStyle::SE_ItemViewItemText, &option, widget);
             rect.setWidth(rect.height());
-            AZ_Printf("Sven debug", "subElementRect: x=%d, y=%d, width=%d, height=%d\n", rect.x(), rect.y(), rect.width(), rect.height());
-            AZ_Printf("Sven debug", "mouseEvent: x=%d, y=%d\n", mouseEvent->pos().x(), mouseEvent->pos().y());
             if (rect.contains(mouseEvent->pos()))
             {
-                AZ_Printf("Asset Processor", "Button clicked\n");
                 m_panel->GoToProduct((static_cast<ProductDependencyTreeItem*>(index.internalPointer()))->GetData()->m_productName);
-            }
-            else
-            {
-                AZ_Printf("Asset Processor", "Non-Button clicked\n");
             }
             return true;
         }
