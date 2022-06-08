@@ -32,7 +32,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/CommandBar/CommandBarPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
@@ -224,7 +223,6 @@ namespace EMStudio
         RegisterPlugin(new LogWindowPlugin());
         RegisterPlugin(new CommandBarPlugin());
         RegisterPlugin(new ActionHistoryPlugin());
-        RegisterPlugin(new MotionWindowPlugin());
         RegisterPlugin(new MorphTargetsWindowPlugin());
         RegisterPlugin(new TimeViewPlugin());
         RegisterPlugin(new SceneManagerPlugin());
