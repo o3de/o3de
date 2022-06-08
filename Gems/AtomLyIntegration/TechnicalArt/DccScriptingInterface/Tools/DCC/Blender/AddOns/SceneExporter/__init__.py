@@ -22,7 +22,7 @@
 # meshes within the capabilities of the .FBX format and O3DE actor entity.
 #
 # You have options to export textures with the mesh, or with the mesh within
-# a sub folder ‘textures’. This will work for Blender Scenes with or without
+# a sub folder "/textures". This will work for Blender Scenes with or without
 # packed textures.
 #
 # Hardware and Software Requirements:
