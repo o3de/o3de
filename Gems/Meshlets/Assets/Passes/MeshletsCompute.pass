@@ -9,7 +9,7 @@
             "Slots": [
                 {
                     "Name": "MeshletsSharedBuffer",
-                    "ShaderInputName": "m_MeshletsSharedBuffer",
+                    "ShaderInputName": "m_meshletsSharedBuffer",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {

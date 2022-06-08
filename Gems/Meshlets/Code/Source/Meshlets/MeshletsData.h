@@ -2,7 +2,7 @@
 * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
 * For complete copyright and license terms please see the LICENSE at the root of this distribution.
 * 
-* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+* SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
 
@@ -69,7 +69,7 @@ namespace AZ
             //!     localIndex_i = meshletTriangles[triangleOffset + i];    // i = triangle vertex index 0..2
             //!     vertexIndex_i =  indirectIndices[currentMeshlet.vertexOffset + localIndex_i];
 
-            //! Amount of vertices and triangle for the mesh - based on this the arrays
+            //! Amount of vertices and triangle for the meshlet - based on this the arrays
             //! indirectIndices and triangleIndices are created per meshlet.
             uint32_t vertexCount;
             uint32_t triangleCount;
@@ -167,7 +167,7 @@ namespace AZ
                         uint32_t encodedTriangle = EncodedTriangles[meshlet.triangle_offset + tri];
                         for (uint32_t i = 0; i < 3; i++)
                         {
-                            uint32_t localIndex = encodedTriangle >> (i * 8) & 0xff;
+                            uint32_t localIndex = (encodedTriangle >> (i * 8)) & 0xff;
                             uint32_t indirectIndex = meshlet.vertex_offset + localIndex;
                             decodedIndexVector[currentIdx++] = IndicesIndirection[indirectIndex];
                         }

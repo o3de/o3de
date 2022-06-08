@@ -74,6 +74,7 @@ namespace AZ
             }
 
             // Instead of compiling per frame, have everything compiled only once after data initialization!
+            // Below is an example of compiling the dispatch if change is required.
             /*
             for (auto& dispatchItem : m_dispatchItems)
             {
@@ -83,7 +84,6 @@ namespace AZ
                     {
                         srgInDispatch->Compile()
                     }
-//                    ShaderResourceGroup* meshletsDataSrg = dispatchItem->m_shaderResourceGroups
                 }
             }
             */
@@ -100,6 +100,14 @@ namespace AZ
             }
         }
 
+        // [To Do] Important remark
+        //-------------------------
+        // When the work load / amount of dispatches is high, the RHI will split work and distribute it
+        // between several threads.
+        // To avoid repeating the work or possibly corrupting data in such a case, split the work
+        // as per Github issue #9899 (https://github.com/o3de/o3de/pull/9899) as an example of how to
+        // prevent multiple threads trying to submit the same work.
+        // This was not done here yet due to the very limited work required but shuold be changed!
         void MultiDispatchComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();

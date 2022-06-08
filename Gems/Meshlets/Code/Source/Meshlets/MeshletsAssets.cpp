@@ -46,8 +46,8 @@ namespace AZ
             for (uint32_t meshletId = 0; meshletId < m_meshletsData.Descriptors.size(); ++meshletId)
             {
                 meshopt_Meshlet& meshlet = m_meshletsData.Descriptors[meshletId];
-                float tx = (meshletId % 3) * 0.5f;
-                float ty = ((meshletId / 3) % 3) * 0.5f;
+                float textureCoordU = (meshletId % 3) * 0.5f;
+                float textureCoordV = ((meshletId / 3) % 3) * 0.5f;
                 for (uint32_t triIdx = 0 ; triIdx < meshlet.triangle_count; ++triIdx)
                 {
                     uint32_t encodedTri = m_meshletsData.EncodedTriangles[meshlet.triangle_offset + triIdx];
@@ -62,8 +62,8 @@ namespace AZ
                     {
                         uint32_t vtxIndex = m_meshletsData.IndicesIndirection[meshlet.vertex_offset + vtxIndirectIndex[vtx]];
 
-                        mesh.vertices[vtxIndex].tx = tx;
-                        mesh.vertices[vtxIndex].ty = ty;
+                        mesh.vertices[vtxIndex].tx = textureCoordU;
+                        mesh.vertices[vtxIndex].ty = textureCoordV;
                     }
                 } 
             }
@@ -98,7 +98,7 @@ namespace AZ
         uint32_t MeshletsModel::CreateMeshlets(GeneratorMesh& mesh)
         {
             const size_t max_vertices = 64;
-            const size_t max_triangles = 124; // NVidia-recommended 126, rounded down to a multiple of 4
+            const size_t max_triangles = 64;  // NVidia-recommended 126, rounded down to a multiple of 4 - set to 64 based on GPU and data generated
             const float cone_weight = 0.5f;   // note: should be set to 0 unless cone culling is used at runtime!
 
             //----------------------------------------------------------------
@@ -194,13 +194,13 @@ namespace AZ
 
         bool MeshletsModel::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
+            const float maxVertexSizeSqr = 99.9f * 99.9f;  // under 100 meters
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
                 Vector3 positionV3 = Vector3(position[0], position[1], position[2]);
 
-                float length = positionV3.GetLength();
-                const float maxVertexSize = 99.0f;
-                if (length < maxVertexSize)
+                float lengthSq = positionV3.GetLengthSq();
+                if (lengthSq < maxVertexSizeSqr)
                 {
                     m_aabb.AddPoint(positionV3);
                 }
@@ -231,12 +231,8 @@ namespace AZ
             //-------------------------------------------
             
             // setup a stream layout and shader input contract for the vertex streams
-            RHI::Format IndexStreamFormat;// = RHI::Format::R32_UINT;
-            RHI::Format PositionStreamFormat;// = RHI::Format::R32G32B32_FLOAT;
-            RHI::Format NormalStreamFormat;// = RHI::Format::R32G32B32_FLOAT;
-            RHI::Format TangentStreamFormat;// = RHI::Format::R32G32B32A32_FLOAT;
-            RHI::Format BitangentStreamFormat;// = RHI::Format::R32G32B32_FLOAT;
-            RHI::Format UVStreamFormat;// = RHI::Format::R32G32_FLOAT;
+            RHI::Format IndexStreamFormat;
+            RHI::Format streamFromat;
             RHI::BufferViewDescriptor bufferDescriptors[10];
 
             uint32_t meshletsAmount = 0;
@@ -256,29 +252,29 @@ namespace AZ
             uint32_t vertexCount = 0;
             bufferAssetView = meshAsset.GetSemanticBufferAssetView(PositionSemanticName);
             float* positions =
-                (float*)RetrieveBufferData(bufferAssetView, PositionStreamFormat, 0, vertexCount, bufferDescriptors[1]);
+                (float*)RetrieveBufferData(bufferAssetView, streamFromat, 0, vertexCount, bufferDescriptors[1]);
             const auto positionsAsset = CreateBufferAsset(PositionSemanticName.GetStringView(), bufferDescriptors[1], defaultBindFlags, positions);
 
             bufferAssetView = meshAsset.GetSemanticBufferAssetView(NormalSemanticName);
             float* normals = positions ?
-                (float*)RetrieveBufferData(bufferAssetView, NormalStreamFormat, vertexCount, vertexCount, bufferDescriptors[2]) :
+                (float*)RetrieveBufferData(bufferAssetView, streamFromat, vertexCount, vertexCount, bufferDescriptors[2]) :
                 nullptr;
             const auto normalsAsset = CreateBufferAsset(NormalSemanticName.GetStringView(), bufferDescriptors[2], defaultBindFlags, normals);
 
             bufferAssetView = meshAsset.GetSemanticBufferAssetView(UVSemanticName);
             float* texCoords = normals && bufferAssetView ?
-                (float*)RetrieveBufferData(bufferAssetView, UVStreamFormat, vertexCount, vertexCount, bufferDescriptors[3]) :
+                (float*)RetrieveBufferData(bufferAssetView, streamFromat, vertexCount, vertexCount, bufferDescriptors[3]) :
                 nullptr;
 
             bufferAssetView = meshAsset.GetSemanticBufferAssetView(TangentSemanticName);
             [[maybe_unused]] float* tangents = normals && bufferAssetView ?
-                (float*)RetrieveBufferData(bufferAssetView, TangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[4]) :
+                (float*)RetrieveBufferData(bufferAssetView, streamFromat, vertexCount, vertexCount, bufferDescriptors[4]) :
                 nullptr;
             const auto tangentsAsset = CreateBufferAsset(TangentSemanticName.GetStringView(), bufferDescriptors[4], defaultBindFlags, tangents);
 
             bufferAssetView = meshAsset.GetSemanticBufferAssetView(BiTangentSemanticName);
             [[maybe_unused]] float* bitangents = normals && bufferAssetView ?
-                (float*)RetrieveBufferData(bufferAssetView, BitangentStreamFormat, vertexCount, vertexCount, bufferDescriptors[5]) :
+                (float*)RetrieveBufferData(bufferAssetView, streamFromat, vertexCount, vertexCount, bufferDescriptors[5]) :
                 nullptr;
             const auto bitangentsAsset = CreateBufferAsset(BiTangentSemanticName.GetStringView(), bufferDescriptors[5], defaultBindFlags, bitangents);
 
@@ -419,7 +415,6 @@ namespace AZ
                 AZ_Error("Meshlets", false, "More than a single mesh, or non-matching elements count");
                 return nullptr;
             }
-//          uint32_t elementSize = bufferDesc.m_elementSize;
             format = bufferDesc.m_elementFormat;
             AZStd::span<const uint8_t> bufferData = bufferAsset->GetBuffer();
             return (uint8_t *) bufferData.data();
@@ -501,24 +496,6 @@ namespace AZ
             return meshletsAmount;
         }
 
-        uint32_t MeshletsModel::CreateMeshletsFromModel(Data::Instance<RPI::Model> sourceModel)
-        {
-            m_sourceModelAsset = sourceModel->GetModelAsset();
-            for (uint32_t lodIdx = 0; lodIdx < sourceModel->GetLodCount(); ++lodIdx)
-            {
-                const Data::Instance<RPI::ModelLod>& currentLod = sourceModel->GetLods()[lodIdx];
-
-                for (uint32_t meshIdx = 0; meshIdx < currentLod->GetMeshes().size(); ++meshIdx)
-                {
-                    [[maybe_unused]]const RPI::ModelLod::Mesh& mesh = currentLod->GetMeshes()[meshIdx];
-                    // The next is TBD - harder to get than from the reflected Asset part
-
-
-                }
-            }
-            return 0;
-        }
-
         MeshletsModel::MeshletsModel(Data::Asset<RPI::ModelAsset> sourceModelAsset)
         {
             IndicesSemanticName = Name{ "INDICES" };
@@ -534,7 +511,7 @@ namespace AZ
             MeshletsIndicesLookupName = Name{ "MESHLETS_LOOKUP" };     
 
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
-            m_aabb.CreateNull();
+            m_aabb = Aabb::CreateNull();
 
             m_meshletsAmount = CreateMeshletsFromModelAsset(sourceModelAsset);
         }

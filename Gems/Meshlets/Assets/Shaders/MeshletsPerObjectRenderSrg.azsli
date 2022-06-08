@@ -89,22 +89,6 @@ ShaderResourceGroup MeshletsObjectRenderSrg : SRG_PerObject
         return float3(m_bitangents[index], m_bitangents[index+1], m_bitangents[index+2]);
     }
 
-// Accessor functions for accurate data types (float3)
-//    float3 GetPosition(uint vertexIndex)
-//    {
-//        return m_positions[vertexIndex];
-//    }
-//
-//    float3 GetNormal(uint vertexIndex)
-//    {
-//        return m_normals[vertexIndex];
-//    }
-//
-//    float3 GetBiTangent(uint vertexIndex)
-//    {
-//        return m_bitangents[vertexIndex];
-//    }
-
     // The last element of the tangents indicates face direction / winding
     float4 GetTangent(uint vertexIndex)
     {

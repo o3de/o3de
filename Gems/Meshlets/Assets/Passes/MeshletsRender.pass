@@ -10,7 +10,7 @@
                 // OUtput shared buffer for dynamic meshlets data
                 {
                     "Name": "MeshletsSharedBuffer",
-                    "ShaderInputName": "m_MeshletsSharedBuffer",
+                    "ShaderInputName": "m_meshletsSharedBuffer",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },

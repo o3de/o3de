@@ -2,7 +2,7 @@
 * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
 * For complete copyright and license terms please see the LICENSE at the root of this distribution.
 * 
-* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+* SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
 
@@ -169,20 +169,20 @@ namespace AZ
         bool MeshletsRenderObject::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
             uint32_t badVertices = 0;
+            const float maxVertexSizeSqr = 99.9f * 99.9f;  // under 100 meters
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
-                Vector3 positionV3 = Vector3(position[0], position[1], position[1]);
+                Vector3 positionV3 = Vector3(position[0], position[1], position[2]);
 
-                float length = positionV3.GetLength();
-                const float maxVertexSize = 99.0f;
-                if (length < maxVertexSize)
+                float lengthSq = positionV3.GetLengthSq();
+                if (lengthSq < maxVertexSizeSqr)
                 {
                     m_aabb.AddPoint(positionV3);
                 }
                 else
                 {
-                    badVertices++;
-                    AZ_WarningOnce("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
+                    ++badVertices;
+                    AZ_Warning("Meshlets", false, "Warning -- vertex [%d:%d] out of bound (%.2f, %.2f, %.2f) in model [%s]",
                         vtx, vtxNum, positionV3.GetX(), positionV3.GetY(), positionV3.GetZ(), m_name.c_str());
                 }
             }
@@ -769,13 +769,13 @@ namespace AZ
         MeshletsRenderObject::MeshletsRenderObject(Data::Asset<RPI::ModelAsset> sourceModelAsset,
             MeshletsFeatureProcessor* meshletsFeatureProcessor)
         {
-            MeshletsRenderObject::s_TextureCoordinatesName = Name("m_texCoordsOffset");
-            MeshletsRenderObject::s_IndicesName = Name("m_indicesOffset");
+            MeshletsRenderObject::s_textureCoordinatesName = Name("m_texCoordsOffset");
+            MeshletsRenderObject::s_indicesName = Name("m_indicesOffset");
 
             m_featureProcessor = meshletsFeatureProcessor;
             SetShaders();
             m_name = "Model_" + AZStd::to_string(s_modelNumber++);
-            m_aabb.CreateNull();
+            m_aabb = Aabb::CreateNull();
 
             if (!Meshlets::SharedBufferInterface::Get())
             {

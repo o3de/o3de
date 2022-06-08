@@ -89,7 +89,7 @@ namespace AtomSampleViewer
         AZ::RPI::RenderPipelineDescriptor pipelineDesc;
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = "LowEndPipeline";
-        pipelineDesc.m_rootPassTemplate = "LowEndPipelineTemplate";
+        pipelineDesc.m_rootPassTemplate = "LowEndPipelineTemplate";     // The active pipeline for this example
         pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
 
         m_lowEndPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineDesc, *m_windowContext);
@@ -457,7 +457,7 @@ namespace AtomSampleViewer
             m_meshetsModel = new AZ::Meshlets::MeshletsModel(m_modelAsset);
             if (m_meshetsModel->GetMeshletsModel())
             {
-                static constexpr const char meshletDebugMaterialPath[] = "objects/adi/debugshadermaterial_01.azmaterial";
+                static constexpr const char meshletDebugMaterialPath[] = "objects/debugshadermaterial_01.azmaterial";
 
                 AZ::Data::Asset<AZ::RPI::MaterialAsset> meshletDebugMaterialAsset =
                     AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(meshletDebugMaterialPath, AZ::RPI::AssetUtils::TraceLevel::Error);

@@ -35,9 +35,6 @@ namespace AZ
 
             MeshletsDispatchItem() = default;
 
-            //! One dispatch item per hair object per computer pass.
-            //! The amount of dispatches depends on the amount of vertices required to be created
-
             ~MeshletsDispatchItem();
 
             void InitDispatch(

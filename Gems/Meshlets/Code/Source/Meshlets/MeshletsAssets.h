@@ -2,7 +2,7 @@
 * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
 * For complete copyright and license terms please see the LICENSE at the root of this distribution.
 * 
-* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+* SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
 
@@ -109,7 +109,6 @@ namespace AZ
                 float* positions, float* normals, float* texCoords, uint32_t vtxNum,
                 uint16_t* indices, uint32_t idxNum, RHI::Format IndexStreamFormat
             );
-            uint32_t CreateMeshletsFromModel(Data::Instance<RPI::Model>);
             uint32_t CreateMeshletsFromModelAsset(Data::Asset<RPI::ModelAsset> sourceModelAsset);
 
             uint32_t CreateMeshletsModel(const RPI::ModelLod& modelLod);

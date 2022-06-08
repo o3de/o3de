@@ -15,28 +15,71 @@ Dependencies: meshlets generation is done by an excellent open source library -
     the MeshOptimizer library: https://github.com/zeux/meshoptimizer
 
 
-Overview
-========
-This gem demonstrates the creation of meshlets as a way to generate mesh render on the fly.
-The example component (via ASV) implements meshlets reference mesh creation, rendered via the regular mesh feature processor, and a second identical mesh generated using meshlet compute pass followed by meshlets direct draw pass - both managed by a new dedicated feature processor.
-The POC is using the external mesh optimizer open source library (https://github.com/zeux/meshoptimizer) to generate the meshlets data, and demonstrates how to reconstruct and render the original mesh based on the added meshlets data.
-It is created as a Gem, with added directories under the Gem including files demonstrating how to attach it and add an ASV sample.
+Demo Show Case
+--------------
+MeshletsExampleComponent will generate two meshlet models that will be displayed
+along side the original one with UVs grouped by meshlet and can be associated with 
+color.
+The first colored meshlets model is the reference model done by generating the meshlets 
+in the CPU at run time model load and by using the material DebugShaderMaterial_01 based on the 
+shader DebugShaderPBR_ForwardPass - all copied to this folder.
+The second Meshlets model is using the meshlets data from the CPU and processing it 
+on the fly using dispatch compute that creates the index buffer and the UV coloring - this
+is then sent to a direct draw render that will displays it.
+The latest is the POC that can be enhance to become a parallel GPU driven pipeline.
 
-The POC is a first step toward possible GPU driven pipeline ala Epic Nanite / Ubisoft:
-To fulfill this direction the following steps will be required:
+Short Intro
+===========
+The Meshlets Gem is a POC for rendering meshes solely on the GPU using 
+meshlets / mesh clusters.
+This is done to promote maximum parallelism in processing relative small pieces 
+of the mesh and gain performance by doind fast culling that due to the size and locality
+of these clusters is much more efficient than culling the entire mesh.
+The work is inspired by Ubisoft 2015 presentation and recently Nanity by Epic.
+The current POC does not do the indirect dispatch and render and lacks the culling 
+stage - these are the main two steps missing to make it beyond a POC.
 
-Turn the registration and GPU work into indirect dispatch and draw (to eliminate the CPU per frame side - should be easy)
-Add culling data (easy - already supported by the external library) and add to the meshlets data
-Populate frame required meshes on the GPU
-Add culling pre-pass (Hi-Z generation per previous meshlets / largest occluders / other.. will be a large time saver)
-Enhance the Compute indices generation and the indirect draw to use the visible data (this is where the GPU gain lies)
-Replace demo shader by proper lighting and shading shader
+What does it do?
+================
+- Splits the mesh and creates the data structures requires for meshlets
+- Prepares the GPU, buffers and data required by the GPU for such render pipeline
+- Dispatch Compute groups that generates the index buffer and debug color UVs
+- Direct draw the output of the compute using direct buffer access for the vertex streams
+
+Known Bug:
+==========
+- In the latest version there seem to be an occasional missing meshlet group, hence creating 
+    an area with missing polygons, this might be a very simple counting bug. Will be fixed in
+    future versions.
+
+Moving Forward
+==============
+- Create and prepare culling data compute culling data
+- Create a new compute stage that will cull the meshlets based on one of the following:
+    - Previous meshlets reprojected Z (requires pre-pass and adding delta objects)
+    - Previous Hi-Z (cracks can occur - needs to compensate)
+    - Best occluders
+    - other..
+- Based on the culling create new indexing table (into the index buffer) for the visible meshlets
+- Run the current meshlet compute on visible meshlets only 
+    - Calculate the indices and populate the index buffer
+- Add actual PBR render connected to Atom's lighting
+- Change the mesh loader and processing as an AssetProcessor builder job to be done offline
+
+Remark: The POC seem to still have a small bug - in some meshes, small amount of polygons 
+    might not render. Due to the selective nature of how it looks, it might be as simple 
+    as missing a meshlet group.
 
 Intent
 ======
-This POC intent is not to replace the existing render pipeline. The provided gem is a POC towards a GPU driven render pipeline and is an opportunity for the O3DE community to take this gem as reference and enhance.
-Removing the CPU from the equation is considered by many the path to the future of rendering, and using meshlets techniques increases performance as they eliminate the majority of the invisible meshes in the scene that otherwise would have sent to render due to partial visibility of the meshes. All in all this technique represents a much more optimal rendering approach, one that was successfully used by Ubisoft and is a large part of Nanite today.
-This approach is parallel to the mesh render pipeline that exists in Atom today and is an opportunity for O3DE community to look into and hopefully advance in the future.
+This POC intent is not to replace the existing render pipeline. The provided gem is a POC towards a GPU 
+driven render pipeline and is an opportunity for the O3DE community to take this gem as reference and enhance.
+Removing the CPU from the equation is considered by many the path to the future of rendering, and using 
+meshlets techniques increases performance as they eliminate the majority of the invisible meshes in the scene 
+that otherwise would have sent to render due to partial visibility of the meshes. All in all this technique 
+represents a much more optimal rendering approach, one that was successfully used by Ubisoft and is a large part of Nanite today.
+This approach is parallel to the mesh render pipeline that exists in Atom today and is an opportunity for 
+O3DE community to look into and hopefully advance in the future.
 In no way it comes to replace the existing mesh render pipeline in Atom that is state of the art and coming to maturity.
 
 References:
@@ -50,19 +93,12 @@ Cluster Culling 2016: https://gpuopen.com/learn/geometryfx-1-2-cluster-culling/
 Epic Nanite 2021: https://quip-amazon.com/-/blob/RKb9AAL3zt8/G7A6Cxor0gvn_WPGltB-8g?name=Karis_Nanite_SIGGRAPH_Advances_2021_final.pdf&s=Gn3dAhbv9gN6
 
 Activision - Geometry Rendering Pipeline architecture 2021: https://research.activision.com/publications/2021/09/geometry-rendering-pipeline-architecture
-
-
-Demo Showcase
-=============
-MeshExampleComponent will generate a secondary meshlet model that will be displayed
-along side the original one with UVs grouped by meshlet and can be associated with 
-color - this is done by using the material DebugShaderMaterial_01 based on the 
-shader DebugShaderPBR_ForwardPass - all copied to this folder.
  
 
 Quick Build and Run Direction
 =============================
-1. Copy the files in this folder over the original files
+1. Go over the files in this directory - you'd needd to folow the instructions below and copy 
+    the files to various locations. Create a Meshlets branch so you'd do it once only.
 2. Add the gem directory to the file engine.json:
     "external_subdirectories": [
         "Gems/Meshlets",
@@ -127,7 +163,13 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
 4. Add the current passes to both MainPipeline.pass and LowEndPipeline.pass - 
     these two pass files were added to this folder as a reference how to add the meshlets passes.
 
-5. Add the meshoptimizer.lib compiled library (under Gems\Meshlets\External\Lib) 
+5. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to shader directory 
+    such as [o3de]\Gems\Atom\TestData\TestData\Materials\Types
+
+6. Add the material file 'debugshadermaterial_01.material' to the material directory. For exmaple:
+    [o3de]\AtomSampleViewer\Objects\DebugShaderMaterial_01.material
+    
+7. Add the meshoptimizer.lib compiled library (under Gems\Meshlets\External\Lib) 
     to your Meshlets.static project.
 
 
@@ -144,5 +186,5 @@ Including the Meshlets sample in ASV
     In method SampleComponentManager::GetSamples()
                 NewRPISample<MeshletsExampleComponent>("Meshlets"),
             
-3. Add the source files to the make file 'atomsampleviewergem_private_files.cmake'        
+3. Add the source files to the make file 'atomsampleviewergem_private_files.cmake'
 

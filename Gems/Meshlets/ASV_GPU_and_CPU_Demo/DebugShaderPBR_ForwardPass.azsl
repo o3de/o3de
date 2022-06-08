@@ -23,6 +23,13 @@ ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial
     float m_roughness;
 }
 
+/*
+* For better understanding of the meshlet data please review MeshletsData.h and 
+* specifically review MeshletDescriptor for understanding.
+* MESHLETS: meshlets descriptor structure containing vertices and indices offsets
+* MESHLETS_TRIANGLES: compressed indices of the local triangles per meshlet - each byte is a local index, 4th is not used.
+* MESHLETS_LOOKUP: vertices indirect index look up table.
+*/
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -34,7 +41,6 @@ struct VSInput
     uint4 m_meshlets : MESHLETS;
     uint  m_meshletsTriangles : MESHLETS_TRIANGLES;
     uint m_meshletsVtxLookup : MESHLETS_LOOKUP;
-//    float4 m_color : COLOR0;
 };
 
 struct VSOutput
@@ -45,8 +51,6 @@ struct VSOutput
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
-//    float3 m_color : UV2;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -60,7 +64,6 @@ VSOutput DebugShaderPBR_MainPassVS(VSInput IN)
     VertexHelper(IN, OUT, worldPosition);
 
     OUT.m_uv = IN.m_uv;
- //   OUT.m_color = IN.m_color;
 
     return OUT;
 }
@@ -93,9 +96,6 @@ ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
-    // Shadow, Occlusion
-    lightingData.shadowCoords = IN.m_shadowCoords;
-
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
@@ -108,7 +108,7 @@ ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
@@ -129,9 +129,9 @@ ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
 
-    // Debug purposes
+    // Debug purposes - displays UV coordiantes as color. For meshlets this will 
+    // display the different meshlets groups.
     OUT.m_diffuseColor = float4(IN.m_uv.rg, 0, 1);
-//    OUT.m_diffuseColor = float4(IN.m_color, 1);
 
     return OUT;
 }

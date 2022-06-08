@@ -2,7 +2,7 @@
 * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
 * For complete copyright and license terms please see the LICENSE at the root of this distribution.
 * 
-* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+* SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
 
@@ -26,7 +26,6 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 
 #include "../../External/meshoptimizer.h"
-//#include <meshoptimizer.h>
 
 #include <SharedBuffer.h>
 #include <MeshletsDispatchItem.h>
@@ -41,9 +40,9 @@ namespace AZ
 
     namespace Meshlets
     {
-        const uint32_t maxVerticesPerMeshlet = 64;      // matching wave/warp groups size multiplier
-//        const uint32_t maxTrianglesPerMeshlet = 124;    // NVidia-recommended 126, rounded down to a multiple of 4
-        const uint32_t maxTrianglesPerMeshlet = 64;    // NVidia-recommended 126, rounded down to a multiple of 4
+        const uint32_t maxVerticesPerMeshlet = 64;     // matching wave/warp groups size multiplier
+//        const uint32_t maxTrianglesPerMeshlet = 124; // NVidia-recommended 126, rounded down to a multiple of 4
+        const uint32_t maxTrianglesPerMeshlet = 64;    // Set it to 64 per inspection of both GPU threads / generated data
 
         class MeshletsFeatureProcessor;
 
@@ -95,8 +94,8 @@ namespace AZ
         public:
             static uint32_t s_modelNumber;
 
-            Name s_TextureCoordinatesName;
-            Name s_IndicesName;
+            Name s_textureCoordinatesName;
+            Name s_indicesName;
 
             MeshletsRenderObject(Data::Asset<RPI::ModelAsset> sourceModelAsset, MeshletsFeatureProcessor* meshletsFeatureProcessor);
             ~MeshletsRenderObject();

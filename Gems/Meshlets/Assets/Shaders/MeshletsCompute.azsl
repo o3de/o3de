@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {   // [To Do] No needto use StructuredBuffer - change to buffer and test
-    RWStructuredBuffer<int>     m_MeshletsSharedBuffer;
+    RWStructuredBuffer<int>     m_meshletsSharedBuffer;
 }
 
 //------------------------------------------------------------------------------
@@ -31,13 +31,17 @@ struct MeshletDescriptor
     //!     localIndex_i = meshletTriangles[triangleOffset + i];    // i = triangle vertex index 0..2
     //!     vertexIndex_i =  indirectIndices[currentMeshlet.vertexOffset + localIndex_i];
 
-    //! Amount of vertices and triangle for the mesh - based on this the arrays
+    //! Amount of vertices and triangle for the meshlet - based on this the arrays
     //! indirectIndices and triangleIndices are created per meshlet.
     uint vertexCount;
     uint triangleCount;
 };
 
 //------------------------------------------------------------------------------
+// This structure is used per mesh (object) and represents the meshlets data 
+// for this mesh.
+// This is not the instance data but rather the object data that can be used 
+// across instances of the same mesh.
 ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
 {
     // Shared buffer offset in uint to be used when using the shared buffer when 
@@ -49,17 +53,15 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
     // For the next array review the structuee 'MeshletDescriptor'.
     // The array holds the offsets and amount of vertices and triangles per 
     // meshlet.
-//    Buffer<uint4>  m_meshletsDescriptors;
     StructuredBuffer<MeshletDescriptor> m_meshletsDescriptors;
 
-    // The following arrya consistes of sub arrays of triangles - one per meshlet.
+    // The following array consistes of sub arrays of triangles - one per meshlet.
     // Each uint (32 bits) represents 3 x 8 bits indices into the meshlet indices 
     // lookup array (the top byte is unused).
     Buffer<uint>    m_meshletsTriangles;    
 
     // Array of sub-tables, each one represents lookup table for a meshlet that 
     // maps between a meshlet local vertex index and its global index in the mesh.
-
     Buffer<uint>    m_meshletsIndicesLookup;
 
     // ---------------------------------------------
@@ -78,33 +80,33 @@ ShaderResourceGroup MeshletsDataSrg : SRG_PerObject
     //--------------------------------------------------------------------------
     uint GetVertexIndex(uint index)
     {
-        return PassSrg::m_MeshletsSharedBuffer[m_indicesOffset + index];
+        return PassSrg::m_meshletsSharedBuffer[m_indicesOffset + index];
     }
 
     void SetVertexIndex(uint index, uint vertexIndex )
     {
-        PassSrg::m_MeshletsSharedBuffer[m_indicesOffset + index] = vertexIndex;
+        PassSrg::m_meshletsSharedBuffer[m_indicesOffset + index] = vertexIndex;
     }
 
     void SetTriangleIndices(uint index, uint3 triIndices)
     {
         uint indexOffset = m_indicesOffset + index;
-        PassSrg::m_MeshletsSharedBuffer[indexOffset] = triIndices.x;
-        PassSrg::m_MeshletsSharedBuffer[indexOffset+1] = triIndices.y;
-        PassSrg::m_MeshletsSharedBuffer[indexOffset+2] = triIndices.z;
+        PassSrg::m_meshletsSharedBuffer[indexOffset] = triIndices.x;
+        PassSrg::m_meshletsSharedBuffer[indexOffset+1] = triIndices.y;
+        PassSrg::m_meshletsSharedBuffer[indexOffset+2] = triIndices.z;
     }
 
     void SetUVs(uint index, float2 texCoords)
     {
         // index multiplied by 2 since we have two coordinates 
         uint texCoordIndex = m_texCoordsOffset + (index << 1);
-        PassSrg::m_MeshletsSharedBuffer[texCoordIndex] = asint(texCoords.x);    
-        PassSrg::m_MeshletsSharedBuffer[texCoordIndex+1] = asint(texCoords.y);    
+        PassSrg::m_meshletsSharedBuffer[texCoordIndex] = asint(texCoords.x);    
+        PassSrg::m_meshletsSharedBuffer[texCoordIndex+1] = asint(texCoords.y);    
     }
 };
 
 //------------------------------------------------------------------------------
-// Given the local meshlet' triangle index and the meshlet, the function calculates
+// Given the local meshlet's triangle index and the meshlet, the function calculates
 // the global triangle's vertex indices and returns them along with the global 
 // triangle offset.
 //------------------------------------------------------------------------------
@@ -133,7 +135,7 @@ uint4 GetGlobalVertexIndicesAndTriOffset(MeshletDescriptor meshlet, uint localTr
 * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
 * For complete copyright and license terms please see the LICENSE at the root of this distribution.
 * 
-* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+* SPDX-License-Identifier: Apache-2.0 OR MIT
 *
 */
 
@@ -212,7 +214,7 @@ void ComputeMeshletsIndexBuffer(
 #endif
 
     if (groupIndex < meshlet.triangleCount)
-    {   // groupIndex is used here as the index of the trianlge we process
+    {   // groupIndex is used here as the index of the triangle we process
         uint4 vtxGlobalVerticesAndTriOffset = GetGlobalVertexIndicesAndTriOffset(meshlet, groupIndex);
 
 //#define _USE_SHARED_BUFFER_OFFSET_

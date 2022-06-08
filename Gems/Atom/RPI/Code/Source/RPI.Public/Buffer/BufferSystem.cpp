@@ -126,7 +126,7 @@ namespace AZ
 //                  [To Do] - the following line (and possibly InputAssembly / DynamicInputAssembly) will need to
 //                  be added to support future indirect buffer usage for GPU driven render pipeline
 //                    RHI::BufferBindFlags::Indirect |  
-                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead;
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;

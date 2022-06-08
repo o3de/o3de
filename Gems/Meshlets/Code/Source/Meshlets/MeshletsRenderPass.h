@@ -51,9 +51,6 @@ namespace AZ
             bool BuildDrawPacket(ModelLodDataArray& lodRenderDataArray,
                 Render::TransformServiceFeatureProcessorInterface::ObjectId objectId);
 
-            //! The following will be called when an object was added or shader has been compiled
-//            void SchedulePacketBuild(HairRenderObject* hairObject);
-
             Data::Instance<RPI::Shader> GetShader();
 
             void SetFeatureProcessor(MeshletsFeatureProcessor* featureProcessor)
