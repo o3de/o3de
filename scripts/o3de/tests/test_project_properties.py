@@ -17,6 +17,10 @@ TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+    "project_version" : "0.0.0.0",
+    "engine_versions" : [
+        "o3de-sdk"
+    ],
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "TestProject",
@@ -47,19 +51,29 @@ def init_project_json_data(request):
 @pytest.mark.usefixtures('init_project_json_data')
 class TestEditProjectProperties:
     @pytest.mark.parametrize("project_path, project_name, project_new_name, project_id, project_origin,\
-                              project_display, project_summary, project_icon,\
-                              add_tags, delete_tags, replace_tags, expected_result", [
+                              project_display, project_summary, project_icon, project_version, \
+                              add_tags, delete_tags, replace_tags, expected_tags, expected_result, \
+                              add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names, \
+                              add_engine_versions, delete_engine_versions, replace_engine_versions, \
+                              expected_engine_versions", [
         pytest.param(pathlib.PurePath('E:/TestProject'),
-        'test', 'test', 'editing by pytest', 'ID', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
-        'B', 'D E F', 0),
+        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
+        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
+        'GemA GemB GemB', ['GemA'], None, ['GemB'],
+        '>=1.0', 'o3de-sdk', None, ['>=1.0'] ),
         pytest.param('',
-        'test', 'test', 'editing by pytest', 'ID', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
-        'B', 'D E F', 1)
+        'test', 'TestB', 'IDB', 'OriginB', 'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
+        'A B C', 'B', 'D E F', ['D','E','F'], 1, 
+        ['GemA','GemB'], None, ['GemC'], ['GemC'],
+        'other~=2.2 >=1.0', '>=1.0', None, ['o3de-sdk','other~=2.2'] ),
         ]
     )
     def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,
-                                     project_display, project_summary, project_icon, add_tags,
-                                     delete_tags, replace_tags, expected_result):
+                                     project_display, project_summary, project_icon, project_version, 
+                                     add_tags, delete_tags, replace_tags, expected_tags, expected_result,
+                                     add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names,
+                                     add_engine_versions, delete_engine_versions, replace_engine_versions,
+                                     expected_engine_versions):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
             if not project_path:
@@ -75,7 +89,10 @@ class TestEditProjectProperties:
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
             result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_id,
                                                            project_origin, project_display, project_summary, project_icon,
-                                                           add_tags, delete_tags, replace_tags)
+                                                           add_tags, delete_tags, replace_tags,
+                                                           add_gem_names, delete_gem_names, replace_gem_names,
+                                                           add_engine_versions, delete_engine_versions, replace_engine_versions,
+                                                           project_version)
             assert result == expected_result
             if project_path:
                 assert self.project_json.data
@@ -85,8 +102,10 @@ class TestEditProjectProperties:
                 assert self.project_json.data.get('display_name', '') == project_display
                 assert self.project_json.data.get('summary', '') == project_summary
                 assert self.project_json.data.get('icon_path', '') == project_icon
-                expected_tag_set = set(replace_tags.split())
-                project_json_tag_set = set(self.project_json.data.get('user_tags', []))
-                assert project_json_tag_set == expected_tag_set
+                assert self.project_json.data.get('version', '') == project_version
+
+                assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
+                assert set(self.project_json.data.get('gem_names', [])) == set(expected_gem_names)
+                assert set(self.project_json.data.get('engine_versions', [])) == set(expected_engine_versions)
             else:
                 assert not self.project_json.data

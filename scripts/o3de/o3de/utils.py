@@ -319,3 +319,28 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
+
+def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a list by first appending values in the new_values list, removing values in the remove_values
+    list,replacing values in the replace_values list and then removing duplicates.
+    :param existing_values list with existing values to modify
+    :param new_values list with values to add to the existing value list
+    :param remove_values list with values to remove from the existing value list
+    :param replace_values list with values to replace in the existing value list
+
+    returns updated existing value list
+    """
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        existing_values.extend(new_values)
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        existing_values = list(filter(lambda value: value not in remove_values, existing_values))
+    if replace_values:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        existing_values = replace_values
+
+    # replace duplicate values
+    return list(dict.fromkeys(existing_values))

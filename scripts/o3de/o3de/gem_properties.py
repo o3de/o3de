@@ -17,31 +17,6 @@ logger = logging.getLogger('o3de.gem_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
 
-def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
-                      replace_values: list or str):
-    """
-    Updates values within a list by first appending values in the new_values list, removing values in the remove_values
-    list and then replacing values in the replace_values list
-    :param existing_values list with existing values to modify
-    :param new_values list with values to add to the existing value list
-    :param remove_values list with values to remove from the existing value list
-    :param replace_values list with values to replace in the existing value list
-
-    returns updated existing value list
-    """
-    if new_values:
-        new_values = new_values.split() if isinstance(new_values, str) else new_values
-        existing_values.extend(new_values)
-    if remove_values:
-        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
-        existing_values = list(filter(lambda value: value not in remove_values, existing_values))
-    if replace_values:
-        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
-        existing_values = replace_values
-
-    return existing_values
-
-
 def edit_gem_props(gem_path: pathlib.Path = None,
                    gem_name: str = None,
                    new_name: str = None,
@@ -105,10 +80,10 @@ def edit_gem_props(gem_path: pathlib.Path = None,
     if new_version:
         update_key_dict['version'] = new_version
 
-    update_key_dict['engine_versions'] = update_values_in_key_list(gem_json_data.get('engine_versions', []), 
+    update_key_dict['engine_versions'] = utils.update_values_in_key_list(gem_json_data.get('engine_versions', []), 
                                                      new_engine_versions, remove_engine_versions, 
                                                      replace_engine_versions)
-    update_key_dict['user_tags'] = update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
+    update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                      remove_tags, replace_tags)
 
     gem_json_data.update(update_key_dict)
