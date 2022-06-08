@@ -9,6 +9,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <Prefab/PrefabDomTypes.h>
 #include <Prefab/Spawnable/PrefabProcessorContext.h>
@@ -108,20 +109,22 @@ namespace UnitTest
         ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_prefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(document));
 
-        // Request NetworkPrefabProcessor to process the prefab
+        // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
         Multiplayer::NetworkPrefabProcessor processor;
         processor.Process(prefabProcessorContext);
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor prefabCatchmentProcessor;
+        prefabCatchmentProcessor.Process(prefabProcessorContext);
 
         // Validate results
         EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
 
-        // Should be 1 networked spawnable
+        // Should be 1 spawnable and 1 networked spawnable
         const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
-        EXPECT_EQ(processedObjects.size(), 1);
+        EXPECT_EQ(processedObjects.size(), 2);
 
         // Verify the name and the type of the spawnable asset 
-        const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
-        EXPECT_EQ(prefabName + Multiplayer::NetworkSpawnableFileExtension.data(), processedObjects[0].GetId());
+        const AZ::Data::AssetData& spawnableAsset = processedObjects[1].GetAsset();
+        EXPECT_EQ(prefabName + Multiplayer::NetworkSpawnableFileExtension.data(), processedObjects[1].GetId());
         EXPECT_EQ(spawnableAsset.GetType(), azrtti_typeid<AzFramework::Spawnable>());
 
         // Verify we have only the networked entity in the network spawnable and not the static one
