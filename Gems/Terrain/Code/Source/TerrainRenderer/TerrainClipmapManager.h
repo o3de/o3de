@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
+#include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -33,6 +34,7 @@ namespace Terrain
         //! Max clipmap number that can have. Used to initialize fixed arrays.
         static constexpr uint32_t MacroClipmapStackSizeMax = 16;
         static constexpr uint32_t DetailClipmapStackSizeMax = 16;
+        static constexpr uint32_t SharedClipmapStackSizeMax = AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax);
 
         //! The size of the clipmap image in each layer.
         uint32_t m_clipmapSize = 1024u;
@@ -130,23 +132,32 @@ namespace Terrain
         bool HasDetailClipmapUpdate() const;
     private:
         //! Update the C++ copy of the clipmap data. And will later be bound to the terrain SRG.
-        void UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene);
+        void UpdateClipmapData(
+            const AZ::Vector3& cameraPosition,
+            const AZ::RPI::Scene* scene,
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         //! Initialzation functions.
         void InitializeClipmapBounds(const AZ::Vector2& center);
         void InitializeClipmapData();
         void InitializeClipmapImages();
 
+        using RawVector2f = AZStd::array<float, 2>;
+        using RawVector4f = AZStd::array<float, 4>;
+        using RawVector4u = AZStd::array<uint32_t, 4>;
+
         //! Data to be passed to shaders
         struct ClipmapData
         {
             //! The 2D xy-plane view position where the main camera is.
-            AZStd::array<float, 2> m_previousViewPosition;
-            AZStd::array<float, 2> m_currentViewPosition;
+            RawVector2f m_viewPosition;
+
+            // Current viewport size.
+            RawVector2f m_viewportSize;
 
             // 2D xy-plane world bounds defined by the terrain.
-            AZStd::array<float, 2> m_worldBoundsMin;
-            AZStd::array<float, 2> m_worldBoundsMax;
+            RawVector2f m_worldBoundsMin;
+            RawVector2f m_worldBoundsMax;
 
             //! The max range that the clipmap is covering.
             float m_macroClipmapMaxRenderRadius;
@@ -168,22 +179,19 @@ namespace Terrain
             uint32_t m_clipmapSizeUint;
 
             //! Clipmap centers in texel coordinates ranging [0, size).
-            //! 0,1: previous clipmap centers; 2,3: current clipmap centers.
-            //! They are used for toroidal addressing and may move each frame based on the view point movement.
-            //! The move distance is scaled differently in each layer.
-            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax> m_macroClipmapCenters;
-            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax> m_detailClipmapCenters;
-
-            //! A list of reciprocal the clipmap scale [s],
-            //! where 1 pixel in the current layer of clipmap represents s meters.
-            //! Fast lookup list to avoid redundant calculation in shaders.
+            //! Clipmap centers are the logical center of the texture, based on toroidal addressing.
             //! x: macro; y: detail
-            AZStd::array<AZStd::array<float, 4>, AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax)> m_clipmapScaleInv;
+            AZStd::array<RawVector4u, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapCenters;
 
-            //! The region of the clipmap that needs update.
-            //! Each clipmap can have 0-6 regions to update each frame.
-            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::MacroClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_macroClipmapBoundsRegions;
-            AZStd::array<AZStd::array<uint32_t, 4>, ClipmapConfiguration::DetailClipmapStackSizeMax * ClipmapBounds::MaxUpdateRegions> m_detailClipmapBoundsRegions;
+            //! A scale converting the length from the texture space to the world space.
+            //! For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
+            //!              dworld = dtexel * clipmapToWorldScale.
+            // x: macro; y: detail
+            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
+
+            //! The number of regions to be updated during the current frame.
+            uint32_t m_macroClipmapUpdateRegionCount = 0;
+            uint32_t m_detailClipmapUpdateRegionCount = 0;
 
             //! Numbers match the compute shader invoking call dispatch(X, Y, 1).
             uint32_t m_macroDispatchGroupCountX = 1;
@@ -210,9 +218,6 @@ namespace Terrain
             // Which clipmap level to sample from, or texture array index.
             float m_debugClipmapLevel; // cast to float in CPU
 
-            // Current viewport size.
-            AZStd::array<float, 2> m_viewportSize;
-
             // How big the clipmap should appear on the screen.
             float m_debugScale;
 
@@ -226,6 +231,28 @@ namespace Terrain
         //! Data will be gathered from them when camera moves.
         AZStd::vector<ClipmapBounds> m_macroClipmapBounds;
         AZStd::vector<ClipmapBounds> m_detailClipmapBounds;
+
+        //! GPU buffer containing the region aabbs to be updated during this frame.
+        AZ::Render::GpuBufferHandler m_macroClipmapUpdateRegionsBuffer;
+        AZ::Render::GpuBufferHandler m_detailClipmapUpdateRegionsBuffer;
+
+        struct ClipmapUpdateRegion
+        {
+            uint32_t m_clipmapLevel;
+
+            // 16 bytes alignment padding
+            AZStd::array<uint32_t, 3> m_padding;
+
+            RawVector4u m_updateRegion;
+
+            ClipmapUpdateRegion(uint32_t clipmapLevel, RawVector4u updateRegion)
+                : m_clipmapLevel(clipmapLevel)
+                , m_updateRegion(updateRegion)
+            {
+            }
+        };
+        AZStd::vector<ClipmapUpdateRegion> m_macroClipmapUpdateRegions;
+        AZStd::vector<ClipmapUpdateRegion> m_detailClipmapUpdateRegions;
 
         //! Terrain SRG input.
         AZ::RHI::ShaderInputNameIndex m_terrainSrgClipmapDataIndex = ClipmapDataShaderInput;

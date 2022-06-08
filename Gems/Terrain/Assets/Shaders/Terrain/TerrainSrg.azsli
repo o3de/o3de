@@ -12,7 +12,7 @@
 
 static const uint MacroClipmapStackSizeMax = 16u;
 static const uint DetailClipmapStackSizeMax = 16u;
-static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
+static const uint SharedClipmapStackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
 // Each clipmap can have at most 6 update regions based on the current algorithm.
 // Due to compilation limitation, the size of arrays must be direct constant.
 static const uint UpdateRegionMax = 6u;
@@ -97,11 +97,20 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_index23;
     };
 
+    struct ClipmapUpdateRegion
+    {
+        uint m_clipmapLevel;
+        uint3 m_padding;
+        uint4 m_clipmapRegion;
+    };
+
     struct ClipmapData
     {
         // The 2D xy-plane view position where the main camera is.
-        float2 m_previousViewPosition;
-        float2 m_currentViewPosition;
+        float2 m_viewPosition;
+
+        // Current viewport size.
+        float2 m_viewportSize;
 
         // 2D xy-plane world bounds defined by the terrain.
         float2 m_worldBoundsMin;
@@ -131,20 +140,18 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
         // They are used for toroidal addressing and may move each frame based on the view point movement.
         // The move distance is scaled differently in each layer.
-        uint4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
-        uint4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
+        uint4 m_clipmapCenters[SharedClipmapStackSizeMax];
 
-        // A list of reciprocal the clipmap scale [s],
-        // where 1 pixel in the current layer of clipmap represents s meters. 
-        // Fast lookup list to avoid redundant calculation in shaders.
+        // A scale converting the length from the texture space to the world space.
+        // For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
+        //              dworld = dtexel * clipmapToWorldScale.
         // x: macro; y: detail
-        float4 m_clipmapScaleInv[StackSizeMax];
+        float4 m_clipmapToWorldScale[SharedClipmapStackSizeMax];
 
-        // The region of the clipmap that needs update.
-        // Each clipmap can have 0-6 regions to update each frame.
-        uint4 m_macroClipmapBoundsRegions[MacroClipmapUpdateRegionMax];
-        uint4 m_detailClipmapBoundsRegions[DetailClipmapUpdateRegionMax];
-
+        // The number of regions to be updated during the current frame.
+        uint m_macroClipmapUpdateRegionCount;
+        uint m_detailClipmapUpdateRegionCount;
+            
         // Numbers match the compute shader invoking call dispatch(X, Y, 1).
         uint m_macroDispatchGroupCountX;
         uint m_macroDispatchGroupCountY;
@@ -170,9 +177,6 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // Which clipmap level to sample from, or texture array index.
         float m_debugClipmapLevel; // cast to float in CPU
 
-        // Current viewport size.
-        float2 m_viewportSize;
-
         // How big the clipmap should appear on the screen.
         float m_debugScale;
 
@@ -193,6 +197,11 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         AddressV = Wrap;
         AddressW = Wrap;
     };
+    
+    // The region of the clipmap that needs update.
+    // Each clipmap can have 0-6 regions to update each frame.
+    StructuredBuffer<ClipmapUpdateRegion> m_macroClipmapUpdateRegions;
+    StructuredBuffer<ClipmapUpdateRegion> m_detailClipmapUpdateRegions;
 
     Texture2DArray<float4> m_macroColorClipmaps;
     Texture2DArray<float2> m_macroNormalClipmaps;
