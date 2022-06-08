@@ -277,7 +277,14 @@ namespace GradientSignal
         const int imageResolutionX = aznumeric_cast<int>(m_configuration.m_outputResolution.GetX());
         const int imageResolutionY = aznumeric_cast<int>(m_configuration.m_outputResolution.GetY());
 
-        const int channels = 1; // R
+        // The TGA and EXR formats aren't recognized with only single channel data,
+        // so need to use RGBA format for them
+        int channels = 1;
+        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
+        {
+            channels = 4;
+        }
+
         int bytesPerPixel = 0;
         OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
         switch (m_configuration.m_outputFormat)
@@ -369,20 +376,46 @@ namespace GradientSignal
                 switch (m_configuration.m_outputFormat)
                 {
                 case OutputFormat::R8:
-                    pixels[((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)] =
-                        static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
-                    break;
+                    {
+                        int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
+                        AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
+                        pixels[index] = value;
+
+                        if (channels == 4)
+                        {
+                            pixels[index + 1] = value;
+                            pixels[index + 2] = value;
+                            pixels[index + 3] = std::numeric_limits<AZ::u8>::max();
+                        }
+                        break;
+                    }
                 case OutputFormat::R16:
                     {
                         auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                        actualMem[((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)] =
-                            static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
+                        int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
+                        AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
+                        actualMem[index] = value;
+
+                        if (channels == 4)
+                        {
+                            actualMem[index + 1] = value;
+                            actualMem[index + 2] = value;
+                            actualMem[index + 3] = std::numeric_limits<AZ::u16>::max();
+                        }
                         break;
                     }
                 case OutputFormat::R32:
                     {
                         auto actualMem = reinterpret_cast<float*>(pixels.data());
-                        actualMem[((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)] = sample;
+                        int index = (((centeringOffsetY + y) * imageResolutionX * channels) + (centeringOffsetX + x)) * channels;
+                        actualMem[index] = sample;
+
+                        if (channels == 4)
+                        {
+                            actualMem[index + 1] = sample;
+                            actualMem[index + 2] = sample;
+                            actualMem[index + 3] = 1.0f;
+                        }
                         break;
                     }
                 }
