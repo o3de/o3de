@@ -70,12 +70,10 @@ namespace AZ
                 //! Builds all of the properties and generates the user interface for the inspector
                 void Populate();
 
-                bool SaveMaterial() const;
-                bool SaveMaterialToSource() const;
-                bool HasMaterialSource() const;
-                bool HasMaterialParentSource() const;
-                void OpenMaterialSourceInEditor() const;
-                void OpenMaterialParentSourceInEditor() const;
+                AZStd::string GetRelativePath(const AZStd::string& path) const;
+                AZStd::string GetFileName(const AZStd::string& path) const;
+                bool IsSourceMaterial(const AZStd::string& path) const;
+                bool SaveMaterial(const AZStd::string& path) const;
                 void OpenMenu();
                 const EditorMaterialComponentUtil::MaterialEditData& GetEditData() const;
 
