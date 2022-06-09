@@ -16,7 +16,7 @@
 #include <iostream>
 namespace AssetProcessor
 {
-    ProductDependencyTreeDelegate::ProductDependencyTreeDelegate(QObject* parent, ProductAssetDetailsPanel* panel)
+    ProductDependencyTreeDelegate::ProductDependencyTreeDelegate(QObject* parent, QPointer<ProductAssetDetailsPanel> panel)
         : QStyledItemDelegate(parent)
         , m_panel(panel)
     {

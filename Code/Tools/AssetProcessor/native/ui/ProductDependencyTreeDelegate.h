@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QStyledItemDelegate>
+#include <QPointer>
 namespace AssetProcessor
 {
     class ProductAssetDetailsPanel;
@@ -15,10 +16,10 @@ namespace AssetProcessor
     {
         Q_OBJECT
     public:
-        ProductDependencyTreeDelegate(QObject* parent, ProductAssetDetailsPanel* panel);
+        ProductDependencyTreeDelegate(QObject* parent, QPointer<ProductAssetDetailsPanel> panel);
     protected:
         bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
     private:
-        ProductAssetDetailsPanel* m_panel;
+        QPointer<ProductAssetDetailsPanel> m_panel;
     };
 } // namespace AssetProcessor

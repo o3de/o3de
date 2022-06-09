@@ -53,8 +53,7 @@ namespace AssetProcessor
         void PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId);
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
-        AssetTreeFilterModel* m_productFilterModel = nullptr;
-        ProductDependencyTreeItem* m_currentItem = nullptr;
+        AZStd::shared_ptr<AssetTreeFilterModel> m_productFilterModel = nullptr;
         AZStd::unique_ptr<ProductDependencyTreeItem> m_root;
         AZStd::unordered_set<AZ::s64> m_trackedProductIds;
         DependencyTreeType m_treeType;
