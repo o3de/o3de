@@ -278,36 +278,26 @@ namespace GradientSignal
         const float inputBoundsExtentsX = inputBoundsExtents.GetX();
         const float inputBoundsExtentsY = inputBoundsExtents.GetY();
 
-        // Get the largest square size that fits into our window bounds.
-        const int imageBoundsX = AZStd::min(imageResolutionX, imageResolutionY);
-        const int imageBoundsY = AZStd::min(imageResolutionX, imageResolutionY);
-
-        // Get how many pixels we need to offset in x and y to center our square in the window.  Because we've made our square
-        // as large as possible, one of these two values should always be 0.
-        // i.e. we'll end up with black bars on the sides or on top, but it should never be both.
-        const int centeringOffsetX = (imageResolutionX - imageBoundsX) / 2;
-        const int centeringOffsetY = (imageResolutionY - imageBoundsY) / 2;
-
         // When sampling the gradient, we can choose to either do it at the corners of each texel area we're sampling, or at the center.
         // They're both correct choices in different ways.  We're currently choosing to do the corners, which makes scaledTexelOffset = 0,
         // but the math is here to make it easy to change later if we ever decide sampling from the center provides a more intuitive
         // image.
         constexpr float texelOffset = 0.0f; // Use 0.5f to sample from the center of the texel.
         const AZ::Vector3 scaledTexelOffset(
-            texelOffset * inputBoundsExtentsX / static_cast<float>(imageBoundsX),
-            texelOffset * inputBoundsExtentsY / static_cast<float>(imageBoundsY), 0.0f);
+            texelOffset * inputBoundsExtentsX / static_cast<float>(imageResolutionX),
+            texelOffset * inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
         // Scale from our image size space (ex: 256 pixels) to our bounds space (ex: 16 meters)
         const AZ::Vector3 pixelToBoundsScale(
-            inputBoundsExtentsX / static_cast<float>(imageBoundsX), inputBoundsExtentsY / static_cast<float>(imageBoundsY), 0.0f);
+            inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
-        for (int y = 0; y < imageBoundsY; ++y)
+        for (int y = 0; y < imageResolutionY; ++y)
         {
-            for (int x = 0; x < imageBoundsX; ++x)
+            for (int x = 0; x < imageResolutionX; ++x)
             {
                 // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
                 // imageBoundsY)
-                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageBoundsY - 1) - y), 0.0f);
+                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
 
                 GradientSampleParams sampleParams;
                 sampleParams.m_position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
@@ -319,11 +309,11 @@ namespace GradientSignal
                 float sample = inBounds ? GetValue(sampleParams) : 0.0f;
 
                 // Write out the sample value for the pixel based on output format
+                int index = ((y * imageResolutionX) + x) * channels;
                 switch (m_configuration.m_outputFormat)
                 {
                 case OutputFormat::R8:
                     {
-                        int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
                         AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
                         pixels[index] = value; // R
 
@@ -338,7 +328,6 @@ namespace GradientSignal
                 case OutputFormat::R16:
                     {
                         auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                        int index = (((centeringOffsetY + y) * imageResolutionX) + (centeringOffsetX + x)) * channels;
                         AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
                         actualMem[index] = value; // R
 
@@ -353,7 +342,6 @@ namespace GradientSignal
                 case OutputFormat::R32:
                     {
                         auto actualMem = reinterpret_cast<float*>(pixels.data());
-                        int index = (((centeringOffsetY + y) * imageResolutionX * channels) + (centeringOffsetX + x)) * channels;
                         actualMem[index] = sample; // R
 
                         if (channels == 4)
