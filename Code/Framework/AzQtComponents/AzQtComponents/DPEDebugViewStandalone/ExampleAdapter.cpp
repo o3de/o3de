@@ -7,7 +7,7 @@
  */
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
-#include <AzFramework/DocumentPropertyEditor/ExampleAdapter.h>
+#include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {

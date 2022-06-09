@@ -32,8 +32,8 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
-#include <AzFramework/DocumentPropertyEditor/ExampleAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
