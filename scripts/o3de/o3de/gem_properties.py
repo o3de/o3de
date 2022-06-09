@@ -80,11 +80,26 @@ def edit_gem_props(gem_path: pathlib.Path = None,
     if new_version:
         update_key_dict['version'] = new_version
 
-    update_key_dict['engine_versions'] = utils.update_values_in_key_list(gem_json_data.get('engine_versions', []), 
-                                                     new_engine_versions, remove_engine_versions, 
-                                                     replace_engine_versions)
-    update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
-                                                     remove_tags, replace_tags)
+    if new_tags or remove_tags or replace_tags:
+        update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
+                                                        remove_tags, replace_tags)
+
+    if new_engine_versions and not utils.validate_version_specifier_list(new_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_engine_versions}')
+        return 1
+
+    if remove_engine_versions and not utils.validate_version_specifier_list(remove_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {remove_engine_versions}')
+        return 1
+
+    if replace_engine_versions and not utils.validate_version_specifier_list(replace_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_engine_versions}')
+        return 1
+
+    if new_engine_versions or remove_engine_versions or replace_engine_versions:
+        update_key_dict['engine_versions'] = utils.update_values_in_key_list(gem_json_data.get('engine_versions', []), 
+                                                        new_engine_versions, remove_engine_versions, 
+                                                        replace_engine_versions)
 
     gem_json_data.update(update_key_dict)
 

@@ -77,15 +77,19 @@ def edit_project_props(proj_path: pathlib.Path = None,
     if new_gem_names or delete_gem_names or replace_gem_names:
         proj_json['gem_names'] = utils.update_values_in_key_list(proj_json.get('gem_names', []), new_gem_names,
                                                         delete_gem_names, replace_gem_names)
+
     if new_engine_versions and not utils.validate_version_specifier_list(new_engine_versions):
         logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_engine_versions}')
         return 1
+
     if delete_engine_versions and not utils.validate_version_specifier_list(delete_engine_versions):
         logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {delete_engine_versions}')
         return 1
+
     if replace_engine_versions and not utils.validate_version_specifier_list(replace_engine_versions):
         logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_engine_versions}')
         return 1
+
     if new_engine_versions or delete_engine_versions or replace_engine_versions:
         proj_json['engine_versions'] = utils.update_values_in_key_list(proj_json.get('engine_versions', []), new_engine_versions,
                                                         delete_engine_versions, replace_engine_versions)
