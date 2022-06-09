@@ -386,12 +386,6 @@ namespace Terrain
         }
     }
 
-    //void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
-    //{
-    //    PrepareMaterialData();
-    //    m_terrainBoundsNeedUpdate = true;
-    //}
-
     void TerrainFeatureProcessor::SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config)
     {
         m_detailMaterialManager.SetDetailMaterialConfiguration(config);
