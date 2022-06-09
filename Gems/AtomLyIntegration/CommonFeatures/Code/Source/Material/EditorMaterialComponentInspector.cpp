@@ -353,6 +353,9 @@ namespace AZ
                             groupNameContext.ContextualizeProperty(propertyConfig.m_id);
                             
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
+                            propertyConfig.m_description +=
+                                "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties "
+                                "with overridden values that are different from the assigned material.";
 
                             const auto& propertyIndex = 
                                 m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
