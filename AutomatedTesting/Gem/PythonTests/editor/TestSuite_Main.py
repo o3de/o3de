@@ -32,9 +32,11 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9971")
     class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
         from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/9971")
     class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSharedTest):
         from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
 
