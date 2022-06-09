@@ -10,7 +10,6 @@
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <EMotionFX/CommandSystem/Source/JointLimitCommands.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
