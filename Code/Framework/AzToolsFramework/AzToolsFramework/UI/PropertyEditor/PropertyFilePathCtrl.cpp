@@ -26,22 +26,21 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
-    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath, const AZStd::string& productExtension)
+    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath)
     {
-        // The GetFullSourcePathFromRelativeProductPath API only works on product paths,
-        // so we need to append the product extension to try and find it
-        AZStd::string productRelativePath = relativePath.Native() + productExtension;
-
-        AZStd::string fullPath;
+        // First check if this source relative path already exists and is in an asset safe folder
+        AZ::Data::AssetInfo info;
+        AZStd::string watchFolder;
         bool fullPathIsValid = false;
-        AssetSystemRequestBus::BroadcastResult(
-            fullPathIsValid, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, productRelativePath, fullPath);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            fullPathIsValid, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, relativePath.c_str(), info,
+            watchFolder);
 
         // The full source path asset exists on disk, so use that as
         // the pre-selected file when the user opens the file picker dialog
         if (fullPathIsValid)
         {
-            return fullPath;
+            return AZ::IO::Path(watchFolder) / relativePath;
         }
         // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet
         // So we need to find it by searching in the asset safe folders
@@ -129,11 +128,6 @@ namespace AzToolsFramework
         m_filter = filter;
     }
 
-    void PropertyFilePathCtrl::SetProductExtension(AZStd::string extension)
-    {
-        m_productExtension = AZStd::move(extension);
-    }
-
     void PropertyFilePathCtrl::SetDefaultFileName(AZ::IO::Path fileName)
     {
         m_defaultFileName = AZStd::move(fileName);
@@ -178,7 +172,7 @@ namespace AzToolsFramework
         // that is stored
         else
         {
-            auto absolutePath = GetAbsolutePathFromRelativePath(m_currentFilePath, m_productExtension);
+            auto absolutePath = GetAbsolutePathFromRelativePath(m_currentFilePath);
             preselectedFilePath = QString::fromUtf8(absolutePath.c_str(), static_cast<int>(absolutePath.Native().size()));
         }
 

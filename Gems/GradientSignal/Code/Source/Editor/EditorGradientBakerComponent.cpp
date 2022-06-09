@@ -8,6 +8,7 @@
 
 #include "EditorGradientBakerComponent.h"
 
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 
@@ -77,7 +78,6 @@ namespace GradientSignal
                         AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputImagePath, "Output Path",
                         "Output path to bake the image to.")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GetSupportedImagesFilter())
-                    ->Attribute(AZ::Edit::Attributes::ProductAssetExtension, ".streamingimage")
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
                     ;
             }
@@ -217,7 +217,7 @@ namespace GradientSignal
         }
 
         // Get the absolute path for our stored relative path
-        AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath, ".streamingimage");
+        AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath);
 
         // Get the actual resolution of our image.  Note that this might be non-square, depending on how the window is sized.
         const int imageResolutionX = aznumeric_cast<int>(m_configuration.m_outputResolution.GetX());
