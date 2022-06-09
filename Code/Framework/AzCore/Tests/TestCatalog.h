@@ -18,6 +18,8 @@ namespace UnitTest
     using namespace AZ;
     using namespace Data;
 
+    struct DataDrivenHandlerAndCatalog;
+
     struct LoadAssetDataSynchronizer
     {
         AZStd::mutex m_conditionMutex;
@@ -29,9 +31,39 @@ namespace UnitTest
 
     struct AssetDefinition
     {
-        AssetDefinition* AddNoLoad(const Uuid& id);
-        AssetDefinition* AddPreload(const Uuid& id);
-        AssetDefinition* AddQueueLoad(const Uuid& id);
+        AssetDefinition& AddNoLoad(const Uuid& id);
+        AssetDefinition& AddPreload(const Uuid& id);
+        AssetDefinition& AddQueueLoad(const Uuid& id);
+        void Store(DataDrivenHandlerAndCatalog& catalog);
+
+        AssetDefinition(
+            const Uuid& assetUuid,
+            AssetType typeId,
+            const char* fileName,
+            size_t loadDelay = 0,
+            bool noAssetData = false,
+            bool noHandler = false,
+            LoadAssetDataSynchronizer* loadSynchronizer = nullptr)
+                : m_assetId(assetUuid, 0)
+                , m_type(typeId)
+                , m_fileName(fileName)
+                , m_loadDelay(loadDelay)
+                , m_loadSynchronizer(loadSynchronizer)
+                , m_noAssetData(noAssetData)
+                , m_noHandler(noHandler)
+        {}
+
+        template<typename T>
+        static AssetDefinition Create(
+            const Uuid& assetUuid,
+            const char* fileName,
+            size_t loadDelay = 0,
+            bool noAssetData = false,
+            bool noHandler = false,
+            LoadAssetDataSynchronizer* loadSynchronizer = nullptr)
+        {
+            return AssetDefinition(assetUuid, azrtti_typeid<T>(), fileName, loadDelay, noAssetData, noHandler, loadSynchronizer);
+        }
 
         AssetId m_assetId;
         AssetType m_type;
@@ -78,11 +110,12 @@ namespace UnitTest
         Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetAllProductDependencies(const AssetId& assetId) override;
         Outcome<AZStd::vector<ProductDependency>, AZStd::string> GetLoadBehaviorProductDependencies(const AssetId& assetId,
             AZStd::unordered_set<AssetId>& noloadSet, PreloadAssetListType& preloadList) override;
+        AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> GetAllReverseProductDependencies(const AssetId&) override;
 
         AssetInfo GetAssetInfoById(const AssetId& assetId) override;
 
         const char* GetStreamName(const AssetId& id);
-        
+
         const AssetDefinition* FindByType(const Uuid& type);
         const AssetDefinition* FindById(const AssetId& id);
         void AddDependenciesHelper(const AZStd::vector<ProductDependency>& list, AZStd::vector<ProductDependency>& listOutput);
@@ -92,15 +125,7 @@ namespace UnitTest
 
         void SetArtificialDelayMilliseconds(size_t createDelay, size_t loadDelay);
 
-        template<typename T>
-        AssetDefinition* AddAsset(const Uuid& assetUuid, const char* fileName, size_t loadDelay = 0, bool noAssetData = false,
-            bool noHandler = false, LoadAssetDataSynchronizer* loadSynchronizer = nullptr)
-        {
-            m_assetDefinitions.push_back(AssetDefinition{
-                AssetId(assetUuid, 0), azrtti_typeid<T>(), fileName, loadDelay, loadSynchronizer, noAssetData, noHandler });
-
-            return &m_assetDefinitions.back();
-        }
+        void AddAsset(AssetDefinition assetDefinition);
 
         AZStd::atomic_int m_numCreations = 0;
         AZStd::atomic_int m_numDestructions = 0;
@@ -115,5 +140,6 @@ namespace UnitTest
         AZ::IO::IStreamerTypes::Priority m_defaultPriority = AZ::IO::IStreamerTypes::s_priorityMedium;
 
         AZStd::vector<AssetDefinition> m_assetDefinitions;
+        AZStd::unordered_map<AssetId, AZStd::unordered_set<AssetId>> m_reverseDependencies;
     };
 }

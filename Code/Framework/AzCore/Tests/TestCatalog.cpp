@@ -14,7 +14,7 @@
 
 namespace UnitTest
 {
-    AssetDefinition* AssetDefinition::AddNoLoad(const Uuid& id)
+    AssetDefinition& AssetDefinition::AddNoLoad(const Uuid& id)
     {
         ProductDependency dependency;
 
@@ -23,21 +23,26 @@ namespace UnitTest
 
         m_noLoadDependencies.push_back(AZStd::move(dependency));
 
-        return this;
+        return *this;
     }
 
-    AssetDefinition* AssetDefinition::AddPreload(const Uuid& id)
+    AssetDefinition& AssetDefinition::AddPreload(const Uuid& id)
     {
         m_preloadDependencies.push_back(ProductDependency(AssetId(id, 0), {}));
 
-        return this;
+        return *this;
     }
 
-    AssetDefinition* AssetDefinition::AddQueueLoad(const Uuid& id)
+    AssetDefinition& AssetDefinition::AddQueueLoad(const Uuid& id)
     {
         m_queueLoadDependencies.push_back(ProductDependency(AssetId(id, 0), {}));
 
-        return this;
+        return *this;
+    }
+
+    void AssetDefinition::Store(DataDrivenHandlerAndCatalog& catalog)
+    {
+        catalog.AddAsset(*this);
     }
 
     DataDrivenHandlerAndCatalog::DataDrivenHandlerAndCatalog()
@@ -271,6 +276,26 @@ namespace UnitTest
         m_loadDelay = loadDelay;
     }
 
+    void DataDrivenHandlerAndCatalog::AddAsset(AssetDefinition assetDefinition)
+    {
+        for(auto&& dependency : assetDefinition.m_noLoadDependencies)
+        {
+            m_reverseDependencies[dependency.m_assetId].emplace(assetDefinition.m_assetId);
+        }
+
+        for (auto&& dependency : assetDefinition.m_preloadDependencies)
+        {
+            m_reverseDependencies[dependency.m_assetId].emplace(assetDefinition.m_assetId);
+        }
+
+        for (auto&& dependency : assetDefinition.m_queueLoadDependencies)
+        {
+            m_reverseDependencies[dependency.m_assetId].emplace(assetDefinition.m_assetId);
+        }
+
+        m_assetDefinitions.push_back(AZStd::move(assetDefinition));
+    }
+
     Outcome<AZStd::vector<ProductDependency>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllProductDependencies(const AssetId& assetId)
     {
         const auto* def = FindById(assetId);
@@ -304,6 +329,34 @@ namespace UnitTest
         }
 
         return AZ::Failure<AZStd::string>("Unknown asset");
+    }
+
+    AZ::Outcome<AZStd::unordered_set<AssetId>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllReverseProductDependencies(const AssetId& assetId)
+    {
+        AZStd::vector<AZ::Data::AssetId> queue;
+        AZStd::unordered_set<AZ::Data::AssetId> output;
+
+        queue.push_back(assetId);
+
+        for (int i = 0; i < queue.size(); ++i)
+        {
+            const auto& queuedDependency = queue[i];
+            auto itr = m_reverseDependencies.find(queuedDependency);
+
+            if (itr != m_reverseDependencies.end())
+            {
+                for (const auto& dependency : itr->second)
+                {
+                    if (!output.contains(dependency))
+                    {
+                        queue.push_back(dependency);
+                        output.insert(dependency);
+                    }
+                }
+            }
+        }
+
+        return AZ::Success(output);
     }
 
     AssetInfo DataDrivenHandlerAndCatalog::GetAssetInfoById(const AssetId& assetId)
