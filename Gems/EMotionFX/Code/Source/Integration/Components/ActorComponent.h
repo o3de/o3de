@@ -88,7 +88,7 @@ namespace EMotionFX
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
-                // actor are disabled when the actor is out of view.
+                // actor are disabled when the actor is out of view. 
                 bool m_forceUpdateJointsOOV = false;
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 

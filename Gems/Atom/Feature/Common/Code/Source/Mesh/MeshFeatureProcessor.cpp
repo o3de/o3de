@@ -240,7 +240,7 @@ namespace AZ
 
             return {};
         }
-
+        
         const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
@@ -540,7 +540,7 @@ namespace AZ
                 AZ_Error("ModelDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-
+            
             if (!m_modelAsset.IsReady())
             {
                 m_modelAsset.QueueLoad();
@@ -592,7 +592,7 @@ namespace AZ
                 // Static mesh, no cloth buffer present.
                 model = RPI::Model::FindOrCreate(modelAsset);
             }
-
+            
             if (model)
             {
                 m_parent->RemoveRayTracingData();
@@ -608,7 +608,7 @@ namespace AZ
             }
         }
 
-
+        
         void ModelDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)
         {
             OnAssetReady(asset);
@@ -624,7 +624,7 @@ namespace AZ
             AzFramework::AssetSystemRequestBus::Broadcast(
                 &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
         }
-
+        
         void ModelDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
             if (assetId == m_modelAsset.GetId())
@@ -645,7 +645,7 @@ namespace AZ
             if (assetId == m_modelAsset.GetId())
             {
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-
+                
                 // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
                 AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
@@ -703,7 +703,7 @@ namespace AZ
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-
+            
             MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
@@ -860,7 +860,7 @@ namespace AZ
             shaderInputContract.m_streamChannels.emplace_back(bitangentStreamChannelInfo);
             shaderInputContract.m_streamChannels.emplace_back(uvStreamChannelInfo);
 
-            // setup the raytracing data for each sub-mesh
+            // setup the raytracing data for each sub-mesh 
             const size_t meshCount = modelLod->GetMeshes().size();
             RayTracingFeatureProcessor::SubMeshVector subMeshes;
             for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
