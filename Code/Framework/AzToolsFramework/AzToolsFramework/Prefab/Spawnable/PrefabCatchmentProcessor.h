@@ -14,11 +14,7 @@
 namespace AZ
 {
     class ReflectContext;
-}
-
-namespace AZ::DataStream
-{
-    enum StreamType;
+    enum DataStream::StreamType;
 }
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
