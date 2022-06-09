@@ -90,8 +90,8 @@ class TestsPythonAssetProcessing_APBatch(object):
                     return True
         return False
 
-    def compute_udp_asset_dbgsg(self, workspace, asset_processor, dbgsg_filename, ap_setup_fixture):
-        # computes the file name of the .dbgsg filt for a UserDefinedProperties test file
+    def compute_udp_asset_debug_file(self, workspace, asset_processor, debug_filename, ap_setup_fixture):
+        # computes the file name of the debug file for a UserDefinedProperties test file
 
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "UserDefinedProperties")        
         result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
@@ -104,18 +104,18 @@ class TestsPythonAssetProcessing_APBatch(object):
             platform = 'pc'
         cache_folder = os.path.join(cache_folder, 'Cache', platform)
 
-        # compute the file name to the .dbgsg file
-        asset_dbgsg = os.path.join(cache_folder, dbgsg_filename)
-        if os.path.isfile(asset_dbgsg) == False:
-            raise Exception(f"Missing file {asset_dbgsg}")
+        # compute the file name to the debug file
+        asset_debug_filename = os.path.join(cache_folder, debug_filename)
+        if os.path.isfile(asset_debug_filename) == False:
+            raise Exception(f"Missing file {asset_debug_filename}")
 
-        return asset_dbgsg
+        return asset_debug_filename
 
     def test_ProcessSceneWithMetadata_SupportedMayaDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Maya that has a few user defined properties
 
         asset_dbgsg = 'userdefinedproperties/maya_with_attributes.dbgsg'
-        dbgsg_file = self.compute_udp_asset_dbgsg(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
+        dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_lod: false'), "Malformed o3de_atom_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_lod: 0.000000'), "Malformed o3de_default_lod value"
@@ -125,19 +125,26 @@ class TestsPythonAssetProcessing_APBatch(object):
         # This test loads the debug output file for an FBX exported by Max that has a few user defined properties
 
         asset_dbgsg = 'userdefinedproperties/max_with_attributes.dbgsg'
-        dbgsg_file = self.compute_udp_asset_dbgsg(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
+        dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_phyx_lodY: 0.000000'), "Malformed o3de_phyx_lodY value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_lod: 0.000000'), "Malformed o3de_default_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_lod: false'), "Malformed o3de_atom_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'), "Malformed o3de_default_material value"
 
-    def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work2(self, workspace, ap_setup_fixture, asset_processor):
+    def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
         # This test loads the debug output file for an FBX exported by Max that has a few user defined properties
 
         asset_dbgsg = 'userdefinedproperties/blender_with_attributes.dbgsg'
-        dbgsg_file = self.compute_udp_asset_dbgsg(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
+        dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_material: 0'), "Malformed o3de_atom_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_lod: 0.000000'), "Malformed o3de_default_lod value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'), "Malformed o3de_default_material value"
         assert self.find_user_defined_property(dbgsg_file, 'o3de_atom_lod: 0'), "Malformed o3de_atom_lod value"
+
+    def test_ProcessSceneWithMetadata_DebugSceneManifest_Work(self, workspace, ap_setup_fixture, asset_processor):
+        # This test detects the debug .assetinfo file in the cahce folder
+
+        assetinfo_dbg = 'userdefinedproperties/blender_with_attributes.assetinfo.dbg'
+        assetinfo_dbg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, assetinfo_dbg, ap_setup_fixture)
+        assert assetinfo_dbg_file, "The debug assetinfo file is missing"

@@ -1067,8 +1067,8 @@ namespace AZ
             ErrorHandler*                   m_errorHandler;         ///< Optional user error handler.
             const SerializeContext*         m_context;              ///< Serialize context containing class reflection required for data traversal.
 
-            IDataContainer::ElementCB       m_elementCallback;      // Pre-bound functor computed internally to avoid allocating closures during traversal.
-            ErrorHandler                    m_defaultErrorHandler;  // If no custom error handler is provided, the context provides one.
+            IDataContainer::ElementCB       m_elementCallback;      ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            ErrorHandler                    m_defaultErrorHandler;  ///< If no custom error handler is provided, the context provides one.
         };
 
         /// Find a class data (stored information) based on a class ID and possible parent class data.
@@ -2531,7 +2531,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = AzTypeInfo<T>::Uuid();
+        const AZ::TypeId& canonicalTypeId = azrtti_typeid<T>();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {

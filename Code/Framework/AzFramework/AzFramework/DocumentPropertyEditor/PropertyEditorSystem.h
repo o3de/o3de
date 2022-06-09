@@ -28,6 +28,7 @@ namespace AZ::DocumentPropertyEditor
         const NodeMetadata* FindNode(AZ::Name name) const override;
         const PropertyEditorMetadata* FindPropertyEditor(AZ::Name name) const override;
         const AttributeDefinitionInterface* FindNodeAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const override;
+        void EnumerateRegisteredAttributes(AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const override;
         AZ::Name LookupNameFromId(AZ::Crc32 crc) const override;
 
     private:

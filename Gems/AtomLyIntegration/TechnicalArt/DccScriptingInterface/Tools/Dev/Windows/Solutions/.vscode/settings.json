@@ -1,5 +1,8 @@
 {
-    "python.envFile": "${workspaceFolder}/../../.env",
-    "python.pythonPath": "${workspaceFolder}\\..\\..\\..\\..\\..\\..\\Tools\\Python\\3.7.5\\windows\\python.exe",
-    "editor.wordWrap": "wordWrapColumn"
+    "python.envFile": "${env:PATH_DCCSIG}/.env",
+    "python.pythonPath": "${env:DCCSI_PY_IDE}",
+    "editor.wordWrap": "wordWrapColumn",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
+
