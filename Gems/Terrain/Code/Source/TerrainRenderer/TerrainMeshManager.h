@@ -170,12 +170,6 @@ namespace Terrain
             float m_rcpClodDistance;
         };
 
-        struct SectorUpdateContext
-        {
-            uint32_t m_lodLevel;
-            StackSectorData* m_sector;
-        };
-
         struct SectorDataRequest
         {
             AZ::Vector2 m_worldStartPosition;
@@ -233,7 +227,7 @@ namespace Terrain
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightNormalVertex>& meshHeightsNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
-        void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
+        void ProcessSectorUpdates(AZStd::vector<AZStd::vector<StackSectorData*>>& sectorUpdates);
         void UpdateRaytracingData(const AZ::Aabb& bounds);
 
         template<typename Callback>
