@@ -18,6 +18,13 @@ SCRIPT_EVENT_UI = "Script Events"
 VARIABLE_MANAGER_UI = "Variable Manager"
 
 """
+Constants for Variable Manager
+
+"""
+RESTORE_DEFAULT_LAYOUT = "Restore Default Layout"
+
+
+"""
 String constants for Node Palette
 """
 NODE_CATEGORY_MATH = "Math"

@@ -11,7 +11,9 @@ import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 from PySide2.QtCore import Qt
-from scripting_utils.scripting_constants import WAIT_TIME_3
+from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_MANAGER_QT,
+                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
+                                                 RESTORE_DEFAULT_LAYOUT)
 
 
 # fmt: off
@@ -22,6 +24,8 @@ class Tests:
     variable_unpinned_after_reopen  = ("Variable is unpinned after reopening create variable menu", "Variable is not unpinned after reopening create variable menu")
 # fmt: on
 
+
+BOOLEAN_STRING = VARIABLE_TYPES[0]
 
 class VariableManager_UnpinVariableType_Works:
     """
@@ -45,9 +49,6 @@ class VariableManager_UnpinVariableType_Works:
     :return: None
     """
 
-    def find_pane(self, window, pane_name):
-        return window.findChild(QtWidgets.QDockWidget, pane_name)
-
     def click_menu_option(self, window, option_text):
         action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
         action.trigger()
@@ -59,56 +60,57 @@ class VariableManager_UnpinVariableType_Works:
         general.idle_enable(True)
 
         # 1) Open Script Canvas window (Tools > Script Canvas)
-        general.open_pane("Script Canvas")
-        helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), WAIT_TIME_3)
+        general.open_pane(SCRIPT_CANVAS_UI)
+        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
 
         # 2) Get the SC window object
         editor_window = pyside_utils.get_editor_main_window()
-        sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
-        sc_main = sc.findChild(QtWidgets.QMainWindow)
+        script_canvas_editor = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+        script_canvas_main_window = script_canvas_editor.findChild(QtWidgets.QMainWindow)
 
         # 3) Open Variable Manager in Script Canvas window
-        pane = self.find_pane(sc, "VariableManager")
-        if not pane.isVisible():
-            self.click_menu_option(sc, "Variable Manager")
-        pane = self.find_pane(sc, "VariableManager")
-        Report.result(Tests.variable_manager_opened, pane.isVisible())
+        variable_manager_pane = script_canvas_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
+        if not variable_manager_pane.isVisible():
+            self.click_menu_option(script_canvas_editor, VARIABLE_MANAGER_QT)
+        Report.result(Tests.variable_manager_opened, variable_manager_pane.isVisible())
 
         # 4) Create new graph
         create_new_graph = pyside_utils.find_child_by_pattern(
-            sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
+            script_canvas_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
         )
         create_new_graph.trigger()
 
         # 5) Click on the Create Variable button in the Variable Manager
-        variable_manager = sc_main.findChild(QtWidgets.QDockWidget, "VariableManager")
-        button = variable_manager.findChild(QtWidgets.QPushButton, "addButton")
-        button.click()
+        create_variable_button = variable_manager_pane.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
+        create_variable_button.click()
 
         # 6) Unpin Boolean by clicking the "Pin" icon on its left side
-        table_view = variable_manager.findChild(QtWidgets.QTableView, "variablePalette")
-        model_index = pyside_utils.find_child_by_pattern(table_view, "Boolean")
-        # Make sure Boolean is pinned
-        is_boolean = model_index.siblingAtColumn(0)
-        result = helper.wait_for_condition(lambda: is_boolean.data(Qt.DecorationRole) is not None, WAIT_TIME_3)
+        variable_table_view = variable_manager_pane.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+        boolean_variable_object = pyside_utils.find_child_by_pattern(variable_table_view, BOOLEAN_STRING)
+        # Make sure Boolean starts pinned
+        pinned_toggle = boolean_variable_object.siblingAtColumn(0)
+        result = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is not None, WAIT_TIME_3)
         Report.result(Tests.variable_pinned, result)
         # Unpin Boolean and make sure Boolean is unpinned.
-        pyside_utils.item_view_index_mouse_click(table_view, is_boolean)
-        result = helper.wait_for_condition(lambda: is_boolean.data(Qt.DecorationRole) is None, WAIT_TIME_3)
+        pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
+        result = helper.wait_for_condition(lambda: pinned_toggle.data(Qt.DecorationRole) is None, WAIT_TIME_3)
         Report.result(Tests.variable_unpinned, result)
 
         # 7) Close and Reopen Create Variable menu and make sure Boolean is unpinned after reopening Create Variable menu
-        button.click()
-        button.click()
-        model_index = pyside_utils.find_child_by_pattern(table_view, "Boolean")
+        create_variable_button.click()
+        create_variable_button.click()
+        boolean_variable_object = pyside_utils.find_child_by_pattern(variable_table_view, BOOLEAN_STRING)
         result = helper.wait_for_condition(
-            lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is None, WAIT_TIME_3
+            lambda: boolean_variable_object.siblingAtColumn(0).data(Qt.DecorationRole) is None, WAIT_TIME_3
         )
         Report.result(Tests.variable_unpinned_after_reopen, result)
 
         # 8) Restore default layout and close SC window
-        self.click_menu_option(sc, "Restore Default Layout")
-        general.close_pane("Script Canvas")
+        boolean_variable_object = pyside_utils.find_child_by_pattern(variable_table_view, BOOLEAN_STRING)
+        pinned_toggle = boolean_variable_object.siblingAtColumn(0)
+        pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
+        self.click_menu_option(script_canvas_editor, RESTORE_DEFAULT_LAYOUT)
+        general.close_pane(SCRIPT_CANVAS_UI)
 
 
 test = VariableManager_UnpinVariableType_Works()
