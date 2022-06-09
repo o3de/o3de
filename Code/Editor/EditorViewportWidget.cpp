@@ -2134,8 +2134,6 @@ void EditorViewportWidget::OnStartPlayInEditorBegin()
 
 void EditorViewportWidget::OnRootPrefabInstanceLoaded()
 {
-    AZ_Printf("ViewBookmarkDebug", "OnRootPrefabInstanceLoaded\n");
-
     // set the camera position once we know the entire scene (level) has finished loading
     SetDefaultCamera();
 }
