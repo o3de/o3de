@@ -132,8 +132,12 @@
                         },
                         "assetHint": "assets/destruction/brittle.blastmaterial"
                     },
-                    "PhysicsMaterial": {
-                        "MaterialId": "{34AD1046-240B-448C-A694-AE80F595C431}"
+                    "PhysicsMaterialAsset": {
+                        "assetId": {
+                            "guid": "{B9100A77-5ACF-5FCC-B9DD-2DAF8EF82F9E}",
+                            "subId": 1
+                        },
+                        "assetHint": "levels/physics/material_librarychangesreflectinstantly/to_change_static_friction_1.physicsmaterial"
                     }
                 },
                 "Component_[7159608037522336146]": {

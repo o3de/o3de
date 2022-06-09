@@ -9,6 +9,7 @@
 
 #include <Components/TerrainPhysicsColliderComponent.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -21,8 +22,6 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AzFramework/Physics/Material.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
@@ -65,23 +64,12 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsSurfaceMaterialMapping>()
-                ->Version(1)
+                ->Version(3)
                 ->Field("Surface", &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag)
-                ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_materialId);
+                ->Field("MaterialAsset", &TerrainPhysicsSurfaceMaterialMapping::m_materialAsset)
+                ->Field("Material", &TerrainPhysicsSurfaceMaterialMapping::m_legacyMaterialId)
+            ;
         }
-    }
-
-
-    AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
-    {
-        if (const auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
-            {
-                return physicsConfiguration->m_materialLibraryAsset.GetId();
-            }
-        }
-        return {};
     }
 
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
@@ -91,8 +79,9 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderConfig>()
-                ->Version(3)
-                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
+                ->Version(5)
+                ->Field("DefaultMaterialAsset", &TerrainPhysicsColliderConfig::m_defaultMaterialAsset)
+                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_legacyDefaultMaterialSelection)
                 ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
             ;
         }
@@ -359,9 +348,11 @@ namespace Terrain
             perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
-    uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
+    uint8_t TerrainPhysicsColliderComponent::GetMaterialIndex(
+        const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset,
+        const AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>>& materialList) const
     {
-        const auto& materialIter = AZStd::find(materialList.begin(), materialList.end(), materialId);
+        const auto& materialIter = AZStd::find(materialList.begin(), materialList.end(), materialAsset);
         if (materialIter != materialList.end())
         {
             return static_cast<uint8_t>(materialIter - materialList.begin());
@@ -370,34 +361,34 @@ namespace Terrain
         return 0;
     }
 
-    Physics::MaterialId TerrainPhysicsColliderComponent::FindMaterialIdForSurfaceTag(const SurfaceData::SurfaceTag tag) const
+    AZ::Data::Asset<Physics::MaterialAsset> TerrainPhysicsColliderComponent::FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const
     {
         AZStd::shared_lock lock(m_stateMutex);
-
+        
         uint8_t index = 0;
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
             if (mapping.m_surfaceTag == tag)
             {
-                return mapping.m_materialId;
+                return mapping.m_materialAsset;
             }
             index++;
         }
 
         // If this surface isn't mapped, use the default material.
-        return m_configuration.m_defaultMaterialSelection.GetMaterialId();
+        return m_configuration.m_defaultMaterialAsset;
     }
 
-    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
-        const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& regionIn) const
+    void TerrainPhysicsColliderComponent::GetHeightfieldIndicesFromRegion(
+        const AZ::Aabb& regionIn, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows) const
     {
-        using namespace AzFramework::Terrain;
-
-        AZ_PROFILE_FUNCTION(Terrain);
-
         if (!m_terrainDataActive)
         {
+            startRow = 0;
+            startColumn = 0;
+            numRows = 0;
+            numColumns = 0;
             return;
         }
 
@@ -415,18 +406,16 @@ namespace Terrain
 
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
-        TerrainQueryRegion queryRegion;
         size_t xOffset, yOffset;
 
         {
             AZStd::shared_lock lock(m_stateMutex);
 
+            // Convert the heightfield start point from world scale (1 = 1 meter) to terrain grid scale (1 = 1 terrain square)
             AZ::Vector2 heightfieldStartGridPoint = AZ::Vector2(m_heightfieldRegion.m_startPoint) / m_heightfieldRegion.m_stepSize;
 
             AZ::Vector2 contractedAlignedStartGridPoint = (AZ::Vector2(region.GetMin()) / gridResolution).GetCeil();
             AZ::Vector2 contractedAlignedEndGridPoint = (AZ::Vector2(region.GetMax()) / gridResolution).GetFloor();
-
-            AZ::Vector2 contractedAlignedStartPoint = contractedAlignedStartGridPoint * gridResolution;
 
             xOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetX() - heightfieldStartGridPoint.GetX());
             yOffset = aznumeric_cast<size_t>(contractedAlignedStartGridPoint.GetY() - heightfieldStartGridPoint.GetY());
@@ -434,21 +423,56 @@ namespace Terrain
             // The "+ 1.0" at the end is because we need to be sure to include the end points. (ex: start=1, end=4 should have 4 points)
             AZ::Vector2 numPoints = contractedAlignedEndGridPoint - contractedAlignedStartGridPoint + AZ::Vector2(1.0f);
             const size_t numPointsX = AZStd::min(aznumeric_cast<size_t>(numPoints.GetX()), m_heightfieldRegion.m_numPointsX);
-            const size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(numPoints.GetY()),  m_heightfieldRegion.m_numPointsY);
+            const size_t numPointsY = AZStd::min(aznumeric_cast<size_t>(numPoints.GetY()), m_heightfieldRegion.m_numPointsY);
 
-            queryRegion = TerrainQueryRegion(contractedAlignedStartPoint, numPointsX, numPointsY, gridResolution);
+            startColumn = xOffset;
+            startRow = yOffset;
+            numColumns = numPointsX;
+            numRows = numPointsY;
         }
+    }
+
+    //! Updates the list of heights and materials within the region.
+    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
+        const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+        size_t startColumn,
+        size_t startRow,
+        size_t numColumns,
+        size_t numRows) const
+    {
+        using namespace AzFramework::Terrain;
+
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        if (!m_terrainDataActive)
+        {
+            return;
+        }
+
+        // Early-out if we aren't trying to update any points.
+        if ((numColumns == 0) || (numRows == 0))
+        {
+            return;
+        }
+
+        AZ::Aabb worldSize = GetHeightfieldAabb();
+        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+
+        AZ::Vector2 startPoint =
+            AZ::Vector2(worldSize.GetMin())
+            + (AZ::Vector2(aznumeric_cast<float>(startColumn), aznumeric_cast<float>(startRow)) * gridResolution);
+
+        TerrainQueryRegion queryRegion = TerrainQueryRegion(startPoint, numColumns, numRows, gridResolution);
 
         const float worldCenterZ = worldSize.GetCenter().GetZ();
         const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
         const float worldHeightBoundsMax = worldSize.GetMax().GetZ();
 
-        int32_t gridWidth, gridHeight;
-        GetHeightfieldGridSize(gridWidth, gridHeight);
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList = GetMaterialList();
 
-        AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
-
-        auto perPositionCallback = [xOffset, yOffset, &updateHeightsMaterialsCallback, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
+        auto perPositionCallback =
+            [startColumn, startRow, &updateHeightsMaterialsCallback, &materialList, this, worldCenterZ, worldHeightBoundsMin,
+             worldHeightBoundsMax]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             float height = surfacePoint.m_position.GetZ();
@@ -472,12 +496,12 @@ namespace Terrain
             Physics::HeightMaterialPoint point;
             point.m_height = height - worldCenterZ;
             point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
-            Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
-            point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
+            AZ::Data::Asset<Physics::MaterialAsset> materialAsset = FindMaterialAssetForSurfaceTag(surfaceWeight.m_surfaceType);
+            point.m_materialIndex = GetMaterialIndex(materialAsset, materialList);
 
-            int32_t column = aznumeric_cast<int32_t>(xOffset + xIndex);
-            int32_t row = aznumeric_cast<int32_t>(yOffset + yIndex);
-            updateHeightsMaterialsCallback(row, column, point);
+            size_t column = startColumn + xIndex;
+            size_t row = startRow + yIndex;
+            updateHeightsMaterialsCallback(column, row, point);
         };
 
         // Create an async query to update all of the height and material data so that we can spread the computation across
@@ -538,40 +562,41 @@ namespace Terrain
         return AZ::Vector2(gridResolution);
     }
 
-    void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
+    void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(size_t& numColumns, size_t& numRows) const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        numColumns = aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsX);
-        numRows = aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsY);
+        numColumns = m_heightfieldRegion.m_numPointsX;
+        numRows = m_heightfieldRegion.m_numPointsY;
     }
 
-    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
+    size_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        return aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsX);
+        return m_heightfieldRegion.m_numPointsX;
     }
 
-    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
+    size_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        return aznumeric_cast<int32_t>(m_heightfieldRegion.m_numPointsY);
+        return m_heightfieldRegion.m_numPointsY;
     }
 
-    AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
+    AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> TerrainPhysicsColliderComponent::GetMaterialList() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-
-        AZStd::vector<Physics::MaterialId> materialList;
+        
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
+        materialList.reserve(m_configuration.m_surfaceMaterialMappings.size() + 1); // +1 for default material asset
 
         // Ensure the list contains the default material as the first entry.
-        materialList.emplace_back(m_configuration.m_defaultMaterialSelection.GetMaterialId());
+        materialList.push_back(m_configuration.m_defaultMaterialAsset);
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
-            const auto& existingInstance = AZStd::find(materialList.begin(), materialList.end(), mapping.m_materialId);
-            if (existingInstance == materialList.end())
+            const auto& existingInstance = AZStd::find(materialList.begin(), materialList.end(), mapping.m_materialAsset);
+            if (existingInstance == materialList.end()) // Avoid having the same asset more than once
             {
-                materialList.emplace_back(mapping.m_materialId);
+                materialList.push_back(mapping.m_materialAsset);
             }
         }
 
@@ -588,15 +613,17 @@ namespace Terrain
 
     AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::GetHeightsAndMaterials() const
     {
-        int32_t gridWidth = 0, gridHeight = 0;
+        size_t gridWidth = 0, gridHeight = 0;
         GetHeightfieldGridSize(gridWidth, gridHeight);
         AZ_Assert(gridWidth * gridHeight != 0, "GetHeightsAndMaterials: Invalid grid size. Size cannot be zero.");
 
         AZStd::vector<Physics::HeightMaterialPoint> heightMaterials(gridWidth * gridHeight);
-        UpdateHeightsAndMaterials([&heightMaterials, gridWidth](size_t row, size_t col, const Physics::HeightMaterialPoint& point)
-        {
-            heightMaterials[col + row * gridWidth] = point;
-        });
+        UpdateHeightsAndMaterials(
+            [&heightMaterials, gridWidth](size_t col, size_t row, const Physics::HeightMaterialPoint& point)
+            {
+                heightMaterials[col + row * gridWidth] = point;
+            },
+            0, 0, gridWidth, gridHeight);
 
         return heightMaterials;
     }

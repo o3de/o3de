@@ -40,7 +40,7 @@ namespace Blast
         BlastAsset& m_asset; //!< Blast asset to create from.
         BlastListener* m_listener = nullptr; //!< Blast listener to notify about actor creations/destructions, this would generally be BlastFamilyComponent instance.
         Nv::Blast::TkGroup* m_group = nullptr; //!< if not nullptr created TkActor (and TkFamily) will be placed in this group
-        Physics::MaterialId m_physicsMaterial;
+        Physics::MaterialId m_physicsMaterialId;
         const Material* m_blastMaterial = nullptr;
         AZStd::shared_ptr<BlastActorFactory> m_actorFactory;
         AZStd::shared_ptr<EntityProvider> m_entityProvider;

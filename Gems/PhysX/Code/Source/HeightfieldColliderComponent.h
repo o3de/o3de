@@ -56,6 +56,8 @@ namespace PhysX
 
         void SetColliderConfiguration(const Physics::ColliderConfiguration& colliderConfig);
 
+        void BlockOnPendingJobs();
+
     protected:
         // ColliderComponentRequestBus
         AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;

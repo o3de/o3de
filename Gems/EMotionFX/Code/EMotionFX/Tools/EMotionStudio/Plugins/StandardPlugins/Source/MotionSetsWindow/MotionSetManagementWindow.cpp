@@ -16,7 +16,6 @@
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetManagementWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <Editor/SaveDirtyFilesCallbacks.h>
 #include <MCore/Source/FileSystem.h>
 #include <MCore/Source/IDGenerator.h>
@@ -37,16 +36,10 @@ namespace EMStudio
     MotionSetManagementRemoveMotionsFailedWindow::MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions)
         : QDialog(parent)
     {
-        // set the window title
         setWindowTitle("Remove Motions Failed");
-
-        // resize the window
         resize(720, 405);
 
-        // create the layout
         QVBoxLayout* layout = new QVBoxLayout();
-
-        // add the top text
         layout->addWidget(new QLabel("The following motions failed to get removed because they are used by another motion set:"));
 
         // create the table widget
@@ -307,7 +300,6 @@ namespace EMStudio
 
         return true;
     }
-
 
     void MotionSetManagementWindow::RecursivelyAddSets(QTreeWidgetItem* parent, EMotionFX::MotionSet* motionSet, const AZStd::vector<uint32>& selectedSetIDs)
     {
@@ -610,10 +602,16 @@ namespace EMStudio
     }
 
 
-    void MotionSetManagementWindow::SelectItemsById(uint32 motionSetId)
+    void MotionSetManagementWindow::SelectItemsById(uint32 motionSetId, bool clearSelectionUpfront)
     {
         bool selectionChanged = false;
         disconnect(m_motionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
+
+        if (clearSelectionUpfront)
+        {
+            m_motionSetsTree->clearSelection();
+        }
+
         QTreeWidgetItemIterator it(m_motionSetsTree);
         while (*it)
         {

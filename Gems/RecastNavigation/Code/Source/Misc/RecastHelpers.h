@@ -64,12 +64,12 @@ namespace RecastNavigation
         int m_tileX = 0; // tile coordinate within the navigation grid along X-axis
         int m_tileY = 0; // tile coordinate within the navigation grid along Y-axis
 
+        //! A callback to the async object that requested tile geometry. Useful to return the tile data from a task back to the original caller.
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
+
         //! Indexed vertices.
         AZStd::vector<RecastVector3> m_vertices;
         AZStd::vector<AZ::s32> m_indices;
-
-        //! Callback to the navigation mesh component that should process this tile.
-        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> m_tileCallback;
 
         //! @returns true if there are no vertices in this tile.
         bool IsEmpty() const
