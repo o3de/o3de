@@ -24,12 +24,10 @@ import ly_test_tools.launchers.launcher_helper as launcher_helper
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP, ASSET_PROCESSOR_SETTINGS_ROOT_KEY
 
 # Import fixtures
+from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import ap_fast_scan_setting_backup_fixture
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 from ..ap_fixtures.ap_idle_fixture import TimestampChecker
-from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import (
-    ap_fast_scan_setting_backup_fixture as fast_scan_backup,
-)
 
 
 # Import LyShared
@@ -72,7 +70,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3540434")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsAndMacPlatforms_GUIFastScanNoSettingSet_FastScanSettingCreated(self, asset_processor, fast_scan_backup):
+    def test_WindowsAndMacPlatforms_GUIFastScanNoSettingSet_FastScanSettingCreated(self, asset_processor, ap_fast_scan_setting_backup_fixture):
         """
          Tests that a fast scan settings entry gets created for the AP if it does not exist
          and ensures that the entry is defaulted to fast-scan enabled
@@ -86,7 +84,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         """
 
         asset_processor.create_temp_asset_root()
-        fast_scan_setting = fast_scan_backup
+        fast_scan_setting = ap_fast_scan_setting_backup_fixture
 
         # Delete registry value (if it exists)
         fast_scan_setting.delete_entry()
@@ -114,14 +112,11 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
     # fmt:off
     def test_WindowsMacPlatforms_GUIFastScanEnabled_GameLauncherWorksWithAP(self, asset_processor, workspace,
-                                                                            fast_scan_backup):
+                                                                            ap_fast_scan_setting_backup_fixture):
         # fmt:on
         """
-        Sandboxed: Not working on Jenkins
-
         Make sure game launcher working with Asset Processor set to turbo mode
         Validate that no fatal errors (crashes) are reported within a certain
         time frame for the AP and the GameLauncher
@@ -137,7 +132,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         CHECK_ALIVE_SECONDS = 15
 
         # AP is running in turbo mode
-        fast_scan = fast_scan_backup
+        fast_scan = ap_fast_scan_setting_backup_fixture
         fast_scan.set_value("True")
 
         value = fast_scan.get_value()
