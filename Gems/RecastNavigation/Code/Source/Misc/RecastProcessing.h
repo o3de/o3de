@@ -32,20 +32,45 @@ namespace RecastNavigation
 
         rcContext* m_context = nullptr;
 
+        //! First step in building a navigation mesh.
+        //! @param geom input geometry
+        //! @param meshConfig navigation mesh configuration
         void InitializeMeshConfig(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig);
 
+        //! Second step in building a navigation mesh.
+        //! @return true if successful
         [[nodiscard]] bool RasterizeInputPolygonSoup();
 
+        //! Thirst step in building a navigation mesh.
+        //! Once all geometry is rasterized, we do initial pass of filtering to
+        //! remove unwanted overhangs caused by the conservative rasterization
+        //! as well as filter spans where the character cannot possibly stand.
+        //! @param meshConfig navigation mesh configuration, must be the same as provided in @InitializeMeshConfig
         void FilterWalkableSurfaces(const RecastNavigationMeshConfig& meshConfig);
 
+        //! Fourth step in building a navigation mesh.
+        //! Compact the height field so that it is faster to handle from now on.
+        //! This will result more cache coherent data as well as the neighbors
+        //! between walkable cells will be calculated.
+        //! @return true if successful
         [[nodiscard]] bool PartitionWalkableSurfaceToSimpleRegions();
 
+        //! Fifth step in building a navigation mesh.
+        //! @return true if successful
         [[nodiscard]] bool TraceAndSimplifyRegionContours();
 
+        //! Sixth step in building a navigation mesh.
+        //! @return true if successful
         [[nodiscard]] bool BuildPolygonsMeshFromContours();
 
+        //! Seventh step in building a navigation mesh.
+        //! @return true if successful
         [[nodiscard]] bool CreateDetailMesh();
 
+        //! Eight and last step in building a navigation mesh.
+        //! @param geom input geometry, must be the same as provided in @InitializeMeshConfig
+        //! @param meshConfig navigation mesh configuration
+        //! @return navigation tile data in Recast-binary format
         NavigationTileData CreateDetourData(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig);
     };
 } // namespace RecastNavigation

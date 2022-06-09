@@ -12,9 +12,9 @@ namespace RecastNavigation
 {
     void RecastNavigationPhysXProviderConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationPhysXProviderConfig>()
+            serializeContext->Class<RecastNavigationPhysXProviderConfig>()
                 ->Field("Use Editor Scene", &RecastNavigationPhysXProviderConfig::m_useEditorScene)
                 ->Version(1)
                 ;

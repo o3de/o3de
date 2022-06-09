@@ -14,6 +14,7 @@
 
 namespace RecastNavigation
 {
+    //! Provides configuration for @RecastNavigationPhysXProviderComponent and @EditorRecastNavigationPhysXProviderComponent.
     class RecastNavigationPhysXProviderConfig final
         : public AZ::ComponentConfig
     {

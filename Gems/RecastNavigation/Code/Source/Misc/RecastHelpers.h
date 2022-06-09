@@ -7,6 +7,7 @@
  */
 
 #pragma once
+
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
