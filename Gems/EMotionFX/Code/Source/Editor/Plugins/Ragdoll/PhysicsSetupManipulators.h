@@ -63,6 +63,9 @@ namespace EMotionFX
         //! Should reset values in the manipulator mode to sensible defaults.
         virtual void ResetValues() = 0;
 
+        //! Causes values in associated property editor to refresh.
+        virtual void InvalidateEditorValues() {};
+
         void SetViewportId(AZ::s32 viewportId);
     protected:
         AZ::s32 m_viewportId;

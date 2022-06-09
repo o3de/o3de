@@ -8,9 +8,11 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -50,6 +52,10 @@ namespace AzPhysics
         AZ::Crc32 GetChildLocalPositionVisibility() const;
         AZ::Crc32 GetStartSimulationEnabledVisibility() const;
 
+        // Allow additional values specific to a particular physics backend to be retrieved and modified.
+        virtual AZStd::optional<float> GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName) { return AZStd::nullopt; }
+        virtual void SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value) {};
+
         // Entity/object association.
         void* m_customUserData = nullptr;
 
@@ -66,4 +72,18 @@ namespace AzPhysics
         // Default all visibility settings to invisible, since most joint configurations don't need to display these.
         AZ::u8 m_propertyVisibilityFlags = 0;
     };
-}
+
+    //! Default colors, line widths etc for use when visualizing joints.
+    namespace JointVisualizationDefaults
+    {
+        const float Alpha = 0.6f;
+        const AZ::Color ColorDefault = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
+        const AZ::Color ColorFirst = AZ::Color(1.0f, 0.0f, 0.0f, Alpha);
+        const AZ::Color ColorSecond = AZ::Color(0.0f, 1.0f, 0.0f, Alpha);
+        const AZ::Color ColorSweepArc = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
+
+        const float SweepLineDisplaceFactor = 0.5f;
+        const float SweepLineThickness = 1.0f;
+        const float SweepLineGranularity = 1.0f;
+    } // namespace JointVisualizationDefaults
+} // namespace AzPhysics

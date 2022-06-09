@@ -9,28 +9,29 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
-#include <AzToolsFramework/Manipulators/RotationManipulators.h>
+#include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {
-    enum class JointLimitFrame : AZ::u8
+    //! Used for storing the initial state of the joint twist limits.
+    struct JointTwistLimitState
     {
-        Parent,
-        Child
+        AZStd::optional<float> m_twistLimitLower;
+        AZStd::optional<float> m_twistLimitUpper;
     };
 
-    //! Provides functionality for interactively editing character physics joint limit frame orientations in the Animation Editor Viewport. 
-    class JointLimitRotationManipulators
+    //! Provides functionality for interactively editing character physics joint limit extents in the Animation Editor Viewport. 
+    class JointTwistLimitManipulators
         : public PhysicsSetupManipulatorsBase
         , private AZ::TickBus::Handler
         , private PhysicsSetupManipulatorRequestBus::Handler
     {
     public:
-        JointLimitRotationManipulators(JointLimitFrame jointLimitFrame);
-        ~JointLimitRotationManipulators();
+        JointTwistLimitManipulators();
+        ~JointTwistLimitManipulators();
         void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
@@ -44,21 +45,15 @@ namespace EMotionFX
         // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
-        void OnManipulatorMoved(const AZ::Quaternion& rotation);
         void BeginEditing();
         void FinishEditing();
 
-        AZ::Quaternion& GetLocalOrientation();
-        const AZ::Quaternion& GetLocalOrientation() const;
-
-        AzToolsFramework::RotationManipulators m_rotationManipulators =
-            AzToolsFramework::RotationManipulators(AZ::Transform::CreateIdentity());
+        AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitLowerManipulator;
+        AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitUpperManipulator;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
-        JointLimitFrame m_jointLimitFrame = JointLimitFrame::Parent;
         MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustJointLimitCallback;
+        JointTwistLimitState m_jointTwistLimitState;
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };
-
-    void CreateCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData);
-    void ExecuteCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData);
 } // namespace EMotionFX
