@@ -15,7 +15,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsHotReloadingEnabled()
     {
-        bool isHotReloadingEnabled = true;
+        bool isHotReloadingEnabled = false;
 
         
         if (auto* registry = AZ::SettingsRegistry::Get())
