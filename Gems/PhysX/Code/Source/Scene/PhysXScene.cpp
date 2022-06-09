@@ -125,7 +125,7 @@ namespace PhysX
 
         bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
         {
-            if (auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
+            if (const auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
             {
                 bool shapeAdded = false;
                 auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderPair->first), *(shapeColliderPair->second));
@@ -139,7 +139,7 @@ namespace PhysX
                     }, simulatedBody);
                 return shapeAdded;
             }
-            else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
+            else if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
                 for (const auto& shapeColliderConfigs : *shapeColliderPairList)
@@ -156,15 +156,16 @@ namespace PhysX
                 }
                 return shapeAdded;
             }
-            else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
+            else if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
-                AZStd::visit([shape](auto&& body)
+                auto shapePtr = *shape;
+                AZStd::visit([shapePtr](auto&& body)
                     {
-                        body->AddShape(*shape);
+                        body->AddShape(shapePtr);
                     }, simulatedBody);
                 return true;
             }
-            else if (auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
+            else if (const auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
             {
                 for (auto shapePtr : *shapeList)
                 {
