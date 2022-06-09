@@ -71,7 +71,6 @@ namespace AssetProcessor
         AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
         AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
     }
-
     
     QTreeView* ProductAssetDetailsPanel::GetOutgoingProductDependenciesTreeView() const
     {

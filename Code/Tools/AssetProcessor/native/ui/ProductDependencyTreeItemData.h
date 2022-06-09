@@ -70,7 +70,6 @@ namespace AssetProcessor
             return m_data;
         }
 
-
     private:
         AZStd::vector<AZStd::unique_ptr<ProductDependencyTreeItem>> m_childItems;
         AZStd::shared_ptr<ProductDependencyTreeItemData> m_data;

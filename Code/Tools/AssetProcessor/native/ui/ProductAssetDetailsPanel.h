@@ -61,16 +61,6 @@ namespace AssetProcessor
         void SetScanQueueEnabled(bool enabled);
         void SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection);
 
-        ProductDependencyTreeModel* GetOutgoingDependencyTreeModel() const
-        {
-            return m_outgoingDependencyTreeModel;
-        }
-
-        ProductDependencyTreeModel* GetIncomingDependencyTreeModel() const
-        {
-            return m_incomingDependencyTreeModel;
-        }
-
         QTreeView* GetOutgoingProductDependenciesTreeView() const;
         QTreeView* GetIncomingProductDependenciesTreeView() const;
 
