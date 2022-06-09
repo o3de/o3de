@@ -331,8 +331,10 @@ namespace AzFramework
 
         queue.push_back(id);
 
-        for (const auto& queuedDependency : queue)
+        // Use a standard loop since we're appending to the end of the vector as we go
+        for (int i = 0; i < queue.size(); ++i)
         {
+            const auto& queuedDependency = queue[i];
             auto itr = m_registry->m_reverseAssetDependencies.find(queuedDependency);
 
             if (itr != m_registry->m_reverseAssetDependencies.end())
