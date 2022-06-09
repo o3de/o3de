@@ -30,15 +30,15 @@ namespace AzToolsFramework
     {
         Q_OBJECT
 
-        signals:
+    signals:
         void expanderChanged(bool expanded);
 
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
         virtual ~DPELayout();
-        void setExpanderShown(bool shouldShow);
-        void setExpanded(bool expanded);
+        void SetExpanderShown(bool shouldShow);
+        void SetExpanded(bool expanded);
         bool IsExpanded();
 
         // QLayout overrides

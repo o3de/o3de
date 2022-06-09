@@ -46,7 +46,7 @@ namespace AzToolsFramework
         }
     }
 
-    void DPELayout::setExpanderShown(bool shouldShow)
+    void DPELayout::SetExpanderShown(bool shouldShow)
     {
         if (m_showExpander != shouldShow)
         {
@@ -55,7 +55,7 @@ namespace AzToolsFramework
         }
     }
 
-    void DPELayout::setExpanded(bool expanded)
+    void DPELayout::SetExpanded(bool expanded)
     {
         if (m_expanded != expanded)
         {
@@ -170,7 +170,7 @@ namespace AzToolsFramework
 
     void DPELayout::onCheckstateChanged(int expanderState)
     {
-        setExpanded(expanderState == Qt::Checked);
+        SetExpanded(expanderState == Qt::Checked);
     }
 
     DocumentPropertyEditor* DPELayout::GetDPE() const
@@ -232,7 +232,7 @@ namespace AzToolsFramework
 
         if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
-            m_columnLayout->setExpanderShown(true);
+            m_columnLayout->SetExpanderShown(true);
 
             if (IsExpanded())
             {
@@ -256,7 +256,7 @@ namespace AzToolsFramework
                 {
                     priorWidgetInLayout = this;
                 }
-                if (m_domOrderedChildren.size() > domIndex)
+                if (domIndex >= 0 && m_domOrderedChildren.size() > domIndex)
                 {
                     delete m_domOrderedChildren[domIndex];
                     m_domOrderedChildren[domIndex] = newRow;
@@ -388,7 +388,7 @@ namespace AzToolsFramework
                 };
                 if (AZStd::find_if(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), isDPERow) == m_domOrderedChildren.end())
                 {
-                    m_columnLayout->setExpanderShown(false);
+                    m_columnLayout->SetExpanderShown(false);
                 }
             }
 
