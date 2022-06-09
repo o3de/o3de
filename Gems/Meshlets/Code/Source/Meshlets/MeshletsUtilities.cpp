@@ -47,6 +47,9 @@ namespace AZ
             return srg;
         }
 
+        //! Utility function to create a resource view of different type than the shared buffer data.
+        //! Since this class is sub-buffer container, this method should be used after creating
+        //!  a new allocation to be used as a sub-buffer.
         RHI::BufferViewDescriptor UtilityClass::CreateResourceViewWithDifferentFormat(
             uint32_t offsetInBytes, uint32_t elementCount, uint32_t elementSize,
             RHI::Format format, RHI::BufferBindFlags overrideBindFlags)
@@ -160,7 +163,7 @@ namespace AZ
             AZ_Assert(bufferDesc.m_viewOffsetInBytes % bufferDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
 
             // And here we create resource view from the shared buffer 
-            RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
+            RHI::BufferViewDescriptor viewDescriptor = UtilityClass::CreateResourceViewWithDifferentFormat(
                 bufferDesc.m_viewOffsetInBytes, bufferDesc.m_elementCount, bufferDesc.m_elementSize,
                 bufferDesc.m_elementFormat, bufferDesc.m_bindFlags
             );

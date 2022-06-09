@@ -84,6 +84,10 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> srg
             );
 
+            //! Utility function to create a resource view into the shared buffer memory area. This
+            //! resource view can have a different type than the shared buffer data.
+            //! Since the shared buffer class is used as a buffer allocation for many sub-buffers, this
+            //! method should be used after creating a new allocation within the shared buffer.
             static RHI::BufferViewDescriptor CreateResourceViewWithDifferentFormat(
                 uint32_t offsetInBytes, uint32_t elementCount, uint32_t elementSize,
                 RHI::Format format, RHI::BufferBindFlags overrideBindFlags

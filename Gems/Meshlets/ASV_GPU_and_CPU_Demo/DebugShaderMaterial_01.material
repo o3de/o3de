@@ -1,7 +1,7 @@
 {
     "description": "",
     "parentMaterial": "",
-    "materialType": "TestData/Materials/Types/DebugShaderPBR.materialtype",
+    "materialType": "Materials/Types/DebugShaderPBR.materialtype",
     "materialTypeVersion": 3,
     "properties": {
         "settings": {

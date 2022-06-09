@@ -27,6 +27,13 @@ namespace AZ
 
     namespace Meshlets
     {
+        //! Multi Dispatch Pass - this pass will handle multiple dispatch submission
+        //! during each frame - one dispatch per mesh, each represents group of compute
+        //! threads that will be working to create meshlets of the given mesh.
+        //! This class can be generalized in the future to become a base class for this
+        //! dispatch submission.
+        //! [To Do] - revisit the 'BuildCommandListInternal' method and refactor to handle
+        //! 'under the hood' RHI CPU threads that carries the submissions in parallel
         class MultiDispatchComputePass final
             : public RPI::ComputePass
         {
@@ -37,7 +44,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(MultiDispatchComputePass, SystemAllocator, 0);
             ~MultiDispatchComputePass() = default;
 
-            // Creates a HairSkinningComputePass
             static RPI::Ptr<MultiDispatchComputePass> Create(const RPI::PassDescriptor& descriptor);
 
             //! Thread-safe function for adding the frame's dispatch items

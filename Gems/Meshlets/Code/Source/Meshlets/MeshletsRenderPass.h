@@ -47,9 +47,8 @@ namespace AZ
             static RPI::Ptr<MeshletsRenderPass> Create(const RPI::PassDescriptor& descriptor);
 
             // Adds the lod array of render data
+            bool FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
             bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
-            bool BuildDrawPacket(ModelLodDataArray& lodRenderDataArray,
-                Render::TransformServiceFeatureProcessorInterface::ObjectId objectId);
 
             Data::Instance<RPI::Shader> GetShader();
 
@@ -71,7 +70,6 @@ namespace AZ
             bool InitializePipelineState();
             bool AcquireFeatureProcessor();
             void BuildShaderAndRenderData();
-            bool BuildDrawPacket(MeshRenderData& lodRenderData);
 
             // Pass behavior overrides
             void InitializeInternal() override;

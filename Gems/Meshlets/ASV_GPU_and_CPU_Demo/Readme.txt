@@ -142,7 +142,7 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
                 "Gems/Meshlets/Assets/Shaders"
             ]
 
-2. You can choose to add Meshlets Assets in 
+2. Not required: you can choose to add Meshlets Assets in 
     <project_folder>/Registry/assets_scan_folders.setreg
             "Meshlets":
             {
@@ -151,26 +151,26 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
                     "Gems/Meshlets/Assets"
                 ]
             }
-    Remark: this is not required in this case as Meshlets can process regular Atom meshes
+    Remark: this is NOT required in this case as Meshlets can process regular Atom meshes
 
-3. Enable Meshlets gem in <project_folder>/Gem/code/enabled_gems.cmake
+3. Enable Meshlets gem in project_folder - AtomSampleViewer/Gem/code/enabled_gems.cmake
             (
                 set(ENABLED_GEMS
                 ...
                 Meshlets
             )
             
-4. Add the current passes to both MainPipeline.pass and LowEndPipeline.pass - 
-    these two pass files were added to this folder as a reference how to add the meshlets passes.
+4. Add the current passes to MainPipeline.pass - 
+    the pass file was added to this folder as a reference how to add the meshlets passes.
 
-5. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to shader directory 
-    such as [o3de]\Gems\Atom\TestData\TestData\Materials\Types
+5. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to the shader directory:
+    [o3de]\AtomSampleViewer\Materials\Types\*
 
-6. Add the material file 'debugshadermaterial_01.material' to the material directory. For exmaple:
-    [o3de]\AtomSampleViewer\Objects\DebugShaderMaterial_01.material
+6. Add the material file 'debugshadermaterial_01.material' to the material directory:
+    [o3de]\AtomSampleViewer\Materials\DebugShaderMaterial_01.material
     
-7. Add the meshoptimizer.lib compiled library (under Gems\Meshlets\External\Lib) 
-    to your Meshlets.static project.
+7. Complie meshoptimizer to a library, copy the compiled library (you can compile and place it under Gems\Meshlets\External\Lib) 
+    and add it to your Meshlets.static project.
 
 
 Including the Meshlets sample in ASV

@@ -208,28 +208,6 @@ namespace AZ
             }
         }
 
-        //! Utility function to create a resource view of different type than the shared buffer data.
-        //! Since this class is sub-buffer container, this method should be used after creating
-        //!  a new allocation to be used as a sub-buffer.
-        //! Notice the alignment required according to the element size - this might need
-        RHI::BufferViewDescriptor SharedBuffer::CreateResourceViewWithDifferentFormat(
-            uint32_t offsetInBytes, uint32_t elementCount, uint32_t elementSize,
-            RHI::Format format, RHI::BufferBindFlags overrideBindFlags)
-        {
-            RHI::BufferViewDescriptor viewDescriptor;
-
-            // In the following line I use the element size and not the size based of the
-            // element format since in the more interesting case of structured buffer, the
-            // size will result in an error.
-            uint32_t elementOffset = offsetInBytes / elementSize;
-            viewDescriptor.m_elementOffset = elementOffset;
-            viewDescriptor.m_elementCount = elementCount;
-            viewDescriptor.m_elementFormat = format;
-            viewDescriptor.m_elementSize = elementSize;
-            viewDescriptor.m_overrideBindFlags = overrideBindFlags;
-            return viewDescriptor;
-        }
-
     } // namespace Meshlets
 } // namespace AZ
 

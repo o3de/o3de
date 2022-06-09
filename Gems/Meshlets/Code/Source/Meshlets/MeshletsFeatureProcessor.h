@@ -89,8 +89,9 @@ namespace AZ
             Data::Instance<RPI::Shader> GetRenderShader() { return m_renderShader; }
 
         protected:
-            /// Implement equivalent
-//            bool CreateMeshDrawPacket(Meshlets::Mesh* currentMesh);
+            bool BuildDrawPacket(
+                ModelLodDataArray& lodRenderDataArray,
+                Render::TransformServiceFeatureProcessorInterface::ObjectId objectId);
 
             bool HasMeshletPasses(RPI::RenderPipeline* renderPipeline);
             bool AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline);

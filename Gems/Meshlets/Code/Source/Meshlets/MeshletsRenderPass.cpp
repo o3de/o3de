@@ -172,88 +172,15 @@ namespace AZ
             return m_shader;
         }
 
-
-        //==============================================================================
-        // [To Do] - to use the object Id and VertexUtility the ObjectSrg must be created 
-        // and passed with the Object Id here.
-        // This will require more than several changes also on the CPU side, utilizing the 
-        // transform (m_transformService->ReserveObjectId()) and setting the Id in the 
-        // PerObjectSrg (objectSrg->SetConstant(objectIdIndex, m_objectId.GetIndex())).
-        // Look at ModelDataInstance::Init(Data::Instance<RPI::Model> model) to see how
-        // to set the model Id - this will lead to MeshDrawPacket::DoUpdate that will
-        // demonstrate how to set the Srgs.
-        // The buffers for the render are passed and set via Srg and not as assembly buffers
-        // which means that the instance Is must be set (for matrices) and vertex Id must
-        // be used in the shader to address the buffers
-
-        // This method is called the first time that a render object is constructed and
-        // does not need to be called again.
-        // At each frame the MeshletsFeatureProcessor will call the AddDrawPackets per each
-        // visible (multi meshlet) mesh and add its draw packets to the view.
-        // Notice that because the object Id is mapped 1:1 with the DrawPacket, it currently
-        // does not support instancing. For instancing a separate structure per call needs
-        // to be added and the DrawPacket as well as the dispatch should be part of an object
-        // instance structure and not the render object.
-        bool MeshletsRenderPass::BuildDrawPacket(
-            ModelLodDataArray& lodRenderDataArray,
-            Render::TransformServiceFeatureProcessorInterface::ObjectId objectId)
+        bool MeshletsRenderPass::FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
         {
-            for (uint32_t lod = 0; lod < lodRenderDataArray.size(); ++lod)
+            if (!m_pipelineState)
             {
-                MeshRenderData* lodRenderData = lodRenderDataArray[lod];
-                if (!lodRenderData || !lodRenderData->RenderObjectSrg)
-                {
-                    AZ_Error("Meshlets", false,
-                        "Failed to build draw packet - missing LOD[%d] render data Render Srg.", lod);
-                    return false;
-                }
-
-                // ObjectId belongs to the instance and not the object - to be moved
-                lodRenderData->ObjectId = objectId;
-
-                RHI::DrawPacketBuilder::DrawRequest drawRequest;
-                drawRequest.m_listTag = m_drawListTag;
-                drawRequest.m_pipelineState = m_pipelineState;
-                // Leave the following empty if using buffers rather than vertex streams.
-//                drawRequest.m_streamBufferViews = lodRenderData->m_renderStreamBuffersViews; 
-                drawRequest.m_stencilRef = 0;
-                drawRequest.m_sortKey = 0;
-
-                RHI::DrawPacketBuilder drawPacketBuilder;
-                RHI::DrawIndexed drawIndexed;
-
-                drawIndexed.m_indexCount = lodRenderData->IndexCount;
-                drawIndexed.m_indexOffset = 0;
-                drawIndexed.m_vertexOffset = 0;
-
-                drawPacketBuilder.Begin(nullptr);
-                drawPacketBuilder.SetDrawArguments(drawIndexed);
-                drawPacketBuilder.SetIndexBufferView(lodRenderData->IndexBufferView);
-
-                // Add the object Id to the Srg - once instancing is supported, the ObjectId and the
-                // render Srg should be per instance / draw and not per object.
-                RHI::ShaderInputConstantIndex indexConstHandle = lodRenderData->RenderObjectSrg->FindShaderInputConstantIndex(Name("m_objectId"));
-                if (!lodRenderData->RenderObjectSrg->SetConstant(indexConstHandle, objectId.GetIndex()))
-                {
-                    AZ_Error("Meshlets", false, "Failed to bind Render Constant [m_ObjectId]");
-                }
-                lodRenderData->RenderObjectSrg->Compile();
-
-                // Add the per object render Srg - buffers required for the geometry render
-                drawPacketBuilder.AddShaderResourceGroup(lodRenderData->RenderObjectSrg->GetRHIShaderResourceGroup());
-
-                drawPacketBuilder.AddDrawItem(drawRequest);
-
-                // Change the following line in order to support instancing.
-                // For instancing the data cannot be associated 1:1 with the object
-                lodRenderData->MeshDrawPacket = drawPacketBuilder.End();
-
-                if (!lodRenderData->MeshDrawPacket)
-                {
-                    AZ_Error("Meshlets", false, "Failed to build the Meshlet DrawPacket.");
-                    return false;
-                }
+                return false;
             }
+
+            drawRequest.m_listTag = m_drawListTag;
+            drawRequest.m_pipelineState = m_pipelineState;
 
             return true;
         }

@@ -1,12 +1,12 @@
 {
     "gem_name": "Meshlets",
     "display_name": "Meshlets",
-    "license": "What license Meshlets uses goes here: i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
-    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
-    "origin_url": "The primary repo for Meshlets goes here: i.e. http://www.mydomain.com",
+        "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "A short description of Meshlets goes here.",
+    "summary": "The Meshlets Gem is a POC for rendering meshes solely on the GPU using meshlets / mesh clusters.",
     "canonical_tags": [
         "Gem"
     ],
@@ -14,8 +14,8 @@
         "Meshlets"
     ],
     "icon_path": "preview.png",
-    "requirements": "Notice of any requirements Meshlets has goes here. i.e. This requires X other gem",
-    "documentation_url": "Link to any documentation of Meshlets goes here: i.e. https://o3de.org/docs/user-guide/gems/reference/design/white-box/",
+    "requirements": "Compiled library for meshlets generation is required to be linked. The open source library meshoptimizer is required for that: https://github.com/zeux/meshoptimizer",
+    "documentation_url": "",
     "dependencies": [],
     "restricted": "Meshlets"
 }

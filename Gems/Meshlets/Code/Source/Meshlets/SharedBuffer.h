@@ -117,14 +117,6 @@ namespace AZ
             //! Update the content of an area within the shared buffer
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0) override;
 
-            //! Utility function to create a resource view into the shared buffer memory area. This
-            //! resource view can have a different type than the shared buffer data.
-            //! Since the shared buffer class is used as a buffer allocation for many sub-buffers, this
-            //! method should be used after creating a new allocation within the shared buffer.
-            static RHI::BufferViewDescriptor CreateResourceViewWithDifferentFormat(
-                uint32_t offsetInBytes, uint32_t elementCount, uint32_t elementSize,
-                RHI::Format format, RHI::BufferBindFlags overrideBindFlags);
-
         private:
             // SystemTickBus
             void OnSystemTick() override;

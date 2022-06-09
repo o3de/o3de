@@ -187,7 +187,8 @@ namespace AZ
             Data::Asset<RPI::BufferAsset> bufferAsset;
 
             // The next line is the actual buffer asset creation
-            AZ_Error("Meshlets", creator.End(bufferAsset), "Error -- creating buffer [%s]", bufferName.c_str());
+            [[maybe_unused]] bool creationSuccessful = creator.End(bufferAsset);
+            AZ_Error("Meshlets", creationSuccessful, "Error -- creating buffer [%s]", bufferName.c_str());
 
             return bufferAsset;
         }
