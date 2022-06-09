@@ -65,10 +65,10 @@ namespace Terrain
         
         struct WorldShaderData
         {
-            AZStd::array<float, 3> m_min{ 0.0f, 0.0f, 0.0f };
-            float padding1{ 0.0f };
-            AZStd::array<float, 3> m_max{ 0.0f, 0.0f, 0.0f };
-            float padding2{ 0.0f };
+            float m_zMin;
+            float m_zMax;
+            float m_zExtents;
+            float m_padding;
         };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
@@ -107,9 +107,9 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
 
-        AZ::RHI::ShaderInputConstantIndex m_worldDataIndex;
+        AZ::RHI::ShaderInputNameIndex m_worldDataIndex = "m_terrainWorldData";
 
-        AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
+        AZ::Vector2 m_zBounds{ AZ::Vector2::CreateZero() };
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
         float m_sampleSpacing{ 0.0f };

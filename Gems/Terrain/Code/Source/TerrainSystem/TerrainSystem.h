@@ -65,6 +65,7 @@ namespace Terrain
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
 
+        bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const override;
 
         //! Returns terrains height in meters at location x,y.
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain

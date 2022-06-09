@@ -20,13 +20,33 @@ AZ_CVAR(
 AZ_CVAR(
     float, cl_navmesh_showInputDataSeconds, 30.f, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, keeps the debug triangle mesh input for the specified number of seconds");
+AZ_CVAR(
+    AZ::u32, bg_navmesh_tileThreads, 4, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Number of threads to use to process tiles for each RecastNavigationPhysXProvider");
 
 AZ_DECLARE_BUDGET(Navigation);
 
 namespace RecastNavigation
 {
-    RecastNavigationPhysXProviderCommon::RecastNavigationPhysXProviderCommon(bool useEditorScene) : m_useEditorScene(useEditorScene)
+    RecastNavigationPhysXProviderCommon::RecastNavigationPhysXProviderCommon(bool useEditorScene)
+        : m_useEditorScene(useEditorScene)
+        , m_taskExecutor(bg_navmesh_tileThreads)
     {
+    }
+
+    void RecastNavigationPhysXProviderCommon::OnActivate()
+    {
+        m_shouldProcessTiles = true;
+    }
+
+    void RecastNavigationPhysXProviderCommon::OnDeactivate()
+    {
+        m_shouldProcessTiles = false;
+        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        {
+            // If the tasks are still in progress, wait until the task graph is finished.
+            m_taskGraphEvent->Wait();
+        }
     }
 
     const char* RecastNavigationPhysXProviderCommon::GetSceneName() const
@@ -78,7 +98,7 @@ namespace RecastNavigation
         if (cl_navmesh_showInputData || debugDrawInputData)
         {
             transformed.push_back(translated);
-        }        
+        }
     }
 
     static void AddDebugDrawIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZStd::vector<AZ::u32>& indices, bool debugDrawInputData)
@@ -119,9 +139,11 @@ namespace RecastNavigation
                 continue;
             }
 
-            AZ::Transform t = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
             overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
+            auto pose = overlapHit.m_shape->GetLocalPose();
             // Note: geometry data is in local space
+            AZ::Transform tBody = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
+            AZ::Transform t = tBody * AZ::Transform::CreateTranslation(pose.first);
 
             if (!vertices.empty())
             {
@@ -229,5 +251,90 @@ namespace RecastNavigation
         }
 
         return tiles;
+    }
+
+    void RecastNavigationPhysXProviderCommon::CollectGeometryAsyncImpl(
+        float tileSize,
+        float borderSize,
+        const AZ::Aabb& worldVolume,
+        [[maybe_unused]] bool debugDrawInputData,
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
+
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraph.Reset();
+
+            AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
+
+            const AZ::Vector3 extents = worldVolume.GetExtents();
+            int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+            int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
+
+            const AZ::Vector3& worldMin = worldVolume.GetMin();
+            const AZ::Vector3& worldMax = worldVolume.GetMax();
+
+            const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
+
+            AZStd::vector<AZ::TaskToken> tileTaskTokens;
+
+            // Create tasks for each tile and a finish task.
+            for (int y = 0; y < tilesAlongY; ++y)
+            {
+                for (int x = 0; x < tilesAlongX; ++x)
+                {
+                    const AZ::Vector3 tileMin{
+                        worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                        worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                        worldMin.GetZ()
+                    };
+
+                    const AZ::Vector3 tileMax{
+                        worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                        worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                        worldMax.GetZ()
+                    };
+
+                    AZ::Aabb tileVolume = AZ::Aabb::CreateFromMinMax(tileMin, tileMax);
+                    AZ::Aabb scanVolume = AZ::Aabb::CreateFromMinMax(tileMin - border, tileMax + border);
+                    AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
+                    geometryData->m_tileCallback = tileCallback;
+                    geometryData->m_worldBounds = tileVolume;
+                    geometryData->m_scanBounds = scanVolume;
+                    geometryData->m_tileX = x;
+                    geometryData->m_tileY = y;
+
+                    AZ::TaskToken token = m_taskGraph.AddTask(
+                        m_taskDescriptor, [this, geometryData]()
+                        {
+                            if (m_shouldProcessTiles)
+                            {
+                                AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
+                                QueryHits results;
+                                CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
+                                AppendColliderGeometry(*geometryData, results, false);
+                                geometryData->m_tileCallback(geometryData);
+                            }
+                        });
+
+                    tileTaskTokens.push_back(AZStd::move(token));
+                }
+            }
+
+            AZ::TaskToken finishToken = m_taskGraph.AddTask(
+                m_taskDescriptor, [tileCallback]()
+                {
+                    tileCallback({}); // Notifies the caller that the operation is done.
+                });
+
+            for (AZ::TaskToken& task : tileTaskTokens)
+            {
+                task.Precedes(finishToken);
+            }
+
+            m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+        }
     }
 } // namespace RecastNavigation

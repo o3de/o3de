@@ -36,6 +36,8 @@ set(FILES
     Source/CommandSystemConfig.h
     Source/ImporterCommands.cpp
     Source/ImporterCommands.h
+    Source/JointLimitCommands.cpp
+    Source/JointLimitCommands.h
     Source/MetaData.cpp
     Source/MetaData.h
     Source/MiscCommands.cpp

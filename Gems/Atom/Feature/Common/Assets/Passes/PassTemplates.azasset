@@ -216,7 +216,7 @@
                 "Name": "NewDepthOfFieldCompositeTemplate",
                 "Path": "Passes/NewDepthOfFieldComposite.pass"
             },
-			{
+            {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },

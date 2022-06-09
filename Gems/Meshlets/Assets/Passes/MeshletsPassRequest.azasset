@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        // This is not set yet - please fill with active passes.
+        // This should be replaced with a parent pass that will contain all meshlets passes
+        "Name": "MeshletsParentPass",
+        "TemplateName": "MeshletsParentPassTemplate",
+        "Enabled": true,
+        // Currently no connections from the pipeline are required - this will change shortly
+        // to have depth and lighting brought in.
+        "Connections": [
+        ]
+    }
+}

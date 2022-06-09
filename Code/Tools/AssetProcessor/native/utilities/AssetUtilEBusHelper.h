@@ -124,6 +124,8 @@ namespace AssetProcessor
         virtual void OnAssetFailed(const AZStd::string& /*sourceFileName*/) {}
         // Notifies listener about a general error
         virtual void OnErrorMessage([[maybe_unused]] const char* error) {}
+        // Notifies listener about a builder registration failure
+        virtual void OnBuilderRegistrationFailure() {};
     };
 
     using MessageInfoBus = AZ::EBus<MessageInfoBusTraits>;
@@ -265,5 +267,4 @@ namespace AssetProcessor
     };
 
     using  AssetServerInfoBus = AZ::EBus<AssetServerInfoBusTraits>;
-
 } // namespace AssetProcessor

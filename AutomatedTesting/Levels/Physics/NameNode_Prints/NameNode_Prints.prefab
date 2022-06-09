@@ -140,6 +140,13 @@
                         "CollisionGroupId": {
                             "GroupId": "{C0082271-F0B0-40D7-BD3D-57764336382F}"
                         },
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -161,16 +168,16 @@
                 "Component_[13910212585951705274]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 13910212585951705274,
-                    "m_name": "C19536274_NameNode_Prints",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{71B90B3C-7EFB-5F42-9FDE-7B2CAD7135E5}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{71B90B3C-7EFB-5F42-9FDE-7B2CAD7135E5}",
+                            "path": "scriptcanvas/c19536274_namenode_prints.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{71B90B3C-7EFB-5F42-9FDE-7B2CAD7135E5}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{71B90B3C-7EFB-5F42-9FDE-7B2CAD7135E5}",
-                        "path": "scriptcanvas/c19536274_namenode_prints.scriptcanvas"
                     }
                 },
                 "Component_[1534629704230734412]": {
@@ -243,6 +250,13 @@
                         "CollisionGroupId": {
                             "GroupId": "{C0082271-F0B0-40D7-BD3D-57764336382F}"
                         },
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -264,16 +278,16 @@
                 "Component_[13910212585951705274]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 13910212585951705274,
-                    "m_name": "C19536273_NameNode_Prints",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{9D36B9D1-F1E6-58AA-8B52-0788EECF0743}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{9D36B9D1-F1E6-58AA-8B52-0788EECF0743}",
+                            "path": "scriptcanvas/c19536273_namenode_prints.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{9D36B9D1-F1E6-58AA-8B52-0788EECF0743}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{9D36B9D1-F1E6-58AA-8B52-0788EECF0743}",
-                        "path": "scriptcanvas/c19536273_namenode_prints.scriptcanvas"
                     }
                 },
                 "Component_[1534629704230734412]": {
@@ -338,6 +352,13 @@
                         "CollisionGroupId": {
                             "GroupId": "{C7177D1A-7AA0-4C65-AA17-AEEAE6CF27DC}"
                         },
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -367,16 +388,16 @@
                 "Component_[14808834262172119539]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14808834262172119539,
-                    "m_name": "C19536277_NameNode_NothingPrints",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{38FF2ADB-9B86-561C-B110-A8B83B3D0122}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{38FF2ADB-9B86-561C-B110-A8B83B3D0122}",
+                            "path": "scriptcanvas/c19536277_namenode_nothingprints.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{38FF2ADB-9B86-561C-B110-A8B83B3D0122}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{38FF2ADB-9B86-561C-B110-A8B83B3D0122}",
-                        "path": "scriptcanvas/c19536277_namenode_nothingprints.scriptcanvas"
                     }
                 },
                 "Component_[15332433319673356377]": {
@@ -441,10 +462,17 @@
                         "CollisionGroupId": {
                             "GroupId": "{C7177D1A-7AA0-4C65-AA17-AEEAE6CF27DC}"
                         },
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{B072A405-BAFA-4B0A-9164-B3A424E642A9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{03568CB1-7F6B-5455-915E-F6EFA9EF7BDF}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "physicssurfaces.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -472,16 +500,16 @@
                 "Component_[14808834262172119539]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14808834262172119539,
-                    "m_name": "C19536275_SetCollisionGroupEmpty_PrintsWarning",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{C899C0FA-BC99-585C-99DC-BFF98C8CDD29}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{C899C0FA-BC99-585C-99DC-BFF98C8CDD29}",
+                            "path": "scriptcanvas/c19536275_setcollisiongroupempty_printswarning.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{C899C0FA-BC99-585C-99DC-BFF98C8CDD29}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{C899C0FA-BC99-585C-99DC-BFF98C8CDD29}",
-                        "path": "scriptcanvas/c19536275_setcollisiongroupempty_printswarning.scriptcanvas"
                     }
                 },
                 "Component_[15332433319673356377]": {
@@ -546,10 +574,17 @@
                         "CollisionGroupId": {
                             "GroupId": "{C7177D1A-7AA0-4C65-AA17-AEEAE6CF27DC}"
                         },
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{B072A405-BAFA-4B0A-9164-B3A424E642A9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{03568CB1-7F6B-5455-915E-F6EFA9EF7BDF}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "physicssurfaces.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -577,16 +612,16 @@
                 "Component_[14808834262172119539]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14808834262172119539,
-                    "m_name": "C19536275_SetCollisionGroupInvalid_PrintsWarning",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{307DC8EA-6D9E-5026-940C-F81D1D24F69D}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{307DC8EA-6D9E-5026-940C-F81D1D24F69D}",
+                            "path": "scriptcanvas/c19536275_setcollisiongroupinvalid_printswarning.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{307DC8EA-6D9E-5026-940C-F81D1D24F69D}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{307DC8EA-6D9E-5026-940C-F81D1D24F69D}",
-                        "path": "scriptcanvas/c19536275_setcollisiongroupinvalid_printswarning.scriptcanvas"
                     }
                 },
                 "Component_[15332433319673356377]": {
@@ -651,10 +686,17 @@
                         "CollisionGroupId": {
                             "GroupId": "{C7177D1A-7AA0-4C65-AA17-AEEAE6CF27DC}"
                         },
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{B072A405-BAFA-4B0A-9164-B3A424E642A9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{03568CB1-7F6B-5455-915E-F6EFA9EF7BDF}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "physicssurfaces.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -682,16 +724,16 @@
                 "Component_[14808834262172119539]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14808834262172119539,
-                    "m_name": "C19536276_SetCollisionLayer_PrintsWarning",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{07A8A7CB-F6F3-5D1F-B6EB-BF673CBD121D}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{07A8A7CB-F6F3-5D1F-B6EB-BF673CBD121D}",
+                            "path": "scriptcanvas/c19536276_setcollisionlayer_printswarning.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{07A8A7CB-F6F3-5D1F-B6EB-BF673CBD121D}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{07A8A7CB-F6F3-5D1F-B6EB-BF673CBD121D}",
-                        "path": "scriptcanvas/c19536276_setcollisionlayer_printswarning.scriptcanvas"
                     }
                 },
                 "Component_[15332433319673356377]": {
