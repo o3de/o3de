@@ -302,7 +302,6 @@ namespace AzToolsFramework
             return newTemplateId;
         }
 
-
         bool PrefabLoader::LoadNestedInstance(
             PrefabDomValue::MemberIterator& instanceIterator, TemplateId targetTemplateId,
             AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
