@@ -45,6 +45,7 @@ namespace RecastNavigation
         //! RecastNavigationProviderRequestBus overrides ...
         //! @{
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
+        void CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
         AZ::Aabb GetWorldBounds() const override;
         int GetNumberOfTiles(float tileSize) const override;
         //! @}
