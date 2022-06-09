@@ -63,7 +63,6 @@ namespace UnitTest
         }
         void OnAssetReady(Asset<AssetData> asset) override
         {
-            AZ_TracePrintf("debug", "AssetReady: %s\n", asset.GetId().ToFixedString().c_str());
             EXPECT_EQ(asset->GetId(), m_assetId);
             EXPECT_EQ(asset->GetType(), m_assetType);
             if (m_readyCheck)
@@ -94,12 +93,19 @@ namespace UnitTest
             m_dataLoaded++;
             m_latest = asset;
         }
+
+        void OnAssetDependencyReloaded([[maybe_unused]] AssetId assetId) override
+        {
+            m_dependencyReloaded++;
+        }
+
         AssetId     m_assetId;
         AssetType   m_assetType;
         AZStd::atomic_int m_ready{};
         AZStd::atomic_int m_error{};
         AZStd::atomic_int m_reloaded{};
         AZStd::atomic_int m_dataLoaded{};
+        AZStd::atomic_int m_dependencyReloaded{};
         Asset<AssetData> m_latest;
         OnAssetReadyCheck m_readyCheck;
     };
@@ -163,8 +169,8 @@ namespace UnitTest
             auto* catalog = m_assetHandlerAndCatalog;
 
             AssetDefinition::Create<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt").AddQueueLoad(MyAsset2Id).Store(*catalog);
-            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt", 100).AddQueueLoad(MyAsset3Id).Store(*catalog);
-            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt", 50).AddQueueLoad(MyAsset4Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt").AddQueueLoad(MyAsset3Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt").AddQueueLoad(MyAsset4Id).Store(*catalog);
             AssetDefinition::Create<AssetWithAssetReference>(MyAsset4Id, "TestAsset4.txt").AddQueueLoad(MyAsset5Id).Store(*catalog);
             AssetDefinition::Create<AssetWithAssetReference>(MyAsset5Id, "TestAsset5.txt").AddQueueLoad(MyAsset6Id).Store(*catalog);
             AssetDefinition::Create<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt").Store(*catalog);
@@ -233,6 +239,7 @@ namespace UnitTest
 
     TEST_F(AssetReloading, AssetReloadTest)
     {
+        // Test OnAssetDependencyReloaded notification is sent all the way to the parent asset up a deep chain of dependencies
         const auto timeoutSeconds = AZStd::chrono::seconds(200);
 
         OnAssetReadyListener assetStatus1(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>());
@@ -257,8 +264,6 @@ namespace UnitTest
 
         // Make sure all 6 assets have loaded.
         asset1.BlockUntilLoadComplete();
-
-
 
         EXPECT_TRUE(asset1.IsReady());
         EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 6);
@@ -304,33 +309,6 @@ namespace UnitTest
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         // Now that we know every asset is loaded, trigger some reloads
-        struct ReloadListener : AssetBus::Handler
-        {
-            ReloadListener(AssetId assetId)
-            {
-                BusConnect(assetId);
-            }
-
-            ~ReloadListener()
-            {
-                BusDisconnect();
-            }
-
-            void OnAssetReloaded([[maybe_unused]] Asset<AssetData> asset) override
-            {
-                ++m_reloadCount;
-            }
-            void OnAssetDependencyReloaded([[maybe_unused]] AssetId assetId) override
-            {
-                ++m_dependencyReloadCount;
-            }
-
-            AZStd::atomic_int m_reloadCount = 0;
-            AZStd::atomic_int m_dependencyReloadCount = 0;
-        };
-
-        ReloadListener reloadListener(MyAsset1Id);
-
         AssetManager::Instance().ReloadAsset(MyAsset6Id, QueueLoad);
 
         maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
@@ -348,7 +326,7 @@ namespace UnitTest
         EXPECT_FALSE(timedOut);
 
         EXPECT_EQ(assetStatus6.m_reloaded, 1);
-        EXPECT_EQ(reloadListener.m_dependencyReloadCount, 1);
+        EXPECT_EQ(assetStatus1.m_dependencyReloaded, 1);
     }
 
     /**
