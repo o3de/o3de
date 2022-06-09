@@ -8,6 +8,7 @@
 
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
 #include <AzFramework/Physics/Character.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 namespace EMotionFX
 {
@@ -19,6 +20,11 @@ namespace EMotionFX
     bool PhysicsSetupManipulatorData::HasCapsuleCollider() const
     {
         return HasColliders() && m_colliderNodeConfiguration->m_shapes[0].second->GetShapeType() == Physics::ShapeType::Capsule;
+    }
+
+    bool PhysicsSetupManipulatorData::HasJointLimit() const
+    {
+        return m_valid && m_jointConfiguration;
     }
 
     void PhysicsSetupManipulatorsBase::SetViewportId(AZ::s32 viewportId)
