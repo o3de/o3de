@@ -378,11 +378,11 @@ namespace EMotionFX
                 SceneAPIMatrixType bindBoneTransformNoScale(bindSpaceLocalTransform);
                 const AZ::Vector3    bindScale = coordSysConverter.ConvertScale(bindBoneTransformNoScale.ExtractScale());
                 const AZ::Transform convertedbindTransform = AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(bindBoneTransformNoScale));
-                const AZ::Vector3    bindPos   = convertedbindTransform.GetTranslation();
-                const AZ::Quaternion bindRot = convertedbindTransform.GetRotation();
+                const AZ::Vector3    bindPosition   = convertedbindTransform.GetTranslation();
+                const AZ::Quaternion bindRotation = convertedbindTransform.GetRotation();
 
-                motionData->SetJointBindPosePosition(jointDataIndex, bindPos);
-                motionData->SetJointBindPoseRotation(jointDataIndex, bindRot);
+                motionData->SetJointBindPosePosition(jointDataIndex, bindPosition);
+                motionData->SetJointBindPoseRotation(jointDataIndex, bindRotation);
                 EMFX_SCALECODE
                 (
                     motionData->SetJointBindPoseScale(jointDataIndex, bindScale);
