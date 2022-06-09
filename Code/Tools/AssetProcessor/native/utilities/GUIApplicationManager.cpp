@@ -706,6 +706,13 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
     }
 }
 
+void GUIApplicationManager::QuitRequested()
+{
+    m_startupErrorCollector = nullptr;
+
+    ApplicationManagerBase::QuitRequested();
+}
+
 void GUIApplicationManager::ShowTrayIconMessage(QString msg)
 {
     if (m_trayIcon && m_mainWindow && !m_mainWindow->isVisible())

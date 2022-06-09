@@ -26,7 +26,6 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
-#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
@@ -201,6 +200,7 @@ namespace EMStudio
         // Unload everything from the Editor, so that reopening the editor
         // results in an empty scene
         Reset();
+        CommandSystem::ClearMotionSetsCommand(); // Remove the default motion set.
 
         delete m_shortcutManager;
         delete m_fileManager;
@@ -917,7 +917,19 @@ namespace EMStudio
         }
 
         // enable the menus if at least one motion set
-        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
+        bool emptyDefaultMotionSet = false;
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() == 1)
+        {
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
+            if (motionSet->GetNumChildSets() == 0 &&
+                motionSet->GetNumMotionEntries() == 0 &&
+                motionSet->GetNameString() == CommandSystem::s_defaultMotionSetName)
+            {
+                emptyDefaultMotionSet = true;
+            }
+        }
+
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0 && !emptyDefaultMotionSet)
         {
             m_resetAction->setEnabled(true);
             m_saveAllAction->setEnabled(true);
@@ -1261,15 +1273,6 @@ namespace EMStudio
         // add the load and the create instance commands
         commandGroup.AddCommandString(loadActorCommand.c_str());
 
-        // Temp solution after we refactor / remove the actor manager.
-        // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
-        // Atom render viewport will create actor instance along with the actor component.
-        PluginManager* pluginManager = GetPluginManager();
-        if (pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
-        {
-            commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
-        }
-
         // execute the group command
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult) == false)
         {
@@ -1513,7 +1516,7 @@ namespace EMStudio
     }
 
 
-    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup)
+    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup, bool addDefaultMotionSet)
     {
         // create and relink to a temporary new command group in case the input command group has not been specified
         MCore::CommandGroup newCommandGroup("Reset Scene");
@@ -1532,6 +1535,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(&newCommandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1551,6 +1558,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(commandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1570,7 +1581,7 @@ namespace EMStudio
         GetCommandManager()->ClearHistory();
 
         Workspace* workspace = GetManager()->GetWorkspace();
-        workspace->SetDirtyFlag(true);
+        workspace->SetDirtyFlag(false);
     }
 
     void MainWindow::OnReset()
@@ -2189,7 +2200,7 @@ namespace EMStudio
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
 
                 // clear everything before laoding a new workspace file
-                Reset(true, true, true, true, &workspaceCommandGroup);
+                Reset(/*clearActors=*/true, /*clearMotionSets=*/true, /*clearMotions=*/true, /*clearAnimGraphs=*/true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
                 workspaceCommandGroup.SetReturnFalseAfterError(true);
 
                 // load the first workspace of the list as more doesn't make sense anyway

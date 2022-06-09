@@ -44,6 +44,7 @@ namespace AZ::DocumentPropertyEditor
         //! based on an attribute name. Returns null if no attribute is found.
         virtual const AttributeDefinitionInterface* FindNodeAttribute(
             AZ::Name name, const PropertyEditorMetadata* parent = nullptr) const = 0;
+        virtual void EnumerateRegisteredAttributes(AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const = 0;
         //! For a given CRC, looks up an equivalent Name.
         //! The pool of valid CRCs is registered from registered Node, PropertyEditor, and Attribute names.
         virtual AZ::Name LookupNameFromId(AZ::Crc32 crc) const = 0;

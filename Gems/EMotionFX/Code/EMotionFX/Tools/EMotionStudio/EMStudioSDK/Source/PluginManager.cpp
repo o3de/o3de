@@ -32,7 +32,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/CommandBar/CommandBarPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MorphTargetsWindow/MorphTargetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/SceneManagerPlugin.h>
@@ -41,7 +40,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
@@ -225,7 +223,6 @@ namespace EMStudio
         RegisterPlugin(new LogWindowPlugin());
         RegisterPlugin(new CommandBarPlugin());
         RegisterPlugin(new ActionHistoryPlugin());
-        RegisterPlugin(new MotionWindowPlugin());
         RegisterPlugin(new MorphTargetsWindowPlugin());
         RegisterPlugin(new TimeViewPlugin());
         RegisterPlugin(new SceneManagerPlugin());
@@ -234,7 +231,6 @@ namespace EMStudio
         RegisterPlugin(new MotionSetsWindowPlugin());
         RegisterPlugin(new NodeGroupsPlugin());
         RegisterPlugin(new AnimGraphPlugin());
-        RegisterPlugin(new OpenGLRenderPlugin());
         RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
         RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
         RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
