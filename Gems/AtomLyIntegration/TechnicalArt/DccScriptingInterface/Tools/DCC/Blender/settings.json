@@ -1,0 +1,16 @@
+{
+	"O3DE_DCCSI_TOOLS_DCC_BLENDER":"True",
+	"DCCSI_BLENDER_VERSION":"3.1",
+	"DCCSI_BLENDER_LOCATION":"C:\Program Files\Blender Foundation\Blender 3.1",
+	"DCCSI_BLENDER_EXE":"C:\Program Files\Blender Foundation\Blender 3.1\blender.exe",
+	"DCCSI_BLENDER_LAUNCHER":"C:\Program Files\Blender Foundation\Blender 3.1\blender-launcher.exe",
+	"DCCSI_BLENDER_PYTHON":"C:\Program Files\Blender Foundation\Blender 3.1\3.1\python",
+	"DCCSI_BLENDER_PY_BIN":"C:\Program Files\Blender Foundation\Blender 3.1\3.1\python\bin",
+	"DCCSI_BLENDER_PY_EXE":"C:\Program Files\Blender Foundation\Blender 3.1\3.1\python\bin\python.exe",
+	"DCCSI_BLENDER_SET_CALLBACKS":"True",
+	"DCCSI_BLENDER_SCRIPTS":"C:\Program Files\Blender Foundation\Blender 3.1\3.1\scripts",
+	"DCCSI_BLENDER_ADDONS":"C:\Program Files\Blender Foundation\Blender 3.1\3.1\scripts\addons",
+	"DCCSI_PY_VERSION_MAJOR":"3",
+	"DCCSI_PY_VERSION_MINOR":"10",
+	"DCCSI_PY_VERSION_RELEASE":"2"
+}

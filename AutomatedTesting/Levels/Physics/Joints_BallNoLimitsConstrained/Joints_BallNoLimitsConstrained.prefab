@@ -93,6 +93,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 17363654757392362489,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -236,6 +243,13 @@
                     "Id": 7429624549406958440,
                     "ColliderConfiguration": {
                         "Trigger": true,
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -303,10 +317,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 1322277184770581793,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{B072A405-BAFA-4B0A-9164-B3A424E642A9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{03568CB1-7F6B-5455-915E-F6EFA9EF7BDF}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "physicssurfaces.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -372,6 +393,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 5053986797366085195,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
