@@ -45,6 +45,7 @@ namespace PhysX
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
+        void BlockOnPendingJobs();
     protected:
 
         // AzToolsFramework::EntitySelectionEvents
