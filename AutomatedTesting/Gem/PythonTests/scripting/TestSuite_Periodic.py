@@ -189,11 +189,6 @@ class TestAutomation(TestAutomationBase):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
-        from . import VariableManager_UnpinVariableType_Works as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
         from . import Node_HappyPath_DuplicateNode as test_module
@@ -221,6 +216,23 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+    def test_VariableManager_UnpinVariableType_Works(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Success: VariableManager is opened successfully",
+            "Success: Variable is pinned",
+            "Success: Variable is unpinned",
+            "Success: Variable is unpinned after reopening create variable menu",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "VariableManager_UnpinVariableType_Works.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
             "Verified no tabs open: True",
