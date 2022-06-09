@@ -49,21 +49,22 @@ namespace AssetProcessor
 
     void ProductAssetDetailsPanel::SetupDependencyGraph(QTreeView* productAssetsTreeView, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
     {
-        m_dependencyTreeDelegate = new ProductDependencyTreeDelegate(nullptr, this);
+        m_outgoingDependencyTreeDelegate = new ProductDependencyTreeDelegate(this, this);
         m_outgoingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Outgoing, this);
         m_ui->OutgoingProductDependenciesTreeView->setModel(m_outgoingDependencyTreeModel);
         m_ui->OutgoingProductDependenciesTreeView->setRootIsDecorated(true);
-        m_ui->OutgoingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
+        m_ui->OutgoingProductDependenciesTreeView->setItemDelegate(m_outgoingDependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_outgoingDependencyTreeModel,
             &ProductDependencyTreeModel::AssetDataSelectionChanged);
 
+        m_incomingDependencyTreeDelegate = new ProductDependencyTreeDelegate(this, this);
         m_incomingDependencyTreeModel =
             new ProductDependencyTreeModel(assetDatabaseConnection, m_productFilterModel, DependencyTreeType::Incoming, this);
         m_ui->IncomingProductDependenciesTreeView->setModel(m_incomingDependencyTreeModel);
         m_ui->IncomingProductDependenciesTreeView->setRootIsDecorated(true);
-        m_ui->IncomingProductDependenciesTreeView->setItemDelegate(m_dependencyTreeDelegate);
+        m_ui->IncomingProductDependenciesTreeView->setItemDelegate(m_incomingDependencyTreeDelegate);
         connect(
             productAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, m_incomingDependencyTreeModel,
             &ProductDependencyTreeModel::AssetDataSelectionChanged);

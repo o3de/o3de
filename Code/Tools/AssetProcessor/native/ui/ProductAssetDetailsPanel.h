@@ -119,6 +119,7 @@ namespace AssetProcessor
 
         ProductDependencyTreeModel* m_outgoingDependencyTreeModel = nullptr;
         ProductDependencyTreeModel* m_incomingDependencyTreeModel = nullptr;
-        ProductDependencyTreeDelegate* m_dependencyTreeDelegate = nullptr;
+        ProductDependencyTreeDelegate* m_outgoingDependencyTreeDelegate = nullptr;
+        ProductDependencyTreeDelegate* m_incomingDependencyTreeDelegate = nullptr;
     };
 } // namespace AssetProcessor
