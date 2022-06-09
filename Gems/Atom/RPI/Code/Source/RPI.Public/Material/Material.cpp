@@ -258,7 +258,7 @@ namespace AZ
             }
         }
 
-        void Material::OnAssetDependencyReloaded([[maybe_unused]] Data::AssetId assetId)
+        void Material::OnAssetDependencyReloaded([[maybe_unused]] Data::Asset<Data::AssetData> asset)
         {
             OnAssetReloaded(m_materialAsset);
         }

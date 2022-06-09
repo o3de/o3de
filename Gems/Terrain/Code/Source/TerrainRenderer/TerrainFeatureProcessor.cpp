@@ -118,7 +118,7 @@ namespace Terrain
         m_terrainBoundsNeedUpdate = true;
     }
 
-    void TerrainFeatureProcessor::OnAssetDependencyReloaded([[maybe_unused]] AZ::Data::AssetId assetId)
+    void TerrainFeatureProcessor::OnAssetDependencyReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         PrepareMaterialData();
         m_terrainBoundsNeedUpdate = true;
