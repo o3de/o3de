@@ -141,6 +141,16 @@ def print_engine_external_subdirectories(verbose: int) -> int:
     return 0
 
 
+def print_project_engine_name(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
+    project_path = get_project_path(project_path, project_name)
+    if not project_path:
+        return 1
+    project_json_data = manifest.get_project_json_data(project_name, project_path)
+    if not project_json_data:
+        return 1
+    print(f'Project Engine Name:\n{project_json_data.get("engine","")}')
+    return 0
+
 # Project output methods
 def print_project_gems(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
     project_path = get_project_path(project_path, project_name)
