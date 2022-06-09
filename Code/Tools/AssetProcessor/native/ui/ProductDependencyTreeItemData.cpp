@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ProductDependencyTreeItemData.h"
+#include <native/ui/ProductDependencyTreeItemData.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 

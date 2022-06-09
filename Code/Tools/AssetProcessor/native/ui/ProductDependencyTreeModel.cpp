@@ -6,10 +6,10 @@
  *
  */
 
-#include "ProductDependencyTreeModel.h"
-#include "ProductDependencyTreeItemData.h"
-#include "AssetTreeItem.h"
-#include "ProductAssetTreeItemData.h"
+#include <native/ui/ProductDependencyTreeModel.h>
+#include <native/ui/ProductDependencyTreeItemData.h>
+#include <native/ui/AssetTreeItem.h>
+#include <native/ui/ProductAssetTreeItemData.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>

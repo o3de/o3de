@@ -9,9 +9,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "AssetDetailsPanel.h"
-#include "ProductDependencyTreeModel.h"
-#include "ProductDependencyTreeDelegate.h"
+#include <native/ui/AssetDetailsPanel.h>
+#include <native/ui/ProductDependencyTreeModel.h>
+#include <native/ui/ProductDependencyTreeDelegate.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QDateTime>

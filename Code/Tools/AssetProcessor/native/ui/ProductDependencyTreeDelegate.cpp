@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ProductDependencyTreeDelegate.h"
-#include "ProductDependencyTreeItemData.h"
-#include "ProductAssetDetailsPanel.h"
-#include "ProductAssetTreeItemData.h"
+#include <native/ui/ProductDependencyTreeDelegate.h>
+#include <native/ui/ProductDependencyTreeItemData.h>
+#include <native/ui/ProductAssetDetailsPanel.h>
+#include <native/ui/ProductAssetTreeItemData.h>
 
 #include <QMouseEvent>
 #include <QApplication>
