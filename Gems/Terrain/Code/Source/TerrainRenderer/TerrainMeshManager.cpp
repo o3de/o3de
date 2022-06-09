@@ -522,14 +522,17 @@ namespace Terrain
 
     void TerrainMeshManager::InitializeTerrainPatch(PatchData& patchdata)
     {
+        // This function initializes positions and indices that are common to all terrain sectors. The indices are laid out
+        // using a z-order curve (Morton code) which helps triangles which are close in space to also be close in the index
+        // buffer. This in turn increases the probability that previously processed vertices will be in the vertex cache.
+
         patchdata.m_xyPositions.clear();
         patchdata.m_indices.clear();
 
-        // Moser–de Bruijn sequences for x and y
+        // Generate x and y coordinates using Moser–de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
         AZStd::array<uint16_t, GridVerts1D> zOrderX;
         AZStd::array<uint16_t, GridVerts1D> zOrderY;
 
-        // Generate z-order x and y coordinates so the final z-order position can be found later by interleaving.
         for (uint16_t i = 0; i < GridVerts1D; ++i)
         {
             // This will take any 8 bit number and put 0's in between each bit. For instance 0b1011 becomes 0b1000101.
@@ -540,8 +543,7 @@ namespace Terrain
 
         patchdata.m_indices.resize_no_construct(GridSize * GridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
 
-        // Create the indices for a mesh patch in z order for vertex cache optimization. This helps reduce the number of times
-        // a vertex position needs to be recalculated by grouping triangles together in space.
+        // Create the indices for a mesh patch in z-order for vertex cache optimization.
         for (uint16_t y = 0; y < GridSize; ++y)
         {
             for (uint16_t x = 0; x < GridSize; ++x)
@@ -648,16 +650,16 @@ namespace Terrain
                     lodIndex2 += LodGridVerts1D;
                 }
 
-                uint16_t zIndex = m_vertexOrder.at(index);
+                const uint16_t zOrderIndex = m_vertexOrder.at(index);
 
                 if (lodHeightsNormals[lodIndex1].m_height == NoTerrainVertexHeight || lodHeightsNormals[lodIndex2].m_height == NoTerrainVertexHeight)
                 {
                     // One of the neighboring vertices has no data, so use the original height and normal
-                    clodHeightNormals[zIndex] = originalHeightsNormals[zIndex];
+                    clodHeightNormals[zOrderIndex] = originalHeightsNormals[zOrderIndex];
                 }
                 else
                 {
-                    clodHeightNormals[zIndex] =
+                    clodHeightNormals[zOrderIndex] =
                     {
                         HeightDataType((lodHeightsNormals[lodIndex1].m_height + lodHeightsNormals[lodIndex2].m_height) / 2),
                         NormalDataType(
@@ -678,8 +680,14 @@ namespace Terrain
         PatchData patchData;
         InitializeTerrainPatch(patchData);
 
-        m_xyPositionsBuffer = CreateMeshBufferInstance(AZ::RHI::GetFormatSize(XYPositionFormat), uint32_t(patchData.m_xyPositions.size()), patchData.m_xyPositions.data());
-        m_indexBuffer = CreateMeshBufferInstance(AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT), uint32_t(patchData.m_indices.size()), patchData.m_indices.data());
+        m_xyPositionsBuffer = CreateMeshBufferInstance(
+            AZ::RHI::GetFormatSize(XYPositionFormat),
+            aznumeric_cast<uint32_t>(patchData.m_xyPositions.size()),
+            patchData.m_xyPositions.data());
+        m_indexBuffer = CreateMeshBufferInstance(
+            AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT),
+            aznumeric_cast<uint32_t>(patchData.m_indices.size()),
+            patchData.m_indices.data());
 
         m_dummyLodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D, nullptr);
 
