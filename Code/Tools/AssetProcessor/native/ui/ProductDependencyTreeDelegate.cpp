@@ -22,7 +22,7 @@ namespace AssetProcessor
     {
     }
     bool ProductDependencyTreeDelegate::editorEvent(
-        QEvent* event, QAbstractItemModel* /*model*/, const QStyleOptionViewItem& option, const QModelIndex& index)
+        QEvent* event, [[maybe_unused]] QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
