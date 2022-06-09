@@ -1019,7 +1019,7 @@
                                 "Id": {
                                     "id": 259078447254182
                                 },
-                                "Name": "SC-Node(Find Path Between Positions)",
+                                "Name": "SC-Node(FindPathBetweenPositions)",
                                 "Components": {
                                     "Component_[11722851955260468209]": {
                                         "$type": "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF} Method",
@@ -1164,7 +1164,7 @@
                                             }
                                         ],
                                         "methodType": 0,
-                                        "methodName": "Find Path Between Positions",
+                                        "methodName": "FindPathBetweenPositions",
                                         "className": "DetourNavigationRequestBus",
                                         "resultSlotIDs": [
                                             {}
@@ -3940,7 +3940,7 @@
                                 "Id": {
                                     "id": 259134281829030
                                 },
-                                "Name": "SC-Node(Update Navigation Mesh Async)",
+                                "Name": "SC-Node(UpdateNavigationMeshAsync)",
                                 "Components": {
                                     "Component_[7698606022369929528]": {
                                         "$type": "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF} Method",
@@ -4007,7 +4007,7 @@
                                             }
                                         ],
                                         "methodType": 0,
-                                        "methodName": "Update Navigation Mesh Async",
+                                        "methodName": "UpdateNavigationMeshAsync",
                                         "className": "RecastNavigationMeshRequestBus",
                                         "resultSlotIDs": [
                                             {}
@@ -7060,7 +7060,7 @@
                                 "Id": {
                                     "id": 259456404376230
                                 },
-                                "Name": "srcEndpoint=(Set Variable: Vector3), destEndpoint=(Find Path Between Positions: Vector3: 2)",
+                                "Name": "srcEndpoint=(Set Variable: Vector3), destEndpoint=(FindPathBetweenPositions: Vector3: 2)",
                                 "Components": {
                                     "Component_[13812576806893539146]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7088,7 +7088,7 @@
                                 "Id": {
                                     "id": 259460699343526
                                 },
-                                "Name": "srcEndpoint=(Set Variable: Out), destEndpoint=(Find Path Between Positions: In)",
+                                "Name": "srcEndpoint=(Set Variable: Out), destEndpoint=(FindPathBetweenPositions: In)",
                                 "Components": {
                                     "Component_[3525016573114031011]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7116,7 +7116,7 @@
                                 "Id": {
                                     "id": 259464994310822
                                 },
-                                "Name": "srcEndpoint=(Find Path Between Positions: Out), destEndpoint=(Set Variable: In)",
+                                "Name": "srcEndpoint=(FindPathBetweenPositions: Out), destEndpoint=(Set Variable: In)",
                                 "Components": {
                                     "Component_[12054931798420435813]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7144,7 +7144,7 @@
                                 "Id": {
                                     "id": 259469289278118
                                 },
-                                "Name": "srcEndpoint=(Find Path Between Positions: Array<Vector3>), destEndpoint=(Set Variable: Array<Vector3>)",
+                                "Name": "srcEndpoint=(FindPathBetweenPositions: Array<Vector3>), destEndpoint=(Set Variable: Array<Vector3>)",
                                 "Components": {
                                     "Component_[4530508370291388388]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7228,7 +7228,7 @@
                                 "Id": {
                                     "id": 259482174180006
                                 },
-                                "Name": "srcEndpoint=(GetWorldTranslation: Vector3), destEndpoint=(Find Path Between Positions: Vector3: 1)",
+                                "Name": "srcEndpoint=(GetWorldTranslation: Vector3), destEndpoint=(FindPathBetweenPositions: Vector3: 1)",
                                 "Components": {
                                     "Component_[9951097422005082718]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7368,7 +7368,7 @@
                                 "Id": {
                                     "id": 259503649016486
                                 },
-                                "Name": "srcEndpoint=(RecastNavigationMeshNotificationBus Handler: OnConnected), destEndpoint=(Update Navigation Mesh Async: In)",
+                                "Name": "srcEndpoint=(RecastNavigationMeshNotificationBus Handler: OnConnected), destEndpoint=(UpdateNavigationMeshAsync: In)",
                                 "Components": {
                                     "Component_[9345238546360588840]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
@@ -7396,7 +7396,7 @@
                                 "Id": {
                                     "id": 259507943983782
                                 },
-                                "Name": "srcEndpoint=(Get Variable: EntityId), destEndpoint=(Update Navigation Mesh Async: EntityId)",
+                                "Name": "srcEndpoint=(Get Variable: EntityId), destEndpoint=(UpdateNavigationMeshAsync: EntityId)",
                                 "Components": {
                                     "Component_[3676423898853119807]": {
                                         "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
