@@ -91,7 +91,7 @@ class Node_HappyPath_DuplicateNode:
         # 3) Add node
         self.run_command_line_input(sc_editor, sc_editor_main_window, COMMAND_LINE_ARGS)
 
-        # 4) Duplicate node w/ a ctrl+
+        # 4) Duplicate nodes on graph w/ ctrl+a and ctrl+d keystroke
         sc_graph_view = sc_editor.findChild(QtWidgets.QFrame, "graphicsViewFrame")
         sc_graph = sc_graph_view.findChild(QtWidgets.QWidget, "")
         sc_editor_main_window.activateWindow()
