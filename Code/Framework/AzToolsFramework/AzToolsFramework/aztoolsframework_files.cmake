@@ -731,6 +731,8 @@ set(FILES
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
     Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicNotificationHandler.h
+    Prefab/PrefabPublicNotificationHandler.cpp
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
