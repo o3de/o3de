@@ -19,7 +19,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
     "project_version" : "0.0.0.0",
     "engine_versions" : [
-        "o3de-sdk"
+        "o3de-sdk==2205.01"
     ],
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
     "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
@@ -60,12 +60,28 @@ class TestEditProjectProperties:
         'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
         'A B C', 'B', 'D E F', ['D','E','F'], 0, 
         'GemA GemB GemB', ['GemA'], None, ['GemB'],
-        '>=1.0', 'o3de-sdk', None, ['>=1.0'] ),
+        'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'] ),
+        pytest.param(pathlib.PurePath('D:/TestProject'),
+        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
+        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
+        'GemA GemB GemB', ['GemA'], None, ['GemB'],
+        'o3de-add==4.3.2.1', None, 'o3de-sdk>=0.1.2.3 o3de-sdk==1.0.0.0,==2.0.0.0', ['o3de-sdk>=0.1.2.3', 'o3de-sdk==1.0.0.0,==2.0.0.0'] ),
+        pytest.param(pathlib.PurePath('D:/TestProject'),
+        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
+        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
+        'GemA GemB GemB', ['GemA'], None, ['GemB'],
+        # removal uses exact matching, it doesn't support partial matches 
+        None, 'o3de-sdk>=0.1.2.3 o3de-sdk==1.0.0.0', None, ['o3de-sdk==1.0.0.0,==2.0.0.0'] ),
+        pytest.param(pathlib.PurePath('D:/TestProject'),
+        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
+        'A B C', 'B', 'D E F', ['D','E','F'], 1, 
+        'GemA GemB GemB', ['GemA'], None, ['GemB'],
+        None, None, 'invalid', ['o3de-sdk==1.0.0.0,==2.0.0.0'] ),
         pytest.param('',
         'test', 'TestB', 'IDB', 'OriginB', 'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
         'A B C', 'B', 'D E F', ['D','E','F'], 1, 
         ['GemA','GemB'], None, ['GemC'], ['GemC'],
-        'other~=2.2 >=1.0', '>=1.0', None, ['o3de-sdk','other~=2.2'] ),
+        'o3de-add==4.3.2.1', None, 'o3de-sdk>=0.1.2.3 o3de-sdk>=1.0.0.0', ['o3de-sdk>=0.1.2.3,>=1.0.0.0'] )
         ]
     )
     def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,

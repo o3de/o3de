@@ -71,12 +71,24 @@ def edit_project_props(proj_path: pathlib.Path = None,
     if new_version:
         proj_json['version'] = new_version
 
-    proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
-                                                     delete_tags, replace_tags)
-    proj_json['gem_names'] = utils.update_values_in_key_list(proj_json.get('gem_names', []), new_gem_names,
-                                                     delete_gem_names, replace_gem_names)
-    proj_json['engine_versions'] = utils.update_values_in_key_list(proj_json.get('engine_versions', []), new_engine_versions,
-                                                     delete_engine_versions, replace_engine_versions)
+    if new_tags or delete_tags or replace_tags:
+        proj_json['user_tags'] = utils.update_values_in_key_list(proj_json.get('user_tags', []), new_tags,
+                                                        delete_tags, replace_tags)
+    if new_gem_names or delete_gem_names or replace_gem_names:
+        proj_json['gem_names'] = utils.update_values_in_key_list(proj_json.get('gem_names', []), new_gem_names,
+                                                        delete_gem_names, replace_gem_names)
+    if new_engine_versions and not utils.validate_version_specifier_list(new_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_engine_versions}')
+        return 1
+    if delete_engine_versions and not utils.validate_version_specifier_list(delete_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {delete_engine_versions}')
+        return 1
+    if replace_engine_versions and not utils.validate_version_specifier_list(replace_engine_versions):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_engine_versions}')
+        return 1
+    if new_engine_versions or delete_engine_versions or replace_engine_versions:
+        proj_json['engine_versions'] = utils.update_values_in_key_list(proj_json.get('engine_versions', []), new_engine_versions,
+                                                        delete_engine_versions, replace_engine_versions)
 
     return 0 if manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json') else 1
 
@@ -142,9 +154,9 @@ def add_parser_args(parser):
                        help='Replace entirety of gem_names field with space delimited list of values')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-aev', '--add-engine-versions', type=str, nargs='*', required=False,
-                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. >=1.0 o3de-sdk~=2.2).')
+                       help='Add engine version(s) this project is compatible with. Space delimited list (ex. o3de>=1.0.0.0 o3de-sdk~=2.3).')
     group.add_argument('-dev', '--remove-engine-versions', type=str, nargs='*', required=False,
-                       help='Removes engine version(s) from the engine_versions property. Space delimited list (ex. >=1.0 o3de-sdk~=2.2).')
+                       help='Removes engine version(s) from the engine_versions property. Space delimited list (ex. o3de>=1.0.0.0 o3de-sdk~=2.3).')
     group.add_argument('-rev', '--replace-engine-versions', type=str, nargs='*', required=False,
                        help='Replace entirety of engine_versions field with space delimited list of values.')
     parser.set_defaults(func=_edit_project_props)

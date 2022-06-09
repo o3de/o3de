@@ -11,6 +11,7 @@ This file validating o3de object json files
 import json
 import pathlib
 import uuid
+from o3de import utils
 
 
 def valid_o3de_json_dict(json_data: dict, key: str) -> bool:
@@ -55,6 +56,10 @@ def valid_o3de_project_json(file_name: str or pathlib.Path, generate_uuid: bool 
         try:
             json_data = json.load(f)
             _ = json_data['project_name']
+
+            if 'engine_versions' in json_data:
+                if not utils.validate_version_specifier_list(json_data['engine_data']):
+                    return False
 
             if not generate_uuid:
                 _ = json_data['project_id']

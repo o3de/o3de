@@ -17,6 +17,9 @@ import shutil
 import urllib.request
 import logging
 import zipfile
+import re
+from packaging.version import Version
+from packaging.specifiers import SpecifierSet
 
 from o3de import gitproviderinterface, github_utils
 
@@ -105,6 +108,22 @@ def validate_identifier(identifier: str) -> bool:
         for character in identifier:
             if not (character.isalnum() or character == '_' or character == '-'):
                 return False
+    return True
+
+
+def validate_version_specifier(version_specifier:str) -> bool:
+    try:
+        get_object_name_and_version_specifier(version_specifier)
+    except Exception as e:
+        return False
+    return True 
+
+
+def validate_version_specifier_list(version_specifiers:str or list) -> bool:
+    version_specifier_list = version_specifiers.split() if isinstance(version_specifiers, str) else version_specifiers
+    for version_specifier in version_specifier_list:
+        if not validate_version_specifier(version_specifier):
+            return False
     return True
 
 
@@ -320,11 +339,12 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
 
+
 def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
                       replace_values: list or str):
     """
-    Updates values within a list by first appending values in the new_values list, removing values in the remove_values
-    list,replacing values in the replace_values list and then removing duplicates.
+    Updates values within a list by replacing all values or by appending values in the new_values list, 
+    removing values in the remove_values and then removing duplicates.
     :param existing_values list with existing values to modify
     :param new_values list with values to add to the existing value list
     :param remove_values list with values to remove from the existing value list
@@ -332,15 +352,44 @@ def update_values_in_key_list(existing_values: list, new_values: list or str, re
 
     returns updated existing value list
     """
+    if replace_values:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return list(dict.fromkeys(replace_values))
+
     if new_values:
         new_values = new_values.split() if isinstance(new_values, str) else new_values
         existing_values.extend(new_values)
     if remove_values:
         remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
         existing_values = list(filter(lambda value: value not in remove_values, existing_values))
-    if replace_values:
-        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
-        existing_values = replace_values
 
     # replace duplicate values
     return list(dict.fromkeys(existing_values))
+
+
+def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
+    """
+    Get the object name and version specifier from a string in the form <name><version specifier(s)>
+    Valid input examples:
+        o3de>=1.0.0.0
+        o3de-sdk==2205.01,~=2201.10
+    :param input the string in the form <name><version specifier(s)>
+
+    return an engine name and a version specifier or raises an exception if input is invalid
+    """
+
+    regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
+    regex = re.compile(r"^\s*" + regex_str + r"\s*$", re.VERBOSE | re.IGNORECASE)
+    match = regex.search(input)
+
+    if not match:
+        raise Exception(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+
+    if not match.group("object_name"):
+        raise Exception(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.0.0.0")
+
+    # SpecifierSet will raise an exception if invalid
+    if not SpecifierSet(match.group("version_specifier")):
+        return None
+    
+    return match.group("object_name").strip(), match.group("version_specifier").strip()
