@@ -42,8 +42,9 @@ namespace AzToolsFramework
         {
             return AZ::IO::Path(watchFolder) / relativePath;
         }
-        // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet
-        // So we need to find it by searching in the asset safe folders
+        // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet.
+        // Search through the set of asset-safe folders to look for the first one that contains a matching
+        // subdirectory structure that could be used to store the requested relative path and name.
         else
         {
             bool assetSafeFoldersRetrieved = false;
