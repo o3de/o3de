@@ -1,7 +1,7 @@
 Alphabet Letter P asset test cases:
 
 Freeze transform vs Non Freeze Transform
-Description: The non free transform version has an arbitrary transform on the root joint, while the freeze transform version has identical transform on the root joint.
+Description: The non freeze transform version has an arbitrary transform on the root joint, while the freeze transform version has identical transform on the root joint.
 Expectation: A straight up letter P that animated with slight mesh deformation. Both asset should be identical to each other, including skeleton, mesh, skinning and animation.
 
 Dot name vs non dot name
