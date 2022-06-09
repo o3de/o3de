@@ -63,6 +63,7 @@ namespace UnitTest
         }
         void OnAssetReady(Asset<AssetData> asset) override
         {
+            AZ_TracePrintf("debug", "AssetReady: %s\n", asset.GetId().ToFixedString().c_str());
             EXPECT_EQ(asset->GetId(), m_assetId);
             EXPECT_EQ(asset->GetType(), m_assetType);
             if (m_readyCheck)
@@ -125,6 +126,230 @@ namespace UnitTest
         AssetId     m_assetId;
         AZStd::atomic_int m_ready{};
     };
+
+    class AssetReloading : public DisklessAssetManagerBase
+    {
+    public:
+        TestAssetManager* m_testAssetManager{ nullptr };
+        DataDrivenHandlerAndCatalog* m_assetHandlerAndCatalog{ nullptr };
+
+        static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
+        static inline const AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
+        static inline const AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
+        static inline const AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
+        static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
+        static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+
+        // Initialize the Job Manager with 6 threads for the Asset Manager to use.
+        size_t GetNumJobManagerThreads() const override
+        {
+            return 6;
+        }
+
+        void SetUp() override
+        {
+            DisklessAssetManagerBase::SetUp();
+            SetupTest();
+        }
+
+        void TearDown() override
+        {
+            AssetManager::Destroy();
+            DisklessAssetManagerBase::TearDown();
+        }
+
+        void SetupAssets()
+        {
+            auto* catalog = m_assetHandlerAndCatalog;
+
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt").AddQueueLoad(MyAsset2Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt", 100).AddQueueLoad(MyAsset3Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt", 50).AddQueueLoad(MyAsset4Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset4Id, "TestAsset4.txt").AddQueueLoad(MyAsset5Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset5Id, "TestAsset5.txt").AddQueueLoad(MyAsset6Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt").Store(*catalog);
+        }
+
+        void SetupTest()
+        {
+            AssetWithSerializedData::Reflect(*m_serializeContext);
+            AssetWithAssetReference::Reflect(*m_serializeContext);
+
+            AssetManager::Descriptor desc;
+            m_testAssetManager = aznew TestAssetManager(desc);
+            AssetManager::SetInstance(m_testAssetManager);
+            m_assetHandlerAndCatalog = aznew DataDrivenHandlerAndCatalog();
+            m_assetHandlerAndCatalog->m_context = m_serializeContext;
+
+            SetupAssets();
+
+            AZStd::vector<AssetType> types;
+            m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
+            for (const auto& type : types)
+            {
+                m_testAssetManager->RegisterHandler(m_assetHandlerAndCatalog, type);
+                m_testAssetManager->RegisterCatalog(m_assetHandlerAndCatalog, type);
+            }
+
+            {
+                AssetWithSerializedData asset6;
+
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &asset6, m_serializeContext));
+
+                AssetWithAssetReference asset1;
+                AssetWithAssetReference asset2;
+                AssetWithAssetReference asset3;
+                AssetWithAssetReference asset4;
+                AssetWithAssetReference asset5;
+
+                asset5.m_asset = m_testAssetManager->CreateAsset<AssetWithSerializedData>(MyAsset6Id, AssetLoadBehavior::QueueLoad);
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &asset5, m_serializeContext));
+
+                asset4.m_asset = m_testAssetManager->CreateAsset<AssetWithAssetReference>(MyAsset5Id, AssetLoadBehavior::QueueLoad);
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &asset4, m_serializeContext));
+
+                asset3.m_asset = m_testAssetManager->CreateAsset<AssetWithAssetReference>(MyAsset4Id, AssetLoadBehavior::QueueLoad);
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &asset3, m_serializeContext));
+
+                asset2.m_asset = m_testAssetManager->CreateAsset<AssetWithAssetReference>(MyAsset3Id, AssetLoadBehavior::QueueLoad);
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &asset2, m_serializeContext));
+
+                asset1.m_asset = m_testAssetManager->CreateAsset<AssetWithAssetReference>(MyAsset2Id, AssetLoadBehavior::QueueLoad);
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &asset1, m_serializeContext));
+
+                m_assetHandlerAndCatalog->m_numCreations = 0;
+            }
+        }
+
+        void CheckFinishedCreationsAndDestructions()
+        {
+            // Make sure asset jobs have finished before validating the number of destroyed assets, because it's possible that the asset job
+            // still contains a reference on the job thread that won't trigger the asset destruction until the asset job is destroyed.
+            BlockUntilAssetJobsAreComplete();
+            m_testAssetManager->DispatchEvents();
+            EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, m_assetHandlerAndCatalog->m_numDestructions);
+        }
+    };
+
+    TEST_F(AssetReloading, AssetReloadTest)
+    {
+        const auto timeoutSeconds = AZStd::chrono::seconds(200);
+
+        OnAssetReadyListener assetStatus1(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>());
+        OnAssetReadyListener assetStatus2(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
+        OnAssetReadyListener assetStatus3(MyAsset3Id, azrtti_typeid<AssetWithAssetReference>());
+        OnAssetReadyListener assetStatus4(MyAsset4Id, azrtti_typeid<AssetWithAssetReference>());
+        OnAssetReadyListener assetStatus5(MyAsset5Id, azrtti_typeid<AssetWithAssetReference>());
+        OnAssetReadyListener assetStatus6(MyAsset6Id, azrtti_typeid<AssetWithSerializedData>());
+
+        // Suspend the streamer until we've got all the assets queued simultaneously to ensure that we've flooded the system.
+        auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
+        streamer->SuspendProcessing();
+
+        // Load all three root assets, each of which cascades another asset load as PreLoad.
+        Asset<AssetWithAssetReference> asset1 =
+            m_testAssetManager->GetAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
+
+        EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 6);
+
+        // Now that all the initial requests are queued, start up the streamer.
+        streamer->ResumeProcessing();
+
+        // Make sure all 6 assets have loaded.
+        asset1.BlockUntilLoadComplete();
+
+
+
+        EXPECT_TRUE(asset1.IsReady());
+        EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 6);
+
+        // Assets above can be ready (PreNotify) before the signal has reached our listener - allow for a small window to hear
+        auto maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        bool timedOut = false;
+        while (!assetStatus1.m_ready
+            || !assetStatus2.m_ready
+            || !assetStatus3.m_ready
+            || !assetStatus4.m_ready
+            || !assetStatus5.m_ready
+            || !assetStatus6.m_ready)
+        {
+            AssetManager::Instance().DispatchEvents();
+            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            {
+                timedOut = true;
+                break;
+            }
+        }
+
+        // Make sure we didn't time out.
+        ASSERT_FALSE(timedOut);
+
+        EXPECT_EQ(assetStatus1.m_ready, 1);
+        EXPECT_EQ(assetStatus2.m_ready, 1);
+        EXPECT_EQ(assetStatus3.m_ready, 1);
+        // MyAsset4 and 5 were loaded as a blocking dependency while a job was waiting to load them
+        // we want to verify they did not go through a second load
+        EXPECT_EQ(assetStatus4.m_ready, 1);
+        EXPECT_EQ(assetStatus5.m_ready, 1);
+        // MyAsset6 was loaded by MyAsset3.  Make sure it's ready too.
+        EXPECT_EQ(assetStatus6.m_ready, 1);
+
+        EXPECT_EQ(assetStatus1.m_reloaded, 0);
+        EXPECT_EQ(assetStatus2.m_reloaded, 0);
+        EXPECT_EQ(assetStatus3.m_reloaded, 0);
+        EXPECT_EQ(assetStatus4.m_reloaded, 0);
+        EXPECT_EQ(assetStatus5.m_reloaded, 0);
+        EXPECT_EQ(assetStatus6.m_reloaded, 0);
+
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
+
+        // Now that we know every asset is loaded, trigger some reloads
+        struct ReloadListener : AssetBus::Handler
+        {
+            ReloadListener(AssetId assetId)
+            {
+                BusConnect(assetId);
+            }
+
+            ~ReloadListener()
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReloaded([[maybe_unused]] Asset<AssetData> asset) override
+            {
+                ++m_reloadCount;
+            }
+            void OnAssetDependencyReloaded([[maybe_unused]] AssetId assetId) override
+            {
+                ++m_dependencyReloadCount;
+            }
+
+            AZStd::atomic_int m_reloadCount = 0;
+            AZStd::atomic_int m_dependencyReloadCount = 0;
+        };
+
+        ReloadListener reloadListener(MyAsset1Id);
+
+        AssetManager::Instance().ReloadAsset(MyAsset6Id, QueueLoad);
+
+        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        timedOut = false;
+        while (!assetStatus6.m_reloaded)
+        {
+            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            {
+                timedOut = true;
+                break;
+            }
+
+            AssetManager::Instance().DispatchEvents();
+        }
+        EXPECT_FALSE(timedOut);
+
+        EXPECT_EQ(assetStatus6.m_reloaded, 1);
+        EXPECT_EQ(reloadListener.m_dependencyReloadCount, 1);
+    }
 
     /**
     * Generate a situation where we have more dependent job loads than we have threads
@@ -198,36 +423,36 @@ namespace UnitTest
         {
             auto* catalog = m_assetHandlerAndCatalog;
 
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt")->AddPreload(MyAsset4Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt")->AddPreload(MyAsset5Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt")->AddPreload(MyAsset6Id);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt").AddPreload(MyAsset4Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt").AddPreload(MyAsset5Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt").AddPreload(MyAsset6Id).Store(*catalog);
 
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt");
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt");
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt");
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt").Store(*catalog);
 
-            catalog->AddAsset<AssetWithAssetReference>(DelayLoadAssetId, "DelayLoadAsset.txt", 10);
-            catalog->AddAsset<AssetWithAssetReference>(NoLoadAssetId, "NoLoadAsset.txt")->AddNoLoad(MyAsset2Id);
+            AssetDefinition::Create<AssetWithAssetReference>(DelayLoadAssetId, "DelayLoadAsset.txt", 10).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(NoLoadAssetId, "NoLoadAsset.txt").AddNoLoad(MyAsset2Id).Store(*catalog);
 
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetRootId, "PreLoadRoot.txt")->AddPreload(PreloadAssetAId)->AddQueueLoad(QueueLoadAssetAId);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadAssetRootId, "PreLoadRoot.txt").AddPreload(PreloadAssetAId).AddQueueLoad(QueueLoadAssetAId).Store(*catalog);
 
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetAId, "PreLoadA.txt")->AddPreload(PreloadAssetBId)->AddQueueLoad(QueueLoadAssetBId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetBId, "PreLoadB.txt");
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetBId, "QueueLoadB.txt");
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadAssetAId, "PreLoadA.txt").AddPreload(PreloadAssetBId).AddQueueLoad(QueueLoadAssetBId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadAssetBId, "PreLoadB.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetBId, "QueueLoadB.txt").Store(*catalog);
 
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetAId, "QueueLoadA.txt")->AddPreload(PreloadAssetCId)->AddQueueLoad(QueueLoadAssetCId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetCId, "PreLoadC.txt");
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetCId, "QueueLoadC.txt");
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetAId, "QueueLoadA.txt").AddPreload(PreloadAssetCId).AddQueueLoad(QueueLoadAssetCId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadAssetCId, "PreLoadC.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(QueueLoadAssetCId, "QueueLoadC.txt").Store(*catalog);
 
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadBrokenDepAId, "PreLoadBrokenA.txt")->AddPreload(PreloadBrokenDepBId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadBrokenDepBId, "PreLoadBrokenB.txt")->AddPreload(PreloadAssetNoDataId)->AddPreload(PreloadAssetNoHandlerId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetNoDataId, "PreLoadNoData.txt", 0, true);
-            catalog->AddAsset<EmptyAssetWithNoHandler>(PreloadAssetNoHandlerId, "PreLoadNoHandler.txt", 0, false, true);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadBrokenDepAId, "PreLoadBrokenA.txt").AddPreload(PreloadBrokenDepBId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadBrokenDepBId, "PreLoadBrokenB.txt").AddPreload(PreloadAssetNoDataId).AddPreload(PreloadAssetNoHandlerId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(PreloadAssetNoDataId, "PreLoadNoData.txt", 0, true).Store(*catalog);
+            AssetDefinition::Create<EmptyAssetWithNoHandler>(PreloadAssetNoHandlerId, "PreLoadNoHandler.txt", 0, false, true).Store(*catalog);
 
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(CircularAId, "CircularA.txt")->AddPreload(CircularAId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(CircularBId, "CircularB.txt")->AddPreload(CircularCId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(CircularCId, "CircularC.txt")->AddPreload(CircularBId);
-            catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(CircularDId, "CircularD.txt")->AddPreload(CircularBId);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(CircularAId, "CircularA.txt").AddPreload(CircularAId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(CircularBId, "CircularB.txt").AddPreload(CircularCId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(CircularCId, "CircularC.txt").AddPreload(CircularBId).Store(*catalog);
+            AssetDefinition::Create<AssetWithQueueAndPreLoadReferences>(CircularDId, "CircularD.txt").AddPreload(CircularBId).Store(*catalog);
         }
 
         void SetupTest()
@@ -684,8 +909,8 @@ namespace UnitTest
         constexpr char AssetNoRefB[] = "{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}";
 
         {
-            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(AssetNoRefA, "a.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(AssetNoRefB, "b.txt", 10);
+            AssetDefinition::Create<AssetWithSerializedData>(AssetNoRefA, "a.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithSerializedData>(AssetNoRefB, "b.txt", 10).Store(*m_assetHandlerAndCatalog);
 
             AssetWithSerializedData ap;
 
@@ -789,13 +1014,13 @@ namespace UnitTest
         {
             auto* catalog = m_assetHandlerAndCatalog;
 
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt", 1000, false, false, &m_loadDataSynchronizer)->AddPreload(MyAsset4Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt", 1000, false, false, &m_loadDataSynchronizer)->AddPreload(MyAsset5Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt", 1000, false, false, &m_loadDataSynchronizer)->AddPreload(MyAsset6Id);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt", 1000, false, false, &m_loadDataSynchronizer).AddPreload(MyAsset4Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt", 1000, false, false, &m_loadDataSynchronizer).AddPreload(MyAsset5Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt", 1000, false, false, &m_loadDataSynchronizer).AddPreload(MyAsset6Id).Store(*catalog);
 
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt", 1000);
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt", 1000);
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt", 1000);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt", 1000).Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt", 1000).Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt", 1000).Store(*catalog);
         }
 
         void SetupTest()
@@ -2015,17 +2240,17 @@ namespace UnitTest
 
         void SetupAssets(DataDrivenHandlerAndCatalog* catalog)
         {
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt")->AddPreload(MyAsset4Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt")->AddPreload(MyAsset5Id);
-            catalog->AddAsset<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt")->AddPreload(MyAsset6Id);
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt");
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt");
-            catalog->AddAsset<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt");
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset1Id, "TestAsset1.txt").AddPreload(MyAsset4Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset2Id, "TestAsset2.txt").AddPreload(MyAsset5Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAsset3Id, "TestAsset3.txt").AddPreload(MyAsset6Id).Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset4Id, "TestAsset4.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt").Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt").Store(*catalog);
 
-            catalog->AddAsset<AssetWithAssetReference>(MyAssetAId, "TestAsset1.txt")->AddPreload(MyAssetBId);
-            catalog->AddAsset<AssetWithAssetReference>(MyAssetBId, "TestAsset2.txt")->AddPreload(MyAssetCId);
-            catalog->AddAsset<AssetWithAssetReference>(MyAssetCId, "TestAsset3.txt")->AddPreload(MyAssetDId);
-            catalog->AddAsset<AssetWithSerializedData>(MyAssetDId, "TestAsset4.txt");
+            AssetDefinition::Create<AssetWithAssetReference>(MyAssetAId, "TestAsset1.txt").AddPreload(MyAssetBId).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAssetBId, "TestAsset2.txt").AddPreload(MyAssetCId).Store(*catalog);
+            AssetDefinition::Create<AssetWithAssetReference>(MyAssetCId, "TestAsset3.txt").AddPreload(MyAssetDId).Store(*catalog);
+            AssetDefinition::Create<AssetWithSerializedData>(MyAssetDId, "TestAsset4.txt").Store(*catalog);
         }
 
         void ParallelCreateAndDestroy()
@@ -2586,9 +2811,9 @@ namespace UnitTest
 
             AssetWithCustomData::Reflect(*m_serializeContext);
 
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt");
-            m_assetHandlerAndCatalog->AddAsset<AssetWithCustomData>(MyAsset3Id, "MyAsset3.txt");
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset1Id, "MyAsset1.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset2Id, "MyAsset2.txt").Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithCustomData>(MyAsset3Id, "MyAsset3.txt").Store(*m_assetHandlerAndCatalog);
 
             AZStd::vector<AssetType> types;
             m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
@@ -2999,12 +3224,12 @@ namespace UnitTest
             // These tests validate behaviors when the root asset is released while a dependent asset is in the middle of loading,
             // so getting the timing correct is mandatory for these tests.
 
-            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(RootAssetId,
-                "RootAsset.txt")->AddPreload(DependentPreloadAssetId);
-            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(DependentPreloadAssetId,
-                "DependentPreloadAsset.txt")->AddPreload(NestedDependentPreloadBlockingAssetId);
-            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(NestedDependentPreloadBlockingAssetId,
-                "DependentPreloadBlockingAsset.txt", 0, false, false, &m_loadDataSynchronizer);
+            AssetDefinition::Create<AssetWithAssetReference>(RootAssetId,
+                "RootAsset.txt").AddPreload(DependentPreloadAssetId).Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithAssetReference>(DependentPreloadAssetId,
+                "DependentPreloadAsset.txt").AddPreload(NestedDependentPreloadBlockingAssetId).Store(*m_assetHandlerAndCatalog);
+            AssetDefinition::Create<AssetWithSerializedData>(NestedDependentPreloadBlockingAssetId,
+                "DependentPreloadBlockingAsset.txt", 0, false, false, &m_loadDataSynchronizer).Store(*m_assetHandlerAndCatalog);
 
             AZStd::vector<AssetType> types;
             m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
