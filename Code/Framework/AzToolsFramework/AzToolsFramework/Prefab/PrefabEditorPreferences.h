@@ -8,8 +8,8 @@
 
 #pragma once
 
-namespace AzToolsFramework
+namespace AzToolsFramework::Prefab
 {
     bool IsHotReloadingEnabled();
 
-} // namespace AzToolsFramework
+} // namespace AzToolsFramework::Prefab

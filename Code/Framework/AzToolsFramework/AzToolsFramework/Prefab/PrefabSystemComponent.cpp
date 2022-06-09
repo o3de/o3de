@@ -41,7 +41,7 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::IsHotReloadingEnabled())
+            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusConnect();
             }
@@ -50,7 +50,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::IsHotReloadingEnabled())
+            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
             }

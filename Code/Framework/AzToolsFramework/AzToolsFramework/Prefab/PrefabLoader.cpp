@@ -302,62 +302,6 @@ namespace AzToolsFramework
             return newTemplateId;
         }
 
-        TemplateId PrefabLoader::ReadPrefabFile(AZ::IO::PathView relativePath, AZStd::unordered_set<AZ::IO::Path> progressedFilePathsSet)
-        {
-            if (!IsValidPrefabPath(relativePath))
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadTemplateFromString - "
-                    "Invalid origin path: '%.*s'",
-                    AZ_STRING_ARG(relativePath.Native()));
-                return InvalidTemplateId;
-            }
-            auto readResult = AZ::Utils::ReadFile(GetFullPath(relativePath).Native(), AZStd::numeric_limits<size_t>::max());
-            if (!readResult.IsSuccess())
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
-                    "Error message: '%s'",
-                    AZ_STRING_ARG(relativePath.Native()), readResult.GetError().c_str());
-                return InvalidTemplateId;
-            }
-
-            // Cyclical dependency detected if the prefab file is already part of the progressed
-            // file path set.
-            if (progressedFilePathsSet.contains(relativePath))
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadTemplateFromString - "
-                    "Prefab file '%.*s' has been detected to directly or indirectly depend on itself."
-                    "Terminating any further loading of this branch of its prefab hierarchy.",
-                    AZ_STRING_ARG(relativePath.Native()));
-                return InvalidTemplateId;
-            }
-
-            // Read Template's prefab file from disk and parse Prefab DOM from file.
-            AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
-            if (!readPrefabFileResult.IsSuccess())
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
-                    "Error message: '%s'",
-                    AZ_STRING_ARG(relativePath.Native()), readPrefabFileResult.GetError().c_str());
-
-                return InvalidTemplateId;
-            }
-
-            // Add or replace the Source parameter in the dom
-            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
-            sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().data());
-
-            // Directly return loaded Template id.
-            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
-            return loadedTemplateId;
-        }
 
         bool PrefabLoader::LoadNestedInstance(
             PrefabDomValue::MemberIterator& instanceIterator, TemplateId targetTemplateId,
