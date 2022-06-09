@@ -84,12 +84,16 @@ namespace Physics
         const JointDebugDrawData& jointDebugDrawData,
         const ColorSettings& colorSettings)
     {
-        const AZ::Transform jointChildWorldSpaceTransform = jointDebugDrawData.m_childWorldTransform *
-            AZ::Transform::CreateFromQuaternion(ragdollNodeConfig.m_jointConfig->m_childLocalRotation);
-        const AZ::Vector3 dir = jointChildWorldSpaceTransform.GetBasisX();
+        if (ragdollNodeConfig.m_jointConfig)
+        {
+            const AZ::Transform jointChildWorldSpaceTransform = jointDebugDrawData.m_childWorldTransform *
+                AZ::Transform::CreateFromQuaternion(ragdollNodeConfig.m_jointConfig->m_childLocalRotation);
+            const AZ::Vector3 xAxisDirection = jointChildWorldSpaceTransform.GetBasisX();
 
-        debugDisplay->SetColor(colorSettings.m_selectedColor);
-        debugDisplay->DrawArrow(jointChildWorldSpaceTransform.GetTranslation(), jointChildWorldSpaceTransform.GetTranslation() + dir, 0.1f);
+            debugDisplay->SetColor(colorSettings.m_selectedColor);
+            debugDisplay->DrawArrow(
+                jointChildWorldSpaceTransform.GetTranslation(), jointChildWorldSpaceTransform.GetTranslation() + xAxisDirection, 0.1f);
+        }
     };
 
     void CharacterPhysicsDebugDraw::RenderJointLimit(
