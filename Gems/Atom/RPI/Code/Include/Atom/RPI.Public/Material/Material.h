@@ -145,7 +145,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetDependencyReloaded(Data::AssetId assetId) override;
+            void OnAssetDependencyReloaded(Data::Asset<Data::AssetData> asset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...

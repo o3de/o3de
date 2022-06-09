@@ -94,7 +94,7 @@ namespace UnitTest
             m_latest = asset;
         }
 
-        void OnAssetDependencyReloaded([[maybe_unused]] AssetId assetId) override
+        void OnAssetDependencyReloaded([[maybe_unused]] Asset<AssetData> asset) override
         {
             m_dependencyReloaded++;
         }

@@ -1609,7 +1609,7 @@ namespace AZ::Data
             {
                 for (const auto& dependency : result.GetValue())
                 {
-                    AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset.GetId());
+                    AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset);
                 }
             }
             else
