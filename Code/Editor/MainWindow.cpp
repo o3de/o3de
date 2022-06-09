@@ -124,6 +124,7 @@ static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.me
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
+static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
 static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
 static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
 static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
@@ -1416,6 +1417,11 @@ void MainWindow::AdjustToolBarIconSize(AzQtComponents::ToolBar::ToolBarIconSize 
 
 void MainWindow::OnGameModeChanged(bool inGameMode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
@@ -2198,6 +2204,56 @@ void MainWindow::InitializeActions()
         );
     }
 
+    // --- Game Actions
+
+    // Play Game
+    {
+        ActionProperties actionProperties;
+        actionProperties.m_name = "Play Game";
+        actionProperties.m_description = "Activate Game Mode";
+        actionProperties.m_category = "Game";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.game.play", actionProperties,
+            [cryEdit]()
+            {
+                cryEdit->OnViewSwitchToGame();
+            },
+            []()
+            {
+                return false;
+            }
+        );
+
+        // Need to add Enabled state callback
+        // action->setEnabled(!m_bIsExportingLegacyData && GetIEditor()->IsLevelLoaded());
+    }
+
+    // Play Game (Maximized)
+    {
+        ActionProperties actionProperties;
+        actionProperties.m_name = "Play Game (Maximized)";
+        actionProperties.m_description = "Activate Game Mode in a maximized window";
+        actionProperties.m_category = "Game";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.game.playMaximized", actionProperties,
+            [cryEdit]()
+            {
+                cryEdit->OnViewSwitchToGameFullScreen();
+            },
+            []()
+            {
+                return false;
+            }
+        );
+
+        // Need to add Enabled state callback
+        // action->setEnabled(!m_bIsExportingLegacyData && GetIEditor()->IsLevelLoaded());
+    }
+
     // --- Help Actions
 
     // Tutorials
@@ -2360,6 +2416,11 @@ void MainWindow::InitializeMenus()
     }
     {
         MenuProperties menuProperties;
+        menuProperties.m_name = "Play Game";
+        m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
+    }
+    {
+        MenuProperties menuProperties;
         menuProperties.m_name = "&Tools";
         m_menuManagerInterface->RegisterMenu(ToolsMenuIdentifier, menuProperties);
     }
@@ -2403,6 +2464,13 @@ void MainWindow::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 20);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 40);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 60);
+    }
+
+    // Game
+    {
+        m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, PlayGameMenuIdentifier, 100);
+            m_menuManagerInterface->AddActionToMenu(PlayGameMenuIdentifier, "o3de.action.game.play", 100);
+            m_menuManagerInterface->AddActionToMenu(PlayGameMenuIdentifier, "o3de.action.game.playMaximized", 200);
     }
 
     // Help - Search Documentation Widget
