@@ -18,7 +18,6 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <AtomCore/Instance/InstanceData.h>

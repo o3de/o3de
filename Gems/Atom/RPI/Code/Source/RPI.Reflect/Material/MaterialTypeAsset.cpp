@@ -9,7 +9,6 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 

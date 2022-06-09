@@ -18,7 +18,6 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 
 namespace AZ::RPI
 {
