@@ -876,19 +876,22 @@ void MainWindow::SaveLogPanelState()
     }
 }
 
+AssetProcessor::ProductDependencyTreeItem* MainWindow::GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos)
+{
+    const QModelIndex assetIndex =
+        (isOutgoing ? ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->indexAt(pos)
+                    : ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->indexAt(pos));
+    if (!assetIndex.isValid())
+    {
+        return static_cast<AssetProcessor::ProductDependencyTreeItem*>(nullptr);
+    }
+    return static_cast<AssetProcessor::ProductDependencyTreeItem*>(assetIndex.internalPointer());
+}
+
 void MainWindow::ShowOutgoingProductDependenciesContextMenu(const QPoint& pos)
 {
     using namespace AssetProcessor;
-    auto productAt = [this](const QPoint& pos)
-    {
-        const QModelIndex assetIndex = ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->indexAt(pos);
-        if (!assetIndex.isValid())
-        {
-            return static_cast<ProductDependencyTreeItem*>(nullptr);
-        }
-        return static_cast<ProductDependencyTreeItem*>(assetIndex.internalPointer());
-    };
-    const ProductDependencyTreeItem* cachedAsset = productAt(pos);
+    const ProductDependencyTreeItem* cachedAsset = GetProductAssetFromDependencyTreeView(true, pos);
 
     if (!cachedAsset || !cachedAsset->GetData())
     {
@@ -919,16 +922,7 @@ void MainWindow::ShowOutgoingProductDependenciesContextMenu(const QPoint& pos)
 void MainWindow::ShowIncomingProductDependenciesContextMenu(const QPoint& pos)
 {
     using namespace AssetProcessor;
-    auto productAt = [this](const QPoint& pos)
-    {
-        const QModelIndex assetIndex = ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->indexAt(pos);
-        if (!assetIndex.isValid())
-        {
-            return static_cast<ProductDependencyTreeItem*>(nullptr);
-        }
-        return static_cast<ProductDependencyTreeItem*>(assetIndex.internalPointer());
-    };
-    const ProductDependencyTreeItem* cachedAsset = productAt(pos);
+    const ProductDependencyTreeItem* cachedAsset = GetProductAssetFromDependencyTreeView(false, pos);
 
     if (!cachedAsset || !cachedAsset->GetData())
     {
