@@ -71,6 +71,7 @@ namespace AZ
                 void Populate();
 
                 AZStd::string GetRelativePath(const AZStd::string& path) const;
+                AZStd::string GetFileName(const AZStd::string& path) const;
                 bool IsSourceMaterial(const AZStd::string& path) const;
                 bool SaveMaterial(const AZStd::string& path) const;
                 void OpenMenu();

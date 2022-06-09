@@ -35,6 +35,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QLabel>
 #include <QMenu>
 #include <QToolButton>
+#include <QToolTip>
 #include <QWidget>
 AZ_POP_DISABLE_WARNING
 
@@ -239,35 +240,35 @@ namespace AZ
                 if (!m_editData.m_materialSourcePath.empty())
                 {
                     // Inserting links that will be used to open the material/type in the material editor
-                    const auto& materialSourceRelativePath = GetRelativePath(m_editData.m_materialSourcePath);
+                    const auto& materialSourceFileName = GetFileName(m_editData.m_materialSourcePath);
                     if (IsSourceMaterial(m_editData.m_materialSourcePath))
                     {
                         materialInfo += tr("<tr><td><b>Material Source&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
                                             .arg(m_editData.m_materialSourcePath.c_str())
-                                            .arg(materialSourceRelativePath.c_str());
+                                            .arg(materialSourceFileName.c_str());
                     }
                     else
                     {
                         // Materials that come from other sources like FBX files will not have the link
                         materialInfo += tr("<tr><td><b>Material Source&emsp;</b></td><td>%1</td></tr>")
-                                            .arg(materialSourceRelativePath.c_str());
+                                            .arg(materialSourceFileName.c_str());
                     }
                 }
                 if (IsSourceMaterial(m_editData.m_materialParentSourcePath))
                 {
                     // Inserting links that will be used to open the material/type in the material editor
-                    const auto& materialParentSourceRelativePath = GetRelativePath(m_editData.m_materialParentSourcePath);
+                    const auto& materialParentSourceFileName = GetFileName(m_editData.m_materialParentSourcePath);
                     materialInfo += tr("<tr><td><b>Material Parent&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
                                         .arg(m_editData.m_materialParentSourcePath.c_str())
-                                        .arg(materialParentSourceRelativePath.c_str());
+                                        .arg(materialParentSourceFileName.c_str());
                 }
                 if (!m_editData.m_materialTypeSourcePath.empty())
                 {
                     // Inserting links that will be used to open the material/type in the material editor
-                    const auto& materialTypeSourceRelativePath = GetRelativePath(m_editData.m_materialTypeSourcePath);
+                    const auto& materialTypeSourceFileName = GetFileName(m_editData.m_materialTypeSourcePath);
                     materialInfo += tr("<tr><td><b>Material Type&emsp;</b></td><td><a href=\"%1\">%2</a></td></tr>")
                                         .arg(m_editData.m_materialTypeSourcePath.c_str())
-                                        .arg(materialTypeSourceRelativePath.c_str());
+                                        .arg(materialTypeSourceFileName.c_str());
                 }
                 materialInfo += tr("</table>");
 
@@ -277,6 +278,9 @@ namespace AZ
                 connect(m_overviewText, &QLabel::linkActivated, this, [](const QString& link) {
                     EditorMaterialSystemComponentRequestBus::Broadcast(
                         &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, link.toUtf8().constData());
+                });
+                connect(m_overviewText, &QLabel::linkHovered, this, [](const QString& link) {
+                    QToolTip::showText(QCursor::pos(), link);
                 });
 
                 // Update the overview image with the last rendered preview of the primary entity's material.
@@ -682,6 +686,13 @@ namespace AZ
                 return relativePath;
             }
 
+            AZStd::string MaterialPropertyInspector::GetFileName(const AZStd::string& path) const
+            {
+                AZStd::string fileName;
+                AZ::StringFunc::Path::GetFullFileName(path.c_str(), fileName);
+                return fileName;
+            }
+
             bool MaterialPropertyInspector::IsSourceMaterial(const AZStd::string& path) const
             {
                 return !path.empty() && AZ::StringFunc::Path::IsExtension(path.c_str(), AZ::RPI::MaterialSourceData::Extension);
@@ -723,8 +734,8 @@ namespace AZ
 
                 if (IsSourceMaterial(m_editData.m_materialSourcePath))
                 {
-                    const auto& materialSourceRelativePath = GetRelativePath(m_editData.m_materialSourcePath);
-                    action = menu.addAction(tr("Save Over \"%1\"...").arg(materialSourceRelativePath.c_str()), [this] {
+                    const auto& materialSourceFileName = GetFileName(m_editData.m_materialSourcePath);
+                    action = menu.addAction(tr("Save Over \"%1\"...").arg(materialSourceFileName.c_str()), [this] {
                         SaveMaterial(m_editData.m_materialSourcePath);
                     });
                 }
