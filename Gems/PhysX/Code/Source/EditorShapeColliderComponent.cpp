@@ -41,15 +41,6 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
-        , m_onMaterialLibraryChangedEventHandler(
-            [this](const AZ::Data::AssetId& defaultMaterialLibrary)
-            {
-                m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
-                Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-            })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
@@ -311,7 +302,7 @@ namespace PhysX
 
     AZ::u32 EditorShapeColliderComponent::OnConfigurationChanged()
     {
-        m_colliderConfig.m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
+        m_colliderConfig.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
         CreateStaticEditorCollider();
         return AZ::Edit::PropertyRefreshLevels::None;
     }
@@ -740,16 +731,11 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
-            {
-                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
-            }
         }
     }
 
     void EditorShapeColliderComponent::OnDeselected()
     {
-        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 

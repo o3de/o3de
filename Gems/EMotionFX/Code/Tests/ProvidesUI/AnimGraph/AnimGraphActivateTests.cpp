@@ -120,7 +120,7 @@ namespace EMotionFX
         QComboBox* motionSetPreviewSelector = qobject_cast<QComboBox*>(PopulatedAnimGraphFixture::FindTopLevelWidget("EMFX.AttributesWindowWidget.AnimGraph.MotionSetComboBox"));
 
         // Set Preview motionset as created MotionSet
-        motionSetPreviewSelector->setCurrentIndex(0);
+        motionSetPreviewSelector->setCurrentIndex(1);
         ASSERT_EQ(motionSetPreviewSelector->currentText(), "motionSet0") << "Preview Motionset could not be set";
 
         // Find activate animigraph button

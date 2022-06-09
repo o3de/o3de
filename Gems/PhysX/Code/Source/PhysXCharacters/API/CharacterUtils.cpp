@@ -16,10 +16,10 @@
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
+#include <PhysX/Material/PhysXMaterial.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Physics/MaterialBus.h>
 
 #include <cfloat>
 
@@ -45,37 +45,10 @@ namespace PhysX::Utils::Characters
     static void AppendShapeIndependentProperties(physx::PxControllerDesc& controllerDesc,
         const Physics::CharacterConfiguration& characterConfig, CharacterControllerCallbackManager* callbackManager)
     {
-        AZStd::vector<AZStd::shared_ptr<Physics::Material>> materials;
+        AZStd::vector<AZStd::shared_ptr<Material>> materials = Material::FindOrCreateMaterials(characterConfig.m_materialSlots);
+        AZ_Assert(!materials.empty(), "Material list is empty, it should at least include the default material.");
 
-        if (characterConfig.m_materialSelection.GetMaterialIdsAssignedToSlots().empty())
-        {
-            // If material selection has no slots, falling back to default material.
-            AZStd::shared_ptr<Physics::Material> defaultMaterial;
-            Physics::PhysicsMaterialRequestBus::BroadcastResult(defaultMaterial,
-                &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
-            if (!defaultMaterial)
-            {
-                AZ_Error("PhysX Character Controller", false, "Invalid default material.");
-                return;
-            }
-            materials.push_back(AZStd::move(defaultMaterial));
-        }
-        else
-        {
-            Physics::PhysicsMaterialRequestBus::Broadcast(
-                &Physics::PhysicsMaterialRequestBus::Events::GetMaterials,
-                characterConfig.m_materialSelection,
-                materials);
-            if (materials.empty())
-            {
-                AZ_Error("PhysX Character Controller", false, "Could not create character controller, material list was empty.");
-                return;
-            }
-        }
-
-        physx::PxMaterial* pxMaterial = static_cast<physx::PxMaterial*>(materials.front()->GetNativePointer());
-
-        controllerDesc.material = pxMaterial;
+        controllerDesc.material = const_cast<physx::PxMaterial*>(materials.front()->GetPxMaterial());
         controllerDesc.position = PxMathConvertExtended(characterConfig.m_position);
         controllerDesc.slopeLimit = cosf(AZ::DegToRad(characterConfig.m_maximumSlopeAngle));
         controllerDesc.stepOffset = characterConfig.m_stepHeight;

@@ -21,7 +21,7 @@ local SimpleSpawnDespawn =
 function SimpleSpawnDespawn:OnActivate()
     self.spawnableMediator = SpawnableScriptMediator()
     self.ticket = self.spawnableMediator:CreateSpawnTicket(self.Properties.Prefab)
-    self.spawnableMediator:SpawnAndParentAndTransform(self.ticket, self.entityId, Vector3(0,0,5), Vector3(0,0,90), 5.0 )
+    self.spawnableMediator:SpawnAndParentAndTransform(self.ticket, self.entityId, Vector3(0.0,0.0,5.0), Vector3(0.0,0.0,90.0), 5.0 )
     self.spawnableNotificationsBusHandler = SpawnableScriptNotificationsBus.Connect(self, self.ticket:GetId())
 end
 

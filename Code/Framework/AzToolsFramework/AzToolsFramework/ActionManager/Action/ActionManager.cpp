@@ -50,7 +50,6 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    
     ActionManagerOperationResult ActionManager::RegisterAction(
         const AZStd::string& contextIdentifier,
         const AZStd::string& actionIdentifier,
@@ -83,6 +82,7 @@ namespace AzToolsFramework
                     properties.m_name,
                     properties.m_description,
                     properties.m_category,
+                    properties.m_iconPath,
                     handler
                 )
             }
@@ -96,7 +96,7 @@ namespace AzToolsFramework
         const AZStd::string& actionIdentifier,
         const ActionProperties& properties,
         AZStd::function<void()> handler,
-        AZStd::function<void(QAction*)> updateCallback)
+        AZStd::function<bool()> checkStateCallback)
     {
         if (!m_actionContexts.contains(contextIdentifier))
         {
@@ -124,66 +124,178 @@ namespace AzToolsFramework
                     properties.m_name,
                     properties.m_description,
                     properties.m_category,
+                    properties.m_iconPath,
                     handler,
-                    updateCallback
+                    checkStateCallback
                 )
             }
         );
 
         return AZ::Success();
     }
+    
+    ActionManagerGetterResult ActionManager::GetActionName(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get name of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        return AZ::Success(actionIterator->second.GetName());
+    }
+
+    ActionManagerOperationResult ActionManager::SetActionName(const AZStd::string& actionIdentifier, const AZStd::string& name)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set name of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        actionIterator->second.SetName(name);
+        return AZ::Success();
+    }
+
+    ActionManagerGetterResult ActionManager::GetActionDescription(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get description of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        return AZ::Success(actionIterator->second.GetDescription());
+    }
+
+    ActionManagerOperationResult ActionManager::SetActionDescription(const AZStd::string& actionIdentifier, const AZStd::string& description)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set description of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        actionIterator->second.SetDescription(description);
+        return AZ::Success();
+    }
+
+    ActionManagerGetterResult ActionManager::GetActionCategory(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get name of category \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        return AZ::Success(actionIterator->second.GetCategory());
+    }
+
+    ActionManagerOperationResult ActionManager::SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set name of category \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        actionIterator->second.SetCategory(category);
+        return AZ::Success();
+    }
+
+    ActionManagerGetterResult ActionManager::GetActionIconPath(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get icon path of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        return AZ::Success(actionIterator->second.GetIconPath());
+    }
+
+    ActionManagerOperationResult ActionManager::SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set icon path of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+        
+        actionIterator->second.SetIconPath(iconPath);
+        return AZ::Success();
+    }
 
     ActionManagerOperationResult ActionManager::TriggerAction(const AZStd::string& actionIdentifier)
     {
-        if (!m_actions.contains(actionIdentifier))
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not trigger action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
 
-        m_actions[actionIdentifier].GetAction()->trigger();
+        actionIterator->second.GetAction()->trigger();
         return AZ::Success();
     }
 
     QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
     {
-        if (!m_actions.contains(actionIdentifier))
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
         {
             return nullptr;
         }
 
-        return m_actions[actionIdentifier].GetAction();
+        return actionIterator->second.GetAction();
     }
 
     const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier)
     {
-        if (!m_actions.contains(actionIdentifier))
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
         {
             return nullptr;
         }
-
-        return m_actions[actionIdentifier].GetAction();
+        
+        return actionIterator->second.GetAction();
     }
     
     ActionManagerOperationResult ActionManager::UpdateAction(const AZStd::string& actionIdentifier)
     {
-        if (!m_actions.contains(actionIdentifier))
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not update action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
 
-        if (!m_actions[actionIdentifier].IsCheckable())
+        if (!actionIterator->second.IsCheckable())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not update action \"%s\" as it was not registered as Checkable.",
                 actionIdentifier.c_str()));
         }
         
-        m_actions[actionIdentifier].Update();
-
+        actionIterator->second.Update();
         return AZ::Success();
     }
 

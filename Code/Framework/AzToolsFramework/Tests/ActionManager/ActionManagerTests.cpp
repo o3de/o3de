@@ -51,7 +51,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RegisterCheckableActionToUnregisteredContext)
     {
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -59,7 +59,7 @@ namespace UnitTest
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
 
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
 
         EXPECT_TRUE(outcome.IsSuccess());
     }
@@ -67,8 +67,8 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, RegisterCheckableActionTwice)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
-        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, [](QAction*){});
+        m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
+        auto outcome = m_actionManagerInterface->RegisterCheckableAction("o3de.context.test", "o3de.action.test", {}, []{}, []()->bool{ return true; });
 
         EXPECT_FALSE(outcome.IsSuccess());
     }
@@ -105,6 +105,108 @@ namespace UnitTest
         
         action->trigger();
         EXPECT_TRUE(actionTriggered);
+    }
+
+    TEST_F(ActionManagerFixture, GetActionName)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Test Name";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto outcome = m_actionManagerInterface->GetActionName("o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Name"));
+    }
+
+    TEST_F(ActionManagerFixture, SetActionName)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Wrong Name";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto setOutcome = m_actionManagerInterface->SetActionName("o3de.action.test", "Correct Name");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetActionName("o3de.action.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Name"));
+    }
+
+    TEST_F(ActionManagerFixture, GetActionDescription)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_description = "Test Description";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto outcome = m_actionManagerInterface->GetActionDescription("o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Description"));
+    }
+
+    TEST_F(ActionManagerFixture, SetActionDescription)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_description = "Wrong Description";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto setOutcome = m_actionManagerInterface->SetActionDescription("o3de.action.test", "Correct Description");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetActionDescription("o3de.action.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Description"));
+    }
+
+    TEST_F(ActionManagerFixture, GetActionCategory)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_category = "Test Category";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto outcome = m_actionManagerInterface->GetActionCategory("o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Category"));
+    }
+
+    TEST_F(ActionManagerFixture, SetActionCategory)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_category = "Wrong Category";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto setOutcome = m_actionManagerInterface->SetActionCategory("o3de.action.test", "Correct Category");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetActionCategory("o3de.action.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Category"));
+    }
+
+    TEST_F(ActionManagerFixture, VerifyIncorrectIconPath)
+    {
+        // Since we don't want to have the unit tests depend on a resource file, this will only test the case where an incorrect path is set.
+        // When a path that does not point to a resource is passed, the icon path string is cleared and the icon will be null.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_iconPath = ":/Some/Incorrect/Path.svg";
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+
+        auto outcome = m_actionManagerInterface->GetActionIconPath("o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_TRUE(outcome.GetValue().empty());
+
+        QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
+        EXPECT_TRUE(action->icon().isNull());
     }
 
     TEST_F(ActionManagerFixture, TriggerUnregisteredAction)
@@ -144,9 +246,9 @@ namespace UnitTest
             {
                 actionToggle = !actionToggle;
             },
-            [&](QAction* action)
+            [&]() -> bool
             {
-                action->setChecked(actionToggle);
+                return actionToggle;
             }
         );
 
@@ -183,9 +285,9 @@ namespace UnitTest
             {
                 actionToggle = !actionToggle;
             },
-            [&](QAction* action)
+            [&]() -> bool
             {
-                action->setChecked(actionToggle);
+                return actionToggle;
             }
         );
         

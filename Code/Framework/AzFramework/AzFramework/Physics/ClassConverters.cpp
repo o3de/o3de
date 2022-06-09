@@ -9,7 +9,6 @@
 #include <AzFramework/Physics/ClassConverters.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -151,50 +150,6 @@ namespace Physics
             return true;
         }
 
-        bool MaterialLibraryAssetConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-        {
-            if (classElement.GetVersion() <= 1)
-            {
-                AZStd::vector<MaterialFromAssetConfiguration> newConfiguration;
-
-                auto oldConfigurationsListDataNode = AZ::Utils::FindDescendantElements(context, classElement, { AZ_CRC("Properties", 0x87c331c7) });
-                for (auto dataElement : oldConfigurationsListDataNode)
-                {
-                    int elementsCount = dataElement->GetNumSubElements();
-                    for (int i = 0; i < elementsCount; ++i)
-                    {
-                        MaterialConfiguration oldConfiguration;
-
-                        auto oldConfigurationDataNode = dataElement->GetSubElement(i);
-                        if (!oldConfigurationDataNode.GetDataHierarchy(context, oldConfiguration))
-                        {
-                            return false;
-                        }
-
-                        MaterialId oldId;
-                        if (auto oldIdNode = oldConfigurationDataNode.FindSubElement(AZ_CRC("UID", 0x539b0606)))
-                        {
-                            oldIdNode->GetData<MaterialId>(oldId);
-                        }
-
-                        MaterialFromAssetConfiguration configuration;
-                        configuration.m_configuration = oldConfiguration;
-                        configuration.m_id = oldId;
-
-                        newConfiguration.push_back(configuration);
-                    }
-                }
-
-                classElement.RemoveElementByName(AZ_CRC("Properties", 0x87c331c7));
-                if (classElement.AddElementWithData(context, "Properties", newConfiguration) == -1)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         bool ColliderConfigurationConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& dataElement)
         {
             // version 1->2
@@ -243,32 +198,6 @@ namespace Physics
             }
 
             return true;
-        }
-
-        bool MaterialSelectionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& dataElement)
-        {
-            bool success = true;
-
-            if (dataElement.GetVersion() <= 1)
-            {
-                Physics::MaterialId materialId;
-                success = dataElement.FindSubElementAndGetData(AZ_CRC("MaterialId", 0x9360e002), materialId);
-
-                if (success)
-                {
-                    dataElement.RemoveElementByName(AZ_CRC("MaterialId", 0x9360e002));
-                    success = success && (dataElement.FindElement(AZ_CRC("MaterialId", 0x9360e002)) < 0);
-                    success = success && dataElement.AddElementWithData(context, "MaterialIds", AZStd::vector<Physics::MaterialId> { materialId });
-                }
-            }
-
-            if (success && dataElement.GetVersion() <= 2)
-            {
-                dataElement.RemoveElementByName(AZ_CRC_CE("Material"));
-                success = success && (dataElement.FindElement(AZ_CRC_CE("Material")) < 0);
-            }
-
-            return success;
         }
     } // namespace ClassConverters
 } // namespace Physics
