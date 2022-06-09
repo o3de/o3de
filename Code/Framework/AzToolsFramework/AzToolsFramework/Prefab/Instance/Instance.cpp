@@ -332,7 +332,7 @@ namespace AzToolsFramework
                 if (m_containerEntity)
                 {
                     m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
-                	m_containerEntity.reset();
+                    m_containerEntity.reset();
                 }
 
                 for (const auto& [entityAlias, entity] : m_entities)

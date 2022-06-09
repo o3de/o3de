@@ -16,6 +16,11 @@ namespace AZ
     class ReflectContext;
 }
 
+namespace AZ::DataStream
+{
+    enum StreamType;
+}
+
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     class PrefabCatchmentProcessor
