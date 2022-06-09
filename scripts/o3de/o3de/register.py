@@ -212,7 +212,8 @@ def register_all_restricted_in_folder(restricted_path: pathlib.Path,
 
 def register_all_repos_in_folder(repos_path: pathlib.Path,
                                  remove: bool = False,
-                                 engine_path: pathlib.Path = None) -> int:
+                                 engine_path: pathlib.Path = None,
+                                 force: bool = False) -> int:
     return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, None, engine_path=engine_path)
 
 
@@ -835,7 +836,7 @@ def _run_register(args: argparse) -> int:
     elif args.all_restricted_path:
         return register_all_restricted_in_folder(args.all_restricted_path, args.remove)
     elif args.all_repo_uri:
-        return register_all_repos_in_folder(args.all_restricted_path, args.remove)
+        return register_all_repos_in_folder(args.all_restricted_path, args.remove, args.force)
     else:
         return register(engine_path=args.engine_path,
                         project_path=args.project_path,
