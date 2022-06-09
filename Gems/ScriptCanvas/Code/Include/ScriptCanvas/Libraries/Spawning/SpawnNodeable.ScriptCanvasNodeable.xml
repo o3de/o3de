@@ -22,7 +22,7 @@
 
     <Output Name="On Spawn Completed" Description="Called when spawning entities is completed.">
         <Parameter Name="SpawnTicketOut" Type="AzFramework::EntitySpawnTicket" Description="Ticket instance of the spawn result."/>
-        <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first"/>
+        <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first."/>
     </Output>/>
   </Class>
 </ScriptCanvas>

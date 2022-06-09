@@ -116,7 +116,6 @@ namespace EMStudio
         // initialize everything
         ReInit();
         UpdateInterface();
-        m_plugin->ReInit();
     }
 
 
@@ -329,9 +328,7 @@ namespace EMStudio
 
         ReInit();
         UpdateInterface();
-        m_plugin->ReInit();
     }
-
 
     void MotionEventPresetsWidget::SavePresets(bool showSaveDialog)
     {

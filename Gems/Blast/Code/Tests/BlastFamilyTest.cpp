@@ -41,6 +41,8 @@ namespace Blast
             m_mockPxAsset = AZStd::make_unique<FakeExtPxAsset>(actorDesc);
             m_asset = AZStd::make_unique<BlastAsset>(m_mockPxAsset.get());
             m_blastMaterial = AZStd::make_unique<Material>(MaterialConfiguration());
+            m_physicsMaterialManager = AZStd::make_unique<DummyPhysicsMaterialManager>();
+            m_physicsMaterialManager->Init();
 
             m_systemHandler = AZStd::make_shared<MockBlastSystemBusHandler>();
             m_mockTkFramework = AZStd::make_unique<MockTkFramework>();
@@ -53,6 +55,7 @@ namespace Blast
         {
             m_fakeActorFactory = nullptr;
             m_systemHandler = nullptr;
+            m_physicsMaterialManager.reset();
         }
 
         AZStd::shared_ptr<FakeActorFactory> m_fakeActorFactory;
@@ -60,6 +63,7 @@ namespace Blast
         AZStd::unique_ptr<FakeExtPxAsset> m_mockPxAsset;
         AZStd::unique_ptr<BlastAsset> m_asset;
         AZStd::unique_ptr<Material> m_blastMaterial;
+        AZStd::unique_ptr<DummyPhysicsMaterialManager> m_physicsMaterialManager;
 
         AZStd::shared_ptr<MockBlastSystemBusHandler> m_systemHandler;
         AZStd::unique_ptr<MockTkFramework> m_mockTkFramework;

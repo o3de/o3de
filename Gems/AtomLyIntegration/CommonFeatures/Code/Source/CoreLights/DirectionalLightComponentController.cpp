@@ -459,6 +459,33 @@ namespace AZ
             }
         }
 
+        void DirectionalLightComponentController::SetFullscreenBlurEnabled(bool enable)
+        {
+            m_configuration.m_fullscreenBlurEnabled = enable;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurEnabled(m_lightHandle, enable);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurConstFalloff(float blurConstFalloff)
+        {
+            m_configuration.m_fullscreenBlurConstFalloff = blurConstFalloff;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurConstFalloff(m_lightHandle, blurConstFalloff);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurDepthFalloffStrength(float blurDepthFalloffStrength)
+        {
+            m_configuration.m_fullscreenBlurDepthFalloffStrength = blurDepthFalloffStrength;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurDepthFalloffStrength(m_lightHandle, blurDepthFalloffStrength);
+            }
+        }
+
         bool DirectionalLightComponentController::GetAffectsGI() const
         {
             return m_configuration.m_affectsGI;
@@ -574,6 +601,9 @@ namespace AZ
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
             SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
+            SetFullscreenBlurEnabled(m_configuration.m_fullscreenBlurEnabled);
+            SetFullscreenBlurConstFalloff(m_configuration.m_fullscreenBlurConstFalloff);
+            SetFullscreenBlurDepthFalloffStrength(m_configuration.m_fullscreenBlurDepthFalloffStrength);
             SetAffectsGI(m_configuration.m_affectsGI);
             SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
 

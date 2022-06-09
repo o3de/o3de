@@ -30,8 +30,6 @@ namespace ScriptCanvasTestUtilitiesCPP
 
 namespace ScriptCanvasTests
 {
-    using namespace ScriptCanvas;
-
     const char* GetUnitTestDirPathRelative()
     {
         return ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative;
@@ -39,6 +37,8 @@ namespace ScriptCanvasTests
 
     void ExpectParse(AZStd::string_view graphPath)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
         const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
 
@@ -54,6 +54,8 @@ namespace ScriptCanvasTests
 
     void ExpectParseError(AZStd::string_view graphPath)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
         const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
@@ -75,6 +77,9 @@ namespace ScriptCanvasTests
 
     void VerifyReporter(const ScriptCanvasEditor::Reporter& reporter)
     {
+        using namespace ScriptCanvas;
+
+
         if (!reporter.IsGraphLoaded())
         {
             ADD_FAILURE() << "Graph was not successfully loaded.";
@@ -227,14 +232,14 @@ namespace ScriptCanvasTests
         ScriptCanvasTests::RunUnitTestGraph(graphPath, ScriptCanvasEditor::RunSpec());
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution)
     {
         ScriptCanvasEditor::RunSpec spec;
         spec.execution = execution;
         ScriptCanvasTests::RunUnitTestGraph(graphPath, spec);
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, const ScriptCanvasEditor::DurationSpec& duration)
     {
         ScriptCanvasEditor::RunSpec runSpec;
         runSpec.execution = execution;
@@ -242,7 +247,7 @@ namespace ScriptCanvasTests
         RunUnitTestGraph(graphPath, runSpec);
     }
 
-    void RunUnitTestGraph(AZStd::string_view graphPath, ExecutionMode execution, AZStd::string_view dependentScriptEvent)
+    void RunUnitTestGraph(AZStd::string_view graphPath, ScriptCanvas::ExecutionMode execution, AZStd::string_view dependentScriptEvent)
     {
         AZ::Data::AssetType assetType(azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
         if (auto scriptEventAssetHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType))
@@ -294,7 +299,7 @@ namespace ScriptCanvasTests
     {
         ScriptCanvasEditor::RunSpec spec;
         spec.duration = duration;
-        ScriptCanvasTests::RunUnitTestGraph(graphPath, ExecutionMode::Interpreted, duration);
+        ScriptCanvasTests::RunUnitTestGraph(graphPath, ScriptCanvas::ExecutionMode::Interpreted, duration);
     }
 
     void RunUnitTestGraph(AZStd::string_view graphPath, const ScriptCanvasEditor::RunSpec& runSpec)
@@ -332,6 +337,8 @@ namespace ScriptCanvasTests
 
     void RunUnitTestGraphMixed(AZStd::string_view graphPath, const ScriptCanvasEditor::DurationSpec& duration)
     {
+        using namespace ScriptCanvas;
+
         AZ_TEST_START_TRACE_SUPPRESSION;
 
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
@@ -462,7 +469,7 @@ namespace ScriptCanvasTests
     AZ::u32 TestBehaviorContextObject::s_createdCount = 0;
     AZ::u32 TestBehaviorContextObject::s_destroyedCount = 0;
 
-    AZ::EntityId CreateClassFunctionNode(const ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName)
+    AZ::EntityId CreateClassFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, AZStd::string_view className, AZStd::string_view methodName)
     {
         using namespace ScriptCanvas;
 
@@ -481,6 +488,7 @@ namespace ScriptCanvasTests
 
     AZStd::string SlotDescriptorToString(ScriptCanvas::SlotDescriptor descriptor)
     {
+        using namespace ScriptCanvas;
         AZStd::string name;
 
         switch (descriptor.m_slotType)
