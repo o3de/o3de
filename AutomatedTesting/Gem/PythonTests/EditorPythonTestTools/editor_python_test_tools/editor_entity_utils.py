@@ -658,6 +658,12 @@ class EditorEntity:
         new_rotation = convert_to_azvector3(new_rotation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldRotation", self.id, new_rotation)
 
+    def get_world_uniform_scale(self) -> float:
+        """
+        Gets the world uniform scale of the current entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldUniformScale", self.id)
+
     # Local Transform Functions
     def get_local_uniform_scale(self) -> float:
         """

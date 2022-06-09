@@ -126,8 +126,7 @@ namespace AZ
                     ->Method("SetAssetId", &EditorMaterialComponentSlot::SetAssetId)
                     ->Method("Clear", &EditorMaterialComponentSlot::Clear)
                     ->Method("ClearMaterial", &EditorMaterialComponentSlot::ClearMaterial)
-                    ->Method("ClearOverrides", &EditorMaterialComponentSlot::ClearProperties) // This method will be deprecated. Use ClearProperties instead.
-                    ->Method("ClearProperties", &EditorMaterialComponentSlot::ClearProperties)
+                    ->Method("ClearProperties", &EditorMaterialComponentSlot::ClearProperties, "ClearOverrides") // deprecates ClearOverrides
                     ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
                     ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
                     ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
