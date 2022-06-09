@@ -52,6 +52,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        void CreateExpanderWidget();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         bool m_showExpander = false;

@@ -139,10 +139,7 @@ namespace AzToolsFramework
             {
                 if (!m_expanderWidget)
                 {
-                    m_expanderWidget = new QCheckBox(parentWidget());
-                    m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
-                    AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
-                    connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+                    CreateExpanderWidget();
                 }
                 m_expanderWidget->move(itemGeometry.topLeft());
                 m_expanderWidget->show();
@@ -183,6 +180,14 @@ namespace AzToolsFramework
             AZ_Assert(dpe, "A DPELayout must be the child of a DPERowWidget, which must be the child of a DocumentPropertyEditor!");
         }
         return dpe;
+    }
+
+    void DPELayout::CreateExpanderWidget()
+    {
+        m_expanderWidget = new QCheckBox(parentWidget());
+        m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
+        AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
+        connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
