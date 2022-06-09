@@ -106,7 +106,7 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
+    void ProductAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
         // Even if multi-select is enabled, only display the first selected item.
         if (selected.indexes().count() == 0 || !selected.indexes()[0].isValid())
@@ -422,14 +422,14 @@ namespace AssetProcessor
         m_ui->missingDependencyErrorIcon->setVisible(false);
     }
 
-    void ProductAssetDetailsPanel::OnSupportClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnSupportClicked([[maybe_unused]] bool checked)
     {
         QDesktopServices::openUrl(
             QStringLiteral("https://o3de.org/docs/user-guide/packaging/asset-bundler/assets-resolving/"));
     }
 
 
-    void ProductAssetDetailsPanel::OnScanFileClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnScanFileClicked([[maybe_unused]] bool checked)
     {
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData = AZStd::rtti_pointer_cast<const ProductAssetTreeItemData>(m_currentItem->GetData());
         ScanFileForMissingDependencies(productItemData->m_name, productItemData);
@@ -467,7 +467,7 @@ namespace AssetProcessor
                 existingDependencies,
                 m_assetDatabaseConnection,
                 /*queueDbCommandsOnMainThread*/ true,
-                [=](AZStd::string /*relativeDependencyFilePath*/) {
+                [=]([[maybe_unused]] AZStd::string relativeDependencyFilePath) {
                 RemoveProductIdFromScanCount(productItemData->m_databaseInfo.m_productID, scanName);
                 // The MissingDependencyScannerRequestBus callback always runs on the main thread, so no need to queue again.
                 AzToolsFramework::AssetDatabase::AssetDatabaseNotificationBus::Broadcast(
@@ -551,7 +551,7 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::OnScanFolderClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnScanFolderClicked([[maybe_unused]] bool checked)
     {
         if (!m_currentItem)
         {
@@ -577,13 +577,13 @@ namespace AssetProcessor
         }
     }
 
-    void ProductAssetDetailsPanel::OnClearScanFileClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnClearScanFileClicked([[maybe_unused]] bool checked)
     {
         const AZStd::shared_ptr<const ProductAssetTreeItemData> productItemData = AZStd::rtti_pointer_cast<const ProductAssetTreeItemData>(m_currentItem->GetData());
         ClearMissingDependenciesForFile(productItemData);
     }
 
-    void ProductAssetDetailsPanel::OnClearScanFolderClicked(bool /*checked*/)
+    void ProductAssetDetailsPanel::OnClearScanFolderClicked([[maybe_unused]] bool checked)
     {
         if (!m_currentItem)
         {

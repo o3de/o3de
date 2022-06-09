@@ -97,7 +97,7 @@ namespace AssetProcessor
         return parentItem->getChildCount();
     }
 
-    int ProductDependencyTreeModel::columnCount(const QModelIndex& /*parent*/) const
+    int ProductDependencyTreeModel::columnCount([[maybe_unused]] const QModelIndex& parent) const
     {
         return static_cast<int>(ProductDependencyTreeColumns::Max);
     }
@@ -128,7 +128,8 @@ namespace AssetProcessor
         return QVariant();
     }
 
-    bool ProductDependencyTreeModel::setData(const QModelIndex& /*index*/, const QVariant& /*value*/, int /*role*/)
+    bool ProductDependencyTreeModel::setData(
+        [[maybe_unused]] const QModelIndex& index, [[maybe_unused]] const QVariant& value, [[maybe_unused]] int role)
     {
         return false;
     }
@@ -181,7 +182,7 @@ namespace AssetProcessor
         return parentItem->getChildCount() > 0;
     }
 
-    void ProductDependencyTreeModel::AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
+    void ProductDependencyTreeModel::AssetDataSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
         // Even if multi-select is enabled, only display the first selected item.
         if (selected.indexes().count() == 0 || !selected.indexes()[0].isValid())
