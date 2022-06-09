@@ -515,11 +515,13 @@ class AtomComponentProperties:
         """
         Grid component properties.
           - 'Grid Size': The size of the grid, default value is 32
-          - 'Axis Color': Color of the grid axis, default value is 0,0,255 (blue)
+          - 'Axis Color': Sets color of the grid axis using azlmbr.math.Color tuple, default value is 0,0,255 (blue)
           - 'Primary Grid Spacing': Amount of space between grid lines, default value is 1.0
-          - 'Primary Color': Color of the primary grid lines, default value is 64,64,64 (dark grey)
+          - 'Primary Color': Sets color of the primary grid lines using azlmbr.math.Color tuple,
+             default value is 64,64,64 (dark grey)
           - 'Secondary Grid Spacing': Amount of space between sub-grid lines, default value is 0.25
-          - 'Secondary Color': Color of the secondary grid lines, default value is 128,128,128 (light grey)
+          - 'Secondary Color': Sets color of the secondary grid lines using azlmbr.math.Color tuple,
+             default value is 128,128,128 (light grey)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """

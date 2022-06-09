@@ -53,8 +53,8 @@ class Tests:
         "Primary Color value set successfully",
         "P1: Primary Color value could not be set")
     secondary_grid_spacing = (
-        "Secondary Grid value set successfully",
-        "P1: Secondary Grid value could not be set")
+        "Secondary Grid Spacing value set successfully",
+        "P1: Secondary Grid Spacing value could not be set")
     secondary_color = (
         "Secondary Color value set successfully",
         "P1: Secondary Color value could not be set")
@@ -160,11 +160,12 @@ def AtomEditorComponents_Grid_AddedToEntity():
                           AtomComponentProperties.grid('Axis Color')) == green_color_value)
 
         # 7. Primary Grid Spacing property value updated.
+        primary_grid_spacing_value = 0.5
         grid_component.set_component_property_value(
-            AtomComponentProperties.grid('Primary Grid Spacing'), value=0.5)
+            AtomComponentProperties.grid('Primary Grid Spacing'), value=primary_grid_spacing_value)
         Report.result(Tests.primary_grid_spacing,
                       grid_component.get_component_property_value(
-                          AtomComponentProperties.grid('Primary Grid Spacing')) == 0.5)
+                          AtomComponentProperties.grid('Primary Grid Spacing')) == primary_grid_spacing_value)
 
         # 8. Primary Color property value updated.
         brown_color_value = math.Color(129.0, 96.0, 0.0, 1.0)
@@ -175,10 +176,12 @@ def AtomEditorComponents_Grid_AddedToEntity():
                           AtomComponentProperties.grid('Primary Color')) == brown_color_value)
 
         # 9. Secondary Grid Spacing property value updated.
-        grid_component.set_component_property_value(AtomComponentProperties.grid('Secondary Grid Spacing'), value=0.75)
+        secondary_grid_spacing_value = 0.75
+        grid_component.set_component_property_value(
+            AtomComponentProperties.grid('Secondary Grid Spacing'), value=secondary_grid_spacing_value)
         Report.result(Tests.secondary_grid_spacing,
                       grid_component.get_component_property_value(
-                          AtomComponentProperties.grid('Secondary Grid Spacing')) == 0.75)
+                          AtomComponentProperties.grid('Secondary Grid Spacing')) == secondary_grid_spacing_value)
 
         # 10. Secondary Color property value updated.
         blue_color_value = math.Color(0.0, 35.0, 161.0, 1.0)
