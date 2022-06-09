@@ -100,7 +100,7 @@ void CEditorPreferencesPage_ViewportManipulator::Reflect(AZ::SerializeContext& s
                 "Determines whether Planar and Linear Manipulators should switch to face the view (camera) in the Editor")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Manipulators::m_manipulatorMouseWrap, "Manipulator Mouse Wrap",
-                "Determines whether the cursor is going to wrap around the source widget.");
+                "Determines whether the cursor is going to wrap around the viewport.");
 
         editContext
             ->Class<CEditorPreferencesPage_ViewportManipulator>("Manipulator Viewport Preferences", "Manipulator Viewport Preferences")
