@@ -380,7 +380,6 @@ namespace PhysX
         }
 
         m_pxController = nullptr;
-        m_material = nullptr;
     }
 
     // Physics::Character

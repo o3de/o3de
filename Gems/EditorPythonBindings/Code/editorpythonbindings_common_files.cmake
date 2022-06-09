@@ -11,6 +11,7 @@ set(FILES
     Include/EditorPythonBindings/EditorPythonBindingsBus.h
     Include/EditorPythonBindings/EditorPythonBindingsSymbols.h
     Source/ActionManager/ActionManagerBus.h
+    Source/ActionManager/MenuManagerBus.h
     Source/ActionManager/PythonActionManagerHandler.cpp
     Source/ActionManager/PythonActionManagerHandler.h
     Source/ActionManager/PythonEditorAction.cpp

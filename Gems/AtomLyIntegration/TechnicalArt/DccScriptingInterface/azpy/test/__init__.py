@@ -59,8 +59,7 @@ if _DCCSI_DEV_MODE:
     from azpy import test_imports
     _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
     test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
+                 _pkg=_PACKAGENAME)
 # -------------------------------------------------------------------------
 
 

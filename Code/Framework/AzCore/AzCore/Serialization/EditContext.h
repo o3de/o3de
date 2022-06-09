@@ -411,6 +411,41 @@ namespace AZ
             EnumBuilder* Value(const char* name, E value);
         };
 
+        /// Analog to SerializeContext::EnumerateInstanceCallContext for enumerating an EditContext
+        struct EnumerateInstanceCallContext
+        {
+            AZ_TYPE_INFO(EnumerateInstanceCallContext, "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
+            EnumerateInstanceCallContext(
+                const SerializeContext::BeginElemEnumCB& beginElemCB,
+                const SerializeContext::EndElemEnumCB& endElemCB,
+                const EditContext* context,
+                unsigned int accessflags,
+                SerializeContext::ErrorHandler* errorHandler);
+
+            SerializeContext::BeginElemEnumCB m_beginElemCB; ///< Optional callback when entering an element's hierarchy.
+            SerializeContext::EndElemEnumCB m_endElemCB; ///< Optional callback when exiting an element's hierarchy.
+            unsigned int m_accessFlags; ///< Data access flags for the enumeration, see \ref EnumerationAccessFlags.
+            SerializeContext::ErrorHandler* m_errorHandler; ///< Optional user error handler.
+
+            SerializeContext::IDataContainer::ElementCB
+                m_elementCallback; ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            SerializeContext::ErrorHandler m_defaultErrorHandler; ///< If no custom error handler is provided, the context provides one.
+        };
+
+        /**
+         * Call this function to traverse an instance's hierarchy by providing address and classId, if you have the typed pointer you can just call \ref EnumerateObject
+         * \param ptr pointer to the object for traversal
+         * \param classId classId of object for traversal
+         * \param beginElemCB callback when we begin/open a child element
+         * \param endElemCB callback when we end/close a child element
+         * \param accessFlags \ref EnumerationAccessFlags
+         * \param classData pointer to the class data for the traversed object to avoid calling FindClassData(classId) (can be null)
+         * \param classElement pointer to class element (null for root elements)
+         * \param errorHandler optional pointer to the error handler.
+         */
+        bool EnumerateInstanceConst(EnumerateInstanceCallContext* callContext, const void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) const;
+        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) const;
+
     private:
         typedef AZStd::list<Edit::ClassData> ClassDataListType;
         typedef AZStd::unordered_map<AZ::Uuid, Edit::ElementData> EnumDataMapType;
