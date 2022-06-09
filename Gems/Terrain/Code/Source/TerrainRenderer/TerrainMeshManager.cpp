@@ -529,7 +529,7 @@ namespace Terrain
         patchdata.m_xyPositions.clear();
         patchdata.m_indices.clear();
 
-        // Generate x and y coordinates using Moser–de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
+        // Generate x and y coordinates using Moser-de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
         AZStd::array<uint16_t, GridVerts1D> zOrderX;
         AZStd::array<uint16_t, GridVerts1D> zOrderY;
 
