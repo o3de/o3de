@@ -38,8 +38,8 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
                 ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
-                ->Event("Update Navigation Mesh", &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted)
-                ->Event("Update Navigation Mesh Async", &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+                ->Event("UpdateNavigationMesh", &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted)
+                ->Event("UpdateNavigationMeshAsync", &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
 
             behaviorContext->Class<RecastNavigationMeshComponentController>()->RequestBus("RecastNavigationMeshRequestBus");
 

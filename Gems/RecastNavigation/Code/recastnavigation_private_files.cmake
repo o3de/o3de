@@ -19,6 +19,7 @@ set(FILES
     Source/Components/RecastNavigationPhysXProviderComponent.cpp
 
     Source/Misc/RecastHelpers.h
+    Source/Misc/RecastNavigationConstants.h
     Source/Misc/RecastNavigationDebugDraw.h
     Source/Misc/RecastNavigationDebugDraw.cpp
     Source/Misc/RecastNavigationMeshConfig.h

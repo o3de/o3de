@@ -8,7 +8,6 @@
 
 set(FILES
     Include/RecastNavigation/RecastNavigationBus.h
-    Include/RecastNavigation/RecastNavigationConstants.h
     Include/RecastNavigation/DetourNavigationBus.h
     Include/RecastNavigation/RecastNavigationMeshBus.h
     Include/RecastNavigation/RecastNavigationProviderBus.h

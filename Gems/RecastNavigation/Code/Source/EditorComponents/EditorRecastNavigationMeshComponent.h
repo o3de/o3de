@@ -10,9 +10,9 @@
 
 #include <AzCore/Component/Component.h>
 #include <Components/RecastNavigationMeshComponent.h>
+#include <Misc/RecastNavigationConstants.h>
 #include <Misc/RecastNavigationMeshComponentController.h>
 #include <Misc/RecastNavigationMeshConfig.h>
-#include <RecastNavigation/RecastNavigationConstants.h>
 #include <ToolsComponents/EditorComponentAdapter.h>
 #include <ToolsComponents/EditorComponentBase.h>
 

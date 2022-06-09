@@ -9,12 +9,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Aabb.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include <Misc/RecastHelpers.h>
+#include <Misc/RecastNavigationConstants.h>
 #include <Misc/RecastNavigationPhysXProviderComponentController.h>
 #include <Misc/RecastNavigationPhysXProviderConfig.h>
-#include <RecastNavigation/RecastNavigationConstants.h>
 
 namespace RecastNavigation
 {
