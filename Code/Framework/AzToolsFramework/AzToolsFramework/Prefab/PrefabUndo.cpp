@@ -97,7 +97,7 @@ namespace AzToolsFramework
             {
                 PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
 
-                // Create a copy of the dom of the end state so that it has its own lifecycle.
+                // Create a copy of the dom of the end state so that it shares the lifecycle of the cached Dom.
                 PrefabDom endStateCopy;
                 endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
                 Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
