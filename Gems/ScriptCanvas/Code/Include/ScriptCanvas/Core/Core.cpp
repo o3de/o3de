@@ -222,7 +222,7 @@ namespace ScriptCanvas
     {
         return m_data && m_data == other.m_data
             || !m_id.IsNull() && m_id == other.m_id
-            || !m_absolutePath.empty() &&  m_absolutePath == other.m_absolutePath;
+            || !m_relativePath.empty() && m_relativePath == other.m_relativePath;
     }
 
     void SourceHandle::Clear()
@@ -241,7 +241,7 @@ namespace ScriptCanvas
     // return a SourceHandle with only the Id and Path, but without a pointer to the data
     SourceHandle SourceHandle::Describe() const
     {
-        return SourceHandle(nullptr, m_id, m_absolutePath);
+        return SourceHandle(nullptr, m_id, m_relativePath);
     }
 
     ScriptCanvasEditor::GraphPtrConst SourceHandle::Get() const
@@ -271,14 +271,14 @@ namespace ScriptCanvas
 
     AZStd::string SourceHandle::Name() const
     {
-        return AZStd::string::format("%.*s", AZ_STRING_ARG(m_absolutePath.Filename().Native()));
+        return AZStd::string::format("%.*s", AZ_STRING_ARG(m_relativePath.Filename().Native()));
     }
 
     bool SourceHandle::operator==(const SourceHandle& other) const
     {
         return m_data.get() == other.m_data.get()
             && m_id == other.m_id
-            && m_absolutePath == other.m_absolutePath;
+            && m_relativePath == other.m_relativePath;
     }
 
     bool SourceHandle::operator!=(const SourceHandle& other) const
@@ -293,6 +293,11 @@ namespace ScriptCanvas
 
     void SourceHandle::SanitizePaths()
     {
+        if (!m_relativePath.empty() && m_absolutePath.RelativePath() != m_relativePath)
+        {
+            m_absolutePath = m_relativePath;
+        }
+
         m_absolutePath.MakePreferred();
         m_relativePath = m_absolutePath.RelativePath();
     }
@@ -304,7 +309,7 @@ namespace ScriptCanvas
 
     bool SourceHandle::PathEquals(const SourceHandle& other) const
     {
-        return m_absolutePath == other.m_absolutePath;
+        return m_relativePath == other.m_relativePath;
     }
 
     void SourceHandle::Reflect(AZ::ReflectContext* context)
@@ -319,7 +324,7 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SourceHandle>("Source File", "Script Canvas Source File")
+                editContext->Class<SourceHandle>("Source Handle", "Script Canvas Source File")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
@@ -335,12 +340,14 @@ namespace ScriptCanvas
             behaviorContext->Class<SourceHandle>()
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::Module, "scriptcanvas")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
 
-            behaviorContext->Method("ScriptCanvas_SourceHandle_FromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return SourceHandle(AZ::IO::Path(pathStringView)); })
+            behaviorContext->Method("SourceHandleFromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return SourceHandle(AZ::IO::Path(pathStringView)); })
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::Module, "scriptcanvas")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
         }

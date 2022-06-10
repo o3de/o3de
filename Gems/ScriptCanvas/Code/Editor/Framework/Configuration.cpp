@@ -187,7 +187,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Source File", "Script Canvas source file associated with this component")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Source", "Script Canvas source file associated with this component")
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Script Canvas Editor")
