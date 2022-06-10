@@ -48,13 +48,18 @@ namespace Terrain
         //! The actual max resolution may be bigger due to rounding.
         //! Resolution in: texels per meter.
         float m_macroClipmapMaxResolution = 2.0f;
-        float m_detailClipmapMaxResolution = 64.0f;
+        float m_detailClipmapMaxResolution = 1024.0f;
 
         //! The scale base between two adjacent clipmap layers.
         //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
         //! to what is covered by the nth clipmap.
         float m_macroClipmapScaleBase = 2.0f;
         float m_detailClipmapScaleBase = 2.0f;
+
+        //! The margin of the clipmap where the data won't be used.
+        //! This is used to reduce the update frequency and avoid edge rounding errors.
+        uint32_t m_macroClipmapMarginSize = 4;
+        uint32_t m_detailClipmapMarginSize = 4;
 
         //! Calculate how many layers of clipmap is needed.
         //! Final result must be less or equal than the MacroClipmapStackSizeMax/DetailClipmapStackSizeMax.
@@ -144,20 +149,14 @@ namespace Terrain
 
         using RawVector2f = AZStd::array<float, 2>;
         using RawVector4f = AZStd::array<float, 4>;
+        using RawVector2u = AZStd::array<uint32_t, 2>;
         using RawVector4u = AZStd::array<uint32_t, 4>;
 
         //! Data to be passed to shaders
         struct ClipmapData
         {
-            //! The 2D xy-plane view position where the main camera is.
-            RawVector2f m_viewPosition;
-
             // Current viewport size.
             RawVector2f m_viewportSize;
-
-            // 2D xy-plane world bounds defined by the terrain.
-            RawVector2f m_worldBoundsMin;
-            RawVector2f m_worldBoundsMax;
 
             //! The max range that the clipmap is covering.
             float m_macroClipmapMaxRenderRadius;
@@ -173,21 +172,15 @@ namespace Terrain
             uint32_t m_macroClipmapStackSize;
             uint32_t m_detailClipmapStackSize;
 
+            //! The margin size of the edge of the clipmap where the data won't be used.
+            //! Use float to reduce frequent casting in shaders.
+            float m_macroClipmapMarginSize;
+            float m_detailClipmapMarginSize;
+
             //! The size of the clipmap image in each layer.
             //! Given 2 copies in different types to save casting.
             float m_clipmapSizeFloat;
             uint32_t m_clipmapSizeUint;
-
-            //! Clipmap centers in texel coordinates ranging [0, size).
-            //! Clipmap centers are the logical center of the texture, based on toroidal addressing.
-            //! x: macro; y: detail
-            AZStd::array<RawVector4u, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapCenters;
-
-            //! A scale converting the length from the texture space to the world space.
-            //! For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
-            //!              dworld = dtexel * clipmapToWorldScale.
-            // x: macro; y: detail
-            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
 
             //! The number of regions to be updated during the current frame.
             uint32_t m_macroClipmapUpdateRegionCount = 0;
@@ -213,16 +206,31 @@ namespace Terrain
             // 6: detail specularF0 clipmap
             // 7: detail metalness clipmap
             // 8: detail occlusion clipmap
-            uint32_t m_debugClipmapId;
+            uint32_t m_debugClipmapId = 0;
 
             // Which clipmap level to sample from, or texture array index.
-            float m_debugClipmapLevel; // cast to float in CPU
+            float m_debugClipmapLevel = 0; // cast to float in CPU
 
             // How big the clipmap should appear on the screen.
-            float m_debugScale;
+            float m_debugScale = 0.5f;
 
             // Multiplier adjustment for final color output.
-            float m_debugBrightness;
+            float m_debugBrightness = 1.0f;
+
+            //! Clipmap centers in texel coordinates ranging [0, size).
+            //! Clipmap centers are the logical center of the texture, based on toroidal addressing.
+            //! xy: macro; zw: detail
+            AZStd::array<RawVector4u, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapCenters;
+
+            //! Clipmap centers in world coordinates.
+            //! xy: macro; zw: detail
+            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapWorldCenters;
+
+            //! A scale converting the length from the texture space to the world space.
+            //! For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
+            //!              dworld = dtexel * clipmapToWorldScale.
+            //! x: macro; y: detail
+            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
         };
 
         ClipmapData m_clipmapData;
