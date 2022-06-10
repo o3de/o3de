@@ -50,7 +50,6 @@ public:
 
     void TearDown() override
     {
-        BusDisconnect();
         if (m_console)
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
@@ -61,6 +60,8 @@ public:
             m_eventLogger.reset();
         }
         m_gatheredMessages = {};
+
+        BusDisconnect();
     }
 
     AZStd::vector<AZStd::string> m_gatheredMessages;
