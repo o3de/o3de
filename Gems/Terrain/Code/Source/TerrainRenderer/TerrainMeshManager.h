@@ -115,6 +115,17 @@ namespace Terrain
         using HeightDataType = uint16_t;
         using NormalDataType = AZStd::pair<int16_t, int16_t>;
 
+        enum StreamIndex : uint32_t
+        {
+            XYPositions,
+            Heights,
+            Normals,
+            LodHeights,
+            LodNormals,
+
+            Count,
+        };
+
         struct VertexPosition
         {
             float m_posx;
@@ -138,7 +149,7 @@ namespace Terrain
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, 5> m_streamBufferViews;
+            AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;

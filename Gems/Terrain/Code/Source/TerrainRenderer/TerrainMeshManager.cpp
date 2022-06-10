@@ -317,20 +317,20 @@ namespace Terrain
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
                 sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D);
-                sector.m_streamBufferViews[0] = CreateStreamBufferView(m_xyPositionsBuffer);
-                sector.m_streamBufferViews[1] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
-                sector.m_streamBufferViews[2] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                sector.m_streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
+                sector.m_streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
+                sector.m_streamBufferViews[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
 
                 if (m_config.m_clodEnabled)
                 {
                     sector.m_lodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D);
-                    sector.m_streamBufferViews[3] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[4] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
+                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
                 else
                 {
-                    sector.m_streamBufferViews[3] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
-                    sector.m_streamBufferViews[4] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
+                    sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
+                    sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
 
                 BuildDrawPacket(sector);
@@ -530,10 +530,13 @@ namespace Terrain
         patchdata.m_indices.clear();
 
         // Generate x and y coordinates using Moser-de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
-        AZStd::array<uint16_t, GridVerts1D> zOrderX;
-        AZStd::array<uint16_t, GridVerts1D> zOrderY;
+        static_assert(GridSize < AZStd::numeric_limits<uint8_t>::max(),
+            "The following equation to generate z-order indices requires the number to be 8 or fewer bits.");
 
-        for (uint16_t i = 0; i < GridVerts1D; ++i)
+        AZStd::array<uint16_t, GridSize> zOrderX;
+        AZStd::array<uint16_t, GridSize> zOrderY;
+
+        for (uint16_t i = 0; i < GridSize; ++i)
         {
             // This will take any 8 bit number and put 0's in between each bit. For instance 0b1011 becomes 0b1000101.
             uint16_t value = ((i * 0x0101010101010101ULL & 0x8040201008040201ULL) * 0x0102040810204081ULL >> 49) & 0x5555;
