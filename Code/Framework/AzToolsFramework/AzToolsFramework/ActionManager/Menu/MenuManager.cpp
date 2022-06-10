@@ -83,6 +83,13 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
+        if (menuIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add action \"%s\" to menu \"%s\" - menu already contains action.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddAction(sortIndex, actionIdentifier);
         return AZ::Success();
     }
@@ -118,6 +125,13 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - menu already contains this sub-menu.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
         return AZ::Success();
     }
@@ -137,6 +151,13 @@ namespace AzToolsFramework
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not add menu \"%s\" to menu bar \"%s\" - menu has not been registered.", menuIdentifier.c_str(),
                 menuBarIdentifier.c_str()));
+        }
+
+        if (menuBarIterator->second.ContainsMenu(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add menu \"%s\" to menu bar \"%s\" - menu bar already contains this menu.",
+                menuIdentifier.c_str(), menuBarIdentifier.c_str()));
         }
 
         menuBarIterator->second.AddMenu(sortIndex, menuIdentifier);
