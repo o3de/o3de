@@ -253,6 +253,8 @@ set(FILES
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
