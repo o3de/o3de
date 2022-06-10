@@ -7,8 +7,10 @@
  */
 
 #pragma once
+
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 

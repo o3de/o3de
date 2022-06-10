@@ -44,7 +44,9 @@ function(ly_is_newer_than file1 file2 is_newer)
     if("${file1}" IS_NEWER_THAN "${file2}")
         file(TIMESTAMP "${file1}" file1_mod_time)
         file(TIMESTAMP "${file2}" file2_mod_time)
-        if (NOT file1_mod_time EQUAL file2_mod_time)
+        # note that the above modtimes will come thru in string format
+        # like "2022-06-09T14:21:30" - not as numbers, so use STREQUAL
+        if (NOT "${file1_mod_time}" STREQUAL "${file2_mod_time}")
             set(${is_newer} TRUE PARENT_SCOPE)
         endif()
     endif()

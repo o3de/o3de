@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Recast.h>
+#include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Task/TaskDescriptor.h>
@@ -23,15 +24,27 @@ namespace RecastNavigation
 {
     //! Common navigation mesh logic for Recast navigation components. Recommended use is as a base class.
     //! The method provided are not thread-safe. Use the mutex from @m_navObject to synchronize as necessary at the higher level.
-    class RecastNavigationMeshCommon
+    class RecastNavigationMeshComponentController
+        : public RecastNavigationMeshRequestBus::Handler
     {
+        friend class EditorRecastNavigationMeshComponent;
     public:
-        AZ_RTTI(RecastNavigationMeshCommon, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
-        RecastNavigationMeshCommon();
-        virtual ~RecastNavigationMeshCommon() = default;
+        AZ_CLASS_ALLOCATOR(RecastNavigationMeshComponentController, AZ::SystemAllocator, 0);
+        AZ_RTTI(RecastNavigationMeshComponentController, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
 
-        void OnActivate();
-        void OnDeactivate();
+        RecastNavigationMeshComponentController();
+        explicit RecastNavigationMeshComponentController(const RecastNavigationMeshConfig& config);
+        ~RecastNavigationMeshComponentController() override = default;
+
+        void Activate(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        void Deactivate();
+        void SetConfiguration(const RecastNavigationMeshConfig& config);
+        const RecastNavigationMeshConfig& GetConfiguration() const;
+
+        static void Reflect(AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
@@ -56,7 +69,39 @@ namespace RecastNavigation
         //! @param sendNotificationEvent once all the tiles are processed and added to the navigation update notify on the main thread
         void ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent);
 
+        //! RecastNavigationRequestBus overrides ...
+        //! @{
+        void UpdateNavigationMeshBlockUntilCompleted() override;
+        void UpdateNavigationMeshAsync() override;
+        AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() override;
+        //! @}
+
     protected:
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+
+        //! In-game navigation mesh configuration.
+        RecastNavigationMeshConfig m_configuration;
+
+        void OnSendNotificationTick();
+
+        //! Tick event to notify on navigation mesh updates from the main thread.
+        //! This is often needed for script environment, such as Script Canvas.
+        AZ::ScheduledEvent m_sendNotificationEvent{ [this]() { OnSendNotificationTick(); }, AZ::Name("RecastNavigationMeshUpdated") };
+
+        //! If debug draw was specified, then this call will be invoked every frame.
+        void OnDebugDrawTick();
+
+        //! Tick event for the optional debug draw.
+        AZ::ScheduledEvent m_tickEvent{ [this]() { OnDebugDrawTick(); }, AZ::Name("RecastNavigationDebugViewTick") };
+
+        void OnReceivedAllNewTiles();
+
+        //! Tick event to notify on navigation mesh updates from the main thread.
+        //! This is often needed for script environment, such as Script Canvas.
+        AZ::ScheduledEvent m_receivedAllNewTilesEvent{ [this]() { OnReceivedAllNewTiles(); }, AZ::Name("RecastNavigationReceivedTiles") };
+
+        void OnTileProcessedEvent(AZStd::shared_ptr<TileGeometry> tile);
+    
         //! Debug draw object for Recast navigation mesh.
         RecastNavigationDebugDraw m_customDebugDraw;
 
@@ -77,40 +122,5 @@ namespace RecastNavigation
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
-
-        struct RecastProcessing
-        {
-            rcConfig config = {};
-            AZStd::vector<AZ::u8> trianglesAreas;
-            RecastPointer<rcHeightfield> solid;
-            RecastPointer<rcCompactHeightfield> compactHeightfield;
-            RecastPointer<rcContourSet> contourSet;
-            RecastPointer<rcPolyMesh> polyMesh;
-            RecastPointer<rcPolyMeshDetail> polyMeshDetail;
-
-            const float* vertices = nullptr;
-            int vertexCount = 0;
-            const int* triangleData = nullptr;
-            int triangleCount = 0;
-
-            rcContext* context = nullptr;
-
-            void InitializeMeshConfig(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig);
-
-            [[nodiscard]] bool RasterizeInputPolygonSoup();
-
-            void FilterWalkableSurfaces(const RecastNavigationMeshConfig& meshConfig);
-
-            [[nodiscard]] bool PartitionWalkableSurfaceToSimpleRegions();
-
-            [[nodiscard]] bool TraceAndSimplifyRegionContours();
-
-            [[nodiscard]] bool BuildPolygonsMeshFromContours();
-
-            [[nodiscard]] bool CreateDetailMesh();
-
-            NavigationTileData CreateDetourData(TileGeometry* geom, const RecastNavigationMeshConfig& meshConfig);
-        };
     };
-
 } // namespace RecastNavigation
