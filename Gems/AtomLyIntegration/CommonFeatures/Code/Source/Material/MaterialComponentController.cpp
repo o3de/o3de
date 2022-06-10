@@ -333,8 +333,13 @@ namespace AZ
 
         AZ::Data::AssetId MaterialComponentController::GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
         {
-            auto materialIt = m_defaultMaterialMap.find(materialAssignmentId);
-            return materialIt != m_defaultMaterialMap.end() ? materialIt->second.GetId() : AZ::Data::AssetId();
+            // Temporarily reverting the logic for this function. It should be entirely based around m_defaultMaterialMap.
+            RPI::ModelMaterialSlotMap modelMaterialSlots;
+            MaterialReceiverRequestBus::EventResult(
+                modelMaterialSlots, m_entityId, &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
+
+            auto slotIter = modelMaterialSlots.find(materialAssignmentId.m_materialSlotStableId);
+            return slotIter != modelMaterialSlots.end() ? slotIter->second.m_defaultMaterialAsset.GetId() : AZ::Data::AssetId();
         }
 
         AZStd::string MaterialComponentController::GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const
