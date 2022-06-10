@@ -189,14 +189,14 @@ struct ClipmapLevel
 };
 
 // returns 1.0 for true, 0.0 for false.
-float AabbContainsPoint(float2 center, float extent, float3 point)
+float AabbContainsPoint(float2 center, float extent, float2 point_)
 {
     float2 aabbMin = center - float2(extent, extent);
     float2 aabbMax = center + float2(extent, extent);
 
     // Use (x - aabb.x1)(x - aabb.x2) < 0 for collision detection.
-    float2 minDiff = point - aabbMin;
-    float2 maxDiff = point - aabbMax;
+    float2 minDiff = point_ - aabbMin;
+    float2 maxDiff = point_ - aabbMax;
     float2 det = float2(minDiff.x * maxDiff.x, minDiff.y * maxDiff.y);
     float2 contains = step(float2(0.0, 0.0), det);
     // x axis | y axis | result we want | x - 1 | y - 1 | (x - 1)(y - 1)
