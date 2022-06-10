@@ -99,9 +99,9 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
 
     struct ClipmapUpdateRegion
     {
+        uint4 m_clipmapRegion;
         uint m_clipmapLevel;
         uint3 m_padding;
-        uint4 m_clipmapRegion;
     };
 
     struct ClipmapData
