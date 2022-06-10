@@ -240,7 +240,7 @@ namespace UnitTest
     TEST_F(AssetReloading, AssetReloadTest)
     {
         // Test OnAssetDependencyReloaded notification is sent all the way to the parent asset up a deep chain of dependencies
-        const auto timeoutSeconds = AZStd::chrono::seconds(200);
+        const auto timeoutSeconds = AZStd::chrono::seconds(10);
 
         OnAssetReadyListener assetStatus1(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>());
         OnAssetReadyListener assetStatus2(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
@@ -326,6 +326,11 @@ namespace UnitTest
         EXPECT_FALSE(timedOut);
 
         EXPECT_EQ(assetStatus6.m_reloaded, 1);
+        EXPECT_EQ(assetStatus6.m_dependencyReloaded, 0);
+        EXPECT_EQ(assetStatus5.m_dependencyReloaded, 1);
+        EXPECT_EQ(assetStatus4.m_dependencyReloaded, 1);
+        EXPECT_EQ(assetStatus3.m_dependencyReloaded, 1);
+        EXPECT_EQ(assetStatus2.m_dependencyReloaded, 1);
         EXPECT_EQ(assetStatus1.m_dependencyReloaded, 1);
     }
 
