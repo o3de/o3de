@@ -145,4 +145,100 @@ namespace UnitTest
             EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(frustum, obb1));
         }
     }
-}
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleCapAJustIntersectsCapB)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(1.0f, 7.0f, 13.0f);
+        const AZ::Vector3 secondHemisphereCenterA(2.0f, 3.0f, 5.0f);
+        const float radiusA = 5.51f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(3.0f, -1.0f, -3.0f);
+        const AZ::Vector3 secondHemisphereCenterB(4.0f, -5.0f, -11.0f);
+        const float radiusB = 3.51f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleCapAJustSeparatedFromCapB)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(1.0f, 7.0f, 13.0f);
+        const AZ::Vector3 secondHemisphereCenterA(2.0f, 3.0f, 5.0f);
+        const float radiusA = 5.49f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(3.0f, -1.0f, -3.0f);
+        const AZ::Vector3 secondHemisphereCenterB(4.0f, -5.0f, -11.0f);
+        const float radiusB = 3.49f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleCapAJustIntersectsCylinderB)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(1.0f, 3.0f, -5.0f);
+        const AZ::Vector3 secondHemisphereCenterA(4.0f, 7.0f, 7.0f);
+        const float radiusA = 1.01f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(0.5f, 6.5f, 1.0f);
+        const AZ::Vector3 secondHemisphereCenterB(-3.5f, 9.5f, 1.0f);
+        const float radiusB = 1.51f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleCapAJustSeparatedFromCylinderB)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(1.0f, 3.0f, -5.0f);
+        const AZ::Vector3 secondHemisphereCenterA(4.0f, 7.0f, 7.0f);
+        const float radiusA = 0.99f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(0.5f, 6.5f, 1.0f);
+        const AZ::Vector3 secondHemisphereCenterB(-3.5f, 9.5f, 1.0f);
+        const float radiusB = 1.49f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleAContainsB)
+    {
+        const AZ::Vector3 firstHemisphereCenter(1.0f, 2.0f, 3.0f);
+        const AZ::Vector3 secondHemisphereCenter(5.0f, 7.0f, -4.0f);
+        const float radiusA = 2.0f;
+        const float radiusB = 1.5f;
+        const AZ::Capsule capsuleA(firstHemisphereCenter, secondHemisphereCenter, radiusA);
+        const AZ::Capsule capsuleB(firstHemisphereCenter, secondHemisphereCenter, radiusB);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleParallelJustOverlapping)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(2.0f, -3.0f, -7.0f);
+        const AZ::Vector3 secondHemisphereCenterA(11.0f, 17.0f, 5.0f);
+        const float radiusA = 3.01f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(-2.0f, -3.0f, -4.0f);
+        const AZ::Vector3 secondHemisphereCenterB(7.0f, 17.0f, 8.0f);
+        const float radiusB = 2.01f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleParallelJustSeparate)
+    {
+        const AZ::Vector3 firstHemisphereCenterA(2.0f, -3.0f, -7.0f);
+        const AZ::Vector3 secondHemisphereCenterA(11.0f, 17.0f, 5.0f);
+        const float radiusA = 2.99f;
+        const AZ::Capsule capsuleA(firstHemisphereCenterA, secondHemisphereCenterA, radiusA);
+        const AZ::Vector3 firstHemisphereCenterB(-2.0f, -3.0f, -4.0f);
+        const AZ::Vector3 secondHemisphereCenterB(7.0f, 17.0f, 8.0f);
+        const float radiusB = 1.99f;
+        const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+} // namespace UnitTest

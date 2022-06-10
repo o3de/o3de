@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Math/IntersectSegment.h>
+
 namespace AZ
 {
     namespace ShapeIntersection
@@ -159,6 +161,20 @@ namespace AZ
             }
 
             return true;
+        }
+
+
+        AZ_MATH_INLINE bool Overlaps(const Capsule& capsule1, const Capsule& capsule2)
+        {
+            Vector3 closestPointSegment1;
+            Vector3 closestPointSegment2;
+            float segment1Proportion;
+            float segment2Proportion;
+            Intersect::ClosestSegmentSegment(
+                capsule1.GetFirstHemisphereCenter(), capsule1.GetSecondHemisphereCenter(), capsule2.GetFirstHemisphereCenter(),
+                capsule2.GetSecondHemisphereCenter(), segment1Proportion, segment2Proportion, closestPointSegment1, closestPointSegment2);
+            const float radiusSum = capsule1.GetRadius() + capsule2.GetRadius();
+            return closestPointSegment1.GetDistanceSq(closestPointSegment2) <= radiusSum * radiusSum;
         }
 
 

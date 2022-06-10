@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Math/Sphere.h>
-#include <AzCore/Math/Frustum.h>
-#include <AzCore/Math/Plane.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Capsule.h>
+#include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Obb.h>
+#include <AzCore/Math/Plane.h>
+#include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/Vector3.h>
 
 namespace AZ
@@ -38,6 +39,7 @@ namespace AZ
         bool Overlaps(const Frustum& frustum, const Sphere& sphere);
         bool Overlaps(const Frustum& frustum, const Obb& obb);
         bool Overlaps(const Frustum& frustum, const Aabb& aabb);
+        bool Overlaps(const Capsule& capsule1, const Capsule& capsule2);
         //! @}
 
         //! Tests to see if Arg1 contains Arg2. Non Symmetric.
