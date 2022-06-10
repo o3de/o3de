@@ -28,7 +28,7 @@ namespace EMotionFX
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
     }
 
-    void JointLimitRotationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void JointLimitRotationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -166,7 +166,7 @@ namespace EMotionFX
             return;
         }
 
-        if (CommandAdjustJointLimit* command = azdynamic_cast<CommandAdjustJointLimit*>(commandGroup.GetCommand(0)))
+        if (auto* command = azdynamic_cast<CommandAdjustJointLimit*>(commandGroup.GetCommand(0)))
         {
             command->SetJointConfiguration(physicsSetupManipulatorData.m_jointConfiguration);
         }

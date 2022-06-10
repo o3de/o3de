@@ -34,7 +34,7 @@ namespace EMotionFX
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
     }
 
-    void JointSwingLimitManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void JointSwingLimitManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -68,8 +68,9 @@ namespace EMotionFX
             {
                 if (m_jointSwingLimitState.m_swingLimitY.has_value())
                 {
-                    float newSwingLimitY = ManipulatorScale * action.LocalPosition().GetZ();
+                    const float newSwingLimitY = ManipulatorScale * action.LocalPosition().GetZ();
                     m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("SwingLimitY"), newSwingLimitY);
+                    // get the value again, in case it is different from the value set due to validation
                     AZStd::optional<float> validatedSwingLimitY =
                         m_physicsSetupManipulatorData.m_jointConfiguration->GetPropertyValue(AZ::Name("SwingLimitY"));
                     if (validatedSwingLimitY.has_value())
@@ -107,8 +108,9 @@ namespace EMotionFX
             {
                 if (m_jointSwingLimitState.m_swingLimitZ.has_value())
                 {
-                    float newSwingLimitZ = ManipulatorScale * action.LocalPosition().GetY();
+                    const float newSwingLimitZ = ManipulatorScale * action.LocalPosition().GetY();
                     m_physicsSetupManipulatorData.m_jointConfiguration->SetPropertyValue(AZ::Name("SwingLimitZ"), newSwingLimitZ);
+                    // get the value again, in case it is different from the value set due to validation
                     AZStd::optional<float> validatedSwingLimitZ =
                         m_physicsSetupManipulatorData.m_jointConfiguration->GetPropertyValue(AZ::Name("SwingLimitZ"));
                     if (validatedSwingLimitZ.has_value())
@@ -161,6 +163,8 @@ namespace EMotionFX
         AZ::TickBus::Handler::BusDisconnect();
         m_swingYManipulator->Unregister();
         m_swingZManipulator->Unregister();
+        m_swingYManipulator.reset();
+        m_swingZManipulator.reset();
         m_debugDisplay = nullptr;
     }
 

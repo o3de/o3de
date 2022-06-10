@@ -48,7 +48,7 @@ namespace EMotionFX
         return AZ::RadToDeg(angleDeltaRadians);
     }
 
-    void JointTwistLimitManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void JointTwistLimitManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -159,6 +159,8 @@ namespace EMotionFX
         AZ::TickBus::Handler::BusDisconnect();
         m_twistLimitLowerManipulator->Unregister();
         m_twistLimitUpperManipulator->Unregister();
+        m_twistLimitLowerManipulator.reset();
+        m_twistLimitUpperManipulator.reset();
         m_debugDisplay = nullptr;
     }
 
@@ -191,7 +193,7 @@ namespace EMotionFX
             return;
         }
 
-        AZStd::array<AZ::Vector3, 4> points = {
+        const AZStd::array<AZ::Vector3, 4> points = {
             AZ::Vector3(-0.5f * ManipulatorAxisLength, 0.0f, 0.0f),
             AZ::Vector3(0.5f * ManipulatorAxisLength, 0.0f, 0.0f),
             AZ::Vector3(0.5f * ManipulatorAxisLength, ManipulatorQuadWidth, 0.0f),

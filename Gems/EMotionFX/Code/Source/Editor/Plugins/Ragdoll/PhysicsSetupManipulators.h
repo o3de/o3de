@@ -51,7 +51,7 @@ namespace EMotionFX
         virtual ~PhysicsSetupManipulatorsBase() = default;
 
         //! Called when the manipulator mode is entered to initialize the mode.
-        virtual void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) = 0;
+        virtual void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) = 0;
 
         //! Called when the manipulator mode needs to refresh its values.
         virtual void Refresh() = 0;
@@ -64,7 +64,9 @@ namespace EMotionFX
         virtual void ResetValues() = 0;
 
         //! Causes values in associated property editor to refresh.
-        virtual void InvalidateEditorValues() {};
+        virtual void InvalidateEditorValues()
+        {
+        }
 
         void SetViewportId(AZ::s32 viewportId);
     protected:

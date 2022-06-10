@@ -53,8 +53,13 @@ namespace AzPhysics
         AZ::Crc32 GetStartSimulationEnabledVisibility() const;
 
         // Allow additional values specific to a particular physics backend to be retrieved and modified.
-        virtual AZStd::optional<float> GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName) { return AZStd::nullopt; }
-        virtual void SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value) {};
+        virtual AZStd::optional<float> GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName)
+        {
+            return AZStd::nullopt;
+        }
+        virtual void SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value)
+        {
+        }
 
         // Entity/object association.
         void* m_customUserData = nullptr;
@@ -76,14 +81,14 @@ namespace AzPhysics
     //! Default colors, line widths etc for use when visualizing joints.
     namespace JointVisualizationDefaults
     {
-        const float Alpha = 0.6f;
-        const AZ::Color ColorDefault = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
-        const AZ::Color ColorFirst = AZ::Color(1.0f, 0.0f, 0.0f, Alpha);
-        const AZ::Color ColorSecond = AZ::Color(0.0f, 1.0f, 0.0f, Alpha);
-        const AZ::Color ColorSweepArc = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
+        inline const float Alpha = 0.6f;
+        inline const AZ::Color ColorDefault = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
+        inline const AZ::Color ColorFirst = AZ::Color(1.0f, 0.0f, 0.0f, Alpha);
+        inline const AZ::Color ColorSecond = AZ::Color(0.0f, 1.0f, 0.0f, Alpha);
+        inline const AZ::Color ColorSweepArc = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
 
-        const float SweepLineDisplaceFactor = 0.5f;
-        const float SweepLineThickness = 1.0f;
-        const float SweepLineGranularity = 1.0f;
+        inline const float SweepLineDisplaceFactor = 0.5f;
+        inline const float SweepLineThickness = 1.0f;
+        inline const float SweepLineGranularity = 1.0f;
     } // namespace JointVisualizationDefaults
 } // namespace AzPhysics
