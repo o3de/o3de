@@ -5,9 +5,18 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from PySide2 import QtWidgets, QtTest, QtCore
+import editor_python_test_tools.pyside_utils as pyside_utils
+from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.utils import Report
+import azlmbr.legacy.general as general
+from scripting_utils.scripting_constants import WAIT_TIME_3, SCRIPT_CANVAS_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,\
+    TREE_VIEW_QT, NODE_CATEGORY_MATH
+
 
 # fmt: off
-class Tests():
+class Tests:
+    pane_close      = ("Script Canvas pane successfully closed", "Script Canvas pane failed to close")
     pane_open       = ("Script Canvas pane successfully opened", "Script Canvas pane failed to open")
     click_expand    = ("Category expanded on left click",        "Category failed to expand on left click")
     click_collapse  = ("Category collapsed on left click",       "Category failed to collapse on left click")
@@ -16,7 +25,7 @@ class Tests():
 # fmt: on
 
 
-def NodeCategory_ExpandOnClick():
+class NodeCategory_ExpandOnClick:
     """
     Summary:
      Verifying the expand/collapse functionality on node categories
@@ -45,79 +54,85 @@ def NodeCategory_ExpandOnClick():
 
     :return: None
     """
-    from utils import Report
-    from PySide2 import QtCore, QtWidgets, QtTest
-    from PySide2.QtTest import QTest
-    import pyside_utils
-    import azlmbr.legacy.general as general
 
-    def left_click_arrow(item_view, index):
-        original_state = item_view.isExpanded(index)
-        rect_center_y = item_view.visualRect(index).center().y()
-        rect_left_x = item_view.visualRect(index).left()
-        for i in range(5):  # this range can be increased for safe side
-            QtTest.QTest.mouseClick(
-                item_view.viewport(),
-                QtCore.Qt.LeftButton,
-                QtCore.Qt.NoModifier,
-                QtCore.QPoint(rect_left_x - i, rect_center_y),
-            )
-            if item_view.isExpanded(index) != original_state:
-                break
 
-    def double_click(item_view, index):
-        item_index_center = item_view.visualRect(index).center()
+    def left_click_expander_button(self, node_palette_node_tree, category_index):
+        rect_left_x = 1 # 1 pixel from the left side of the widget looks like where the expand button begins
+        rect_center_y = node_palette_node_tree.visualRect(category_index).center().y()
+        click_position = QtCore.QPoint(rect_left_x, rect_center_y)
+        #click position relative to node palette tree view and not screen space xy
+        QtTest.QTest.mouseClick(node_palette_node_tree.viewport(),
+                                QtCore.Qt.LeftButton,
+                                QtCore.Qt.NoModifier,
+                                click_position,
+                                )
+
+    def double_click_node_category(self, node_palette_node_tree, index):
+        item_index_center = node_palette_node_tree.visualRect(index).center()
         # Left click on the item before trying to double click, will otherwise fail to expand
         # as first click would highlight and second click would be a 'single click'
-        pyside_utils.item_view_index_mouse_click(item_view, index)
-        QTest.mouseDClick(item_view.viewport(), QtCore.Qt.LeftButton, QtCore.Qt.NoModifier, item_index_center)
+        pyside_utils.item_view_index_mouse_click(node_palette_node_tree, index)
+        QtTest.QTest.mouseDClick(node_palette_node_tree.viewport(),
+                                 QtCore.Qt.LeftButton,
+                                 QtCore.Qt.NoModifier,
+                                 item_index_center)
 
-    # 1) Open Script Canvas pane
-    general.open_pane("Script Canvas")
-    Report.critical_result(Tests.pane_open, general.is_pane_visible("Script Canvas"))
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    # 2) Get the SC window objects
-    editor_window = pyside_utils.get_editor_main_window()
-    sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
-    if sc.findChild(QtWidgets.QDockWidget, "NodePalette") is None:
-        action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Palette", "type": QtWidgets.QAction})
-        action.trigger()
-    node_palette = sc.findChild(QtWidgets.QDockWidget, "NodePalette")
-    nodeTree = node_palette.findChild(QtWidgets.QTreeView, "treeView")
-    ai_index = pyside_utils.find_child_by_pattern(nodeTree, "AI")
+        # Preconditions
+        general.idle_enable(True)
+        general.close_pane(SCRIPT_CANVAS_UI)
+        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI) is None, WAIT_TIME_3)
 
-    # 3) Ensure all categories are collapsed for a clean state
-    nodeTree.collapseAll()
+        # 1) Open Script Canvas pane
+        general.open_pane(SCRIPT_CANVAS_UI)
+        Report.critical_result(Tests.pane_open, general.is_pane_visible(SCRIPT_CANVAS_UI))
 
-    # 4) Left-Click on a node category arrow to expand it
-    left_click_arrow(nodeTree, ai_index)
+        # 2) Get the SC window objects
+        editor_window = pyside_utils.get_editor_main_window()
+        script_canvas_window = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
+        if script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
+            action = pyside_utils.find_child_by_pattern(script_canvas_window, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+            action.trigger()
+        #wait for the node palette and other SC elements to render
+        helper.wait_for_condition(lambda: script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is not None, WAIT_TIME_3)
+        node_palette_widget = script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+        node_palette_node_tree = node_palette_widget.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+        node_palette_math_category = pyside_utils.find_child_by_pattern(node_palette_node_tree, NODE_CATEGORY_MATH)
 
-    # 5) Verify it expanded
-    Report.result(Tests.click_expand, nodeTree.isExpanded(ai_index))
+        # 3) Ensure all categories are collapsed for a clean state
+        node_palette_node_tree.collapseAll()
 
-    # 6) Left-Click on a node category arrow to collapse it
-    left_click_arrow(nodeTree, ai_index)
+        # 4) Left-Click on a node category arrow to expand it
+        self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
 
-    # 7) Verify it collapsed
-    Report.result(Tests.click_collapse, not nodeTree.isExpanded(ai_index))
+        # 5) Verify it expanded
+        category_has_expanded = helper.wait_for_condition(lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(Tests.click_expand, category_has_expanded)
 
-    # 8) Double-Click on a node category to expand it
-    double_click(nodeTree, ai_index)
+        # 6) Left-Click on a node category arrow to collapse it
+        self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
 
-    # 9) Verify it expanded
-    Report.result(Tests.dClick_expand, nodeTree.isExpanded(ai_index))
+        # 7) Verify it collapsed
+        category_has_expanded = helper.wait_for_condition(lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(Tests.click_collapse, not category_has_expanded)
 
-    # 10) Double-Click on a node category to collapse it
-    double_click(nodeTree, ai_index)
+        # 8) Double-Click on a node category to expand it
+        self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
 
-    # 11) Verify it collapsed
-    Report.result(Tests.dClick_collapse, not nodeTree.isExpanded(ai_index))
+        # 9) Verify it expanded
+        category_has_expanded = helper.wait_for_condition(lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(Tests.dClick_expand, category_has_expanded)
+
+        # 10) Double-Click on a node category to collapse it
+        self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
+
+        # 11) Verify it collapsed
+        category_has_expanded = helper.wait_for_condition(lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(Tests.dClick_collapse, not category_has_expanded)
 
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
+test = NodeCategory_ExpandOnClick()
+test.run_test()
 
-    imports.init()
-    from utils import Report
-
-    Report.start_test(NodeCategory_ExpandOnClick)
