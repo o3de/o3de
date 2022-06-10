@@ -75,7 +75,6 @@ class EditorComponent:
             build_prop_tree_outcome.IsSuccess()
         ), f"Failure: Could not build property tree editor of component: '{self.get_component_name()}'"
         prop_tree = build_prop_tree_outcome.GetValue()
-        Report.info(prop_tree.build_paths_list())
         self.property_tree_editor = prop_tree
         return self.property_tree_editor
 
