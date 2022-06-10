@@ -24,13 +24,13 @@
 #include <MultiDispatchComputePass.h>
 #include <MeshletsRenderPass.h>
 
-namespace RPI
-{
-    class RenderPipeline;
-}
-
 namespace AZ
 {
+    namespace RPI
+    {
+        class RenderPipeline;
+    }
+
     namespace Meshlets
     {
         class MeshletsRenderObject;
