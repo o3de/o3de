@@ -24,6 +24,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <RigidBodyStatic.h>
 #include <SphereColliderComponent.h>
@@ -1227,6 +1228,11 @@ namespace PhysX
 
         void TearDown() override
         {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+
             //Clean up the Test scene
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
@@ -1301,6 +1307,14 @@ namespace PhysX
     class DensityBoundariesTestFixture
         : public ::testing::TestWithParam<float>
     {
+    public:
+        void TearDown() override
+        {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+        }
     };
 
     TEST_P(DensityBoundariesTestFixture, Material_ExtremeDensityValues_ResultingDensityClampedToValidRange)
