@@ -124,9 +124,11 @@ namespace PhysXEditorTests
         ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
         ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldAabb).WillByDefault(
+            Return(AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, -3.0f, 3.0f, 3.0f, 3.0f)));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
             .WillByDefault(
-                [](int32_t& numColumns, int32_t& numRows)
+                [](size_t& numColumns, size_t& numRows)
                 {
                     numColumns = 3;
                     numRows = 3;
@@ -140,16 +142,28 @@ namespace PhysXEditorTests
                 });
         ON_CALL(mockShapeRequests, GetMaterialList).WillByDefault(Return(GetMaterialList()));
 
+        ON_CALL(mockShapeRequests, GetHeightfieldIndicesFromRegion)
+            .WillByDefault(
+                []([[maybe_unused]] const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows)
+                {
+                    startColumn = 0;
+                    startRow = 0;
+                    numColumns = 3;
+                    numRows = 3;
+                });
+
+
         ON_CALL(mockShapeRequests, UpdateHeightsAndMaterials)
             .WillByDefault(
-                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, [[maybe_unused]]const AZ::Aabb& regionIn)
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, [[maybe_unused]] size_t startColumn,
+                   [[maybe_unused]] size_t startRow, [[maybe_unused]] size_t numColumns, [[maybe_unused]] size_t numRows)
                 {
                     auto samples = GetSamples();
-                    for (int32_t row = 0; row < 3; row++)
+                    for (size_t row = 0; row < 3; row++)
                     {
-                        for (int32_t col = 0; col < 3; col++)
+                        for (size_t col = 0; col < 3; col++)
                         {
-                            updateHeightsMaterialsCallback(row, col, samples[(row * 3) + col]);
+                            updateHeightsMaterialsCallback(col, row, samples[(row * 3) + col]);
                         }
                     }
                 });
@@ -191,6 +205,12 @@ namespace PhysXEditorTests
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
+
+            // The updates are performed asynchronously, so block on the jobs until they're completed.
+            auto editorHeightfieldComponent = m_editorEntity->FindComponent<PhysX::EditorHeightfieldColliderComponent>();
+            editorHeightfieldComponent->BlockOnPendingJobs();
+            auto runtimeHeightfieldComponent = m_gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>();
+            runtimeHeightfieldComponent->BlockOnPendingJobs();
         }
 
         void TearDown() override
@@ -318,8 +338,8 @@ namespace PhysXEditorTests
 
         physx::PxHeightField* heightfield = heightfieldGeometry.heightField;
 
-        int32_t numRows{ 0 };
-        int32_t numColumns{ 0 };
+        size_t numRows{ 0 };
+        size_t numColumns{ 0 };
         Physics::HeightfieldProviderRequestsBus::Event(
             gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
         EXPECT_EQ(numColumns, heightfield->getNbColumns());
@@ -352,8 +372,8 @@ namespace PhysXEditorTests
     {
         AZ::EntityId gameEntityId = m_gameEntity->GetId();
 
-        int32_t numRows{ 0 };
-        int32_t numColumns{ 0 };
+        size_t numRows{ 0 };
+        size_t numColumns{ 0 };
         Physics::HeightfieldProviderRequestsBus::Event(
             gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
@@ -394,13 +414,14 @@ namespace PhysXEditorTests
         // Hence hardcoding the expected material indices in the test 
         const AZStd::array<int, 4> physicsMaterialsValidationDataIndex = {0, 2, 1, 1};
 
-        for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
+        for (size_t sampleRow = 0; sampleRow < numRows; ++sampleRow)
         {
-            for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
+            for (size_t sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
             {
-                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
+                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(static_cast<physx::PxU32>(sampleRow), static_cast<physx::PxU32>(sampleColumn));
 
-                auto [materialIndex0, materialIndex1] = PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleRow, sampleColumn, numRows, numColumns);
+                auto [materialIndex0, materialIndex1] =
+                    PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleColumn, sampleRow, numColumns, numRows);
                 EXPECT_EQ(samplePhysX.materialIndex0, materialIndex0);
                 EXPECT_EQ(samplePhysX.materialIndex1, materialIndex1);
 

@@ -129,8 +129,8 @@ def Terrain_SupportsPhysics():
 
         general.idle_wait_frames(1)
 
-        # 10) Enter game mode and test if the ball detects the heightfield collision within 3 seconds
-        TIMEOUT = 3.0
+        # 10) Enter game mode and test if the ball detects the heightfield collision within 5 seconds
+        TIMEOUT = 5.0
 
         class Collider:
             id = general.find_game_entity("Ball")
@@ -138,7 +138,7 @@ def Terrain_SupportsPhysics():
 
         terrain_id = general.find_game_entity("TestEntity1")
  
-        def on_collision_begin(args):
+        def on_collision_persist(args):
             other_id = args[0]
             if other_id.Equal(terrain_id):
                 Report.info("Ball intersected with heightfield")
@@ -146,7 +146,7 @@ def Terrain_SupportsPhysics():
 
         handler = azlmbr.physics.CollisionNotificationBusHandler()
         handler.connect(Collider.id)
-        handler.add_callback("OnCollisionBegin", on_collision_begin)
+        handler.add_callback("OnCollisionPersist", on_collision_persist)
 
         helper.wait_for_condition(lambda: Collider.touched_ground, TIMEOUT)
         Report.result(Tests.test_collision, Collider.touched_ground)
