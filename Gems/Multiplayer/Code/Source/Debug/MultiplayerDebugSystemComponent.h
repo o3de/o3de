@@ -32,6 +32,9 @@ namespace Multiplayer
 #endif
     {
     public:
+        static constexpr char HOST_BUTTON_TITLE[] = "Host";
+        static constexpr char LAUNCH_LOCAL_CLIENT_BUTTON_TITLE[] = "Launch Local Client";
+
         AZ_COMPONENT(MultiplayerDebugSystemComponent, "{060BF3F1-0BFE-4FCE-9C3C-EE991F0DA581}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -90,5 +93,7 @@ namespace Multiplayer
         AZStd::deque<AuditTrailInput> m_committedAuditTrail;
         AZStd::deque<AuditTrailInput> m_pendingAuditTrail;
         AZStd::deque<AuditTrailInput> m_filteredAuditTrail;
+
+        AZ::ApplicationTypeQuery m_applicationType;
     };
 }
