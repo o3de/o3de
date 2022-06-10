@@ -267,6 +267,69 @@ namespace UnitTest
         EXPECT_TRUE(action->isChecked());
     }
 
+    TEST_F(ActionManagerFixture, InstallEnabledStateCallback)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        
+        auto outcome = m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return false; });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyEnabledStateCallback)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_TRUE(enabledOutcome.GetValue());
+        }
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", []() { return false; });
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+    }
+
+    TEST_F(ActionManagerFixture, VerifyEnabledStateCallbackUpdate)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        bool enabledState = false;
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", [&]() {
+            return enabledState;
+        });
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+
+        enabledState = true;
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+
+        auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_TRUE(enabledOutcome.GetValue());
+        }
+    }
+
     TEST_F(ActionManagerFixture, UpdateUnregisteredAction)
     {
         auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
@@ -305,16 +368,6 @@ namespace UnitTest
         
         EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_TRUE(action->isChecked());
-    }
-
-    TEST_F(ActionManagerFixture, UpdateNonCheckableAction)
-    {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        
-        auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
-        
-        EXPECT_FALSE(outcome.IsSuccess());
     }
 
 } // namespace UnitTest
