@@ -90,6 +90,13 @@ namespace ImageProcessingAtom
             const AZStd::string& sourceAssetName) override;
         bool DoesSupportPlatform(const AZStd::string& platformId) override;
         bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) override;
+        FileMask GetFileMask(AZStd::string_view imageFilePath) override;
+        AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) override;
+        AZStd::vector<PresetName> GetPresetsForFileMask(const FileMask& fileMask) override;
+        PresetName GetDefaultPreset() override;
+        PresetName GetDefaultAlphaPreset() override;
+        bool IsValidPreset(PresetName presetName) override;
+
         ////////////////////////////////////////////////////////////////////////
 
     private:

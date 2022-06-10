@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 
 namespace AssetBuilderSDK
 {
@@ -76,6 +77,18 @@ namespace ImageProcessingAtom
 
         //! Return whether the specified preset requires an image to be square and a power of 2
         virtual bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) = 0;
+
+        virtual FileMask GetFileMask(AZStd::string_view imageFilePath) = 0;
+
+        virtual AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) = 0;
+
+        virtual AZStd::vector<PresetName> GetPresetsForFileMask(const FileMask& fileMask) = 0;
+
+        virtual PresetName GetDefaultPreset() = 0;
+
+        virtual PresetName GetDefaultAlphaPreset() = 0;
+
+        virtual bool IsValidPreset(PresetName presetName) = 0;
     };
 
     using ImageBuilderRequestBus = AZ::EBus<ImageBuilderRequests>;
