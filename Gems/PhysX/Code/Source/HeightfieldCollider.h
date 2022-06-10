@@ -60,6 +60,8 @@ namespace PhysX
         //! @return Pointer to the simulated body.
         const AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
+        void BlockOnPendingJobs();
+
         // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
@@ -85,7 +87,7 @@ namespace PhysX
         void ClearHeightfield();
         void InitStaticRigidBody(const AZ::Transform& baseTransform);
 
-        void UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection);
+        void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
     private:
         //! Helper class to manage the spawned physics update jobs.
@@ -146,6 +148,9 @@ namespace PhysX
 
         //! Cached entity name for the entity this collider is attached to.
         AZStd::string m_entityName;
+
+        //! Track the current dirty region for async heightfield refreshes.
+        AZ::Aabb m_dirtyRegion;
     };
 
 } // namespace PhysX

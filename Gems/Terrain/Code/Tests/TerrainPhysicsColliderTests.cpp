@@ -148,7 +148,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -181,7 +181,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMinB
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -213,7 +213,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMaxB
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -272,7 +272,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -354,34 +354,34 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMateria
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
-    const Physics::MaterialId mat2 = Physics::MaterialId::Create();
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
 
     Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
-    mapping1.m_materialId = mat1;
+    mapping1.m_materialAsset = mat1;
     mapping1.m_surfaceTag = tag1;
     config.m_surfaceMaterialMappings.emplace_back(mapping1);
 
     Terrain::TerrainPhysicsSurfaceMaterialMapping mapping2;
-    mapping2.m_materialId = mat2;
+    mapping2.m_materialAsset = mat2;
     mapping2.m_surfaceTag = tag2;
     config.m_surfaceMaterialMappings.emplace_back(mapping2);
 
     AddTerrainPhysicsColliderToEntity(config);
     ActivateEntity(m_entity.get());
 
-    AZStd::vector<Physics::MaterialId> materialList;
+    AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
     Physics::HeightfieldProviderRequestsBus::EventResult(
         materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
 
     // The materialList should be 3 items long: the two materials we've added, plus a default material.
     EXPECT_EQ(materialList.size(), 3);
 
-    Physics::MaterialId defaultMaterial = Physics::MaterialId();
-    EXPECT_EQ(materialList[0], defaultMaterial);
+    const AZ::Data::AssetId nullId; // Select the default material by assigning a null ID to the slot
+    EXPECT_EQ(materialList[0].GetId(), nullId);
     EXPECT_EQ(materialList[1], mat1);
     EXPECT_EQ(materialList[2], mat2);
 }
@@ -392,15 +392,15 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMateria
     AddTerrainPhysicsColliderToEntity(Terrain::TerrainPhysicsColliderConfig());
     ActivateEntity(m_entity.get());
 
-    AZStd::vector<Physics::MaterialId> materialList;
+    AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
     Physics::HeightfieldProviderRequestsBus::EventResult(
         materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
 
     // The materialList should be 1 items long: which should be the default material.
     EXPECT_EQ(materialList.size(), 1);
 
-    Physics::MaterialId defaultMaterial = Physics::MaterialId();
-    EXPECT_EQ(materialList[0], defaultMaterial);
+    const AZ::Data::AssetId nullId; // Select the default material by assigning a null ID to the slot
+    EXPECT_EQ(materialList[0].GetId(), nullId);
 }
 
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndMaterialsReturnsCorrectly)
@@ -409,19 +409,19 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
-    const Physics::MaterialId mat2 = Physics::MaterialId::Create();
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> mat2(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
 
     Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
-    mapping1.m_materialId = mat1;
+    mapping1.m_materialAsset = mat1;
     mapping1.m_surfaceTag = tag1;
     config.m_surfaceMaterialMappings.emplace_back(mapping1);
 
     Terrain::TerrainPhysicsSurfaceMaterialMapping mapping2;
-    mapping2.m_materialId = mat2;
+    mapping2.m_materialAsset = mat2;
     mapping2.m_surfaceTag = tag2;
     config.m_surfaceMaterialMappings.emplace_back(mapping2);
 
@@ -480,7 +480,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -509,17 +509,17 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     // Create two SurfaceTag/Material mappings and add them to the collider.
     Terrain::TerrainPhysicsColliderConfig config;
 
-    const Physics::MaterialId defaultSurfaceMaterial = Physics::MaterialId::Create();
-    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
+    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    const AZ::Data::Asset<Physics::MaterialAsset> mat1(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
 
     Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
-    mapping1.m_materialId = mat1;
+    mapping1.m_materialAsset = mat1;
     mapping1.m_surfaceTag = tag1;
     config.m_surfaceMaterialMappings.emplace_back(mapping1);
-    config.m_defaultMaterialSelection.SetMaterialId(defaultSurfaceMaterial);
+    config.m_defaultMaterialAsset = defaultSurfaceMaterial;
 
     // Intentionally don't set the mapping for "tag2". It's expected the default material will substitute.
     AddTerrainPhysicsColliderToEntity(config);
@@ -574,7 +574,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 
     // Validate material list is generated with the default material
     {
-        AZStd::vector<Physics::MaterialId> materialList;
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
         Physics::HeightfieldProviderRequestsBus::EventResult(
             materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
 
@@ -590,7 +590,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         Physics::HeightfieldProviderRequestsBus::EventResult(
             heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-        int32_t cols, rows;
+        size_t cols, rows;
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -616,8 +616,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 {
     // Create only the default material with no mapping for the tags. It's expected the default material will be assigned to both tags.
     Terrain::TerrainPhysicsColliderConfig config;    
-    const Physics::MaterialId defaultSurfaceMaterial = Physics::MaterialId::Create();
-    config.m_defaultMaterialSelection.SetMaterialId(defaultSurfaceMaterial);
+    const AZ::Data::Asset<Physics::MaterialAsset> defaultSurfaceMaterial(AZ::Data::AssetId(AZ::Uuid::CreateRandom()), nullptr);
+    config.m_defaultMaterialAsset = defaultSurfaceMaterial;
     AddTerrainPhysicsColliderToEntity(config);
 
     const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
@@ -673,7 +673,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
 
     // Validate material list is generated with the default material
     {
-        AZStd::vector<Physics::MaterialId> materialList;
+        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList;
         Physics::HeightfieldProviderRequestsBus::EventResult(
             materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
 
@@ -687,7 +687,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         Physics::HeightfieldProviderRequestsBus::EventResult(
             heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-        int32_t cols, rows;
+        size_t cols, rows;
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -769,8 +769,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
 
     // Request a sub-part of the terrain and validate the points match the original data
     int32_t callCounter = 0;
-    Physics::UpdateHeightfieldSampleFunction validateDataCallback = [&callCounter, &heightsMaterials](int32_t row,
-        int32_t column, const Physics::HeightMaterialPoint& dataPoint)
+    Physics::UpdateHeightfieldSampleFunction validateDataCallback =
+        [&callCounter, &heightsMaterials](size_t column, size_t row, const Physics::HeightMaterialPoint& dataPoint)
     {
         size_t lookUpIndex = row * expectedGridSize + column;
         EXPECT_LT(lookUpIndex, heightsMaterials.size());
@@ -782,8 +782,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
     AZ::Vector3 regionMax(AZ::Vector3(200.0f));
     int32_t dx = int32_t(regionMax.GetX() - regionMin.GetX()) + 1;
     int32_t dy = int32_t(regionMax.GetY() - regionMin.GetY()) + 1;
-            
-    m_colliderComponent->UpdateHeightsAndMaterials(validateDataCallback, AZ::Aabb::CreateFromMinMax(regionMin, regionMax));
+
+    size_t startRow, startColumn, numRows, numColumns;
+    m_colliderComponent->GetHeightfieldIndicesFromRegion(
+        AZ::Aabb::CreateFromMinMax(regionMin, regionMax), startColumn, startRow, numColumns, numRows);
+
+    m_colliderComponent->UpdateHeightsAndMaterials(validateDataCallback, startColumn, startRow, numColumns, numRows);
 
     // Validate update heightfield callback was called the exact amount of times required for the region
     EXPECT_EQ(dx * dy, callCounter);

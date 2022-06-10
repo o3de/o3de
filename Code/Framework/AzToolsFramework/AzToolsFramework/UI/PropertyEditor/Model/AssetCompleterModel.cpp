@@ -33,13 +33,24 @@ namespace AzToolsFramework
     {
     }
 
-    void AssetCompleterModel::SetFilter(AZ::Data::AssetType filterType)
+    void AssetCompleterModel::SetFilter(const AZ::Data::AssetType& assetType)
     {
-        AssetTypeFilter* typeFilter = new AssetTypeFilter();
-        typeFilter->SetAssetType(filterType);
-        typeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        SetFilter(AZStd::vector<AZ::Data::AssetType>{ assetType });
+    }
 
-        SetFilter(FilterConstType(typeFilter));
+    void AssetCompleterModel::SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    {
+        CompositeFilter* anyAssetTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
+        anyAssetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+
+        for (const auto& assetType : assetTypes)
+        {
+            AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
+            assetTypeFilter->SetAssetType(assetType);
+            anyAssetTypeFilter->AddFilter(FilterConstType(assetTypeFilter));
+        }
+
+        SetFilter(FilterConstType(anyAssetTypeFilter));
     }
 
     void AssetCompleterModel::SetFilter(FilterConstType filter)

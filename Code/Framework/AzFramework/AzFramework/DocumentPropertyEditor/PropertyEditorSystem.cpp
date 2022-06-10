@@ -17,11 +17,13 @@ namespace AZ::DocumentPropertyEditor
         Nodes::Reflect(this);
 
         AZ::Interface<PropertyEditorSystemInterface>::Register(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
     }
 
     PropertyEditorSystem::~PropertyEditorSystem()
     {
         AZ::Interface<PropertyEditorSystemInterface>::Unregister(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
     }
 
     void PropertyEditorSystem::RegisterNode(NodeMetadata metadata)
@@ -86,6 +88,18 @@ namespace AZ::DocumentPropertyEditor
             }
         }
         return nullptr;
+    }
+
+    void PropertyEditorSystem::EnumerateRegisteredAttributes(
+        AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const
+    {
+        if (auto attributeContainerIt = m_attributeMetadata.find(name); attributeContainerIt != m_attributeMetadata.end())
+        {
+            for (auto attributeIt = attributeContainerIt->second.begin(); attributeIt != attributeContainerIt->second.end(); ++attributeIt)
+            {
+                enumerateCallback(*attributeIt->second);
+            }
+        }
     }
 
     void PropertyEditorSystem::AddNameToCrcTable(AZ::Name name)
