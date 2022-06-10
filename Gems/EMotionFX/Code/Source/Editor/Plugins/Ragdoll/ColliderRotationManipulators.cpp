@@ -29,7 +29,7 @@ namespace EMotionFX
         EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
     }
 
-    void ColliderRotationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void ColliderRotationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
