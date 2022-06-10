@@ -345,8 +345,6 @@ namespace Terrain
 
     void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        const AZStd::array<uint32_t, 4> zero = { 0, 0, 0, 0 };
-
         // set new view position
         AZ::Vector2 currentViewPosition = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
 
