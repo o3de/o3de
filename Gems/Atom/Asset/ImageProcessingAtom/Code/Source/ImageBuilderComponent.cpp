@@ -196,6 +196,46 @@ namespace ImageProcessingAtom
         return outProducts;
     }
 
+    IImageObjectPtr BuilderPluginComponent::ConvertImageObjectInMemory(
+        IImageObjectPtr imageObject,
+        const AZStd::string& presetName,
+        const AZStd::string& platformName,
+        const AZ::Data::AssetId& sourceAssetId,
+        const AZStd::string& sourceAssetName)
+    {
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        AZStd::string_view presetFilePath;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &presetFilePath);
+        if (preset == nullptr)
+        {
+            AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
+            return nullptr;
+        }
+
+        AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
+        TextureSettings& textureSettings = desc->m_textureSetting;
+        textureSettings.m_preset = preset->m_name;
+        desc->m_inputImage = imageObject;
+        desc->m_presetSetting = *preset;
+        desc->m_isPreview = false;
+        desc->m_platform = platformName;
+        desc->m_filePath = presetFilePath;
+        desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
+        desc->m_imageName = sourceAssetName;
+        desc->m_shouldSaveFile = false;
+        desc->m_sourceAssetId = sourceAssetId;
+        
+        // Create an image convert process
+        ImageConvertProcess process(AZStd::move(desc));
+        process.ProcessAll();
+        bool result = process.IsSucceed();
+        if (result)
+            return process.GetOutputImage();
+        else
+            return nullptr;
+    }
+
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->DoesSupportPlatform(platformId);

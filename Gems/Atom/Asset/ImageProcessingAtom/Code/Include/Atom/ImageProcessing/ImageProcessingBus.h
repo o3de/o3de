@@ -64,6 +64,13 @@ namespace ImageProcessingAtom
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) = 0;
 
+        virtual IImageObjectPtr ConvertImageObjectInMemory(
+            IImageObjectPtr imageObject,
+            const AZStd::string& presetName,
+            const AZStd::string& platformName,
+            const AZ::Data::AssetId& sourceAssetId,
+            const AZStd::string& sourceAssetName) = 0;
+
         //! Return whether the specified platform is supported by the image builder
         virtual bool DoesSupportPlatform(const AZStd::string& platformId) = 0;
 
