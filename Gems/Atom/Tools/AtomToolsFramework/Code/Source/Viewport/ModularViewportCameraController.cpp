@@ -18,6 +18,7 @@
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AtomToolsFramework
@@ -198,13 +199,39 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        if (event.m_priority == m_priorityFn(m_cameraSystem))
+        auto modifierKeyStates = AzFramework::ModifierKeyStates{};
+
+        auto inputDevice =
+            AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
+        if (auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::ModifierAltL);
+            it != inputDevice->GetInputChannelsById().end())
+        {
+            const AzFramework::ModifierKeyStates* customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>();
+            modifierKeyStates = [customData]
+            {
+                if (customData)
+                {
+                    return *customData;
+                }
+
+                return AzFramework::ModifierKeyStates();
+            }();
+        }
+
+        auto priority = m_priorityFn(m_cameraSystem);
+        if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::AltL))
+        {
+            priority = AzFramework::ViewportControllerPriority::Highest;
+        }
+
+        if (event.m_priority == priority)
         {
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
                 windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+            auto cameraState = AzFramework::BuildInputEvent(event.m_inputChannel, modifierKeyStates, windowSize);
+            return m_cameraSystem.HandleEvents(cameraState);
         }
 
         return false;
