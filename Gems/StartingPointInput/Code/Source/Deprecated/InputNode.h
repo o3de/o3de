@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Source/InputNode.generated.h>
+#include <Source/Deprecated/InputNode.generated.h>
 
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Graph.h>

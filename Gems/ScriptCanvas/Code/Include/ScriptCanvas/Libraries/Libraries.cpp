@@ -12,8 +12,6 @@
 #include <Libraries/Core/CoreNodes.h>
 #include <Libraries/Deprecated/DeprecatedNodeLibrary.h>
 #include <Libraries/Logic/Logic.h>
-#include <Libraries/Spawning/Spawning.h>
-#include <Libraries/UnitTesting/UnitTestingLibrary.h>
 
 namespace ScriptCanvas
 {

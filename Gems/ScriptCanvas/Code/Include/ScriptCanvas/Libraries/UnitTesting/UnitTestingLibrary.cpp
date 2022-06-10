@@ -8,10 +8,10 @@
 
 #ifndef _RELEASE
 
-#include "UnitTestingLibrary.h"
-
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
+#include <ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.h>
+#include <ScriptCanvas/Libraries/UnitTesting/UnitTestBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.h>
 
 

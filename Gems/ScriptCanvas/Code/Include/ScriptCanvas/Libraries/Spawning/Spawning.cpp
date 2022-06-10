@@ -6,10 +6,10 @@
  *
  */
 
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
-#include <ScriptCanvas/Libraries/Spawning/Spawning.h>
 
 namespace ScriptCanvas
 {

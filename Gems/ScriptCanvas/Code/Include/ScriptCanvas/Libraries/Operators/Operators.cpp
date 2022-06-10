@@ -7,7 +7,6 @@
  */
 
 #include <Libraries/Libraries.h>
-#include "Operators.h"
 #include <ScriptCanvas/Core/Attributes.h>
 #include <Libraries/Operators/Math/OperatorLerpNodeableNode.h>
 
