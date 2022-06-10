@@ -12,7 +12,8 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <DebugDraw/DebugDrawBus.h>
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <Misc/RecastNavigationPhysXProviderComponentController.h>
 
 AZ_CVAR(
     bool, cl_navmesh_showInputData, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -28,18 +29,67 @@ AZ_DECLARE_BUDGET(Navigation);
 
 namespace RecastNavigation
 {
-    RecastNavigationPhysXProviderCommon::RecastNavigationPhysXProviderCommon(bool useEditorScene)
-        : m_useEditorScene(useEditorScene)
+    void RecastNavigationPhysXProviderComponentController::Reflect(AZ::ReflectContext* context)
+    {
+        RecastNavigationPhysXProviderConfig::Reflect(context);
+
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<RecastNavigationPhysXProviderComponentController>()
+                ->Field("Config", &RecastNavigationPhysXProviderComponentController::m_config)
+                ->Version(1);
+        }
+    }
+
+    void RecastNavigationPhysXProviderComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        // This can be used to depend on this specific component.
+        provided.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponentController"));
+        // Or be able to satisfy requirements of @RecastNavigationMeshComponent, as one of geometry data providers for the navigation mesh.
+        provided.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
+    }
+
+    void RecastNavigationPhysXProviderComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationPhysXProviderComponentController"));
+        incompatible.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
+    }
+
+    void RecastNavigationPhysXProviderComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        required.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+    }
+
+    RecastNavigationPhysXProviderComponentController::RecastNavigationPhysXProviderComponentController()
+        : m_taskExecutor(bg_navmesh_tileThreads)
+    {
+    }
+
+    RecastNavigationPhysXProviderComponentController::RecastNavigationPhysXProviderComponentController(
+        const RecastNavigationPhysXProviderConfig& config)
+        : m_config(config)
         , m_taskExecutor(bg_navmesh_tileThreads)
     {
     }
 
-    void RecastNavigationPhysXProviderCommon::OnActivate()
+    void RecastNavigationPhysXProviderComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
+        m_entityComponentIdPair = entityComponentIdPair;
         m_shouldProcessTiles = true;
+        RecastNavigationProviderRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
-    void RecastNavigationPhysXProviderCommon::OnDeactivate()
+    void RecastNavigationPhysXProviderComponentController::SetConfiguration(const RecastNavigationPhysXProviderConfig& config)
+    {
+        m_config = config;
+    }
+
+    const RecastNavigationPhysXProviderConfig& RecastNavigationPhysXProviderComponentController::GetConfiguration() const
+    {
+        return m_config;
+    }
+
+    void RecastNavigationPhysXProviderComponentController::Deactivate()
     {
         m_shouldProcessTiles = false;
         if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
@@ -47,14 +97,50 @@ namespace RecastNavigation
             // If the tasks are still in progress, wait until the task graph is finished.
             m_taskGraphEvent->Wait();
         }
+
+        RecastNavigationProviderRequestBus::Handler::BusDisconnect();
     }
 
-    const char* RecastNavigationPhysXProviderCommon::GetSceneName() const
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectGeometry(
+        float tileSize, float borderSize)
     {
-        return m_useEditorScene ? AzPhysics::EditorPhysicsSceneName : AzPhysics::DefaultPhysicsSceneName;
+        // Blocking call.
+        return CollectGeometryImpl(tileSize, borderSize, GetWorldBounds());
     }
 
-    void RecastNavigationPhysXProviderCommon::CollectCollidersWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
+    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsync(
+        float tileSize,
+        float borderSize,
+        AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
+    {
+        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
+    }
+
+    AZ::Aabb RecastNavigationPhysXProviderComponentController::GetWorldBounds() const
+    {
+        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(worldBounds, m_entityComponentIdPair.GetEntityId(),
+            &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        return worldBounds;
+    }
+
+    int RecastNavigationPhysXProviderComponentController::GetNumberOfTiles(float tileSize) const
+    {
+        const AZ::Aabb worldVolume = GetWorldBounds();
+
+        const AZ::Vector3 extents = worldVolume.GetExtents();
+        const int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
+        const int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
+
+        return tilesAlongX * tilesAlongY;
+    }
+
+    const char* RecastNavigationPhysXProviderComponentController::GetSceneName() const
+    {
+        return m_config.m_useEditorScene ? AzPhysics::EditorPhysicsSceneName : AzPhysics::DefaultPhysicsSceneName;
+    }
+
+    void RecastNavigationPhysXProviderComponentController::CollectCollidersWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryWithinVolume");
 
@@ -93,34 +179,9 @@ namespace RecastNavigation
         }
     }
 
-    static void AddDebugVertexIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZ::Vector3& translated, bool debugDrawInputData)
-    {
-        if (cl_navmesh_showInputData || debugDrawInputData)
-        {
-            transformed.push_back(translated);
-        }
-    }
-
-    static void AddDebugDrawIfEnabled(AZStd::vector<AZ::Vector3>& transformed, const AZStd::vector<AZ::u32>& indices, bool debugDrawInputData)
-    {
-        if (cl_navmesh_showInputData || debugDrawInputData)
-        {
-            for (size_t i = 2; i < indices.size(); i += 3)
-            {
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                    transformed[indices[i - 2]], transformed[indices[i - 1]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                    transformed[indices[i - 1]], transformed[indices[i - 0]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-                DebugDraw::DebugDrawRequestBus::Broadcast(&DebugDraw::DebugDrawRequests::DrawLineLocationToLocation,
-                    transformed[indices[i - 0]], transformed[indices[i - 2]], AZ::Colors::Red, cl_navmesh_showInputDataSeconds);
-            }
-        }
-    }
-
-    void RecastNavigationPhysXProviderCommon::AppendColliderGeometry(
+    void RecastNavigationPhysXProviderComponentController::AppendColliderGeometry(
         TileGeometry& geometry,
-        const QueryHits& overlapHits,
-        bool debugDrawInputData)
+        const QueryHits& overlapHits)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: AppendColliderGeometry");
 
@@ -158,13 +219,9 @@ namespace RecastNavigation
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
                         geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
 
-                        AddDebugVertexIfEnabled(transformed, translated, debugDrawInputData);
-
                         geometry.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + currentLocalIndex));
                         currentLocalIndex++;
                     }
-
-                    AddDebugDrawIfEnabled(transformed, indices, debugDrawInputData);
                 }
                 else
                 {
@@ -174,8 +231,6 @@ namespace RecastNavigation
                     {
                         const AZ::Vector3 translated = t.TransformPoint(vertex);
                         geometry.m_vertices.push_back(RecastVector3::CreateFromVector3SwapYZ(translated));
-
-                        AddDebugVertexIfEnabled(transformed, translated, debugDrawInputData);
                     }
 
                     for (size_t i = 2; i < indices.size(); i += 3)
@@ -184,8 +239,6 @@ namespace RecastNavigation
                         geometry.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 1]));
                         geometry.m_indices.push_back(aznumeric_cast<AZ::u32>(indicesCount + indices[i - 2]));
                     }
-
-                    AddDebugDrawIfEnabled(transformed, indices, debugDrawInputData);
                 }
 
                 indicesCount += vertices.size();
@@ -195,8 +248,8 @@ namespace RecastNavigation
         }
     }
 
-    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderCommon::CollectGeometryImpl(
-        float tileSize, float borderSize, const AZ::Aabb& worldVolume, bool debugDrawInputData)
+    AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectGeometryImpl(
+        float tileSize, float borderSize, const AZ::Aabb& worldVolume)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
 
@@ -242,7 +295,7 @@ namespace RecastNavigation
 
                 AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
                 geometryData->m_worldBounds = tileVolume;
-                AppendColliderGeometry(*geometryData, results, debugDrawInputData);
+                AppendColliderGeometry(*geometryData, results);
 
                 geometryData->m_tileX = x;
                 geometryData->m_tileY = y;
@@ -253,11 +306,10 @@ namespace RecastNavigation
         return tiles;
     }
 
-    void RecastNavigationPhysXProviderCommon::CollectGeometryAsyncImpl(
+    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
         float tileSize,
         float borderSize,
         const AZ::Aabb& worldVolume,
-        [[maybe_unused]] bool debugDrawInputData,
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
         if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
@@ -314,7 +366,7 @@ namespace RecastNavigation
                                 AZ_PROFILE_SCOPE(Navigation, "Navigation: collecting geometry for a tile");
                                 QueryHits results;
                                 CollectCollidersWithinVolume(geometryData->m_scanBounds, results);
-                                AppendColliderGeometry(*geometryData, results, false);
+                                AppendColliderGeometry(*geometryData, results);
                                 geometryData->m_tileCallback(geometryData);
                             }
                         });

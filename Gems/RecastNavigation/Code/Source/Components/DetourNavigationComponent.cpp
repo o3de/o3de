@@ -38,8 +38,8 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
                 ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
-                ->Event("Find Path Between Entities", &DetourNavigationRequests::FindPathBetweenEntities)
-                ->Event("Find Path Between Positions", &DetourNavigationRequests::FindPathBetweenPositions)
+                ->Event("FindPathBetweenEntities", &DetourNavigationRequests::FindPathBetweenEntities)
+                ->Event("FindPathBetweenPositions", &DetourNavigationRequests::FindPathBetweenPositions)
                 ;
 
             behaviorContext->Class<DetourNavigationComponent>()->RequestBus("DetourNavigationRequestBus");

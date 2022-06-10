@@ -43,7 +43,16 @@ namespace AzToolsFramework
         //! Returns the pointer to the action.
         QAction* GetAction();
 
-        //! Calls the callback to update the action's checked state, if any.
+        //! Sets the enabled state callback for the action.
+        void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
+
+        //! Returns true if the EditorAction has an enabled state callback set, false otherwise.
+        bool HasEnabledStateCallback() const;
+
+        //! Returns true if the EditorAction is enabled, false otherwise.
+        bool IsEnabled() const;
+
+        //! Calls the callback to update the action's checked and enabled state, if any.
         void Update();
 
         //! Returns whether the action is checkable.
@@ -62,6 +71,7 @@ namespace AzToolsFramework
         AZStd::string m_iconPath;
 
         AZStd::function<bool()> m_checkStateCallback = nullptr;
+        AZStd::function<bool()> m_enabledStateCallback = nullptr;
 
         AZStd::string m_parentIdentifier;
     };
