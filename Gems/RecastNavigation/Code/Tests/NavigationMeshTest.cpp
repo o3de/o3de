@@ -122,7 +122,7 @@ namespace RecastNavigationTests
             e.CreateComponent<RecastNavigation::RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
             e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
-            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{}, true);
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{});
         }
 
         void SetupNavigationMesh()
@@ -300,7 +300,7 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
 
             e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
@@ -328,7 +328,7 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
 
             e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
@@ -626,10 +626,10 @@ namespace RecastNavigationTests
     /*
      * Just for code coverage!
      */
-    TEST_F(NavigationTest, RecastNavigationMeshCommonTests)
+    TEST_F(NavigationTest, RecastNavigationMeshComponentControllerTests)
     {
-        RecastNavigation::RecastNavigationMeshCommon common;
-        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshCommon"), 0);
+        RecastNavigation::RecastNavigationMeshComponentController common;
+        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshComponentController"), 0);
     }
 
     /*
@@ -644,10 +644,10 @@ namespace RecastNavigationTests
     /*
      * Just for code coverage!
      */
-    TEST_F(NavigationTest, RecastNavigationPhysXProviderCommon)
+    TEST_F(NavigationTest, RecastNavigationPhysXProviderComponentController)
     {
-        RecastNavigation::RecastNavigationPhysXProviderCommon test(true);
-        EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderCommon"), 0);
+        RecastNavigation::RecastNavigationPhysXProviderComponentController test;
+        EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderComponentController"), 0);
     }
 
     TEST_F(NavigationTest, AsyncOnNavigationMeshUpdatedIsCalled)
