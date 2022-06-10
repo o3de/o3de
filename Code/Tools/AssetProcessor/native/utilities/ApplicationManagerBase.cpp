@@ -322,6 +322,12 @@ void ApplicationManagerBase::Rescan()
     GetAssetScanner()->StartScan();
 }
 
+void ApplicationManagerBase::FastScan()
+{
+    m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
+    GetAssetScanner()->StartScan();
+}
+
 void ApplicationManagerBase::InitAssetCatalog()
 {
     using namespace AssetProcessor;
