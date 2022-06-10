@@ -75,7 +75,7 @@ namespace AzToolsFramework
         if (toolBarIterator == m_toolBars.end())
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add separator - menu \"%s\" has not been registered.", toolBarIdentifier.c_str()));
+                "ToolBar Manager - Could not add separator - menu \"%s\" has not been registered.", toolBarIdentifier.c_str()));
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
