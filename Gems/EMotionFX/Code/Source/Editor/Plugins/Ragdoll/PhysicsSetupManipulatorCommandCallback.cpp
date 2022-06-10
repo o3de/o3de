@@ -15,6 +15,7 @@ namespace EMotionFX
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();
+        m_manipulators->InvalidateEditorValues();
         return true;
     }
 
@@ -22,6 +23,7 @@ namespace EMotionFX
         [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
         m_manipulators->Refresh();
+        m_manipulators->InvalidateEditorValues();
         return true;
     }
 } // namespace EMotionFX

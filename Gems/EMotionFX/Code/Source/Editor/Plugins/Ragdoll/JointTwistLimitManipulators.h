@@ -9,30 +9,34 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
-#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h>
-#include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 
 namespace EMotionFX
 {
-    //! Provides functionality for interactively editing character physics capsule collider dimensions in the Animation Editor Viewport.
-    class ColliderCapsuleManipulators
+    //! Used for storing the initial state of the joint twist limits.
+    struct JointTwistLimitState
+    {
+        AZStd::optional<float> m_twistLimitLower;
+        AZStd::optional<float> m_twistLimitUpper;
+    };
+
+    //! Provides functionality for interactively editing character physics joint limit extents in the Animation Editor Viewport. 
+    class JointTwistLimitManipulators
         : public PhysicsSetupManipulatorsBase
         , private AZ::TickBus::Handler
         , private PhysicsSetupManipulatorRequestBus::Handler
-        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
-        ColliderCapsuleManipulators();
-        ~ColliderCapsuleManipulators();
-
-        // PhysicsSetupManipulatorsBase overrides ...
+        JointTwistLimitManipulators();
+        ~JointTwistLimitManipulators();
         void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
         void ResetValues() override;
+        void InvalidateEditorValues() override;
 
     private:
         // AZ::TickBus::Handler overrides ...
@@ -41,19 +45,15 @@ namespace EMotionFX
         // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;
 
-        // CapsuleViewportEdit overrides ...
-        AZ::Transform GetCapsuleWorldTransform() const override;
-        AZ::Transform GetCapsuleLocalTransform() const override;
-        AZ::Vector3 GetCapsuleNonUniformScale() const override;
-        float GetCapsuleRadius() const override;
-        float GetCapsuleHeight() const override;
-        void SetCapsuleRadius(float radius) override;
-        void SetCapsuleHeight(float height) override;
-        void BeginEditing() override;
-        void FinishEditing() override;
+        void BeginEditing();
+        void FinishEditing();
 
+        AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitLowerManipulator;
+        AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitUpperManipulator;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         MCore::CommandGroup m_commandGroup;
-        AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustColliderCallback;
+        AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustJointLimitCallback;
+        JointTwistLimitState m_jointTwistLimitState;
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };
 } // namespace EMotionFX
