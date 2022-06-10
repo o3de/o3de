@@ -853,7 +853,12 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
                 
-                AZ_Assert(shaderResourceGroup, "Shader resource group in descriptor set index %d is null.", index);
+                if (shaderResourceGroup == nullptr)
+                {
+                    AZ_Assert(false, "Shader resource group in descriptor set index %d is null.", index);
+                    continue;
+                }
+
                 auto& compiledData = shaderResourceGroup->GetCompiledData();
                 VkDescriptorSet vkDescriptorSet = compiledData.GetNativeDescriptorSet();
 

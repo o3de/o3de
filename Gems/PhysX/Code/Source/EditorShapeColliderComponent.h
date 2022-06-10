@@ -136,7 +136,8 @@ namespace PhysX
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;
@@ -164,7 +165,6 @@ namespace PhysX
         AZStd::optional<bool> m_previousSingleSided; //!< Stores the previous single sided setting when unable to support single-sided shapes (such as when used with a dynamic rigid body).
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.

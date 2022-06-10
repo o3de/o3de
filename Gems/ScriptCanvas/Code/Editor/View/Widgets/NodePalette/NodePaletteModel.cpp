@@ -163,7 +163,7 @@ namespace
             return; // skip this method
         }
 
-        nodePaletteModel.RegisterMethodNode(behaviorContext, behaviorMethod);
+        nodePaletteModel.RegisterGlobalMethodNode(behaviorContext, behaviorMethod);
     }
 
     //! Retrieve the list of EBuses t hat should not be exposed in the ScriptCanvasEditor Node Palette
@@ -462,7 +462,7 @@ namespace
                 AZStd::string categoryPath;
 
                 GraphCanvas::TranslationKey key;
-                key << "BehaviorClass" << behaviorClass->m_name.c_str() << "details";
+                key << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext << behaviorClass->m_name.c_str() << "details";
 
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -579,7 +579,7 @@ namespace
             {
 
                 GraphCanvas::TranslationKey key;
-                key << "EBusHandler" << behaviorEbus.m_name.c_str() << "details";
+                key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext << behaviorEbus.m_name.c_str() << "details";
 
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -624,7 +624,7 @@ namespace
         if (!behaviorEbus.m_events.empty())
         {
             GraphCanvas::TranslationKey key;
-            key << "EBusSender" << behaviorEbus.m_name.c_str() << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusSenderContext << behaviorEbus.m_name.c_str() << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -904,7 +904,7 @@ namespace ScriptCanvasEditor
             if (classData && classData->m_editData && classData->m_editData->m_name)
             {
                 GraphCanvas::TranslationKey key;
-                key << "ScriptCanvas::Node" << classData->m_typeId.ToString<AZStd::string>().c_str() << "details";
+                key << ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext << classData->m_typeId.ToString<AZStd::string>().c_str() << "details";
 
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -917,11 +917,6 @@ namespace ScriptCanvasEditor
 
                 customNodeInformation->m_displayName = details.m_name;
                 customNodeInformation->m_toolTip = details.m_tooltip;
-
-                if (!details.m_category.empty())
-                {
-                    customNodeInformation->m_categoryPath = details.m_category;
-                }
 
                 if (customNodeInformation->m_displayName.empty())
                 {
@@ -939,6 +934,17 @@ namespace ScriptCanvasEditor
                             if (categoryAttributeData->Get(nullptr))
                             {
                                 customNodeInformation->m_styleOverride = categoryAttributeData->Get(nullptr);
+                            }
+                        }
+                    }
+
+                    if (auto categoryNameAttribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::Category))
+                    {
+                        if(auto categoryNameAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryNameAttribute))
+                        {
+                            if (categoryNameAttributeData->Get(nullptr))
+                            {
+                                customNodeInformation->m_categoryPath = categoryNameAttributeData->Get(nullptr);
                             }
                         }
                     }
@@ -967,6 +973,11 @@ namespace ScriptCanvasEditor
                     {
                         customNodeInformation->m_toolTip = classData->m_editData->m_description;
                     }
+                }
+
+                if (!details.m_category.empty())
+                {
+                    customNodeInformation->m_categoryPath = details.m_category;
                 }
             }
 
@@ -1007,7 +1018,7 @@ namespace ScriptCanvasEditor
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
             GraphCanvas::TranslationKey catkey;
-            catkey << "BehaviorClass" << methodClass.c_str() << "details";
+            catkey << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext << methodClass.c_str() << "details";
             GraphCanvas::TranslationRequests::Details catdetails;
             GraphCanvas::TranslationRequestBus::BroadcastResult(catdetails, &GraphCanvas::TranslationRequests::GetDetails, catkey, catdetails);
 
@@ -1021,7 +1032,7 @@ namespace ScriptCanvasEditor
                 context = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
             }
             updatedMethodName += methodName;
-            key << "BehaviorClass" << methodClass << "methods" << updatedMethodName << context  << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext << methodClass << "methods" << updatedMethodName << context << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -1053,7 +1064,7 @@ namespace ScriptCanvasEditor
             auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
             methodModelInformation->m_methodName = behaviorMethod.m_name;
-
+            methodModelInformation->m_isProperty = true;
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
             AZStd::string name = behaviorProperty->m_name;
@@ -1061,7 +1072,7 @@ namespace ScriptCanvasEditor
             AZ::StringFunc::Replace(name, "::Setter", "");
 
             GraphCanvas::TranslationKey key;
-            key << "Constant" << name << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorGlobalPropertyContext << name << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -1080,9 +1091,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
+    void NodePaletteModel::RegisterGlobalMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
     {
-        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterMethodNode");
+        AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterGlobalMethodNode");
 
         // Construct Node Identifier using the BehaviorMethod name and the ScriptCanvas Method typeid
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier =
@@ -1094,10 +1105,11 @@ namespace ScriptCanvasEditor
             auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
             methodModelInformation->m_methodName = behaviorMethod.m_name;
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
+            methodModelInformation->m_isProperty = false;
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
             GraphCanvas::TranslationKey key;
-            key << "BehaviorMethod" << behaviorMethod.m_name.c_str() << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorGlobalMethodContext << behaviorMethod.m_name.c_str() << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -1120,7 +1132,6 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RegisterEBusHandlerNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const AZ::BehaviorEBusHandler::BusForwarderEvent& forwardEvent)
     {
-
         AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterEBusHandlerNodeModelInformation");
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructEBusEventReceiverIdentifier(busId, forwardEvent.m_eventId);
 
@@ -1140,7 +1151,7 @@ namespace ScriptCanvasEditor
             handlerInformation->m_eventId = forwardEvent.m_eventId;
 
             GraphCanvas::TranslationKey key;
-            key << "EBusHandler" << busName << "methods" << eventName << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext << busName << "methods" << eventName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -1183,7 +1194,7 @@ namespace ScriptCanvasEditor
             senderInformation->m_eventId = eventId;
 
             GraphCanvas::TranslationKey key;
-            key << "EBusSender" << busName << "methods" << eventName << "details";
+            key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusSenderContext << busName << "methods" << eventName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);

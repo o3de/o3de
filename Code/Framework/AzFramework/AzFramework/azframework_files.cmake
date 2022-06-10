@@ -142,11 +142,24 @@ set(FILES
     DocumentPropertyEditor/BasicAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
     DocumentPropertyEditor/DocumentAdapter.h
+    DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
     DocumentPropertyEditor/PropertyEditorNodes.h
+    DocumentPropertyEditor/PropertyEditorSystem.cpp
+    DocumentPropertyEditor/PropertyEditorSystem.h
+    DocumentPropertyEditor/PropertyEditorSystemInterface.h
     DocumentPropertyEditor/CvarAdapter.cpp
     DocumentPropertyEditor/CvarAdapter.h
+    DocumentPropertyEditor/RoutingAdapter.cpp
+    DocumentPropertyEditor/RoutingAdapter.h
+    DocumentPropertyEditor/ReflectionAdapter.cpp
+    DocumentPropertyEditor/ReflectionAdapter.h
+    DocumentPropertyEditor/Reflection/Attribute.h
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.cpp
+    DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
+    DocumentPropertyEditor/Reflection/Visitor.cpp
+    DocumentPropertyEditor/Reflection/Visitor.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h
@@ -229,6 +242,22 @@ set(FILES
     Physics/Configuration/SystemConfiguration.cpp
     Physics/DebugDraw/CharacterPhysicsDebugDraw.h
     Physics/DebugDraw/CharacterPhysicsDebugDraw.cpp
+    Physics/Material/PhysicsMaterial.h
+    Physics/Material/PhysicsMaterial.cpp
+    Physics/Material/PhysicsMaterialId.h
+    Physics/Material/PhysicsMaterialId.cpp
+    Physics/Material/PhysicsMaterialAsset.h
+    Physics/Material/PhysicsMaterialAsset.cpp
+    Physics/Material/PhysicsMaterialPropertyValue.h
+    Physics/Material/PhysicsMaterialPropertyValue.cpp
+    Physics/Material/PhysicsMaterialSlots.h
+    Physics/Material/PhysicsMaterialSlots.cpp
+    Physics/Material/PhysicsMaterialManager.h
+    Physics/Material/PhysicsMaterialManager.cpp
+    Physics/Material/PhysicsMaterialSystemComponent.h
+    Physics/Material/PhysicsMaterialSystemComponent.cpp
+    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h
+    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
@@ -245,8 +274,6 @@ set(FILES
     Physics/Character.h
     Physics/CollisionBus.h
     Physics/CollisionBus.cpp
-    Physics/Material.cpp
-    Physics/Material.h
     Physics/NameConstants.cpp
     Physics/NameConstants.h
     Physics/RigidBodyBus.h
@@ -265,7 +292,6 @@ set(FILES
     Physics/Utils.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
-    Physics/MaterialBus.h
     Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
@@ -292,11 +318,15 @@ set(FILES
     Spawnable/Script/SpawnableScriptMediator.cpp
     Spawnable/Script/SpawnableScriptMediator.h
     Spawnable/Script/SpawnableScriptNotificationsHandler.h
+    Spawnable/InMemorySpawnableAssetContainer.cpp
+    Spawnable/InMemorySpawnableAssetContainer.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
     Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
+    Spawnable/SpawnableAssetUtils.h
+    Spawnable/SpawnableAssetUtils.cpp
     Spawnable/SpawnableEntitiesContainer.h
     Spawnable/SpawnableEntitiesContainer.cpp
     Spawnable/SpawnableEntitiesInterface.h

@@ -136,6 +136,21 @@ namespace AZ
                 return Failure();
             }
 
+            // Images are set to pre-load, so they will fully load when loading a material or material type asset.
+            // To create the material asset, we don't need to fully load the images that are referenced.
+            // So we use this filter to ignore the image assets
+            Data::AssetLoadParameters dontLoadImageAssets{ [](const AZ::Data::AssetFilterInfo& filterInfo)
+                                                           {
+                                                               if (filterInfo.m_assetType == AZ::AzTypeInfo<StreamingImageAsset>::Uuid() ||
+                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<AttachmentImageAsset>::Uuid() ||
+                                                                   filterInfo.m_assetType == AZ::AzTypeInfo<ImageAsset>::Uuid())
+                                                               {
+                                                                   return false;
+                                                               }
+
+                                                               return true;
+                                                           } };
+
             Data::Asset<MaterialTypeAsset> materialTypeAsset;
             
             switch (processingMode)
@@ -149,7 +164,8 @@ namespace AZ
                 case MaterialAssetProcessingMode::PreBake:
                 {
                     // In this case we need to load the material type data in preparation for the material->Finalize() step below.
-                    auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(materialTypeAssetId.GetValue());
+                    auto materialTypeAssetOutcome = AssetUtils::LoadAsset<MaterialTypeAsset>(
+                        materialTypeAssetId.GetValue(), AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                     if (!materialTypeAssetOutcome)
                     {
                         return Failure();
@@ -170,7 +186,9 @@ namespace AZ
 
             if (!m_parentMaterial.empty())
             {
-                auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(materialSourceFilePath, m_parentMaterial);
+                constexpr uint32_t subId = 0;
+                auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(
+                    materialSourceFilePath, m_parentMaterial, subId, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                 if (!parentMaterialAsset.IsSuccess())
                 {
                     return Failure();
@@ -396,8 +414,7 @@ namespace AZ
                                 "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                 propertyValue.GetValue<AZStd::string>().data());
                         }
-                                    
-                        imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
+
                         materialAssetCreator.SetPropertyValue(propertyId, imageAsset);
                     }
                     else

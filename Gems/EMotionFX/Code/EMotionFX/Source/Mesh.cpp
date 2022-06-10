@@ -297,6 +297,9 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
+            // Keep track of the number of unique jointIds
+            AZStd::bitset<AZStd::numeric_limits<uint16>::max()> usedJoints;
+            uint16 highestJointIndex = 0;
             AZ::u32 currentVertex = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
@@ -325,8 +328,11 @@ namespace EMotionFX
                                     continue;
                                 }
 
-                                const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                                skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
+                                const AZ::u16 skeletonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                                skinningLayer->AddInfluence(currentVertex, skeletonJointIndex, weight, 0);
+                                
+                                usedJoints.set(skeletonJointIndex);
+                                highestJointIndex = AZStd::max(highestJointIndex, skeletonJointIndex);
                             }
                         }
 
@@ -334,6 +340,9 @@ namespace EMotionFX
                     }
                 }
             }
+
+            mesh->SetNumUniqueJoints(aznumeric_caster(usedJoints.count()));
+            mesh->SetHighestJointIndex(highestJointIndex);
         }
 
         AZ::u32 vertexOffset = 0;

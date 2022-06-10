@@ -39,8 +39,8 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeleteEntity_UnderLevelPrefab(EditorSharedTest):
         from .tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
 
-    class test_ReparentPrefab_UnderAnotherPrefab(EditorSharedTest):
-        from .tests.reparent_prefab import ReparentPrefab_UnderAnotherPrefab as test_module
+    class test_ReparentPrefab_UnderPrefabAndEntityHierarchies(EditorSharedTest):
+        from .tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module
 
     class test_DetachPrefab_UnderAnotherPrefab(EditorSharedTest):
         from .tests.detach_prefab import DetachPrefab_UnderAnotherPrefab as test_module
@@ -60,6 +60,38 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
+    class test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
-    
+
+    class test_SC_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_SimpleSpawnAndDespawn as test_module
+
+    class test_SC_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_EntityClearedOnGameModeExit as test_module
+
+    class test_SC_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    class test_SC_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_NestedSpawn as test_module
+
+    class test_SC_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
+        from .tests.spawnables import SC_Spawnables_DespawnOnEntityDeactivate as test_module
+
+    class test_Lua_Spawnables_SimpleSpawnAndDespawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_SimpleSpawnAndDespawn as test_module
+
+    class test_Lua_Spawnables_EntityClearedOnGameModeExit(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_EntityClearedOnGameModeExit as test_module
+
+    class test_Lua_Spawnables_MultipleSpawnsFromSingleTicket(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_MultipleSpawnsFromSingleTicket as test_module
+
+    class test_Lua_Spawnables_NestedSpawn(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_NestedSpawn as test_module
+
+    class test_Lua_Spawnables_DespawnOnEntityDeactivate(EditorSharedTest):
+        from .tests.spawnables import Lua_Spawnables_DespawnOnEntityDeactivate as test_module

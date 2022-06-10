@@ -22,21 +22,21 @@ import azlmbr.vegetation as vegetation
 sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
-from editor_python_test_tools.prefab_utils import Prefab
+from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
 
 
-def create_temp_mesh_prefab(mesh_asset_path, prefab_filename):
+def create_temp_mesh_prefab(model_asset_path, prefab_filename):
     # Create initial entity
     root = EditorEntity.create_editor_entity(name=prefab_filename)
     assert root.exists(), "Failed to create entity"
     # Add mesh component
     mesh_component = root.add_component("Mesh")
     assert root.has_component("Mesh") and mesh_component.is_enabled(), "Failed to add/activate Mesh component"
-    # Assign the specified mesh asset
-    mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(), False)
-    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset)
-    assert mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset") == mesh_asset, \
-        "Failed to set Mesh asset"
+    # Assign the specified model asset
+    model_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", model_asset_path, math.Uuid(), False)
+    mesh_component.set_component_property_value("Controller|Configuration|Model Asset", model_asset)
+    assert mesh_component.get_component_property_value("Controller|Configuration|Model Asset") == model_asset, \
+        "Failed to set Model asset"
     # Create and return the temporary/in-memory prefab
     temp_prefab = Prefab.create_prefab([root], prefab_filename)
     return temp_prefab
@@ -88,7 +88,9 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     )
     if surface_entity.id.IsValid():
         print(f"'{surface_entity.name}' created")
+
     hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
+    wait_for_propagation()
     components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, uniform_scale)
     return surface_entity
 

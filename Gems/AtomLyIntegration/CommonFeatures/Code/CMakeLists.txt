@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
@@ -102,12 +102,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
-                Gem::EditorModeFeedback.Editor.Static
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Legacy::CryCommon
+        RUNTIME_DEPENDENCIES
+            3rdParty::OpenImageIO::Tools::Binaries
+            3rdParty::OpenImageIO::Tools::PythonPlugins
     )
 
     ly_add_target(

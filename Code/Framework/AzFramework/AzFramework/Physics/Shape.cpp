@@ -6,9 +6,9 @@
  *
  */
 
-#include "Shape.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/ClassConverters.h>
+#include <AzFramework/Physics/Shape.h>
 
 namespace Physics
 {
@@ -19,7 +19,7 @@ namespace Physics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ColliderConfiguration>()
-                ->Version(4, &Physics::ClassConverters::ColliderConfigurationConverter)
+                ->Version(6, &Physics::ClassConverters::ColliderConfigurationConverter)
                 ->Field("CollisionLayer", &ColliderConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &ColliderConfiguration::m_collisionGroupId)
                 ->Field("Visible", &ColliderConfiguration::m_visible)
@@ -29,7 +29,8 @@ namespace Physics
                 ->Field("Exclusive", &ColliderConfiguration::m_isExclusive)
                 ->Field("Position", &ColliderConfiguration::m_position)
                 ->Field("Rotation", &ColliderConfiguration::m_rotation)
-                ->Field("MaterialSelection", &ColliderConfiguration::m_materialSelection)
+                ->Field("MaterialSlots", &ColliderConfiguration::m_materialSlots)
+                ->Field("MaterialSelection", &ColliderConfiguration::m_legacyMaterialSelection)
                 ->Field("propertyVisibilityFlags", &ColliderConfiguration::m_propertyVisibilityFlags)
                 ->Field("ColliderTag", &ColliderConfiguration::m_tag)
                 ->Field("RestOffset", &ColliderConfiguration::m_restOffset)
@@ -58,8 +59,8 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_rotation, "Rotation", "Local rotation relative to the rigid body")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetOffsetVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_materialSelection, "Physics Materials", "Select which physics materials to use for each element of this shape")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetMaterialSelectionVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_materialSlots, "", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetMaterialSlotsVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_tag, "Tag", "Tag used to identify colliders from one another")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_restOffset, "Rest offset",
                         "Bodies will come to rest separated by the sum of their rest offset values (must be less than contact offset)")
@@ -122,9 +123,11 @@ namespace Physics
         return GetPropertyVisibility(PropertyVisibility::CollisionLayer);
     }
 
-    AZ::Crc32 ColliderConfiguration::GetMaterialSelectionVisibility() const
+    AZ::Crc32 ColliderConfiguration::GetMaterialSlotsVisibility() const
     {
-        return GetPropertyVisibility(PropertyVisibility::MaterialSelection);
+        return (m_propertyVisibilityFlags & PropertyVisibility::MaterialSelection) != 0
+            ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
+            : AZ::Edit::PropertyVisibility::Hide;
     }
 
     AZ::Crc32 ColliderConfiguration::GetOffsetVisibility() const

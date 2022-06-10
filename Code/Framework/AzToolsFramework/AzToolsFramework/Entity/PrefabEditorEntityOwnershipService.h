@@ -15,7 +15,7 @@
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {
@@ -174,6 +174,11 @@ namespace AzToolsFramework
         bool GetInstancesInRootAliasPath(
             Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const override;
 
+        void RegisterGameModeEventHandler(AZ::Event<GameModeState>::Handler& handler) override
+        {
+            handler.Connect(m_gameModeEvent);
+        }
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
@@ -183,7 +188,7 @@ namespace AzToolsFramework
 
         struct PlayInEditorData
         {
-            AzToolsFramework::Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer m_assetsCache;
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_assetsCache;
             AZStd::vector<AZ::Entity*> m_deactivatedEntities;
             AzFramework::SpawnableEntitiesContainer m_entities;
             bool m_isEnabled{ false };
@@ -202,7 +207,7 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         Prefab::TemplateId GetRootPrefabTemplateId() override;
 
-        const Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer::SpawnableAssets& GetPlayInEditorAssetData() const override;
+        const AzFramework::InMemorySpawnableAssetContainer::SpawnableAssets& GetPlayInEditorAssetData() const override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);
@@ -222,6 +227,7 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+        AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
     };
 }

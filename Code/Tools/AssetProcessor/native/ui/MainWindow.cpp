@@ -479,8 +479,10 @@ void MainWindow::Activate()
 
     settings.beginGroup("Options");
     bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
+    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
     settings.endGroup();
 
+    // zero analysis flag
     QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
     {
@@ -494,6 +496,21 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
     ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
+
+    // output debug flag
+    QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
+        [this](int newCheckState)
+        {
+            bool newOption = newCheckState == Qt::Checked ? true : false;
+            m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
+            QSettings settingsInCallback;
+            settingsInCallback.beginGroup("Options");
+            settingsInCallback.setValue("EnableBuilderDebugFlag", QVariant(newOption));
+            settingsInCallback.endGroup();
+        });
+
+    m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
+    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -1495,7 +1512,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
 
     menu.addAction(tr("Copy"), this, [&]()
     {
-        QGuiApplication::clipboard()->setText(FindAbsoluteFilePath(item));
+        QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(FindAbsoluteFilePath(item)));
     });
 
     // Get the internal path to the log file
@@ -1657,7 +1674,7 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
         AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(*cachedAsset);
         if (pathToSource.IsSuccess())
         {
-            QGuiApplication::clipboard()->setText(pathToSource.GetValue());
+            QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(pathToSource.GetValue()));
         }
     });
 
@@ -1758,7 +1775,7 @@ void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)
         AZ::Outcome<QString> pathToProduct = GetAbsolutePathToProduct(*cachedAsset);
         if (pathToProduct.IsSuccess())
         {
-            QGuiApplication::clipboard()->setText(pathToProduct.GetValue());
+            QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(pathToProduct.GetValue()));
         }
     });
 

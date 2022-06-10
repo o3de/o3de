@@ -46,7 +46,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }
 
-    void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuilderSourceStorage&& result)
+    void DataSystem::AddResult(const SourceHandle& handle, BuilderSourceStorage&& result)
     {
         MutexLock lock(m_mutex);
         m_buildResultsByHandle[handle.Id()] = result;
@@ -58,7 +58,7 @@ namespace ScriptCanvasBuilder
         m_buildResultsByHandle[id] = result;
     }
 
-    BuilderSourceResult DataSystem::CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle)
+    BuilderSourceResult DataSystem::CompileBuilderData(SourceHandle sourceHandle)
     {
         MutexLock lock(m_mutex);
 
@@ -71,11 +71,11 @@ namespace ScriptCanvasBuilder
         return BuilderSourceResult{ storage.status, &storage.data };
     }
 
-    void DataSystem::CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle)
+    void DataSystem::CompileBuilderDataInternal(SourceHandle sourceHandle)
     {
         using namespace ScriptCanvasBuilder;
 
-        CompleteDescriptionInPlace(sourceHandle);
+        ScriptCanvasEditor::CompleteDescriptionInPlace(sourceHandle);
         BuilderSourceStorage result;
         
         auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
@@ -110,13 +110,13 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
         ScriptCanvas::RuntimeAssetPtr asset(assetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-        m_assets.insert({ sourceId, BuilderAssetResult{  BuilderAssetStatus::Pending, asset } });
+        m_assets[sourceId] = BuilderAssetResult{ BuilderAssetStatus::Pending, asset };
         BuilderAssetResult& result = m_assets[sourceId];
         result.data.QueueLoad();
         return result;
     }
 
-    BuilderAssetResult DataSystem::LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle)
+    BuilderAssetResult DataSystem::LoadAsset(SourceHandle sourceHandle)
     {
         if (auto iter = m_assets.find(sourceHandle.Id()); iter != m_assets.end())
         {
@@ -197,8 +197,7 @@ namespace ScriptCanvasBuilder
         {
             SCRIPT_SYSTEM_SCRIPT_STATUS("ScriptCanvas", "DataSystem::ReportReadyFilter executing Lua script processing.");
             const auto assetIdGuid = asset.GetId().m_guid;
-            const auto luaScriptAssetId = AZ::Data::AssetId(assetIdGuid, AZ::ScriptAsset::CompiledAssetSubId);
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, luaScriptAssetId);
+            
             auto& buildResult = m_assets[assetIdGuid];
             buildResult.data = asset;
             buildResult.data.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
@@ -208,7 +207,7 @@ namespace ScriptCanvasBuilder
                 = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(luaAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad, {});
             luaAsset.QueueLoad();
             luaAsset.BlockUntilLoadComplete();
-            ReportReady(asset);
+            ReportReady(buildResult.data);
         });
     }
 
@@ -244,7 +243,7 @@ namespace ScriptCanvasBuilder
         DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
         MonitorAsset(sourceId);
 
-        if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, sourceId, {})))
+        if (auto handle = ScriptCanvasEditor::CompleteDescription(SourceHandle(nullptr, sourceId, {})))
         {
             CompileBuilderDataInternal(*handle);
             auto& builderStorage = m_buildResultsByHandle[sourceId];

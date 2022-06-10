@@ -10,13 +10,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # You need to launch this script with MaterialEditor.exe in order for azlmbr.materialeditor to appear.
 
 import os
-import sys
 import time
 
 import azlmbr.math as math
 import azlmbr.paths
-
-sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import Atom.atom_utils.material_editor_utils as material_editor
 
@@ -27,12 +24,10 @@ TEST_MATERIAL_1 = "001_DefaultWhite.material"
 TEST_MATERIAL_2 = "002_BaseColorLerp.material"
 TEST_MATERIAL_3 = "003_MetalMatte.material"
 TEST_DATA_PATH = os.path.join(
-    azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases"
-)
+    azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases")
 MATERIAL_TYPE_PATH = os.path.join(
     azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets",
-    "Materials", "Types", "StandardPBR.materialtype",
-)
+    "Materials", "Types", "StandardPBR.materialtype")
 CACHE_FILE_EXTENSION = ".azmaterial"
 
 
@@ -74,7 +69,7 @@ def run():
 
     # 1) Test Case: Opening an Existing Asset
     document_id = material_editor.open_material(MATERIAL_TYPE_PATH)
-    print(f"Material opened: {material_editor.is_open(document_id)}")
+    print(f"Material opened: {material_editor.is_document_open(document_id)}")
 
     # Verify if the test material exists initially
     target_path = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL)
@@ -88,8 +83,8 @@ def run():
 
     # Verify if the newly created document is open
     new_document_id = material_editor.open_material(target_path)
-    material_editor.wait_for_condition(lambda: material_editor.is_open(new_document_id))
-    print(f"New Material opened: {material_editor.is_open(new_document_id)}")
+    material_editor.wait_for_condition(lambda: material_editor.is_document_open(new_document_id))
+    print(f"New Material opened: {material_editor.is_document_open(new_document_id)}")
 
     # 3) Test Case: Closing Selected Material
     print(f"Material closed: {material_editor.close_document(new_document_id)}")
@@ -97,8 +92,7 @@ def run():
     # Open materials initially
     document1_id, document2_id, document3_id = (
         material_editor.open_material(os.path.join(TEST_DATA_PATH, material))
-        for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
-    )
+        for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3])
 
     # 4) Test Case: Closing All Materials
     print(f"All documents closed: {material_editor.close_all_documents()}")
@@ -109,11 +103,11 @@ def run():
         for material in [TEST_MATERIAL_1, TEST_MATERIAL_2, TEST_MATERIAL_3]
     )
     result = material_editor.close_all_except_selected(document1_id)
-    print(f"Close All Except Selected worked as expected: {result and material_editor.is_open(document1_id)}")
+    print(f"Close All Except Selected worked as expected: {result and material_editor.is_document_open(document1_id)}")
 
     # 6) Test Case: Saving Material
     document_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
-    property_name = azlmbr.name.Name("baseColor.color")
+    property_name = "baseColor.color"
     initial_color = material_editor.get_property(document_id, property_name)
     # Assign new color to the material file and save the actual material
     expected_color = math.Color(0.25, 0.25, 0.25, 1.0)
@@ -125,7 +119,7 @@ def run():
     # Assign new color to the material file and save the document as copy
     expected_color_1 = math.Color(0.5, 0.5, 0.5, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_1)
-    target_path_1 = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL_1)
+    target_path_1 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_1)
     cache_file_name_1 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_1', '.material')
     cache_file_1 = f"{cache_file_name_1[0]}{CACHE_FILE_EXTENSION}"
     target_path_1_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_1)
@@ -136,7 +130,7 @@ def run():
     # Assign new color to the material file save the document as child
     expected_color_2 = math.Color(0.75, 0.75, 0.75, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_2)
-    target_path_2 = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL_2)
+    target_path_2 = os.path.join(azlmbr.paths.projectroot, "materials", NEW_MATERIAL_2)
     cache_file_name_2 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_2', '.material')
     cache_file_2 = f"{cache_file_name_2[0]}{CACHE_FILE_EXTENSION}"
     target_path_2_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_2)
@@ -171,14 +165,14 @@ def run():
     # 9) Test Case: Saving all Open Materials
     # Open first material and make change to the values
     document1_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_1))
-    property1_name = azlmbr.name.Name("metallic.factor")
+    property1_name = "metallic.factor"
     initial_metallic_factor = material_editor.get_property(document1_id, property1_name)
     expected_metallic_factor = 0.444
     material_editor.set_property(document1_id, property1_name, expected_metallic_factor)
 
     # Open second material and make change to the values
     document2_id = material_editor.open_material(os.path.join(TEST_DATA_PATH, TEST_MATERIAL_2))
-    property2_name = azlmbr.name.Name("baseColor.color")
+    property2_name = "baseColor.color"
     initial_color = material_editor.get_property(document2_id, property2_name)
     expected_color = math.Color(0.4156, 0.0196, 0.6862, 1.0)
     material_editor.set_property(document2_id, property2_name, expected_color)
@@ -203,17 +197,18 @@ def run():
     material_editor.save_all()
     material_editor.close_all_documents()
 
+    # Confirm documents closed
+    print(f"Document1 closed as expected: {material_editor.wait_for_condition(lambda: not material_editor.is_document_open(document1_id), 2.0)}")
+    print(f"Document2 closed as expected: {material_editor.wait_for_condition(lambda: not material_editor.is_document_open(document2_id), 2.0)}")
+    print(f"Document3 closed as expected: {material_editor.wait_for_condition(lambda: not material_editor.is_document_open(document3_id), 2.0)}")
+
     # 10) Verify Asset Browser pane visibility
     verify_pane_visibility("Asset Browser")
 
     # 11) Verify Material Inspector pane visibility
     verify_pane_visibility("Inspector")
 
-    # Confirm documents closed and exit Material Editor
-    material_editor.wait_for_condition(lambda:
-                                       (not material_editor.is_open(document1_id)) and
-                                       (not material_editor.is_open(document2_id)) and
-                                       (not material_editor.is_open(document3_id)), 2.0)
+    # exit Material Editor
     material_editor.exit()
 
 

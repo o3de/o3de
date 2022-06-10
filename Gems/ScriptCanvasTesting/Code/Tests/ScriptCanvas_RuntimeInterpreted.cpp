@@ -88,7 +88,7 @@ TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
     ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
-TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
+TEST_F(ScriptCanvasTestFixture, DISABLED_ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
 }
@@ -953,4 +953,14 @@ TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResults)
 TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResultsByValue)
 {
     RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResultsByValue", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, StringFormatSquareBracketTranslation)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_StringFormatSquareBracketTranslation", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, AutoGenFunctions)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_AutoGenFunctions", ExecutionMode::Interpreted);
 }

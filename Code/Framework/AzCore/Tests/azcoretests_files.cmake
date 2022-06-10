@@ -20,6 +20,7 @@ set(FILES
     EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
     AssetManager.cpp
+    AttributeDomInteropTests.cpp
     TestCatalog.h
     TestCatalog.cpp
     AssetSerializerTests.cpp
@@ -143,8 +144,12 @@ set(FILES
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/IntersectionPerformanceTests.cpp
+    Math/IntersectionTestHelpers.cpp
+    Math/IntersectionTestHelpers.h
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/IntersectPointTest.cpp
     Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
@@ -168,6 +173,8 @@ set(FILES
     Math/SfmtTests.cpp
     Math/SimdMathTests.cpp
     Math/SphereTests.cpp
+    Math/RayTests.cpp
+    Math/LineSegmentTests.cpp
     Math/SplineTests.cpp
     Math/TransformPerformanceTests.cpp
     Math/TransformTests.cpp
@@ -242,6 +249,7 @@ set(FILES
 
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    EnumTests.cpp
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
 )
