@@ -243,6 +243,8 @@ namespace AZ::Data
         }
         else
         {
+            // For reloading, we assume the passed-in asset reference has already been created and just needs to be queued for loading
+            // calling GetAssetInternal would result in re-using the existing reference instead of actually loading
             thisAsset = rootAsset;
 
             AssetManager::Instance().QueueAssetReload(rootAsset, HasPreloads(rootAssetId));
