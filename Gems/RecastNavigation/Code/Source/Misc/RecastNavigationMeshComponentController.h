@@ -122,5 +122,8 @@ namespace RecastNavigation
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
+
+        //! If true, an operation to update is in progress.
+        AZStd::atomic<bool> m_updateInProgress{ false };
     };
 } // namespace RecastNavigation
