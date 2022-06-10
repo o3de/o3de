@@ -67,7 +67,7 @@ namespace PhysX
         }
     }
 
-    void StaticRigidBody::AddShape(const AZStd::shared_ptr<Physics::Shape>& shape)
+    void StaticRigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
     {
         auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
         if (pxShape && pxShape->GetPxShape())

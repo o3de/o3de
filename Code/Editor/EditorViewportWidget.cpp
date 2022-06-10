@@ -44,6 +44,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
@@ -110,6 +111,7 @@ void StartFixedCursorMode(QObject* viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT 8.0f
+
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -188,6 +190,8 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     m_editorEntityNotifications = AZStd::make_unique<AZ::ViewportHelpers::EditorEntityNotifications>(*this);
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
     if (!m_pPrimaryViewport)
     {
@@ -202,6 +206,8 @@ EditorViewportWidget::~EditorViewportWidget()
     {
         m_pPrimaryViewport = nullptr;
     }
+
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
 
     m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
@@ -580,7 +586,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndLoad:
     case eNotify_OnEndCreate:
         UpdateScene();
-        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -588,10 +593,8 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndNewScene:
-        {
-            PopDisableRendering();
-            UpdateScene();
-        }
+        PopDisableRendering();
+        UpdateScene();
         break;
 
     case eNotify_OnBeginTerrainCreate:
@@ -1907,7 +1910,7 @@ void EditorViewportWidget::SetDefaultCamera()
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
 
-    // Synchronize the configured editor viewport FOV to the default camera
+    // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
         const float fov = gSettings.viewports.fDefaultFov;
@@ -1915,19 +1918,30 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fov);
     }
 
-    // Push the default view as the active view
-    auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (atomViewportRequests)
+    // push the default view as the active view
+    if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
 
-    const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
-    // Set the default Editor Camera position and orientation
-    m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-    m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
-        SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    // check to see if we have an existing last known location for this level
+    auto* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
+    if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = viewBookmarkInterface->LoadLastKnownLocation();
+        lastKnownLocationBookmark.has_value())
+    {
+        m_defaultViewTM.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
+        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
+            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
+    }
+    else
+    {
+        // set the default editor camera position and orientation if there was no last known location
+        const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
+        m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+        m_defaultViewTM.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    }
 
     SetViewTM(m_defaultViewTM);
 
@@ -2116,6 +2130,12 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
 void EditorViewportWidget::OnStartPlayInEditorBegin()
 {
     m_playInEditorState = PlayInEditorState::Starting;
+}
+
+void EditorViewportWidget::OnRootPrefabInstanceLoaded()
+{
+    // set the camera position once we know the entire scene (level) has finished loading
+    SetDefaultCamera();
 }
 
 void EditorViewportWidget::OnStartPlayInEditor()
