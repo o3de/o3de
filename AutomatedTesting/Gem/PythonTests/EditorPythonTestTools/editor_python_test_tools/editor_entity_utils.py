@@ -19,6 +19,8 @@ import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.legacy.general as general
 
+import editor_python_test_tools.prefab_utils as PrefabUtils
+
 # Helper file Imports
 from editor_python_test_tools.utils import Report
 
@@ -813,5 +815,3 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
-
-import editor_python_test_tools.prefab_utils as PrefabUtils
