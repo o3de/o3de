@@ -602,6 +602,13 @@ namespace AZ
         {
             retVal.push_back(currentIter->second);
         }
+
+        findResult = m_deprecatedNameToTypeIdMap.equal_range(classNameCrc);
+        for (auto&& currentIter = findResult.first; currentIter != findResult.second; ++currentIter)
+        {
+            AZ_TracePrintf("Serialize", "Found TypeId using deprecated class name CRC value of %u", static_cast<AZ::u32>(classNameCrc));
+            retVal.push_back(currentIter->second);
+        }
         return retVal;
     }
 
