@@ -19,10 +19,11 @@ class QAction;
 namespace AzToolsFramework
 {
     using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
+    using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
     struct ActionContextProperties
     {
-        AZ_RTTI(ActionProperties, "{74694A62-E3FF-43EE-98DF-D66731DC2286}");
+        AZ_RTTI(ActionContextProperties, "{74694A62-E3FF-43EE-98DF-D66731DC2286}");
 
         ActionContextProperties() = default;
         virtual ~ActionContextProperties() = default;
@@ -66,12 +67,48 @@ namespace AzToolsFramework
             AZStd::function<void()> handler
         ) = 0;
 
+        //! Register a new Checkable Action to the Action Manager.
+        virtual ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const ActionProperties& properties,
+            AZStd::function<void()> handler,
+            AZStd::function<bool()> checkStateCallback
+        ) = 0;
+
+        //! Get an Action's name via its identifier.
+        virtual ActionManagerGetterResult GetActionName(const AZStd::string& actionIdentifier) = 0;
+
+        //! Set an Action's name via its identifier.
+        virtual ActionManagerOperationResult SetActionName(const AZStd::string& actionIdentifier, const AZStd::string& name) = 0;
+
+        //! Get an Action's description via its identifier.
+        virtual ActionManagerGetterResult GetActionDescription(const AZStd::string& actionIdentifier) = 0;
+
+        //! Set an Action's description via its identifier.
+        virtual ActionManagerOperationResult SetActionDescription(const AZStd::string& actionIdentifier, const AZStd::string& description) = 0;
+
+        //! Get an Action's category via its identifier.
+        virtual ActionManagerGetterResult GetActionCategory(const AZStd::string& actionIdentifier) = 0;
+
+        //! Set an Action's category via its identifier.
+        virtual ActionManagerOperationResult SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category) = 0;
+
+        //! Get an Action's icon path via its identifier.
+        virtual ActionManagerGetterResult GetActionIconPath(const AZStd::string& actionIdentifier) = 0;
+
+        //! Set an Action's icon path via its identifier.
+        virtual ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) = 0;
+
         //! Trigger an Action via its identifier.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
 
         //! Retrieve a QAction via its identifier.
         virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
         virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
+
+        //! Update the state of a Checkable Action via its identifier.
+        virtual ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

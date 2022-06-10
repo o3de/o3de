@@ -1161,6 +1161,26 @@ namespace AssetBuilderSDK
         return m_resultCode == ProcessJobResultCode::ProcessJobResult_Success;
     }
 
+    bool ProcessJobResponse::ReportProductCollisions() const
+    {
+        bool result = true;
+        AZStd::unordered_map<AZ::u32, const char*> subIdMap;
+        for(const auto& jobProduct : m_outputProducts)
+        {
+            auto subIdEntry = AZStd::make_pair(jobProduct.m_productSubID, jobProduct.m_productFileName.c_str());
+            auto insertResult = subIdMap.insert(subIdEntry);
+            if (!insertResult.second)
+            {
+                AZ_Error("asset", false, "SubId (%d) conflicts with file1 (%s) and file2 (%s)",
+                    jobProduct.m_productSubID,
+                    jobProduct.m_productFileName.c_str(),
+                    insertResult.first->second );
+                result = false;
+            }
+        }
+        return result;
+    }
+
     void InitializeReflectContext(AZ::ReflectContext* context)
     {
         ProductPathDependency::Reflect(context);

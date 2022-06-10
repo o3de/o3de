@@ -9,24 +9,35 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
+
+#include <QWidgetAction>
 
 class QAction;
 class QMenu;
+class QWidget;
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+
     class EditorMenu
     {
     public:
         EditorMenu();
         explicit EditorMenu(const AZStd::string& name);
 
-        void AddAction(int sortKey, QAction* action);
+        static void Initialize();
+
         void AddSeparator(int sortKey);
-        void AddSubMenu(int sortKey, QMenu* submenu);
+        void AddAction(int sortKey, AZStd::string actionIdentifier);
+        void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
+        void AddWidget(int sortKey, QWidget* widget);
+        
+        // Returns the pointer to the menu.
         QMenu* GetMenu();
+        const QMenu* GetMenu() const;
 
     private:
         void RefreshMenu();
@@ -35,22 +46,26 @@ namespace AzToolsFramework
         {
             Action = 0,
             Separator,
-            SubMenu
+            SubMenu,
+            Widget
         };
 
         struct MenuItem
         {
-            MenuItem();
-            MenuItem(QAction* action);
-            MenuItem(QMenu* menu);
+            explicit MenuItem(MenuItemType type = MenuItemType::Separator, AZStd::string identifier = "");
+            explicit MenuItem(QWidget* widget);
 
             MenuItemType m_type;
 
-            AZStd::variant<QAction*, QMenu*> m_value;
+            AZStd::string m_identifier;
+            QWidgetAction* m_widgetAction = nullptr;
         };
 
         QMenu* m_menu = nullptr;
         AZStd::multimap<int, MenuItem> m_menuItems;
+
+        inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
+        inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

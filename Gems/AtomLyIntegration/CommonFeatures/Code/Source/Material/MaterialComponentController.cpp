@@ -6,12 +6,14 @@
  *
  */
 
-#include <Material/MaterialComponentController.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <Material/MaterialComponentController.h>
 
 namespace AZ
 {
@@ -89,17 +91,17 @@ namespace AZ
 
         void MaterialComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MaterialProviderService", 0x64849a6b));
+            provided.push_back(AZ_CRC_CE("MaterialProviderService"));
         }
 
         void MaterialComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("MaterialProviderService", 0x64849a6b));
+            incompatible.push_back(AZ_CRC_CE("MaterialProviderService"));
         }
 
         void MaterialComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
+            required.push_back(AZ_CRC_CE("MaterialReceiverService"));
         }
 
         MaterialComponentController::MaterialComponentController(const MaterialComponentConfig& config)
@@ -192,36 +194,41 @@ namespace AZ
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
 
-            bool anyQueued = false;
-            auto queueAsset = [&anyQueued, this](AZ::Data::Asset<AZ::RPI::MaterialAsset>& materialAsset) -> bool
+            // Build tables of all referenced materials so that we can look up default values for their material assets and properties
+            m_defaultMaterialMap.clear();
+            m_activeMaterialMap.clear();
+            m_uniqueMaterialMap.clear();
+            for (const auto& [materialAssignmentId, materialAssignment] : GetOriginalMaterialAssignments())
             {
-                if (materialAsset.GetId().IsValid() && !this->Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
+                auto& defaultMaterial = m_defaultMaterialMap[materialAssignmentId];
+                defaultMaterial = materialAssignment.m_materialAsset;
+
+                auto& activeMaterial = m_activeMaterialMap[materialAssignmentId];
+                activeMaterial = defaultMaterial;
+                m_uniqueMaterialMap[activeMaterial.GetId()] = activeMaterial;
+
+                // The active material map is initialized with the default materials then entries are replaced if there is a valid override in the configuration
+                auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
+                if (materialIt != m_configuration.m_materials.end())
+                {
+                    materialIt->second.m_defaultMaterialAsset = defaultMaterial;
+                    if (materialIt->second.m_materialAsset.GetId().IsValid())
+                    {
+                        activeMaterial = materialIt->second.m_materialAsset;
+                        m_uniqueMaterialMap[activeMaterial.GetId()] = activeMaterial;
+                    }
+                }
+            }
+
+            // Begin loading all unique, referenced material assets
+            bool anyQueued = false;
+            for (auto& [assetId, uniqueMaterial] : m_uniqueMaterialMap)
+            {
+                if (uniqueMaterial.GetId().IsValid())
                 {
                     anyQueued = true;
-                    materialAsset.QueueLoad();
-                    this->Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
-                    return true;
-                }
-                return false;
-            };
-
-            for (auto& materialPair : m_configuration.m_materials)
-            {
-                if (materialPair.second.m_materialInstancePreCreated)
-                {
-                    continue;
-                }
-
-                materialPair.second.m_defaultMaterialAsset = {};
-                if (!queueAsset(materialPair.second.m_materialAsset))
-                {
-                    // Only assign and load the default material if there was no material override and there are propoerties to apply
-                    if (!materialPair.second.m_propertyOverrides.empty() || !materialPair.second.m_matModUvOverrides.empty())
-                    {
-                        materialPair.second.m_defaultMaterialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
-                            GetDefaultMaterialAssetId(materialPair.first), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
-                        queueAsset(materialPair.second.m_defaultMaterialAsset);
-                    }
+                    uniqueMaterial.QueueLoad();
+                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
                 }
             }
 
@@ -252,6 +259,22 @@ namespace AZ
                 }
             };
 
+            // Update all of the material asset containers to reference the newly loaded asset
+            for (auto& materialPair : m_defaultMaterialMap)
+            {
+                updateAsset(materialPair.second);
+            }
+
+            for (auto& materialPair : m_activeMaterialMap)
+            {
+                updateAsset(materialPair.second);
+            }
+
+            for (auto& materialPair : m_uniqueMaterialMap)
+            {
+                updateAsset(materialPair.second);
+            }
+
             for (auto& materialPair : m_configuration.m_materials)
             {
                 updateAsset(materialPair.second.m_materialAsset);
@@ -260,8 +283,8 @@ namespace AZ
 
             if (allReady)
             {
-                //Do not start updating materials and properties until all materials are loaded and ready
-                //This prevents property changes from being queued and notifications from being sent with pending materials
+                // Only start updating materials and instances after all assets that can be loaded have been loaded.
+                // This ensures that property changes and notifications only occur once everything is fully loaded.
                 for (auto& materialPair : m_configuration.m_materials)
                 {
                     materialPair.second.RebuildInstance();
@@ -276,6 +299,9 @@ namespace AZ
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
 
+            m_defaultMaterialMap.clear();
+            m_activeMaterialMap.clear();
+            m_uniqueMaterialMap.clear();
             for (auto& materialPair : m_configuration.m_materials)
             {
                 materialPair.second.Release();
@@ -301,12 +327,13 @@ namespace AZ
 
         AZ::Data::AssetId MaterialComponentController::GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
         {
-            const AZ::Data::AssetId materialAssetId = GetMaterialOverride(materialAssignmentId);
-            return materialAssetId.IsValid() ? materialAssetId : GetDefaultMaterialAssetId(materialAssignmentId);
+            auto materialIt = m_activeMaterialMap.find(materialAssignmentId);
+            return materialIt != m_activeMaterialMap.end() ? materialIt->second.GetId() : AZ::Data::AssetId();
         }
 
         AZ::Data::AssetId MaterialComponentController::GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
         {
+            // Temporarily reverting the logic for this function. It should be entirely based around m_defaultMaterialMap.
             RPI::ModelMaterialSlotMap modelMaterialSlots;
             MaterialReceiverRequestBus::EventResult(
                 modelMaterialSlots, m_entityId, &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
@@ -360,38 +387,46 @@ namespace AZ
             if (!m_configuration.m_materials.empty())
             {
                 m_configuration.m_materials.clear();
-                QueueMaterialUpdateNotification();
+                LoadMaterials();
             }
         }
 
         void MaterialComponentController::ClearModelMaterialOverrides()
         {
-            AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
+            const auto numErased = AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
                 return materialPair.first.IsSlotIdOnly();
             });
-            QueueMaterialUpdateNotification();
+            if (numErased > 0)
+            {
+                LoadMaterials();
+            }
         }
 
         void MaterialComponentController::ClearLodMaterialOverrides()
         {
-            AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
+            const auto numErased = AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
                 return materialPair.first.IsLodAndSlotId();
             });
-            QueueMaterialUpdateNotification();
+            if (numErased > 0)
+            {
+                LoadMaterials();
+            }
         }
 
         void MaterialComponentController::ClearIncompatibleMaterialOverrides()
         {
-            const MaterialAssignmentMap& originalMaterials = GetOriginalMaterialAssignments();
-            AZStd::erase_if(m_configuration.m_materials, [&originalMaterials](const auto& materialPair) {
-                return originalMaterials.find(materialPair.first) == originalMaterials.end();
+            const auto numErased = AZStd::erase_if(m_configuration.m_materials, [this](const auto& materialPair) {
+                return m_defaultMaterialMap.find(materialPair.first) == m_defaultMaterialMap.end();
             });
-            QueueMaterialUpdateNotification();
+            if (numErased > 0)
+            {
+                LoadMaterials();
+            }
         }
 
         void MaterialComponentController::ClearInvalidMaterialOverrides()
         {
-            AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
+            const auto numErased = AZStd::erase_if(m_configuration.m_materials, [](const auto& materialPair) {
                 if (materialPair.second.m_materialAsset.GetId().IsValid())
                 {
                     AZ::Data::AssetInfo assetInfo;
@@ -402,7 +437,10 @@ namespace AZ
                 }
                 return false;
             });
-            QueueMaterialUpdateNotification();
+            if (numErased > 0)
+            {
+                LoadMaterials();
+            }
         }
 
         void MaterialComponentController::RepairInvalidMaterialOverrides()
@@ -417,8 +455,7 @@ namespace AZ
                         materialPair.second.m_materialAsset.GetId());
                     if (!assetInfo.m_assetId.IsValid())
                     {
-                        materialPair.second.m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(
-                            GetDefaultMaterialAssetId(materialPair.first), AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                        materialPair.second.m_materialAsset = {};
                     }
                 }
             }
@@ -453,6 +490,7 @@ namespace AZ
                 }
             }
 
+            LoadMaterials();
             return propertiesUpdated;
         }
 
@@ -492,7 +530,7 @@ namespace AZ
         {
             if (m_configuration.m_materials.erase(materialAssignmentId) > 0)
             {
-                QueueMaterialUpdateNotification();
+                LoadMaterials();
             }
         }
 
@@ -523,18 +561,26 @@ namespace AZ
         AZStd::any MaterialComponentController::GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
         {
             const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
-            if (materialIt == m_configuration.m_materials.end())
+            if (materialIt != m_configuration.m_materials.end())
             {
-                return {};
+                const auto propertyIt = materialIt->second.m_propertyOverrides.find(AZ::Name(propertyName));
+                if (propertyIt != materialIt->second.m_propertyOverrides.end())
+                {
+                    return propertyIt->second;
+                }
             }
 
-            const auto propertyIt = materialIt->second.m_propertyOverrides.find(AZ::Name(propertyName));
-            if (propertyIt == materialIt->second.m_propertyOverrides.end())
+            const auto activeIt = m_activeMaterialMap.find(materialAssignmentId);
+            if (activeIt != m_activeMaterialMap.end() && activeIt->second.IsReady())
             {
-                return {};
+                const auto index = activeIt->second->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(propertyName));
+                if (index.IsValid())
+                {
+                    return AZ::RPI::MaterialPropertyValue::ToAny(activeIt->second->GetPropertyValues()[index.GetIndex()]);
+                }
             }
 
-            return propertyIt->second;
+            return {};
         }
 
         void MaterialComponentController::ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName)
@@ -689,6 +735,10 @@ namespace AZ
                     if (value.is<AZ::Data::Asset<AZ::Data::AssetData>>())
                     {
                         value = AZStd::any_cast<AZ::Data::Asset<AZ::Data::AssetData>>(value).GetId();
+                    }
+                    else if (value.is<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>())
+                    {
+                        value = AZStd::any_cast<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(value).GetId();
                     }
                     else if (value.is<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>())
                     {

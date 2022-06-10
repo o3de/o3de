@@ -108,7 +108,7 @@ namespace EMStudio
         : public QTableWidget
     {
         Q_OBJECT
-                 MCORE_MEMORYOBJECTCATEGORY(MotionSetTableWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        MCORE_MEMORYOBJECTCATEGORY(MotionSetTableWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         MotionSetTableWidget(MotionSetsWindowPlugin* parentPlugin, QWidget* parent);
@@ -131,8 +131,8 @@ namespace EMStudio
     class MotionSetWindow
         : public QWidget
     {
-        Q_OBJECT
-                 MCORE_MEMORYOBJECTCATEGORY(MotionSetWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        Q_OBJECT // AUTOMOC
+        MCORE_MEMORYOBJECTCATEGORY(MotionSetWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         MotionSetWindow(MotionSetsWindowPlugin* parentPlugin, QWidget* parent);
@@ -145,6 +145,15 @@ namespace EMStudio
         bool UpdateMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry, const AZStd::string& oldMotionId);
         bool RemoveMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry);
         void PlayMotion(EMotionFX::Motion* motion);
+
+        void Select(EMotionFX::MotionSet::MotionEntry* motionEntry);
+
+        EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
+        EMotionFX::MotionSet::MotionEntry* FindMotionEntryByMotionId(AZ::u32 motionId) const;
+        QTableWidgetItem* FindTableWidgetItemByEntry(EMotionFX::MotionSet::MotionEntry* motionEntry) const;
+        MotionSetTableWidget* GetTableWidget() const { return m_tableWidget; }
+
+        void SyncMotionDirtyFlag(int motionId);
 
     signals:
         void MotionSelectionChanged();
@@ -161,6 +170,7 @@ namespace EMStudio
         void OnCopyMotionID();
         void OnClearMotions();
         void OnEditButton();
+        void OnSave();
 
         void OnTextFilterChanged(const QString& text);
 
@@ -181,17 +191,18 @@ namespace EMStudio
         void AddMotions(const AZStd::vector<AZStd::string>& filenames);
         void contextMenuEvent(QContextMenuEvent* event) override;
 
-        EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
-
         void GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices);
         size_t CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
 
     private:
+        void SetRowItalic(int row, bool italic);
+
         MotionSetTableWidget* m_tableWidget = nullptr;
 
         QAction* m_addAction = nullptr;
         QAction* m_loadAction = nullptr;
         QAction* m_editAction = nullptr;
+        QAction* m_saveAction = nullptr;
 
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;

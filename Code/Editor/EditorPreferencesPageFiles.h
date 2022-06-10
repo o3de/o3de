@@ -45,7 +45,6 @@ private:
         int m_backupOnSaveMaxCount;
         bool m_autoNumberSlices;
         bool m_backupOnSave;
-        bool m_autoSaveTagPoints;
     };
 
     struct ExternalEditors

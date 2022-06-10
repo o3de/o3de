@@ -21,12 +21,11 @@
 void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<Files>()
-        ->Version(2)
+        ->Version(3)
         ->Field("AutoNumberSlices", &Files::m_autoNumberSlices)
         ->Field("BackupOnSave", &Files::m_backupOnSave)
         ->Field("BackupOnSaveMaxCount", &Files::m_backupOnSaveMaxCount)
         ->Field("TempDirectory", &Files::m_standardTempDirectory)
-        ->Field("AutoSaveTagPoints", &Files::m_autoSaveTagPoints)
         ->Field("SliceSaveLocation", &Files::m_saveLocation);
 
     serialize.Class<ExternalEditors>()
@@ -65,7 +64,6 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, "Standard Temporary Directory", "Standard Temporary Directory")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_autoSaveTagPoints, "Auto Save Camera Tag Points", "Instantly Save Changed Camera Tag Points")
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "Slice Save location", "Specify the default location to save new slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
@@ -125,7 +123,6 @@ void CEditorPreferencesPage_Files::OnApply()
 
     gSettings.bBackupOnSave = m_files.m_backupOnSave;
     gSettings.backupOnSaveMaxCount = m_files.m_backupOnSaveMaxCount;
-    gSettings.bAutoSaveTagPoints = m_files.m_autoSaveTagPoints;
     gSettings.strStandardTempDirectory = m_files.m_standardTempDirectory.c_str();
 
     gSettings.textEditorForScript = m_editors.m_scripts.c_str();
@@ -151,7 +148,6 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_files.m_saveLocation = sliceSettings->m_saveLocation;
     m_files.m_backupOnSave = gSettings.bBackupOnSave;
     m_files.m_backupOnSaveMaxCount = gSettings.backupOnSaveMaxCount;
-    m_files.m_autoSaveTagPoints = gSettings.bAutoSaveTagPoints;
     m_files.m_standardTempDirectory = gSettings.strStandardTempDirectory.toUtf8().data();
 
     m_editors.m_scripts = gSettings.textEditorForScript.toUtf8().data();

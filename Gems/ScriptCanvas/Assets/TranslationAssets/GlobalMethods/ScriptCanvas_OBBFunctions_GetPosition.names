@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_OBBFunctions_GetPosition",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Position",
+                "category": "Math/OBB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_OBBFunctions_GetPosition",
+                    "details": {
+                        "name": "Get Position",
+                        "tooltip": "Returns the position of Source"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

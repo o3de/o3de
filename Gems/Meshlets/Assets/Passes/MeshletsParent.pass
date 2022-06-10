@@ -1,0 +1,50 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MeshletsComputePass",
+                    "TemplateName": "MeshletsComputePassTemplate",
+                    "Connections": [
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/MeshletsCompute.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "MeshletsRenderPass",
+                    "TemplateName": "MeshletsRenderPassTemplate",
+                    "Connections": [
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "meshlets",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/MeshletsDebugRenderShader.shader"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
+ 

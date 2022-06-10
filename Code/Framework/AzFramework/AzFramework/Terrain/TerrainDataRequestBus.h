@@ -103,7 +103,7 @@ namespace AzFramework
             //! maximum number of cores / job threads on the current PC. It's a symbolic number,
             //! not a literal one, since the maximum number of available jobs will change from
             //! machine to machine.
-            static constexpr int32_t NumJobsMax = -1;
+            static constexpr int32_t UseMaxJobs = -1;
 
             //! This constant is used with m_desiredNumberOfJobs to set the default number of jobs
             //! for splitting up async terrain requests. By default, we use a single job so that the
@@ -161,6 +161,9 @@ namespace AzFramework
 
             virtual AZ::Aabb GetTerrainAabb() const = 0;
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
+
+            // Returns true if any terrain area spawner intersects with the provided bounds
+            virtual bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const = 0;
 
             //! Returns terrains height in meters at location x,y.
             //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside
