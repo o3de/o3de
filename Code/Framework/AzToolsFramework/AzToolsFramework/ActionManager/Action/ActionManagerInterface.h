@@ -77,7 +77,7 @@ namespace AzToolsFramework
             const ActionProperties& properties,
             AZStd::function<void()> handler
         ) = 0;
-        
+
         //! Register a new Checkable Action to the Action Manager.
         //! @param contextIdentifier The identifier for the action context the newly registered action should be added to.
         //! @param actionIdentifier The identifier for the newly registered action.
@@ -141,7 +141,7 @@ namespace AzToolsFramework
         //! Returns the enabled state for the action.
         //! @param actionIdentifier The action identifier to query.
         //! @return A successful outcome object with the enabled state, or a string with a message detailing the error in case of failure.
-        virtual ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) = 0;
+        virtual ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) const = 0;
 
         //! Trigger an Action via its identifier.
         //! @param actionIdentifier The identifier for the action to trigger.

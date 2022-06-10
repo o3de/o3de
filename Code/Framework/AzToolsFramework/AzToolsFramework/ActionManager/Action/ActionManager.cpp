@@ -242,7 +242,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    ActionManagerBooleanResult ActionManager::IsActionEnabled(const AZStd::string& actionIdentifier)
+    ActionManagerBooleanResult ActionManager::IsActionEnabled(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
@@ -252,7 +252,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.GetAction()->isEnabled());
+        return AZ::Success(actionIterator->second.IsEnabled());
     }
 
     ActionManagerOperationResult ActionManager::TriggerAction(const AZStd::string& actionIdentifier)

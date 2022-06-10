@@ -119,9 +119,14 @@ namespace AzToolsFramework
         }
     }
 
-    bool EditorAction::HasEnabledStateCallback()
+    bool EditorAction::HasEnabledStateCallback() const
     {
         return m_checkStateCallback != nullptr;
+    }
+
+    bool EditorAction::IsEnabled() const
+    {
+        return m_action->isEnabled();
     }
 
     void EditorAction::Update()

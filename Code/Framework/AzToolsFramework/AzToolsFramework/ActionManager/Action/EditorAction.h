@@ -47,7 +47,10 @@ namespace AzToolsFramework
         void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
 
         //! Returns true if the EditorAction has an enabled state callback set, false otherwise.
-        bool HasEnabledStateCallback();
+        bool HasEnabledStateCallback() const;
+
+        //! Returns true if the EditorAction is enabled, false otherwise.
+        bool IsEnabled() const;
 
         //! Calls the callback to update the action's checked and enabled state, if any.
         void Update();
