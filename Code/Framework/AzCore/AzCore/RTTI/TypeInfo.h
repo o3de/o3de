@@ -103,8 +103,63 @@ namespace AZ
      */
     using TypeId = AZ::Uuid;
 
-    template <class T, bool IsEnum = AZStd::is_enum<T>::value>
+    template <class T, bool IsEnum = AZStd::is_enum_v<T>>
     struct AzTypeInfo;
+
+    //! Allows a C++ Type to expose deprecated type names through a visitor pattern
+    //! provide a static member function which accepts a user provided callback
+    //! and invokes for each deprecated type name
+    inline namespace DeprecatedTypeNames
+    {
+        using DeprecatedTypeNameCallback = AZStd::function<void(AZStd::string_view)>;
+
+        template <class T, class = void>
+        inline constexpr bool HasDeprecatedTypeNameVisitor_v = false;
+        template <class T>
+        inline constexpr bool HasDeprecatedTypeNameVisitor_v<T, AZStd::enable_if_t<AZStd::is_invocable_v<
+            decltype(&AZStd::remove_cvref_t<T>::DeprecatedTypeNameVisitor), DeprecatedTypeNameCallback>>> = true;
+
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor
+        {
+            constexpr void operator()(
+                [[maybe_unused]] const DeprecatedTypeNameCallback& visitCallback) const
+            {
+                // Base Template delegates to static member function
+                if constexpr (HasDeprecatedTypeNameVisitor_v<T>)
+                {
+                    AZStd::remove_cvref_t<T>::DeprecatedTypeNameVisitor(visitCallback);
+                }
+            }
+        };
+        // Specializations to remove reference qualifiers types
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T*>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T const>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T&>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T const&>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T&&>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        struct AzDeprecatedTypeNameVisitor<T const&&>
+            : AzDeprecatedTypeNameVisitor<T>
+        {};
+        template <class T>
+        inline constexpr AzDeprecatedTypeNameVisitor<T> DeprecatedTypeNameVisitor{};
+    }
 
     inline namespace TypeIdResolverTags
     {
@@ -225,7 +280,7 @@ namespace AZ
         template <typename T, class = void>
         inline constexpr bool HasAZTypeInfoIntrusive = false;
         template <typename T>
-        inline constexpr bool HasAZTypeInfoIntrusive<T, std::void_t<typename T::TYPEINFO_Enable>> = true;
+        inline constexpr bool HasAZTypeInfoIntrusive<T, AZStd::void_t<typename T::TYPEINFO_Enable>> = true;
 
         /// Check if a class has an AzTypeInfo specialization
         template<typename T, class = void>
@@ -594,6 +649,68 @@ namespace AZ
             return sizeof(R(Args...));
         }
     };
+
+    inline namespace DeprecatedTypeNames
+    {
+        // Visits the types deprecated name if it exist, otherwise visit the current type name
+        template<class T, class Functor>
+        static constexpr void VisitDeprecatedNameOrCurrentName(Functor&& visitCallback)
+        {
+            // Attempt to visit the deprecated name if a DeprecatedTypeNameVisitor exists
+            bool deprecatedNameVisited{};
+            auto VisitDeprecatedName = [&visitCallback, &deprecatedNameVisited](AZStd::string_view oldName)
+            {
+                AZStd::invoke(AZStd::forward<Functor>(visitCallback), oldName);
+                deprecatedNameVisited = true;
+            };
+            DeprecatedTypeNameVisitor<T>(VisitDeprecatedName);
+
+            // The type doesn't have a deprecated name so visit the current name
+            if (!deprecatedNameVisited)
+            {
+                AZStd::invoke(AZStd::forward<Functor>(visitCallback), AZ::AzTypeInfo<T>::Name());
+            }
+        }
+        template<class T>
+        static constexpr void AggregateTypeNameOld(char* buffer, size_t bufferSize)
+        {
+            auto AppendDeprecatedName = [buffer, bufferSize](AZStd::string_view typeName)
+            {
+                AZ::Internal::AzTypeInfoSafeCat(buffer, bufferSize, typeName.data());
+                // Old Aggregate TypeName logic always placed a space after each argument
+                AZ::Internal::AzTypeInfoSafeCat(buffer, bufferSize, " ");
+            };
+            VisitDeprecatedNameOrCurrentName<T>(AppendDeprecatedName);
+        }
+
+        template<class R, class... Args>
+        struct AzDeprecatedTypeNameVisitor<R(Args...)>
+        {
+            template<class Functor>
+            constexpr void operator()(Functor&& visitCallback) const
+            {
+                // Raw functions pointer used to be stored in a 64 byte buffer
+                AZStd::array<char, 64> deprecatedName{};
+
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "{");
+
+                // Tracks if the return type deprecated name was found. If so the current type name isn't used
+                auto AppendDeprecatedName = [&deprecatedName](AZStd::string_view retTypeDeprecatedName)
+                {
+                    AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(),
+                        retTypeDeprecatedName.data());
+                };
+                VisitDeprecatedNameOrCurrentName<R>(AZStd::move(AppendDeprecatedName));
+
+                // Use the old aggregate logic to append the function parameters
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "(");
+                (AggregateTypeNameOld<Args>(deprecatedName.data(), deprecatedName.size()), ...);
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), ")}");
+
+                AZStd::invoke(AZStd::forward<Functor>(visitCallback), deprecatedName.data());
+            }
+        };
+    }
 
     // specialize for member function pointers
     template<class R, class C, class... Args>
