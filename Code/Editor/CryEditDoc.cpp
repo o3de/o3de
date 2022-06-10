@@ -996,12 +996,6 @@ bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& conte
         return false;
     }
 
-    // Save Tag Point locations to file if auto save of tag points disabled
-    if (!gSettings.bAutoSaveTagPoints)
-    {
-        CCryEditApp::instance()->SaveTagLocations();
-    }
-
     QString normalizedPath = Path::ToUnixPath(filename);
     if (IsSliceFile(normalizedPath))
     {
