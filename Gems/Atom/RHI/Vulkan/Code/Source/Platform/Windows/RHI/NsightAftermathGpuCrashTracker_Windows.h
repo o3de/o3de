@@ -11,7 +11,6 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <RHI/DX12.h>
 
 #if defined(USE_NSIGHT_AFTERMATH)
 #include <RHI/NsightAftermathHelpers.h>
@@ -27,12 +26,6 @@ public:
 
     //! Initialize the GPU crash dump tracker.
     void EnableGPUCrashDumps();
-
-    //! Cache all context handles which can be used to check the status of them in case of a gpu crash/TDR
-    void AddContext(GFSDK_Aftermath_ContextHandle cntxHndl);
-
-    //! Return the handles
-    const AZStd::vector<GFSDK_Aftermath_ContextHandle>& GetContextHandles() { return m_contextHandles; }
 
 private:
 
@@ -158,9 +151,6 @@ private:
     // cache executable folder and project name
     AZStd::string m_executableFolder;
     AZStd::string m_projectName;
-
-    //! Cache the handles which can be used to output the name of the last executing scope
-    AZStd::vector<GFSDK_Aftermath_ContextHandle> m_contextHandles;
 
 };
 
