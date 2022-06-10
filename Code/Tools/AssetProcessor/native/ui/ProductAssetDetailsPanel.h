@@ -16,6 +16,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QDateTime>
 #include <QHash>
+#include <QPointer>
 #include <QScopedPointer>
 #endif
 
@@ -52,7 +53,7 @@ namespace AssetProcessor
         ~ProductAssetDetailsPanel() override;
 
         // The scan results widget is in a separate section of the UI, but updates when scans are added / completed.
-        void SetScannerInformation(QListWidget* missingDependencyScanResults, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
+        void SetScannerInformation(QPointer<QListWidget> missingDependencyScanResults, AZStd::shared_ptr<AssetDatabaseConnection> assetDatabaseConnection)
         {
             m_missingDependencyScanResults = missingDependencyScanResults;
             m_assetDatabaseConnection = assetDatabaseConnection;
@@ -113,13 +114,11 @@ namespace AssetProcessor
         QHash<AZ::s64, QString> m_productIdToScanName;
         QHash<QString, MissingDependencyScanGUIInfo> m_scanNameToScanGUIInfo;
         mutable AZStd::recursive_mutex m_scanCountMutex;
-        QListWidget* m_missingDependencyScanResults = nullptr;
+        QPointer<QListWidget> m_missingDependencyScanResults = nullptr;
         // The asset database connection in the AzToolsFramework namespace is read only. The AssetProcessor connection allows writing.
         AZStd::shared_ptr<AssetDatabaseConnection> m_assetDatabaseConnection;
 
         ProductDependencyTreeModel* m_outgoingDependencyTreeModel = nullptr;
         ProductDependencyTreeModel* m_incomingDependencyTreeModel = nullptr;
-        ProductDependencyTreeDelegate* m_outgoingDependencyTreeDelegate = nullptr;
-        ProductDependencyTreeDelegate* m_incomingDependencyTreeDelegate = nullptr;
     };
 } // namespace AssetProcessor
