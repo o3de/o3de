@@ -121,13 +121,6 @@ namespace Terrain
             float m_posy;
         };
 
-        struct PatchData
-        {
-            AZStd::vector<VertexPosition> m_xyPositions;
-            AZStd::vector<float> m_heights;
-            AZStd::vector<uint16_t> m_indices;
-        };
-
         struct StackSectorData
         {
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
@@ -143,6 +136,7 @@ namespace Terrain
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
+            uint8_t m_lodLevel = 0xFF;
             bool m_hasData = false;
         };
 
@@ -217,7 +211,7 @@ namespace Terrain
         void RebuildDrawPackets();
         AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
-        void InitializeTerrainPatch(PatchData& patchdata);
+        void CreateCommonBuffers();
         void InitializeCommonSectorData();
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(uint32_t elementSize, uint32_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
         void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
@@ -246,6 +240,7 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_lowerLodIndexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
 

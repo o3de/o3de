@@ -233,7 +233,8 @@ namespace Terrain
     {
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, m_indexBuffer->GetBufferViewDescriptor().m_elementCount, 0));
+        //drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, m_indexBuffer->GetBufferViewDescriptor().m_elementCount, 0));
+        drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, m_lowerLodIndexBuffer->GetBufferViewDescriptor().m_elementCount, 0));
         drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
         drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
@@ -292,29 +293,29 @@ namespace Terrain
 
         m_sectorStack.clear();
 
-        const uint32_t stackCount = aznumeric_cast<uint32_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        const uint8_t stackCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorStack.reserve(stackCount);
 
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckStacksForUpdate().
         m_indexBufferView =
         {
-            *m_indexBuffer->GetRHIBuffer(),
+            //*m_indexBuffer->GetRHIBuffer(),
+            *m_lowerLodIndexBuffer->GetRHIBuffer(),
             0,
-            aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
+            //aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
+            aznumeric_cast<uint32_t>(m_lowerLodIndexBuffer->GetBufferSize()),
             AZ::RHI::IndexFormat::Uint16
         };
 
-        for (uint32_t j = 0; j < stackCount; ++j)
+        for (uint8_t lodLevel = 0; lodLevel < stackCount; ++lodLevel)
         {
             m_sectorStack.push_back({});
             StackData& stackData = m_sectorStack.back();
 
             stackData.m_sectors.resize(m_1dSectorCount * m_1dSectorCount);
 
-            for (uint32_t i = 0; i < stackData.m_sectors.size(); ++i)
+            for (StackSectorData& sector : stackData.m_sectors)
             {
-                StackSectorData& sector = stackData.m_sectors.at(i);
-
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
                 sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D);
@@ -333,6 +334,8 @@ namespace Terrain
                     sector.m_streamBufferViews[3] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer);
                     sector.m_streamBufferViews[4] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
+
+                sector.m_lodLevel = lodLevel;
 
                 BuildDrawPacket(sector);
             }
@@ -522,14 +525,11 @@ namespace Terrain
         }
     }
 
-    void TerrainMeshManager::InitializeTerrainPatch(PatchData& patchdata)
+    void TerrainMeshManager::CreateCommonBuffers()
     {
         // This function initializes positions and indices that are common to all terrain sectors. The indices are laid out
         // using a z-order curve (Morton code) which helps triangles which are close in space to also be close in the index
         // buffer. This in turn increases the probability that previously processed vertices will be in the vertex cache.
-
-        patchdata.m_xyPositions.clear();
-        patchdata.m_indices.clear();
 
         // Generate x and y coordinates using Moser-de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
         AZStd::array<uint16_t, GridVerts1D> zOrderX;
@@ -543,27 +543,30 @@ namespace Terrain
             zOrderY.at(i) = value << 1;
         }
 
-        patchdata.m_indices.resize_no_construct(GridSize * GridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
+        AZStd::vector<uint16_t> m_indices;
+        m_indices.resize_no_construct(GridSize * GridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
 
         // Create the indices for a mesh patch in z-order for vertex cache optimization.
         for (uint16_t y = 0; y < GridSize; ++y)
         {
             for (uint16_t x = 0; x < GridSize; ++x)
             {
-                uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
-                quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
+                {
+                    uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
+                    quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
 
-                const uint16_t topLeft = y * GridVerts1D + x;
-                const uint16_t topRight = topLeft + 1;
-                const uint16_t bottomLeft = topLeft + GridVerts1D;
-                const uint16_t bottomRight = bottomLeft + 1;
+                    const uint16_t topLeft = y * GridVerts1D + x;
+                    const uint16_t topRight = topLeft + 1;
+                    const uint16_t bottomLeft = topLeft + GridVerts1D;
+                    const uint16_t bottomRight = bottomLeft + 1;
 
-                patchdata.m_indices.at(quadOrder + 0) = topLeft;
-                patchdata.m_indices.at(quadOrder + 1) = topRight;
-                patchdata.m_indices.at(quadOrder + 2) = bottomLeft;
-                patchdata.m_indices.at(quadOrder + 3) = bottomLeft;
-                patchdata.m_indices.at(quadOrder + 4) = topRight;
-                patchdata.m_indices.at(quadOrder + 5) = bottomRight;
+                    m_indices.at(quadOrder + 0) = topLeft;
+                    m_indices.at(quadOrder + 1) = topRight;
+                    m_indices.at(quadOrder + 2) = bottomLeft;
+                    m_indices.at(quadOrder + 3) = bottomLeft;
+                    m_indices.at(quadOrder + 4) = topRight;
+                    m_indices.at(quadOrder + 5) = bottomRight;
+                }
             }
         }
 
@@ -573,7 +576,7 @@ namespace Terrain
         constexpr uint16_t VertexNotSet = 0xFFFF;
         m_vertexOrder = AZStd::vector<uint16_t>(GridVerts2D, VertexNotSet);
         uint16_t vertex = 0;
-        for (uint16_t& index : patchdata.m_indices)
+        for (uint16_t& index : m_indices)
         {
             if (m_vertexOrder.at(index) == VertexNotSet)
             {
@@ -589,17 +592,59 @@ namespace Terrain
             }
         }
 
+        m_indexBuffer = CreateMeshBufferInstance(
+            AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT),
+            aznumeric_cast<uint32_t>(m_indices.size()),
+            m_indices.data());
+
+        // Create another index buffer in z-order that matches the lower lod.
+
+        AZStd::vector<uint16_t> m_lowerLodIndices;
+        m_lowerLodIndices.resize_no_construct(m_indices.size() / 4); // Covers the same area but looks like the lower lod, so only has 1/4 the triangles.
+
+        for (uint16_t y = 0; y < GridSize / 2; ++y)
+        {
+            for (uint16_t x = 0; x < GridSize / 2; ++x)
+            {
+                uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
+                quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
+
+                const uint16_t topLeft = y * 2 * GridVerts1D + x * 2;
+                const uint16_t topRight = topLeft + 2;
+                const uint16_t bottomLeft = topLeft + GridVerts1D * 2;
+                const uint16_t bottomRight = bottomLeft + 2;
+
+                m_lowerLodIndices.at(quadOrder + 0) = m_vertexOrder.at(topLeft);
+                m_lowerLodIndices.at(quadOrder + 1) = m_vertexOrder.at(topRight);
+                m_lowerLodIndices.at(quadOrder + 2) = m_vertexOrder.at(bottomLeft);
+                m_lowerLodIndices.at(quadOrder + 3) = m_vertexOrder.at(bottomLeft);
+                m_lowerLodIndices.at(quadOrder + 4) = m_vertexOrder.at(topRight);
+                m_lowerLodIndices.at(quadOrder + 5) = m_vertexOrder.at(bottomRight);
+            }
+        }
+
+        m_lowerLodIndexBuffer = CreateMeshBufferInstance(
+            AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT),
+            aznumeric_cast<uint32_t>(m_lowerLodIndices.size()),
+            m_lowerLodIndices.data());
+
         // Create x/y positions. These are the same for all sectors since they're in local space.
-        patchdata.m_xyPositions.resize_no_construct(GridVerts2D);
+
+        AZStd::vector<VertexPosition> m_xyPositions;
+        m_xyPositions.resize_no_construct(GridVerts2D);
         for (uint16_t y = 0; y < GridVerts1D; ++y)
         {
             for (uint16_t x = 0; x < GridVerts1D; ++x)
             {
                 uint16_t zOrderCoord = m_vertexOrder.at(y * GridVerts1D + x);
-                patchdata.m_xyPositions.at(zOrderCoord) = { aznumeric_cast<float>(x) / GridSize, aznumeric_cast<float>(y) / GridSize };
+                m_xyPositions.at(zOrderCoord) = { aznumeric_cast<float>(x) / GridSize, aznumeric_cast<float>(y) / GridSize };
             }
         }
 
+        m_xyPositionsBuffer = CreateMeshBufferInstance(
+            AZ::RHI::GetFormatSize(XYPositionFormat),
+            aznumeric_cast<uint32_t>(m_xyPositions.size()),
+            m_xyPositions.data());
     }
 
     AZ::Data::Instance<AZ::RPI::Buffer> TerrainMeshManager::CreateMeshBufferInstance(uint32_t elementSize, uint32_t elementCount, const void* initialData, const char* name)
@@ -679,17 +724,7 @@ namespace Terrain
 
     void TerrainMeshManager::InitializeCommonSectorData()
     {
-        PatchData patchData;
-        InitializeTerrainPatch(patchData);
-
-        m_xyPositionsBuffer = CreateMeshBufferInstance(
-            AZ::RHI::GetFormatSize(XYPositionFormat),
-            aznumeric_cast<uint32_t>(patchData.m_xyPositions.size()),
-            patchData.m_xyPositions.data());
-        m_indexBuffer = CreateMeshBufferInstance(
-            AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT),
-            aznumeric_cast<uint32_t>(patchData.m_indices.size()),
-            patchData.m_indices.data());
+        CreateCommonBuffers();
 
         m_dummyLodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D, nullptr);
 
@@ -864,13 +899,17 @@ namespace Terrain
 
     void TerrainMeshManager::ProcessSectorUpdates(AZStd::vector<AZStd::vector<StackSectorData*>>& sectorUpdates)
     {
-        AZ::JobCompletion jobCompletion;
         for (uint32_t lodLevel = 0; lodLevel < sectorUpdates.size(); ++lodLevel)
         {
             auto& sectors = sectorUpdates.at(lodLevel);
+            if (sectors.empty())
+            {
+                continue;
+            }
+
+            AZ::JobCompletion jobCompletion;
             for (StackSectorData* sector : sectors)
             {
-
                 const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
 
                 const auto jobLambda = [this, sector, gridMeters]() -> void
@@ -923,6 +962,7 @@ namespace Terrain
                 objectSrgData.m_rcpLodLevel = 1.0f / (lodLevel + 1);
                 sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
                 sector->m_srg->Compile();
+                sector->m_hasData = false; // mark the terrain as not having data for now. Once a job runs if it actually has data it'll flip to true.
 
                 // Check against the area of terrain that could appear in this sector for any terrain areas. If none exist then skip updating the mesh.
                 bool hasTerrain = false;
@@ -937,13 +977,9 @@ namespace Terrain
                     executeGroupJob->SetDependent(&jobCompletion);
                     executeGroupJob->Start();
                 }
-                else
-                {
-                    sector->m_hasData = false;
-                }
             }
+            jobCompletion.StartAndWaitForCompletion();
         }
-        jobCompletion.StartAndWaitForCompletion();
 
     }
 
