@@ -240,6 +240,47 @@ def validate_undo_redo_on_prefab_creation(prefab_instance, original_parent_id):
             "Prefab parent was not restored on Redo."
 
 
+def validate_spawned_entity_rotation(entity, expected_rotation):
+    """
+    This is a helper function which helps validate the rotation of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_rotation: The expected world rotation of the spawned entity
+    """
+    spawned_entity_rotation = entity.get_world_rotation()
+    x_rotation_success = math.isclose(spawned_entity_rotation.x, expected_rotation.x,
+                                      rel_tol=1e-5)
+    y_rotation_success = math.isclose(spawned_entity_rotation.y, expected_rotation.y,
+                                      rel_tol=1e-5)
+    z_rotation_success = math.isclose(spawned_entity_rotation.z, expected_rotation.z,
+                                      rel_tol=1e-5)
+    Report.info(f"Spawned Entity Rotation: Found {spawned_entity_rotation}, expected {expected_rotation}")
+    return x_rotation_success and y_rotation_success and z_rotation_success
+
+
+def validate_spawned_entity_scale(entity, expected_scale):
+    """
+    This is a helper function which helps validate the scale of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_scale: The expected world scale of the spawned entity
+    """
+    spawned_entity_scale = entity.get_world_uniform_scale()
+    scale_success = spawned_entity_scale == expected_scale
+    Report.info(f"Spawned Entity Scale: Found {spawned_entity_scale}, expected {expected_scale}")
+    return scale_success
+
+
+def validate_spawned_entity_translation(entity, expected_position):
+    """
+    This is a helper function which helps validate the world position of entities spawned via the spawnable API
+    :param entity: The spawned entity on which to validate transform values
+    :param expected_position: The expected world translation of the spawned entity
+    """
+    spawned_entity_position = entity.get_world_translation()
+    position_success = spawned_entity_position == expected_position
+    Report.info(f"Spawned Entity Translation: Found {spawned_entity_position}, expected {expected_position}")
+    return position_success
+
+
 def validate_spawned_entity_transform(entity, expected_position, expected_rotation, expected_scale):
     """
     This is a helper function which helps validate the transform of entities spawned via the spawnable API
@@ -248,21 +289,22 @@ def validate_spawned_entity_transform(entity, expected_position, expected_rotati
     :param expected_rotation: The expected world rotation of the spawned entity
     :param expected_scale: The expected local scale of the spawned entity
     """
-    spawned_entity_transform = entity.get_world_translation()
-    spawned_entity_rotation = entity.get_world_rotation()
 
-    x_rotation_success = math.isclose(spawned_entity_rotation.x, expected_rotation.x,
-                                      rel_tol=1e-5)
-    y_rotation_success = math.isclose(spawned_entity_rotation.y, expected_rotation.y,
-                                      rel_tol=1e-5)
-    z_rotation_success = math.isclose(spawned_entity_rotation.z, expected_rotation.z,
-                                      rel_tol=1e-5)
-    rotation_success = x_rotation_success and y_rotation_success and z_rotation_success
-    spawned_entity_scale_success = wait_for_condition(lambda: entity.get_local_uniform_scale() == expected_scale, 3.0)
+    position_success = helper.wait_for_condition(lambda: validate_spawned_entity_translation(entity, expected_position),
+                                                 5.0)
+    rotation_success = helper.wait_for_condition(lambda: validate_spawned_entity_rotation(entity, expected_rotation),
+                                                 5.0)
+    scale_success = helper.wait_for_condition(lambda: validate_spawned_entity_scale(entity, expected_scale),
+                                              5.0)
 
-    assert spawned_entity_transform == expected_position, \
-        f"Entity was not spawned in the position expected: Found {spawned_entity_transform}, expected {expected_position}"
+    assert position_success, \
+        f"Entity was not spawned in the position expected: Found {entity.get_world_translation()}, " \
+        f"expected {expected_position}"
     assert rotation_success, \
-        f"Entity was not spawned with the rotation expected: Found {spawned_entity_rotation}, expected {expected_rotation}"
-    assert spawned_entity_scale_success, \
-        f"Entity was not spawned with the scale expected: Found {entity.get_local_uniform_scale()}, expected {expected_scale}"
+        f"Entity was not spawned with the rotation expected: Found {entity.get_world_rotation()}, " \
+        f"expected {expected_rotation}"
+    assert scale_success, \
+        f"Entity was not spawned with the scale expected: Found {entity.get_world_uniform_scale()}, " \
+        f"expected {expected_scale}"
+
+    return position_success and rotation_success and scale_success

@@ -30,6 +30,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     {
         float3 m_mainCameraPosition;
         float m_firstLodDistance;
+        float m_rcpClodDistance;
     };
 
     struct DetailMaterialData
@@ -83,11 +84,17 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float2 m_boundsMax;
     };
 
-    struct MacroMaterialGrid
+    struct MacroMaterialGridInfo
     {
         uint m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
         float m_tileSize; // Size of a tile in meters.
         float2 m_offset; // x/y offset of min x/y corner of grid.
+    };
+
+    struct MacroMaterialRefs
+    {
+        uint m_index01;
+        uint m_index23;
     };
 
     struct ClipmapData
@@ -143,12 +150,49 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_macroDispatchGroupCountY;
         uint m_detailDispatchGroupCountX;
         uint m_detailDispatchGroupCountY;
+
+        // Debug data
+        // Enables debug overlay to indicate clipmap levels.
+        float m_enableMacroClipmapOverlay;
+        float m_enableDetailClipmapOverlay;
+
+        // 0: macro color clipmap
+        // 1: macro normal clipmap
+        // 2: detail color clipmap
+        // 3: detail normal clipmap
+        // 4: detail height clipmap
+        // 5: detail roughness clipmap
+        // 6: detail specularF0 clipmap
+        // 7: detail metalness clipmap
+        // 8: detail occlusion clipmap
+        uint m_debugClipmapId;
+
+        // Which clipmap level to sample from, or texture array index.
+        float m_debugClipmapLevel; // cast to float in CPU
+
+        // Current viewport size.
+        float2 m_viewportSize;
+
+        // How big the clipmap should appear on the screen.
+        float m_debugScale;
+
+        // Multiplier adjustment for final color output.
+        float m_debugBrightness;
     };
 
     MeshData m_meshData;
 
     // Clipmap SRG
     ClipmapData m_clipmapData;
+
+    // Clipmap Sampler
+    Sampler m_clipmapSampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
 
     Texture2DArray<float4> m_macroColorClipmaps;
     Texture2DArray<float2> m_macroNormalClipmaps;
@@ -164,14 +208,15 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
 
     StructuredBuffer<MacroMaterialData> m_macroMaterialData;
-    MacroMaterialGrid m_macroMaterialGrid;
+    StructuredBuffer<MacroMaterialRefs> m_macroMaterialGridRefs;
+    MacroMaterialGridInfo m_macroMaterialGridInfo;
     
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
 
     uint2 GetMacroGridResolution()
     {
-        return uint2(m_macroMaterialGrid.m_resolution >> 16, m_macroMaterialGrid.m_resolution & 0xFFFF);
+        return uint2(m_macroMaterialGridInfo.m_resolution >> 16, m_macroMaterialGridInfo.m_resolution & 0xFFFF);
     }
     
     float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)

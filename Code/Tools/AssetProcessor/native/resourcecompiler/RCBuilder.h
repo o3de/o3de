@@ -14,44 +14,6 @@
 
 namespace AssetProcessor
 {
-    struct RCCompiler
-    {
-        //! RC.exe execution result
-        struct Result
-        {
-            Result(int exitCode, bool crashed, const QString& outputDir);
-            Result() = default;
-            int     m_exitCode = 1;
-            bool    m_crashed = false;
-            QString m_outputDir;
-        };
-
-        virtual ~RCCompiler() = default;
-        virtual bool Initialize() = 0;
-        virtual bool Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params,
-            const QString& dest, const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const = 0;
-        virtual void RequestQuit() = 0;
-    };
-
-    //! Worker class to handle shell execution of the legacy rc.exe compiler
-    class NativeLegacyRCCompiler
-        : public RCCompiler
-    {
-    public:
-        NativeLegacyRCCompiler();
-
-        bool Initialize() override;
-        bool Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest,
-            const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const override;
-        static QString BuildCommand(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest);
-        void RequestQuit()  override;
-    private:
-        static const int            s_maxSleepTime;
-        static const unsigned int   s_jobMaximumWaitTime;
-        bool                        m_resourceCompilerInitialized;
-        volatile bool               m_requestedQuit;
-    };
-
     //! Internal structure that consolidates a internal builder id, its name, and its custom fixed rc param match
     class BuilderIdAndName
     {
@@ -191,7 +153,6 @@ namespace AssetProcessor
         // returns false only if there is a critical failure.
         virtual bool LoadProcessJobResponseFile(const char* responseFileDir, const char* responseFileName, AssetBuilderSDK::ProcessJobResponse& response, bool& responseLoaded);
 
-        AZStd::unique_ptr<RCCompiler>           m_rcCompiler;
         volatile bool                           m_isShuttingDown;
         InternalRecognizerContainer             m_assetRecognizerDictionary;
 

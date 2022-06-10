@@ -32,6 +32,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
 #endif
@@ -96,6 +97,7 @@ class SANDBOX_API EditorViewportWidget final
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
+    , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -234,6 +236,9 @@ private:
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
     bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
+
+    // AzToolsFramework::Prefab::PrefabPublicNotificationBus overrides ...
+    void OnRootPrefabInstanceLoaded() override;
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...

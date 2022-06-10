@@ -12,6 +12,10 @@
                     "Name": "SkinnedMeshes",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },
                 // Outputs...
                 {
                     "Name": "DirectionalShadowmap",
@@ -33,8 +37,21 @@
                 {
                     "Name": "SwapChainOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "SlotType": "Output"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "FullscreenShadowBuffer",
+                        "Slot": "FullscreenShadow"
+                    }
+                ]
+            },
             "Connections": [
                 {
                     "LocalSlot": "DirectionalShadowmap",
@@ -62,6 +79,13 @@
                     "AttachmentRef": {
                         "Pass": "EsmShadowmapsPassProjected",
                         "Attachment": "EsmShadowmaps"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "FullscreenShadowBlur",
+                        "Attachment": "Output"
                     }
                 }
             ],
@@ -135,7 +159,48 @@
                             }
                         }
                     ]
+                },
+                {
+                    "Name": "FullscreenShadowPass",
+                    "TemplateName": "FullscreenShadowTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmapsESM",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "FullscreenShadowBlur",
+                    "TemplateName": "FastDepthAwareBlurTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "BlurSource",
+                            "AttachmentRef": {
+                                "Pass": "FullscreenShadowPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
                 }
+
             ]
         }
     }
