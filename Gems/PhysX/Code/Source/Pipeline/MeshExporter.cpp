@@ -35,7 +35,6 @@
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <GFxFramework/MaterialIO/Material.h>
 
 // A utility macro helping set/clear bits in a single line
 #define SET_BITS(flags, condition, bits) flags = (condition) ? ((flags) | (bits)) : ((flags) & ~(bits))
