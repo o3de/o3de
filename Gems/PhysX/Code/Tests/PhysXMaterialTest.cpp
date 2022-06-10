@@ -16,6 +16,8 @@
 #include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
+#include <Tests/PhysXGenericTestFixture.h>
+
 namespace UnitTest
 {
     static constexpr float Tolerance = 1e-4f;
