@@ -125,6 +125,8 @@ public Q_SLOTS:
     void OnRescanButtonClicked();
     void HighlightAsset(QString assetPath);
 
+    void OnFastScanButtonClicked();
+
     void OnAssetTabChange(int index);
     void BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
