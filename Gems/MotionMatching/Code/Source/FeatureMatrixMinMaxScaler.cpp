@@ -6,42 +6,43 @@
  *
  */
 
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/IO/GenericStreams.h>
+#include <AzCore/IO/SystemFile.h>
 #include <Allocators.h>
-#include <fstream>
-#include <iostream>
-#include <limits>
+#include <AzCore/std/limits.h>
 #include <FeatureMatrixMinMaxScaler.h>
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MinMaxScaler, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MinMaxScaler, MotionMatchAllocator, 0);
 
-    bool MinMaxScaler::Fit(const FeatureMatrix& in, const Settings& settings)
+    bool MinMaxScaler::Fit(const FeatureMatrix& featureMatrix, const Settings& settings)
     {
-        const FeatureMatrix::Index numRows = in.rows();
-        const FeatureMatrix::Index numColumns = in.cols();
+        const FeatureMatrix::Index numRows = featureMatrix.rows();
+        const FeatureMatrix::Index numColumns = featureMatrix.cols();
 
         m_clip = settings.m_clip;
         m_featureMin = settings.m_featureMin;
         m_featureMax = settings.m_featureMax;
         m_featureRange = settings.m_featureMax - settings.m_featureMin;
-        AZ_Assert(m_featureRange > s_epsilon, "Feature range too small. This will lead to divisions by infinity.");
+        AZ_Assert(m_featureRange > s_epsilon, "Feature range too small. This will lead to divisions by zero.");
         m_dataMin.clear();
-        m_dataMin.resize(numColumns, std::numeric_limits<float>::max());
+        m_dataMin.resize(numColumns, AZStd::numeric_limits<float>::max());
         m_dataMax.clear();
-        m_dataMax.resize(numColumns, -std::numeric_limits<float>::max());
+        m_dataMax.resize(numColumns, AZStd::numeric_limits<float>::lowest());
 
         for (FeatureMatrix::Index row = 0; row < numRows; ++row)
         {
             for (FeatureMatrix::Index column = 0; column < numColumns; ++column)
             {
-                m_dataMin[column] = AZStd::min(m_dataMin[column], in(row, column));
-                m_dataMax[column] = AZStd::max(m_dataMax[column], in(row, column));
+                m_dataMin[column] = AZStd::min(m_dataMin[column], featureMatrix(row, column));
+                m_dataMax[column] = AZStd::max(m_dataMax[column], featureMatrix(row, column));
             }
         }
 
         m_dataRange.clear();
-        m_dataRange.resize(numColumns);
+        m_dataRange.resize_no_construct(numColumns);
         for (FeatureMatrix::Index column = 0; column < numColumns; ++column)
         {
             const float columnMin = m_dataMin[column];
@@ -102,10 +103,10 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    FeatureMatrix MinMaxScaler::Transform(const FeatureMatrix& in) const
+    FeatureMatrix MinMaxScaler::Transform(const FeatureMatrix& featureMatrix) const
     {
-        const FeatureMatrix::Index numRows = in.rows();
-        const FeatureMatrix::Index numColumns = in.cols();
+        const FeatureMatrix::Index numRows = featureMatrix.rows();
+        const FeatureMatrix::Index numColumns = featureMatrix.cols();
         FeatureMatrix result;
         result.resize(numRows, numColumns);
 
@@ -113,7 +114,7 @@ namespace EMotionFX::MotionMatching
         {
             for (FeatureMatrix::Index column = 0; column < numColumns; ++column)
             {
-                result(row, column) = Transform(in(row, column), column);
+                result(row, column) = Transform(featureMatrix(row, column), column);
             }
         }
 
@@ -122,10 +123,10 @@ namespace EMotionFX::MotionMatching
 
     //-------------------------------------------------------------------------
 
-    FeatureMatrix MinMaxScaler::InverseTransform(const FeatureMatrix& in) const
+    FeatureMatrix MinMaxScaler::InverseTransform(const FeatureMatrix& featureMatrix) const
     {
-        const FeatureMatrix::Index numRows = in.rows();
-        const FeatureMatrix::Index numColumns = in.cols();
+        const FeatureMatrix::Index numRows = featureMatrix.rows();
+        const FeatureMatrix::Index numColumns = featureMatrix.cols();
         FeatureMatrix result;
         result.resize(numRows, numColumns);
 
@@ -133,7 +134,7 @@ namespace EMotionFX::MotionMatching
         {
             for (FeatureMatrix::Index column = 0; column < numColumns; ++column)
             {
-                result(row, column) = InverseTransform(in(row, column), column);
+                result(row, column) = InverseTransform(featureMatrix(row, column), column);
             }
         }
 
@@ -161,9 +162,9 @@ namespace EMotionFX::MotionMatching
         return normalizedValue * m_dataRange[column] + m_dataMin[column];
     }
 
-    void MinMaxScaler::SaveMinMaxAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames)
+    void MinMaxScaler::SaveMinMaxAsCsv(const char* filename, const AZStd::vector<AZStd::string>& columnNames)
     {
-        std::ofstream file(filename.c_str());
+        AZStd::string data;
 
         // Save column names in the first row
         if (!columnNames.empty())
@@ -172,37 +173,43 @@ namespace EMotionFX::MotionMatching
             {
                 if (i != 0)
                 {
-                    file << ",";
+                    data += ",";
                 }
 
-                file << columnNames[i].c_str();
+                data += columnNames[i].c_str();
             }
-            file << "\n";
+            data += "\n";
         }
 
         for (size_t i = 0; i < m_dataMin.size(); ++i)
         {
             if (i != 0)
             {
-                file << ",";
+                data += ",";
             }
 
-            file << m_dataMin[i];
+            data += AZStd::to_string(m_dataMin[i]);
         }
 
-        file << "\n";
+        data += "\n";
 
         for (size_t i = 0; i < m_dataMax.size(); ++i)
         {
             if (i != 0)
             {
-                file << ",";
+                data += ",";
             }
 
-            file << m_dataMax[i];
+            data += AZStd::to_string(m_dataMax[i]);
         }
 
-        file << "\n";
-        file.close();
+        data += "\n";
+
+        AZ::IO::SystemFile file;
+        if (file.Open(filename, AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            file.Write(data.data(), data.size());
+            file.Close();
+        }
     }
 } // namespace EMotionFX::MotionMatching

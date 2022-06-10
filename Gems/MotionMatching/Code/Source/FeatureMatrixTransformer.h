@@ -14,11 +14,12 @@
 
 namespace EMotionFX::MotionMatching
 {
+    //! Transformers can be used to e.g. normalize or scale features in the feature matrix or the query vector.
     class FeatureMatrixTransformer
     {
     public:
         AZ_RTTI(Transformer, "{B19CDBB8-FA99-4CBD-86C1-640A3CC5988A}");
-        AZ_CLASS_ALLOCATOR(FeatureMatrixTransformer, MotionMatchAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FeatureMatrixTransformer, MotionMatchAllocator, 0);
 
         virtual ~FeatureMatrixTransformer() = default;
 
@@ -34,7 +35,7 @@ namespace EMotionFX::MotionMatching
 
         //! Prepare the transformer.
         //! This might e.g. run some statistical analysis and cache values that will be needed for actually transforming the data.
-        virtual bool Fit(const FeatureMatrix& in, const Settings& settings = {}) = 0;
+        virtual bool Fit(const FeatureMatrix& featureMatrix, const Settings& settings) = 0;
 
         //! Copy and transform the input data.
         //! Note: Use the version that can batch transform the most data.

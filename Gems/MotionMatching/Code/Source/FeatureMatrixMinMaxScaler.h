@@ -13,6 +13,7 @@
 
 namespace EMotionFX::MotionMatching
 {
+    //! The min/max-scaler can be used to normalize the feature matrix, the query vector and other data.
     class MinMaxScaler
         : public FeatureMatrixTransformer
     {
@@ -22,17 +23,17 @@ namespace EMotionFX::MotionMatching
 
         MinMaxScaler() = default;
 
-        bool Fit(const FeatureMatrix& in, const Settings& settings = {}) override;
+        bool Fit(const FeatureMatrix& featureMatrix, const Settings& settings = {}) override;
 
         // Normalize and scale the values.
         float Transform(float value, FeatureMatrix::Index column) const override;
         AZ::Vector2 Transform(const AZ::Vector2& value, FeatureMatrix::Index column) const override;
         AZ::Vector3 Transform(const AZ::Vector3& value, FeatureMatrix::Index column) const override;
         void Transform(AZStd::span<float> data) const override;
-        FeatureMatrix Transform(const FeatureMatrix& in) const override;
+        FeatureMatrix Transform(const FeatureMatrix& featureMatrix) const override;
 
         // From normalized and scaled back to the original values.
-        FeatureMatrix InverseTransform(const FeatureMatrix& in) const override;
+        FeatureMatrix InverseTransform(const FeatureMatrix& featureMatrix) const override;
         AZ::Vector2 InverseTransform(const AZ::Vector2& value, FeatureMatrix::Index column) const override;
         AZ::Vector3 InverseTransform(const AZ::Vector3& value, FeatureMatrix::Index column) const override;
         float InverseTransform(float value, FeatureMatrix::Index column) const override;
@@ -42,12 +43,12 @@ namespace EMotionFX::MotionMatching
 
         static constexpr float s_epsilon = AZ::Constants::FloatEpsilon;
 
-        void SaveMinMaxAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {});
+        void SaveMinMaxAsCsv(const char* filename, const AZStd::vector<AZStd::string>& columnNames = {});
 
     private:
         AZStd::vector<float> m_dataMin; //!< Minimum value per column seen in the given input feature matrix.
         AZStd::vector<float> m_dataMax; //!< Maximum value per column seen in the given input feature matrix.
-        AZStd::vector<float> m_dataRange;//!< Per column range (m_dataMax[col] - m_dataMin[col]) seen in the given input feature matrix.
+        AZStd::vector<float> m_dataRange; //!< Per column range (m_dataMax[col] - m_dataMin[col]) seen in the given input feature matrix.
 
         bool m_clip = false; //!< Clip transformed values out of feature range to provided feature range.
 
