@@ -148,6 +148,14 @@ namespace PhysX
         m_heightfieldCollider.reset();
     }
 
+    void EditorHeightfieldColliderComponent::BlockOnPendingJobs()
+    {
+        if (m_heightfieldCollider)
+        {
+            m_heightfieldCollider->BlockOnPendingJobs();
+        }
+    }
+
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();

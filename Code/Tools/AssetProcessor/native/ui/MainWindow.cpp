@@ -517,7 +517,11 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 {
     if (selected.size() > 0)
     {
-        const auto& proxyIndex = selected.indexes().at(0);
+        const auto proxyIndex = selected.indexes().at(0);
+        if (!proxyIndex.isValid())
+        {
+            return;
+        }
         const auto& index = m_builderListSortFilterProxy->mapToSource(proxyIndex);
 
         AssetProcessor::BuilderInfoList builders;

@@ -31,10 +31,11 @@ namespace EMotionFX
     public:
         JointLimitRotationManipulators(JointLimitFrame jointLimitFrame);
         ~JointLimitRotationManipulators();
-        void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
+        void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
         void ResetValues() override;
+        void InvalidateEditorValues() override;
 
     private:
         // AZ::TickBus::Handler overrides ...
@@ -57,4 +58,7 @@ namespace EMotionFX
         MCore::CommandGroup m_commandGroup;
         AZStd::unique_ptr<PhysicsSetupManipulatorCommandCallback> m_adjustJointLimitCallback;
     };
+
+    void CreateCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData);
+    void ExecuteCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData);
 } // namespace EMotionFX

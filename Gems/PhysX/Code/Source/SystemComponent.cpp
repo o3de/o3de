@@ -248,12 +248,12 @@ namespace PhysX
         return convex;
     }
 
-    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows)
     {
         physx::PxHeightFieldDesc desc;
         desc.format = physx::PxHeightFieldFormat::eS16_TM;
-        desc.nbColumns = numColumns;
-        desc.nbRows = numRows;
+        desc.nbColumns = static_cast<physx::PxU32>(numColumns);
+        desc.nbRows = static_cast<physx::PxU32>(numRows);
         desc.samples.data = samples;
         desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 

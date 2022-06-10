@@ -89,3 +89,11 @@ class TestAutomation(TestAutomationBase):
     def test_DeleteEntity_UnderLevelPrefab(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_PrefabNotifications_PropagationNotificationsReceived(self, request, workspace, editor, launcher_platform):
+        from .tests.prefab_notifications import PrefabNotifications_PropagationNotificationsReceived as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(self, request, workspace, editor, launcher_platform):
+        from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
