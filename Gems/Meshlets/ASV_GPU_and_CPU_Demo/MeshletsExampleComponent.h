@@ -75,16 +75,7 @@ namespace AtomSampleViewer
 
         void DefaultWindowCreated() override;
 
-        void CreateLowEndPipeline();
-        void DestroyLowEndPipeline();
-
-        void ActivateLowEndPipeline();
-        void DeactivateLowEndPipeline();
-
         AZ::Meshlets::MeshletsFeatureProcessor* GetMeshletsFeatureProcessor();
-
-        AZ::RPI::RenderPipelinePtr m_lowEndPipeline;
-        AZ::RPI::RenderPipelinePtr m_originalPipeline;
 
         AZStd::shared_ptr<AZ::RPI::WindowContext> m_windowContext;
         AZ::Render::ImGuiActiveContextScope m_imguiScope;
@@ -117,9 +108,6 @@ namespace AtomSampleViewer
         bool m_showGroundPlane = false;
 
         bool m_cameraControllerDisabled = false;
-
-        bool m_useLowEndPipeline = false;
-        bool m_switchPipeline = false;
 
         AZ::Meshlets::MeshletsFeatureProcessor* m_meshletsFeatureProcessor = nullptr;
 

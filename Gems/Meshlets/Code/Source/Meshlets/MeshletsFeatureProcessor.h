@@ -63,6 +63,7 @@ namespace AZ
             // FeatureProcessor overrides ...
             void Activate() override;
             void Deactivate() override;
+            void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void Render(const FeatureProcessor::RenderPacket& packet) override;
 
