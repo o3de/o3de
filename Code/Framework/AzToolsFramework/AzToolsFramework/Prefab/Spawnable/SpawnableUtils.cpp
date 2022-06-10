@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 
+
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
     namespace Internal
@@ -181,6 +182,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AzToolsFramework::Prefab::Instance& source,
         AZStd::string targetPrefabName,
         AzToolsFramework::Prefab::Instance& target,
+        AzToolsFramework::Prefab::Instance& targetNestedInstance,
         AZ::EntityId entityId,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
@@ -197,7 +199,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             if (replacement)
             {
                 AZ::Entity* result = replacement.get();
-                target.AddEntity(AZStd::move(replacement), alias.Filename().Native());
+                targetNestedInstance.AddEntity(AZStd::move(replacement), alias.Filename().Native());
 
                 EntityAliasStore store;
                 store.m_aliasType = storedAliasType;
@@ -418,3 +420,4 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     template void SortEntitiesByTransformHierarchy(AZStd::vector<AZ::Entity*>& entities);
     template void SortEntitiesByTransformHierarchy(AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& entities);
 } // namespace AzToolsFramework::Prefab::SpawnableUtils
+
