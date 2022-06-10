@@ -246,6 +246,10 @@ namespace AZ::IO
             }
             if (AnyFlag(mode & OpenMode::ModeBinary))
             {
+                if (AnyFlag(mode & OpenMode::ModeRead))
+                {
+                    return "wb+";
+                }
                 return "wb";
             }
             if (AnyFlag(mode & OpenMode::ModeText))
