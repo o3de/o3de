@@ -57,8 +57,8 @@ def valid_o3de_project_json(file_name: str or pathlib.Path, generate_uuid: bool 
             json_data = json.load(f)
             _ = json_data['project_name']
 
-            if 'engine_versions' in json_data:
-                if not utils.validate_version_specifier_list(json_data['engine_data']):
+            if 'compatible_engines' in json_data:
+                if not utils.validate_version_specifier_list(json_data['compatible_engines']):
                     return False
 
             if not generate_uuid:
@@ -88,6 +88,11 @@ def valid_o3de_gem_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             _ = json_data['gem_name']
+
+            if 'compatible_engines' in json_data:
+                if not utils.validate_version_specifier_list(json_data['compatible_engines']):
+                    return False
+
         except (json.JSONDecodeError, KeyError):
             return False
     return True

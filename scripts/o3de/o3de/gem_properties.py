@@ -30,9 +30,9 @@ def edit_gem_props(gem_path: pathlib.Path = None,
                    new_license: str = None,
                    new_license_url: str = None,
                    new_version: str = None,
-                   new_engine_versions: list or str = None,
-                   remove_engine_versions: list or str = None,
-                   replace_engine_versions: list or str = None,
+                   new_compatible_engines: list or str = None,
+                   remove_compatible_engines: list or str = None,
+                   replace_compatible_engines: list or str = None,
                    new_tags: list or str = None,
                    remove_tags: list or str = None,
                    replace_tags: list or str = None
@@ -84,22 +84,22 @@ def edit_gem_props(gem_path: pathlib.Path = None,
         update_key_dict['user_tags'] = utils.update_values_in_key_list(gem_json_data.get('user_tags', []), new_tags,
                                                         remove_tags, replace_tags)
 
-    if new_engine_versions and not utils.validate_version_specifier_list(new_engine_versions):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_engine_versions}')
+    if new_compatible_engines and not utils.validate_version_specifier_list(new_compatible_engines):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {new_compatible_engines}')
         return 1
 
-    if remove_engine_versions and not utils.validate_version_specifier_list(remove_engine_versions):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {remove_engine_versions}')
+    if remove_compatible_engines and not utils.validate_version_specifier_list(remove_compatible_engines):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {remove_compatible_engines}')
         return 1
 
-    if replace_engine_versions and not utils.validate_version_specifier_list(replace_engine_versions):
-        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_engine_versions}')
+    if replace_compatible_engines and not utils.validate_version_specifier_list(replace_compatible_engines):
+        logger.error(f'Compatible versions must be in the format <engine name><version specifiers>. e.g. o3de==1.0.0.0 \n {replace_compatible_engines}')
         return 1
 
-    if new_engine_versions or remove_engine_versions or replace_engine_versions:
-        update_key_dict['engine_versions'] = utils.update_values_in_key_list(gem_json_data.get('engine_versions', []), 
-                                                        new_engine_versions, remove_engine_versions, 
-                                                        replace_engine_versions)
+    if new_compatible_engines or remove_compatible_engines or replace_compatible_engines:
+        update_key_dict['compatible_engines'] = utils.update_values_in_key_list(gem_json_data.get('compatible_engines', []), 
+                                                        new_compatible_engines, remove_compatible_engines, 
+                                                        replace_compatible_engines)
 
     gem_json_data.update(update_key_dict)
 
@@ -120,9 +120,9 @@ def _edit_gem_props(args: argparse) -> int:
                           args.gem_license,
                           args.gem_license_url,
                           args.gem_version,
-                          args.add_engine_versions,
-                          args.remove_engine_versions,
-                          args.replace_engine_versions,
+                          args.add_compatible_engines,
+                          args.remove_compatible_engines,
+                          args.replace_compatible_engines,
                           args.add_tags,
                           args.remove_tags,
                           args.replace_tags)
@@ -158,12 +158,12 @@ def add_parser_args(parser):
     group.add_argument('-gv', '--gem-version', type=str, required=False,
                        help='Sets the version of the gem.')
     group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('-aev', '--add-engine-versions', type=str, nargs='*', required=False,
+    group.add_argument('-aev', '--add-compatible-engines', type=str, nargs='*', required=False,
                        help='Add engine version(s) this gem is compatible with. Can be specified multiple times.')
-    group.add_argument('-dev', '--remove-engine-versions', type=str, nargs='*', required=False,
-                       help='Removes engine version(s) from the engine_versions property. Can be specified multiple times.')
-    group.add_argument('-rev', '--replace-engine-versions', type=str, nargs='*', required=False,
-                       help='Replace engine version(s) in the engine_versions property. Can be specified multiple times.')
+    group.add_argument('-dev', '--remove-compatible-engines', type=str, nargs='*', required=False,
+                       help='Removes engine version(s) from the compatible_engines property. Can be specified multiple times.')
+    group.add_argument('-rev', '--replace-compatible-engines', type=str, nargs='*', required=False,
+                       help='Replace engine version(s) in the compatible_engines property. Can be specified multiple times.')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Can be specified multiple times.')

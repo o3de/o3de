@@ -18,7 +18,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
     "project_name": "TestProject",
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
     "project_version" : "0.0.0.0",
-    "engine_versions" : [
+    "compatible_engines" : [
         "o3de-sdk==2205.01"
     ],
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
@@ -52,44 +52,54 @@ def init_project_json_data(request):
 class TestEditProjectProperties:
     @pytest.mark.parametrize("project_path, project_name, project_new_name, project_id, project_origin,\
                               project_display, project_summary, project_icon, project_version, \
-                              add_tags, delete_tags, replace_tags, expected_tags, expected_result, \
+                              add_tags, delete_tags, replace_tags, expected_tags, \
                               add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names, \
-                              add_engine_versions, delete_engine_versions, replace_engine_versions, \
-                              expected_engine_versions", [
+                              add_compatible_engines, delete_compatible_engines, replace_compatible_engines, \
+                              expected_compatible_engines, expected_result",  [
         pytest.param(pathlib.PurePath('E:/TestProject'),
-        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
-        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
-        'GemA GemB GemB', ['GemA'], None, ['GemB'],
-        'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'] ),
+                    'ProjNameA', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
+                    0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
-        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
-        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
-        'GemA GemB GemB', ['GemA'], None, ['GemB'],
-        'o3de-add==4.3.2.1', None, 'o3de-sdk>=0.1.2.3 o3de-sdk==1.0.0.0,==2.0.0.0', ['o3de-sdk>=0.1.2.3', 'o3de-sdk==1.0.0.0,==2.0.0.0'] ),
+                    'ProjNameA', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
+                    0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
-        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
-        'A B C', 'B', 'D E F', ['D','E','F'], 0, 
-        'GemA GemB GemB', ['GemA'], None, ['GemB'],
-        # removal uses exact matching, it doesn't support partial matches 
-        None, 'o3de-sdk>=0.1.2.3 o3de-sdk==1.0.0.0', None, ['o3de-sdk==1.0.0.0,==2.0.0.0'] ),
-        pytest.param(pathlib.PurePath('D:/TestProject'),
-        'test', 'TestA', 'IDA', 'OriginA', 'DisplayA', 'SummaryA', 'IconA', '1.0.0.0', 
-        'A B C', 'B', 'D E F', ['D','E','F'], 1, 
-        'GemA GemB GemB', ['GemA'], None, ['GemB'],
-        None, None, 'invalid', ['o3de-sdk==1.0.0.0,==2.0.0.0'] ),
-        pytest.param('',
-        'test', 'TestB', 'IDB', 'OriginB', 'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
-        'A B C', 'B', 'D E F', ['D','E','F'], 1, 
-        ['GemA','GemB'], None, ['GemC'], ['GemC'],
-        'o3de-add==4.3.2.1', None, 'o3de-sdk>=0.1.2.3 o3de-sdk>=1.0.0.0', ['o3de-sdk>=0.1.2.3,>=1.0.0.0'] )
+                    'ProjNameA', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    # removal uses exact matching, it doesn't support partial matches 
+                    None, 'a>=0.1 b==1.0', None, ['b==1.0,==2.0'],
+                    0),
+        pytest.param(pathlib.PurePath('F:/TestProject'),
+                    'ProjNameA', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
+                    1),
+        pytest.param('', # invalid path
+                    'ProjNameA', 'ProjNameB', 'IDB', 'OriginB', 
+                    'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    ['GemA','GemB'], None, ['GemC'], ['GemC'],
+                    None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
+                    1)
         ]
     )
     def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,
                                      project_display, project_summary, project_icon, project_version, 
                                      add_tags, delete_tags, replace_tags, expected_tags, expected_result,
                                      add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names,
-                                     add_engine_versions, delete_engine_versions, replace_engine_versions,
-                                     expected_engine_versions):
+                                     add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
+                                     expected_compatible_engines):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
             if not project_path:
@@ -107,10 +117,10 @@ class TestEditProjectProperties:
                                                            project_origin, project_display, project_summary, project_icon,
                                                            add_tags, delete_tags, replace_tags,
                                                            add_gem_names, delete_gem_names, replace_gem_names,
-                                                           add_engine_versions, delete_engine_versions, replace_engine_versions,
+                                                           add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                                            project_version)
             assert result == expected_result
-            if project_path:
+            if result == 0:
                 assert self.project_json.data
                 assert self.project_json.data.get('project_name', '') == project_new_name
                 assert self.project_json.data.get('project_id', '') == project_id
@@ -122,6 +132,6 @@ class TestEditProjectProperties:
 
                 assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
                 assert set(self.project_json.data.get('gem_names', [])) == set(expected_gem_names)
-                assert set(self.project_json.data.get('engine_versions', [])) == set(expected_engine_versions)
-            else:
+                assert set(self.project_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
+            elif not project_path:
                 assert not self.project_json.data
