@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QTimer>
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -25,7 +26,7 @@ namespace AzToolsFramework
             auto subWidget = layoutItem->widget();
             if (subWidget)
             {
-                delete subWidget;
+                subWidget->deleteLater();
             }
             delete layoutItem;
         }
@@ -139,11 +140,16 @@ namespace AzToolsFramework
 
     void DPERowWidget::Clear()
     {
+        DocumentPropertyEditor* dpe = GetDPE();
         // propertyHandlers own their widgets, so don't destroy them here. Set them free!
         for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
              propertyWidgetIter != endIter; ++propertyWidgetIter)
         {
             m_columnLayout->removeWidget(propertyWidgetIter->first);
+            if (dpe)
+            {
+                dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second));
+            }
         }
         m_widgetToPropertyHandler.clear();
 
@@ -289,7 +295,7 @@ namespace AzToolsFramework
                 domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
-                delete *childIterator; // deleting the widget also automatically removes it from the layout
+                (*childIterator)->deleteLater(); // deleting the widget also automatically removes it from the layout
                 m_domOrderedChildren.erase(childIterator);
             }
 
@@ -383,6 +389,11 @@ namespace AzToolsFramework
         : QFrame(parentWidget)
     {
         m_layout = new QVBoxLayout(this);
+
+        m_handlerCleanupTimer = new QTimer(this);
+        m_handlerCleanupTimer->setSingleShot(true);
+        m_handlerCleanupTimer->setInterval(0);
+        connect(m_handlerCleanupTimer, &QTimer::timeout, this, &DocumentPropertyEditor::CleanupReleasedHandlers);
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
@@ -418,6 +429,12 @@ namespace AzToolsFramework
         {
             m_layout->insertWidget(foundIndex + 1, widgetToAdd);
         }
+    }
+
+    void DocumentPropertyEditor::ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler)
+    {
+        m_unusedHandlers.emplace_back(AZStd::move(handler));
+        m_handlerCleanupTimer->start();
     }
 
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
@@ -475,6 +492,12 @@ namespace AzToolsFramework
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
         {
             const auto& patchPath = operationIterator->GetDestinationPath();
+            if (patchPath.Size() == 0)
+            {
+                // If we're operating on the entire tree, go ahead and just reset
+                HandleReset();
+                return;
+            }
             auto firstAddressEntry = patchPath[0];
 
             AZ_Assert(
@@ -516,4 +539,9 @@ namespace AzToolsFramework
         }
     }
 
+    void DocumentPropertyEditor::CleanupReleasedHandlers()
+    {
+        // Release unused handlers from the pool, thereby destroying them and their associated widgets
+        m_unusedHandlers.clear();
+    }
 } // namespace AzToolsFramework
