@@ -84,6 +84,14 @@ namespace PhysX
         m_heightfieldCollider.reset();
     }
 
+    void HeightfieldColliderComponent::BlockOnPendingJobs()
+    {
+        if (m_heightfieldCollider)
+        {
+            m_heightfieldCollider->BlockOnPendingJobs();
+        }
+    }
+
     void HeightfieldColliderComponent::SetColliderConfiguration(const Physics::ColliderConfiguration& colliderConfig)
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)

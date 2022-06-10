@@ -139,9 +139,11 @@ namespace RecastNavigation
                 continue;
             }
 
-            AZ::Transform t = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
             overlapHit.m_shape->GetGeometry(vertices, indices, nullptr);
+            auto pose = overlapHit.m_shape->GetLocalPose();
             // Note: geometry data is in local space
+            AZ::Transform tBody = AZ::Transform::CreateFromQuaternionAndTranslation(body->GetOrientation(), body->GetPosition());
+            AZ::Transform t = tBody * AZ::Transform::CreateTranslation(pose.first);
 
             if (!vertices.empty())
             {
