@@ -17,8 +17,6 @@
 
 namespace AssetProcessor
 {
-    AZ_CVAR_EXTERNED(bool, ap_disableAssetTreeView);
-
     ProductDependencyTreeModel::ProductDependencyTreeModel(
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection,
         AssetTreeFilterModel* productFilterModel,
@@ -203,7 +201,7 @@ namespace AssetProcessor
         beginResetModel();
 
         ProductDependencyTreeItem* productDependencies =
-            new ProductDependencyTreeItem(ProductDependencyTreeItemData::MakeShared(productItemData->m_name, ""));
+            new ProductDependencyTreeItem(AZStd::make_shared<ProductDependencyTreeItemData>(productItemData->m_name, ""));
         m_root.reset(productDependencies);
         m_trackedProductIds.clear();
         createIndex(0, 0, productDependencies);
@@ -286,7 +284,7 @@ namespace AssetProcessor
 
                 AZ::IO::Path productNamePath(incomingDependency.m_productName, AZ::IO::PosixPathSeparator);
                 const AZ::IO::PathView filename = productNamePath.Filename();
-                AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData = ProductDependencyTreeItemData::MakeShared(
+                AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData = AZStd::make_shared<ProductDependencyTreeItemData>(
                     AZ::IO::FixedMaxPathString(filename.Native()).c_str(), incomingDependency.m_productName);
                 ProductDependencyTreeItem* child = parent->CreateChild(productDepTreeItemData);
                 pendingChildren.push_back(ProductDependencyChild(child, incomingDependency.m_productID));
@@ -347,8 +345,9 @@ namespace AssetProcessor
 
                         AZ::IO::Path productNamePath(product.m_productName, AZ::IO::PosixPathSeparator);
                         const AZ::IO::PathView filename = productNamePath.Filename();
-                        AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData = ProductDependencyTreeItemData::MakeShared(
-                            AZ::IO::FixedMaxPathString(filename.Native()).c_str(), product.m_productName);
+                        AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData =
+                            AZStd::make_shared<ProductDependencyTreeItemData>(
+                                AZ::IO::FixedMaxPathString(filename.Native()).c_str(), product.m_productName);
                         ProductDependencyTreeItem* child = parent->CreateChild(productDepTreeItemData);
                         pendingChildren.push_back(ProductDependencyChild(child, product.m_productID));
                         m_trackedProductIds.insert(product.m_productID);

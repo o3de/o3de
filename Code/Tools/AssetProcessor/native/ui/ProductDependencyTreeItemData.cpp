@@ -8,18 +8,13 @@
 #include <native/ui/ProductDependencyTreeItemData.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 #include <QDir>
 #include <QStack>
 
 namespace AssetProcessor
 {
-    AZStd::shared_ptr<ProductDependencyTreeItemData> ProductDependencyTreeItemData::MakeShared(
-        QString name, AZStd::string productName)
-    {
-        return AZStd::make_shared<ProductDependencyTreeItemData>(name, productName);
-    }
-
     ProductDependencyTreeItemData::ProductDependencyTreeItemData(
         QString name, AZStd::string productName)
         : m_name(name)
@@ -40,8 +35,7 @@ namespace AssetProcessor
 
     ProductDependencyTreeItem* ProductDependencyTreeItem::CreateChild(AZStd::shared_ptr<ProductDependencyTreeItemData> data)
     {
-        m_childItems.emplace_back(new ProductDependencyTreeItem(data, this));
-        return m_childItems.back().get();
+        return m_childItems.emplace_back(new ProductDependencyTreeItem(data, this)).get();
     }
 
     ProductDependencyTreeItem* ProductDependencyTreeItem::GetChild(int row) const
@@ -67,7 +61,7 @@ namespace AssetProcessor
 
     int ProductDependencyTreeItem::getChildCount() const
     {
-        return static_cast<int>(m_childItems.size());
+        return aznumeric_cast<int>(m_childItems.size());
     }
 
     int ProductDependencyTreeItem::GetRow() const

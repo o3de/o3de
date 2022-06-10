@@ -27,9 +27,6 @@ namespace AssetProcessor
     public:
         AZ_RTTI(ProductDependencyTreeItemData, "{A746FA16-7545-44FB-9454-0D64CBAA7A6E}");
 
-        static AZStd::shared_ptr<ProductDependencyTreeItemData> MakeShared(
-            QString name, AZStd::string productName);
-
         ProductDependencyTreeItemData(
             QString name, AZStd::string productName);
 
