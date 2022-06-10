@@ -760,12 +760,14 @@ namespace RecastNavigationTests
             }));
 
         const Wait wait(AZ::EntityId(1));
-        for (int i = 0; i < 10'000; ++i)
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        for (int i = 0; i < 9'001; ++i)
         {
             RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
         }
         wait.BlockUntilCalled();
 
+        // Only one of those updates was done.
         EXPECT_EQ(wait.m_calls, 1);
     }
 
