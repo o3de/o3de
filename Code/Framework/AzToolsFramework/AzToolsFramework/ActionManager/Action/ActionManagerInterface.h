@@ -105,6 +105,8 @@ namespace AzToolsFramework
 
         //! Retrieve a QAction via its identifier.
         virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Retrieve a QAction via its identifier.
         virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
 
         //! Update the state of a Checkable Action via its identifier.
