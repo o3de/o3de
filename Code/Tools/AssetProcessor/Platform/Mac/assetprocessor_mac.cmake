@@ -13,4 +13,5 @@ set_target_properties(AssetProcessor PROPERTIES
     RESOURCE ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/Images.xcassets
     XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AssetProcessorAppIcon
     ENTITLEMENT_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/AssetProcessorEntitlements.plist
+    XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.O3DE.AssetProcessor"
 )
