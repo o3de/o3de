@@ -32,12 +32,13 @@ namespace UnitTest
 
     class ScriptComponentTest
         : public UnitTest::ScopedAllocatorSetupFixture
+        , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
         AZ_TYPE_INFO(ScriptComponentTest, "{85CDBD49-70FF-416A-8154-B5525EDD30D4}");
 
         void SetUp() override
-        {        
+        {
             ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 100 * 1024 * 1024;
             //appDesc.m_recordsMode = AllocationRecords::RECORD_FULL;
@@ -63,11 +64,20 @@ namespace UnitTest
 
             ScriptComponent::CreateDescriptor(); // descriptor is deleted by app
             ScriptComponent::Reflect(m_serializeContext);
+
+            AZ::Data::AssetCatalogRequestBus::Handler::BusConnect();
         }
 
         void TearDown() override
         {
+            AZ::Data::AssetCatalogRequestBus::Handler::BusDisconnect();
             m_app.Destroy();
+        }
+
+        AZ::Outcome<AZStd::unordered_set<Data::AssetId>, AZStd::string> GetAllReverseProductDependencies([[maybe_unused]] const Data::AssetId&) override
+        {
+            // No-op, this data is not needed for this test
+            return AZ::Success(AZStd::unordered_set<Data::AssetId>{});
         }
 
         AZStd::optional<Data::Asset<ScriptAsset>> CreateAndLoadScriptAsset(const AZStd::string& script, ScriptContext& scriptContext, Uuid id = Uuid::CreateRandom())
@@ -202,13 +212,13 @@ namespace UnitTest
         }
 
         // When reloading script assets from files, ScriptSystemComponent would clear old script caches automatically in the
-        // function `ScriptSystemComponent::LoadAssetData()`. But here we are changing script directly in memory, therefore we 
+        // function `ScriptSystemComponent::LoadAssetData()`. But here we are changing script directly in memory, therefore we
         // need to clear old cache manually.
         AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequestBus::Events::ClearAssetReferences, scriptAsset1.GetId());
 
         // trigger reload
         Data::AssetManager::Instance().ReloadAssetFromData(scriptAsset2);
-        
+
         // ReloadAssetFromData is (now) a queued event
         // Need to tick subsystems here to receive reload event.
         m_app.Tick();
