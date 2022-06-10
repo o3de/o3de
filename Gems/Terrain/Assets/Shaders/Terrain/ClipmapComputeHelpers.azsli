@@ -12,10 +12,10 @@
 
 // In addition to the margin size passed from ClipmapManager,
 // this margin is a safety margin to avoid edge cases when blending or sampling.
-// For example, due to toroidal addressing, 2 physical adjecent texels can locate
+// For example, due to toroidal addressing, 2 physical adjacent texels can locate
 // on the opposite edges in the clipmap in logical space. They may be accidentally blended
 // by float rounding errors. Size in texels.
-static const uint ExtendedClipmapMarginSize = 2;
+static const float ExtendedClipmapMarginSize = 2;
 // Excluding margins, the distance from the clipmap edge to where blending with the next level
 // should start. Size in texels.
 static const float BetweenLevelsBlendBandSize = 256;
@@ -188,8 +188,31 @@ struct ClipmapLevel
     float m_weight; // Blending weight between 2 clipmap layers.
 };
 
-ClipmapLevel CalCulateMacroClipmapLevel(float2 worldPosition)
+// returns 1.0 for true, 0.0 for false.
+float AabbContainsPoint(float2 center, float extent, float3 point)
 {
+    float2 aabbMin = center - float2(extent, extent);
+    float2 aabbMax = center + float2(extent, extent);
+
+    // Use (x - aabb.x1)(x - aabb.x2) < 0 for collision detection.
+    float2 minDiff = point - aabbMin;
+    float2 maxDiff = point - aabbMax;
+    float2 det = float2(minDiff.x * maxDiff.x, minDiff.y * maxDiff.y);
+    float2 contains = step(float2(0.0, 0.0), det);
+    // x axis | y axis | result we want | x - 1 | y - 1 | (x - 1)(y - 1)
+    //    0   |   0    |      1         |   -1  |   -1  |        1
+    //    0   |   1    |      0         |   -1  |    0  |        0
+    //    1   |   0    |      0         |    0  |   -1  |        0
+    //    1   |   1    |      0         |    0  |    0  |        0
+    contains = contains - float2(1.0, 1.0);
+    return contains.x * contains.y;
+}
+
+ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
+{
+    float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
+    float clipmapMarginSize = TerrainSrg::m_clipmapData.m_macroClipmapMarginSize;
+
     ClipmapLevel clipmapLevel;
     float closestLevel = 1.0;
     // ignore the last level, as it will be used as a fall back default.
@@ -198,27 +221,10 @@ ClipmapLevel CalCulateMacroClipmapLevel(float2 worldPosition)
     {
         float2 clipmapCenterInWorldSpace = GetMacroClipmapCenterInWorldSpace(clipmapIndex);
         float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapIndex);
-        float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
-        float clipmapMarginSize = TerrainSrg::m_clipmapData.m_macroClipmapMarginSize;
-
         float extent = (clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize) * clipmapToWorldScale;
-        float2 clipmapAabbMin = clipmapCenterInWorldSpace - float2(extent, extent);
-        float2 clipmapAabbMax = clipmapCenterInWorldSpace + float2(extent, extent);
 
-        // Use (x - aabb.x1)(x - aabb.x2) < 0 for collision detection.
-        float2 minDiff = worldPosition - clipmapAabbMin;
-        float2 maxDiff = worldPosition - clipmapAabbMax;
-        float2 det = float2(minDiff.x * maxDiff.x, minDiff.y * maxDiff.y);
-        float2 contains = step(float2(0.0, 0.0), det);
-        // x axis | y axis | result we want | x - 1 | y - 1 | (x - 1)(y - 1)
-        //    0   |   0    |      1         |   -1  |   -1  |        1
-        //    0   |   1    |      0         |   -1  |    0  |        0
-        //    1   |   0    |      0         |    0  |   -1  |        0
-        //    1   |   1    |      0         |    0  |    0  |        0
-        contains = contains - float2(1.0, 1.0);
-        // For rounding error safety.
-        closestLevel += contains.x * contains.y;
-        //float result = step(0.5, contains.x * contains.y);
+        float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
+        closestLevel += contains;
     }
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_macroClipmapStackSize - uint(closestLevel);
     clipmapLevel.m_nextLevel = clipmapLevel.m_closestLevel + 1;
@@ -226,8 +232,6 @@ ClipmapLevel CalCulateMacroClipmapLevel(float2 worldPosition)
     // Calculate the blending fact if the position falls into the blending band.
     float2 clipmapCenterInWorldSpace = GetMacroClipmapCenterInWorldSpace(clipmapLevel.m_closestLevel);
     float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel.m_closestLevel);
-    float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
-    float clipmapMarginSize = TerrainSrg::m_clipmapData.m_macroClipmapMarginSize;
 
     float blendBeginDistance = clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize - BetweenLevelsBlendBandSize;
     // Clipmap uses Chebyshev distance
@@ -238,8 +242,11 @@ ClipmapLevel CalCulateMacroClipmapLevel(float2 worldPosition)
     return clipmapLevel;
 }
 
-ClipmapLevel CalCulateDetailClipmapLevel(float2 worldPosition)
+ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
 {
+    uint clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeUint;
+    uint clipmapMarginSize = TerrainSrg::m_clipmapData.m_detailClipmapMarginSize;
+
     ClipmapLevel clipmapLevel;
     float closestLevel = 1.0;
     // ignore the last level, as it will be used as a fall back default.
@@ -248,36 +255,17 @@ ClipmapLevel CalCulateDetailClipmapLevel(float2 worldPosition)
     {
         float2 clipmapCenterInWorldSpace = GetDetailClipmapCenterInWorldSpace(clipmapIndex);
         float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapIndex);
-        uint clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeUint;
-        uint clipmapMarginSize = TerrainSrg::m_clipmapData.m_detailClipmapMarginSize;
-
         float extent = (clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize) * clipmapToWorldScale;
-        float2 clipmapAabbMin = clipmapCenterInWorldSpace - float2(extent, extent);
-        float2 clipmapAabbMax = clipmapCenterInWorldSpace + float2(extent, extent);
 
-        // Use (x - aabb.x1)(x - aabb.x2) < 0 for collision detection.
-        float2 minDiff = worldPosition - clipmapAabbMin;
-        float2 maxDiff = worldPosition - clipmapAabbMax;
-        float2 det = float2(minDiff.x * maxDiff.x, minDiff.y * maxDiff.y);
-        float2 contains = step(float2(0.0, 0.0), det);
-        // x axis | y axis | result we want | x - 1 | y - 1 | (x - 1)(y - 1)
-        //    0   |   0    |      1         |   -1  |   -1  |        1
-        //    0   |   1    |      0         |   -1  |    0  |        0
-        //    1   |   0    |      0         |    0  |   -1  |        0
-        //    1   |   1    |      0         |    0  |    0  |        0
-        contains = contains - float2(1.0, 1.0);
-        // For rounding error safety.
-        closestLevel += contains.x * contains.y;
-        //float result = step(0.5, contains.x * contains.y);
+        float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
+        closestLevel += contains;
     }
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_detailClipmapStackSize - uint(closestLevel);
     clipmapLevel.m_nextLevel = clipmapLevel.m_closestLevel + 1;
 
-    // Calculate the blending fact if the position falls into the blending band.
+    // Calculate the blending factor if the position falls into the blending band.
     float2 clipmapCenterInWorldSpace = GetDetailClipmapCenterInWorldSpace(clipmapLevel.m_closestLevel);
     float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel.m_closestLevel);
-    float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
-    float clipmapMarginSize = TerrainSrg::m_clipmapData.m_detailClipmapMarginSize;
 
     float blendBeginDistance = clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize - BetweenLevelsBlendBandSize;
     // Clipmap uses Chebyshev distance
@@ -435,7 +423,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
     }
     data.m_hasMacro = true;
 
-    ClipmapLevel macroClipmapLevel = CalCulateMacroClipmapLevel(worldPosition);
+    ClipmapLevel macroClipmapLevel = CalculateMacroClipmapLevel(worldPosition);
 
     // Check if it has a next level, meaning the position is at the blending area between clipmap levels.
     if (macroClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_macroClipmapStackSize)
@@ -480,7 +468,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
     }
     else
     {
-        ClipmapLevel detailClipmapLevel = CalCulateDetailClipmapLevel(worldPosition);
+        ClipmapLevel detailClipmapLevel = CalculateDetailClipmapLevel(worldPosition);
 
         if (detailClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_detailClipmapStackSize)
         {

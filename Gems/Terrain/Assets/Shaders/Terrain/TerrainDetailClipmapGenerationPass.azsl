@@ -68,7 +68,7 @@ void MainCS(
             float2 detailUvDdx = ddxPosition(clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
             float2 detailUvDdy = ddyPosition(clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
 
-            ClipmapLevel macroClipmapLevel = CalCulateMacroClipmapLevel(worldPosition);
+            ClipmapLevel macroClipmapLevel = CalculateMacroClipmapLevel(worldPosition);
 
             float3 macroColor;
             if (macroClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_macroClipmapStackSize)

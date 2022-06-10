@@ -452,10 +452,10 @@ namespace Terrain
 
             for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {
-                AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
+                AZStd::array<uint32_t, 4> aabb = { aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_y),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_y) };
                 m_macroClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
             }
         }
@@ -498,10 +498,10 @@ namespace Terrain
 
             for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {
-                AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
-                                                   (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
+                AZStd::array<uint32_t, 4> aabb = { aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_y),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_y) };
                 m_detailClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
             }
         }
