@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -21,11 +23,16 @@
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 
-
 namespace GradientSignal
 {
-    class GradientBakerConfig
-        : public AZ::ComponentConfig
+    enum class OutputFormat : AZ::u8
+    {
+        R8,
+        R16,
+        R32
+    };
+
+    class GradientBakerConfig : public AZ::ComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(GradientBakerConfig, AZ::SystemAllocator, 0);
@@ -34,6 +41,9 @@ namespace GradientSignal
 
         GradientSampler m_gradientSampler;
         AZ::EntityId m_inputBounds;
+        AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
+        OutputFormat m_outputFormat = OutputFormat::R32;
+        AZ::IO::Path m_outputImagePath;
     };
 
     class EditorGradientBakerComponent
@@ -45,7 +55,8 @@ namespace GradientSignal
         , private SectorDataNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorGradientBakerComponent, EditorGradientBakerComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT(
+            EditorGradientBakerComponent, EditorGradientBakerComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
         EditorGradientBakerComponent() = default;
@@ -89,9 +100,12 @@ namespace GradientSignal
         void UpdatePreviewSettings() const;
         AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
+        void BakeImage();
+        bool IsBakeDisabled() const;
+
     private:
         GradientBakerConfig m_configuration;
         AZ::EntityId m_gradientEntityId;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
-}
+} // namespace GradientSignal

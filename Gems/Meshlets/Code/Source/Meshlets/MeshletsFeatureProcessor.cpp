@@ -104,6 +104,7 @@ namespace AZ
 
         void MeshletsFeatureProcessor::Deactivate()
         {
+            m_passRequestAsset.Reset();
             DisableSceneNotification();
             TickBus::Handler::BusDisconnect();
         }
@@ -169,6 +170,11 @@ namespace AZ
         // is possible to simplify the logic and only hook to the active pipeline.
         bool MeshletsFeatureProcessor::AddMeshletsPassesToPipeline(RPI::RenderPipeline* renderPipeline)
         {
+            if (HasMeshletPasses(renderPipeline))
+            {   // This pipeline is not relevant - exist without changing anything.
+                return true;
+            }
+
             const char* passRequestAssetFilePath = "Passes/MeshletsPassRequest.azasset";
             m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
@@ -199,6 +205,13 @@ namespace AZ
                 renderPipeline->GetId().GetCStr());
 
             return success;
+        }
+
+        // This method will be called by the scene to establish all required injections
+        // to the pass pipeline
+        void MeshletsFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+        {
+            AddMeshletsPassesToPipeline(renderPipeline);
         }
 
         void MeshletsFeatureProcessor::SetTransform(
@@ -404,9 +417,6 @@ namespace AZ
 
             m_renderPipeline = renderPipeline;
             CreateResources();
-
-            // This should be used in the future instead of changing the actual pipeline file
-//            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 
@@ -419,9 +429,6 @@ namespace AZ
 
             m_renderPipeline = renderPipeline.get();
             CreateResources();
-
-            // This should be used in the future instead of changing the actual pipeline file
-//            AddMeshletsPassesToPipeline(m_renderPipeline);
             Init(m_renderPipeline);
         }
 
