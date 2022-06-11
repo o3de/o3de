@@ -106,13 +106,16 @@ namespace AZ
         public:
 
             //! This message is sent every time a material or property update affects UI.
-            virtual void OnMaterialsEdited() {}
+            virtual void OnMaterialsEdited(){};
+
+            //! This message is sent whenever the default material slot configuration is updated in the material component.
+            virtual void OnMaterialSlotLayoutChanged(){};
 
             //! This message is sent when one or more material property changes have been applied, at most once per frame.
-            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials) {}
+            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials){};
 
             //! This message is sent when the component has created the material instance to be used for rendering.
-            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment) {}
+            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment){};
         };
         using MaterialComponentNotificationBus = EBus<MaterialComponentNotifications>;
 
@@ -125,8 +128,8 @@ namespace AZ
             virtual MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
                 
-            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
-            virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
+            //! Returns a map of all material slot labels.
+            virtual MaterialAssignmentLabelMap GetMaterialAssignmentLabels() const = 0;
 
             //! Returns the available, overridable material slots and the default assigned materials
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
@@ -141,7 +144,7 @@ namespace AZ
         {
         public:
             //! Notification that overridable material slots are available or have changed
-            virtual void OnMaterialAssignmentsChanged() = 0;
+            virtual void OnMaterialAssignmentSlotsChanged(){};
         };
         using MaterialReceiverNotificationBus = EBus<MaterialReceiverNotifications>;
 

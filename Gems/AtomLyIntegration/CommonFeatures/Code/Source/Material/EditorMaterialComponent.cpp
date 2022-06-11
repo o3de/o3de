@@ -143,7 +143,6 @@ namespace AZ
         void EditorMaterialComponent::Activate()
         {
             BaseClass::Activate();
-            MaterialReceiverNotificationBus::Handler::BusConnect(GetEntityId());
             MaterialComponentNotificationBus::Handler::BusConnect(GetEntityId());
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             UpdateMaterialSlots();
@@ -152,7 +151,6 @@ namespace AZ
         void EditorMaterialComponent::Deactivate()
         {
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
-            MaterialReceiverNotificationBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
         }
@@ -308,7 +306,7 @@ namespace AZ
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
-        void EditorMaterialComponent::OnMaterialAssignmentsChanged()
+        void EditorMaterialComponent::OnMaterialSlotLayoutChanged()
         {
             UpdateMaterialSlots();
         }
@@ -320,11 +318,6 @@ namespace AZ
             m_materialSlots = {};
             m_materialSlotsByLod = {};
 
-            // Get current material assignments
-            MaterialAssignmentMap currentMaterials;
-            MaterialComponentRequestBus::EventResult(
-                currentMaterials, GetEntityId(), &MaterialComponentRequestBus::Events::GetMaterialOverrides);
-
             // Get the known material assignment slots from the associated model or other source
             MaterialAssignmentMap originalMaterials;
             MaterialComponentRequestBus::EventResult(
@@ -334,13 +327,7 @@ namespace AZ
             for (const auto& materialPair : originalMaterials)
             {
                 // Setup the material slot entry
-                EditorMaterialComponentSlot slot;
-                slot.m_entityId = GetEntityId();
-                slot.m_id = materialPair.first;
-
-                // if material is present in controller configuration, assign its data
-                const MaterialAssignment& materialFromController = GetMaterialAssignmentFromMap(currentMaterials, slot.m_id);
-                slot.m_materialAsset = materialFromController.m_materialAsset;
+                EditorMaterialComponentSlot slot(GetEntityId(), materialPair.first);
 
                 if (slot.m_id.IsDefault())
                 {

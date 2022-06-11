@@ -204,38 +204,20 @@ namespace AZ::Render
         m_skinnedMeshFeatureProcessor = nullptr;
     }
 
-    RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+    MaterialAssignmentLabelMap AtomActorInstance::GetMaterialAssignmentLabels() const
     {
-        Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-        if (modelAsset.IsReady())
-        {
-            return modelAsset->GetMaterialSlots();
-        }
-        else
-        {
-            return {};
-        }
+        return GetMaterialAssignmentSlotLabelsFromModel(GetModelAsset());
     }
 
     MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
         const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
-        }
-
-        return MaterialAssignmentId();
+        return FindMaterialAssignmentIdInModel(GetModelAsset(), lod, label);
     }
 
     MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
-        }
-
-        return MaterialAssignmentMap{};
+        return GetMaterialAssignmentsFromModel(GetModelAsset());
     }
 
     AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const
@@ -683,7 +665,7 @@ namespace AZ::Render
         m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
-            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
 
             RegisterActor();
         }

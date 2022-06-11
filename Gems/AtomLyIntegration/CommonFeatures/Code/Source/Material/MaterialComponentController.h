@@ -79,7 +79,7 @@ namespace AZ
             AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const override;
 
             //! MaterialReceiverNotificationBus::Handler overrides...
-            void OnMaterialAssignmentsChanged() override;
+            void OnMaterialAssignmentSlotsChanged() override;
 
         private:
 
@@ -99,6 +99,8 @@ namespace AZ
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);
             //! Queue material instance recreation notifications until tick
             void QueueMaterialUpdateNotification();
+            //! Queue material reload so that it only occurs once per tick
+            void QueueLoadMaterials();
 
             //! Converts property overrides storing image asset references into asset IDs. This addresses a problem where image property
             //! overrides are lost during prefab serialization and patching. This suboptimal function will be removed once the underlying
@@ -108,10 +110,10 @@ namespace AZ
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
             AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_defaultMaterialMap;
-            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_activeMaterialMap;
             AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
+            bool m_queuedLoadMaterials = false;
         };
     } // namespace Render
 } // namespace AZ

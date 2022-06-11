@@ -134,7 +134,18 @@ namespace AZ
                     ->Method("ExportMaterial", &EditorMaterialComponentSlot::ExportMaterial)
                     ;
             }
-        };
+        }
+
+        EditorMaterialComponentSlot::EditorMaterialComponentSlot(
+            const AZ::EntityId& entityId, const MaterialAssignmentId& materialAssignmentId)
+            : m_entityId(entityId)
+            , m_id(materialAssignmentId)
+        {
+            AZ::Data::AssetId assetId = {};
+            MaterialComponentRequestBus::EventResult(
+                assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, m_id);
+            m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+        }
 
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {

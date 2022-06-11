@@ -321,28 +321,20 @@ namespace AZ
             }
         }
 
-        RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
+        MaterialAssignmentLabelMap MeshComponentController::GetMaterialAssignmentLabels() const
         {
-            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-            if (modelAsset.IsReady())
-            {
-                return modelAsset->GetMaterialSlots();
-            }
-            else
-            {
-                return {};
-            }
+            return GetMaterialAssignmentSlotLabelsFromModel(GetModelAsset());
         }
 
         MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
-            return FindMaterialAssignmentIdInModel(GetModel(), lod, label);
+            return FindMaterialAssignmentIdInModel(GetModelAsset(), lod, label);
         }
 
         MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
         {
-            return GetMaterialAssignmentsFromModel(GetModel());
+            return GetMaterialAssignmentsFromModel(GetModelAsset());
         }
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const
@@ -386,7 +378,7 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
                 MeshComponentNotificationBus::Event(entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
-                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
                 AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
                     m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
@@ -431,7 +423,7 @@ namespace AZ
             {
                 // If there is no model asset to be loaded then we need to invalidate the material slot configuration
                 MaterialReceiverNotificationBus::Event(
-                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
@@ -448,7 +440,7 @@ namespace AZ
 
                 // Model has been released which invalidates the material slot configuration
                 MaterialReceiverNotificationBus::Event(
-                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
