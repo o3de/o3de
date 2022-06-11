@@ -35,6 +35,7 @@ namespace RecastNavigation
                 ->Field("Region Min Size", &Self::m_regionMinSize)
                 ->Field("Tile Size", &Self::m_tileSize)
                 ->Field("Border Size", &Self::m_borderSize)
+                ->Field("Debug Draw", &Self::m_enableDebugDraw)
                 ->Version(1)
                 ;
 
@@ -45,6 +46,9 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                    ->DataElement(nullptr, &RecastNavigationMeshConfig::m_enableDebugDraw,
+                        "Debug Draw", "If enabled, draw the navigation mesh")
 
                     ->DataElement(nullptr, &Self::m_tileSize, "Tile Size",
                         "The width/height size of tile's on the xy-plane.")

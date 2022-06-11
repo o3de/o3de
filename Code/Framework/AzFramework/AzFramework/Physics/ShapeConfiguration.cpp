@@ -298,6 +298,11 @@ namespace Physics
 
     void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh)
     {
+        if (m_cachedNativeMesh == cachedNativeMesh)
+        {
+            return;
+        }
+        ReleaseCachedNativeMesh();
         m_cachedNativeMesh = cachedNativeMesh;
     }
 
@@ -370,6 +375,11 @@ namespace Physics
 
     void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield)
     {
+        if (m_cachedNativeHeightfield == cachedNativeHeightfield)
+        {
+            return;
+        }
+
         if (m_cachedNativeHeightfield)
         {
             Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);

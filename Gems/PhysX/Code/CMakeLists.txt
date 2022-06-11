@@ -107,7 +107,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
-                AZ::GFxFramework
                 AZ::AssetBuilderSDK
                 AZ::SceneCore
                 AZ::SceneData

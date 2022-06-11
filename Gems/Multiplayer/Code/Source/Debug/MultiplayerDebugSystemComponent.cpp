@@ -7,6 +7,7 @@
  */
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -53,6 +54,7 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::Activate()
     {
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, m_applicationType);
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif
@@ -114,6 +116,29 @@ namespace Multiplayer
             ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
             ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
             ImGui::Checkbox("Multiplayer Audit Trail", &m_displayNetAuditTrail);
+
+            if (auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get(); multiplayerInterface && !m_applicationType.IsEditor())
+            {
+                if (auto console = AZ::Interface<AZ::IConsole>::Get())
+                {
+                    const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
+                    if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
+                    {
+                        if (ImGui::Button(HOST_BUTTON_TITLE))
+                        {
+                            console->PerformCommand("host");
+                        }
+                    }
+                    else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
+                        multiplayerAgentType == MultiplayerAgentType::ClientServer)
+                    {
+                        if (ImGui::Button(LAUNCH_LOCAL_CLIENT_BUTTON_TITLE))
+                        {
+                            console->PerformCommand("sv_launch_local_client");
+                        }
+                    }
+                }
+            }
             ImGui::EndMenu();
         }
     }
