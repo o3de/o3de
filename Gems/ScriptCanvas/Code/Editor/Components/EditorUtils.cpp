@@ -33,8 +33,9 @@ namespace ScriptCanvasEditor
 {
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
-        if (assetSystem)
+        using namespace AzToolsFramework;
+
+        if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
         {
             if (!source.Id().IsNull())
             {
@@ -49,25 +50,33 @@ namespace ScriptCanvasEditor
                     {
                         AZ_Warning("ScriptCanvas", assetInfoID.m_assetId.m_guid == source.Id()
                             , "SourceHandle completion produced conflicting AssetIds.");
-                        AZ::IO::Path watchPath(watchFolderPath);
-                        AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                        return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+
+                        AZStd::string rootFolder;
+                        AZStd::string relativePath;
+                        if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
+                        {
+                            return SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, relativePath);
+                        }
                     }
                 }
             }
-            else if (!source.Path().empty())
+
+            if (!source.Path().empty())
             {
                 AZStd::string watchFolderPath;
                 AZ::Data::AssetInfo assetInfoPath;
-                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath) && assetInfoPath.m_assetId.IsValid())
+                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath)
+                && assetInfoPath.m_assetId.IsValid())
                 {
-                    AZ::IO::Path watchPath(watchFolderPath);
-                    AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                    return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                    AZStd::string rootFolder;
+                    AZStd::string relativePath;
+                    if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
+                    {
+                        return SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, relativePath);
+                    }
                 }
             }
         }
-
 
         return AZStd::nullopt;
     }

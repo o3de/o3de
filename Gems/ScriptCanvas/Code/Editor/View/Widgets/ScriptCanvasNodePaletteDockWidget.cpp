@@ -422,6 +422,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            using namespace AzFramework;
+
             AZ::Data::AssetId assetId = asset.GetId();
             m_pendingAssets.erase(assetId);
 
@@ -465,14 +467,17 @@ namespace ScriptCanvasEditor
 
                     AZStd::string rootPath, absolutePath;
                     AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
+                    StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
  
                     AZStd::string normPath = absolutePath;
-                    AzFramework::StringFunc::Path::Normalize(normPath);
- 
+                    StringFunc::Path::Normalize(normPath);
+
+                    AssetSystemRequestBus::Events
+
                     AZStd::string watchFolder;
                     bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
+                    AssetSystemRequestBus::BroadcastResult(sourceInfoFound
+                        , &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
  
                     if (!sourceInfoFound)
                     {

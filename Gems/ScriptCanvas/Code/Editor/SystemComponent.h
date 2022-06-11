@@ -113,7 +113,6 @@ namespace ScriptCanvasEditor
     private:
         SystemComponent(const SystemComponent&) = delete;
 
-        void FilterForScriptCanvasEnabledEntities(AzToolsFramework::EntityIdList& sourceList, AzToolsFramework::EntityIdList& targetList);
         void PopulateEditorCreatableTypes();
         
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
