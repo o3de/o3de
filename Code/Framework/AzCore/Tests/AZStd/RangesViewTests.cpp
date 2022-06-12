@@ -14,6 +14,7 @@
 #include <AzCore/std/ranges/elements_view.h>
 #include <AzCore/std/ranges/empty_view.h>
 #include <AzCore/std/ranges/join_view.h>
+#include <AzCore/std/ranges/join_with_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/single_view.h>
 #include <AzCore/std/ranges/split_view.h>
@@ -325,7 +326,7 @@ namespace UnitTest
     {
         const AZStd::vector<int> testVector{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         // Split the vector on 3
-        auto splitView = AZStd::ranges::views::split(testVector, 3);
+        auto splitView = testVector | AZStd::ranges::views::split(3);
         auto splitIt = splitView.begin();
         ASSERT_NE(splitView.end(), splitIt);
         auto splitSubrange = *splitIt;
@@ -381,10 +382,27 @@ namespace UnitTest
         auto joinViewIter2 = joinView2.begin();
         // swaps the 'W' and 'V'
         AZStd::ranges::iter_swap(joinViewIter1, joinViewIter2);
+
+        // swaps the 'H' and 'F' of the second string of each vector
+
+        /* Commented in out original AZStd::ranges::advanceand the second AZStd::ranges::iter_swap cll
         AZStd::ranges::advance(joinViewIter1, 5, joinView1.end());
         AZStd::ranges::advance(joinViewIter2, 5, joinView2.end());
-        // swaps the 'H' and 'F' of the second string of each vector
         AZStd::ranges::iter_swap(joinViewIter1, joinViewIter2);
+        //
+        // There is a bug in MSVC compiler when swapping a char& that occurs only in profile configuration
+        // The AZStd::ranges::iter_swap eventually calls AZStd::ranges::swap which should swap 5th characters
+        // of each vector.
+        // But instead the testVector2[5] gets the correct character of testVector1[5] `H` swapped to it.
+        // But the testVector1[5] seems to get the character from testVector2[0] which is now 'V' swapped to it
+        //
+        // I believe the MSVC is probably performing a bad optimization where it comes to the read address
+        // of the *joinViewIter2(char&) iterator
+        //
+        // The workaround that is working is to use AZStd::ranges::next to create a new join_view::iterator
+        // and perform AZStd::ranges::iter_swap on those objects.
+        */
+        AZStd::ranges::iter_swap(AZStd::ranges::next(joinViewIter1, 5, joinView1.end()), AZStd::ranges::next(joinViewIter2, 5, joinView2.end()));
         EXPECT_EQ("Vorld", testVector1[0]);
         EXPECT_EQ("Fello", testVector1[1]);
         EXPECT_EQ("Walue", testVector2[0]);
@@ -411,6 +429,91 @@ namespace UnitTest
         EXPECT_TRUE((*joinViewIter2).empty());
     }
 
+    // join_with_view
+    TEST_F(RangesViewTestFixture, JoinView_ReverseIterationOverRangeOfRanges_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "nuSnooMdlroWolleH";
+        using Rope = AZStd::fixed_vector<AZStd::string_view, 32>;
+        Rope rope{ "Hello", "World", "Moon", "Sun" };
+        AZStd::fixed_string<128> accumString;
+
+        auto joinView = AZStd::ranges::views::join(rope);
+        // Iterate over view in reverse(can replace for normal loop with range based one once AZStd::ranges::reverse_view is available)
+        for (auto revIter = AZStd::ranges::rbegin(joinView); revIter != AZStd::ranges::rend(joinView); ++revIter)
+        {
+            accumString.push_back(*revIter);
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    TEST_F(RangesViewTestFixture, JoinWithView_IteratesOverRangeOfRangesWithSeparator_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "Hello, World, Moon, Sun";
+        using RopeWithSeparator = AZStd::fixed_vector<AZStd::string_view, 32>;
+        RopeWithSeparator rope{ "Hello", "World", "Moon", "Sun" };
+        AZStd::fixed_string<128> accumString;
+        // Protip: Do not use a string literal directly with join_with
+        // A string literal is actually an a reference to a C array that includes the null-terminator character
+        // Convert it to a string_view
+        using namespace AZStd::literals::string_view_literals;
+        for (auto&& charElement : AZStd::ranges::views::join_with(rope, ", "_sv))
+        {
+            accumString.push_back(charElement);
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    TEST_F(RangesViewTestFixture, JoinWithView_IteratesCanIterateOverSplitView_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "Hello World Moon Sun";
+        constexpr AZStd::string_view splitExpression = "Hello,World,Moon,Sun";
+        {
+            // Test range adaptor with char literal
+            AZStd::fixed_string<128> accumString;
+
+            for (auto&& charElement : splitExpression | AZStd::ranges::views::split(',') | AZStd::ranges::views::join_with(' '))
+            {
+                accumString.push_back(charElement);
+            }
+
+            EXPECT_EQ(expectedString, accumString);
+        }
+        {
+            // Test range adaptor with string_view
+            // DO NOT use string literal as it is deduced as an array that incldues the NUL character
+            // as part of the range
+            AZStd::fixed_string<128> accumString;
+            using namespace AZStd::literals::string_view_literals;
+            for (auto&& charElement : splitExpression | AZStd::ranges::views::split(',') | AZStd::ranges::views::join_with(" "_sv))
+            {
+                accumString.push_back(charElement);
+            }
+
+            EXPECT_EQ(expectedString, accumString);
+        }
+    }
+
+    TEST_F(RangesViewTestFixture, JoinWithView_ReverseIterationOverRangeOfRanges_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "nuS ,nooM ,dlroW ,olleH";
+        using RopeWithSeparator = AZStd::fixed_vector<AZStd::string_view, 32>;
+        RopeWithSeparator rope{ "Hello", "World", "Moon", "Sun" };
+        AZStd::fixed_string<128> accumString;
+
+        using namespace AZStd::literals::string_view_literals;
+        auto joinWithView = AZStd::ranges::views::join_with(rope, ", "_sv);
+        // Iterate over view in reverse(can replace for normal loop with range based one once AZStd::ranges::reverse_view is available)
+        for (auto revIter = AZStd::ranges::rbegin(joinWithView); revIter != AZStd::ranges::rend(joinWithView); ++revIter)
+        {
+            accumString.push_back(*revIter);
+        }
+
+        EXPECT_EQ(expectedString, accumString);
+    }
+
+    // elements_view
     TEST_F(RangesViewTestFixture, ElementsView_CanIterateVectorOfTuple_Succeeds)
     {
         using TestTuple = AZStd::tuple<int, AZStd::string, bool>;
@@ -479,5 +582,20 @@ namespace UnitTest
         }
 
         EXPECT_EQ("HelloWorldSunRandomText", accumResult);
+    }
+
+    TEST_F(RangesViewTestFixture, ElementsView_ReverseIteration_Succeeds)
+    {
+        using PairType = AZStd::pair<int, const char*>;
+        AZStd::map testMap{ PairType{1, "Hello"}, PairType{2, "World"}, PairType{3, "Sun"}, PairType{45, "RandomText"} };
+
+        AZStd::string accumResult{};
+        auto valuesView = AZStd::ranges::views::values(testMap);
+        for (auto revIter = AZStd::ranges::rbegin(valuesView); revIter != AZStd::ranges::rend(valuesView); ++revIter)
+        {
+            accumResult += *revIter;
+        }
+
+        EXPECT_EQ("RandomTextSunWorldHello", accumResult);
     }
 }

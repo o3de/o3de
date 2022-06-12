@@ -44,6 +44,7 @@ set(FILES
     ranges/iter_move.h
     ranges/iter_swap.h
     ranges/join_view.h
+    ranges/join_with_view.h
     ranges/owning_view.h
     ranges/ranges.h
     ranges/ranges_adaptor.h
