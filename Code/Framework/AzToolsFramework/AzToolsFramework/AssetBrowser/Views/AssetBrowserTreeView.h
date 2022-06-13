@@ -38,6 +38,7 @@ namespace AzToolsFramework
             , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
+
         public:
             explicit AssetBrowserTreeView(QWidget* parent = nullptr);
             ~AssetBrowserTreeView() override;
@@ -90,12 +91,15 @@ namespace AzToolsFramework
             void ClearStringFilter();
             void ClearTypeFilter();
 
-        protected Q_SLOTS:
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
-            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+        public Q_SLOTS:
+            void OpenItemForEditing(const QModelIndex& index);
 
         protected:
             QModelIndexList selectedIndexes() const override;
+
+        protected Q_SLOTS:
+            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
 
         private:
             QPointer<AssetBrowserModel> m_assetBrowserModel;

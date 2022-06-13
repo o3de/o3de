@@ -20,6 +20,7 @@
 
 #include <QFileInfo>
 #include <QMimeData>
+#include <QTimer>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
@@ -231,6 +232,16 @@ namespace AzToolsFramework
                     if (success)
                     {
                         emit dataChanged(index.parent(), index);
+						
+						if (m_assetEntriesToCreatorBusIds.contains(item))
+                        {
+                            AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                                m_assetEntriesToCreatorBusIds[item],
+                                &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleInitialFilenameChange,
+                                item->GetFullPath());
+
+                            m_assetEntriesToCreatorBusIds.erase(item);
+                        }
                     }
                 });
             return false;
@@ -375,6 +386,28 @@ namespace AzToolsFramework
                 m_addingEntry = false;
                 endInsertRows();
 
+                if (!m_watchedIncomingAssetPaths.empty())
+                {
+                    // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
+                    AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
+                    const AZStd::string& childFullPath = AZ::IO::Path(newestChildEntry->GetFullPath()).AsPosix();
+
+                    if (m_watchedIncomingAssetPaths.contains(childFullPath))
+                    {
+                        m_watchedIncomingAssetPaths.erase(childFullPath);
+
+                        QTimer::singleShot(0, this,
+                            [&, newestChildEntry]()
+                            {
+                                QModelIndex index;
+                                if (GetEntryIndex(newestChildEntry, index))
+                                {
+                                    emit AssetCreatedFromEditor(index);
+                                }
+                            });
+                    }
+                }
+
                 // we have to also invalidate our parent all the way up the chain.
                 // since in this model, the children's data is actually relevant to the filtering of a parent
                 // since a parent "matches" the filter if its children do.
@@ -411,6 +444,19 @@ namespace AzToolsFramework
             {
                 m_removingEntry = false;
                 endRemoveRows();
+            }
+        }
+
+        void AssetBrowserModel::NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath)
+        {
+            QModelIndex index = findIndex(assetPath.c_str());
+            if (index.isValid())
+            {
+                emit AssetCreatedFromEditor(index);
+            }
+            else
+            {
+                m_watchedIncomingAssetPaths.insert(AZ::IO::Path(assetPath).AsPosix());
             }
         }
 

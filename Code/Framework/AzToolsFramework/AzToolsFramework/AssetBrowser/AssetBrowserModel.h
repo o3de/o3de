@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/Component/TickBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
@@ -80,6 +81,7 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
+            void NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath) override;
 
             //////////////////////////////////////////////////////////////////////////
             // TickBus
@@ -95,7 +97,10 @@ namespace AzToolsFramework
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
-            
+
+        Q_SIGNALS:
+            void AssetCreatedFromEditor(const QModelIndex& index);
+
         private:
             //Non owning pointer 
             AssetBrowserFilterModel* m_filterModel = nullptr;

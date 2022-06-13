@@ -100,6 +100,7 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserInteractionNotificationBus
             SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+            void NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath) override;
             //////////////////////////////////////////////////////////////////////////
 
             void AddFile(const AZ::s64& fileId);

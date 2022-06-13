@@ -267,6 +267,16 @@ namespace AzToolsFramework
             return SourceFileDetails();
         }
 
+        void AssetBrowserComponent::NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath)
+        {
+            if (assetPath.empty())
+            {
+                return;
+            }
+
+            AzToolsFramework::AssetBrowser::AssetBrowserModelRequestBus::Broadcast(
+                &AzToolsFramework::AssetBrowser::AssetBrowserModelRequests::NotifyAssetWasCreatedInEditor, assetPath);
+        }
 
         void AssetBrowserComponent::AddFile(const AZ::s64& fileId) 
         {
