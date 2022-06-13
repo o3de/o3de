@@ -19,6 +19,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
+#include <EMotionFX/CommandSystem/Source/JointLimitCommands.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/MorphTargetCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
@@ -61,6 +62,7 @@ namespace CommandSystem
         RegisterCommand(aznew EMotionFX::CommandAddRagdollJoint());
         RegisterCommand(aznew EMotionFX::CommandAdjustRagdollJoint());
         RegisterCommand(aznew EMotionFX::CommandRemoveRagdollJoint());
+        RegisterCommand(aznew EMotionFX::CommandAdjustJointLimit());
 
         // register simulated object related commands.
         RegisterCommand(aznew EMotionFX::CommandAddSimulatedObject());

@@ -54,9 +54,11 @@ namespace AzToolsFramework
         ActionManagerOperationResult SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category) override;
         ActionManagerGetterResult GetActionIconPath(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) override;
+        ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) const override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;
+        ActionManagerOperationResult InstallEnabledStateCallback(const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback) override;
         ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
 
         void ClearActionContextMap();

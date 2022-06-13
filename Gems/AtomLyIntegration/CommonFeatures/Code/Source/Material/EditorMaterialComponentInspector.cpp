@@ -725,11 +725,9 @@ namespace AZ
                     return;
                 }
 
-                QAction* action = nullptr;
-
                 QMenu menu(this);
 
-                action = menu.addAction(tr("Save As..."), [this] {
+                menu.addAction(tr("Save As..."), [this] {
                     const auto& defaultPath = AtomToolsFramework::GetUniqueFilePath(AZStd::string::format(
                         "%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), AZ::RPI::MaterialSourceData::Extension));
                     SaveMaterial(defaultPath);
@@ -738,14 +736,14 @@ namespace AZ
                 if (IsSourceMaterial(m_editData.m_materialSourcePath))
                 {
                     const auto& materialSourceFileName = GetFileName(m_editData.m_materialSourcePath);
-                    action = menu.addAction(tr("Save Over \"%1\"...").arg(materialSourceFileName.c_str()), [this] {
+                    menu.addAction(tr("Save Over \"%1\"...").arg(materialSourceFileName.c_str()), [this] {
                         SaveMaterial(m_editData.m_materialSourcePath);
                     });
                 }
 
                 menu.addSeparator();
 
-                action = menu.addAction("Clear Overrides", [this] {
+                menu.addAction("Clear Overrides", [this] {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Clear material property overrides.");
                     m_editData.m_materialPropertyOverrideMap.clear();
                     for (const AZ::EntityId& entityId : m_entityIdsToEdit)
