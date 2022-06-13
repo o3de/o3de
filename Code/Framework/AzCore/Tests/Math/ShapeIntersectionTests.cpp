@@ -242,18 +242,6 @@ namespace UnitTest
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
     }
 
-    TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedSphere)
-    {
-        const AZ::Vector3 sphereCenter(2.0f, 3.0f, 4.0f);
-        const float sphereRadius = 2.0f;
-        const AZ::Sphere sphere(sphereCenter, sphereRadius);
-        const AZ::Vector3 obbPosition(3.0f, 4.0f, 5.0f);
-        const AZ::Quaternion obbRotation(0.46f, 0.26f, 0.58f, 0.62f);
-        const AZ::Vector3 obbHalfLengths(5.0f, 6.0f, 7.0f);
-        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
-        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
-    }
-
     TEST(MATH_ShapeIntersection, CapsuleObbCompletelyContainedCapsule)
     {
         const AZ::Vector3 firstHemisphereCenter(2.0f, 3.0f, 4.0f);
@@ -434,5 +422,101 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 2.0f, 1.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedObb)
+    {
+        const AZ::Vector3 spherePosition(1.0f, 2.0f, 3.0f);
+        const float sphereRadius = 5.0f;
+        const AZ::Sphere sphere(spherePosition, sphereRadius);
+        const AZ::Vector3 obbPosition(2.0f, 3.0f, 4.0f);
+        const AZ::Quaternion obbRotation(0.24f, -0.72f, -0.12f, 0.64f);
+        const AZ::Vector3 obbHalfLengths(1.0f, 2.0f, 1.5f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedSphere)
+    {
+        const AZ::Vector3 sphereCenter(2.0f, 3.0f, 4.0f);
+        const float sphereRadius = 2.0f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(3.0f, 4.0f, 5.0f);
+        const AZ::Quaternion obbRotation(0.46f, 0.26f, 0.58f, 0.62f);
+        const AZ::Vector3 obbHalfLengths(5.0f, 6.0f, 7.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustIntersectingFace)
+    {
+        const AZ::Vector3 sphereCenter(-0.4f, -0.24f, 8.32f);
+        const float sphereRadius = 2.01f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(2.0f, -1.0f, 4.0f);
+        const AZ::Quaternion obbRotation(0.44f, 0.24f, 0.48f, 0.72f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 3.0f, 1.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromFace)
+    {
+        const AZ::Vector3 sphereCenter(-0.4f, -0.24f, 8.32f);
+        const float sphereRadius = 1.99f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(2.0f, -1.0f, 4.0f);
+        const AZ::Quaternion obbRotation(0.44f, 0.24f, 0.48f, 0.72f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 3.0f, 1.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustIntersectingEdge)
+    {
+        const AZ::Vector3 sphereCenter(3.58f, 1.7264f, 1.2048f);
+        const float sphereRadius = 5.01f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(-2.0f, -1.0f, -3.0f);
+        const AZ::Quaternion obbRotation(0.16f, 0.20f, 0.40f, 0.88f);
+        const AZ::Vector3 obbHalfLengths(1.5f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromEdge)
+    {
+        const AZ::Vector3 sphereCenter(3.58f, 1.7264f, 1.2048f);
+        const float sphereRadius = 4.99f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(-2.0f, -1.0f, -3.0f);
+        const AZ::Quaternion obbRotation(0.16f, 0.20f, 0.40f, 0.88f);
+        const AZ::Vector3 obbHalfLengths(1.5f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustIntersectingVertex)
+    {
+        const AZ::Vector3 sphereCenter(6.84f, 0.12f, -2.8f);
+        const float sphereRadius = 3.01f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(1.0f, -1.0f, -2.0f);
+        const AZ::Quaternion obbRotation(-0.22f, -0.26f, 0.38f, 0.86f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromVertex)
+    {
+        const AZ::Vector3 sphereCenter(6.84f, 0.12f, -2.8f);
+        const float sphereRadius = 2.99f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(1.0f, -1.0f, -2.0f);
+        const AZ::Quaternion obbRotation(-0.22f, -0.26f, 0.38f, 0.86f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
     }
 } // namespace UnitTest
