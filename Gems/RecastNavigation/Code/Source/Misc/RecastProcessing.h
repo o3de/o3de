@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Recast.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
 
