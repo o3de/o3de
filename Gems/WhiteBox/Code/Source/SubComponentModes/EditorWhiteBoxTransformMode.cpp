@@ -262,6 +262,7 @@ namespace WhiteBox
                 );
             }
 
+            Api::CalculatePlanarUVs(*whiteBox);
             EditorWhiteBoxComponentNotificationBus::Event(
                 entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
         };
@@ -287,6 +288,9 @@ namespace WhiteBox
             if(auto manipulator = translationManipulator.lock()) {
                 manipulator->SetLocalPosition(sharedState->m_polygonMidpoint);
             }
+
+            Api::CalculateNormals(*whiteBox);
+            Api::CalculatePlanarUVs(*whiteBox);
 
             EditorWhiteBoxComponentRequestBus::Event(
                     entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
@@ -366,6 +370,7 @@ namespace WhiteBox
                     manipulator->SetLocalOrientation(action.LocalOrientation());
                 }
 
+                Api::CalculatePlanarUVs(*whiteBox);
                 EditorWhiteBoxComponentNotificationBus::Event(
                     entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
             });
@@ -392,6 +397,9 @@ namespace WhiteBox
                 {
                     manipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
                 }
+
+                Api::CalculateNormals(*whiteBox);
+                Api::CalculatePlanarUVs(*whiteBox);
 
                 EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
             });
@@ -453,6 +461,7 @@ namespace WhiteBox
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
+            Api::CalculatePlanarUVs(*whiteBox);
             EditorWhiteBoxComponentNotificationBus::Event(
                 entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
         };
@@ -472,8 +481,10 @@ namespace WhiteBox
                 const AZ::Vector3 vertexPosition =  (vertexLocalPosition * (sharedState->m_polygonScale + (action.m_start.m_sign * action.LocalScaleOffset()))) + sharedState->m_polygonMidpoint;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
-            
             sharedState->m_vertexPositions = Api::VertexPositions(*whiteBox, sharedState->m_vertexHandles);
+
+            Api::CalculateNormals(*whiteBox);
+            Api::CalculatePlanarUVs(*whiteBox);
             EditorWhiteBoxComponentRequestBus::Event(
                     entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
