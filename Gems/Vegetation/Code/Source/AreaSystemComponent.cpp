@@ -593,7 +593,11 @@ namespace Vegetation
             });
     }
 
-    void AreaSystemComponent::OnSurfaceChanged(const AZ::EntityId& /*entityId*/, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    void AreaSystemComponent::OnSurfaceChanged(
+        const AZ::EntityId& /*entityId*/,
+        const AZ::Aabb& oldBounds,
+        const AZ::Aabb& newBounds,
+        const SurfaceData::SurfaceTagSet& /*changedSurfaceTags*/)
     {
         m_vegTasks.QueueVegetationTask([oldBounds, newBounds](UpdateContext* context, PersistentThreadData* threadData, VegetationThreadTasks* vegTasks)
         {

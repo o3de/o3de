@@ -34,7 +34,11 @@ namespace SurfaceData
         //! allows multiple threads to call
         using MutexType = AZStd::recursive_mutex;
 
-        virtual void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) = 0;
+        virtual void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) = 0;
     };
 
     typedef AZ::EBus<SurfaceDataSystemNotifications> SurfaceDataSystemNotificationBus;
