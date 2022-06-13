@@ -49,12 +49,13 @@ set_property(
     PROPERTY COMPILE_OPTIONS ${compile_options}
 )
 unset(compile_options)
+
+# Place external recast libraries under RecastNavigation gem.
 set(RECAST_FETCHCONTENT_FOLDER "Gems/RecastNavigation/External")
-set_property(TARGET DebugUtils PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET Detour PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET DetourCrowd PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET DetourTileCache PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+foreach(recastLibrary ${recastLibraries})
+    set_property(TARGET ${recastLibrary} PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+endforeach()
 
 # Export external recast navigation targets for installers.
 set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
