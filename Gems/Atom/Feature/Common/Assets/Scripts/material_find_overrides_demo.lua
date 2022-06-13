@@ -13,16 +13,6 @@ local FindMaterialAssignmentTest =
 {
     Properties = 
     {
-        Textures = 
-        {
-            "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
-            "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
-            "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
-            "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
-        }, 
-        MaterialSlotFilter = ""
     }, 
 }
 
@@ -51,6 +41,17 @@ function FindMaterialAssignmentTest:OnActivate()
     self.colors = {}
     self.lerpDirs = {}
 
+    self.textures = 
+    {
+        "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
+        "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
+        "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
+        "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
+    }
+    self.materialSlotFilter = ""
+
     self.tickBusHandler = TickBus.Connect(self);
 end
 
@@ -67,9 +68,9 @@ function FindMaterialAssignmentTest:UpdateColor(assignmentId, color)
 end
 
 function FindMaterialAssignmentTest:UpdateTexture(assignmentId)
-    if (#self.Properties.Textures > 0) then
+    if (#self.textures > 0) then
         local propertyName = "baseColor.textureMap"
-        local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
+        local textureName = self.textures[ math.random( #self.textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
         MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, textureAssetId);
@@ -134,9 +135,7 @@ end
 
 function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
 
-
     if(nil == self.assignmentIds) then
-    
         local originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId)
         if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
             return
@@ -144,7 +143,7 @@ function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
         
         self.assignmentIds =
         {
-            MaterialComponentRequestBus.Event.FindMaterialAssignmentId(self.entityId, -1, self.Properties.MaterialSlotFilter),
+            MaterialComponentRequestBus.Event.FindMaterialAssignmentId(self.entityId, -1, self.materialSlotFilter),
         }
     
         for index = 1, #self.assignmentIds do

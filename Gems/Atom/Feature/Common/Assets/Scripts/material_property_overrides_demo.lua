@@ -13,15 +13,6 @@ local PropertyValueTest =
 {
     Properties = 
     {
-        Textures = 
-        {
-            "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
-            "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
-            "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
-            "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
-            "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
-        }, 
     }, 
 }
 
@@ -50,16 +41,16 @@ function PropertyValueTest:OnActivate()
     self.colors = {}
     self.lerpDirs = {}
 
-    self.originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId);
-    self.assignmentIds = self.originalAssignments:GetKeys()
+    self.textures = 
+    {
+        "materials/presets/macbeth/05_blue_flower_srgb.tif.streamingimage",
+        "materials/presets/macbeth/06_bluish_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/09_moderate_red_srgb.tif.streamingimage",
+        "materials/presets/macbeth/11_yellow_green_srgb.tif.streamingimage",
+        "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
+        "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
+    } 
 
-    for index = 1, self.assignmentIds:GetSize() do
-        local id = self.assignmentIds[index]
-        if (id ~= nil) then
-            self.colors[index] = randomColor()
-            self.lerpDirs[index] = randomDir()
-        end
-    end
     self.tickBusHandler = TickBus.Connect(self);
 end
 
@@ -76,9 +67,9 @@ function PropertyValueTest:UpdateColor(assignmentId, color)
 end
 
 function PropertyValueTest:UpdateTexture(assignmentId)
-    if (#self.Properties.Textures > 0) then
+    if (#self.textures > 0) then
         local propertyName = "baseColor.textureMap"
-        local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
+        local textureName = self.textures[ math.random( #self.textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
         MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, textureAssetId);
@@ -87,7 +78,7 @@ end
 
 function PropertyValueTest:UpdateProperties()
     Debug.Log("Overriding properties...")
-    for index = 1, self.assignmentIds:GetSize() do
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             self:UpdateFactor(id)
@@ -132,7 +123,7 @@ function lerpColor(color, lerpDir, deltaTime)
 end
 
 function PropertyValueTest:lerpColors(deltaTime)
-    for index = 1, self.assignmentIds:GetSize() do
+    for index = 1, #self.assignmentIds do
         local id = self.assignmentIds[index]
         if (id ~= nil) then
             lerpColor(self.colors[index], self.lerpDirs[index], deltaTime)
@@ -142,6 +133,24 @@ function PropertyValueTest:lerpColors(deltaTime)
 end
 
 function PropertyValueTest:OnTick(deltaTime, timePoint)
+
+    if(nil == self.assignmentIds) then
+        local originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId)
+        if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
+            return
+        end
+        
+        self.assignmentIds = originalAssignments:GetKeys()
+
+        for index = 1, #self.assignmentIds do
+            local id = self.assignmentIds[index]
+            if (id ~= nil) then
+                self.colors[index] = randomColor()
+                self.lerpDirs[index] = randomDir()
+            end
+        end
+    end
+
     self.timer = self.timer + deltaTime
     self.totalTime = self.totalTime + deltaTime
     self:lerpColors(deltaTime)
