@@ -30,6 +30,13 @@ namespace WhiteBox
         All
     };
 
+    enum class TransformType 
+    {
+        Translation,
+        Rotation,
+        Scale
+    };
+
     //! The Component Mode responsible for handling all interactions with the White Box Tool.
     class EditorWhiteBoxComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
@@ -108,6 +115,8 @@ namespace WhiteBox
             m_keyboardMofifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
+        TransformType m_transformType = TransformType::Translation;
+
         bool m_restoreModifierHeld = false;
 
         AzToolsFramework::ViewportUi::ClusterId
@@ -134,6 +143,8 @@ namespace WhiteBox
         //! Event handler for sub mode changes.
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler;
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
+            m_TransformSelectionHandler;
     };
 
     inline SubMode EditorWhiteBoxComponentMode::GetCurrentSubMode() const

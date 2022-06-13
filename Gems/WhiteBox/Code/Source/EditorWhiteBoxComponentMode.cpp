@@ -30,6 +30,14 @@ namespace WhiteBox
 
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
 
+    static void SetViewportUiClusterActiveButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+    }
+
     // helper function to return what modifier keys move us to restore mode
     static bool RestoreModifier(AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers)
     {
@@ -87,9 +95,32 @@ namespace WhiteBox
             enable = true;
             break;
         }
+        
+        switch (m_transformType)
+        {
+        case WhiteBox::TransformType::Translation:
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformTranslateButtonId);
+            break;
+        case WhiteBox::TransformType::Rotation:
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformRotateButtonId);
+            break;
+        case WhiteBox::TransformType::Scale:
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformScaleButtonId);
+            break;
+        default:
+            break;
+        }
+        
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterVisible,
             m_transformClusterId, enable);
+        if(enable) 
+        {
+           if(auto transformMode = AZStd::get_if<AZStd::unique_ptr<TransformMode>>(&m_modes)) 
+           {
+               (*transformMode)->SetTransformMode(m_transformType);
+           }
+        }
     }
 
     void EditorWhiteBoxComponentMode::Refresh()
@@ -299,14 +330,6 @@ namespace WhiteBox
             m_modes);
     }
 
-    static void SetViewportUiClusterActiveButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
-    {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
-    }
-
     void EditorWhiteBoxComponentMode::EnterDefaultMode()
     {
         m_modes = AZStd::make_unique<DefaultMode>(GetEntityComponentIdPair());
@@ -325,7 +348,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponentMode::EnterTransformMode()
     {
-        m_modes = AZStd::make_unique<TransformMode>();
+        m_modes = AZStd::make_unique<TransformMode>(GetEntityComponentIdPair());
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Transform;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_transformModeButtonId);
@@ -543,7 +566,7 @@ namespace WhiteBox
         // temporary setting to disable this feature
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
         {
-            bool hasTransformMode = false;
+            bool hasTransformMode = true;
             settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
             if (hasTransformMode)
             {
@@ -562,7 +585,8 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
             m_edgeRestoreModeButtonId, WhiteboxModeClusterEdgeRestoreTooltip);
-        auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+
+        m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler([this](AzToolsFramework::ViewportUi::ButtonId buttonId) 
         {
             if (buttonId == m_defaultModeButtonId)
             {
@@ -577,14 +601,36 @@ namespace WhiteBox
                 EnterTransformMode();
             }
             UpdateTransformCluster();
-        };
 
-        m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
+        });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_modeSelectionClusterId, m_modeSelectionHandler);
 
+        m_TransformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            {
+                if (buttonId == m_transformTranslateButtonId)
+                {
+                    m_transformType = TransformType::Translation;
+                }
+                else if (buttonId == m_transformRotateButtonId)
+                {
+                    m_transformType = TransformType::Rotation;
+                }
+                else if (buttonId == m_transformScaleButtonId)
+                {
+                    m_transformType = TransformType::Scale;
+                }
+                UpdateTransformCluster();
+            });
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_transformClusterId, m_TransformSelectionHandler);
+        
         UpdateTransformCluster();
     }
 } // namespace WhiteBox
