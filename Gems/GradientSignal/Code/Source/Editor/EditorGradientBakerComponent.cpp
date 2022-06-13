@@ -8,6 +8,11 @@
 
 #include "EditorGradientBakerComponent.h"
 
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#include <QTimer>
+AZ_POP_DISABLE_WARNING
+
+#include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
@@ -16,6 +21,176 @@
 
 namespace GradientSignal
 {
+    // Custom AZ::Job so that we can bake the output image asynchronously.
+    // We create the AZ::Job with isAutoDelete = false so that we can detect
+    // when the job has completed, which means we need to handle its deletion.
+    BakeImageJob::BakeImageJob(
+        const GradientBakerConfig& configuration,
+        const AZ::IO::Path& fullPath,
+        AZ::Aabb inputBounds,
+        AZ::EntityId boundsEntityId
+        )
+        : AZ::Job(false, nullptr)
+        , m_configuration(configuration)
+        , m_outputImageAbsolutePath(fullPath)
+        , m_inputBounds(inputBounds)
+        , m_boundsEntityId(boundsEntityId)
+    {
+    }
+
+    void BakeImageJob::Process()
+    {
+        // Get the actual resolution of our image.  Note that this might be non-square, depending on how the window is sized.
+        const int imageResolutionX = aznumeric_cast<int>(m_configuration.m_outputResolution.GetX());
+        const int imageResolutionY = aznumeric_cast<int>(m_configuration.m_outputResolution.GetY());
+
+        // The TGA and EXR formats aren't recognized with only single channel data,
+        // so need to use RGBA format for them
+        int channels = 1;
+        if (m_outputImageAbsolutePath.Extension() == ".tga" || m_outputImageAbsolutePath.Extension() == ".exr")
+        {
+            channels = 4;
+        }
+
+        int bytesPerPixel = 0;
+        OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
+        switch (m_configuration.m_outputFormat)
+        {
+        case OutputFormat::R8:
+            bytesPerPixel = 1;
+            pixelFormat = OIIO::TypeDesc::UINT8;
+            break;
+        case OutputFormat::R16:
+            bytesPerPixel = 2;
+            pixelFormat = OIIO::TypeDesc::UINT16;
+            break;
+        case OutputFormat::R32:
+            bytesPerPixel = 4;
+            pixelFormat = OIIO::TypeDesc::FLOAT;
+            break;
+        }
+        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
+        AZStd::vector<AZ::u8> pixels;
+        pixels.resize(imageSize, 0);
+
+        AZ::IO::Path absolutePath = m_outputImageAbsolutePath.LexicallyNormal();
+        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
+        if (!outputImage)
+        {
+            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
+                absolutePath.c_str());
+            return;
+        }
+
+        OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
+        outputImage->open(absolutePath.c_str(), spec);
+
+        const AZ::Vector3 inputBoundsCenter = m_inputBounds.GetCenter();
+        const AZ::Vector3 inputBoundsExtentsOld = m_inputBounds.GetExtents();
+        m_inputBounds =
+            AZ::Aabb::CreateCenterRadius(inputBoundsCenter, AZ::GetMax(inputBoundsExtentsOld.GetX(), inputBoundsExtentsOld.GetY()) / 2.0f);
+
+        const AZ::Vector3 inputBoundsStart =
+            AZ::Vector3(m_inputBounds.GetMin().GetX(), m_inputBounds.GetMin().GetY(), inputBoundsCenter.GetZ());
+        const AZ::Vector3 inputBoundsExtents = m_inputBounds.GetExtents();
+        const float inputBoundsExtentsX = inputBoundsExtents.GetX();
+        const float inputBoundsExtentsY = inputBoundsExtents.GetY();
+
+        // When sampling the gradient, we can choose to either do it at the corners of each texel area we're sampling, or at the center.
+        // They're both correct choices in different ways.  We're currently choosing to do the corners, which makes scaledTexelOffset = 0,
+        // but the math is here to make it easy to change later if we ever decide sampling from the center provides a more intuitive
+        // image.
+        constexpr float texelOffset = 0.0f; // Use 0.5f to sample from the center of the texel.
+        const AZ::Vector3 scaledTexelOffset(
+            texelOffset * inputBoundsExtentsX / static_cast<float>(imageResolutionX),
+            texelOffset * inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
+
+        // Scale from our image size space (ex: 256 pixels) to our bounds space (ex: 16 meters)
+        const AZ::Vector3 pixelToBoundsScale(
+            inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
+
+        for (int y = 0; y < imageResolutionY; ++y)
+        {
+            for (int x = 0; x < imageResolutionX; ++x)
+            {
+                // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
+                // imageBoundsY)
+                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
+
+                GradientSampleParams sampleParams;
+                sampleParams.m_position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
+
+                bool inBounds = true;
+                LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                    inBounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, sampleParams.m_position);
+
+                float sample = inBounds ? m_configuration.m_gradientSampler.GetValue(sampleParams) : 0.0f;
+
+                // Write out the sample value for the pixel based on output format
+                int index = ((y * imageResolutionX) + x) * channels;
+                switch (m_configuration.m_outputFormat)
+                {
+                case OutputFormat::R8:
+                {
+                    AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
+                    pixels[index] = value; // R
+
+                    if (channels == 4)
+                    {
+                        pixels[index + 1] = value; // G
+                        pixels[index + 2] = value; // B
+                        pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
+                    }
+                    break;
+                }
+                case OutputFormat::R16:
+                {
+                    auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
+                    AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
+                    actualMem[index] = value; // R
+
+                    if (channels == 4)
+                    {
+                        actualMem[index + 1] = value; // G
+                        actualMem[index + 2] = value; // B
+                        actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
+                    }
+                    break;
+                }
+                case OutputFormat::R32:
+                {
+                    auto actualMem = reinterpret_cast<float*>(pixels.data());
+                    actualMem[index] = sample; // R
+
+                    if (channels == 4)
+                    {
+                        actualMem[index + 1] = sample; // G
+                        actualMem[index + 2] = sample; // B
+                        actualMem[index + 3] = 1.0f; // A
+                    }
+                    break;
+                }
+                }
+            }
+        }
+
+        bool result = outputImage->write_image(pixelFormat, pixels.data());
+        if (!result)
+        {
+            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
+                absolutePath.c_str());
+        }
+
+        outputImage->close();
+
+        m_isFinished.store(true);
+    }
+
+    bool BakeImageJob::IsFinished() const
+    {
+        return m_isFinished.load();
+    }
+
     AZStd::string GetSupportedImagesFilter()
     {
         // Build filter for supported streaming image formats that will be used on the
@@ -157,6 +332,19 @@ namespace GradientSignal
         GradientRequestBus::Handler::BusConnect(GetEntityId());
 
         UpdatePreviewSettings();
+
+        // If we have a valid output image path set and the image doesn't exist,
+        // then bake it when we activate our component.
+        if (!m_configuration.m_outputImagePath.empty())
+        {
+            AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath);
+            if (!AZ::IO::SystemFile::Exists(fullPathIO.c_str()))
+            {
+                QTimer::singleShot(0, [this]() {
+                    BakeImage();
+                });
+            }
+        }
     }
 
     void EditorGradientBakerComponent::Deactivate()
@@ -169,6 +357,7 @@ namespace GradientSignal
         // If the preview shouldn't be active, use an invalid entityId
         m_gradientEntityId = AZ::EntityId();
 
+        AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
@@ -216,160 +405,30 @@ namespace GradientSignal
             return;
         }
 
+        AZ::TickBus::Handler::BusConnect();
+
         // Get the absolute path for our stored relative path
         AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath);
 
-        // Get the actual resolution of our image.  Note that this might be non-square, depending on how the window is sized.
-        const int imageResolutionX = aznumeric_cast<int>(m_configuration.m_outputResolution.GetX());
-        const int imageResolutionY = aznumeric_cast<int>(m_configuration.m_outputResolution.GetY());
-
-        // The TGA and EXR formats aren't recognized with only single channel data,
-        // so need to use RGBA format for them
-        int channels = 1;
-        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
+        // Delete the output image (if it exists) before we start baking so that in case
+        // the Editor shuts down mid-bake we don't leave the output image in a bad state.
+        if (AZ::IO::SystemFile::Exists(fullPathIO.c_str()))
         {
-            channels = 4;
+            AZ::IO::SystemFile::Delete(fullPathIO.c_str());
         }
 
-        int bytesPerPixel = 0;
-        OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
-        switch (m_configuration.m_outputFormat)
-        {
-        case OutputFormat::R8:
-            bytesPerPixel = 1;
-            pixelFormat = OIIO::TypeDesc::UINT8;
-            break;
-        case OutputFormat::R16:
-            bytesPerPixel = 2;
-            pixelFormat = OIIO::TypeDesc::UINT16;
-            break;
-        case OutputFormat::R32:
-            bytesPerPixel = 4;
-            pixelFormat = OIIO::TypeDesc::FLOAT;
-            break;
-        }
-        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
-        AZStd::vector<AZ::u8> pixels;
-        pixels.resize(imageSize, 0);
+        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), GetPreviewEntity());
+        m_bakeImageJob->Start();
 
-        AZ::IO::Path absolutePath = fullPathIO.LexicallyNormal();
-        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
-        if (!outputImage)
-        {
-            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
-                absolutePath.c_str());
-            return;
-        }
-
-        OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
-        outputImage->open(absolutePath.c_str(), spec);
-
-        AZ::Aabb inputBounds = GetPreviewBounds();
-        AZ::EntityId boundsEntityId = GetPreviewEntity();
-
-        const AZ::Vector3 inputBoundsCenter = inputBounds.GetCenter();
-        const AZ::Vector3 inputBoundsExtentsOld = inputBounds.GetExtents();
-        inputBounds =
-            AZ::Aabb::CreateCenterRadius(inputBoundsCenter, AZ::GetMax(inputBoundsExtentsOld.GetX(), inputBoundsExtentsOld.GetY()) / 2.0f);
-
-        const AZ::Vector3 inputBoundsStart =
-            AZ::Vector3(inputBounds.GetMin().GetX(), inputBounds.GetMin().GetY(), inputBoundsCenter.GetZ());
-        const AZ::Vector3 inputBoundsExtents = inputBounds.GetExtents();
-        const float inputBoundsExtentsX = inputBoundsExtents.GetX();
-        const float inputBoundsExtentsY = inputBoundsExtents.GetY();
-
-        // When sampling the gradient, we can choose to either do it at the corners of each texel area we're sampling, or at the center.
-        // They're both correct choices in different ways.  We're currently choosing to do the corners, which makes scaledTexelOffset = 0,
-        // but the math is here to make it easy to change later if we ever decide sampling from the center provides a more intuitive
-        // image.
-        constexpr float texelOffset = 0.0f; // Use 0.5f to sample from the center of the texel.
-        const AZ::Vector3 scaledTexelOffset(
-            texelOffset * inputBoundsExtentsX / static_cast<float>(imageResolutionX),
-            texelOffset * inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
-
-        // Scale from our image size space (ex: 256 pixels) to our bounds space (ex: 16 meters)
-        const AZ::Vector3 pixelToBoundsScale(
-            inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
-
-        for (int y = 0; y < imageResolutionY; ++y)
-        {
-            for (int x = 0; x < imageResolutionX; ++x)
-            {
-                // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
-                // imageBoundsY)
-                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
-
-                GradientSampleParams sampleParams;
-                sampleParams.m_position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
-
-                bool inBounds = true;
-                LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                    inBounds, boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, sampleParams.m_position);
-
-                float sample = inBounds ? GetValue(sampleParams) : 0.0f;
-
-                // Write out the sample value for the pixel based on output format
-                int index = ((y * imageResolutionX) + x) * channels;
-                switch (m_configuration.m_outputFormat)
-                {
-                case OutputFormat::R8:
-                    {
-                        AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
-                        pixels[index] = value; // R
-
-                        if (channels == 4)
-                        {
-                            pixels[index + 1] = value; // G
-                            pixels[index + 2] = value; // B
-                            pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
-                        }
-                        break;
-                    }
-                case OutputFormat::R16:
-                    {
-                        auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                        AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
-                        actualMem[index] = value; // R
-
-                        if (channels == 4)
-                        {
-                            actualMem[index + 1] = value; // G
-                            actualMem[index + 2] = value; // B
-                            actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
-                        }
-                        break;
-                    }
-                case OutputFormat::R32:
-                    {
-                        auto actualMem = reinterpret_cast<float*>(pixels.data());
-                        actualMem[index] = sample; // R
-
-                        if (channels == 4)
-                        {
-                            actualMem[index + 1] = sample; // G
-                            actualMem[index + 2] = sample; // B
-                            actualMem[index + 3] = 1.0f; // A
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        bool result = outputImage->write_image(pixelFormat, pixels.data());
-        if (!result)
-        {
-            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
-                absolutePath.c_str());
-        }
-
-        outputImage->close();
+        // Force a refresh now so the bake button gets disabled
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     bool EditorGradientBakerComponent::IsBakeDisabled() const
     {
         return m_configuration.m_outputImagePath.empty() || !m_configuration.m_gradientSampler.m_gradientId.IsValid() ||
-            !m_configuration.m_inputBounds.IsValid();
+            !m_configuration.m_inputBounds.IsValid() || m_bakeImageJob;
     }
 
     AZ::EntityId EditorGradientBakerComponent::GetPreviewEntity() const
@@ -390,6 +449,21 @@ namespace GradientSignal
         }
 
         return bounds;
+    }
+
+    void EditorGradientBakerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        if (m_bakeImageJob && m_bakeImageJob->IsFinished())
+        {
+            delete m_bakeImageJob;
+            m_bakeImageJob = nullptr;
+
+            AZ::TickBus::Handler::BusDisconnect();
+
+            // Refresh once the job has completed so the Bake button can be re-enabled
+            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        }
     }
 
     AZ::EntityId EditorGradientBakerComponent::GetGradientEntityId() const
