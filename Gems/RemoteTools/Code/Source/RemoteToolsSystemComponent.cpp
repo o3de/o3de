@@ -94,17 +94,14 @@ namespace RemoteTools
 #endif
     }
 
-    AzFramework::RemoteToolsServiceKey RemoteToolsSystemComponent::RegisterToolingService(AZStd::string name, uint16_t port)
+    void RemoteToolsSystemComponent::RegisterToolingService(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
-        AzFramework::RemoteToolsServiceKey key = AZ::Crc32(name + AZStd::string::format("%d", port));
         m_entryRegistry[key] = RemoteToolsRegistryEntry();
         m_entryRegistry[key].m_name = name;
         m_entryRegistry[key].m_port = port;
-
-        return key;
     }
 
-    const AzFramework::ReceivedRemoteToolsMessages* RemoteToolsSystemComponent::GetReceivedMessages(AzFramework::RemoteToolsServiceKey key) const
+    const AzFramework::ReceivedRemoteToolsMessages* RemoteToolsSystemComponent::GetReceivedMessages(AZ::Crc32 key) const
     {
         if (m_inbox.contains(key))
         {
@@ -113,7 +110,7 @@ namespace RemoteTools
         return nullptr;
     }
 
-    void RemoteToolsSystemComponent::ClearReceivedMessages(AzFramework::RemoteToolsServiceKey key)
+    void RemoteToolsSystemComponent::ClearReceivedMessages(AZ::Crc32 key)
     {
         if (m_inbox.contains(key))
         {
@@ -122,30 +119,30 @@ namespace RemoteTools
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointJoinedHandler(
-        AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
     {
         handler.Connect(m_entryRegistry[key].m_endpointJoinedEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointLeftHandler(
-        AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
     {
         handler.Connect(m_entryRegistry[key].m_endpointLeftEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointConnectedHandler(
-        AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler)
     {
         handler.Connect(m_entryRegistry[key].m_endpointConnectedEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointChangedHandler(
-        AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler)
     {
         handler.Connect(m_entryRegistry[key].m_endpointChangedEvent);
     }
 
-    void RemoteToolsSystemComponent::EnumTargetInfos(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointContainer& infos)
+    void RemoteToolsSystemComponent::EnumTargetInfos(AZ::Crc32 key, AzFramework::RemoteToolsEndpointContainer& infos)
     {
         if (m_entryRegistry.contains(key))
         {
@@ -157,7 +154,7 @@ namespace RemoteTools
         }
     }
 
-    void RemoteToolsSystemComponent::SetDesiredEndpoint(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID)
+    void RemoteToolsSystemComponent::SetDesiredEndpoint(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
         AZ_TracePrintf("RemoteToolsSystemComponent", "Set Target - %u", desiredTargetID);
         if (m_entryRegistry.contains(key))
@@ -186,12 +183,12 @@ namespace RemoteTools
         }
     }
 
-    void RemoteToolsSystemComponent::SetDesiredEndpointInfo(AzFramework::RemoteToolsServiceKey key, const AzFramework::RemoteToolsEndpointInfo& targetInfo)
+    void RemoteToolsSystemComponent::SetDesiredEndpointInfo(AZ::Crc32 key, const AzFramework::RemoteToolsEndpointInfo& targetInfo)
     {
         SetDesiredEndpoint(key, targetInfo.GetPersistentId());
     }
 
-    AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetDesiredEndpoint(AzFramework::RemoteToolsServiceKey key)
+    AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetDesiredEndpoint(AZ::Crc32 key)
     {
         if (m_entryRegistry.contains(key))
         {
@@ -201,7 +198,7 @@ namespace RemoteTools
         return AzFramework::RemoteToolsEndpointInfo(); // return an invalid target info.
     }
 
-    AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetEndpointInfo(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID)
+    AzFramework::RemoteToolsEndpointInfo RemoteToolsSystemComponent::GetEndpointInfo(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
         if (m_entryRegistry.contains(key))
         {
@@ -216,7 +213,7 @@ namespace RemoteTools
         return AzFramework::RemoteToolsEndpointInfo(); // return an invalid target info.
     }
 
-    bool RemoteToolsSystemComponent::IsEndpointOnline(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID)
+    bool RemoteToolsSystemComponent::IsEndpointOnline(AZ::Crc32 key, AZ::u32 desiredTargetID)
     {
         if (m_entryRegistry.contains(key))
         {
@@ -303,7 +300,7 @@ namespace RemoteTools
         AzNetworking::ByteOrder byteOrder = connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
             ? AzNetworking::ByteOrder::Host
             : AzNetworking::ByteOrder::Network;
-        AzFramework::RemoteToolsServiceKey key = connection->GetRemoteAddress().GetPort(byteOrder);
+        AZ::Crc32 key = connection->GetRemoteAddress().GetPort(byteOrder);
 
         if (m_entryRegistry.contains(key))
         {
@@ -322,7 +319,7 @@ namespace RemoteTools
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] const RemoteToolsPackets::RemoteToolsPacket& packet)
     {
-        AzFramework::RemoteToolsServiceKey key = packet.GetPersistentId();
+        AZ::Crc32 key = packet.GetPersistentId();
 
         // Receive
         if (connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor

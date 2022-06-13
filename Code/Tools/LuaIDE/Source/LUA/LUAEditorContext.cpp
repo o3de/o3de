@@ -36,6 +36,7 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <Source/LUA/LUALocalsTrackerMessages.h>
+#include <Source/Utils/LuaIDEConstants.h>
 
 #include <QMessageBox>
 #include <regex>
@@ -123,6 +124,22 @@ namespace LUAEditor
     {
         m_fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(m_fileIO, "FileIO system is not present, make sure a FileIO instance is set by the application.");
+
+        m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
+            [this](bool value)
+            {
+                this->DesiredTargetConnected(value);
+            });
+        AzFramework::RemoteToolsInterface::Get()->RegisterRemoteToolsEndpointConnectedHandler(
+            LUADebugger::LuaToolsKey, m_connectedEventHandler);
+
+        m_changedEventHandler = AzFramework::RemoteToolsEndpointChangedEvent::Handler(
+            [this](AZ::u32 oldVal, AZ::u32 newVal)
+            {
+                this->DesiredTargetChanged(oldVal, newVal);
+            });
+        AzFramework::RemoteToolsInterface::Get()->RegisterRemoteToolsEndpointChangedHandler(
+            LUADebugger::LuaToolsKey, m_changedEventHandler);
     }
 
     void Context::Activate()
@@ -135,7 +152,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusConnect();
         LUABreakpointRequestMessages::Handler::BusConnect();
         LUAStackRequestMessages::Handler::BusConnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
         LUAWatchesRequestMessages::Handler::BusConnect();
         LUATargetContextRequestMessages::Handler::BusConnect();
         HighlightedWords::Handler::BusConnect();
@@ -191,7 +207,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusDisconnect();
         LUAStackRequestMessages::Handler::BusDisconnect();
         LUABreakpointRequestMessages::Handler::BusDisconnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
         HighlightedWords::Handler::BusDisconnect();
         AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
 

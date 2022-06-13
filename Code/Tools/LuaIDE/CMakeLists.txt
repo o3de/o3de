@@ -26,6 +26,7 @@ ly_add_target(
             .
             Source/Editor
             Source/LUA
+            Source/Utils
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon

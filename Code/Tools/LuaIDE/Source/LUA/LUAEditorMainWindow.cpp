@@ -39,6 +39,7 @@
 #include "LUAEditorContextMessages.h"
 #include "LUABreakpointTrackerMessages.h"
 #include "LUAEditorSettingsDialog.hxx"
+#include <Source/Utils/LuaIDEConstants.h>
 
 #include <Source/AssetDatabaseLocationListener.h>
 #include <Source/LUA/ui_LUAEditorMainWindow.h>
@@ -143,7 +144,7 @@ namespace LUAEditor
 
         this->setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        m_pTargetButton = aznew AzToolsFramework::TargetSelectorButtonAction(this);
+        m_pTargetButton = aznew AzToolsFramework::TargetSelectorButtonAction(LUADebugger::LuaToolsKey, this);
         m_gui->debugToolbar->addAction(m_pTargetButton);
         m_gui->menuDebug->addAction(m_pTargetButton);
 

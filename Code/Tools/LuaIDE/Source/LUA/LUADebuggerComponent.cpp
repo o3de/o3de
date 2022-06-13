@@ -8,7 +8,9 @@
 
 #include "LUADebuggerComponent.h"
 #include "LUAEditorContextMessages.h"
+#include <Source/Utils/LuaIDEConstants.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/PlatformIncl.h>
@@ -19,7 +21,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Script/ScriptContext.h>
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 #include <AzFramework/Script/ScriptDebugMsgReflection.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -29,11 +30,10 @@ namespace LUADebugger
 {
     // Utility functions
     // Returns true if a valid target was found, in which case the info is returned in targetInfo.
-    bool GetDesiredTarget(AzFramework::TargetInfo& targetInfo)
+    bool GetDesiredTarget(AzFramework::RemoteToolsEndpointInfo& targetInfo)
     {
         // discover what target the user is currently connected to, if any?
-        AzFramework::TargetInfo info;
-        EBUS_EVENT_RESULT(info, AzFramework::TargetManager::Bus, GetDesiredTarget);
+        AzFramework::RemoteToolsEndpointInfo info = AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(LuaToolsKey);
         if (!info.GetPersistentId())
         {
             AZ_TracePrintf("Debug", "The user has not chosen a target to connect to.\n");
@@ -42,9 +42,7 @@ namespace LUADebugger
 
         targetInfo = info;
         if (
-            (!targetInfo.IsValid()) ||
-            ((targetInfo.GetStatusFlags() & AzFramework::TF_ONLINE) == 0) ||
-            ((targetInfo.GetStatusFlags() & AzFramework::TF_DEBUGGABLE) == 0)
+            (!targetInfo.IsValid())
             )
         {
             AZ_TracePrintf("Debug", "The target is currently not in a state that would allow debugging code (offline or not debuggable)\n");
@@ -70,25 +68,21 @@ namespace LUADebugger
     void Component::Activate()
     {
         LUAEditorDebuggerMessages::Bus::Handler::BusConnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
-        AzFramework::TmMsgBus::Handler::BusConnect(AZ_CRC("ScriptDebugger", 0xf8ab685e));
     }
 
     void Component::Deactivate()
     {
         LUAEditorDebuggerMessages::Bus::Handler::BusDisconnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
-        AzFramework::TmMsgBus::Handler::BusDisconnect(AZ_CRC("ScriptDebugger", 0xf8ab685e));
     }
 
     void Component::EnumerateContexts()
     {
         AZ_TracePrintf("LUA Debug", "Component::EnumerateContexts()\n");
 
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumContexts", 0xbdb959ba)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumContexts", 0xbdb959ba)));
         }
     }
 
@@ -97,10 +91,10 @@ namespace LUADebugger
         AZ_TracePrintf("LUA Debug", "Component::AttachDebugger( %s )\n", scriptContextName);
 
         AZ_Assert(scriptContextName, "You need to supply a valid script context name to attach to!");
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("AttachDebugger", 0x6590ff36), scriptContextName));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("AttachDebugger", 0x6590ff36), scriptContextName));
         }
     }
 
@@ -108,37 +102,37 @@ namespace LUADebugger
     {
         AZ_TracePrintf("LUA Debug", "Component::DetachDebugger()\n");
 
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("DetachDebugger", 0x88a2ee04)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("DetachDebugger", 0x88a2ee04)));
         }
     }
 
     void Component::EnumRegisteredClasses(const char* scriptContextName)
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredClasses", 0xed6b8070), scriptContextName));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredClasses", 0xed6b8070), scriptContextName));
         }
     }
 
     void Component::EnumRegisteredEBuses(const char* scriptContextName)
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredEBuses"), scriptContextName));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredEBuses"), scriptContextName));
         }
     }
 
     void Component::EnumRegisteredGlobals(const char* scriptContextName)
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredGlobals", 0x80d1e6af), scriptContextName));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumRegisteredGlobals", 0x80d1e6af), scriptContextName));
         }
     }
 
@@ -151,12 +145,12 @@ namespace LUADebugger
         EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetRelativeProductPathFromFullSourceOrProductPath, debugName, relativePath);
         relativePath = "@" + relativePath;
 
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
             // local editors are never debuggable (they'd never have the debuggable flag) so if you get here you know its over the network
             // and its network id is targetID.
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC("AddBreakpoint", 0xba71daa4), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC("AddBreakpoint", 0xba71daa4), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
         }
     }
 
@@ -169,39 +163,39 @@ namespace LUADebugger
         EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetRelativeProductPathFromFullSourceOrProductPath, debugName, relativePath);
         relativePath = "@" + relativePath;
 
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
             // local editors are never debuggable (they'd never have the debuggable flag) so if you get here you know its over the network
             // and its network id is targetID.
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC("RemoveBreakpoint", 0x90ade500), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC("RemoveBreakpoint", 0x90ade500), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
         }
     }
 
     void Component::DebugRunStepOver()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepOver", 0x6b89bf41)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepOver", 0x6b89bf41)));
         }
     }
 
     void Component::DebugRunStepIn()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepIn", 0x761a6b13)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepIn", 0x761a6b13)));
         }
     }
 
     void Component::DebugRunStepOut()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepOut", 0xac19b635)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("StepOut", 0xac19b635)));
         }
     }
 
@@ -212,53 +206,53 @@ namespace LUADebugger
 
     void Component::DebugRunContinue()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("Continue", 0x13e32adf)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("Continue", 0x13e32adf)));
         }
     }
 
     void Component::EnumLocals()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumLocals", 0x4aa29dcf)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("EnumLocals", 0x4aa29dcf)));
         }
     }
 
     void Component::GetValue(const AZStd::string& varName)
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("GetValue", 0x2d64f577), varName.c_str()));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("GetValue", 0x2d64f577), varName.c_str()));
         }
     }
 
     void Component::SetValue(const AZ::ScriptContextDebug::DebugValue& value)
     {
         (void)value;
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
             AzFramework::ScriptDebugSetValue request;
             request.m_value = value;
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, request);
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, request);
         }
     }
 
     void Component::GetCallstack()
     {
-        AzFramework::TargetInfo targetInfo;
+        AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (GetDesiredTarget(targetInfo))
         {
-            EBUS_EVENT(AzFramework::TargetManager::Bus, SendTmMessage, targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("GetCallstack", 0x343b24f3)));
+            AzFramework::RemoteToolsInterface::Get()->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC("GetCallstack", 0x343b24f3)));
         }
     }
 
-    void Component::OnReceivedMsg(AzFramework::TmMsgPtr msg)
+    void Component::OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg)
     {
         if (AzFramework::ScriptDebugAck* ack = azdynamic_cast<AzFramework::ScriptDebugAck*>(msg.get()))
         {

@@ -25,7 +25,7 @@ namespace RemoteTools
 
     struct RemoteToolsRegistryEntry
     {
-        AZStd::string m_name;
+        AZ::Name m_name;
         uint16_t m_port;
 
         AzFramework::RemoteToolsEndpointContainer m_availableTargets;
@@ -106,31 +106,31 @@ namespace RemoteTools
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::IRemoteTools interface implementation
 
-        AzFramework::RemoteToolsServiceKey RegisterToolingService(AZStd::string name, uint16_t port) override;
+        void RegisterToolingService(AZ::Crc32 key, AZ::Name name, uint16_t port) override;
 
-        const AzFramework::ReceivedRemoteToolsMessages* GetReceivedMessages(AzFramework::RemoteToolsServiceKey key) const override;
+        const AzFramework::ReceivedRemoteToolsMessages* GetReceivedMessages(AZ::Crc32 key) const override;
 
-        void ClearReceivedMessages(AzFramework::RemoteToolsServiceKey key) override;
+        void ClearReceivedMessages(AZ::Crc32 key) override;
 
-        void RegisterRemoteToolsEndpointJoinedHandler(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
 
-        void RegisterRemoteToolsEndpointLeftHandler(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
 
-        void RegisterRemoteToolsEndpointConnectedHandler(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointConnectedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler) override;
 
-        void RegisterRemoteToolsEndpointChangedHandler(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointChangedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler) override;
 
-        void EnumTargetInfos(AzFramework::RemoteToolsServiceKey key, AzFramework::RemoteToolsEndpointContainer& infos) override;
+        void EnumTargetInfos(AZ::Crc32 key, AzFramework::RemoteToolsEndpointContainer& infos) override;
 
-        void SetDesiredEndpoint(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID) override;
+        void SetDesiredEndpoint(AZ::Crc32 key, AZ::u32 desiredTargetID) override;
 
-        void SetDesiredEndpointInfo(AzFramework::RemoteToolsServiceKey key, const AzFramework::RemoteToolsEndpointInfo& targetInfo) override;
+        void SetDesiredEndpointInfo(AZ::Crc32 key, const AzFramework::RemoteToolsEndpointInfo& targetInfo) override;
 
-        AzFramework::RemoteToolsEndpointInfo GetDesiredEndpoint(AzFramework::RemoteToolsServiceKey key) override;
+        AzFramework::RemoteToolsEndpointInfo GetDesiredEndpoint(AZ::Crc32 key) override;
 
-        AzFramework::RemoteToolsEndpointInfo GetEndpointInfo(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID) override;
+        AzFramework::RemoteToolsEndpointInfo GetEndpointInfo(AZ::Crc32 key, AZ::u32 desiredTargetID) override;
 
-        bool IsEndpointOnline(AzFramework::RemoteToolsServiceKey key, AZ::u32 desiredTargetID) override;
+        bool IsEndpointOnline(AZ::Crc32 key, AZ::u32 desiredTargetID) override;
 
         void SendRemoteToolsMessage(const AzFramework::RemoteToolsEndpointInfo& target, const AzFramework::RemoteToolsMessage& msg) override;
         ////////////////////////////////////////////////////////////////////////
@@ -138,9 +138,9 @@ namespace RemoteTools
         AZStd::unique_ptr<RemoteToolsJoinThread> m_joinThread;
         AZStd::unique_ptr<RemoteToolsOutboxThread> m_outboxThread;
 
-        AZStd::unordered_map<AzFramework::RemoteToolsServiceKey, RemoteToolsRegistryEntry> m_entryRegistry;
+        AZStd::unordered_map<AZ::Crc32, RemoteToolsRegistryEntry> m_entryRegistry;
 
-        AZStd::unordered_map<AzFramework::RemoteToolsServiceKey, AzFramework::ReceivedRemoteToolsMessages> m_inbox;
+        AZStd::unordered_map<AZ::Crc32, AzFramework::ReceivedRemoteToolsMessages> m_inbox;
         AZStd::mutex m_inboxMutex;
     };
 } // namespace RemoteTools

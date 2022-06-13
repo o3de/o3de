@@ -43,10 +43,6 @@ namespace LUA
 
     void TargetContextButton::DoPopup()
     {
-        AzFramework::TargetContainer targets;
-
-        EBUS_EVENT(AzFramework::TargetManager::Bus, EnumTargetInfos, targets);
-
         QMenu menu;
 
         AZStd::vector<AZStd::string> contexts;
