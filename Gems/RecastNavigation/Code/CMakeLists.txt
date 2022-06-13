@@ -56,6 +56,24 @@ set_property(TARGET DetourCrowd PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 set_property(TARGET DetourTileCache PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 
+# Export external recast navigation targets for installers.
+set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
+    include(CMakePrintHelpers)
+
+    add_library(RecastNavigation::Detour STATIC IMPORTED)
+    set_target_properties(RecastNavigation::Detour PROPERTIES IMPORTED_LOCATION "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/Detour.lib")
+    ly_target_include_system_directories(TARGET RecastNavigation::Detour INTERFACE "${CMAKE_SOURCE_DIR}/include/recastnavigation")
+
+    cmake_print_properties(
+        TARGETS
+            RecastNavigation::Detour
+        PROPERTIES
+            LOCATION
+            INTERFACE_INCLUDE_DIRECTORIES
+    )
+]]
+)
+
 # The RecastNavigation.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME RecastNavigation.API INTERFACE
@@ -69,6 +87,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
+           RecastNavigation::Detour
 )
 
 # The RecastNavigation.Private.Object target is an internal target
