@@ -67,7 +67,7 @@ set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
         set_target_properties(RecastNavigation::${recastLibrary} 
             PROPERTIES 
                 IMPORTED_LOCATION 
-                    "${LY_ROOT_FOLDER}/lib/${recastLibrary}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+                    "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${recastLibrary}${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
         target_compile_definitions(RecastNavigation::${recastLibrary} 
             INTERFACE 
