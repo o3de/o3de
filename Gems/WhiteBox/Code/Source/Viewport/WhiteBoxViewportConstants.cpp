@@ -44,6 +44,7 @@ namespace WhiteBox
         AZ::Color, cl_whiteBoxVertexSelectedModifierColor, AZ::Color::CreateFromRgba(0, 150, 255, 200), nullptr,
         AZ::ConsoleFunctorFlags::Null, "");
 
+    AZ_CVAR(float, ed_whiteBoxPolygonViewOverlapOffset, 0.004f, nullptr, AZ::ConsoleFunctorFlags::Null, "The offset highlighted polygon");
     AZ_CVAR(float, cl_whiteBoxVertexManipulatorSize, 0.125f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, cl_whiteBoxMouseClickDeltaThreshold, 0.001f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, cl_whiteBoxModifierMidpointEpsilon, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
