@@ -251,6 +251,10 @@ namespace AzToolsFramework
             //! finally, if its not a generic asset, it tries the operating system.
             virtual void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& /*assetId*/, bool& /*alreadyHandled*/) {}
 
+            //! Notifies handlers that a new asset was created from the editor so they can handle
+            //! renaming or other behavior as necessary.
+            virtual void NotifyAssetWasCreatedInEditor([[maybe_unused]] const AZStd::string& assetPath) {}
+
             //! Allows you to recognise the source files that your plugin cares about and provide information about the source file
             //! for display in the Asset Browser.  This allows you to override the default behavior if you wish to.
             //! note that you'll get SourceFileDetails for every file in view, and you should only return something if its YOUR
@@ -287,6 +291,10 @@ namespace AzToolsFramework
 
             virtual void BeginRemoveEntry(AssetBrowserEntry* entry) = 0;
             virtual void EndRemoveEntry() = 0;
+
+            //! Notifies the Asset Browser's model that an asset was created through the editor.
+            //! @param assetPath The full filepath for the asset.
+            virtual void NotifyAssetWasCreatedInEditor([[maybe_unused]] const AZStd::string& assetPath) {}
         };
 
         using AssetBrowserModelRequestBus = AZ::EBus<AssetBrowserModelRequests>;

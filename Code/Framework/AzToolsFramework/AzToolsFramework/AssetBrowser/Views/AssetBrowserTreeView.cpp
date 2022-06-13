@@ -296,6 +296,20 @@ namespace AzToolsFramework
             return GetEntryFromIndex<SourceAssetBrowserEntry>(index) == nullptr;
         }
 
+        void AssetBrowserTreeView::OpenItemForEditing(const QModelIndex& index)
+        {
+            if (index.isValid())
+            {
+                selectionModel()->clear();
+                selectionModel()->select(index, QItemSelectionModel::Select);
+                setCurrentIndex(index);
+
+                scrollTo(index);
+
+                RenameEntry();
+            }
+        }
+
         bool AssetBrowserTreeView::SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID)
         {
             int elements = model()->rowCount(idxParent);
@@ -310,6 +324,7 @@ namespace AzToolsFramework
                     setCurrentIndex(rowIdx);
                     return true;
                 }
+
                 if (SelectProduct(rowIdx, assetID))
                 {
                     expand(rowIdx);

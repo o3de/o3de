@@ -21,6 +21,7 @@
 #include <QMimeData>
 #include <QFileInfo>
 #include <QThread>
+#include <QTimer>
 #include <QApplication>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
@@ -367,6 +368,26 @@ namespace AzToolsFramework
                 m_addingEntry = false;
                 endInsertRows();
 
+                if (!m_watchedIncomingAssetPaths.empty())
+                {
+                    // Gets the newest child with the assumption that BeginAddEntry adds new entries at GetChildCount
+                    AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
+                    const AZStd::string& childFullPath = AZ::IO::Path(newestChildEntry->GetFullPath()).AsPosix();
+
+                    if (m_watchedIncomingAssetPaths.contains(childFullPath))
+                    {
+                        QModelIndex index = createIndex(parent->GetChildCount(),
+                            aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName),
+                            newestChildEntry);
+
+                        if (index.isValid())
+                        {
+                            m_watchedIncomingAssetPaths.erase(childFullPath);
+                            QTimer::singleShot(0, this, [&]() { emit AssetCreatedFromEditor(index); });
+                        }
+                    }
+                }
+
                 // we have to also invalidate our parent all the way up the chain.
                 // since in this model, the children's data is actually relevant to the filtering of a parent
                 // since a parent "matches" the filter if its children do.
@@ -403,6 +424,19 @@ namespace AzToolsFramework
             {
                 m_removingEntry = false;
                 endRemoveRows();
+            }
+        }
+
+        void AssetBrowserModel::NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath)
+        {
+            QModelIndex index = findIndex(assetPath.c_str());
+            if (index.isValid())
+            {
+                emit AssetCreatedFromEditor(index);
+            }
+            else
+            {
+                m_watchedIncomingAssetPaths.insert(AZ::IO::Path(assetPath).AsPosix());
             }
         }
 
