@@ -18,9 +18,11 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 
+
 #endif // Q_MOC_RUN
 
 class QCheckBox;
+class QTimer;
 
 namespace AzToolsFramework
 {
@@ -59,7 +61,6 @@ namespace AzToolsFramework
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
     };
-
     class DPERowWidget : public QWidget
     {
         Q_OBJECT
@@ -119,6 +120,7 @@ namespace AzToolsFramework
         }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
+        void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
@@ -126,12 +128,15 @@ namespace AzToolsFramework
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
+        void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
 
+        QTimer* m_handlerCleanupTimer;
+        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         AZStd::deque<DPERowWidget*> m_domOrderedRows;
     };
 } // namespace AzToolsFramework
