@@ -3264,7 +3264,9 @@ namespace AssetProcessor
         if (m_initialScanSkippingFeature)
         {
             for (const AssetFileInfo& fileInfo : filePaths)
+            {
                 AddKnownFoldersRecursivelyForFile(fileInfo.m_filePath, fileInfo.m_scanFolder->ScanPath());
+            }
 
             m_sourceFilesInDatabase.clear();
             m_fileModTimes.clear();
