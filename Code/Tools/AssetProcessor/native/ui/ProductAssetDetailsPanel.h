@@ -114,7 +114,7 @@ namespace AssetProcessor
         QHash<AZ::s64, QString> m_productIdToScanName;
         QHash<QString, MissingDependencyScanGUIInfo> m_scanNameToScanGUIInfo;
         mutable AZStd::recursive_mutex m_scanCountMutex;
-        QPointer<QListWidget> m_missingDependencyScanResults = nullptr;
+        QPointer<QListWidget> m_missingDependencyScanResults;
         // The asset database connection in the AzToolsFramework namespace is read only. The AssetProcessor connection allows writing.
         AZStd::shared_ptr<AssetDatabaseConnection> m_assetDatabaseConnection;
 
