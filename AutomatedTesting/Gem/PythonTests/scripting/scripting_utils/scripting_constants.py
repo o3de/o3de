@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Holds constants used across both hydra and non-hydra scripts.
 """
+import os
+import azlmbr.paths as paths
 
 """
 Constants for window and tab names
@@ -56,3 +58,7 @@ WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
 
+"""
+File Paths
+"""
+SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
