@@ -196,7 +196,7 @@ namespace AZ
             //! Returns a map of all material slot labels.
             virtual MaterialAssignmentLabelMap GetMaterialLabels() const = 0;
 
-            //! Returns the available, overridable material slots and the default assigned materials
+            //! Returns the available material slots and default assigned materials
             virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
 
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;

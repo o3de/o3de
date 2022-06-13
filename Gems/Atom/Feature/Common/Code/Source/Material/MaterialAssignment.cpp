@@ -86,19 +86,18 @@ namespace AZ
         }
 
         MaterialAssignment::MaterialAssignment(const AZ::Data::AssetId& materialAssetId)
-            : m_materialAsset(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid())
-            , m_materialInstance()
+            : MaterialAssignment(Data::Asset<RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid()))
         {
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset)
-            : m_materialAsset(asset)
-            , m_materialInstance()
+            : MaterialAssignment(asset, Data::Instance<RPI::Material>())
         {
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset, const Data::Instance<RPI::Material>& instance)
-            : m_materialAsset(asset)
+            : m_defaultMaterialAsset(asset)
+            , m_materialAsset(asset)
             , m_materialInstance(instance)
         {
         }

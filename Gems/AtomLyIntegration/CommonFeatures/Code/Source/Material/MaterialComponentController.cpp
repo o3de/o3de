@@ -203,14 +203,14 @@ namespace AZ
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
 
+            MaterialReceiverRequestBus::EventResult(
+                m_defaultMaterialMap, m_entityId, &MaterialReceiverRequestBus::Events::GetDefautMaterialMap);
+
             // Build tables of all referenced materials so that we can load and look up defaults
-            for (const auto& [materialAssignmentId, materialAssignment] : GetDefautMaterialMap())
+            for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
             {
                 const auto& defaultMaterialAsset = materialAssignment.m_materialAsset;
                 m_uniqueMaterialMap[defaultMaterialAsset.GetId()] = defaultMaterialAsset;
-
-                // Insert entry for quick look up of the default material asset
-                m_defaultMaterialMap[materialAssignmentId] = defaultMaterialAsset;
 
                 auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
                 if (materialIt != m_configuration.m_materials.end())
@@ -257,14 +257,15 @@ namespace AZ
             };
 
             // Update all of the material asset containers to reference the newly loaded asset
-            for (auto& materialPair : m_defaultMaterialMap)
+            for (auto& materialPair : m_uniqueMaterialMap)
             {
                 updateAsset(materialPair.second);
             }
 
-            for (auto& materialPair : m_uniqueMaterialMap)
+            for (auto& materialPair : m_defaultMaterialMap)
             {
-                updateAsset(materialPair.second);
+                updateAsset(materialPair.second.m_materialAsset);
+                updateAsset(materialPair.second.m_defaultMaterialAsset);
             }
 
             for (auto& materialPair : m_configuration.m_materials)
@@ -304,10 +305,7 @@ namespace AZ
 
         MaterialAssignmentMap MaterialComponentController::GetDefautMaterialMap() const
         {
-            MaterialAssignmentMap originalMaterials;
-            MaterialReceiverRequestBus::EventResult(
-                originalMaterials, m_entityId, &MaterialReceiverRequestBus::Events::GetDefautMaterialMap);
-            return originalMaterials;
+            return m_defaultMaterialMap;
         }
 
         MaterialAssignmentId MaterialComponentController::FindMaterialAssignmentId(
@@ -321,8 +319,8 @@ namespace AZ
 
         AZ::Data::AssetId MaterialComponentController::GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const
         {
-            auto materialIt = m_defaultMaterialMap.find(materialAssignmentId);
-            return materialIt != m_defaultMaterialMap.end() ? materialIt->second.GetId() : AZ::Data::AssetId();
+            const auto materialIt = m_defaultMaterialMap.find(materialAssignmentId);
+            return materialIt != m_defaultMaterialMap.end() ? materialIt->second.m_materialAsset.GetId() : AZ::Data::AssetId();
         }
 
         AZStd::string MaterialComponentController::GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const
@@ -533,8 +531,7 @@ namespace AZ
         {
             auto& materialAssignment = m_configuration.m_materials[materialAssignmentId];
             const bool wasEmpty = materialAssignment.m_propertyOverrides.empty();
-            materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = value;
-            ConvertAssetsForSerialization();
+            materialAssignment.m_propertyOverrides[AZ::Name(propertyName)] = ConvertAssetsForSerialization(value);
 
             if (materialAssignment.RequiresLoading())
             {
@@ -581,9 +578,9 @@ namespace AZ
             if (!materialAsset.IsReady())
             {
                 const auto defaultMaterialIt = m_defaultMaterialMap.find(materialAssignmentId);
-                if (defaultMaterialIt != m_defaultMaterialMap.end() && defaultMaterialIt->second.IsReady())
+                if (defaultMaterialIt != m_defaultMaterialMap.end() && defaultMaterialIt->second.m_materialAsset.IsReady())
                 {
-                    materialAsset = defaultMaterialIt->second;
+                    materialAsset = defaultMaterialIt->second.m_materialAsset;
                 }
             }
 
@@ -594,7 +591,8 @@ namespace AZ
                 const auto index = layout->FindPropertyIndex(AZ::Name(propertyName));
                 if (index.IsValid())
                 {
-                    return AZ::RPI::MaterialPropertyValue::ToAny(materialAsset->GetPropertyValues()[index.GetIndex()]);
+                    auto propertyValue = materialAsset->GetPropertyValues()[index.GetIndex()];
+                    return ConvertAssetsForSerialization(AZ::RPI::MaterialPropertyValue::ToAny(propertyValue));
                 }
             }
 
@@ -707,9 +705,9 @@ namespace AZ
             if (!materialAsset.IsReady())
             {
                 const auto defaultMaterialIt = m_defaultMaterialMap.find(materialAssignmentId);
-                if (defaultMaterialIt != m_defaultMaterialMap.end() && defaultMaterialIt->second.IsReady())
+                if (defaultMaterialIt != m_defaultMaterialMap.end() && defaultMaterialIt->second.m_materialAsset.IsReady())
                 {
-                    materialAsset = defaultMaterialIt->second;
+                    materialAsset = defaultMaterialIt->second.m_materialAsset;
                 }
             }
 
@@ -721,7 +719,8 @@ namespace AZ
                 {
                     auto descriptor = layout->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
                     auto propertyValue = materialAsset->GetPropertyValues()[propertyIndex];
-                    properties.insert({ descriptor->GetName().GetStringView(), AZ::RPI::MaterialPropertyValue::ToAny(propertyValue) });
+                    properties.insert({ descriptor->GetName().GetStringView(),
+                                        ConvertAssetsForSerialization(AZ::RPI::MaterialPropertyValue::ToAny(propertyValue)) });
                 }
             }
 
@@ -791,32 +790,41 @@ namespace AZ
         {
             for (auto& materialAssignmentPair : m_configuration.m_materials)
             {
-                MaterialAssignment& materialAssignment = materialAssignmentPair.second;
-                for (auto& propertyPair : materialAssignment.m_propertyOverrides)
-                {
-                    auto& value = propertyPair.second;
-                    if (value.is<AZ::Data::Asset<AZ::Data::AssetData>>())
-                    {
-                        value = AZStd::any_cast<AZ::Data::Asset<AZ::Data::AssetData>>(value).GetId();
-                    }
-                    else if (value.is<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>())
-                    {
-                        value = AZStd::any_cast<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(value).GetId();
-                    }
-                    else if (value.is<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>())
-                    {
-                        value = AZStd::any_cast<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(value).GetId();
-                    }
-                    else if (value.is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
-                    {
-                        value = AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value).GetId();
-                    }
-                    else if (value.is<AZ::Data::Instance<AZ::RPI::Image>>())
-                    {
-                        value = AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId();
-                    }
-                }
+                ConvertAssetsForSerialization(materialAssignmentPair.second.m_propertyOverrides);
             }
+        }
+
+        void MaterialComponentController::ConvertAssetsForSerialization(MaterialPropertyOverrideMap& propertyMap)
+        {
+            for (auto& propertyPair : propertyMap)
+            {
+                ConvertAssetsForSerialization(propertyPair.second);
+            }
+        }
+
+        AZStd::any MaterialComponentController::ConvertAssetsForSerialization(const AZStd::any& value) const
+        {
+            if (value.is<AZ::Data::Asset<AZ::Data::AssetData>>())
+            {
+                return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::Data::AssetData>>(value).GetId());
+            }
+            if (value.is<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>())
+            {
+                return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(value).GetId());
+            }
+            if (value.is<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>())
+            {
+                return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(value).GetId());
+            }
+            if (value.is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
+            {
+                return AZStd::any(AZStd::any_cast<AZ::Data::Asset<AZ::RPI::ImageAsset>>(value).GetId());
+            }
+            if (value.is<AZ::Data::Instance<AZ::RPI::Image>>())
+            {
+                return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
+            }
+            return value;
         }
     } // namespace Render
 } // namespace AZ

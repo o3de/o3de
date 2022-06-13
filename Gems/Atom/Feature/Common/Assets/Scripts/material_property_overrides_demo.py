@@ -45,7 +45,7 @@ def assetIdToPath(assetId):
 # List all slot ids
 def getIds(entityId):
     print("Get material ids")
-    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetDefautMaterialMap', entityId)
+    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetDefautMaterialMap', entityId).keys()
 
 def printMaterials(entityId):
     materials = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetMaterialMap', entityId)
@@ -62,18 +62,18 @@ def setPropertyValues(entityId, ids):
     for id in ids:
         # factor override (float)
         factor = random.random()
-        propertyName = Name("baseColor.factor")
+        propertyName = "baseColor.factor"
         azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, factor)
 
         # color override
         color = math.Color(random.random(), random.random(), random.random(), 1.0)
-        propertyName = Name("baseColor.color")
+        propertyName = "baseColor.color"
         azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, color)
 
         # texture override
         texturePath = random.choice(textures)
         assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', texturePath, math.Uuid(), False)
-        propertyName = Name("baseColor.textureMap")
+        propertyName = "baseColor.textureMap"
         azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, assetId)
 
 # Convert property value to string
@@ -82,7 +82,15 @@ def propertyValueToString(value):
         return value
     if value.typename == 'Color':
         return 'Color(r={:.2f}, g={:.2f}, b={:.2f}, a={:.2f})'.format(value.r, value.g, value.b, value.a)
+    if value.typename == 'Vector4':
+        return 'Vector4(x={:.2f}, y={:.2f}, z={:.2f}, w={:.2f})'.format(value.x, value.y, value.z, value.w)
+    if value.typename == 'Vector3':
+        return 'Vector3(x={:.2f}, y={:.2f}, z={:.2f})'.format(value.x, value.y, value.z)
+    if value.typename == 'Vector2':
+        return 'Vector2(x={:.2f}, y={:.2f})'.format(value.x, value.y)
     if value.typename == 'ImageBinding':
+        return assetIdToPath(value.GetAssetId())
+    if value.typename == 'Asset':
         return assetIdToPath(value.GetAssetId())
     if value.typename == 'AssetId':
         return assetIdToPath(value)

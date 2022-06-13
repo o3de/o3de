@@ -106,10 +106,12 @@ namespace AZ
             //! overrides are lost during prefab serialization and patching. This suboptimal function will be removed once the underlying
             //! problem is resolved.
             void ConvertAssetsForSerialization();
+            void ConvertAssetsForSerialization(MaterialPropertyOverrideMap& propertyMap);
+            AZStd::any ConvertAssetsForSerialization(const AZStd::any& value) const;
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
-            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_defaultMaterialMap;
+            MaterialAssignmentMap m_defaultMaterialMap;
             AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
