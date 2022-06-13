@@ -28,7 +28,7 @@ namespace AZ::Render
         return PassDescriptorList
         {
             // Outline effect for the entities in the selected entity mask
-            { AZ::Name("EntityOutlinePass"), AZ::Name("EditorModeOutlineTemplate") }
+            AZ::Name("EditorModeOutlineTemplate")
         };
     }
     

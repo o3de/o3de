@@ -18,13 +18,13 @@ namespace AZ::Render
         return PassDescriptorList
         {
             // Black and white effect for unfocused entities (scaled by distance)
-            { AZ::Name("DesaturationPass"), AZ::Name("EditorModeDesaturationTemplate") },
+            AZ::Name("EditorModeDesaturationTemplate"),
 
             // Darkening effect for unfocused entities (scaled by distance)
-            { AZ::Name("TintPass"), AZ::Name("EditorModeTintTemplate") },
+            AZ::Name("EditorModeTintTemplate"),
 
             // Blurring effect for unfocused entities (scaled by distance)
-            { AZ::Name("BlurPass"), AZ::Name("EditorModeBlurParentTemplate") }
+            AZ::Name("EditorModeBlurParentTemplate")
         };
     }
 

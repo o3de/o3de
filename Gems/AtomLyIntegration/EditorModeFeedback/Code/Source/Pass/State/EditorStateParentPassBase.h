@@ -18,11 +18,8 @@
 
 namespace AZ::Render
 {
-    //! Pass name and pass template.
-    using PassDescriptor = AZStd::pair<AZ::Name, AZ::Name>;
-
     //! List of passes to create.
-    using PassDescriptorList = AZStd::vector<PassDescriptor>;
+    using PassDescriptorList = AZStd::vector<Name>;
 
     //! Parent pass for editor states.
     //! This base class is inherited by the specific editor states that wish to implement custom feedback effects.
@@ -79,7 +76,7 @@ namespace AZ::Render
                 return 0;
             }
 
-            auto* childPass = parentPass->FindChildPass(m_childPassDescriptorList[index].first);
+            auto* childPass = parentPass->FindChildPass(m_childPassDescriptorList[index]);
             if (!ChildPass)
             {
                 return nullptr;

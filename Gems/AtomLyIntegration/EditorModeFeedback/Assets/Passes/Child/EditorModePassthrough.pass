@@ -9,19 +9,6 @@
             "PassClass": "EditorModeOutlinePass",
             "Slots": [
                 {
-                    "Name": "InputDepth",
-                    "SlotType": "Input",
-                    "ShaderInputName": "m_depth",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
-                    "Name": "InputEntityMask",
-                    "SlotType": "Input",
-                    "ShaderInputName": "m_entityMask",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ShaderImageDimensionsConstant": "m_maskDimensions"
-                },
-                {
                     "Name": "InputColor",
                     "SlotType": "Input",
                     "ShaderInputName": "m_framebuffer",
