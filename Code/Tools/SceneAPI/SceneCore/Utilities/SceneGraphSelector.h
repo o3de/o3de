@@ -14,7 +14,10 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 
-namespace AZ::SceneAPI::DataTypes { class ISceneNodeSelectionList; }
+namespace AZ::SceneAPI::DataTypes {
+    class ISceneNodeSelectionList;
+    class ISceneNodeGroup;
+}
 
 namespace AZ::SceneAPI::Utilities
 {
@@ -26,9 +29,12 @@ namespace AZ::SceneAPI::Utilities
     {
     public:
         using NodeFilterFunction = bool(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
-        using NodeRemapFunction = Containers::SceneGraph::NodeIndex(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index);
+        using NodeRemapFunction = Containers::SceneGraph::NodeIndex(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index, [[maybe_unused]] const DataTypes::ISceneNodeGroup& nodeGroup);
 
-        SCENE_CORE_API static AZStd::vector<AZStd::string> GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list,
+        SCENE_CORE_API static AZStd::vector<AZStd::string> GenerateTargetNodes(
+            const Containers::SceneGraph& graph,
+            const DataTypes::ISceneNodeGroup& nodeGroup,
+            const DataTypes::ISceneNodeSelectionList& list,
             NodeFilterFunction nodeFilter, NodeRemapFunction nodeRemap = NoRemap);
         SCENE_CORE_API static void SelectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
         SCENE_CORE_API static void UnselectAll(const Containers::SceneGraph& graph, DataTypes::ISceneNodeSelectionList& list);
@@ -40,11 +46,17 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API static bool IsMesh(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
         SCENE_CORE_API static bool IsMeshObject(const AZStd::shared_ptr<const DataTypes::IGraphObject>& object);
 
-        SCENE_CORE_API static Containers::SceneGraph::NodeIndex NoRemap(const Containers::SceneGraph& /*graph*/, const Containers::SceneGraph::NodeIndex& index)
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex NoRemap(
+            const Containers::SceneGraph& /*graph*/,
+            const Containers::SceneGraph::NodeIndex& index,
+            [[maybe_unused]] const DataTypes::ISceneNodeGroup& meshGroup)
         {
             return index;
         }
-        SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index);
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOptimizedMesh(
+            const Containers::SceneGraph& graph,
+            const Containers::SceneGraph::NodeIndex& index,
+            const DataTypes::ISceneNodeGroup& meshGroup);
 
     private:
         static void CopySelectionToSet(AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected, const DataTypes::ISceneNodeSelectionList& list);

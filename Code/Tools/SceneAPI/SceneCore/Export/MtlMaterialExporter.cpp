@@ -304,7 +304,8 @@ namespace AZ
                 if (rules.FindFirstByType<DataTypes::IMaterialRule>())
                 {
                     // create materials for render nodes
-                    AZStd::vector<AZStd::string> renderTargetNodes = Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph, 
+                    AZStd::vector<AZStd::string> renderTargetNodes = Utilities::SceneGraphSelector::GenerateTargetNodes(
+                        sceneGraph, sceneNodeGroup,
                         sceneNodeGroup.GetSceneNodeSelectionList(), Utilities::SceneGraphSelector::IsMesh);
                     for (auto& nodeName : renderTargetNodes)
                     {
@@ -347,7 +348,7 @@ namespace AZ
                             auto& lodSceneNodeList = lodRule->GetSceneNodeSelectionList(lodIndex);
 
                             AZStd::vector<AZStd::string> lodNodes = 
-                                Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph, lodSceneNodeList, Utilities::SceneGraphSelector::IsMesh);
+                                Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph, sceneNodeGroup, lodSceneNodeList, Utilities::SceneGraphSelector::IsMesh);
 
                             for (const AZStd::string& nodeName : lodNodes)
                             {

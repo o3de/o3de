@@ -7,12 +7,14 @@
  */
 
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Transform.h>
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 
 namespace AZ
 {
@@ -40,10 +42,18 @@ namespace AZ
                 return object && object->RTTI_IsTypeOf(DataTypes::IMeshData::TYPEINFO_Uuid());
             }
 
-            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(
+                const Containers::SceneGraph& graph,
+                const Containers::SceneGraph::NodeIndex& index,
+                const DataTypes::ISceneNodeGroup& sceneNodeGroup)
             {
                 const auto& nodeName = graph.GetNodeName(index);
-                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength()).append(OptimizedMeshSuffix);
+
+                const AZStd::string optimizedName = AZStd::string(nodeName.GetPath(), nodeName.GetPathLength())
+                                                        .append("_")
+                                                        .append(sceneNodeGroup.GetName())
+                                                        .append(SceneAPI::Utilities::OptimizedMeshSuffix);
+
                 if (auto optimizedIndex = graph.Find(optimizedName); optimizedIndex.IsValid())
                 {
                     return optimizedIndex;
@@ -51,7 +61,12 @@ namespace AZ
                 return index;
             }
 
-            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(const Containers::SceneGraph& graph, const DataTypes::ISceneNodeSelectionList& list, NodeFilterFunction nodeFilter, NodeRemapFunction nodeRemap)
+            AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(
+                const Containers::SceneGraph& graph,
+                const DataTypes::ISceneNodeGroup& sceneNodeGroup,
+                const DataTypes::ISceneNodeSelectionList& list,
+                NodeFilterFunction nodeFilter,
+                NodeRemapFunction nodeRemap)
             {
                 AZStd::vector<AZStd::string> targetNodes;
                 AZStd::set<AZStd::string> selectedNodesSet;
@@ -77,7 +92,7 @@ namespace AZ
                     {
                         if (nodeFilter(graph, index))
                         {
-                            Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index);
+                            Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index, sceneNodeGroup);
                             if (remappedIndex == index)
                             {
                                 targetNodes.emplace_back(AZStd::move(currentNodeName));
@@ -104,7 +119,7 @@ namespace AZ
                             selectedNodesSet.insert(currentNodeName);
                             if (nodeFilter(graph, index))
                             {
-                                Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index);
+                                Containers::SceneGraph::NodeIndex remappedIndex = nodeRemap(graph, index, sceneNodeGroup);
                                 if (remappedIndex == index)
                                 {
                                     targetNodes.emplace_back(AZStd::move(currentNodeName));
@@ -273,4 +288,5 @@ namespace AZ
             }
         }
     }
-}
+} // namespace AZ
+
