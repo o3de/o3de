@@ -17,6 +17,7 @@ namespace AzToolsFramework
 {
     using ToolBarManagerOperationResult = AZ::Outcome<void, AZStd::string>;
 
+    //! Provides additional properties to initialize a ToolBar upon registration.
     struct ToolBarProperties
     {
         AZ_RTTI(ToolBarProperties, "{49B21EA2-5449-47EC-AEFC-3DBC0288CED0}");

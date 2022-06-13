@@ -15,48 +15,48 @@
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
-        : m_ToolBar(new QToolBar(""))
+        : m_toolBar(new QToolBar(""))
     {
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
-        : m_ToolBar(new QToolBar(name.c_str()))
+        : m_toolBar(new QToolBar(name.c_str()))
     {
     }
 
     void EditorToolBar::AddSeparator(int sortKey)
     {
-        m_ToolBarItems.insert({ sortKey, ToolBarItem() });
+        m_toolBarItems.insert({ sortKey, ToolBarItem() });
         RefreshToolBar();
     }
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_ToolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
+        m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshToolBar();
     }
 
     void EditorToolBar::AddWidget(int sortKey, QWidget* widget)
     {
-        m_ToolBarItems.insert({ sortKey, ToolBarItem(widget) });
+        m_toolBarItems.insert({ sortKey, ToolBarItem(widget) });
         RefreshToolBar();
     }
 
     QToolBar* EditorToolBar::GetToolBar()
     {
-        return m_ToolBar;
+        return m_toolBar;
     }
 
     const QToolBar* EditorToolBar::GetToolBar() const
     {
-        return m_ToolBar;
+        return m_toolBar;
     }
 
     void EditorToolBar::RefreshToolBar()
     {
-        m_ToolBar->clear();
+        m_toolBar->clear();
 
-        for (const auto& elem : m_ToolBarItems)
+        for (const auto& elem : m_toolBarItems)
         {
             switch (elem.second.m_type)
             {
@@ -64,18 +64,18 @@ namespace AzToolsFramework
                 {
                     if(QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier))
                     {
-                        m_ToolBar->addAction(action);
+                        m_toolBar->addAction(action);
                     }
                     break;
                 }
             case ToolBarItemType::Separator:
                 {
-                    m_ToolBar->addSeparator();
+                    m_toolBar->addSeparator();
                     break;
                 }
             case ToolBarItemType::Widget:
                 {
-                    m_ToolBar->addAction(elem.second.m_widgetAction);
+                    m_toolBar->addAction(elem.second.m_widgetAction);
                     break;
                 }
             default:
@@ -105,8 +105,8 @@ namespace AzToolsFramework
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
 
-        m_ToolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
-        AZ_Assert(m_ToolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
+        m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
+        AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
     }
 
 } // namespace AzToolsFramework

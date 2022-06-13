@@ -16,7 +16,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-
+    
+    //! ToolBar Manager class definition.
+    //! Handles Editor ToolBars and allows registration and access across tools.
     class ToolBarManager
         : private ToolBarManagerInterface
     {

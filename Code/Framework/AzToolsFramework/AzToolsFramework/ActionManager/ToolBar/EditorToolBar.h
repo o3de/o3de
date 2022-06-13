@@ -22,6 +22,8 @@ namespace AzToolsFramework
     class ActionManagerInterface;
     class ToolBarManagerInterface;
 
+    //! Editor ToolBar class definitions.
+    //! Wraps a QToolBar and provides additional functionality to handle and sort its items.
     class EditorToolBar
     {
     public:
@@ -59,11 +61,11 @@ namespace AzToolsFramework
             QWidgetAction* m_widgetAction = nullptr;
         };
 
-        QToolBar* m_ToolBar = nullptr;
-        AZStd::multimap<int, ToolBarItem> m_ToolBarItems;
+        QToolBar* m_toolBar = nullptr;
+        AZStd::multimap<int, ToolBarItem> m_toolBarItems;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
-        inline static ToolBarManagerInterface* m_ToolBarManagerInterface = nullptr;
+        inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
     };
 
 } // namespace AzToolsFramework
