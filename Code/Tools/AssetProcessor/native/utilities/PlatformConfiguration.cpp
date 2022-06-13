@@ -664,22 +664,7 @@ namespace AssetProcessor
             {
                 auto platformIdentifier = QString::fromUtf8(platform.m_identifier.data(),
                     aznumeric_cast<int>(platform.m_identifier.size()));
-                AssetPlatformSpec spec;
-                // a special case exists where this is "overriding" an underlying version.
-                // in this case, unless some string was specified for the overrider, we use the underlying one
-                if (!currentParams.empty())
-                {
-                    spec.m_extraRCParams = QString::fromUtf8(currentParams.data(), aznumeric_cast<int>(currentParams.size()));
-                }
-                else
-                {
-                    if (assetRecognizer.m_recognizer.m_platformSpecs.contains(platformIdentifier))
-                    {
-                        // carry over the prior
-                        spec.m_extraRCParams = assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier].m_extraRCParams;
-                    }
-                }
-                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = spec;
+                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = AssetInternalSpec::Copy;
             }
         }
     }

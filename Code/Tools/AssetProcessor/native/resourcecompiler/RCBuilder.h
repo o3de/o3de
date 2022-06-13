@@ -44,7 +44,6 @@ namespace AssetProcessor
     };
 
     extern const BuilderIdAndName  BUILDER_ID_COPY;
-    extern const BuilderIdAndName  BUILDER_ID_RC;
     extern const BuilderIdAndName  BUILDER_ID_SKIP;
     extern const QHash<QString, BuilderIdAndName>  INTERNAL_BUILDER_BY_ID;
 
@@ -52,20 +51,20 @@ namespace AssetProcessor
     struct InternalAssetRecognizer
         : public AssetRecognizer
     {
-        InternalAssetRecognizer(const AssetRecognizer& src, const QString& builderId, const QHash<QString, AssetPlatformSpec>& assetPlatformSpecByPlatform);
+        InternalAssetRecognizer(const AssetRecognizer& src, const QString& builderId, const QHash<QString, AssetInternalSpec>& assetPlatformSpecByPlatform);
         InternalAssetRecognizer(const InternalAssetRecognizer& src) = default;
 
         AZ::u32 CalculateCRC() const;
 
         //! Map of platform specs based on the identifier of the platform
-        QHash<QString, AssetPlatformSpec>           m_platformSpecsByPlatform;
+        QHash<QString, AssetInternalSpec> m_platformSpecsByPlatform;
 
         //! unique id that is generated for each unique internal asset recognizer
         //! which can be used as the key for the job parameter map (see AssetBuilderSDK::JobParameterMap)
-        AZ::u32                                 m_paramID;
+        AZ::u32 m_paramID;
 
         //! Keep track which internal builder type this recognizer is for
-        const QString                          m_builderId;
+        const QString m_builderId;
     };
     typedef QHash<AZ::u32, InternalAssetRecognizer*> InternalRecognizerContainer;
     typedef QList<const InternalAssetRecognizer*> InternalRecognizerPointerContainer;
@@ -100,7 +99,7 @@ namespace AssetProcessor
         static void RegisterInternalAssetRecognizerToMap(
             const AssetRecognizer& assetRecognizer,
             const QString& builderId,
-            QHash<QString, AssetPlatformSpec>& sourceAssetPlatformSpecs,
+            QHash<QString, AssetInternalSpec>& sourceAssetPlatformSpecs,
             QHash<QString, InternalAssetRecognizerList>& internalRecognizerListByType);
 
         //! Split all of the asset recognizers from a container into buckets based on their specific builder action type

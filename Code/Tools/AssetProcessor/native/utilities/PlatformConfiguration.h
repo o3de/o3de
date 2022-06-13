@@ -58,10 +58,10 @@ namespace AssetProcessor
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
-    class AssetPlatformSpec
+    enum class AssetInternalSpec
     {
-    public:
-        QString m_extraRCParams;
+        Copy,
+        Skip
     };
 
     //! The data about a particular recognizer, including all platform specs.
@@ -90,8 +90,8 @@ namespace AssetProcessor
         QString m_version = QString();
 
         // the QString is the Platform Identifier ("pc")
-        // the AssetPlatformSpec is the details for processing that asset on that platform.
-        QHash<QString, AssetPlatformSpec> m_platformSpecs;
+        // the AssetInternalSpec specifies the type of internal job to process
+        QHash<QString, AssetInternalSpec> m_platformSpecs;
 
         // an optional parameter which is a UUID of types to assign to the output asset(s)
         // if you don't specify one, then a heuristic will be used

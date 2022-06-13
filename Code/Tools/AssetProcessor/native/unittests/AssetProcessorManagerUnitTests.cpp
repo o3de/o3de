@@ -82,8 +82,6 @@ namespace AssetProcessor
 
                     return first.m_jobEntry.m_platformInfo.m_identifier < second.m_jobEntry.m_platformInfo.m_identifier;
                 });
-
-            //AZ_TracePrintf("test", "-------------------------\n");
         }
 
         void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForANDROID, PlatformConfiguration& config, QString scanFolderPath, QString relPath)
@@ -95,8 +93,8 @@ namespace AssetProcessor
             config.GetMatchingRecognizers(filePath, output);
             for (const AssetRecognizer* assetRecogniser : output)
             {
-                extraInfoForPC.append(assetRecogniser->m_platformSpecs["pc"].m_extraRCParams);
-                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs["android"].m_extraRCParams);
+                extraInfoForPC.append(assetRecogniser->m_platformSpecs["pc"] == AssetInternalSpec::Copy ? "copy" : "skip");
+                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs["android"] == AssetInternalSpec::Copy ? "copy" : "skip");
                 extraInfoForPC.append(assetRecogniser->m_version);
                 extraInfoForANDROID.append(assetRecogniser->m_version);
             }
@@ -264,28 +262,19 @@ namespace AssetProcessor
 
         config.AddMetaDataType("exportsettings", QString());
 
-        AZ::Uuid buildIDRcLegacy;
-        BUILDER_ID_RC.GetUuid(buildIDRcLegacy);
-
         AssetRecognizer rec;
-        AssetPlatformSpec specpc;
-        AssetPlatformSpec specandroid;
 
-        specandroid.m_extraRCParams = "somerandomparam";
         rec.m_name = "random files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
         config.AddRecognizer(rec);
         UNIT_TEST_EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
-
-        specpc.m_extraRCParams = ""; // blank must work
-        specandroid.m_extraRCParams = "testextraparams";
 
         const char* builderTxt1Name = "txt files";
         rec.m_name = builderTxt1Name;
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
 
         config.AddRecognizer(rec);
 
@@ -306,7 +295,7 @@ namespace AssetProcessor
         rec.m_name = "tiff files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.tiff", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.clear();
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
         rec.m_testLockSource = true;
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -314,33 +303,26 @@ namespace AssetProcessor
         rec.m_platformSpecs.clear();
         rec.m_testLockSource = false;
 
-        specpc.m_extraRCParams = "pcparams";
-        specandroid.m_extraRCParams = "androidparams";
-
         rec.m_name = "xxx files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.xxx", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // two recognizers for the same pattern.
         rec.m_name = "xxx files 2 (builder2)";
-        specpc.m_extraRCParams = "pcparams2";
-        specandroid.m_extraRCParams = "androidparams2";
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // Ignore recognizer
-        AssetPlatformSpec ignore_spec;
-        ignore_spec.m_extraRCParams = "skip";
         AssetRecognizer ignore_rec;
         ignore_rec.m_name = "ignore files";
         ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        ignore_rec.m_platformSpecs.insert("pc", specpc);
-        ignore_rec.m_platformSpecs.insert("android", ignore_spec);
+        ignore_rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        ignore_rec.m_platformSpecs.insert("android", AssetInternalSpec::Skip);
         config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
 
@@ -1682,8 +1664,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)"));
 
         //Changing specs for pc
-        specpc.m_extraRCParams = "new pcparams";
-        rec.m_platformSpecs.insert("pc", specpc);
+        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
 
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -1717,54 +1698,6 @@ namespace AssetProcessor
             apm.AssetProcessed(processResult.m_jobEntry, response);
         }
 
-        // now re-perform the same test, this time only the pc ones should re-appear.
-        // this should happen because we're changing the extra params, which should be part of the fingerprint
-        // if this unit test fails, check to make sure that the extra params are being ingested into the fingerprint computation functions
-        // and also make sure that the jobs that are for the remaining android platform don't change.
-
-        // store the UUID so that we can insert the new one with the same UUID
-        AZStd::shared_ptr<InternalMockBuilder> builderTxt2Builder;
-        UNIT_TEST_EXPECT_TRUE(mockAppManager.GetBuilderByID("xxx files 2 (builder2)", builderTxt2Builder));
-
-        AZ::Uuid builderUuid;
-        UNIT_TEST_EXPECT_TRUE(mockAppManager.GetBuildUUIDFromName("xxx files 2 (builder2)", builderUuid));
-
-        builderTxt2Builder.reset();
-
-        config.RemoveRecognizer("xxx files 2 (builder2)");
-        mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)");
-        //Changing specs for pc
-        specpc.m_extraRCParams = "new pcparams---"; // make sure the xtra params are different.
-        rec.m_platformSpecs.remove("pc");
-        rec.m_platformSpecs.insert("pc", specpc);
-
-        config.AddRecognizer(rec);
-        mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
-
-        processResults.clear();
-
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-        QCoreApplication::processEvents(QEventLoop::AllEvents);
-
-        QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
-
-        UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-
-        sortAssetToProcessResultList(processResults);
-
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1); // only 1 for pc
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
-
-        // ---------------------
-
-        unsigned int newfingerprintForPC = 0;
-        unsigned int newfingerprintForANDROID = 0;
-
-        ComputeFingerprints(newfingerprintForPC, newfingerprintForANDROID, config, watchFolderPath, relativePathFromWatchFolder);
-
-        UNIT_TEST_EXPECT_TRUE(newfingerprintForPC != fingerprintForPC);//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE(newfingerprintForANDROID == fingerprintForANDROID);//Fingerprints are same
-
         config.RemoveRecognizer("xxx files 2 (builder2)");
         mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)");
 
@@ -1782,14 +1715,6 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier != processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
-
-        unsigned int newfingerprintForPCAfterVersionChange = 0;
-        unsigned int newfingerprintForANDROIDAfterVersionChange = 0;
-
-        ComputeFingerprints(newfingerprintForPCAfterVersionChange, newfingerprintForANDROIDAfterVersionChange, config, watchFolderPath, relativePathFromWatchFolder);
-
-        UNIT_TEST_EXPECT_TRUE((newfingerprintForPCAfterVersionChange != fingerprintForPC) || (newfingerprintForPCAfterVersionChange != newfingerprintForPC));//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE((newfingerprintForANDROIDAfterVersionChange != fingerprintForANDROID) || (newfingerprintForANDROIDAfterVersionChange != newfingerprintForANDROID));//Fingerprints should be different
 
         processResults.clear();
         
@@ -2222,21 +2147,15 @@ namespace AssetProcessor
         mockAppManager.UnRegisterAllBuilders();
 
         AssetRecognizer abt_rec1;
-        AssetPlatformSpec abt_specandroid;
         abt_rec1.m_name = "UnitTestTextBuilder1";
         abt_rec1.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        //abt_rec1.m_regexp.setPatternSyntax(QRegExp::Wildcard);
-        //abt_rec1.m_regexp.setPattern("*.txt");
-        abt_rec1.m_platformSpecs.insert("android", specandroid);
+        abt_rec1.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec1);
 
         AssetRecognizer abt_rec2;
-        AssetPlatformSpec abt_specpc;
         abt_rec2.m_name = "UnitTestTextBuilder2";
         abt_rec2.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        //abt_rec2.m_regexp.setPatternSyntax(QRegExp::Wildcard);
-        //abt_rec2.m_regexp.setPattern("*.txt");
-        abt_rec2.m_platformSpecs.insert("pc", specpc);
+        abt_rec2.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec2);
 
         processResults.clear();
