@@ -135,7 +135,7 @@ namespace AzNetworking
             {
                 return 0;
             }
-            AZLOG_ERROR("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
         }
         else if (receivedBytes == 0)
         {
@@ -157,14 +157,14 @@ namespace AzNetworking
         if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
         {
             const int32_t error = GetLastNetworkError();
-            AZLOG_ERROR("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
             return false;
         }
 
         if (::listen(aznumeric_cast<int32_t>(m_socketFd), SOMAXCONN) != 0)
         {
             const int32_t error = GetLastNetworkError();
-            AZLOG_ERROR("Failed to listen on socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to listen on socket (%d:%s)", error, GetNetworkErrorDesc(error));
             return false;
         }
 
@@ -184,7 +184,7 @@ namespace AzNetworking
             if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
                 return false;
             }
         }
@@ -201,7 +201,7 @@ namespace AzNetworking
             if (::connect(static_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
                 return false;
             }
         }
@@ -225,7 +225,7 @@ namespace AzNetworking
             if (!IsOpen())
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
                 m_socketFd = InvalidSocketFd;
                 return false;
             }
