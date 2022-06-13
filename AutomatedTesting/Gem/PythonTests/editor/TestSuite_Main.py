@@ -82,12 +82,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_Docking_BasicDockedTools(EditorSharedTest):
         from .EditorScripts import Docking_BasicDockedTools as test_module
 
-    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
-        from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
-
-    class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSharedTest):
-        from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
-        
     class test_EntityOutliner_EntityOrdering(EditorSharedTest):
         from .EditorScripts import EntityOutliner_EntityOrdering as test_module
 
@@ -99,3 +93,17 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     class test_Menus_ViewMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation(EditorTestSuite):
+
+    # These tests require no UI interaction or modal dialog interactions
+
+    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
+        from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
+
+    class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSharedTest):
+        from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module
