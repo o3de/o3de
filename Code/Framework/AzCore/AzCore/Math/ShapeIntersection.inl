@@ -185,6 +185,16 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE bool Overlaps(const Capsule& capsule, const Sphere& sphere)
+        {
+            float proportion;
+            Vector3 closestPointOnCapsuleAxis;
+            Intersect::ClosestPointSegment(sphere.GetCenter(), capsule.GetFirstHemisphereCenter(), capsule.GetSecondHemisphereCenter(), proportion, closestPointOnCapsuleAxis);
+            const float radiusSum = sphere.GetRadius() + capsule.GetRadius();
+            return closestPointOnCapsuleAxis.GetDistanceSq(sphere.GetCenter()) <= radiusSum * radiusSum;
+        }
+
+
         AZ_MATH_INLINE bool Contains(const Aabb& aabb1, const Aabb& aabb2)
         {
             return aabb1.Contains(aabb2);
