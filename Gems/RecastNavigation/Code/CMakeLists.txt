@@ -58,19 +58,23 @@ set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
 
 # Export external recast navigation targets for installers.
 set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
-    include(CMakePrintHelpers)
+    set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+    foreach(recastLibrary ${recastLibraries})
+        add_library(RecastNavigation::${recastLibrary} STATIC IMPORTED GLOBAL)
 
-    add_library(RecastNavigation::Detour STATIC IMPORTED)
-    set_target_properties(RecastNavigation::Detour PROPERTIES IMPORTED_LOCATION "${LY_ROOT_FOLDER}/lib/Detour.lib")
-    ly_target_include_system_directories(TARGET RecastNavigation::Detour INTERFACE "${LY_ROOT_FOLDER}/include/recastnavigation")
+        set_target_properties(RecastNavigation::${recastLibrary} 
+            PROPERTIES 
+                IMPORTED_LOCATION 
+                    "${LY_ROOT_FOLDER}/lib/${recastLibrary}.lib")
 
-    cmake_print_properties(
-        TARGETS
-            RecastNavigation::Detour
-        PROPERTIES
-            LOCATION
-            INTERFACE_INCLUDE_DIRECTORIES
-    )
+        target_compile_definitions(RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                DT_POLYREF64)
+
+        ly_target_include_system_directories(TARGET RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                "${LY_ROOT_FOLDER}/include/recastnavigation")
+    endforeach()
 ]]
 )
 
@@ -86,8 +90,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         INTERFACE
-           AZ::AzCore
-           RecastNavigation::Detour
+            AZ::AzCore
+            RecastNavigation::Detour
+            RecastNavigation::Recast
 )
 
 # The RecastNavigation.Private.Object target is an internal target
@@ -179,9 +184,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 Gem::RecastNavigation.Private.Object
-                RecastNavigation::DebugUtils
-                RecastNavigation::Detour
-                RecastNavigation::Recast
                 Gem::LmbrCentral.Static
                 Gem::DebugDraw.Static
     )

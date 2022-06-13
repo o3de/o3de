@@ -403,12 +403,12 @@ endif()
     # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
     file(WRITE "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
         "${cmake_copyright_comment}"
+        "${O3DE_INSTALL_CODE_PLACEHOLDER}"
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
         "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
         "${ENABLE_GEMS_PLACEHOLDER}"
-        "${O3DE_INSTALL_CODE_PLACEHOLDER}"
     )
 
     ly_install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
