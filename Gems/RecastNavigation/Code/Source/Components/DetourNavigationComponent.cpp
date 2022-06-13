@@ -10,7 +10,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Components/DetourNavigationComponent.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
 
 AZ_DECLARE_BUDGET(Navigation);

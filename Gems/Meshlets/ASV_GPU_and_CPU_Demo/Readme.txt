@@ -127,8 +127,11 @@ https://github.com/zeux/meshoptimizer
 
 Connecting the Gem to the project folder (AtomSamplesViewer for example):
 =========================================================================
+In the following example I will use AtomSampleViewer as the active project. If this 
+is not the case, simply replace with the directory name of your active project.
+  
 1. Add Meshlets Shader Assets directories to the file 
-    <project_folder>/config/shader_global_build_options.json
+    AtomSampleViewer/config/shader_global_build_options.json
     
             "PreprocessorOptions" : {
             "predefinedMacros": ["AZSL=17"],
@@ -143,7 +146,7 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
             ]
 
 2. Not required: you can choose to add Meshlets Assets in 
-    <project_folder>/Registry/assets_scan_folders.setreg
+    AtomSampleViewer/Registry/assets_scan_folders.setreg
             "Meshlets":
             {
                 "SourcePaths":
@@ -153,38 +156,45 @@ Connecting the Gem to the project folder (AtomSamplesViewer for example):
             }
     Remark: this is NOT required in this case as Meshlets can process regular Atom meshes
 
-3. Enable Meshlets gem in project_folder - AtomSampleViewer/Gem/code/enabled_gems.cmake
+3. Enable Meshlets gem for the active project - AtomSampleViewer/Gem/code/enabled_gems.cmake
             (
                 set(ENABLED_GEMS
                 ...
                 Meshlets
             )
-            
-4. Add the current passes to MainPipeline.pass - 
-    the pass file was added to this folder as a reference how to add the meshlets passes.
 
-5. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to the shader directory:
+4. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to the shader directory:
     [o3de]\AtomSampleViewer\Materials\Types\*
 
-6. Add the material file 'debugshadermaterial_01.material' to the material directory:
+5. Add the material file 'debugshadermaterial_01.material' to the material directory:
     [o3de]\AtomSampleViewer\Materials\DebugShaderMaterial_01.material
     
-7. Complie meshoptimizer to a library, copy the compiled library (you can compile and place it under Gems\Meshlets\External\Lib) 
+6. Complie meshoptimizer to a library, copy the compiled library (you can compile and place it under Gems\Meshlets\External\Lib) 
     and add it to your Meshlets.static project.
+    
+Remark: at this point there is no need to copy the MainPipeline.pass that was provided 
+    as an example, since the meshlets parent pass is being injected into the pipeline by the 
+    MeshletsFeatureProcessor.
 
 
 Including the Meshlets sample in ASV
 ====================================
-1. Add the following two files under the directory [O3de dir]\AtomSampleViewer\Gem\Code\Source
+1. Add the following two files to the directory [o3de]\AtomSampleViewer\Gem\Code\Source
     MeshletsExampleComponent.h
     MeshletsExampleComponent.cpp
 
 2. Alter SampleComponentManager.cpp to include the following lines:
-    In the header files section:
-    #include <MeshletsExampleComponent.h>
+    Add the following line to the header files section:
+        #include <MeshletsExampleComponent.h>
 
-    In method SampleComponentManager::GetSamples()
-                NewRPISample<MeshletsExampleComponent>("Meshlets"),
+    Add the following line to the method SampleComponentManager::GetSamples()
+        NewRPISample<MeshletsExampleComponent>("Meshlets"),
+        
+    Set the pipeline descriptor to allow pass injection:
+        pipelineDesc.m_allowModification = true;
             
 3. Add the source files to the make file 'atomsampleviewergem_private_files.cmake'
-
+    set(FILES
+        Source/MeshletsExampleComponent.cpp
+        Source/MeshletsExampleComponent.h
+        ...

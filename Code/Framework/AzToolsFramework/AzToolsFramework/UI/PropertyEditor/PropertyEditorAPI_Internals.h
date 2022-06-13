@@ -193,6 +193,7 @@ namespace AzToolsFramework
             {
                 delete m_widget;
             }
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
 
         QWidget* GetWidget() override
@@ -248,8 +249,11 @@ namespace AzToolsFramework
                 }
             }
 
-            AZ::Dom::Value value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node).value();
-            m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
+            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
+            if (value.has_value())
+            {
+                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+            }
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
 

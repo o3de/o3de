@@ -180,6 +180,19 @@ namespace AZ::DocumentPropertyEditor
         {
             m_builder.BeginRow();
             ExtractLabel(attributes);
+            if (access.GetType() == azrtti_typeid<AZStd::string>())
+            {
+                AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
+                VisitValue(
+                    Dom::Utils::ValueFromType(value), attributes,
+                    [&value](const Dom::Value& newValue)
+                    {
+                        value = newValue.GetString();
+                        return newValue;
+                    }, false);
+                return;
+            }
+
             AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::ValueFromType<void*>(access.Get());
             VisitValue(AZ::Dom::Utils::ValueFromType<void*>(access.Get()), attributes, [](const Dom::Value& newValue)
                 {
@@ -258,7 +271,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ReflectionAdapter::GenerateContents() const
+    Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();
         if (m_instance != nullptr)

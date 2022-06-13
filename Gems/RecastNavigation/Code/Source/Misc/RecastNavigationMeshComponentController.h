@@ -15,7 +15,7 @@
 #include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
