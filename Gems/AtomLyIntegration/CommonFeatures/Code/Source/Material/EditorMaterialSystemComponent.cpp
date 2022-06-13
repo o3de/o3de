@@ -176,7 +176,7 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, materialAssignmentId);
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
                 if (!materialAssetId.IsValid())
                 {
                     return;
@@ -184,7 +184,7 @@ namespace AZ
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
                 AZ::Render::MaterialComponentRequestBus::EventResult(
-                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyValues,
                     materialAssignmentId);
 
                 AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;

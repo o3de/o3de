@@ -321,7 +321,7 @@ namespace AZ
             }
         }
 
-        MaterialAssignmentLabelMap MeshComponentController::GetMaterialAssignmentLabels() const
+        MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
         {
             return GetMaterialAssignmentSlotLabelsFromModel(GetModelAsset());
         }
@@ -332,7 +332,7 @@ namespace AZ
             return FindMaterialAssignmentIdInModel(GetModelAsset(), lod, label);
         }
 
-        MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
+        MaterialAssignmentMap MeshComponentController::GetDefautMaterialMap() const
         {
             return GetMaterialAssignmentsFromModel(GetModelAsset());
         }
@@ -395,7 +395,7 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
 
                 MaterialAssignmentMap materials;
-                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
+                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialMap);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;

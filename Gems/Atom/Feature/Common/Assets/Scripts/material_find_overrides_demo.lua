@@ -57,13 +57,13 @@ end
 function FindMaterialAssignmentTest:UpdateFactor(assignmentId)
     local propertyName = "baseColor.factor"
     local propertyValue = math.random()
-    MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
+    MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function FindMaterialAssignmentTest:UpdateColor(assignmentId, color)
     local propertyName = "baseColor.color"
     local propertyValue = color
-    MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
+    MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function FindMaterialAssignmentTest:UpdateTexture(assignmentId)
@@ -72,7 +72,7 @@ function FindMaterialAssignmentTest:UpdateTexture(assignmentId)
         local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
-        MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, textureAssetId);
+        MaterialComponentRequestBus.Event.SetPropertyValue(self.entityId, assignmentId, propertyName, textureAssetId);
     end
 end
 
@@ -89,7 +89,7 @@ end
 
 function FindMaterialAssignmentTest:ClearProperties()
     Debug.Log("Clearing properties...")
-    MaterialComponentRequestBus.Event.ClearAllPropertyOverrides(self.entityId);
+    MaterialComponentRequestBus.Event.ClearAllPropertyValues(self.entityId);
 end
 
 function lerpColor(color, lerpDir, deltaTime)
@@ -137,7 +137,7 @@ function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
 
     if(nil == self.assignmentIds) then
     
-        local originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId)
+        local originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId)
         if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
             return
         end

@@ -204,7 +204,7 @@ namespace AZ::Render
         m_skinnedMeshFeatureProcessor = nullptr;
     }
 
-    MaterialAssignmentLabelMap AtomActorInstance::GetMaterialAssignmentLabels() const
+    MaterialAssignmentLabelMap AtomActorInstance::GetMaterialLabels() const
     {
         return GetMaterialAssignmentSlotLabelsFromModel(GetModelAsset());
     }
@@ -215,7 +215,7 @@ namespace AZ::Render
         return FindMaterialAssignmentIdInModel(GetModelAsset(), lod, label);
     }
 
-    MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
+    MaterialAssignmentMap AtomActorInstance::GetDefautMaterialMap() const
     {
         return GetMaterialAssignmentsFromModel(GetModelAsset());
     }
@@ -596,7 +596,7 @@ namespace AZ::Render
     void AtomActorInstance::RegisterActor()
     {
         MaterialAssignmentMap materials;
-        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
+        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);
 
         InitWrinkleMasks();
