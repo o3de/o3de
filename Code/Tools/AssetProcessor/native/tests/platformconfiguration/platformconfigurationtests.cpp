@@ -14,7 +14,6 @@
 
 const char TestAppRoot[] = "@exefolder@/testdata";
 const char EmptyDummyProjectName[] = "EmptyDummyProject";
-const char DummyProjectName[] = "DummyProject";
 
 // make the internal calls public for the purposes of the unit test!
 class UnitTestPlatformConfiguration : public AssetProcessor::PlatformConfiguration
