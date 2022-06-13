@@ -1570,7 +1570,7 @@ namespace AZ::Data
                     AssetBus::Event(dependency, &AssetBus::Events::OnAssetDependencyReloaded, asset);
                 }
             }
-            else if (result.GetError() != "No handler")
+            else if (AssetCatalogRequestBus::HasHandlers())
             {
                 // There's a lot of unit tests which don't implement this since it's not needed.
                 // Rather than require an empty implementation everywhere, it's only considered a failure
