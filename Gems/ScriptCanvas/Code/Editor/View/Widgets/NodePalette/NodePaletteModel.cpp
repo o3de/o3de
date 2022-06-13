@@ -242,6 +242,15 @@ namespace
         return skipBuses;
     }
 
+    ScriptCanvasEditor::RegisterNodeInformation GetIncrementNodeInformation()
+    {
+        ScriptCanvasEditor::RegisterNodeInformation nodeInformation;
+        nodeInformation.m_displayName = "++";
+        nodeInformation.m_categoryPath = "Math";
+        nodeInformation.m_toolTip = "Increments a value";
+        return nodeInformation;
+    }
+
     //! Register all nodes populated into the ScriptCanvas NodeRegistry
     void PopulateScriptCanvasDerivedNodes(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::SerializeContext& serializeContext)
@@ -783,16 +792,11 @@ namespace
     void PopulateDataDrivenNodes(
         ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
     {
-
-        // Create the small operator node information
-        ScriptCanvasEditor::RegisterNodeInformation nodeInformation;
-        nodeInformation.m_displayName = "++";
-        nodeInformation.m_categoryPath = "Math";
-        nodeInformation.m_toolTip = "Increments a value";
+        // For now, we just populate the palette with an increment node
+        ScriptCanvasEditor::RegisterNodeInformation nodeInformation = GetIncrementNodeInformation();
 
         nodePaletteModel.RegisterNode(nodeInformation);
     }
-
 
     // Helper function for populating the node palette model.
     // Pulled out just to make the tabbing a bit nicer, since it's a huge method.

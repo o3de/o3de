@@ -235,6 +235,32 @@ namespace ScriptCanvas
         return nullptr;
     }
 
+    ScriptCanvas::Node* CreateIncrementNode()
+    {
+        ScriptCanvas::Node* node = aznew Node;
+        node->SetNodeName("++");
+
+        DynamicDataSlotConfiguration inputPin;
+
+        inputPin.m_name = " ";
+        inputPin.m_toolTip = "Input";
+        inputPin.SetConnectionType(ConnectionType::Input);
+        inputPin.m_displayType = Data::Type::Number();
+
+        node->AddSlot(inputPin, true);
+
+        DynamicDataSlotConfiguration outputPin;
+
+        outputPin.m_name = " ";
+        outputPin.m_toolTip = "Output";
+        outputPin.SetConnectionType(ConnectionType::Output);
+        outputPin.m_displayType = Data::Type::Number();
+
+        node->AddSlot(outputPin, true);
+
+        return node;
+    }
+
     ScriptCanvas::Node* SystemComponent::CreateNodeOnEntity(const AZ::EntityId& entityId, ScriptCanvasId scriptCanvasId, const AZ::Uuid& nodeType)
     {
         if (!nodeType.IsNull())
@@ -266,26 +292,9 @@ namespace ScriptCanvas
         {
             AZ::Entity* nodeEntity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
-            ScriptCanvas::Node* node = aznew Node;
-            node->SetNodeName("++");
 
-            DynamicDataSlotConfiguration inputPin;
-
-            inputPin.m_name = " ";
-            inputPin.m_toolTip = "Input";
-            inputPin.SetConnectionType(ConnectionType::Input);
-            inputPin.m_displayType = Data::Type::Number();
-
-            node->AddSlot(inputPin, true);
-
-            DynamicDataSlotConfiguration outputPin;
-
-            outputPin.m_name = " ";
-            outputPin.m_toolTip = "Output";
-            outputPin.SetConnectionType(ConnectionType::Output);
-            outputPin.m_displayType = Data::Type::Number();
-
-            node->AddSlot(outputPin, true);
+            // For now, just create an increment node if the Uuid is null
+            ScriptCanvas::Node* node = CreateIncrementNode();
 
             if (node && nodeEntity)
             {
