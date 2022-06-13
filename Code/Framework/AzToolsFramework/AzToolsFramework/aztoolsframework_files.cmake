@@ -753,6 +753,9 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EntityAliasTypes.h
+    Prefab/Spawnable/EntityIdPathMapperInterface.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h

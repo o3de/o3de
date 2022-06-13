@@ -209,8 +209,12 @@ namespace AzToolsFramework
             m_type = NodeType::PropertyEditorNode;
             auto& jsonBackend = GetModel()->GetBackend();
             AZStd::string stringBuffer;
-            AZ::Dom::Utils::ValueToSerializedString(
-                jsonBackend, domVal[AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.GetName()], stringBuffer);
+            auto editorValue = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(domVal);
+            if (editorValue.has_value())
+            {
+                AZ::Dom::Utils::ValueToSerializedString(
+                    jsonBackend, editorValue.value(), stringBuffer);
+            }
             m_displayString = QString::fromUtf8(stringBuffer.data(), static_cast<int>(stringBuffer.size()));
         }
 

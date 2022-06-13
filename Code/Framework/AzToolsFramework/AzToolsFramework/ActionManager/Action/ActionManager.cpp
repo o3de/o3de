@@ -242,6 +242,19 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    ActionManagerBooleanResult ActionManager::IsActionEnabled(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not retrieve enabled state of action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        return AZ::Success(actionIterator->second.IsEnabled());
+    }
+
     ActionManagerOperationResult ActionManager::TriggerAction(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -277,6 +290,28 @@ namespace AzToolsFramework
         
         return actionIterator->second.GetAction();
     }
+
+    ActionManagerOperationResult ActionManager::InstallEnabledStateCallback(
+        const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not install enabled state callback on action \"%s\" as no action with that identifier was registered.",
+                actionIdentifier.c_str()));
+        }
+
+        if (actionIterator->second.HasEnabledStateCallback())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not install enabled state callback on action \"%s\" - action already has an enabled state callback installed.",
+                actionIdentifier.c_str()));
+        }
+
+        actionIterator->second.SetEnabledStateCallback(AZStd::move(enabledStateCallback));
+        return AZ::Success();
+    }
     
     ActionManagerOperationResult ActionManager::UpdateAction(const AZStd::string& actionIdentifier)
     {
@@ -285,13 +320,6 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not update action \"%s\" as no action with that identifier was registered.",
-                actionIdentifier.c_str()));
-        }
-
-        if (!actionIterator->second.IsCheckable())
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not update action \"%s\" as it was not registered as Checkable.",
                 actionIdentifier.c_str()));
         }
         

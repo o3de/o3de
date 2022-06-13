@@ -8,26 +8,47 @@
 
 #pragma once
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <Misc/RecastHelpers.h>
+#include <Misc/RecastNavigationPhysXProviderConfig.h>
+#include <RecastNavigation/RecastNavigationProviderBus.h>
 
 namespace RecastNavigation
 {
     //! Common logic for Recast navigation tiled collector components. Recommended use is as a base class.
     //! The method provided are not thread-safe. Synchronize as necessary at the higher level.
-    class RecastNavigationPhysXProviderCommon
+    class RecastNavigationPhysXProviderComponentController
+        : public RecastNavigationProviderRequestBus::Handler
     {
     public:
-        AZ_RTTI(RecastNavigationPhysXProviderCommon, "{182D93F8-9E76-409B-9939-6816509A6F52}");
-        //! Use it to configure geometry collection in either Editor PhysX scene or game scene.
-        //! @param useEditorScene if true, collect geometry from Editor PhysX scene, otherwise game scene.
-        explicit RecastNavigationPhysXProviderCommon(bool useEditorScene);
-        virtual ~RecastNavigationPhysXProviderCommon() = default;
+        AZ_CLASS_ALLOCATOR(RecastNavigationPhysXProviderComponentController, AZ::SystemAllocator, 0);
+        AZ_RTTI(RecastNavigationPhysXProviderComponentController, "{182D93F8-9E76-409B-9939-6816509A6F52}");
 
-        void OnActivate();
-        void OnDeactivate();
+        RecastNavigationPhysXProviderComponentController();
+        explicit RecastNavigationPhysXProviderComponentController(const RecastNavigationPhysXProviderConfig& config);
+        ~RecastNavigationPhysXProviderComponentController() override = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        void Activate(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        void Deactivate();
+        void SetConfiguration(const RecastNavigationPhysXProviderConfig& config);
+        const RecastNavigationPhysXProviderConfig& GetConfiguration() const;
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
+        //! RecastNavigationProviderRequestBus overrides ...
+        //! @{
+        AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
+        void CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
+        AZ::Aabb GetWorldBounds() const override;
+        int GetNumberOfTiles(float tileSize) const override;
+        //! @}
 
         //! A container of PhysX overlap scene hits (has PhysX colliders and their position/orientation).
         using QueryHits = AZStd::vector<AzPhysics::SceneQueryHit>;
@@ -36,13 +57,11 @@ namespace RecastNavigation
         //! @param tileSize the result is packaged in tiles, which are squares covering the provided volume of @worldVolume
         //! @param borderSize an additional extend in all direction around the tile volume, this additional geometry will allow Recast to connect tiles together.
         //! @param worldVolume the overall volume to collect static PhysX geometry
-        //! @param debugDrawInputData if true, debug draw will show the geometry collected
         //! @returns an array of tiles, each containing indexed geometry
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometryImpl(
             float tileSize,
             float borderSize,
-            const AZ::Aabb& worldVolume,
-            bool debugDrawInputData);
+            const AZ::Aabb& worldVolume);
 
         //! Async variant of @CollectGeometryImpl. Tiles are returned via a callback @tileCallback.
         //!   Calls on @tileCallback will come from a task graph (not a main thread).
@@ -57,13 +76,11 @@ namespace RecastNavigation
         //! @param tileSize the result is packaged in tiles, which are squares covering the provided volume of @worldVolume
         //! @param borderSize an additional extend in all direction around the tile volume, this additional geometry will allow Recast to connect tiles together
         //! @param worldVolume worldVolume the overall volume to collect static PhysX geometry
-        //! @param debugDrawInputData debugDrawInputData if true, debug draw will show the geometry collected
         //! @param tileCallback an empty tile indicates the end of the operation, otherwise a valid shared_ptr is returned with tile geometry
         void CollectGeometryAsyncImpl(
             float tileSize,
             float borderSize,
             const AZ::Aabb& worldVolume,
-            bool debugDrawInputData,
             AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback);
 
         //! Finds all the static PhysX colliders within a given volume.
@@ -74,15 +91,14 @@ namespace RecastNavigation
         //! Given a container of static colliders return indexed triangle data.
         //! @param geometry (out) triangle data will be added
         //! @param overlapHits (in) an array of static PhysX colliders
-        //! @param debugDrawInputData (optional) debug visualization options to show found triangles
-        void AppendColliderGeometry(TileGeometry& geometry, const QueryHits& overlapHits, bool debugDrawInputData);
+        void AppendColliderGeometry(TileGeometry& geometry, const QueryHits& overlapHits);
 
         //! Returns the built-in names for the PhysX scene, either Editor or game scene.
         const char* GetSceneName() const;
 
     protected:
-        //! Either use Editor PhysX world or game PhysX world.
-        bool m_useEditorScene;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+        RecastNavigationPhysXProviderConfig m_config;
 
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
@@ -93,5 +109,4 @@ namespace RecastNavigation
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Collect Geometry", "Recast Navigation" };
     };
-
 } // namespace RecastNavigation
