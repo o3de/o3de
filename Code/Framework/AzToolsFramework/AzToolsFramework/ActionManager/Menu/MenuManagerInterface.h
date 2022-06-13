@@ -18,7 +18,8 @@ class QWidget;
 namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
-
+    
+    //! Provides additional properties to initialize a Menu upon registration.
     struct MenuProperties
     {
         AZ_RTTI(MenuProperties, "{E46CF861-2A19-43EC-8CD7-42E4C03AD6CF}");
