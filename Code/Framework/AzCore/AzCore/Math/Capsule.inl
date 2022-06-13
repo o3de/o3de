@@ -36,12 +36,12 @@ namespace AZ
         return m_radius;
     }
 
-    AZ_MATH_INLINE float Capsule::GetCylinderHeight()
+    AZ_MATH_INLINE float Capsule::GetCylinderHeight() const
     {
         return m_firstHemisphereCenter.GetDistance(m_secondHemisphereCenter);
     }
 
-    AZ_MATH_INLINE float Capsule::GetTotalHeight()
+    AZ_MATH_INLINE float Capsule::GetTotalHeight() const
     {
         return GetCylinderHeight() + 2.0f * m_radius;
     }

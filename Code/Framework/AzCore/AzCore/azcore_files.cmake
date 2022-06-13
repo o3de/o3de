@@ -339,6 +339,7 @@ set(FILES
     Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h

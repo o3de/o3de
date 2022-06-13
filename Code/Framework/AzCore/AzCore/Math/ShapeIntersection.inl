@@ -113,6 +113,13 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Obb& obb)
+        {
+            const float radius = sphere.GetRadius();
+            return obb.GetDistanceSq(sphere.GetCenter()) < radius * radius;
+        }
+
+
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)

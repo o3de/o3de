@@ -202,7 +202,7 @@ namespace UnitTest
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
     }
 
-    TEST(MATH_ShapeIntersection, CapsuleCapsuleAContainsB)
+    TEST(MATH_ShapeIntersection, CapsuleCapsuleCompletelyContainedCapsuleB)
     {
         const AZ::Vector3 firstHemisphereCenter(1.0f, 2.0f, 3.0f);
         const AZ::Vector3 secondHemisphereCenter(5.0f, 7.0f, -4.0f);
@@ -240,5 +240,199 @@ namespace UnitTest
         const AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleA, capsuleB));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsuleB, capsuleA));
+    }
+
+    TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedSphere)
+    {
+        const AZ::Vector3 sphereCenter(2.0f, 3.0f, 4.0f);
+        const float sphereRadius = 2.0f;
+        const AZ::Sphere sphere(sphereCenter, sphereRadius);
+        const AZ::Vector3 obbPosition(3.0f, 4.0f, 5.0f);
+        const AZ::Quaternion obbRotation(0.46f, 0.26f, 0.58f, 0.62f);
+        const AZ::Vector3 obbHalfLengths(5.0f, 6.0f, 7.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCompletelyContainedCapsule)
+    {
+        const AZ::Vector3 firstHemisphereCenter(2.0f, 3.0f, 4.0f);
+        const AZ::Vector3 secondHemisphereCenter(3.0f, 4.0f, 6.0f);
+        const float radius = 1.0f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(3.0f, 4.0f, 5.0f);
+        const AZ::Quaternion obbRotation(0.64f, -0.08f, -0.56f, 0.52f);
+        const AZ::Vector3 obbHalfLengths(4.0f, 4.0f, 5.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCompletelyContainedObb)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-1.0f, 4.0f, 3.0f);
+        const AZ::Vector3 secondHemisphereCenter(5.0f, 0.0f, 7.0f);
+        const float radius = 4.0f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(2.0f, 2.0f, 5.0f);
+        const AZ::Quaternion obbRotation(0.72f, -0.48f, -0.24f, 0.44f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingFace)
+    {
+        const AZ::Vector3 firstHemisphereCenter(0.696f, -2.8432f, 1.4576f);
+        const AZ::Vector3 secondHemisphereCenter(-0.84f, -4.072f, 1.096f);
+        const float radius = 1.01f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(3.0f, -1.0f, 2.0f);
+        const AZ::Quaternion obbRotation(0.48f, -0.60f, 0.0f, 0.64f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromFace)
+    {
+        const AZ::Vector3 firstHemisphereCenter(0.696f, -2.8432f, 1.4576f);
+        const AZ::Vector3 secondHemisphereCenter(-0.84f, -4.072f, 1.096f);
+        const float radius = 0.99f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(3.0f, -1.0f, 2.0f);
+        const AZ::Quaternion obbRotation(0.48f, -0.60f, 0.0f, 0.64f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingFace)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-1.7872f, 4.4496f, -1.424f);
+        const AZ::Vector3 secondHemisphereCenter(1.6368f, 5.2176f, -3.344f);
+        const float radius = 2.01f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(1.0f, 1.0f, -2.0f);
+        const AZ::Quaternion obbRotation(0.12f, -0.96f, 0.08f, 0.24f);
+        const AZ::Vector3 obbHalfLengths(1.5f, 2.0f, 0.5f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromFace)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-1.7872f, 4.4496f, -1.424f);
+        const AZ::Vector3 secondHemisphereCenter(1.6368f, 5.2176f, -3.344f);
+        const float radius = 1.99f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(1.0f, 1.0f, -2.0f);
+        const AZ::Quaternion obbRotation(0.12f, -0.96f, 0.08f, 0.24f);
+        const AZ::Vector3 obbHalfLengths(1.5f, 2.0f, 0.5f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingEdge)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-7.64f, -0.534f, -0.088f);
+        const AZ::Vector3 secondHemisphereCenter(-5.384f, 0.4796f, -0.4528f);
+        const float radius = 1.26f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(-2.0f, 2.0f, -1.0f);
+        const AZ::Quaternion obbRotation(0.70f, -0.02f, -0.14f, 0.70f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.5f, 1.5f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromEdge)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-7.64f, -0.534f, -0.088f);
+        const AZ::Vector3 secondHemisphereCenter(-5.384f, 0.4796f, -0.4528f);
+        const float radius = 1.24f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(-2.0f, 2.0f, -1.0f);
+        const AZ::Quaternion obbRotation(0.70f, -0.02f, -0.14f, 0.70f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.5f, 1.5f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingEdge)
+    {
+        const AZ::Vector3 firstHemisphereCenter(6.3152f, 5.8864f, -1.088f);
+        const AZ::Vector3 secondHemisphereCenter(6.3664f, -3.6752f, -4.016f);
+        const float radius = 2.51f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(3.0f, 0.0f, 1.0f);
+        const AZ::Quaternion obbRotation(0.16f, 0.92f, -0.16f, 0.32f);
+        const AZ::Vector3 obbHalfLengths(1.0f, 1.5f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromEdge)
+    {
+        const AZ::Vector3 firstHemisphereCenter(6.3152f, 5.8864f, -1.088f);
+        const AZ::Vector3 secondHemisphereCenter(6.3664f, -3.6752f, -4.016f);
+        const float radius = 2.49f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(3.0f, 0.0f, 1.0f);
+        const AZ::Quaternion obbRotation(0.16f, 0.92f, -0.16f, 0.32f);
+        const AZ::Vector3 obbHalfLengths(1.0f, 1.5f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingVertex)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-8.92f, 8.56f, -2.4f);
+        const AZ::Vector3 secondHemisphereCenter(-3.96f, 5.28f, -3.2f);
+        const float radius = 3.01f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(1.0f, 2.0f, -4.0f);
+        const AZ::Quaternion obbRotation(0.4f, 0.4f, 0.64f, 0.52f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromVertex)
+    {
+        const AZ::Vector3 firstHemisphereCenter(-8.92f, 8.56f, -2.4f);
+        const AZ::Vector3 secondHemisphereCenter(-3.96f, 5.28f, -3.2f);
+        const float radius = 2.99f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(1.0f, 2.0f, -4.0f);
+        const AZ::Quaternion obbRotation(0.4f, 0.4f, 0.64f, 0.52f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingVertex)
+    {
+        const AZ::Vector3 firstHemisphereCenter(1.5952f, 1.0064f, 9.064f);
+        const AZ::Vector3 secondHemisphereCenter(-4.4176f, -6.8432f, 6.568f);
+        const float radius = 3.01f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(2.0f, -4.0f, 3.0f);
+        const AZ::Quaternion obbRotation(0.56f, -0.08f, -0.20f, 0.80f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 2.0f, 1.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+    }
+
+    TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromVertex)
+    {
+        const AZ::Vector3 firstHemisphereCenter(1.5952f, 1.0064f, 9.064f);
+        const AZ::Vector3 secondHemisphereCenter(-4.4176f, -6.8432f, 6.568f);
+        const float radius = 2.99f;
+        const AZ::Capsule capsule(firstHemisphereCenter, secondHemisphereCenter, radius);
+        const AZ::Vector3 obbPosition(2.0f, -4.0f, 3.0f);
+        const AZ::Quaternion obbRotation(0.56f, -0.08f, -0.20f, 0.80f);
+        const AZ::Vector3 obbHalfLengths(2.0f, 2.0f, 1.0f);
+        const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
     }
 } // namespace UnitTest

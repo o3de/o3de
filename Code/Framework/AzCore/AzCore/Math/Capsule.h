@@ -34,10 +34,10 @@ namespace AZ
         float GetRadius() const;
 
         //! Gets the height of the cylindrical section of the capsule.
-        float GetCylinderHeight();
+        float GetCylinderHeight() const;
 
         //! Gets the total height of the capsule, including the cylindrical section and both hemispherical caps.
-        float GetTotalHeight();
+        float GetTotalHeight() const;
 
         //! Sets the center of the first hemispherical cap (the order of the caps is arbitrary).
         void SetFirstHemisphereCenter(const Vector3& firstHemisphereCenter);
