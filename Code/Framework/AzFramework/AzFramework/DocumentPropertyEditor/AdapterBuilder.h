@@ -76,10 +76,10 @@ namespace AZ::DocumentPropertyEditor
         //! Operations are no longer valid on this builder once this is called.
         Dom::Value&& FinishAndTakeResult();
 
-        template<class PropertyEditorDefinition>
-        void BeginPropertyEditor(Dom::Value value = {})
+        template<class PropertyEditorDefinition, class ValueType = AZ::Dom::Value>
+        void BeginPropertyEditor(ValueType value = {})
         {
-            BeginPropertyEditor(PropertyEditorDefinition::Name, value);
+            BeginPropertyEditor(PropertyEditorDefinition::Name, AZ::Dom::Utils::ValueFromType(value));
         }
 
         template<class NodeDefinition>
