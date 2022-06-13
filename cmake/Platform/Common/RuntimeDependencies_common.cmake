@@ -10,14 +10,14 @@ set(LY_COPY_PERMISSIONS "OWNER_READ OWNER_WRITE OWNER_EXECUTE")
 set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS UTILITY MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
 
 # There are several runtime dependencies to handle:
-# 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is. 
+# 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is.
 #    Some 3rdParty may require to copy the IMPORTED_LOCATION to a relative folder to where the target is.
-# 2. Dependencies to files. This involves copying INTERFACE_LY_TARGET_FILES to the folder where the target is. In 
+# 2. Dependencies to files. This involves copying INTERFACE_LY_TARGET_FILES to the folder where the target is. In
 #    this case, the files may include a relative folder to where the target is.
 # 3. In some platforms and types of targets, we also need to copy the MANUALLY_ADDED_DEPENDENCIES to the folder where the
-#    target is. This is because the target is not in the same folder as the added dependencies. 
-# In all cases, we need to recursively walk through dependencies to find the above. In multiple cases, we will end up 
-# with the same files trying to be copied to the same place. This is expected, we still want to be able to produce a 
+#    target is. This is because the target is not in the same folder as the added dependencies.
+# In all cases, we need to recursively walk through dependencies to find the above. In multiple cases, we will end up
+# with the same files trying to be copied to the same place. This is expected, we still want to be able to produce a
 # working output per target, so there will be duplication.
 #
 
@@ -49,7 +49,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
     endif()
 
     unset(all_runtime_dependencies)
-    
+
     # Collect all dependencies to other targets. Dependencies are through linking (LINK_LIBRARIES), and
     # other manual dependencies (MANUALLY_ADDED_DEPENDENCIES)
 
@@ -77,9 +77,10 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             continue()
         endif()
 
-        if(TARGET ${link_dependency} AND link_dependency MATCHES "^3rdParty::")
+        if(TARGET ${link_dependency})
+            get_target_property(is_imported ${link_dependency} IMPORTED)
             get_target_property(is_system_library ${link_dependency} LY_SYSTEM_LIBRARY)
-            if(is_system_library)
+            if(is_imported AND is_system_library)
                 continue()
             endif()
         endif()
@@ -184,7 +185,7 @@ endfunction()
 function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND ly_TARGET)
 
     # To optimize this, we are going to cache the commands for the targets we requested. A lot of targets end up being
-    # dependencies of other targets. 
+    # dependencies of other targets.
     get_property(is_command_cached GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_COMMAND_${ly_TARGET} SET)
     if(is_command_cached)
 
@@ -280,7 +281,7 @@ function(ly_delayed_generate_runtime_dependencies)
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
             unset(runtime_depend)
-           
+
             ly_get_runtime_dependency_command(runtime_command runtime_depend "${runtime_dependency}")
             string(APPEND LY_COPY_COMMANDS ${runtime_command})
             list(APPEND runtime_depends ${runtime_depend})
@@ -304,7 +305,7 @@ function(ly_delayed_generate_runtime_dependencies)
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
             CONTENT "${configured_template_file}"
         )
-        
+
         # set the property that is consumed from the custom command generated in LyWrappers.cmake
         set_target_properties(${target} PROPERTIES RUNTIME_DEPENDENCIES_DEPENDS "${runtime_depends}")
 

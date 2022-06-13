@@ -161,5 +161,6 @@ set(FILES
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
+    Viewport/ViewBookmarkTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

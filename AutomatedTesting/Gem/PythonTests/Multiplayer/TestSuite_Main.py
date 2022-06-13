@@ -33,6 +33,7 @@ class TestAutomation(EditorTestSuite):
         def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
             save_multiplayer_level_cache_folder_artifact(workspace, "autocomponent_networkinput")
 
+    @pytest.mark.xfail(reason="GHI #9869: Test periodically fails")
     class test_Multiplayer_AutoComponent_RPC(EditorSingleTest):
         from .tests import Multiplayer_AutoComponent_RPC as test_module
 

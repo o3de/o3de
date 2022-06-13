@@ -194,7 +194,6 @@ class TestAutomation(TestAutomationBase):
         from . import VariableManager_UnpinVariableType_Works as test_module
         self._run_test(request, workspace, editor, test_module)
 
-
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
 @pytest.mark.SUITE_periodic
@@ -217,7 +216,6 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-
     def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
         expected_lines = [
             "Successfully created a new event",
