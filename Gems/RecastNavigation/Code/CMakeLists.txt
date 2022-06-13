@@ -51,10 +51,11 @@ set_property(
 unset(compile_options)
 
 # Place external recast libraries under RecastNavigation gem.
-set(RECAST_FETCHCONTENT_FOLDER "Gems/RecastNavigation/External")
+get_property(recastnavigation_gem_root GLOBAL PROPERTY "@GEMROOT:RecastNavigation@")
+ly_get_engine_relative_source_dir(${recastnavigation_gem_root} relative_recastnavigation_gem_root)
 set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
 foreach(recastLibrary ${recastLibraries})
-    set_property(TARGET ${recastLibrary} PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+    set_property(TARGET ${recastLibrary} PROPERTY FOLDER "${relative_recastnavigation_gem_root}/External")
 endforeach()
 
 # Export external recast navigation targets for installers.
