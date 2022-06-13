@@ -100,24 +100,6 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 1);
     }
 
-    TEST_F(ActionManagerFixture, VerifyActionInMenuTwice)
-    {
-        // Register menu, get it and verify it's empty.
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
-        EXPECT_EQ(menu->actions().size(), 0);
-
-        // Register a new action and add it to the menu twice.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
-
-        // Verify the action was added to the menu just once.
-        // This is the correct behavior.
-        EXPECT_EQ(menu->actions().size(), 1);
-    }
-
     TEST_F(ActionManagerFixture, VerifyActionOrderInMenu)
     {
         // Register menu, get it and verify it's empty.

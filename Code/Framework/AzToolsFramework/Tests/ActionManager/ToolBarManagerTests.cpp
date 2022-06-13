@@ -45,6 +45,17 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, AddActionToToolBarTwice)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+        auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetUnregisteredToolBar)
     {
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
@@ -72,24 +83,6 @@ namespace UnitTest
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
         // Verify the action is now in the menu.
-        EXPECT_EQ(toolBar->actions().size(), 1);
-    }
-
-    TEST_F(ActionManagerFixture, VerifyActionInToolBarTwice)
-    {
-        // Register toolbar, get it and verify it's empty.
-        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
-        EXPECT_EQ(toolBar->actions().size(), 0);
-
-        // Register a new action and add it to the toolbar.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
-        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
-
-        // Verify the action was added to the menu just once.
-        // This is the correct behavior.
         EXPECT_EQ(toolBar->actions().size(), 1);
     }
 
@@ -192,6 +185,41 @@ namespace UnitTest
         EXPECT_EQ(actions[0], test1);
         EXPECT_TRUE(actions[1]->isSeparator());
         EXPECT_EQ(actions[2], test2);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfActionInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        // Add the action to the toolbar.
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfActionInToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredActionInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Verify the API fails as the action is not registered.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfActionInToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfActionNotInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        // Verify the API fails as the action is registered but was not added to the toolbar.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfActionInToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
 } // namespace UnitTest
