@@ -11,6 +11,8 @@
 #include <native/ui/AssetTreeItem.h>
 #include <native/ui/ProductAssetTreeItemData.h>
 
+#include <QIcon>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

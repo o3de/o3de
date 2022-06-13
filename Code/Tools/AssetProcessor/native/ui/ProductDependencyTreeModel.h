@@ -12,6 +12,8 @@
 #include <QAbstractItemModel>
 #include "AssetTreeFilterModel.h"
 
+class QIcon;
+
 namespace AssetProcessor
 {
     class ProductDependencyTreeItem;

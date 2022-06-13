@@ -12,6 +12,7 @@
 
 #include <QDir>
 #include <QStack>
+#include <QVariant>
 
 namespace AssetProcessor
 {
