@@ -61,8 +61,8 @@ set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
     include(CMakePrintHelpers)
 
     add_library(RecastNavigation::Detour STATIC IMPORTED)
-    set_target_properties(RecastNavigation::Detour PROPERTIES IMPORTED_LOCATION "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/Detour.lib")
-    ly_target_include_system_directories(TARGET RecastNavigation::Detour INTERFACE "${CMAKE_SOURCE_DIR}/include/recastnavigation")
+    set_target_properties(RecastNavigation::Detour PROPERTIES IMPORTED_LOCATION "${LY_ROOT_FOLDER}/lib/Detour.lib")
+    ly_target_include_system_directories(TARGET RecastNavigation::Detour INTERFACE "${LY_ROOT_FOLDER}/include/recastnavigation")
 
     cmake_print_properties(
         TARGETS
