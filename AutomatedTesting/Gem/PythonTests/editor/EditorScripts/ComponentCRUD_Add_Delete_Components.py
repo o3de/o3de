@@ -125,7 +125,8 @@ def ComponentCRUD_Add_Delete_Components():
         success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_deleted, success)
 
-        # 7) Undo deletion of component
+        # 7) Undo deletion of component after waiting for the deletion to register
+        general.idle_wait(0.5)
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_delete_undo, success)
