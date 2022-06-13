@@ -1005,6 +1005,7 @@ class EditorTestSuite:
         :test_spec: The test class that should be a subclass of EditorSingleTest
         :return: None
         """
+        pytest.fail()
         self._setup_editor_test(editor, workspace, editor_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
