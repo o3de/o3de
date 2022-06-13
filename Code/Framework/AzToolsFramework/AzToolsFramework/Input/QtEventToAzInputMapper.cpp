@@ -213,7 +213,6 @@ namespace AzToolsFramework
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId)
         : QObject(sourceWidget)
         , m_sourceWidget(sourceWidget)
-        , m_keyboardModifiers(AZStd::make_shared<AzFramework::ModifierKeyStates>())
     {
         InitializeKeyMappings();
         InitializeMouseButtonMappings();

@@ -177,8 +177,6 @@ namespace AzToolsFramework
         // Populates m_highPriorityKeys.
         void InitializeHighPriorityKeys();
 
-        // The current keyboard modifier state used by our synthetic key input channels.
-        AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
         // A lookup table for Qt key -> AZ input channel.
         AZStd::unordered_map<Qt::Key, AzFramework::InputChannelId> m_keyMappings;
         // A lookup table for Qt mouse button -> AZ input channel.
