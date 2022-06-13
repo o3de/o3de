@@ -16,7 +16,6 @@
 #include <EMotionStudio/EMStudioSDK/Source/MainWindowEventFilter.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/PreferencesWindow.h>
-#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
