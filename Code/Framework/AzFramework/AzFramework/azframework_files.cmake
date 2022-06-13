@@ -75,7 +75,6 @@ set(FILES
     Asset/Benchmark/BenchmarkCommands.h
     Asset/Benchmark/BenchmarkSettingsAsset.cpp
     Asset/Benchmark/BenchmarkSettingsAsset.h
-    AutoGen/AzFramework.AutoPackets.xml
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
     Viewport/ViewportBus.h
@@ -432,10 +431,6 @@ set(FILES
     Input/Utils/AdjustAnalogInputForDeadZone.h
     Input/Utils/IsAnyKeyOrButton.h
     Input/Utils/ProcessRawInputEventQueues.h
-    TargetManagement/NeighborhoodAPI.h
-    TargetManagement/TargetManagementAPI.h
-    TargetManagement/TargetManagementComponent.cpp
-    TargetManagement/TargetManagementComponent.h
     FileTag/FileTag.h
     FileTag/FileTag.cpp
     FileTag/FileTagBus.h
