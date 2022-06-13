@@ -93,7 +93,6 @@ namespace UnitTest
         : public ::testing::Test
         , public AllocatorsBase
         , public AZ::ComponentApplicationBus::Handler
-        , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
         //////////////////////////////////////////////////////////////////////////
@@ -138,7 +137,6 @@ namespace UnitTest
             AllocatorsBase::SetupAllocator();
 
             // Adding this handler to allow utility functions access the serialize context
-            AZ::Data::AssetCatalogRequestBus::Handler::BusConnect();
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
@@ -179,7 +177,7 @@ namespace UnitTest
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
             threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
-#endif
+#endif 
 
             uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
 
@@ -188,7 +186,7 @@ namespace UnitTest
                 jobManagerDesc.m_workerThreads.push_back(threadDesc);
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
                 threadDesc.m_cpuId++;
-#endif
+#endif 
             }
 
             m_jobManager = AZStd::make_unique<JobManager>(jobManagerDesc);
@@ -267,14 +265,7 @@ namespace UnitTest
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
-            AZ::Data::AssetCatalogRequestBus::Handler::BusDisconnect();
             AllocatorsBase::TeardownAllocator();
-        }
-
-        AZ::Outcome<AZStd::unordered_set<Data::AssetId>, AZStd::string> GetAllReverseProductDependencies([[maybe_unused]] const Data::AssetId&) override
-        {
-            // Data is not needed for this test, we just need to handle the call
-            return AZ::Success(AZStd::unordered_set<Data::AssetId>{});
         }
 
         //enum names for Images with specific identification
@@ -800,7 +791,7 @@ namespace UnitTest
             //test ConvertFormat functions against all the pixel formats
             for (EPixelFormat pixelFormat : compressedFormats)
             {
-                //
+                // 
                 if (!CPixelFormats::GetInstance().IsImageSizeValid(pixelFormat, srcImage->GetWidth(0), srcImage->GetHeight(0), false))
                 {
                     continue;
@@ -833,7 +824,7 @@ namespace UnitTest
             }
         }
     }
-
+        
     TEST_F(ImageProcessingTest, Test_ConvertAllAstc_Success)
     {
         // Compress/Decompress to all astc formats (LDR)
@@ -864,7 +855,7 @@ namespace UnitTest
             }
         }
     }
-
+        
     TEST_F(ImageProcessingTest, Test_ConvertHdrToAstc_Success)
     {
         // Compress/Decompress HDR
@@ -874,20 +865,20 @@ namespace UnitTest
         EPixelFormat dstFormat = ePixelFormat_ASTC_4x4;
         ImageToProcess imageToProcess(srcImage);
         imageToProcess.ConvertFormat(ePixelFormat_ASTC_4x4);
-
+                
         ASSERT_TRUE(imageToProcess.Get());
         ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == dstFormat);
         ASSERT_TRUE(imageToProcess.Get()->GetWidth(0) == srcImage->GetWidth(0));
         ASSERT_TRUE(imageToProcess.Get()->GetHeight(0) == srcImage->GetHeight(0));
-
+                                
         //convert back to an uncompressed format and expect it will be successful
         imageToProcess.ConvertFormat(srcImage->GetPixelFormat());
         ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == srcImage->GetPixelFormat());
-
+                                
         //save the image to a file so we can check the visual result
         SaveImageToFile(imageToProcess.Get(), "ASTC_HDR", 1);
     }
-
+    
     TEST_F(ImageProcessingTest, Test_AstcNormalPreset_Success)
     {
         // Normal.preset which uses ASTC as output format
@@ -916,7 +907,7 @@ namespace UnitTest
             ASSERT_TRUE(outputImage->GetPixelFormat() == preset->m_pixelFormat);
             ASSERT_TRUE(outputImage->GetWidth(0) == srcImage->GetWidth(0));
             ASSERT_TRUE(outputImage->GetHeight(0) == srcImage->GetHeight(0));
-
+            
             SaveImageToFile(outputImage, "ASTC_Normal", 10);
 
             delete process;
