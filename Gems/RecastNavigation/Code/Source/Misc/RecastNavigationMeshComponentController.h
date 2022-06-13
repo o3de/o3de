@@ -71,8 +71,8 @@ namespace RecastNavigation
 
         //! RecastNavigationRequestBus overrides ...
         //! @{
-        void UpdateNavigationMeshBlockUntilCompleted() override;
-        void UpdateNavigationMeshAsync() override;
+        bool UpdateNavigationMeshBlockUntilCompleted() override;
+        bool UpdateNavigationMeshAsync() override;
         AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() override;
         //! @}
 

@@ -61,12 +61,12 @@ namespace RecastNavigation
         required.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
     }
 
-    void RecastNavigationMeshComponentController::UpdateNavigationMeshBlockUntilCompleted()
+    bool RecastNavigationMeshComponentController::UpdateNavigationMeshBlockUntilCompleted()
     {
         bool notInProgress = false;
         if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
         {
-            return;
+            return false;
         }
 
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
@@ -108,9 +108,10 @@ namespace RecastNavigation
         RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
         m_updateInProgress = false;
+        return true;
     }
 
-    void RecastNavigationMeshComponentController::UpdateNavigationMeshAsync()
+    bool RecastNavigationMeshComponentController::UpdateNavigationMeshAsync()
     {
         bool notInProgress = false;
         if (m_updateInProgress.compare_exchange_strong(notInProgress, true))
@@ -124,7 +125,10 @@ namespace RecastNavigation
                 {
                     OnTileProcessedEvent(tile);
                 });
+            return true;
         }
+
+        return false;
     }
 
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponentController::GetNavigationObject()
