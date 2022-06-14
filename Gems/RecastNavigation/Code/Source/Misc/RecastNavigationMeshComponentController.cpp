@@ -61,8 +61,14 @@ namespace RecastNavigation
         required.push_back(AZ_CRC_CE("RecastNavigationProviderService"));
     }
 
-    void RecastNavigationMeshComponentController::UpdateNavigationMeshBlockUntilCompleted()
+    bool RecastNavigationMeshComponentController::UpdateNavigationMeshBlockUntilCompleted()
     {
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return false;
+        }
+
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;
 
         // Blocking call.
@@ -101,19 +107,28 @@ namespace RecastNavigation
 
         RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
+        m_updateInProgress = false;
+        return true;
     }
 
-    void RecastNavigationMeshComponentController::UpdateNavigationMeshAsync()
+    bool RecastNavigationMeshComponentController::UpdateNavigationMeshAsync()
     {
-        AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
+        bool notInProgress = false;
+        if (m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
 
-        RecastNavigationProviderRequestBus::Event(m_entityComponentIdPair.GetEntityId(),
-            &RecastNavigationProviderRequests::CollectGeometryAsync,
-            m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
-            [this](AZStd::shared_ptr<TileGeometry> tile)
-            {
-                OnTileProcessedEvent(tile);
-            });
+            RecastNavigationProviderRequestBus::Event(m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationProviderRequests::CollectGeometryAsync,
+                m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
+                [this](AZStd::shared_ptr<TileGeometry> tile)
+                {
+                    OnTileProcessedEvent(tile);
+                });
+            return true;
+        }
+
+        return false;
     }
 
     AZStd::shared_ptr<NavMeshQuery> RecastNavigationMeshComponentController::GetNavigationObject()
@@ -170,6 +185,7 @@ namespace RecastNavigation
     {
         RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
+        m_updateInProgress = false;
     }
     void RecastNavigationMeshComponentController::OnDebugDrawTick()
     {
@@ -216,43 +232,43 @@ namespace RecastNavigation
         recast.m_triangleData = geom->m_indices.empty() ? nullptr : &geom->m_indices[0];
         recast.m_triangleCount = static_cast<int>(geom->m_indices.size()) / 3;
         recast.m_context = context;
-        
+
         // Step 1. Initialize build config.
         recast.InitializeMeshConfig(geom, meshConfig);
-        
+
         // Step 2. Rasterize input polygon soup.
         if (!recast.RasterizeInputPolygonSoup())
         {
             return {};
         }
-        
+
         // Step 3. Filter walkable surfaces.
         recast.FilterWalkableSurfaces(meshConfig);
-        
+
         // Step 4. Partition walkable surface to simple regions.
         if (!recast.PartitionWalkableSurfaceToSimpleRegions())
         {
             return {};
         }
-        
+
         // Step 5. Trace and simplify region contours.
         if (!recast.TraceAndSimplifyRegionContours())
         {
             return {};
         }
-        
+
         // Step 6. Build polygons mesh from contours.
         if (!recast.BuildPolygonsMeshFromContours())
         {
             return {};
         }
-        
+
         // Step 7. Create detail mesh which allows to access approximate height on each polygon.
         if (!recast.CreateDetailMesh())
         {
             return {};
         }
-        
+
         // Step 8. Create Detour data from Recast poly mesh.
         return recast.CreateDetourData(geom, meshConfig);
     }
