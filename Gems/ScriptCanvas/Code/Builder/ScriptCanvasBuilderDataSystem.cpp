@@ -46,7 +46,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }
 
-    void DataSystem::AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuilderSourceStorage&& result)
+    void DataSystem::AddResult(const SourceHandle& handle, BuilderSourceStorage&& result)
     {
         MutexLock lock(m_mutex);
         m_buildResultsByHandle[handle.Id()] = result;
@@ -58,7 +58,7 @@ namespace ScriptCanvasBuilder
         m_buildResultsByHandle[id] = result;
     }
 
-    BuilderSourceResult DataSystem::CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle)
+    BuilderSourceResult DataSystem::CompileBuilderData(SourceHandle sourceHandle)
     {
         MutexLock lock(m_mutex);
 
@@ -71,11 +71,11 @@ namespace ScriptCanvasBuilder
         return BuilderSourceResult{ storage.status, &storage.data };
     }
 
-    void DataSystem::CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle)
+    void DataSystem::CompileBuilderDataInternal(SourceHandle sourceHandle)
     {
         using namespace ScriptCanvasBuilder;
 
-        CompleteDescriptionInPlace(sourceHandle);
+        ScriptCanvasEditor::CompleteDescriptionInPlace(sourceHandle);
         BuilderSourceStorage result;
         
         auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
@@ -116,7 +116,7 @@ namespace ScriptCanvasBuilder
         return result;
     }
 
-    BuilderAssetResult DataSystem::LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle)
+    BuilderAssetResult DataSystem::LoadAsset(SourceHandle sourceHandle)
     {
         if (auto iter = m_assets.find(sourceHandle.Id()); iter != m_assets.end())
         {
@@ -243,7 +243,7 @@ namespace ScriptCanvasBuilder
         DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
         MonitorAsset(sourceId);
 
-        if (auto handle = ScriptCanvasEditor::CompleteDescription(ScriptCanvasEditor::SourceHandle(nullptr, sourceId, {})))
+        if (auto handle = ScriptCanvasEditor::CompleteDescription(SourceHandle(nullptr, sourceId, {})))
         {
             CompileBuilderDataInternal(*handle);
             auto& builderStorage = m_buildResultsByHandle[sourceId];

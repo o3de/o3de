@@ -148,7 +148,9 @@ namespace ScriptEvents
         AZ::Uuid GetAddressType() const { return m_addressType.Get<AZ::Uuid>() ? *m_addressType.Get<AZ::Uuid>() : AZ::Uuid::CreateNull(); }
         AZStd::string GetBehaviorContextName() const { return CreateBehaviorContextName(GetVersion()); }
         AZStd::string CreateBehaviorContextName([[maybe_unused]] AZ::u32 versionNumber) const { return AZStd::string::format("%s_%i", GetName().c_str(), GetVersion()); }
-        
+        const AZStd::string& GetScriptCanvasSerializationData() const { return m_scriptCanvasSerializedData; }
+        AZStd::string& ModScriptCanvasSerializationData() { return m_scriptCanvasSerializedData; }
+
         const AZStd::vector<Method>& GetMethods() const { return m_methods; }
 
         AZStd::string_view GetLabel() const { return { m_name.Get<AZStd::string>()->data(), m_name.Get<AZStd::string>()->size() }; }
@@ -193,6 +195,8 @@ namespace ScriptEvents
             {
                 method.Flatten();
             }
+
+            m_scriptCanvasSerializedData.clear();
         }
 
     private:
@@ -203,6 +207,6 @@ namespace ScriptEvents
         ScriptEventData::VersionedProperty m_tooltip;
         ScriptEventData::VersionedProperty m_addressType;
         AZStd::vector<Method> m_methods;
-
+        AZStd::string m_scriptCanvasSerializedData;
     };
 }

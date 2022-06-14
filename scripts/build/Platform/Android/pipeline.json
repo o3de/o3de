@@ -12,10 +12,10 @@
         "daily-pipeline-metrics": {
             "CLEAN_WORKSPACE": true
         },
-        "weekly-clean": {
+        "periodic-clean-weekly": {
             "CLEAN_WORKSPACE": true
         },
-        "weekly-clean-internal": {
+        "periodic-clean-weekly-internal": {
             "CLEAN_WORKSPACE": true
         },
         "snapshot": {

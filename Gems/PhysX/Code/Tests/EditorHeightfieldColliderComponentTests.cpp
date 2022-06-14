@@ -13,11 +13,15 @@
 #include <HeightfieldColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <StaticRigidBodyComponent.h>
 #include <RigidBodyStatic.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <PhysX/MockPhysXHeightfieldProviderComponent.h>
+#include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <Utils.h>
 
@@ -40,14 +44,59 @@ namespace PhysXEditorTests
         return samples;
     }
 
-    AZStd::vector<Physics::MaterialId> GetMaterialList()
+    AZ::Data::Asset<Physics::MaterialAsset> FindOrCreateMaterialAsset(AZ::Data::AssetId assetId)
     {
-        AZStd::vector<Physics::MaterialId> materials{
-            {Physics::MaterialId::FromUUID("{EC976D51-2C26-4C1E-BBF2-75BAAAFA162C}")},
-            {Physics::MaterialId::FromUUID("{B9836F51-A235-4781-95E3-A6302BEE9EFF}")},
-            {Physics::MaterialId::FromUUID("{7E060707-BB03-47EB-B046-4503C7145B6E}")}
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset =
+            AZ::Data::AssetManager::Instance().FindAsset<Physics::MaterialAsset>(assetId , AZ::Data::AssetLoadBehavior::Default);
+
+        if (!materialAsset)
+        {
+            const PhysX::MaterialConfiguration defaultMaterialConfiguration;
+            const Physics::MaterialAsset::MaterialProperties materialProperties =
+            {
+                {PhysX::MaterialConstants::DynamicFrictionName, defaultMaterialConfiguration.m_dynamicFriction},
+                {PhysX::MaterialConstants::StaticFrictionName, defaultMaterialConfiguration.m_staticFriction},
+                {PhysX::MaterialConstants::RestitutionName, defaultMaterialConfiguration.m_restitution},
+                {PhysX::MaterialConstants::DensityName, defaultMaterialConfiguration.m_density},
+                {PhysX::MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(defaultMaterialConfiguration.m_restitutionCombine)},
+                {PhysX::MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(defaultMaterialConfiguration.m_frictionCombine)},
+                {PhysX::MaterialConstants::DebugColorName, defaultMaterialConfiguration.m_debugColor}
+            };
+
+            materialAsset =
+                AZ::Data::AssetManager::Instance().CreateAsset<Physics::MaterialAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
+
+            if (!materialAsset)
+            {
+                AZ_Error("PhysXEditorTests", false, "Failed to create material asset with id '%s'", assetId.ToString<AZStd::string>().c_str());
+                return {};
+            }
+
+            materialAsset->SetData(
+                PhysX::MaterialConstants::MaterialAssetType,
+                PhysX::MaterialConstants::MaterialAssetVersion,
+                materialProperties);
+        }
+
+        return materialAsset;
+    }
+
+    AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> GetMaterialList()
+    {
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset1 =
+            FindOrCreateMaterialAsset(AZ::Uuid::CreateString("{EC976D51-2C26-4C1E-BBF2-75BAAAFA162C}"));
+
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset2 =
+            FindOrCreateMaterialAsset(AZ::Uuid::CreateString("{B9836F51-A235-4781-95E3-A6302BEE9EFF}"));
+
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset3 =
+            FindOrCreateMaterialAsset(AZ::Uuid::CreateString("{7E060707-BB03-47EB-B046-4503C7145B6E}"));
+
+        return {
+            materialAsset1,
+            materialAsset2,
+            materialAsset3
         };
-        return materials;
     }
 
     EntityPtr SetupHeightfieldComponent()
@@ -75,9 +124,11 @@ namespace PhysXEditorTests
         ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
         ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldAabb).WillByDefault(
+            Return(AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, -3.0f, 3.0f, 3.0f, 3.0f)));
         ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
             .WillByDefault(
-                [](int32_t& numColumns, int32_t& numRows)
+                [](size_t& numColumns, size_t& numRows)
                 {
                     numColumns = 3;
                     numRows = 3;
@@ -91,16 +142,28 @@ namespace PhysXEditorTests
                 });
         ON_CALL(mockShapeRequests, GetMaterialList).WillByDefault(Return(GetMaterialList()));
 
+        ON_CALL(mockShapeRequests, GetHeightfieldIndicesFromRegion)
+            .WillByDefault(
+                []([[maybe_unused]] const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows)
+                {
+                    startColumn = 0;
+                    startRow = 0;
+                    numColumns = 3;
+                    numRows = 3;
+                });
+
+
         ON_CALL(mockShapeRequests, UpdateHeightsAndMaterials)
             .WillByDefault(
-                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, [[maybe_unused]]const AZ::Aabb& regionIn)
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, [[maybe_unused]] size_t startColumn,
+                   [[maybe_unused]] size_t startRow, [[maybe_unused]] size_t numColumns, [[maybe_unused]] size_t numRows)
                 {
                     auto samples = GetSamples();
-                    for (int32_t row = 0; row < 3; row++)
+                    for (size_t row = 0; row < 3; row++)
                     {
-                        for (int32_t col = 0; col < 3; col++)
+                        for (size_t col = 0; col < 3; col++)
                         {
-                            updateHeightsMaterialsCallback(row, col, samples[(row * 3) + col]);
+                            updateHeightsMaterialsCallback(col, row, samples[(row * 3) + col]);
                         }
                     }
                 });
@@ -121,7 +184,6 @@ namespace PhysXEditorTests
         void SetUp() override
         {
             PhysXEditorFixture::SetUp();
-            PopulateDefaultMaterialLibrary();
 
             m_editorEntity = SetupHeightfieldComponent();
             m_editorMockShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockPhysXHeightfieldProvider>>(m_editorEntity->GetId());
@@ -143,10 +205,21 @@ namespace PhysXEditorTests
             Physics::HeightfieldProviderNotificationBus::Broadcast(
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
+
+            // The updates are performed asynchronously, so block on the jobs until they're completed.
+            auto editorHeightfieldComponent = m_editorEntity->FindComponent<PhysX::EditorHeightfieldColliderComponent>();
+            editorHeightfieldComponent->BlockOnPendingJobs();
+            auto runtimeHeightfieldComponent = m_gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>();
+            runtimeHeightfieldComponent->BlockOnPendingJobs();
         }
 
         void TearDown() override
         {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+
             CleanupHeightfieldComponent();
 
             m_editorEntity = nullptr;
@@ -157,34 +230,7 @@ namespace PhysXEditorTests
             PhysXEditorFixture::TearDown();
         }
 
-        void PopulateDefaultMaterialLibrary()
-        {
-            AZ::Data::AssetId assetId = AZ::Data::AssetId(AZ::Uuid::Create());
-
-            // Create an asset out of our Script Event
-            Physics::MaterialLibraryAsset* matLibAsset = aznew Physics::MaterialLibraryAsset;
-            {
-                const AZStd::vector<Physics::MaterialId> matIds = GetMaterialList();
-
-                for (const Physics::MaterialId& matId : matIds)
-                {
-                    Physics::MaterialFromAssetConfiguration matConfig;
-                    matConfig.m_id = matId;
-                    matConfig.m_configuration.m_surfaceType = matId.GetUuid().ToString<AZStd::string>();
-                    matLibAsset->AddMaterialData(matConfig);
-                }
-            }
-
-            // Note: There is no interface to simply update material library asset. It has to go via updating the entire configuration which causes assets reloading.
-            // It makes sense as a safety mechanism in the Editor but makes it harder to write tests.
-            // Hence have to work around it via const_cast here to be able to simply set the generated asset into configuration.
-            AzPhysics::SystemConfiguration* sysConfig = const_cast<AzPhysics::SystemConfiguration*>(AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration());
-
-            AZ::Data::Asset<Physics::MaterialLibraryAsset> assetData(assetId, matLibAsset, AZ::Data::AssetLoadBehavior::Default);
-            sysConfig->m_materialLibraryAsset = assetData;
-        }
-
-        Physics::Material* GetMaterialFromRaycast(float x, float y)
+        Physics::MaterialId GetMaterialFromRaycast(float x, float y)
         {
             AzPhysics::RayCastRequest request;
             request.m_start = AZ::Vector3(x, y, 5.0f);
@@ -198,10 +244,10 @@ namespace PhysXEditorTests
 
             if (result)
             {
-                return result.m_hits[0].m_material;
+                return result.m_hits[0].m_physicsMaterialId;
             }
 
-            return nullptr;
+            return {};
         };
 
         EntityPtr m_editorEntity;
@@ -292,8 +338,8 @@ namespace PhysXEditorTests
 
         physx::PxHeightField* heightfield = heightfieldGeometry.heightField;
 
-        int32_t numRows{ 0 };
-        int32_t numColumns{ 0 };
+        size_t numRows{ 0 };
+        size_t numColumns{ 0 };
         Physics::HeightfieldProviderRequestsBus::Event(
             gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
         EXPECT_EQ(numColumns, heightfield->getNbColumns());
@@ -326,8 +372,8 @@ namespace PhysXEditorTests
     {
         AZ::EntityId gameEntityId = m_gameEntity->GetId();
 
-        int32_t numRows{ 0 };
-        int32_t numColumns{ 0 };
+        size_t numRows{ 0 };
+        size_t numColumns{ 0 };
         Physics::HeightfieldProviderRequestsBus::Event(
             gameEntityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
@@ -353,11 +399,7 @@ namespace PhysXEditorTests
 
         physx::PxHeightField* heightfield = heightfieldGeometry.heightField;
 
-        AZStd::vector<AZStd::string> physicsSurfaceTypes;
-        for (Physics::MaterialId materialId : GetMaterialList())
-        {
-            physicsSurfaceTypes.emplace_back(materialId.GetUuid().ToString<AZStd::string>());
-        }
+        const AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> physicsMaterialAssets = GetMaterialList();
 
         // Our heightfield is located in the world as follows:
         // - entity center is (0, 0)
@@ -372,13 +414,14 @@ namespace PhysXEditorTests
         // Hence hardcoding the expected material indices in the test 
         const AZStd::array<int, 4> physicsMaterialsValidationDataIndex = {0, 2, 1, 1};
 
-        for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
+        for (size_t sampleRow = 0; sampleRow < numRows; ++sampleRow)
         {
-            for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
+            for (size_t sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
             {
-                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
+                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(static_cast<physx::PxU32>(sampleRow), static_cast<physx::PxU32>(sampleColumn));
 
-                auto [materialIndex0, materialIndex1] = PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleRow, sampleColumn, numRows, numColumns);
+                auto [materialIndex0, materialIndex1] =
+                    PhysX::Utils::GetPhysXMaterialIndicesFromHeightfieldSamples(samples, sampleColumn, sampleRow, numColumns, numRows);
                 EXPECT_EQ(samplePhysX.materialIndex0, materialIndex0);
                 EXPECT_EQ(samplePhysX.materialIndex1, materialIndex1);
 
@@ -393,16 +436,23 @@ namespace PhysXEditorTests
                     float rayX = x_offset + sampleColumn;
                     float rayY = y_offset + sampleRow;
 
-                    Physics::Material* mat1 = GetMaterialFromRaycast(rayX, rayY);
-                    EXPECT_NE(mat1, nullptr);
+                    Physics::MaterialId matId1 = GetMaterialFromRaycast(rayX, rayY);
+                    EXPECT_TRUE(matId1.IsValid());
 
-                    Physics::Material* mat2 = GetMaterialFromRaycast(rayX + secondRayOffset, rayY + secondRayOffset);
-                    EXPECT_NE(mat2, nullptr);
+                    Physics::MaterialId matId2 = GetMaterialFromRaycast(rayX + secondRayOffset, rayY + secondRayOffset);
+                    EXPECT_TRUE(matId2.IsValid());
 
-                    if (mat1)
+                    if (matId1.IsValid())
                     {
-                        AZStd::string expectedMaterialName = physicsSurfaceTypes[physicsMaterialsValidationDataIndex[sampleRow * 2 + sampleColumn]];
-                        EXPECT_EQ(mat1->GetSurfaceTypeName(), expectedMaterialName);
+                        const AZ::Data::Asset<Physics::MaterialAsset> expectedMaterialAsset = physicsMaterialAssets[physicsMaterialsValidationDataIndex[sampleRow * 2 + sampleColumn]];
+
+                        AZStd::shared_ptr<Physics::Material> mat1 = AZ::Interface<Physics::MaterialManager>::Get()->GetMaterial(matId1);
+
+                        EXPECT_TRUE(mat1.get() != nullptr);
+                        if (mat1)
+                        {
+                            EXPECT_EQ(mat1->GetMaterialAsset(), expectedMaterialAsset);
+                        }
                     }
                 }
             }

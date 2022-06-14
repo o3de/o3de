@@ -122,7 +122,7 @@ namespace RecastNavigationTests
             e.CreateComponent<RecastNavigation::RecastNavigationSystemComponent>();
             m_mockShapeComponent = e.CreateComponent<MockShapeComponent>();
             e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
-            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{}, true);
+            e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>(RecastNavigation::RecastNavigationMeshConfig{});
         }
 
         void SetupNavigationMesh()
@@ -219,12 +219,13 @@ namespace RecastNavigationTests
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        AZStd::shared_ptr<RecastNavigation::NavMeshQuery> nav;
-        RecastNavigationMeshRequestBus::EventResult(nav, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
+        AZStd::shared_ptr<RecastNavigation::NavMeshQuery> navMeshQuery;
+        RecastNavigationMeshRequestBus::EventResult(navMeshQuery, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
+        RecastNavigation::NavMeshQuery::LockGuard lock(*navMeshQuery);
         /*
          * We updated the navigation mesh using a blocking call. We should have access to the native Recast object now.
          */
-        EXPECT_NE(nav, nullptr);
+        EXPECT_NE(lock.GetNavMesh(), nullptr);
     }
 
     TEST_F(NavigationTest, TestAgainstEmptyPhysicalBody)
@@ -259,10 +260,11 @@ namespace RecastNavigationTests
         const Wait wait(AZ::EntityId(1));
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
 
-        AZStd::shared_ptr<NavMeshQuery> nav;
-        RecastNavigationMeshRequestBus::EventResult(nav, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
+        AZStd::shared_ptr<RecastNavigation::NavMeshQuery> navMeshQuery;
+        RecastNavigationMeshRequestBus::EventResult(navMeshQuery, e.GetId(), &RecastNavigationMeshRequests::GetNavigationObject);
+        RecastNavigation::NavMeshQuery::LockGuard lock(*navMeshQuery);
 
-        EXPECT_NE(nav, nullptr);
+        EXPECT_NE(lock.GetNavQuery(), nullptr);
     }
 
     TEST_F(NavigationTest, BlockingTest)
@@ -298,7 +300,7 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
 
             e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
@@ -326,7 +328,7 @@ namespace RecastNavigationTests
             /*
              * There is no way to test debug draw but tell the provider to attempt to debug draw anyway. Just don't crash.
              */
-            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>(true);
+            e.CreateComponent<RecastNavigation::RecastNavigationPhysXProviderComponent>();
 
             e.CreateComponent<RecastNavigation::RecastNavigationMeshComponent>();
         }
@@ -446,8 +448,8 @@ namespace RecastNavigationTests
         RecastNavigationDebugDraw debugDraw(true);
         MockDebug debug;
 
-        const float pos[] = {0, 0, 0};
-        const float uv[] = {0, 0, 0};
+        const float pos[] = { 0, 0, 0 };
+        const float uv[] = { 0, 0, 0 };
         debugDraw.begin(DU_DRAW_LINES);
         debugDraw.vertex(pos, 0, uv);
         debugDraw.vertex(pos, 0, uv);
@@ -624,10 +626,10 @@ namespace RecastNavigationTests
     /*
      * Just for code coverage!
      */
-    TEST_F(NavigationTest, RecastNavigationMeshCommonTests)
+    TEST_F(NavigationTest, RecastNavigationMeshComponentControllerTests)
     {
-        RecastNavigation::RecastNavigationMeshCommon common;
-        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshCommon"), 0);
+        RecastNavigation::RecastNavigationMeshComponentController common;
+        EXPECT_EQ(strcmp(common.TYPEINFO_Name(), "RecastNavigationMeshComponentController"), 0);
     }
 
     /*
@@ -642,9 +644,224 @@ namespace RecastNavigationTests
     /*
      * Just for code coverage!
      */
-    TEST_F(NavigationTest, RecastNavigationPhysXProviderCommon)
+    TEST_F(NavigationTest, RecastNavigationPhysXProviderComponentController)
     {
-        RecastNavigation::RecastNavigationPhysXProviderCommon test(true);
-        EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderCommon"), 0);
+        RecastNavigation::RecastNavigationPhysXProviderComponentController test;
+        EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderComponentController"), 0);
+    }
+
+    TEST_F(NavigationTest, AsyncOnNavigationMeshUpdatedIsCalled)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        wait.BlockUntilCalled();
+    }
+
+    TEST_F(NavigationTest, AsyncDeactivateRightAfterCallingUpdate)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        // Don't wait, deactivate the entity now.
+
+        /*
+         * If everything goes well, the entity will shutdown without a crash. With a bad design,
+         * one of tile will be sent to a deactivate component. Note, RecastNavigationMeshComponent deactivates first while
+         * RecastNavigationPhysXProviderComponent might still try to send it tile data.
+         */
+    }
+
+    TEST_F(NavigationTest, AsyncEmpty)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        wait.BlockUntilCalled();
+    }
+
+    TEST_F(NavigationTest, AsyncRerun)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        for (int i = 1; i <= 2; ++i)
+        {
+            const Wait wait(AZ::EntityId(1));
+            RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+            wait.BlockUntilCalled();
+        }
+    }
+
+    TEST_F(NavigationTest, AsyncSecondWhileFirstIsInProgress)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        wait.BlockUntilCalled();
+
+        EXPECT_EQ(wait.m_calls, 1);
+    }
+
+    TEST_F(NavigationTest, AsyncManyUpdatesWhileFirstIsInProgressStressTest)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        for (int i = 0; i < 9'001; ++i)
+        {
+            RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        }
+        wait.BlockUntilCalled();
+
+        // Only one of those updates was done.
+        EXPECT_EQ(wait.m_calls, 1);
+    }
+
+    TEST_F(NavigationTest, BlockingCallAfterAsync)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
+        wait.BlockUntilCalled();
+
+        // Only one of those updates was done.
+        EXPECT_EQ(wait.m_calls, 1);
+    }
+
+    TEST_F(NavigationTest, BlockingCallAfterAsyncReturnsFalse)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        bool result = false;
+        RecastNavigationMeshRequestBus::EventResult(result, e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+        EXPECT_EQ(result, true);
+
+        RecastNavigationMeshRequestBus::EventResult(result, e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
+        EXPECT_EQ(result, false);
+        wait.BlockUntilCalled();
+    }
+
+    TEST_F(NavigationTest, FindPathRightAfterUpdateAsync)
+    {
+        Entity e;
+        PopulateEntity(e);
+        e.CreateComponent<DetourNavigationComponent>(e.GetId(), 3.f);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        const Wait wait(AZ::EntityId(1));
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
+
+        AZStd::vector<AZ::Vector3> waypoints;
+        DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
+            AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
+        // We should not get the path yet since the async update operation is still in progress.
+        EXPECT_EQ(waypoints.size(), 0);
+
+        wait.BlockUntilCalled();
+    }
+
+    TEST_F(NavigationTest, CollectGeometryCornerCaseZeroTileSize)
+    {
+        Entity e;
+        PopulateEntity(e);
+        e.CreateComponent<DetourNavigationComponent>(e.GetId(), 3.f);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+
+        AZStd::vector<AZStd::shared_ptr<RecastNavigation::TileGeometry>> tiles;
+        RecastNavigation::RecastNavigationProviderRequestBus::EventResult(tiles, e.GetId(),
+            &RecastNavigation::RecastNavigationProviderRequests::CollectGeometry,
+            0.f, 0.f);
+
+        EXPECT_EQ(tiles.size(), 0);
     }
 }

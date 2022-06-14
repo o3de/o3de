@@ -103,8 +103,6 @@ namespace AzToolsFramework
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
 
-        static inline constexpr const char* DefaultMainSpawnableName = "Root";
-
         PrefabEditorEntityOwnershipService(
             const AzFramework::EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 

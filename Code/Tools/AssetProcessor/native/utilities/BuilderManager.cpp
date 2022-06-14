@@ -26,11 +26,6 @@ namespace AssetProcessor
     //! Time in milliseconds to wait after each message pump cycle
     static const int s_IdleBuilderPumpingDelayMS = 100;
 
-    //! Amount of time in seconds to wait for a builder to start up and connect
-    // sometimes, builders take a long time to start because of things like virus scanners scanning each
-    // builder DLL, so we give them a large margin.
-    static const int s_StartupConnectionWaitTimeS = 300;
-
     static const int s_MillisecondsInASecond = 1000;
 
     static const char* s_buildersFolderName = "Builders";
@@ -42,6 +37,15 @@ namespace AssetProcessor
 
     bool Builder::WaitForConnection()
     {
+        if (m_startupWaitTimeS == 0)
+        {
+            const auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(m_startupWaitTimeS, "/Amazon/AssetProcessor/Settings/BuilderManager/StartupTimeoutSeconds");
+            }
+        }
+
         if (m_connectionId == 0)
         {
             bool result = false;
@@ -55,7 +59,7 @@ namespace AssetProcessor
 
                 PumpCommunicator();
 
-                if (ticker.elapsed() > s_StartupConnectionWaitTimeS * s_MillisecondsInASecond
+                if (ticker.elapsed() > m_startupWaitTimeS * s_MillisecondsInASecond
                     || m_quitListener.WasQuitRequested()
                     || !IsRunning())
                 {
@@ -83,7 +87,7 @@ namespace AssetProcessor
             }
             else
             {
-                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", s_StartupConnectionWaitTimeS);
+                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
             return false;
