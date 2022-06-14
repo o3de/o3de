@@ -42,6 +42,12 @@ namespace AzToolsFramework
         RefreshMenu();
     }
 
+    void EditorMenu::AddWidget(int sortKey, QWidget* widget)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(widget) });
+        RefreshMenu();
+    }
+
     QMenu* EditorMenu::GetMenu()
     {
         return m_menu;
@@ -81,6 +87,11 @@ namespace AzToolsFramework
                     m_menu->addSeparator();
                     break;
                 }
+            case MenuItemType::Widget:
+                {
+                    m_menu->addAction(elem.second.m_widgetAction);
+                    break;
+                }
             default:
                 break;
             }
@@ -94,6 +105,13 @@ namespace AzToolsFramework
         {
             m_identifier = AZStd::move(identifier);
         }
+    }
+
+    EditorMenu::MenuItem::MenuItem(QWidget* widget)
+        : m_type(MenuItemType::Widget)
+    {
+        m_widgetAction = new QWidgetAction(widget->parent());
+        m_widgetAction->setDefaultWidget(widget);
     }
 
     void EditorMenu::Initialize()

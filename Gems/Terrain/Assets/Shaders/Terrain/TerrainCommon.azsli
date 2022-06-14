@@ -95,25 +95,19 @@ float2 GetWorldXYPosition(in ObjectSrg::PatchData patchData, in float2 vertexPos
     return float2(patchData.m_xyTranslation + vertexPosition * patchData.m_xyScale);
 }
 
-bool IsVertexOutsideOfTerrainBounds(float2 position, float2 minBounds, float2 maxBounds)
-{
-    return (any(position < minBounds) || any(position > maxBounds));
-}
-
 void CalculateTerrainPosition(
     in SceneSrg::TerrainWorldData worldData, in ObjectSrg::PatchData patchData, in VertexInput input,
     out float3 worldPosition, out float4 position, out float2 cullDistance, out float3 normal)
 {
     float2 worldXyPosition = GetWorldXYPosition(ObjectSrg::m_patchData, input.m_xyPosition);
-    if (IsVertexOutsideOfTerrainBounds(worldXyPosition, worldData.m_min.xy, worldData.m_max.xy))
+    if (input.m_zPosition == 1.0)
     {
-        // Output a NaN to remove this vertex.
+        // 1.0 means there is no height data at this vertex, so output a NaN to remove this vertex.
         position = 1.0 / 0.0;
         return;
     }
 
-    float heightScale = worldData.m_max.z - worldData.m_min.z;
-    float height = worldData.m_min.z + input.m_zPosition * heightScale;
+    float height = worldData.m_zMin + input.m_zPosition * worldData.m_zExtents;
 
     worldPosition = float3(GetWorldXYPosition(patchData, input.m_xyPosition), height);
     cullDistance = TerrainSrg::CalculateCullDistance(patchData.m_lodLevel, worldPosition);
@@ -125,7 +119,7 @@ void CalculateTerrainPosition(
         const float quadDiagonal = quadSize * sqrt(2.0);
         float clodPadding = quadDiagonal * 2; // pad enough to handle a diagonal on the quad from the next lod (which will be 2x the size).
         float clodBlend = saturate((cullDistance.y - clodPadding) * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
-        float lodHeight = worldData.m_min.z + input.m_lodZPosition * heightScale;
+        float lodHeight = worldData.m_zMin + input.m_lodZPosition * worldData.m_zExtents;
         worldPosition.z = lerp(lodHeight, height, clodBlend);
 
         normal = float3(lerp(input.m_lodXYNormal, input.m_xyNormal, clodBlend), 0.0);

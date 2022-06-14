@@ -11,14 +11,19 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 
+#include <QWidgetAction>
+
 class QAction;
 class QMenu;
+class QWidget;
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
     class MenuManagerInterface;
-
+    
+    //! Editor Menu class definitions.
+    //! Wraps a QMenu and provides additional functionality to handle and sort its items.
     class EditorMenu
     {
     public:
@@ -30,6 +35,7 @@ namespace AzToolsFramework
         void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
+        void AddWidget(int sortKey, QWidget* widget);
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();
@@ -42,16 +48,19 @@ namespace AzToolsFramework
         {
             Action = 0,
             Separator,
-            SubMenu
+            SubMenu,
+            Widget
         };
 
         struct MenuItem
         {
             explicit MenuItem(MenuItemType type = MenuItemType::Separator, AZStd::string identifier = "");
+            explicit MenuItem(QWidget* widget);
 
             MenuItemType m_type;
 
             AZStd::string m_identifier;
+            QWidgetAction* m_widgetAction = nullptr;
         };
 
         QMenu* m_menu = nullptr;

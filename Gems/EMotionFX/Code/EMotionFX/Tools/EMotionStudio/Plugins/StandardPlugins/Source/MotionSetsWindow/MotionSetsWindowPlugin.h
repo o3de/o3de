@@ -30,6 +30,9 @@
 
 namespace EMStudio
 {
+    // forward declarations
+    class MotionPropertiesWindow;
+
     class MotionSetsWindowPlugin
         : public EMStudio::DockWidgetPlugin
     {
@@ -61,7 +64,7 @@ namespace EMStudio
 
         EMotionFX::MotionSet* GetSelectedSet() const;
 
-        void SetSelectedSet(EMotionFX::MotionSet* motionSet);
+        void SetSelectedSet(EMotionFX::MotionSet* motionSet, bool clearSelectionUpfront = false);
 
         MotionSetManagementWindow*  GetManagementWindow()                                                       { return m_motionSetManagementWindow; }
         MotionSetWindow*            GetMotionSetWindow()                                                        { return m_motionSetWindow; }
@@ -82,11 +85,18 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAddMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetRemoveMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandCreateMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
+
+        MCORE_DEFINECOMMANDCALLBACK(CommandAdjustMotionCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandAdjustDefaultPlayBackInfoCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandSaveMotionAssetInfoCallback);
         AZStd::vector<MCore::Command::Callback*> m_callbacks;
 
         MotionSetManagementWindow*              m_motionSetManagementWindow;
         MotionSetWindow*                        m_motionSetWindow;
+        MotionPropertiesWindow* m_motionPropertiesWindow = nullptr;
+        AZStd::vector<EMotionFX::MotionInstance*> m_cachedSelectedMotionInstances;
 
         MysticQt::DialogStack*                  m_dialogStack;
 

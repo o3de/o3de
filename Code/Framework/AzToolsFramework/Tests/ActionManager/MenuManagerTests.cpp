@@ -178,7 +178,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, VerifySubMenuInMenu)
     {
-        // Register menu, get it and verify it's empty.
+        // Register menu and submenu.
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
 
@@ -192,6 +192,36 @@ namespace UnitTest
 
         EXPECT_EQ(actions.size(), 1);
         EXPECT_EQ(actions[0]->menu(), submenu);
+    }
+
+    TEST_F(ActionManagerFixture, AddNullWidgetInMenu)
+    {
+        // Register menu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Try to add a nullptr widget.
+        auto outcome = m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", nullptr, 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyWidgetInMenu)
+    {
+        // Register menu and create a QWidget.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QWidget* widget = new QWidget();
+
+        // Add the widget to the menu.
+        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", widget, 42);
+
+        // Verify the widget is now in the menu.
+        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 1);
+
+        QWidgetAction* widgetAction = qobject_cast<QWidgetAction*>(actions[0]);
+        EXPECT_TRUE(widgetAction != nullptr);
+        EXPECT_TRUE(widgetAction->defaultWidget() == widget);
     }
 
     TEST_F(ActionManagerFixture, VerifyComplexMenu)

@@ -293,7 +293,7 @@ namespace AZ
             AzToolsFramework::ViewPaneOptions inspectorOptions;
             inspectorOptions.canHaveMultipleInstances = true;
             inspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
-            inspectorOptions.paneRect = QRect(50, 50, 400, 700);
+            inspectorOptions.paneRect = QRect(50, 50, 600, 1000);
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(

@@ -151,6 +151,18 @@ void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
     m_terrainSettingsDirty = true;
 }
 
+bool TerrainSystem::TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const
+{
+    for (const auto& area : m_registeredAreas)
+    {
+        if (area.second.m_areaBounds.Overlaps(bounds))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void TerrainSystem::SetTerrainHeightQueryResolution(float queryResolution)
 {
     m_requestedSettings.m_heightQueryResolution = queryResolution;
@@ -311,7 +323,6 @@ void TerrainSystem::MakeBulkQueries(
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZ::Aabb bounds;
-    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0], bounds);
     
     // We use a sliding window here and update the window end for each
     // position that falls in the same area as the previous positions. This consumes lesser memory
@@ -319,46 +330,36 @@ void TerrainSystem::MakeBulkQueries(
     // This may be sub optimal if the points are randomly distributed in the list as opposed
     // to points in the same area id being close to each other.
     size_t windowStart = 0;
-    size_t windowEnd = 0;
-    const size_t numPositions = inPositions.size();
-    for(int i = 1; i < numPositions; i++)
-    {
-        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i], bounds);
-        bool queryHeights = false;
-        if (areaId == prevAreaId)
-        {
-            // Update window end to current position.
-            // If it's the last position, submit the query.
-            windowEnd = i;
-            if (windowEnd == numPositions - 1)
-            {
-                queryHeights = true;
-            }
-        }
-        else
-        {
-            queryHeights = true;
-        }
+    AZ::EntityId windowAreaId = FindBestAreaEntityAtPosition(inPositions[0], bounds);
+    const size_t inPositionSize = inPositions.size();
 
-        if (queryHeights)
+    for (size_t windowEnd = 0; windowEnd < inPositionSize; windowEnd++)
+    {
+        size_t nextWindowEnd = windowEnd + 1;
+        AZ::EntityId areaId = (nextWindowEnd < inPositionSize)
+            ? FindBestAreaEntityAtPosition(inPositions[nextWindowEnd], bounds)
+            : AZ::EntityId();
+
+        if (areaId != windowAreaId)
         {
             // If the area id is a default entity id, it usually means the
             // position is outside world bounds.
-            if (prevAreaId != AZ::EntityId())
+            if (windowAreaId != AZ::EntityId())
             {
                 size_t spanLength = (windowEnd - windowStart) + 1;
-                queryCallback(AZStd::span<const AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
+                queryCallback(
+                    AZStd::span<const AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
                     AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
                     AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength),
                     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>(outSurfaceWeights.begin() + windowStart, spanLength),
-                    prevAreaId);
+                    windowAreaId);
             }
 
             // Reset the window to start at the current position. Set the new area
             // id on which to run the next query.
-            windowStart = windowEnd = i;
-            prevAreaId = areaId;
-        }   
+            windowStart = nextWindowEnd;
+            windowAreaId = areaId;
+        }
     }
 }
 
@@ -831,8 +832,8 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         // back to integers so that our regions are always in exact multiples of the number of samples to process.
         // This is important because we want the XY values for each point that we're processing to exactly align with
         // 'start + N * (step size)', or else we'll start to process point locations that weren't actually what was requested.
-        const int32_t y0 = aznumeric_cast<int32_t>(yJob * ySamplesPerQuery);
-        const int32_t y1 = aznumeric_cast<int32_t>((yJob + 1) * ySamplesPerQuery);
+        const int32_t y0 = aznumeric_cast<int32_t>(AZStd::lround(yJob * ySamplesPerQuery));
+        const int32_t y1 = aznumeric_cast<int32_t>(AZStd::lround((yJob + 1) * ySamplesPerQuery));
         const float inRegionMinY = queryRegion.m_startPoint.GetY() + (y0 * queryRegion.m_stepSize.GetY());
         const int32_t numPointsY = AZStd::min(y1 - y0, aznumeric_cast<int32_t>(numSamplesY) - y0);
 
@@ -841,8 +842,8 @@ AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::QueryR
         {
             // Same as above, calculate the start and end of the region, then convert back to integers and create the
             // region based on 'start + n * (step size)'.
-            const int32_t x0 = aznumeric_cast<int32_t>(xJob * xSamplesPerQuery);
-            const int32_t x1 = aznumeric_cast<int32_t>((xJob + 1) * xSamplesPerQuery);
+            const int32_t x0 = aznumeric_cast<int32_t>(AZStd::lround(xJob * xSamplesPerQuery));
+            const int32_t x1 = aznumeric_cast<int32_t>(AZStd::lround((xJob + 1) * xSamplesPerQuery));
             const float inRegionMinX = queryRegion.m_startPoint.GetX() + (x0 * queryRegion.m_stepSize.GetX());
             const int32_t numPointsX = AZStd::min(x1 - x0, aznumeric_cast<int32_t>(numSamplesX) - x0);
 

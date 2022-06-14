@@ -16,10 +16,13 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
-#include <QPointer>
-#include <QFrame>
+#include <QScrollArea>
+
 
 #endif // Q_MOC_RUN
+
+class QCheckBox;
+class QTimer;
 
 namespace AzToolsFramework
 {
@@ -27,9 +30,18 @@ namespace AzToolsFramework
 
     class DPELayout : public QHBoxLayout
     {
+        Q_OBJECT
+
+    signals:
+        void expanderChanged(bool expanded);
+
         // todo: look into caching and QLayoutItem::invalidate()
     public:
         DPELayout(int depth, QWidget* parentWidget = nullptr);
+        virtual ~DPELayout();
+        void SetExpanderShown(bool shouldShow);
+        void SetExpanded(bool expanded);
+        bool IsExpanded();
 
         // QLayout overrides
         QSize sizeHint() const override;
@@ -37,18 +49,25 @@ namespace AzToolsFramework
         void setGeometry(const QRect& rect) override;
         Qt::Orientations expandingDirections() const override;
 
+    protected slots:
+        void onCheckstateChanged(int expanderState);
+
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        void CreateExpanderWidget();
 
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        bool m_showExpander = false;
+        bool m_expanded = true;
+        QCheckBox* m_expanderWidget = nullptr;
     };
-
     class DPERowWidget : public QWidget
     {
         Q_OBJECT
+        friend class DocumentPropertyEditor;
 
     public:
-        explicit DPERowWidget(int depth, QWidget* parentWidget = nullptr);
+        explicit DPERowWidget(int depth, DPERowWidget* parentRow);
         ~DPERowWidget();
 
         void Clear(); //!< destroy all layout contents and clear DOM children
@@ -63,20 +82,26 @@ namespace AzToolsFramework
         //! returns the last descendent of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
-    protected:
-        DocumentPropertyEditor* GetDPE();
+        bool IsExpanded();
 
+    protected slots:
+        void onExpanderChanged(int expanderState);
+
+    protected:
+        DocumentPropertyEditor* GetDPE() const;
+
+        DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
-        QBoxLayout* m_columnLayout = nullptr;
+        DPELayout* m_columnLayout = nullptr;
 
         //! widget children in DOM specified order; mix of row and column widgets
-        AZStd::deque<QPointer<QWidget>> m_domOrderedChildren;
+        AZStd::deque<QWidget*> m_domOrderedChildren;
 
         // a map from the propertyHandler widgets to the propertyHandlers that created them
         AZStd::unordered_map<QWidget*, AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_widgetToPropertyHandler;
     };
 
-    class DocumentPropertyEditor : public QFrame
+    class DocumentPropertyEditor : public QScrollArea
     {
         Q_OBJECT
 
@@ -88,11 +113,14 @@ namespace AzToolsFramework
 
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
+
         AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter()
         {
             return m_adapter;
         }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
+        AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
+        void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
@@ -100,12 +128,15 @@ namespace AzToolsFramework
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
+        void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
 
-        AZStd::deque<QPointer<DPERowWidget>> m_domOrderedRows;
+        QTimer* m_handlerCleanupTimer;
+        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
+        AZStd::deque<DPERowWidget*> m_domOrderedRows;
     };
 } // namespace AzToolsFramework

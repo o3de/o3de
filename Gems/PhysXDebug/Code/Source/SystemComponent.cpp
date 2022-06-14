@@ -194,19 +194,19 @@ namespace PhysXDebug
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXDebugService"));
+        provided.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXDebugService"));
+        incompatible.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PhysXService"));
+        required.push_back(AZ_CRC_CE("PhysXService"));
 #ifdef PHYSXDEBUG_GEM_EDITOR
-        required.push_back(AZ_CRC("PhysXEditorService"));
+        required.push_back(AZ_CRC_CE("PhysXEditorService"));
 #endif // PHYSXDEBUG_GEM_EDITOR
     }
 

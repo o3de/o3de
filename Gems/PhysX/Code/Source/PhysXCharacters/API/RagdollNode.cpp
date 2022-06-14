@@ -31,7 +31,7 @@ namespace PhysX
         }
     }
 
-    RagdollNode::RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
+    RagdollNode::RagdollNode(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig)
     {
         CreatePhysicsBody(sceneHandle, nodeConfig);
     }
@@ -132,7 +132,7 @@ namespace PhysX
         return m_rigidBodyHandle;
     }
 
-    void RagdollNode::CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
+    void RagdollNode::CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig)
     {
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {

@@ -107,15 +107,15 @@ namespace AzToolsFramework
         if (menuIterator == m_menus.end())
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - menu has not been registered.", subMenuIdentifier.c_str(),
-                menuIdentifier.c_str()));
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - menu has not been registered.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
         if (!m_menus.contains(subMenuIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - sub-menu has not been registered.", subMenuIdentifier.c_str(),
-                menuIdentifier.c_str()));
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - sub-menu has not been registered.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
@@ -140,6 +140,27 @@ namespace AzToolsFramework
         }
 
         menuBarIterator->second.AddMenu(sortIndex, menuIdentifier);
+        return AZ::Success();
+    }
+    
+    MenuManagerOperationResult MenuManager::AddWidgetToMenu(
+        const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add widget to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        if (!widget)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add widget to menu \"%s\" - nullptr widget.", menuIdentifier.c_str()));
+        }
+
+        menuIterator->second.AddWidget(sortIndex, widget);
+
         return AZ::Success();
     }
 

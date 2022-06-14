@@ -17,7 +17,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-
+    
+    //! Menu Manager class definition.
+    //! Handles Editor Menus and allows registration and access across tools.
     class MenuManager
         : private MenuManagerInterface
     {
@@ -34,6 +36,8 @@ namespace AzToolsFramework
         MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) override;
         MenuManagerOperationResult AddMenuToMenuBar(
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
