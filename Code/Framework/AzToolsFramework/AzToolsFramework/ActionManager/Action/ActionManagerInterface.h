@@ -189,7 +189,6 @@ namespace AzToolsFramework
         //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
-        
     };
 
 } // namespace AzToolsFramework
