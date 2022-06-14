@@ -129,7 +129,7 @@ namespace AZ
             // root asset reference gets cleared.
             AssetId m_containerAssetId;
 
-            bool m_isReload;
+            bool m_isReload{ false };
 
             mutable AZStd::recursive_mutex m_dependencyMutex;
             DependencyList m_dependencies;

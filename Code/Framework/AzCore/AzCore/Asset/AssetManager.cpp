@@ -916,7 +916,8 @@ namespace AZ::Data
         m_ownedAssetContainers.insert({ container.get(), container });
 
         // Only insert a new entry into m_ownedAssetContainerLookup if one doesn't already exist for this container.
-        // Because it's a multimap, it is possible to add duplicate entries by mistake.
+        // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
+        // Note that the same AssetId can have multiple containers due to different load settings
         bool entryExists = false;
         auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetId);
         for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
@@ -1122,9 +1123,14 @@ namespace AZ::Data
         // Resolve the asset handler and allocate new data for the reload.
         {
             AssetHandlerMap::iterator handlerIt = m_handlers.find(newAsset.GetType());
-            AZ_Assert(
-                handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
-                newAsset.GetType().ToString<AZ::OSString>().c_str(), newAsset.GetId().ToString<AZ::OSString>().c_str());
+
+            if (handlerIt == m_handlers.end())
+            {
+                AZ_Assert(false, "No handler was registered for this asset [type:%s id:%s]!",
+                    newAsset.GetType().ToString<AZ::OSString>().c_str(), newAsset.GetId().ToString<AZ::OSString>().c_str());
+                return;
+            }
+
             handler = handlerIt->second;
         }
 
@@ -1148,13 +1154,14 @@ namespace AZ::Data
                 AZ_Assert(
                     false, "Failed to create dataStream to reload asset %s (%s)", newAsset.GetId().ToString<AZ::OSString>().c_str(),
                     newAsset.GetHint().c_str());
+                return;
             }
         }
         else
         {
             // Asset creation was successful, but asset loading isn't, so trigger the OnAssetError notification
             AZ_Error(
-                "AssetDatabase", false, "Failed to retrieve required information for asset %s (%s)",
+                "AssetDatabase", false, "Failed to retrieve required load stream information for asset %s (%s)",
                 newAsset.GetId().ToString<AZ::OSString>().c_str(), newAsset.GetHint().c_str());
 
             constexpr bool loadSucceeded = false;
@@ -1470,7 +1477,8 @@ namespace AZ::Data
             m_ownedAssetContainers.insert({ container.get(), container });
 
             // Only insert a new entry into m_ownedAssetContainerLookup if one doesn't already exist for this container.
-            // Because it's a multimap, it is possible to add duplicate entries by mistake.
+            // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
+            // Note that the same AssetId can have multiple containers due to different load settings
             bool entryExists = false;
             auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetId);
             for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
@@ -2205,7 +2213,9 @@ namespace AZ::Data
         if (curIter != m_assetContainers.end())
         {
             auto newRef = curIter->second.lock();
-            if (newRef && newRef->IsValid() && !isReload) // Reloads already handle when to allow duplicate requests.  Avoid de-duplication here
+            // Note, is isReload is true, then do not attempt to return an existing container.
+            // The reload system will only request a container when it really wants a new container.
+            if (newRef && newRef->IsValid() && !isReload)
             {
                 return newRef;
             }

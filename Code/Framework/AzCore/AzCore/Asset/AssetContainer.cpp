@@ -421,7 +421,7 @@ namespace AZ::Data
             }
         }
         auto thisAsset = GetAssetData(waiterId);
-        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, waiterId == this->m_containerAssetId ? m_isReload : false, nullptr);
+        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, waiterId == m_containerAssetId ? m_isReload : false, nullptr);
     }
 
     void AssetContainer::RemoveFromAllWaitingPreloads(const AssetId& thisId)
