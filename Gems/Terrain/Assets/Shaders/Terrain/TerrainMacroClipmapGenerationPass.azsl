@@ -52,8 +52,8 @@ void MainCS(
 
             float2 worldPosition = GetWorldPositionFromMacroClipmaps(texelPosition, clipmapLevel);
             float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel);
-            float2 positionDdx = ddxPosition(clipmapToWorldScale);
-            float2 positionDdy = ddyPosition(clipmapToWorldScale);
+            float2 positionDdx = float2(clipmapToWorldScale, 0.0);
+            float2 positionDdy = float2(0.0, clipmapToWorldScale);
 
             float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
             float3 macroNormal = float3(0.0, 0.0, 1.0);

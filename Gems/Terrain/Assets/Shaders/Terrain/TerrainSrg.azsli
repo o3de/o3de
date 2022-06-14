@@ -169,18 +169,31 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
 
         // Clipmap centers in texel coordinates ranging [0, size).
         // Clipmap centers are the logical center of the texture, based on toroidal addressing.
-        // xy: macro; zw: detail
-        uint4 m_clipmapCenters[SharedClipmapStackSizeMax];
+        struct ClipmapCenter
+        {
+            uint2 m_macro;
+            uint2 m_detail;
+        };
+        ClipmapCenter m_clipmapCenters[SharedClipmapStackSizeMax];
 
         // Clipmap centers in world coordinates.
-        // xy: macro; zw: detail
-        float4 m_clipmapWorldCenters[SharedClipmapStackSizeMax];
+        struct ClipmapWorldCenter
+        {
+            float2 m_macro;
+            float2 m_detail;
+        };
+        ClipmapWorldCenter m_clipmapWorldCenters[SharedClipmapStackSizeMax];
 
         // A scale converting the length from the texture space to the world space.
         // For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
         //              dworld = dtexel * clipmapToWorldScale.
-        // x: macro; y: detail
-        float4 m_clipmapToWorldScale[SharedClipmapStackSizeMax];
+        struct ClipmapToWorldScale
+        {
+            float m_macro;
+            float m_detail;
+            float2 m_padding;
+        };
+        ClipmapToWorldScale m_clipmapToWorldScale[SharedClipmapStackSizeMax];
     };
 
     MeshData m_meshData;

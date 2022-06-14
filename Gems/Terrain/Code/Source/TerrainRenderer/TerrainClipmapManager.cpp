@@ -277,8 +277,10 @@ namespace Terrain
             clipmapToWorldScale /= m_config.m_detailClipmapScaleBase;
         }
 
-        m_clipmapData.m_clipmapCenters.fill(zeroUint);
-        m_clipmapData.m_clipmapWorldCenters.fill(zeroFloat);
+        ClipmapData::ClipmapCenter clipmapCenter{ {0u, 0u}, {0u, 0u} };
+        m_clipmapData.m_clipmapCenters.fill(clipmapCenter);
+        ClipmapData::ClipmapWorldCenter clipmapWorldCenter{ { 0.0f, 0.0f }, { 0.f, 0.0f } };
+        m_clipmapData.m_clipmapWorldCenters.fill(clipmapWorldCenter);
     }
 
     void TerrainClipmapManager::InitializeClipmapImages()
@@ -395,10 +397,10 @@ namespace Terrain
 
                 Vector2i center = m_macroClipmapBounds[clipmapIndex].GetModCenter();
                 AZ::Vector2 centerWorld = m_macroClipmapBounds[clipmapIndex].GetCenterInWorldSpace();
-                m_clipmapData.m_clipmapCenters[clipmapIndex][0] = center.m_x;
-                m_clipmapData.m_clipmapCenters[clipmapIndex][1] = center.m_y;
-                m_clipmapData.m_clipmapWorldCenters[clipmapIndex][0] = centerWorld.GetX();
-                m_clipmapData.m_clipmapWorldCenters[clipmapIndex][1] = centerWorld.GetY();
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[0] = center.m_x;
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[1] = center.m_y;
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[0] = centerWorld.GetX();
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[1] = centerWorld.GetY();
             }
 
             for (uint32_t clipmapIndex = 0; clipmapIndex < m_detailClipmapStackSize; ++clipmapIndex)
@@ -407,10 +409,10 @@ namespace Terrain
 
                 Vector2i center = m_detailClipmapBounds[clipmapIndex].GetModCenter();
                 AZ::Vector2 centerWorld = m_detailClipmapBounds[clipmapIndex].GetCenterInWorldSpace();
-                m_clipmapData.m_clipmapCenters[clipmapIndex][2] = center.m_x;
-                m_clipmapData.m_clipmapCenters[clipmapIndex][3] = center.m_y;
-                m_clipmapData.m_clipmapWorldCenters[clipmapIndex][2] = centerWorld.GetX();
-                m_clipmapData.m_clipmapWorldCenters[clipmapIndex][3] = centerWorld.GetY();
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[0] = center.m_x;
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[1] = center.m_y;
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[0] = centerWorld.GetX();
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[1] = centerWorld.GetY();
             }
 
             m_clipmapData.m_macroClipmapUpdateRegionCount = aznumeric_cast<uint32_t>(m_macroClipmapUpdateRegions.size());
@@ -443,12 +445,12 @@ namespace Terrain
 
             // write updated center
             Vector2i center = clipmapBounds.GetModCenter();
-            m_clipmapData.m_clipmapCenters[clipmapIndex][0] = aznumeric_cast<uint32_t>(center.m_x);
-            m_clipmapData.m_clipmapCenters[clipmapIndex][1] = aznumeric_cast<uint32_t>(center.m_y);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[0] = aznumeric_cast<uint32_t>(center.m_x);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[1] = aznumeric_cast<uint32_t>(center.m_y);
 
             AZ::Vector2 centerWorld = clipmapBounds.GetCenterInWorldSpace();
-            m_clipmapData.m_clipmapWorldCenters[clipmapIndex][0] = centerWorld.GetX();
-            m_clipmapData.m_clipmapWorldCenters[clipmapIndex][1] = centerWorld.GetY();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[0] = centerWorld.GetX();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[1] = centerWorld.GetY();
 
             for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {
@@ -489,12 +491,12 @@ namespace Terrain
 
             // write updated center
             Vector2i center = clipmapBounds.GetModCenter();
-            m_clipmapData.m_clipmapCenters[clipmapIndex][2] = aznumeric_cast<uint32_t>(center.m_x);
-            m_clipmapData.m_clipmapCenters[clipmapIndex][3] = aznumeric_cast<uint32_t>(center.m_y);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[0] = aznumeric_cast<uint32_t>(center.m_x);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[1] = aznumeric_cast<uint32_t>(center.m_y);
 
             AZ::Vector2 centerWorld = clipmapBounds.GetCenterInWorldSpace();
-            m_clipmapData.m_clipmapWorldCenters[clipmapIndex][2] = centerWorld.GetX();
-            m_clipmapData.m_clipmapWorldCenters[clipmapIndex][3] = centerWorld.GetY();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[0] = centerWorld.GetX();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[1] = centerWorld.GetY();
 
             for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {

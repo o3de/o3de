@@ -219,17 +219,30 @@ namespace Terrain
 
             //! Clipmap centers in texel coordinates ranging [0, size).
             //! Clipmap centers are the logical center of the texture, based on toroidal addressing.
-            //! xy: macro; zw: detail
-            AZStd::array<RawVector4u, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapCenters;
+            struct ClipmapCenter
+            {
+                RawVector2u m_macro;
+                RawVector2u m_detail;
+            };
+            AZStd::array<ClipmapCenter, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapCenters;
 
             //! Clipmap centers in world coordinates.
-            //! xy: macro; zw: detail
-            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapWorldCenters;
+            struct ClipmapWorldCenter
+            {
+                RawVector2f m_macro;
+                RawVector2f m_detail;
+            };
+            AZStd::array<ClipmapWorldCenter, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapWorldCenters;
 
             //! A scale converting the length from the texture space to the world space.
             //! For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
             //!              dworld = dtexel * clipmapToWorldScale.
-            //! x: macro; y: detail
+            struct ClipmapToWorldScale
+            {
+                float m_macro;
+                float m_detail;
+                RawVector2f m_padding;
+            };
             AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
         };
 
@@ -246,12 +259,10 @@ namespace Terrain
 
         struct ClipmapUpdateRegion
         {
+            RawVector4u m_updateRegion;
             uint32_t m_clipmapLevel;
-
             // 16 bytes alignment padding
             AZStd::array<uint32_t, 3> m_padding;
-
-            RawVector4u m_updateRegion;
 
             ClipmapUpdateRegion(uint32_t clipmapLevel, RawVector4u updateRegion)
                 : m_clipmapLevel(clipmapLevel)

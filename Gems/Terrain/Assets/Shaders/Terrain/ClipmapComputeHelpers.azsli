@@ -46,32 +46,32 @@ static const float3 ClipmapLevelDebugColor[ClipmapLevelDebugColorCount] =
 
 float GetMacroClipmapToWorldScale(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapToWorldScale[clipmapLevel].x;
+    return TerrainSrg::m_clipmapData.m_clipmapToWorldScale[clipmapLevel].m_macro;
 }
 
 float GetDetailClipmapToWorldScale(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapToWorldScale[clipmapLevel].y;
+    return TerrainSrg::m_clipmapData.m_clipmapToWorldScale[clipmapLevel].m_detail;
 }
 
 uint2 GetMacroClipmapCenter(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].xy;
+    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].m_macro;
 }
 
 uint2 GetDetailClipmapCenter(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].zw;
+    return TerrainSrg::m_clipmapData.m_clipmapCenters[clipmapLevel].m_detail;
 }
 
 float2 GetMacroClipmapCenterInWorldSpace(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapWorldCenters[clipmapLevel].xy;
+    return TerrainSrg::m_clipmapData.m_clipmapWorldCenters[clipmapLevel].m_macro;
 }
 
 float2 GetDetailClipmapCenterInWorldSpace(uint clipmapLevel)
 {
-    return TerrainSrg::m_clipmapData.m_clipmapWorldCenters[clipmapLevel].zw;
+    return TerrainSrg::m_clipmapData.m_clipmapWorldCenters[clipmapLevel].m_detail;
 }
 
 // Get the world position at the pixel position in a clipmap.
@@ -127,16 +127,6 @@ float2 GetWorldPositionFromDetailClipmaps(uint2 texelPosition, uint clipmapLevel
     float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel);
 
     return GetWorldPosition(clipmapCenter, clipmapCenterInWorldSpace, texelPosition, clipmapLevel, clipmapToWorldScale);
-}
-
-float2 ddxPosition(float clipmapToWorldScale)
-{
-    return float2(clipmapToWorldScale, 0.0);
-}
-
-float2 ddyPosition(float clipmapToWorldScale)
-{
-    return float2(0.0, clipmapToWorldScale);
 }
 
 struct ClipmapSample
@@ -244,8 +234,8 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
 
 ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
 {
-    uint clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeUint;
-    uint clipmapMarginSize = TerrainSrg::m_clipmapData.m_detailClipmapMarginSize;
+    float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
+    float clipmapMarginSize = TerrainSrg::m_clipmapData.m_detailClipmapMarginSize;
 
     ClipmapLevel clipmapLevel;
     float closestLevel = 1.0;
@@ -412,8 +402,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
 {
     ClipmapSample data;
 
-    float2 distance = worldPosition 
-                - TerrainSrg::m_clipmapData.m_clipmapWorldCenters[TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1];
+    float2 distance = worldPosition - GetDetailClipmapCenterInWorldSpace(TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1);
     float2 absDistance = abs(distance);
     if (absDistance.x > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius || absDistance.y > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius)
     {

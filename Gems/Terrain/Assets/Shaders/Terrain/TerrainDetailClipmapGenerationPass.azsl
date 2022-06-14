@@ -65,8 +65,8 @@ void MainCS(
             float2 detailRegionCoord = worldPosition * TerrainSrg::m_detailMaterialIdScale;
             float2 detailUv = worldPosition * TerrainMaterialSrg::m_detailTextureMultiplier;
             float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel);
-            float2 detailUvDdx = ddxPosition(clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
-            float2 detailUvDdy = ddyPosition(clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
+            float2 detailUvDdx = float2(clipmapToWorldScale, 0.0) * TerrainMaterialSrg::m_detailTextureMultiplier;
+            float2 detailUvDdy = float2(0.0, clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
 
             ClipmapLevel macroClipmapLevel = CalculateMacroClipmapLevel(worldPosition);
 
