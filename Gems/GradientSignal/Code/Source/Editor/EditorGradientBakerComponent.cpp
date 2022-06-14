@@ -70,8 +70,7 @@ namespace GradientSignal
             break;
         }
         const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
-        AZStd::vector<AZ::u8> pixels;
-        pixels.resize(imageSize, 0);
+        AZStd::vector<AZ::u8> pixels(imageSize, 0);
 
         AZ::IO::Path absolutePath = m_outputImageAbsolutePath.LexicallyNormal();
         std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
