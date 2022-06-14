@@ -100,7 +100,7 @@ def ComponentCRUD_Add_Delete_Components():
         general.select_object("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
-        general.idle_wait(0.5)
+        general.idle_wait_frames(1)
 
         # 4) Add/verify Box Shape Component
         editor_window = pyside_utils.get_editor_main_window()
@@ -114,7 +114,7 @@ def ComponentCRUD_Add_Delete_Components():
         Report.result(Tests.mesh_component_added, hydra.has_components(entity_id, ['Mesh']))
 
         # 6) Delete Mesh Component
-        general.idle_wait(0.5)
+        general.idle_wait_frames(3)
         comp_list_contents = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
         await pyside_utils.wait_for_condition(lambda: len(comp_list_contents.children()) > 3)
         # Mesh Component is the 3rd component added to the entity including the default Transform component
@@ -126,7 +126,7 @@ def ComponentCRUD_Add_Delete_Components():
         Report.result(Tests.mesh_component_deleted, success)
 
         # 7) Undo deletion of component after waiting for the deletion to register
-        general.idle_wait(0.5)
+        general.idle_wait_frames(1)
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_delete_undo, success)
