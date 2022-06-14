@@ -4,14 +4,15 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Utility for specifying an Editor test, supports seamless parallelization and/or batching of tests. This is not a set of
-tools to directly invoke, but a plugin with functions intended to be called by only the Pytest framework.
+PyTest plugin for collecting an EditorTest, and setting commandline parameters. Intended to only be called by PyTest.
 """
 from __future__ import annotations
 import pytest
 import inspect
+import ly_test_tools.o3de.editor_test
 
 __test__ = False
+
 
 def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     """
@@ -19,9 +20,13 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     :param parser: The ArgumentParser object
     :return: None
     """
-    parser.addoption("--no-editor-batch", action="store_true", help="Don't batch multiple tests in single editor")
-    parser.addoption("--no-editor-parallel", action="store_true", help="Don't run multiple editors in parallel")
-    parser.addoption("--editors-parallel", type=int, action="store", help="Override the number editors to run at the same time")
+    parser.addoption("--no-editor-batch", action="store_true", help="Disable batching multiple tests within each single editor")
+    parser.addoption("--no-editor-parallel", action="store_true", help="Disable running multiple editors in parallel")
+    parser.addoption("--editors-parallel", type=int, action="store",
+                     help="Override the number editors to run at the same time. Tests can override also this value, "
+                          f"which has a higher precedence than this option. Default value is: "
+                          f"{ly_test_tools.o3de.editor_test.EditorTestSuite.get_number_parallel_editors()}")
+
 
 def pytest_pycollect_makeitem(collector: PyCollector, name: str, obj: object) -> PyCollector:
     """
@@ -37,8 +42,9 @@ def pytest_pycollect_makeitem(collector: PyCollector, name: str, obj: object) ->
             if hasattr(base, "pytest_custom_makeitem"):
                 return base.pytest_custom_makeitem(collector, name, obj)
 
+
 @pytest.hookimpl(hookwrapper=True)
-def pytest_collection_modifyitems(session: Session, items: list[EditorTestBase], config: Config) -> None:
+def pytest_collection_modifyitems(session: Session, items: list[EditorTest], config: Config) -> None:
     """
     Add custom modification of items. This is used for adding the runners into the item list.
     :param session: The Pytest Session
