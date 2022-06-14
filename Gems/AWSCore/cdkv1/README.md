@@ -1,11 +1,12 @@
 # Welcome to the AWS Core CDK Python project!
 
 ```
-This is the long term supported CDK v2 version of this template. If you have preexisting versions of this template
-see the CDK guidance about upgrading to CDK v2.
+This is a legacy CDK v1 application and is provided for backwards compatibility only. 
+The CDK has migrated to a new long term version CDK v2. See the CDK documentation for guidance of how to upgrade.
 ```
 
-This is an optional CDKv2 application that provides two stacks:
+
+This is an optional CDK v1 application that provides two stacks:
 
   * A core stack to use as the basis for a project's CDK application
   * An example stack with example resources that can be connected to ScriptBehavior samples in Core
@@ -21,13 +22,6 @@ you can create the virtualenv manually.
 
 See https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html about for information about how to set up
 the prerequisites for CDK development.
-
-See for more information about working with the CDK and O3DE, see the [Deploying the CDK Application](https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/cdk-application/)
-section on o3de.org. 
-
-Note: This stack is for CDK v2 (the latest CDK version, if you are working with CDKv1 stacks please use the CDKv1 version of this application).
-
-## Make a virtual environment
 
 To manually create a virtualenv on MacOS and Linux:
 

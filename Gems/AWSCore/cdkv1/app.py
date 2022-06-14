@@ -9,10 +9,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 
-from constructs import Construct
-
 from aws_cdk import (
-    App, Environment
+    core
 )
 
 from constants import Constants
@@ -35,9 +33,9 @@ PROJECT_FEATURE_NAME = f'{PROJECT_NAME}-{FEATURE_NAME}'
 """End of Configuration"""
 
 # Set-up regions to deploy core stack to, or use default if not set
-env = Environment(account=ACCOUNT, region=REGION)
+env = core.Environment(account=ACCOUNT, region=REGION)
 
-app = App()
+app = core.App()
 
 core_construct = AWSCore(
     app,
