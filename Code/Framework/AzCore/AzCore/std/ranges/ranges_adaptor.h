@@ -196,6 +196,13 @@ namespace AZStd::ranges::Internal
             : m_copyable_wrapper{ in_place, AZStd::forward<Args>(args)... }
         {}
 
+        explicit constexpr copyable_box(const T& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_copyable_wrapper{ rawValue }
+        {}
+        explicit constexpr copyable_box(T&& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_copyable_wrapper{ AZStd::move(rawValue) }
+        {}
+
         constexpr copyable_box(const copyable_box&) = default;
         constexpr copyable_box(copyable_box&&) = default;
 

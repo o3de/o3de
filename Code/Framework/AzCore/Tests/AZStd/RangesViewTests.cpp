@@ -19,6 +19,7 @@
 #include <AzCore/std/ranges/single_view.h>
 #include <AzCore/std/ranges/split_view.h>
 #include <AzCore/std/ranges/subrange.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/ranges/zip_view.h>
 #include <AzCore/std/string/string_view.h>
 
@@ -597,5 +598,48 @@ namespace UnitTest
         }
 
         EXPECT_EQ("RandomTextSunWorldHello", accumResult);
+    }
+
+    TEST_F(RangesViewTestFixture, TransformView_TransformStringArrayOfNumbers_ToIntView_Succeeds)
+    {
+        constexpr int expectedResult = 1 + 2 + 3;
+        AZStd::vector stringArray{ AZStd::string("1"), AZStd::string("2"), AZStd::string("3") };
+
+        auto StringToInt = [](const AZStd::string& numString) -> int
+        {
+            constexpr int base = 10;
+            return static_cast<int>(strtoll(numString.c_str(), nullptr, base));
+        };
+
+        int accumResult{};
+        for (int value : stringArray | AZStd::ranges::views::transform(StringToInt))
+        {
+            accumResult += value;
+        }
+
+        EXPECT_EQ(expectedResult, accumResult);
+    }
+
+    TEST_F(RangesViewTestFixture, TransformView_GetMemberFromRangeElement_Succeeds)
+    {
+        struct IntWrapper
+        {
+            int m_value{};
+        };
+        constexpr int expectedResult = 1 + 2 + 3;
+        AZStd::vector testArray{ IntWrapper{ 1 }, IntWrapper{ 2 }, IntWrapper{ 3 } };
+
+        auto GetValueMember = [](const IntWrapper& wrapper) -> decltype(auto)
+        {
+            return wrapper.m_value;
+        };
+
+        int accumResult{};
+        for (int value : testArray | AZStd::ranges::views::transform(GetValueMember))
+        {
+            accumResult += value;
+        }
+
+        EXPECT_EQ(expectedResult, accumResult);
     }
 }

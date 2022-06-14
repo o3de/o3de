@@ -55,6 +55,7 @@ set(FILES
     ranges/subrange.h
     ranges/split_view.h
     ranges/swap.h
+    ranges/transform_view.h
     ranges/zip_view.h
     ranges/zip_view.inl
     ratio.h
