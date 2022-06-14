@@ -35,15 +35,15 @@ namespace AZ::Render
         return Name(state.GetStateName() + "Template");
     }
 
-    //static Name GetPassNameForState(const EditorStateParentPassBase& state)
-    //{
-    //    return Name(state.GetStateName() + "Pass");
-    //}
-    //
-    //static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
-    //{
-    //    return Name(state.GetStateName() + "PassthroughPass");
-    //}
+    static Name GetPassNameForState(const EditorStateParentPassBase& state)
+    {
+        return Name(state.GetStateName() + "Pass");
+    }
+    
+    static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
+    {
+        return Name(state.GetStateName() + "PassthroughPass");
+    }
 
     void CreateAndAddStateParentPassTemplate(const EditorStateParentPassBase& state)
     {
@@ -314,66 +314,14 @@ namespace AZ::Render
 
         //CreateAndAddPassthroughPassTemplate();
         //
-        //// Editor state passes
-        //auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
-        //for (const auto& state : m_editorStateParentPasses)
-        //{
-        //    CreateAndAddStateParentPassTemplate(*state);
-        //    RPI::PassRequest pass;
-        //    pass.m_passName = GetPassNameForState(*state);
-        //    pass.m_templateName = GetPassTemplateNameForState(*state);
-        //
-        //    // Input depth
-        //    {
-        //        RPI::PassConnection connection;
-        //        connection.m_localSlot = Name("InputDepth");
-        //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
-        //        pass.AddInputConnection(connection);
-        //    }
-        //
-        //    // Input entity mask
-        //    {
-        //        RPI::PassConnection connection;
-        //        connection.m_localSlot = Name("InputEntityMask");
-        //         connection.m_attachmentRef = { GetMaskPassNameForDrawList(state->GetEntityMaskDrawList()), Name("OutputEntityMask") };
-        //        pass.AddInputConnection(connection);
-        //    }
-        //
-        //    // Input color
-        //    {
-        //        RPI::PassConnection connection;
-        //        connection.m_localSlot = Name("InputColor");
-        //        connection.m_attachmentRef = { previousOutput.first, previousOutput.second };
-        //        pass.AddInputConnection(connection);
-        //    }
-        //
-        //    mainParentPassTemplate->AddPassRequest(pass);
-        //
-        //    // Passthrough pass 
-        //    {
-        //        RPI::PassRequest passthrough;
-        //        passthrough.m_passName = GetPassthroughPassNameForState(*state);
-        //        passthrough.m_templateName = Name("PassthroughPassTemplate");
-        //
-        //        // Input color
-        //        {
-        //            RPI::PassConnection connection;
-        //            connection.m_localSlot = Name("InputColor");
-        //            connection.m_attachmentRef = { pass.m_passName, Name("OutputColor") };
-        //            passthrough.AddInputConnection(connection);
-        //        }
-        //
-        //        mainParentPassTemplate->AddPassRequest(passthrough);
-        //        previousOutput = { passthrough.m_passName, Name("OutputColor") };
-        //    }
-        //}
- 
-        // Focused entity pass
-        
+        // Editor state passes
+        auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
+        for (const auto& state : m_editorStateParentPasses)
         {
+            CreateAndAddStateParentPassTemplate(*state);
             RPI::PassRequest pass;
-            pass.m_passName = Name("EditorStateFocusedEntityParentPass");
-            pass.m_templateName = Name("EditorStateFocusedEntityParentTemplate");
+            pass.m_passName = GetPassNameForState(*state);
+            pass.m_templateName = GetPassTemplateNameForState(*state);
         
             // Input depth
             {
@@ -387,7 +335,7 @@ namespace AZ::Render
             {
                 RPI::PassConnection connection;
                 connection.m_localSlot = Name("InputEntityMask");
-                connection.m_attachmentRef = { GetMaskPassNameForDrawList(m_editorStateParentPasses[0]->GetEntityMaskDrawList()), Name("OutputEntityMask") };
+                 connection.m_attachmentRef = { GetMaskPassNameForDrawList(state->GetEntityMaskDrawList()), Name("OutputEntityMask") };
                 pass.AddInputConnection(connection);
             }
         
@@ -395,29 +343,82 @@ namespace AZ::Render
             {
                 RPI::PassConnection connection;
                 connection.m_localSlot = Name("InputColor");
-                connection.m_attachmentRef = { Name("Parent"), Name("ColorInputOutput") };
+                connection.m_attachmentRef = { previousOutput.first, previousOutput.second };
                 pass.AddInputConnection(connection);
             }
         
             mainParentPassTemplate->AddPassRequest(pass);
-        }
-
-        // Passthrough pass
-        {
-            RPI::PassRequest pass;
-            pass.m_passName = Name("EntityPassthroughPass");
-            pass.m_templateName = Name("EditorModePassthroughTemplate");
-
-            // Input color
+        
+            // Passthrough pass 
             {
-                RPI::PassConnection connection;
-                connection.m_localSlot = Name("InputColor");
-                connection.m_attachmentRef = { Name("EditorStateFocusedEntityParentPass"), Name("OutputColor") };
-                pass.AddInputConnection(connection);
+                RPI::PassRequest passthrough;
+                passthrough.m_passName = GetPassthroughPassNameForState(*state);
+                //passthrough.m_templateName = Name("PassthroughPassTemplate");
+                passthrough.m_templateName = Name("EditorModePassthroughTemplate");
+                
+                // Input color
+                {
+                    RPI::PassConnection connection;
+                    connection.m_localSlot = Name("InputColor");
+                    connection.m_attachmentRef = { pass.m_passName, Name("OutputColor") };
+                    passthrough.AddInputConnection(connection);
+                }
+        
+                mainParentPassTemplate->AddPassRequest(passthrough);
+                previousOutput = { passthrough.m_passName, Name("OutputColor") };
             }
-
-            mainParentPassTemplate->AddPassRequest(pass);
         }
+ 
+        // Focused entity pass
+        
+       //{
+       //    RPI::PassRequest pass;
+       //    pass.m_passName = Name("EditorStateFocusedEntityParentPass");
+       //    pass.m_templateName = Name("EditorStateFocusedEntityParentTemplate");
+       //
+       //    // Input depth
+       //    {
+       //        RPI::PassConnection connection;
+       //        connection.m_localSlot = Name("InputDepth");
+       //        connection.m_attachmentRef = { Name("Parent"), Name("InputDepth") };
+       //        pass.AddInputConnection(connection);
+       //    }
+       //
+       //    // Input entity mask
+       //    {
+       //        RPI::PassConnection connection;
+       //        connection.m_localSlot = Name("InputEntityMask");
+       //        connection.m_attachmentRef = { GetMaskPassNameForDrawList(m_editorStateParentPasses[0]->GetEntityMaskDrawList()), Name("OutputEntityMask") };
+       //        pass.AddInputConnection(connection);
+       //    }
+       //
+       //    // Input color
+       //    {
+       //        RPI::PassConnection connection;
+       //        connection.m_localSlot = Name("InputColor");
+       //        connection.m_attachmentRef = { Name("Parent"), Name("ColorInputOutput") };
+       //        pass.AddInputConnection(connection);
+       //    }
+       //
+       //    mainParentPassTemplate->AddPassRequest(pass);
+       //}
+       //
+       //// Passthrough pass
+       //{
+       //    RPI::PassRequest pass;
+       //    pass.m_passName = Name("EntityPassthroughPass");
+       //    pass.m_templateName = Name("PassthroughPassTemplate");
+       //
+       //    // Input color
+       //    {
+       //        RPI::PassConnection connection;
+       //        connection.m_localSlot = Name("InputColor");
+       //        connection.m_attachmentRef = { Name("EditorStateFocusedEntityParentPass"), Name("OutputColor") };
+       //        pass.AddInputConnection(connection);
+       //    }
+       //
+       //    mainParentPassTemplate->AddPassRequest(pass);
+       //}
         
 
         RPI::PassSystemInterface::Get()->AddPassTemplate(mainParentPassTemplate->m_name, mainParentPassTemplate);
