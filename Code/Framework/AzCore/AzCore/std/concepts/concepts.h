@@ -115,7 +115,7 @@ namespace AZStd
             }
         };
 
-        
+
         template <class T>
         struct to_address_fancy_pointer_fn<T, enable_if_t<
             pointer_traits_has_to_address_v<T>>>
@@ -397,24 +397,28 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
+    // ITER_TRAITS(I) general concept
+    template<class I>
+    using ITER_TRAITS = conditional_t<is_primary_template_v<iterator_traits<I>>, I, iterator_traits<I>>;
+
     // ITER_CONCEPT(I) general concept
     template<class I, class = void>
     constexpr bool use_traits_iterator_concept_for_concept = false;
     template<class I>
-    constexpr bool use_traits_iterator_concept_for_concept<I, void_t<typename iterator_traits<I>::iterator_concept>> = true;
+    constexpr bool use_traits_iterator_concept_for_concept<I, void_t<typename ITER_TRAITS<I>::iterator_concept>> = true;
 
     template<class I, class = void>
     constexpr bool use_traits_iterator_category_for_concept = false;
     template<class I>
     constexpr bool use_traits_iterator_category_for_concept<I, enable_if_t<conjunction_v<
-        sfinae_trigger<typename iterator_traits<I>::iterator_category>,
+        sfinae_trigger<typename ITER_TRAITS<I>::iterator_category>,
         bool_constant<!use_traits_iterator_concept_for_concept<I>> >>> = true;
 
     template<class I, class = void>
     constexpr bool use_random_access_iterator_tag_for_concept = false;
     template<class I>
     constexpr bool use_random_access_iterator_tag_for_concept<I, enable_if_t<conjunction_v<
-        sfinae_trigger<iterator_traits<I>>,
+        sfinae_trigger<ITER_TRAITS<I>>,
         bool_constant<!use_traits_iterator_concept_for_concept<I>>,
         bool_constant<!use_traits_iterator_category_for_concept<I>> >>> = true;
 
@@ -424,12 +428,12 @@ namespace AZStd::Internal
     template<class I>
     struct iter_concept<I, enable_if_t<use_traits_iterator_concept_for_concept<I>>>
     {
-        using type = typename iterator_traits<I>::iterator_concept;
+        using type = typename ITER_TRAITS<I>::iterator_concept;
     };
     template<class I>
     struct iter_concept<I, enable_if_t<use_traits_iterator_category_for_concept<I>>>
     {
-        using type = typename iterator_traits<I>::iterator_category;
+        using type = typename ITER_TRAITS<I>::iterator_category;
     };
 
     template<class I>
