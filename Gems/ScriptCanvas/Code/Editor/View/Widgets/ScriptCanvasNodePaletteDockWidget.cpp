@@ -464,22 +464,9 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
+                    auto assetInfo = AssetHelpers::GetSourceInfoByProductId(assetId, asset.GetType());
 
-                    AZStd::string rootPath, absolutePath;
-                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
- 
-                    AZStd::string normPath = absolutePath;
-                    StringFunc::Path::Normalize(normPath);
-
-                    AssetSystemRequestBus::Events
-
-                    AZStd::string watchFolder;
-                    bool sourceInfoFound{};
-                    AssetSystemRequestBus::BroadcastResult(sourceInfoFound
-                        , &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
- 
-                    if (!sourceInfoFound)
+                    if (!assetInfo.m_assetId.IsValid())
                     {
                         return;
                     }

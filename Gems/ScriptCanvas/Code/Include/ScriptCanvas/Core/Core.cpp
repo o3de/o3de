@@ -178,13 +178,11 @@ namespace ScriptCanvas
         : m_id(AZ::Uuid::CreateNull())
     {}
 
-
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id)
         : m_data(data.m_data)
         , m_id(id)
     {
         SanitizePath();
-        m_id = id;
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id)
@@ -192,12 +190,12 @@ namespace ScriptCanvas
         , m_id(id)
     {
         SanitizePath();
-        m_id = id;
     }
 
     SourceHandle::SourceHandle(const SourceHandle& source)
         : m_data(source.m_data)
-        , m_id(AZ::Uuid::CreateNull())
+        , m_id(source.Id())
+        , m_relativePath(source.m_relativePath)
     {
         SanitizePath();
     }
@@ -208,7 +206,6 @@ namespace ScriptCanvas
         , m_relativePath(path)
     {
         SanitizePath();
-        m_id = id;
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
@@ -217,7 +214,6 @@ namespace ScriptCanvas
         , m_relativePath(path)
     {
         SanitizePath();
-        m_id = id;
     }
 
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::IO::Path& path)
@@ -259,6 +255,26 @@ namespace ScriptCanvas
     SourceHandle SourceHandle::Describe() const
     {
         return SourceHandle(nullptr, m_id, m_relativePath);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
+    {
+        return SourceHandle(data, id, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
+    {
+        return SourceHandle(graph, id, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path)
+    {
+        return SourceHandle(data, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
+    {
+        return SourceHandle(graph, path);
     }
 
     ScriptCanvasEditor::GraphPtrConst SourceHandle::Get() const

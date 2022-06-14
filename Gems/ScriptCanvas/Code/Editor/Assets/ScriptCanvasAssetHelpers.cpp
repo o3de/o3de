@@ -99,7 +99,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            AZ::Data::AssetInfo assetInfo = GetSourceInfoByProductId(assetId);
+            AZ::Data::AssetInfo assetInfo = GetSourceInfoByProductId(assetId, {});
             if (assetInfo.m_assetId.IsValid())
             {
                 AZ_TracePrintf("Script Canvas", "-------------------------------------\n");

@@ -51,7 +51,6 @@ namespace ScriptCanvasEditor
     SystemComponent::~SystemComponent()
     {
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
@@ -105,7 +104,6 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void SystemComponent::Activate()
@@ -227,7 +225,7 @@ namespace ScriptCanvasEditor
                     AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
                     GeneralRequestBus::BroadcastResult(openOutcome
                         , &GeneralRequests::OpenScriptCanvasAsset
-                        , SourceHandle(nullptr, sourceUUIDInCall, ""), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                        , SourceHandle(nullptr, sourceUUIDInCall), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                 }
             };
 

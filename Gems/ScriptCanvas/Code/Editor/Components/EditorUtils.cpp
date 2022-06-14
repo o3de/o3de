@@ -31,6 +31,11 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path)
+    {
+        return CompleteDescription(SourceHandle::FromRelativePath(source, path));
+    }
+
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
         using namespace AzToolsFramework;
@@ -63,17 +68,11 @@ namespace ScriptCanvasEditor
 
             if (!source.Path().empty())
             {
-                AZStd::string watchFolderPath;
-                AZ::Data::AssetInfo assetInfoPath;
-                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath)
-                && assetInfoPath.m_assetId.IsValid())
+                AZStd::string rootFolder;
+                AZStd::string relativePath;
+                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
                 {
-                    AZStd::string rootFolder;
-                    AZStd::string relativePath;
-                    if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
-                    {
-                        return SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, relativePath);
-                    }
+                    return SourceHandle::FromRelativePath(source, relativePath);
                 }
             }
         }
@@ -92,6 +91,26 @@ namespace ScriptCanvasEditor
         {
             return false;
         }
+    }
+
+    AZStd::optional<AZ::IO::Path> GetFullPath(const SourceHandle& source)
+    {
+        using namespace AzToolsFramework;
+
+        if (!source.Path().empty())
+        {
+            if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
+            {
+                AZStd::string rootFolder;
+                AZStd::string relativePath;
+                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
+                {
+                    return AZ::IO::Path(rootFolder) / AZ::IO::Path(relativePath);
+                }
+            }
+        }
+
+        return AZStd::nullopt;
     }
 
     //////////////////////////

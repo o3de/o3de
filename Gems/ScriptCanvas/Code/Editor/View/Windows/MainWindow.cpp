@@ -1867,7 +1867,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SaveAs(AZStd::string_view path, SourceHandle sourceHandle)
     {
-        // clear the AZ::Uuid because it will like change
+        // clear the AZ::Uuid because it willS change
         if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(sourceHandle, AZ::Uuid::CreateNull()), path))
         {
             sourceHandle = *relativeOption;

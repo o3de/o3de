@@ -18,6 +18,10 @@
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/GraphSerialization.h>
 
+AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
+#include <ScriptCanvas/Components/EditorUtils.h>
+AZ_POP_DISABLE_WARNING
+
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 
 namespace ScriptCanvasEditor
@@ -109,7 +113,7 @@ namespace ScriptCanvasEditor
 
         void FileSaver::OnSourceFileReleased(const SourceHandle& source)
         {
-            AZStd::string fullPath = source.Path().c_str();
+            AZStd::string fullPath = m_fullPath.c_str();
             AZStd::string tmpFileName;
             // here we are saving the graph to a temp file instead of the original file and then copying the temp file to the original file.
             // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing.
@@ -190,6 +194,15 @@ namespace ScriptCanvasEditor
         void FileSaver::Save(const SourceHandle& source)
         {
             m_source = source;
+            auto fullPathOptional = GetFullPath(source);
+            if (fullPathOptional)
+            {
+                m_fullPath = *fullPathOptional;
+            }
+            else
+            {
+                m_fullPath.clear();
+            }
 
             if (source.Path().empty())
             {
@@ -200,7 +213,7 @@ namespace ScriptCanvasEditor
             else
             {
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
-                AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(source.Path().c_str());
+                AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(m_fullPath.c_str());
                 streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
                     AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
