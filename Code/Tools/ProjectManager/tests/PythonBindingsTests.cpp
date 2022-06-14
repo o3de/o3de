@@ -26,7 +26,15 @@ namespace O3DE::ProjectManager
         {
         }
 
-        FRIEND_TEST(PythonBindingsTests, PythonBindings_Print_Percent_Does_Not_Crash);
+        void TestOnStdOut(const char* msg)
+        {
+            PythonBindings::OnStdOut(msg);
+        }
+
+        void TestOnStdError(const char* msg)
+        {
+            PythonBindings::OnStdError(msg);
+        }
     };
 
     class PythonBindingsTests 
@@ -98,8 +106,8 @@ namespace O3DE::ProjectManager
 
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
-        PythonBindings::OnStdOut(testMessage);
-        PythonBindings::OnStdError(testError);
+        m_pythonBindings->TestOnStdOut(testMessage);
+        m_pythonBindings->TestOnStdError(testError);
 
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
