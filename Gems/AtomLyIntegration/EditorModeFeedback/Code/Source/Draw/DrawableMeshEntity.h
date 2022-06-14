@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Draw/EditorStateMeshDrawPacket.h>
+
 #include <Atom/RPI.Reflect/Model/ModelLodIndex.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
@@ -60,6 +61,6 @@ namespace AZ::Render
         const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle = nullptr;
         Data::Instance<RPI::Material> m_maskMaterial = nullptr;
         RPI::ModelLodIndex m_modelLodIndex = RPI::ModelLodIndex::Null;
-        AZStd::vector<RPI::MeshDrawPacket> m_meshDrawPackets;
+        AZStd::vector<EditorStateMeshDrawPacket> m_meshDrawPackets;
     };
 } // namespace AZ::Render

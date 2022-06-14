@@ -32,6 +32,8 @@ set(FILES
     Source/Draw/DrawableMeshEntity.h
     Source/Draw/EditorStateMaskRenderer.cpp
     Source/Draw/EditorStateMaskRenderer.h
+    Source/Draw/EditorStateMeshDrawPacket.cpp
+    Source/Draw/EditorStateMeshDrawPacket.h
     Source/EditorModeFeedbackSystemComponent.cpp
     Source/EditorModeFeedbackSystemComponent.h
     Source/EditorModeFeedbackFeatureProcessor.cpp

@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -167,7 +166,7 @@ namespace AZ::Render
 
         for (size_t i = 0; i < modelLod->GetMeshes().size(); i++)
         {
-            RPI::MeshDrawPacket drawPacket(*modelLod, i, m_maskMaterial, meshObjectSrg);
+            EditorStateMeshDrawPacket drawPacket(*modelLod, i, m_maskMaterial, meshObjectSrg);
             m_meshDrawPackets.emplace_back(drawPacket);
         }
     }
