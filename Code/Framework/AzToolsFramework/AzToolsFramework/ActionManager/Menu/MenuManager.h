@@ -17,7 +17,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-
+    
+    //! Menu Manager class definition.
+    //! Handles Editor Menus and allows registration and access across tools.
     class MenuManager
         : private MenuManagerInterface
     {
