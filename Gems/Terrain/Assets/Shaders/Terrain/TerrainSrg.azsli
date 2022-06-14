@@ -127,10 +127,25 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float m_macroClipmapMarginSize;
         float m_detailClipmapMarginSize;
 
+        // In addition to the above margin size used for updating,
+        // this margin is a safety margin to avoid edge cases when blending or sampling.
+        float m_extendedClipmapMarginSize;
+
         // The size of the clipmap image in each layer.
         // Given 2 copies in different types to save casting.
         float m_clipmapSizeFloat;
         uint m_clipmapSizeUint;
+
+        // The texel position where blending to the next level should start. Equivalent to:
+        // m_clipmapSizeFloat / 2.0 - m_macroClipmapMarginSize - m_extendedClipmapMarginSize
+        // Cached for frequent access.
+        float m_validMacroClipmapRadius;
+        // Same as above, equivalent to:
+        // m_clipmapSizeFloat / 2.0 - m_detailClipmapMarginSize - m_extendedClipmapMarginSize
+        float m_validDetailClipmapRadius;
+
+        // The size of the blending area between each clipmap level.
+        float m_clipmapBlendSize;
 
         // The number of regions to be updated during the current frame.
         uint m_macroClipmapUpdateRegionCount;

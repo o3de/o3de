@@ -258,9 +258,17 @@ namespace Terrain
 
         m_clipmapData.m_macroClipmapMarginSize = aznumeric_cast<float>(m_config.m_macroClipmapMarginSize);
         m_clipmapData.m_detailClipmapMarginSize = aznumeric_cast<float>(m_config.m_detailClipmapMarginSize);
+        m_clipmapData.m_extendedClipmapMarginSize = aznumeric_cast<float>(m_config.m_extendedClipmapMarginSize);
 
         m_clipmapData.m_clipmapSizeFloat = aznumeric_cast<float>(m_config.m_clipmapSize);
         m_clipmapData.m_clipmapSizeUint = m_config.m_clipmapSize;
+
+        m_clipmapData.m_validMacroClipmapRadius =
+            m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_macroClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
+        m_clipmapData.m_validDetailClipmapRadius =
+            m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_detailClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
+
+        m_clipmapData.m_clipmapBlendSize = aznumeric_cast<float>(m_config.m_clipmapBlendSize);
 
         m_clipmapData.m_clipmapToWorldScale.fill(zeroFloat);
 

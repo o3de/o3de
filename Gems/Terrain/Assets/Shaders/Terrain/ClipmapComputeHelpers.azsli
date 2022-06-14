@@ -10,16 +10,6 @@
 
 #include <TerrainDetailHelpers.azsli>
 
-// In addition to the margin size passed from ClipmapManager,
-// this margin is a safety margin to avoid edge cases when blending or sampling.
-// For example, due to toroidal addressing, 2 physical adjacent texels can locate
-// on the opposite edges in the clipmap in logical space. They may be accidentally blended
-// by float rounding errors. Size in texels.
-static const float ExtendedClipmapMarginSize = 2;
-// Excluding margins, the distance from the clipmap edge to where blending with the next level
-// should start. Size in texels.
-static const float BetweenLevelsBlendBandSize = 256;
-
 // Used for the debug overlay color for each clipmap level.
 // Only use 5 for better contrast, and we don't really care about far away maps.
 static const uint ClipmapLevelDebugColorCount = 6;
@@ -200,9 +190,6 @@ float AabbContainsPoint(float2 center, float extent, float2 point_)
 
 ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
 {
-    float clipmapSize = TerrainSrg::m_clipmapData.m_clipmapSizeFloat;
-    float clipmapMarginSize = TerrainSrg::m_clipmapData.m_macroClipmapMarginSize;
-
     ClipmapLevel clipmapLevel;
     float closestLevel = 1.0;
     // ignore the last level, as it will be used as a fall back default.
@@ -211,7 +198,7 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
     {
         float2 clipmapCenterInWorldSpace = GetMacroClipmapCenterInWorldSpace(clipmapIndex);
         float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapIndex);
-        float extent = (clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize) * clipmapToWorldScale;
+        float extent = TerrainSrg::m_clipmapData.m_validMacroClipmapRadius * clipmapToWorldScale;
 
         float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
@@ -223,11 +210,11 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
     float2 clipmapCenterInWorldSpace = GetMacroClipmapCenterInWorldSpace(clipmapLevel.m_closestLevel);
     float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel.m_closestLevel);
 
-    float blendBeginDistance = clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize - BetweenLevelsBlendBandSize;
+    float blendBeginDistance = TerrainSrg::m_clipmapData.m_validMacroClipmapRadius - TerrainSrg::m_clipmapData.m_clipmapBlendSize;
     // Clipmap uses Chebyshev distance
     float2 distance = abs(worldPosition - clipmapCenterInWorldSpace);
     float cDistance = max(distance.x, distance.y) / clipmapToWorldScale;
-    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / BetweenLevelsBlendBandSize);
+    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize);
 
     return clipmapLevel;
 }
@@ -245,7 +232,7 @@ ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
     {
         float2 clipmapCenterInWorldSpace = GetDetailClipmapCenterInWorldSpace(clipmapIndex);
         float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapIndex);
-        float extent = (clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize) * clipmapToWorldScale;
+        float extent = TerrainSrg::m_clipmapData.m_validDetailClipmapRadius * clipmapToWorldScale;
 
         float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
@@ -257,11 +244,11 @@ ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
     float2 clipmapCenterInWorldSpace = GetDetailClipmapCenterInWorldSpace(clipmapLevel.m_closestLevel);
     float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel.m_closestLevel);
 
-    float blendBeginDistance = clipmapSize / 2.0 - clipmapMarginSize - ExtendedClipmapMarginSize - BetweenLevelsBlendBandSize;
+    float blendBeginDistance = TerrainSrg::m_clipmapData.m_validDetailClipmapRadius - TerrainSrg::m_clipmapData.m_clipmapBlendSize;
     // Clipmap uses Chebyshev distance
     float2 distance = abs(worldPosition - clipmapCenterInWorldSpace);
     float cDistance = max(distance.x, distance.y) / clipmapToWorldScale;
-    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / BetweenLevelsBlendBandSize);
+    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize);
 
     return clipmapLevel;
 }

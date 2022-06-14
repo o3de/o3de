@@ -57,9 +57,19 @@ namespace Terrain
         float m_detailClipmapScaleBase = 2.0f;
 
         //! The margin of the clipmap where the data won't be used.
-        //! This is used to reduce the update frequency and avoid edge rounding errors.
+        //! This is used to reduce the update frequency. Size in texels.
         uint32_t m_macroClipmapMarginSize = 4;
         uint32_t m_detailClipmapMarginSize = 4;
+        //! In addition to the above margin size used for updating,
+        //! this margin is a safety margin to avoid edge cases when blending or sampling.
+        //! For example, due to toroidal addressing, 2 physical adjacent texels can locate
+        //! on the opposite edges in the clipmap in logical space. They may be accidentally blended
+        //! by float rounding errors. Size in texels.
+        uint32_t m_extendedClipmapMarginSize = 2;
+
+        //! The size of the blending area between each clipmap level.
+        //! Size in texels.
+        uint32_t m_clipmapBlendSize = 256;
 
         //! Calculate how many layers of clipmap is needed.
         //! Final result must be less or equal than the MacroClipmapStackSizeMax/DetailClipmapStackSizeMax.
@@ -177,10 +187,25 @@ namespace Terrain
             float m_macroClipmapMarginSize;
             float m_detailClipmapMarginSize;
 
+            //! In addition to the above margin size used for updating,
+            //! this margin is a safety margin to avoid edge cases when blending or sampling.
+            float m_extendedClipmapMarginSize;
+
             //! The size of the clipmap image in each layer.
             //! Given 2 copies in different types to save casting.
             float m_clipmapSizeFloat;
             uint32_t m_clipmapSizeUint;
+
+            //! The texel position where blending to the next level should start. Equivalent to:
+            //! m_clipmapSizeFloat / 2.0 - m_macroClipmapMarginSize - m_extendedClipmapMarginSize
+            //! Cached for frequent access.
+            float m_validMacroClipmapRadius;
+            //! Same as above, equivalent to:
+            //! m_clipmapSizeFloat / 2.0 - m_detailClipmapMarginSize - m_extendedClipmapMarginSize
+            float m_validDetailClipmapRadius;
+
+            //! The size of the blending area between each clipmap level.
+            float m_clipmapBlendSize;
 
             //! The number of regions to be updated during the current frame.
             uint32_t m_macroClipmapUpdateRegionCount = 0;
