@@ -34,6 +34,7 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult AddSeparatorToToolBar(
             const AZStd::string& toolBarIdentifier, int sortIndex) override;
         QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
+        ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
 
         AZStd::unordered_map<AZStd::string, EditorToolBar> m_toolBars;
 

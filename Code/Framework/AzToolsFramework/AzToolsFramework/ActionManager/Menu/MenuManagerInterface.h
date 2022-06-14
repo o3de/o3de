@@ -18,7 +18,8 @@ class QWidget;
 namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
-    
+    using MenuManagerIntegerResult = AZ::Outcome<int, AZStd::string>;
+
     //! Provides additional properties to initialize a Menu upon registration.
     struct MenuProperties
     {
@@ -96,6 +97,24 @@ namespace AzToolsFramework
         //! @param menuBarIdentifier The identifier for the menu bar to retrieve.
         //! @return A raw pointer to the QMenuBar object.
         virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Retrieve the sort key of an action in a menu from its identifier.
+        //! @param menuIdentifier The identifier for the menu to query.
+        //! @param actionIdentifier The identifier for the action whose sort key to get in the menu.
+        //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerIntegerResult GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const = 0;
+
+        //! Retrieve the sort key of a sub-menu in a menu from its identifier.
+        //! @param menuIdentifier The identifier for the menu to query.
+        //! @param subMenuIdentifier The identifier for the sub-menu whose sort key to get in the menu.
+        //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const = 0;
+
+        //! Retrieve the sort key of a sub-menu in a menu from its identifier.
+        //! @param menuBarIdentifier The identifier for the menu bar to query.
+        //! @param menuIdentifier The identifier for the menu whose sort key to get in the menu bar.
+        //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework

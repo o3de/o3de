@@ -111,11 +111,11 @@ namespace AZ
                 m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
                 Render::DefaultMaterialAssignmentId, m_materialAsset.GetId());
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyOverrides,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyValues,
                 Render::DefaultMaterialAssignmentId, m_materialPropertyOverrides);
         }
 

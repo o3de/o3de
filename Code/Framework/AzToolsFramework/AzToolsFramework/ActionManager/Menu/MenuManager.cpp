@@ -83,6 +83,13 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
+        if (menuIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add action \"%s\" to menu \"%s\" - menu already contains action.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddAction(sortIndex, actionIdentifier);
         return AZ::Success();
     }
@@ -118,6 +125,13 @@ namespace AzToolsFramework
                 subMenuIdentifier.c_str(), menuIdentifier.c_str()));
         }
 
+        if (menuIterator->second.ContainsSubMenu(subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menu \"%s\" to menu \"%s\" - menu already contains this sub-menu.",
+                subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
         return AZ::Success();
     }
@@ -137,6 +151,13 @@ namespace AzToolsFramework
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not add menu \"%s\" to menu bar \"%s\" - menu has not been registered.", menuIdentifier.c_str(),
                 menuBarIdentifier.c_str()));
+        }
+
+        if (menuBarIterator->second.ContainsMenu(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add menu \"%s\" to menu bar \"%s\" - menu bar already contains this menu.",
+                menuIdentifier.c_str(), menuBarIdentifier.c_str()));
         }
 
         menuBarIterator->second.AddMenu(sortIndex, menuIdentifier);
@@ -184,6 +205,64 @@ namespace AzToolsFramework
         }
 
         return menuBarIterator->second.GetMenuBar();
+    }
+    
+    MenuManagerIntegerResult MenuManager::GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of action \"%s\" in menu \"%s\" - menu has not been registered.", actionIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        auto sortKey = menuIterator->second.GetActionSortKey(actionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of action \"%s\" in menu \"%s\" - action was not found in menu.", actionIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        return AZ::Success(sortKey.value());
+    }
+
+    MenuManagerIntegerResult MenuManager::GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of sub-menu \"%s\" in menu \"%s\" - menu has not been registered.", subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        auto sortKey = menuIterator->second.GetSubMenuSortKey(subMenuIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of sub-menu \"%s\" in menu \"%s\" - sub-menu was not found in menu.", subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        return AZ::Success(sortKey.value());
+    }
+
+    MenuManagerIntegerResult MenuManager::GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const
+    {
+        auto menuBarIterator = m_menuBars.find(menuBarIdentifier);
+        if (menuBarIterator == m_menuBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of menu \"%s\" in menu bar \"%s\" - menu bar has not been registered.", menuIdentifier.c_str(),
+                menuBarIdentifier.c_str()));
+        }
+        
+        auto sortKey = menuBarIterator->second.GetMenuSortKey(menuIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of menu \"%s\" in menu bar \"%s\" - menu was not found in menu bar.", menuIdentifier.c_str(), menuBarIdentifier.c_str()));
+        }
+        
+        return AZ::Success(sortKey.value());
     }
 
 } // namespace AzToolsFramework
