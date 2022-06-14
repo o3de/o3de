@@ -8,10 +8,6 @@
 
 #include "EditorGradientBakerComponent.h"
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <QTimer>
-AZ_POP_DISABLE_WARNING
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
@@ -335,16 +331,16 @@ namespace GradientSignal
 
         UpdatePreviewSettings();
 
-        // If we have a valid output image path set and the image doesn't exist,
-        // then bake it when we activate our component.
-        if (!m_configuration.m_outputImagePath.empty())
+        // If we have a valid output image path set and the other criteria for baking
+        // are met but the image doesn't exist, then bake it when we activate our component.
+        if (!IsBakeDisabled())
         {
             AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath);
             if (!AZ::IO::SystemFile::Exists(fullPathIO.c_str()))
             {
-                QTimer::singleShot(0, [this]() {
-                    BakeImage();
-                });
+                // Delay actually starting the bake until the next tick to
+                // make sure everything is ready
+                AZ::TickBus::Handler::BusConnect();
             }
         }
     }
@@ -409,6 +405,11 @@ namespace GradientSignal
 
         AZ::TickBus::Handler::BusConnect();
 
+        StartBakeImageJob();
+    }
+
+    void EditorGradientBakerComponent::StartBakeImageJob()
+    {
         // Get the absolute path for our stored relative path
         AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_configuration.m_outputImagePath);
 
@@ -465,6 +466,13 @@ namespace GradientSignal
             // Refresh once the job has completed so the Bake button can be re-enabled
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        }
+        else if (!m_bakeImageJob)
+        {
+            // If we didn't have a bake job already going, start one now
+            // This is to handle the case where the bake is initiated when
+            // activating the component and the output image doesn't exist
+            StartBakeImageJob();
         }
     }
 
