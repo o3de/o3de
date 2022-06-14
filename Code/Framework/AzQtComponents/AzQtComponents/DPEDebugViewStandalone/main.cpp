@@ -234,9 +234,6 @@ int main(int argc, char** argv)
 
     // create a real DPE on the same adapter as the debug adapter for testing purposes
     AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
-    QScrollArea dpeScrollArea;
-    dpeScrollArea.setWidget(dpeInstance);
-    dpeScrollArea.setWidgetResizable(true);
 
     // add the adapters to a combo box and switch out the views on selection change
     QObject::connect(theWindow->adapterSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), [&]()
@@ -253,7 +250,7 @@ int main(int argc, char** argv)
     theWindow->adapterSelector->setCurrentIndex(0);
 
     theWindow->show();
-    dpeScrollArea.show();
+    dpeInstance->show();
 
     return qtApp.exec();
 }

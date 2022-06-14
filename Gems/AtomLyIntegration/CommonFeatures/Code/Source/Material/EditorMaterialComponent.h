@@ -22,7 +22,6 @@ namespace AZ
         //! In-editor material component for displaying and editing material assignments.
         class EditorMaterialComponent final
             : public EditorRenderComponentAdapter<MaterialComponentController, MaterialComponent, MaterialComponentConfig>
-            , public MaterialReceiverNotificationBus::Handler
             , public MaterialComponentNotificationBus::Handler
             , public EditorMaterialSystemComponentNotificationBus::Handler
         {
@@ -50,10 +49,8 @@ namespace AZ
 
             AZ::u32 OnConfigurationChanged() override;
 
-            //! MaterialReceiverNotificationBus::Handler overrides...
-            void OnMaterialAssignmentsChanged() override;
-
             //! MaterialComponentNotificationBus::Handler overrides...
+            void OnMaterialSlotLayoutChanged() override;
             void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
 
             //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
