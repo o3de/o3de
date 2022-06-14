@@ -8,8 +8,12 @@
 
 #include "EditorRecastNavigationMeshComponent.h"
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <Components/RecastNavigationMeshComponent.h>
+
+AZ_CVAR(
+    int, ed_navmesh_updateFrequencyMs, 1000, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "How often to update the navigation mesh preview in the Editor (in milliseconds).");
 
 namespace RecastNavigation
 {
@@ -189,7 +193,7 @@ namespace RecastNavigation
     {
         if (m_controller.m_configuration.m_enableEditorPreview)
         {
-            m_inEditorUpdateTick.Enqueue(AZ::TimeMs{ 1000 }, true);
+            m_inEditorUpdateTick.Enqueue(AZ::TimeMs{ aznumeric_cast<int>(ed_navmesh_updateFrequencyMs) }, true);
         }
         else
         {

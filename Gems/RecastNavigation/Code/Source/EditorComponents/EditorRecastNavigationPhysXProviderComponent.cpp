@@ -51,7 +51,7 @@ namespace RecastNavigation
     void EditorRecastNavigationPhysXProviderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         m_controller.m_config.m_useEditorScene = false;
-        // The game entity should not regular game scene, while the Editor component will query the Editor PhysX scene.
+        // The game entity must query the regular game PhysX scene, while the Editor component must query the Editor PhysX scene.
         BaseClass::BuildGameEntity(gameEntity);
         m_controller.m_config.m_useEditorScene = true;
     }
