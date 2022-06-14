@@ -68,6 +68,9 @@ namespace GradientSignal
             bytesPerPixel = 4;
             pixelFormat = OIIO::TypeDesc::FLOAT;
             break;
+        default:
+            AZ_Assert(false, "Unsupported output image format (%d)", m_configuration.m_outputFormat);
+            return;
         }
         const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
         AZStd::vector<AZ::u8> pixels(imageSize, 0);
