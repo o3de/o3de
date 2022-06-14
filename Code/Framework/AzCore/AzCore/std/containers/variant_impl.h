@@ -307,13 +307,13 @@ namespace AZStd
                 };
                 template <class Visitor, class... Variants, size_t... Indices1, size_t... Indices2, class... IndiceSequences>
                 static constexpr auto make_dispatch_for_all_impl(index_sequence<Indices1...>, index_sequence<Indices2...>, IndiceSequences... sequences)
-                {   
+                {
                     using index_sequence_workaround = vs2017_index_sequence_error_3528_workaround<Indices1...>;
                     return make_dispatcher_array(make_dispatch_for_all_impl<Visitor, Variants...>(index_sequence_workaround::template make_index_sequence<Indices2>(), sequences...)...);
                 }
 
                 /// This function makes (m^n) visitor functions where m is the number of variants and n is the number of alternatives per variant
-                /// This tree of visitors can invoke the visitor for any combination of alternatives. 
+                /// This tree of visitors can invoke the visitor for any combination of alternatives.
                 /// For three variants with three alternatives 27 functions are generated
                 /// For two variants with three alternatives 9 functions are generated
                 /// For three variants with two alternatives each 8 functions are generated
@@ -338,11 +338,6 @@ namespace AZStd
                 {
                     return impl::visit_alt(AZStd::forward<Visitor>(visitor), AZStd::forward<VariantTypes>(vs).m_impl...);
                 }
-                template <class R, class Visitor, class... VariantTypes>
-                static constexpr R visit_alt_r(Visitor&& visitor, VariantTypes&&... vs)
-                {
-                    return impl::visit_alt(AZStd::forward<Visitor>(visitor), AZStd::forward<VariantTypes>(vs).m_impl...);
-                }
 
                 template <class Visitor, class... VariantTypes>
                 static constexpr decltype(auto) visit_value_at(size_t index, Visitor&& visitor, VariantTypes&&... vs)
@@ -359,7 +354,7 @@ namespace AZStd
                 template <class R, class Visitor, class... VariantTypes>
                 static constexpr R visit_value_r(Visitor&& visitor, VariantTypes&&... vs)
                 {
-                    return visit_alt_r<R>(make_value_visitor(AZStd::forward<Visitor>(visitor)), AZStd::forward<VariantTypes>(vs)...);
+                    return visit_alt(make_value_visitor<R>(AZStd::forward<Visitor>(visitor)), AZStd::forward<VariantTypes>(vs)...);
                 }
 
             private:
@@ -377,10 +372,29 @@ namespace AZStd
                     Visitor&& m_visitor;
                 };
 
+                template <class R, class Visitor>
+                struct value_visitor_return
+                {
+                    template <class... Alternatives>
+                    constexpr R operator()(Alternatives&&... alts) const
+                    {
+                        static_assert(is_invocable_r_v<R, Visitor, decltype((AZStd::forward<Alternatives>(alts).m_value))...>,
+                            "visitor must be invocable with all supplied values and return the specified type R");
+                        return AZStd::invoke(AZStd::forward<Visitor>(m_visitor), AZStd::forward<Alternatives>(alts).m_value...);
+                    }
+
+                    Visitor&& m_visitor;
+                };
+
                 template <class Visitor>
                 static constexpr auto make_value_visitor(Visitor&& visitor)
                 {
                     return value_visitor<Visitor>{AZStd::forward<Visitor>(visitor)};
+                }
+                template <class R, class Visitor>
+                static constexpr auto make_value_visitor(Visitor&& visitor)
+                {
+                    return value_visitor_return<R, Visitor>{AZStd::forward<Visitor>(visitor)};
                 }
             };
 
@@ -416,7 +430,7 @@ namespace AZStd
 
             template <class... Args>
             explicit constexpr union_impl(in_place_index_t<0>, Args&&... args)
-                : m_head{ in_place, AZStd::forward<Args>(args)... }   
+                : m_head{ in_place, AZStd::forward<Args>(args)... }
             {
             }
 
