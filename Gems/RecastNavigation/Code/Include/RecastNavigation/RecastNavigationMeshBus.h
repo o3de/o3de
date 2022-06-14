@@ -11,7 +11,7 @@
 #include <DetourNavMesh.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <Misc/RecastSmartPointer.h>
+#include <RecastNavigation/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {
@@ -81,10 +81,12 @@ namespace RecastNavigation
     {
     public:
         //! Re-calculates the navigation mesh within the defined world area. Blocking call.
-        virtual void UpdateNavigationMeshBlockUntilCompleted() = 0;
+        //! @returns false if another update operation is already in progress
+        virtual bool UpdateNavigationMeshBlockUntilCompleted() = 0;
 
         //! Re-calculates the navigation mesh within the defined world area. Notifies when completed using @RecastNavigationMeshNotificationBus.
-        virtual void UpdateNavigationMeshAsync() = 0;
+        //! @returns false if another update operation is already in progress
+        virtual bool UpdateNavigationMeshAsync() = 0;
 
         //! @returns the underlying navigation objects with the associated synchronization object.
         virtual AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() = 0;

@@ -18,6 +18,7 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 namespace AzToolsFramework
 {

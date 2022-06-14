@@ -284,7 +284,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         # check override with ebus call
         Report.result(Tests.lod_material_set,
                       render.MaterialComponentRequestBus(
-                          bus.Event, "GetMaterialOverride", material_entity.id, assignment_id) == metal_gold.id)
+                          bus.Event, "GetMaterialAssetId", material_entity.id, assignment_id) == metal_gold.id)
 
         # 19. Clear the LOD Material override and confirm the active asset is the default value
         item[0].Clear()
@@ -304,16 +304,16 @@ def AtomEditorComponents_Material_AddedToEntity():
                 AtomComponentProperties.material('Material Asset')) == metal_gold.id)
 
         # 21. Clear the assignment of a default material using MaterialComponentRequestBus and confirm null asset
-        render.MaterialComponentRequestBus(bus.Event, "ClearDefaultMaterialOverride", material_entity.id)
+        render.MaterialComponentRequestBus(bus.Event, "ClearMaterialAssetIdOnDefaultSlot", material_entity.id)
         default_material_asset_id = render.MaterialComponentRequestBus(
-            bus.Event, "GetDefaultMaterialOverride", material_entity.id)
+            bus.Event, "GetMaterialAssetIdOnDefaultSlot", material_entity.id)
         Report.result(Tests.clear_default_material, default_material_asset_id == azlmbr.asset.AssetId())
 
         # 22. Set the Default Material asset using MaterialComponentRequestBus
         render.MaterialComponentRequestBus(
-            bus.Event, "SetDefaultMaterialOverride", material_entity.id, metal_gold.id)
+            bus.Event, "SetMaterialAssetIdOnDefaultSlot", material_entity.id, metal_gold.id)
         default_material_asset_id = render.MaterialComponentRequestBus(
-            bus.Event, "GetDefaultMaterialOverride", material_entity.id)
+            bus.Event, "GetMaterialAssetIdOnDefaultSlot", material_entity.id)
         Report.result(Tests.default_material, default_material_asset_id == metal_gold.id)
 
         # 23. Enter/Exit game mode.

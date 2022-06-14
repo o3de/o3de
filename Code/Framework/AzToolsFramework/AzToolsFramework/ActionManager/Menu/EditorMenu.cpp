@@ -32,12 +32,14 @@ namespace AzToolsFramework
     
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshMenu();
     }
 
     void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
     {
+        m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
         RefreshMenu();
     }
@@ -46,6 +48,38 @@ namespace AzToolsFramework
     {
         m_menuItems.insert({ sortKey, MenuItem(widget) });
         RefreshMenu();
+    }
+    
+    bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
+    {
+        return m_actionToSortKeyMap.contains(actionIdentifier);
+    }
+
+    bool EditorMenu::ContainsSubMenu(const AZStd::string& menuIdentifier) const
+    {
+        return m_subMenuToSortKeyMap.contains(menuIdentifier);
+    }
+
+    AZStd::optional<int> EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
+        if (actionIterator == m_actionToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return actionIterator->second;
+    }
+
+    AZStd::optional<int> EditorMenu::GetSubMenuSortKey(const AZStd::string& menuIdentifier) const
+    {
+        auto menuIterator = m_subMenuToSortKeyMap.find(menuIdentifier);
+        if (menuIterator == m_subMenuToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return menuIterator->second;
     }
 
     QMenu* EditorMenu::GetMenu()
