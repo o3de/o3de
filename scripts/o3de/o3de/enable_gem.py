@@ -16,7 +16,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, project_properties, utils
+from o3de import cmake, manifest, project_properties, utils, version
 
 logger = logging.getLogger('o3de.enable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -26,7 +26,9 @@ def enable_gem_in_project(gem_name: str = None,
                           gem_path: pathlib.Path = None,
                           project_name: str = None,
                           project_path: pathlib.Path = None,
-                          enabled_gem_file: pathlib.Path = None) -> int:
+                          enabled_gem_file: pathlib.Path = None,
+                          force: bool = False,
+                          check: bool = False) -> int:
     """
     enable a gem in a projects enabled_gems.cmake file
     :param gem_name: name of the gem to add
@@ -34,6 +36,8 @@ def enable_gem_in_project(gem_name: str = None,
     :param project_name: name of to the project to add the gem to
     :param project_path: path to the project to add the gem to
     :param enabled_gem_file: if this dependency goes/is in a specific file
+    :param force: bypass version compatibility checks 
+    :param check: check version compatibility without modifying anything 
     :return: 0 for success or non 0 failure code
     """
     # we need either a project name or path
@@ -74,14 +78,14 @@ def enable_gem_in_project(gem_name: str = None,
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
-    # Read gem.json from the gem path
+    # read gem.json from the gem path
     gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
     if enabled_gem_file:
-        # make sure this is a project has an enabled gems file
+        # make sure this project has an enabled gems file
         if not enabled_gem_file.is_file():
             logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
             return 1
@@ -100,6 +104,21 @@ def enable_gem_in_project(gem_name: str = None,
     # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
     buildable_gems = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), buildable_gems)))
 
+    # check gem and engine version compatibility
+    if force:
+        logger.warning(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
+    else:
+        if check_gem_compatibility(gem_json_data, project_path, buildable_gems):
+            if check:
+                logger.info(f'{gem_json_data["gem_name"]} is compatibile with this project and engine and can be enabled')
+                return 0
+        else:
+            if check:
+                logger.info(f'{gem_json_data["gem_name"]} is not compatibile with this project and requires the --force parameter to enable.')
+            else:
+                logger.error(f'{gem_json_data["gem_name"]} is not compatibile with this project and requires the --force parameter to enable.')
+            return 1
+
     ret_val = 0
     # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
     if gem_path not in buildable_gems:
@@ -110,6 +129,53 @@ def enable_gem_in_project(gem_name: str = None,
 
     return ret_val
 
+def check_gem_compatibility(gem_json_data: dict, project_path:pathlib.Path, gem_paths: list):
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f'Failed to load project.json for {gem_json_data["gem_name"]} from {project_path}.')
+        return True
+
+    # check engine compatibility
+    if 'engine_dependencies' in gem_json_data and 'engine' in project_json_data:
+        engine_name = project_json_data['engine_name']
+        engine_json_data = manifest.get_engine_json_data(engine_name=engine_name)
+        if not engine_json_data:
+            logger.error(f'{gem_json_data["gem_name"]} has engine dependencies but the engine'
+                        f'"{engine_name}" could not be found.')
+            return False
+        # if no engine version field exists, we cannot check compatibility
+        if not 'engine_version' in engine_json_data:
+            logger.warning(f'{gem_json_data["gem_name"]} has engine dependencies but the engine'
+                           f'"{engine_name}" does not have an engine_version field.')
+        else:
+            engine_version = engine_json_data['engine_version']
+            if not version.has_compatible_version(gem_json_data['engine_dependencies'], engine_name, engine_version): 
+                logger.error(f'{engine_name} {engine_version} is not compatible with'
+                                f'{gem_json_data["gem_name"]} {gem_json_data["engine_dependencies"]}.'
+                                f'  Use the --force option to override.')
+                return False
+
+    # check gem compatibility
+    if 'dependencies' in gem_json_data:
+        # maintain a cache of gem json data so we don't load it multiple times
+        project_gem_json_data = {}
+        for gem_path in gem_paths:
+            json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
+            project_gem_json_data[json_data['gem_name']] = json_data
+
+        for gem_dependency in gem_json_data['dependencies']:
+            gem_name, version_specifier = version.get_object_name_and_version_specifier(gem_dependency)
+            # check if the gem is already enabled in the project 
+            if not gem_name in project_gem_json_data:
+                logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency}. Use --force to override.')
+                return False
+            # check if the gem version is compatible
+            if 'gem_version' in project_gem_json_data[gem_name]:
+                if not version.has_compatible_version([gem_dependency], gem_name, project_gem_json_data[gem_name]['gem_version']):
+                    logger.error(f'{gem_json_data["gem_name"]} requires {gem_dependency}. Use --force to override.')
+                    return False
+
+    return True
 
 def add_explicit_gem_activation_for_all_paths(gem_root_folders: list,
                                  project_name: str = None,
@@ -168,7 +234,9 @@ def _run_enable_gem_in_project(args: argparse) -> int:
                                      args.gem_path,
                                      args.project_name,
                                      args.project_path,
-                                     args.enabled_gem_file
+                                     args.enabled_gem_file,
+                                     args.force,
+                                     args.check
                                      )
 
 
@@ -196,8 +264,13 @@ def add_parser_args(parser):
     group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
                        help='Explicitly activates all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
-                                   help='The cmake enabled_gem file in which the gem names are specified.'
-                                        'If not specified it will assume enabled_gems.cmake')
+                       help='The cmake enabled_gem file in which the gem names are specified.'
+                            'If not specified it will assume enabled_gems.cmake')
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-f', '--force', type=bool, required=False,
+                       help='Bypass version compatibility checks')
+    group.add_argument('-c', '--check', type=bool, required=False,
+                       help='Checks if this gem can be enabled for the specified project, but does not actually enable.')
 
     parser.set_defaults(func=_run_enable_gem_in_project)
 
