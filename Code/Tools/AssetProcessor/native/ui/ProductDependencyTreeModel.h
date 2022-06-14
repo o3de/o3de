@@ -10,9 +10,8 @@
 #include <AssetDatabase/AssetDatabase.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <QAbstractItemModel>
+#include <QIcon>
 #include "AssetTreeFilterModel.h"
-
-class QIcon;
 
 namespace AssetProcessor
 {
