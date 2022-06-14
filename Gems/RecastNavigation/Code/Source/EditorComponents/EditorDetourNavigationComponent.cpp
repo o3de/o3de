@@ -15,15 +15,15 @@ namespace RecastNavigation
 {
     void EditorDetourNavigationComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<EditorDetourNavigationComponent, AZ::Component>()
+            serializeContext->Class<EditorDetourNavigationComponent, AZ::Component>()
                 ->Field("Navigation Mesh", &EditorDetourNavigationComponent::m_navQueryEntityId)
                 ->Field("Nearest Distance", &EditorDetourNavigationComponent::m_nearestDistance)
                 ->Version(1)
                 ;
 
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
                     "[Calculates paths within an associated navigation mesh.]")

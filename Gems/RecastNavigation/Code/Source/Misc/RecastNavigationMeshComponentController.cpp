@@ -76,6 +76,9 @@ namespace RecastNavigation
             &RecastNavigationProviderRequests::CollectGeometry,
             m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize);
 
+        RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+            &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshRecalculating, m_entityComponentIdPair.GetEntityId());
+
         {
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
             {
@@ -118,13 +121,20 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
 
-            RecastNavigationProviderRequestBus::Event(m_entityComponentIdPair.GetEntityId(),
+            bool operationScheduled = false;
+            RecastNavigationProviderRequestBus::EventResult(operationScheduled, m_entityComponentIdPair.GetEntityId(),
                 &RecastNavigationProviderRequests::CollectGeometryAsync,
                 m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
                 [this](AZStd::shared_ptr<TileGeometry> tile)
                 {
                     OnTileProcessedEvent(tile);
                 });
+
+            if (!operationScheduled)
+            {
+                m_updateInProgress = false;
+                return false;
+            }
             return true;
         }
 
@@ -145,7 +155,7 @@ namespace RecastNavigation
         // The actual navigation data will be passed at a later time.
         CreateNavigationMesh(m_entityComponentIdPair.GetEntityId(), m_configuration.m_tileSize);
 
-        if (cl_navmesh_debug || m_configuration.m_enableDebugDraw)
+        if (IsDebugDrawEnabled())
         {
             m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
@@ -156,17 +166,22 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::Deactivate()
     {
-        m_shouldProcessTiles = false;
-        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
-        {
-            // If the tasks are still in progress, wait until the task graph is finished.
-            m_taskGraphEvent->Wait();
-        }
-
         m_tickEvent.RemoveFromQueue();
+
+        if (m_updateInProgress)
+        {
+            m_shouldProcessTiles = false;
+            if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+            {
+                // If the tasks are still in progress, wait until the task graph is finished.
+                m_taskGraphEvent->Wait();
+            }
+        }
 
         m_context = {};
         m_navObject = {};
+        m_taskGraphEvent = {};
+        m_updateInProgress = false;
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
     }
@@ -187,17 +202,26 @@ namespace RecastNavigation
             &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
         m_updateInProgress = false;
     }
+
+    bool RecastNavigationMeshComponentController::IsDebugDrawEnabled() const
+    {
+        return cl_navmesh_debug || m_configuration.m_enableDebugDraw || m_configuration.m_enableEditorPreview;
+    }
+
     void RecastNavigationMeshComponentController::OnDebugDrawTick()
     {
-        NavMeshQuery::LockGuard lock(*m_navObject);
-
-        if (lock.GetNavMesh() && (cl_navmesh_debug || m_configuration.m_enableDebugDraw))
+        if (IsDebugDrawEnabled())
         {
-            AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();
-            Camera::ActiveCameraRequestBus::BroadcastResult(cameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
-            m_customDebugDraw.SetViewableAabb(AZ::Aabb::CreateCenterRadius(cameraTransform.GetTranslation(), cl_navmesh_debugRadius));
+            NavMeshQuery::LockGuard lock(*m_navObject);
 
-            duDebugDrawNavMesh(&m_customDebugDraw, *lock.GetNavMesh(), DU_DRAWNAVMESH_COLOR_TILES);
+            if (lock.GetNavMesh())
+            {
+                AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();
+                Camera::ActiveCameraRequestBus::BroadcastResult(cameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+                m_customDebugDraw.SetViewableAabb(AZ::Aabb::CreateCenterRadius(cameraTransform.GetTranslation(), cl_navmesh_debugRadius));
+
+                duDebugDrawNavMesh(&m_customDebugDraw, *lock.GetNavMesh(), DU_DRAWNAVMESH_COLOR_TILES);
+            }
         }
     }
 
@@ -415,6 +439,9 @@ namespace RecastNavigation
             }
 
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+
+            RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshRecalculating, m_entityComponentIdPair.GetEntityId());
         }
     }
 } // namespace RecastNavigation

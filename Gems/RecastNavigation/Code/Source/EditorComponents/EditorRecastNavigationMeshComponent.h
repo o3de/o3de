@@ -21,7 +21,7 @@ namespace RecastNavigation
     //! Editor version of @RecastNavigationMeshComponent.
     class EditorRecastNavigationMeshComponent final
         : public AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController,
-                                                                      RecastNavigationMeshComponent, RecastNavigationMeshConfig>
+        RecastNavigationMeshComponent, RecastNavigationMeshConfig>
     {
     public:
         using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController, RecastNavigationMeshComponent, RecastNavigationMeshConfig>;
@@ -30,5 +30,17 @@ namespace RecastNavigation
 
         EditorRecastNavigationMeshComponent() = default;
         explicit EditorRecastNavigationMeshComponent(const RecastNavigationMeshConfig& config);
+
+        void Activate() override;
+        void Deactivate() override;
+
+        void OnAutoUpdateChanged();
+
+        void OnEditorUpdateTick();
+
+    private:
+        AZ::ScheduledEvent m_inEditorUpdateTick{ [this]() {OnEditorUpdateTick(); }, AZ::Name("EditorRecastNavigationMeshTick") };
+
+        friend class EditorNavigationTest;
     };
 } // namespace RecastNavigation

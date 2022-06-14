@@ -99,6 +99,7 @@ namespace RecastNavigation
         }
 
         RecastNavigationProviderRequestBus::Handler::BusDisconnect();
+        m_taskGraphEvent = {};
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectGeometry(
@@ -108,12 +109,12 @@ namespace RecastNavigation
         return CollectGeometryImpl(tileSize, borderSize, GetWorldBounds());
     }
 
-    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsync(
+    bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsync(
         float tileSize,
         float borderSize,
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
-        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
+        return CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
     }
 
     AZ::Aabb RecastNavigationPhysXProviderComponentController::GetWorldBounds() const
@@ -306,7 +307,7 @@ namespace RecastNavigation
         return tiles;
     }
 
-    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
+    bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
         float tileSize,
         float borderSize,
         const AZ::Aabb& worldVolume,
@@ -387,6 +388,9 @@ namespace RecastNavigation
             }
 
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+            return true;
         }
+
+        return false;
     }
 } // namespace RecastNavigation

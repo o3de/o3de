@@ -28,6 +28,7 @@ namespace RecastNavigation
         : public RecastNavigationMeshRequestBus::Handler
     {
         friend class EditorRecastNavigationMeshComponent;
+        friend class EditorNavigationTest;
     public:
         AZ_CLASS_ALLOCATOR(RecastNavigationMeshComponentController, AZ::SystemAllocator, 0);
         AZ_RTTI(RecastNavigationMeshComponentController, "{D34CD5E0-8C29-4545-8734-9C7A92F03740}");
@@ -87,6 +88,8 @@ namespace RecastNavigation
         //! Tick event to notify on navigation mesh updates from the main thread.
         //! This is often needed for script environment, such as Script Canvas.
         AZ::ScheduledEvent m_sendNotificationEvent{ [this]() { OnSendNotificationTick(); }, AZ::Name("RecastNavigationMeshUpdated") };
+
+        bool IsDebugDrawEnabled() const;
 
         //! If debug draw was specified, then this call will be invoked every frame.
         void OnDebugDrawTick();
