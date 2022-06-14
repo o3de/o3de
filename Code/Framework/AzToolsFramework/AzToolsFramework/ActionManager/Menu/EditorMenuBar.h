@@ -30,7 +30,7 @@ namespace AzToolsFramework
         bool ContainsMenu(const AZStd::string& menuIdentifier) const;
 
         // Returns the sort key for the queried menu, or 0 if it's not found.
-        int GetMenuSortKey(const AZStd::string& menuIdentifier) const;
+        AZStd::optional<int> GetMenuSortKey(const AZStd::string& menuIdentifier) const;
         
         // Returns the pointer to the menu bar.
         QMenuBar* GetMenuBar();

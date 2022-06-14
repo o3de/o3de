@@ -60,23 +60,23 @@ namespace AzToolsFramework
         return m_subMenuToSortKeyMap.contains(menuIdentifier);
     }
 
-    int EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    AZStd::optional<int> EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
         if (actionIterator == m_actionToSortKeyMap.end())
         {
-            return 0;
+            return AZStd::nullopt;
         }
 
         return actionIterator->second;
     }
 
-    int EditorMenu::GetSubMenuSortKey(const AZStd::string& menuIdentifier) const
+    AZStd::optional<int> EditorMenu::GetSubMenuSortKey(const AZStd::string& menuIdentifier) const
     {
         auto menuIterator = m_subMenuToSortKeyMap.find(menuIdentifier);
         if (menuIterator == m_subMenuToSortKeyMap.end())
         {
-            return 0;
+            return AZStd::nullopt;
         }
 
         return menuIterator->second;

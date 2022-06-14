@@ -42,8 +42,8 @@ namespace AzToolsFramework
         bool ContainsSubMenu(const AZStd::string& menuIdentifier) const;
 
         // Returns the sort key for the queried action or menu, or 0 if it's not found.
-        int GetActionSortKey(const AZStd::string& actionIdentifier) const;
-        int GetSubMenuSortKey(const AZStd::string& menuIdentifier) const;
+        AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
+        AZStd::optional<int> GetSubMenuSortKey(const AZStd::string& menuIdentifier) const;
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();

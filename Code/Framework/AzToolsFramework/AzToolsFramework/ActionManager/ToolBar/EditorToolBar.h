@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
 #include <QWidgetAction>
@@ -40,7 +41,7 @@ namespace AzToolsFramework
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
         
         // Returns the sort key for the queried action, or 0 if it's not found.
-        int GetActionSortKey(const AZStd::string& actionIdentifier) const;
+        AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
 
         // Returns the pointer to the ToolBar.
         QToolBar* GetToolBar();

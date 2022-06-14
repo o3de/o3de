@@ -48,12 +48,12 @@ namespace AzToolsFramework
         return m_actionToSortKeyMap.contains(actionIdentifier);
     }
 
-    int EditorToolBar::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    AZStd::optional<int> EditorToolBar::GetActionSortKey(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
         if (actionIterator == m_actionToSortKeyMap.end())
         {
-            return 0;
+            return AZStd::nullopt;
         }
 
         return actionIterator->second;

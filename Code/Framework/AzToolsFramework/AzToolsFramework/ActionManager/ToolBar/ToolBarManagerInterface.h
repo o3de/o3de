@@ -66,7 +66,7 @@ namespace AzToolsFramework
         //! @param toolBarIdentifier The identifier for the toolbar to query.
         //! @param actionIdentifier The identifier for the action whose sort key to get in the toolbar.
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
-        virtual ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) = 0;
+        virtual ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework

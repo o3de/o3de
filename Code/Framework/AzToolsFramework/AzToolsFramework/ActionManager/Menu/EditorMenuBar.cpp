@@ -30,12 +30,12 @@ namespace AzToolsFramework
         return m_menuToSortKeyMap.contains(menuIdentifier);
     }
 
-    int EditorMenuBar::GetMenuSortKey(const AZStd::string& menuIdentifier) const
+    AZStd::optional<int> EditorMenuBar::GetMenuSortKey(const AZStd::string& menuIdentifier) const
     {
         auto menuIterator = m_menuToSortKeyMap.find(menuIdentifier);
         if (menuIterator == m_menuToSortKeyMap.end())
         {
-            return 0;
+            return AZStd::nullopt;
         }
 
         return menuIterator->second;
