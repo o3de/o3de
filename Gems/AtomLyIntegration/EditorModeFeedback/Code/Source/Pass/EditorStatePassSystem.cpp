@@ -146,7 +146,7 @@ namespace AZ::Render
     void CreateAndAddPassthroughPassTemplate()
     {
         auto passTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        passTemplate->m_name = Name("PassthroughPassTemplate");
+        passTemplate->m_name = Name("EditorModePassthroughPassTemplate");
         passTemplate->m_passClass = Name("FullScreenTriangle");
     
         // Input color slot
@@ -379,7 +379,7 @@ namespace AZ::Render
             {
                 RPI::PassRequest passthrough;
                 passthrough.m_passName = GetPassthroughPassNameForState(*state);
-                passthrough.m_templateName = Name("EditorModePassthroughTemplate");
+                passthrough.m_templateName = Name("EditorModePassthroughPassTemplate");
                 
                 // Input color
                 {
