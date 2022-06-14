@@ -209,7 +209,7 @@ namespace RedirectOutput
         SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, stdoutFunction);
         SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, stderrFunction);
 
-        PySys_WriteStdout("RedirectOutput installed");
+        PySys_WriteStdout("RedirectOutput installed\n");
     }
 
     void Shutdown()
