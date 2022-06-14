@@ -32,7 +32,7 @@ namespace AzToolsFramework
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_actionToSortKeyMap.insert({actionIdentifier, sortKey});
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshToolBar();
     }

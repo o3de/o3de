@@ -32,14 +32,14 @@ namespace AzToolsFramework
     
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_actionToSortKeyMap.insert({actionIdentifier, sortKey});
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshMenu();
     }
 
     void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
     {
-        m_subMenuToSortKeyMap.insert({menuIdentifier, sortKey});
+        m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
         RefreshMenu();
     }

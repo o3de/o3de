@@ -20,7 +20,7 @@ namespace AzToolsFramework
     
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
-        m_menuToSortKeyMap.insert({menuIdentifier, sortKey});
+        m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menus.insert({ sortKey, AZStd::move(menuIdentifier) });
         RefreshMenuBar();
     }
