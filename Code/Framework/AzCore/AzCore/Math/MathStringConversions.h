@@ -30,29 +30,29 @@ namespace AZStd
 {
     namespace MathStringFormat
     {
-        static const char* Vector2DefaultFormat = "%.8f,%.8f";
-        static const char* Vector2ScriptFormat = "(x=%.7f,y=%.7f)";
+        inline constexpr const char* Vector2DefaultFormat = "%.8f,%.8f";
+        inline constexpr const char* Vector2ScriptFormat = "(x=%.7f,y=%.7f)";
 
-        static const char* Vector3DefaultFormat = "%.8f,%.8f,%.8f";
-        static const char* Vector3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f)";
+        inline constexpr const char* Vector3DefaultFormat = "%.8f,%.8f,%.8f";
+        inline constexpr const char* Vector3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f)";
         
-        static const char* Vector4DefaultFormat = "%.8f,%.8f,%.8f,%.8f";
-        static const char* Vector4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+        inline constexpr const char* Vector4DefaultFormat = "%.8f,%.8f,%.8f,%.8f";
+        inline constexpr const char* Vector4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
         
-        static const char* QuaternionDefaultFormat = "%.8f,%.8f,%.8f,%.8f";
-        static const char* QuaternionScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+        inline constexpr const char* QuaternionDefaultFormat = "%.8f,%.8f,%.8f,%.8f";
+        inline constexpr const char* QuaternionScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
 
-        static const char* Matrix3x3DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
-        static const char* Matrix3x3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
+        inline constexpr const char* Matrix3x3DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
+        inline constexpr const char* Matrix3x3ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
         
-        static const char* Matrix4x4DefaultFormat = "%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f";
-        static const char* Matrix4x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
+        inline constexpr const char* Matrix4x4DefaultFormat = "%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f,%.8f";
+        inline constexpr const char* Matrix4x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f),(x=%.7f,y=%.7f,z=%.7f,w=%.7f)";
 
-        static const char* Matrix3x4DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
-        static const char* Matrix3x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
+        inline constexpr const char* Matrix3x4DefaultFormat = "%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f\n%.8f,%.8f,%.8f";
+        inline constexpr const char* Matrix3x4ScriptFormat = "(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f),(x=%.7f,y=%.7f,z=%.7f)";
 
-        static const char* ColorDefaultFormat = "R:%d, G:%d, B:%d A:%d";
-        static const char* ColorScriptFormat = "(r=%.7f,g=%.7f,b=%.7f,a=%.7f)";
+        inline constexpr const char* ColorDefaultFormat = "R:%d, G:%d, B:%d A:%d";
+        inline constexpr const char* ColorScriptFormat = "(r=%.7f,g=%.7f,b=%.7f,a=%.7f)";
     }; // namespace MathStringFormat
 
     //! Prints a Vector2 with precision to 8 decimal places.
