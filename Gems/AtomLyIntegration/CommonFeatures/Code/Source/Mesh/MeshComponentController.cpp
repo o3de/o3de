@@ -323,18 +323,18 @@ namespace AZ
 
         MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
         {
-            return GetMaterialAssignmentSlotLabelsFromModel(GetModelAsset());
+            return GetMaterialSlotLabelsFromModelAsset(GetModelAsset());
         }
 
         MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
-            return FindMaterialAssignmentIdInModel(GetModelAsset(), lod, label);
+            return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
         }
 
         MaterialAssignmentMap MeshComponentController::GetDefautMaterialMap() const
         {
-            return GetMaterialAssignmentsFromModel(GetModelAsset());
+            return GetDefautMaterialMapFromModelAsset(GetModelAsset());
         }
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const

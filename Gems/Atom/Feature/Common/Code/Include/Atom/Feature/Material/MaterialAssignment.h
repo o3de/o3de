@@ -74,13 +74,13 @@ namespace AZ
             const MaterialAssignmentMap& materials, const MaterialAssignmentId& id);
 
         //! Utility function for generating a set of available material assignments in a model
-        MaterialAssignmentMap GetMaterialAssignmentsFromModel(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
+        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
 
         //! Get material slot labels from a model
-        MaterialAssignmentLabelMap GetMaterialAssignmentSlotLabelsFromModel(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
+        MaterialAssignmentLabelMap GetMaterialSlotLabelsFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
 
         //! Find an assignment id corresponding to the lod and label substring filters
-        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+        MaterialAssignmentId GetMaterialSlotIdFromModelAsset(
             const Data::Asset<AZ::RPI::ModelAsset> modelAsset,
             const MaterialAssignmentLodIndex lodFilter,
             const AZStd::string& labelFilter);

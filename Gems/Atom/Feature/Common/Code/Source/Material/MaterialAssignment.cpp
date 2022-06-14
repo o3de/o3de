@@ -236,7 +236,7 @@ namespace AZ
             return DefaultMaterialAssignment;
         }
 
-        MaterialAssignmentMap GetMaterialAssignmentsFromModel(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
         {
             MaterialAssignmentMap materials;
             materials[DefaultMaterialAssignmentId] = MaterialAssignment();
@@ -264,12 +264,12 @@ namespace AZ
             return materials;
         }
 
-        MaterialAssignmentLabelMap GetMaterialAssignmentSlotLabelsFromModel(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+        MaterialAssignmentLabelMap GetMaterialSlotLabelsFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
         {
             MaterialAssignmentLabelMap labels;
             labels[DefaultMaterialAssignmentId] = "Default Material";
 
-                if (modelAsset.IsReady())
+            if (modelAsset.IsReady())
             {
                 MaterialAssignmentLodIndex lodIndex = 0;
                 for (const auto& lod : modelAsset->GetLodAssets())
@@ -292,7 +292,7 @@ namespace AZ
             return labels;
         }
 
-        MaterialAssignmentId FindMaterialAssignmentIdInLod(
+        MaterialAssignmentId GetMaterialSlotIdFromLodAsset(
             const Data::Asset<AZ::RPI::ModelAsset> modelAsset,
             const Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset,
             const MaterialAssignmentLodIndex lodIndex,
@@ -310,20 +310,20 @@ namespace AZ
             return MaterialAssignmentId();
         }
 
-        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+        MaterialAssignmentId GetMaterialSlotIdFromModelAsset(
             const Data::Asset<AZ::RPI::ModelAsset> modelAsset, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter)
         {
             if (modelAsset.IsReady() && !labelFilter.empty())
             {
                 if (lodFilter < modelAsset->GetLodCount())
                 {
-                    return FindMaterialAssignmentIdInLod(modelAsset, modelAsset->GetLodAssets()[lodFilter], lodFilter, labelFilter);
+                    return GetMaterialSlotIdFromLodAsset(modelAsset, modelAsset->GetLodAssets()[lodFilter], lodFilter, labelFilter);
                 }
 
                 for (size_t lodIndex = 0; lodIndex < modelAsset->GetLodCount(); ++lodIndex)
                 {
-                    const MaterialAssignmentId result =
-                        FindMaterialAssignmentIdInLod(modelAsset, modelAsset->GetLodAssets()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
+                    const MaterialAssignmentId result = GetMaterialSlotIdFromLodAsset(
+                        modelAsset, modelAsset->GetLodAssets()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
                     if (!result.IsDefault())
                     {
                         return result;
