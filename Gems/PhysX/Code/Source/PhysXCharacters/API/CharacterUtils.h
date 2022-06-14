@@ -39,7 +39,7 @@ namespace PhysX
             //! Creates a ragdoll based on the specified setup and initial pose.
             //! @param configuration Information about collider geometry and joint setup required to initialize the ragdoll.
             //! @param sceneHandle A handle to the physics scene in which the ragdoll should be created.
-            Ragdoll* CreateRagdoll(Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle);
+            Ragdoll* CreateRagdoll(const Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle);
 
             //! Creates a joint drive with properties based on the input values.
             //! The input values are validated and the damping ratio is used to calculate the damping value used internally.

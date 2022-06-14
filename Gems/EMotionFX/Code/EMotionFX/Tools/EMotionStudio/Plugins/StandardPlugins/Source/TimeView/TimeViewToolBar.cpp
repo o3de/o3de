@@ -16,7 +16,6 @@
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 
 #include <MysticQt/Source/MysticQtManager.h>
 #include <MCore/Source/Compare.h>
@@ -79,57 +78,51 @@ namespace EMStudio
         {
             case TimeViewMode::Motion:
             {
-                const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-
+                const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
                 if (m_playbackControls->GetPlayButtonState() == PlaybackControlsGroup::Pause)
                 {
-                    // we are playing, pause instead!
-                    for (EMotionFX::MotionInstance* motionInstance : motionInstances)
+                    for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
                     {
                         motionInstance->Pause();
                     }
                 }
                 else
                 {
-                    EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-                    if (plugin)
+                    for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
                     {
-                        for (EMotionFX::MotionInstance* motionInstance : motionInstances)
-                        {
-                            motionInstance->UnPause();
-                        }
-
-                        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-                        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
-
-                        AZStd::vector<EMotionFX::Motion*> motionsToPlay;
-                        motionsToPlay.reserve(numSelectedMotions);
-
-                        for (size_t i = 0; i < numSelectedMotions; ++i)
-                        {
-                            EMotionFX::Motion* motion = selectionList.GetMotion(i);
-
-                            // check if the given motion is already playing
-                            bool isPlaying = false;
-                            for (const EMotionFX::MotionInstance* motionInstance : motionInstances)
-                            {
-                                if (motion == motionInstance->GetMotion())
-                                {
-                                    isPlaying = true;
-                                    break;
-                                }
-                            }
-
-                            // only start playing the motion in case it is not being played already
-                            if (!isPlaying)
-                            {
-                                motionsToPlay.push_back(motion);
-                            }
-                        }
-
-                        MotionWindowPlugin* motionWindowPlugin = (MotionWindowPlugin*)plugin;
-                        motionWindowPlugin->PlayMotions(motionsToPlay);
+                        motionInstance->UnPause();
                     }
+
+                    // Start playing the motion in case any of the selected motions not playing yet.
+                    const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+                    const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+
+                    AZStd::vector<EMotionFX::Motion*> motionsToPlay;
+                    motionsToPlay.reserve(numSelectedMotions);
+
+                    for (size_t i = 0; i < numSelectedMotions; ++i)
+                    {
+                        EMotionFX::Motion* motion = selectionList.GetMotion(i);
+
+                        // check if the given motion is already playing
+                        bool isPlaying = false;
+                        for (const EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
+                        {
+                            if (motion == motionInstance->GetMotion())
+                            {
+                                isPlaying = true;
+                                break;
+                            }
+                        }
+
+                        // only start playing the motion in case it is not being played already
+                        if (!isPlaying)
+                        {
+                            motionsToPlay.push_back(motion);
+                        }
+                    }
+
+                    CommandSystem::PlayMotions(motionsToPlay);
                 }
 
                 break;
@@ -211,8 +204,8 @@ namespace EMStudio
         {
         case RecorderGroup::Default:
         {
-            const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
+            const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+            for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
             {
                  motionInstance->SetCurrentTime(motionInstance->GetDuration());
             }
@@ -241,8 +234,8 @@ namespace EMStudio
         {
         case RecorderGroup::Default:
         {
-            const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
+            const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+            for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
             {
                  motionInstance->Rewind();
             }
@@ -360,24 +353,14 @@ namespace EMStudio
 
     void TimeViewToolBar::UpdateMotions()
     {
-        const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
-
-        // create our command group
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
-        // get the number of selected motions and iterate through them
+        const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
         const size_t numMotions = selection.GetNumSelectedMotions();
+
         for (size_t i = 0; i < numMotions; ++i)
         {
-            MotionWindowPlugin* plugin = GetMotionWindowPlugin();
-            MotionWindowPlugin::MotionTableEntry* entry = plugin ? plugin->FindMotionEntryByID(selection.GetMotion(i)->GetID()) : nullptr;
-            if (!entry)
-            {
-                MCore::LogError("Cannot find motion table entry for the given motion.");
-                continue;
-            }
-
-            EMotionFX::Motion* motion = entry->m_motion;
+            EMotionFX::Motion* motion = selection.GetMotion(i);
             EMotionFX::PlayBackInfo* playbackInfo = motion->GetDefaultPlayBackInfo();
             AZStd::string commandParameters;
 
@@ -425,6 +408,19 @@ namespace EMStudio
             {
                 commandGroup.AddCommandString(AZStd::string::format("AdjustDefaultPlayBackInfo -filename \"%s\" %s", motion->GetFileName(), commandParameters.c_str()).c_str());
             }
+
+            const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+            for (EMotionFX::MotionInstance* motionInstance : selectedMotionInstances)
+            {
+                if (motionInstance->GetMotion() == motion)
+                {
+                    motionInstance->SetMaxLoops(m_playbackOptions->GetLoopForever() ? EMFX_LOOPFOREVER : 1);
+                    motionInstance->SetMirrorMotion(mirrorMotion);
+                    motionInstance->SetPlayMode(playMode);
+                    motionInstance->SetIsInPlace(inPlace);
+                    motionInstance->SetRetargetingEnabled(retarget);
+                }
+            }
         }
 
         // execute the group command
@@ -462,11 +458,6 @@ namespace EMStudio
     QSize TimeViewToolBar::sizeHint() const
     {
         return QSize(150, 35);
-    }
-
-    MotionWindowPlugin* TimeViewToolBar::GetMotionWindowPlugin()
-    {
-        return static_cast<MotionWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID));
     }
 
     void TimeViewToolBar::OnTimeChangeStart()

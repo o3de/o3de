@@ -7,6 +7,8 @@
  */
 
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
 #include <QMenu>
 
@@ -22,25 +24,70 @@ namespace AzToolsFramework
     {
     }
 
-    void EditorMenu::AddAction(int sortKey, QAction* action)
-    {
-        m_menuItems.insert({ sortKey, MenuItem(action) });
-        RefreshMenu();
-    }
-
     void EditorMenu::AddSeparator(int sortKey)
     {
         m_menuItems.insert({ sortKey, MenuItem() });
         RefreshMenu();
     }
-
-    void EditorMenu::AddSubMenu(int sortKey, QMenu* submenu)
+    
+    void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_menuItems.insert({ sortKey, MenuItem(submenu) });
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshMenu();
     }
 
+    void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
+    {
+        m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
+        RefreshMenu();
+    }
+
+    void EditorMenu::AddWidget(int sortKey, QWidget* widget)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(widget) });
+        RefreshMenu();
+    }
+    
+    bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
+    {
+        return m_actionToSortKeyMap.contains(actionIdentifier);
+    }
+
+    bool EditorMenu::ContainsSubMenu(const AZStd::string& menuIdentifier) const
+    {
+        return m_subMenuToSortKeyMap.contains(menuIdentifier);
+    }
+
+    AZStd::optional<int> EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
+        if (actionIterator == m_actionToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return actionIterator->second;
+    }
+
+    AZStd::optional<int> EditorMenu::GetSubMenuSortKey(const AZStd::string& menuIdentifier) const
+    {
+        auto menuIterator = m_subMenuToSortKeyMap.find(menuIdentifier);
+        if (menuIterator == m_subMenuToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return menuIterator->second;
+    }
+
     QMenu* EditorMenu::GetMenu()
+    {
+        return m_menu;
+    }
+
+    const QMenu* EditorMenu::GetMenu() const
     {
         return m_menu;
     }
@@ -55,17 +102,28 @@ namespace AzToolsFramework
             {
             case MenuItemType::Action:
                 {
-                    m_menu->addAction(AZStd::get<QAction*>(elem.second.m_value));
+                    if(QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier))
+                    {
+                        m_menu->addAction(action);
+                    }
                     break;
                 }
             case MenuItemType::SubMenu:
                 {
-                    m_menu->addMenu(AZStd::get<QMenu*>(elem.second.m_value));
+                    if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
+                    {
+                        m_menu->addMenu(menu);
+                    }
                     break;
                 }
             case MenuItemType::Separator:
                 {
                     m_menu->addSeparator();
+                    break;
+                }
+            case MenuItemType::Widget:
+                {
+                    m_menu->addAction(elem.second.m_widgetAction);
                     break;
                 }
             default:
@@ -74,21 +132,29 @@ namespace AzToolsFramework
         }
     }
 
-    EditorMenu::MenuItem::MenuItem()
-        : m_type(MenuItemType::Separator)
+    EditorMenu::MenuItem::MenuItem(MenuItemType type, AZStd::string identifier)
+        : m_type(type)
     {
+        if (type != MenuItemType::Separator)
+        {
+            m_identifier = AZStd::move(identifier);
+        }
     }
 
-    EditorMenu::MenuItem::MenuItem(QAction* action)
-        : m_type(MenuItemType::Action)
-        , m_value(action)
+    EditorMenu::MenuItem::MenuItem(QWidget* widget)
+        : m_type(MenuItemType::Widget)
     {
+        m_widgetAction = new QWidgetAction(widget->parent());
+        m_widgetAction->setDefaultWidget(widget);
     }
 
-    EditorMenu::MenuItem::MenuItem(QMenu* menu)
-        : m_type(MenuItemType::SubMenu)
-        , m_value(menu)
+    void EditorMenu::Initialize()
     {
+        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
+
+        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
     }
 
 } // namespace AzToolsFramework

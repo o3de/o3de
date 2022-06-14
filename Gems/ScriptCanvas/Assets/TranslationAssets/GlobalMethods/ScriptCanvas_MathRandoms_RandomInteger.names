@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MathRandoms_RandomInteger",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Random Integer",
+                "category": "Math/Random"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MathRandoms_RandomInteger",
+                    "details": {
+                        "name": "Script Canvas_ Math Randoms_ Random Integer",
+                        "tooltip": "Returns a random integer [Min, Max]."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Min Value"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Max Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Integer"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

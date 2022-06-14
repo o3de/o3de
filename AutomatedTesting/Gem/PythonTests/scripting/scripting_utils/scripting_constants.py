@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Holds constants used across both hydra and non-hydra scripts.
 """
+import os
+import azlmbr.paths as paths
 
 """
 Constants for window and tab names
@@ -14,6 +16,7 @@ Constants for window and tab names
 SCRIPT_CANVAS_UI = "Script Canvas"
 NODE_PALETTE_UI = "Node Palette"
 ASSET_EDITOR_UI = "Asset Editor"
+SCRIPT_EVENT_UI = "Script Events"
 VARIABLE_MANAGER_UI = "Variable Manager"
 
 """
@@ -21,6 +24,14 @@ String constants for Node Palette
 """
 NODE_CATEGORY_MATH = "Math"
 NODE_STRING_TO_NUMBER = "String To Number"
+NODE_TEST_METHOD = "test_method_name"
+
+"""
+Constants for Asset Editor
+"""
+SAVE_ASSET_AS = "SaveAssetAs"
+DEFAULT_SCRIPT_EVENT = "EventName"
+DEFAULT_METHOD_NAME = "MethodName"
 
 """
 Constants for QtWidgets.
@@ -28,13 +39,26 @@ Different from window/tab names because they do not have spaces
 """
 NODE_PALETTE_QT = "NodePalette"
 TREE_VIEW_QT = "treeView"
+EVENTS_QT = "Events"
+EVENT_NAME_QT = "EventName"
 VARIABLE_PALETTE_QT = "variablePalette"
 VARIABLE_MANAGER_QT = "VariableManager"
 GRAPH_VARIABLES_QT = "graphVariables"
 ADD_BUTTON_QT = "addButton"
+SEARCH_FRAME_QT ="searchFrame"
+SEARCH_FILTER_QT = "searchFilter"
+PARAMETERS_QT = "Parameters"
 
 """
 General constants
 """
+SAVE_STRING = "Save"
+NAME_STRING = "Name"
 WAIT_TIME_3 = 3
+WAIT_TIME_5 = 5
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+
+"""
+File Paths
+"""
+SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")

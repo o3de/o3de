@@ -126,6 +126,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 18441975369007490586,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -180,6 +187,13 @@
                     "Id": 14399102793718028065,
                     "Configuration": {
                         "entityId": "",
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "Material": {
                             "MaterialIds": [
                                 {}
@@ -284,10 +298,17 @@
                     "Id": 14399102793718028065,
                     "Configuration": {
                         "entityId": "",
-                        "Material": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{C9E8CE58-FC4F-4498-B502-21B87CE7321E}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{10A1AF01-04B2-5175-AD29-E01B84452DC4}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarycrudoperationsreflectoncharactercontroller/modified.physicsmaterial"
+                                    }
                                 }
                             ]
                         },
@@ -448,6 +469,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 18441975369007490586,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}

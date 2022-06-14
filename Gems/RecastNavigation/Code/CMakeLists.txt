@@ -19,6 +19,67 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# Add RecastNavigation dependency using FetchContent
+# Note: RecastNavigation::Detour requires lowering of the warning level to compile.
+include(FetchContent)
+FetchContent_Declare(
+        RecastNavigation
+        GIT_REPOSITORY "https://github.com/recastnavigation/recastnavigation"
+        GIT_TAG "5a870d427e47abd4a8e4ce58a95582ec049434d5" # main branch
+)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+set(RECASTNAVIGATION_DEMO OFF)
+set(RECASTNAVIGATION_TESTS OFF)
+set(RECASTNAVIGATION_EXAMPLES OFF)
+get_property(
+    compile_options
+    DIRECTORY
+    PROPERTY COMPILE_OPTIONS
+)
+include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS DT_POLYREF64
+)
+FetchContent_MakeAvailable(RecastNavigation)
+# Restore compile options
+set_property(
+    DIRECTORY
+    PROPERTY COMPILE_OPTIONS ${compile_options}
+)
+unset(compile_options)
+
+# Place external recast libraries under RecastNavigation gem.
+get_property(recastnavigation_gem_root GLOBAL PROPERTY "@GEMROOT:RecastNavigation@")
+ly_get_engine_relative_source_dir(${recastnavigation_gem_root} relative_recastnavigation_gem_root)
+set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+foreach(recastLibrary ${recastLibraries})
+    set_property(TARGET ${recastLibrary} PROPERTY FOLDER "${relative_recastnavigation_gem_root}/External")
+endforeach()
+
+# Export external recast navigation targets for installers.
+set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
+    set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+    foreach(recastLibrary ${recastLibraries})
+        add_library(RecastNavigation::${recastLibrary} STATIC IMPORTED GLOBAL)
+
+        set_target_properties(RecastNavigation::${recastLibrary} 
+            PROPERTIES 
+                IMPORTED_LOCATION 
+                    "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${recastLibrary}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+        target_compile_definitions(RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                DT_POLYREF64)
+
+        ly_target_include_system_directories(TARGET RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                "${LY_ROOT_FOLDER}/include/recastnavigation")
+    endforeach()
+]]
+)
+
 # The RecastNavigation.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME RecastNavigation.API INTERFACE
@@ -31,7 +92,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         INTERFACE
-           AZ::AzCore
+            AZ::AzCore
+            RecastNavigation::Detour
+            RecastNavigation::Recast
 )
 
 # The RecastNavigation.Private.Object target is an internal target
@@ -52,6 +115,11 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            RecastNavigation::DebugUtils
+            RecastNavigation::Detour
+            RecastNavigation::Recast
+            Gem::LmbrCentral.Static
+            Gem::DebugDraw.Static
 )
 
 # Here add RecastNavigation target, it depends on the Private Object library and Public API interface
@@ -117,7 +185,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::RecastNavigation.Private.Object>
+                Gem::RecastNavigation.Private.Object
+                Gem::LmbrCentral.Static
+                Gem::DebugDraw.Static
     )
 
     ly_add_target(
@@ -172,6 +242,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzFramework
                     Gem::RecastNavigation.Private.Object
+                    Gem::RecastNavigation.API
+                    Gem::LmbrCentral.API
+                    Gem::PhysX.Mocks
         )
 
         # Add RecastNavigation.Tests to googletest
@@ -199,6 +272,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         AZ::AzTest
                         Gem::RecastNavigation.Private.Object
+                        Gem::PhysX.Mocks
             )
 
             # Add RecastNavigation.Editor.Tests to googletest

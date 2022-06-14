@@ -44,18 +44,9 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
     
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        output.m_worldPosition, output.m_position, output.m_cullDistance // output params
+        output.m_worldPosition, output.m_position, output.m_cullDistance, output.m_normal // output params
         );
 
-    if (isnan(output.m_position.x))
-    {
-        // Don't bother with additional processing if this vertex is out of bounds.
-        return output;
-    }
-
-    output.m_normal = float3(input.m_xyNormal, 0.0);
-    output.m_normal.z = saturate(sqrt(1.0 - output.m_normal.x * output.m_normal.x - output.m_normal.y * output.m_normal.y));
-    
     return output;
 }
 
@@ -202,6 +193,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     if (o_debugTerrainLodLevels)
     {
+        // Assign the LOD a color
         float3 debugColors[6] = 
         {
             float3(0.1, 0.0, 0.0),
@@ -214,6 +206,23 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
         float3 debugColor = debugColors[lodLevel];
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+
+        // Draw red wireframe on quad boundaries
+        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * RcpGridSize;
+        float2 modPos = input.m_worldPosition.xy % quadSpacing;
+        const float lineWidth = 0.04 * quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.r += 1.0;
+        }
+
+        // Draw yellow (red + green) wireframe on quad boundaries of next lod level.
+        quadSpacing *= 2.0;
+        modPos = input.m_worldPosition.xy % quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.g += 1.0;
+        }
     }
 
     output.m_diffuseColor.w = -1; // Subsurface scattering is disabled

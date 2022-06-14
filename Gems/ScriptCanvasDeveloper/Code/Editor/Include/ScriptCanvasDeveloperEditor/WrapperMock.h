@@ -17,12 +17,10 @@
 #include <ScriptCanvasDeveloperEditor/Mock.h>
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
         class WrapperMock
             : public Mock
             , public ScriptCanvasEditor::ScriptCanvasWrapperNodeDescriptorRequestBus::Handler
