@@ -201,7 +201,7 @@ namespace AzNetworking
             if (::connect(static_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_WARN("Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
+                AZLOG(NET_TcpTraffic, "Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));"Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
                 return false;
             }
         }
