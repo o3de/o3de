@@ -11,10 +11,12 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QCheckBox>
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 namespace AzToolsFramework
 {
@@ -36,6 +38,44 @@ namespace AzToolsFramework
         : QHBoxLayout(parentWidget)
         , m_depth(depth)
     {
+    }
+    DPELayout::~DPELayout()
+    {
+        if (m_expanderWidget)
+        {
+            delete m_expanderWidget;
+        }
+    }
+
+    void DPELayout::SetExpanderShown(bool shouldShow)
+    {
+        if (m_showExpander != shouldShow)
+        {
+            m_showExpander = shouldShow;
+            update();
+        }
+    }
+
+    void DPELayout::SetExpanded(bool expanded)
+    {
+        if (m_expanded != expanded)
+        {
+            m_expanded = expanded;
+            if (m_expanderWidget)
+            {
+                Qt::CheckState newCheckState = (expanded ? Qt::Checked : Qt::Unchecked);
+                if (m_expanderWidget->checkState() != newCheckState)
+                {
+                    m_expanderWidget->setCheckState(newCheckState);
+                }
+            }
+            emit expanderChanged(expanded);
+        }
+    }
+
+    bool DPELayout::IsExpanded()
+    {
+        return m_expanded;
     }
 
     QSize DPELayout::sizeHint() const
@@ -95,6 +135,20 @@ namespace AzToolsFramework
             QRect itemGeometry(rect);
             itemGeometry.setRight(itemCount == 2 ? itemGeometry.width() - perItemWidth : perItemWidth);
             itemGeometry.setLeft(itemGeometry.left() + (m_depth * indentSize));
+
+            if (m_showExpander)
+            {
+                if (!m_expanderWidget)
+                {
+                    CreateExpanderWidget();
+                }
+                m_expanderWidget->move(itemGeometry.topLeft());
+                m_expanderWidget->show();
+            }
+
+            // space to leave for expander, whether it's there or not
+            constexpr int expanderSpace = 16;
+            itemGeometry.setLeft(itemGeometry.left() + expanderSpace);
             itemAt(0)->setGeometry(itemGeometry);
 
             // iterate over the remaining items, laying them left to right
@@ -112,6 +166,11 @@ namespace AzToolsFramework
         return Qt::Vertical | Qt::Horizontal;
     }
 
+    void DPELayout::onCheckstateChanged(int expanderState)
+    {
+        SetExpanded(expanderState == Qt::Checked);
+    }
+
     DocumentPropertyEditor* DPELayout::GetDPE() const
     {
         DocumentPropertyEditor* dpe = nullptr;
@@ -124,13 +183,23 @@ namespace AzToolsFramework
         return dpe;
     }
 
-    DPERowWidget::DPERowWidget(int depth, QWidget* parentWidget)
-        : QWidget(parentWidget)
+    void DPELayout::CreateExpanderWidget()
+    {
+        m_expanderWidget = new QCheckBox(parentWidget());
+        m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
+        AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
+        connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+    }
+
+    DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
+        : QWidget(nullptr) // parent will be set when the row is added to its layout
+        , m_parentRow(parentRow)
         , m_depth(depth)
         , m_columnLayout(new DPELayout(depth, this))
     {
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
     }
 
     DPERowWidget::~DPERowWidget()
@@ -145,7 +214,11 @@ namespace AzToolsFramework
         for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
              propertyWidgetIter != endIter; ++propertyWidgetIter)
         {
-            m_columnLayout->removeWidget(propertyWidgetIter->first);
+            QWidget* propertyWidget = propertyWidgetIter->first;
+            auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
+            m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
+            m_columnLayout->removeWidget(propertyWidget);
+
             if (dpe)
             {
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second));
@@ -153,17 +226,15 @@ namespace AzToolsFramework
         }
         m_widgetToPropertyHandler.clear();
 
-        DestroyLayoutContents(m_columnLayout);
-
-        // delete all child rows, this will also remove them from the layout
+        // delete all remaining child widgets, this will also remove them from their layout
         for (auto entry : m_domOrderedChildren)
         {
-            DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(entry.data());
-            if (rowChild)
+            if (entry)
             {
-                rowChild->deleteLater();
+                delete entry;
             }
         }
+        m_domOrderedChildren.clear();
     }
 
     void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, int domIndex)
@@ -173,31 +244,55 @@ namespace AzToolsFramework
 
         if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
-            // determine where to put this new row in the main DPE layout
-            auto newRow = new DPERowWidget(m_depth + 1);
-            DPERowWidget* priorWidgetInLayout = nullptr;
+            m_columnLayout->SetExpanderShown(true);
 
-            // search for an existing row sibling with a lower dom index
-            for (int priorWidgetIndex = domIndex - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
+            if (IsExpanded())
             {
-                priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
-            }
+                // determine where to put this new row in the main DPE layout
+                auto newRow = new DPERowWidget(m_depth + 1, this);
+                DPERowWidget* priorWidgetInLayout = nullptr;
 
-            // if we found a prior DPERowWidget, put this one after the last of its children,
-            // if not, put this new row immediately after its parent -- this
-            if (priorWidgetInLayout)
-            {
-                priorWidgetInLayout = priorWidgetInLayout->GetLastDescendantInLayout();
+                // search for an existing row sibling with a lower dom index
+                for (int priorWidgetIndex = domIndex - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0; --priorWidgetIndex)
+                {
+                    priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
+                }
+
+                // if we found a prior DPERowWidget, put this one after the last of its children,
+                // if not, put this new row immediately after its parent -- this
+                if (priorWidgetInLayout)
+                {
+                    priorWidgetInLayout = priorWidgetInLayout->GetLastDescendantInLayout();
+                }
+                else
+                {
+                    priorWidgetInLayout = this;
+                }
+                if (domIndex >= 0 && m_domOrderedChildren.size() > domIndex)
+                {
+                    delete m_domOrderedChildren[domIndex];
+                    m_domOrderedChildren[domIndex] = newRow;
+                }
+                else if (m_domOrderedChildren.size() == domIndex)
+                {
+                    m_domOrderedChildren.push_back(newRow);
+                }
+                else
+                {
+                    AZ_Assert(0, "error: trying to add an out of bounds index");
+                    return;
+                }
+                GetDPE()->AddAfterWidget(priorWidgetInLayout, newRow);
+
+                // if it's a row, recursively populate the children from the DOM array in the passed value
+                newRow->SetValueFromDom(childValue);
             }
             else
             {
-                priorWidgetInLayout = this;
+                // this row isn't expanded, don't create any row children, just log that there's a null widget at
+                // the given DOM index
+                m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, nullptr);
             }
-            m_domOrderedChildren.insert(m_domOrderedChildren.begin() + domIndex, newRow);
-            GetDPE()->AddAfterWidget(priorWidgetInLayout, newRow);
-
-            // if it's a row, recursively populate the children from the DOM array in the passed value
-            newRow->SetValueFromDom(childValue);
         }
         else
         {
@@ -297,6 +392,16 @@ namespace AzToolsFramework
                 const auto childIterator = m_domOrderedChildren.begin() + childIndex;
                 (*childIterator)->deleteLater(); // deleting the widget also automatically removes it from the layout
                 m_domOrderedChildren.erase(childIterator);
+
+                // check if the last row widget child was removed, and hide the expander if necessary
+                auto isDPERow = [](auto* widget)
+                {
+                    return qobject_cast<DPERowWidget*>(widget) != nullptr;
+                };
+                if (AZStd::find_if(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), isDPERow) == m_domOrderedChildren.end())
+                {
+                    m_columnLayout->SetExpanderShown(false);
+                }
             }
 
             if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
@@ -316,6 +421,15 @@ namespace AzToolsFramework
             }
 
             QWidget* childWidget = m_domOrderedChildren[childIndex];
+
+            if (!childWidget)
+            {
+                // if there's a null entry in the current place for m_domOrderedChildren,
+                // this entry isn't expanded to that depth and need not follow the change any further
+                AZ_Assert(!IsExpanded(), "m_domOrderedChildren should only contain null entries when collapsed!");
+                return;
+            }
+
             DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
             if (widgetAsDpeRow)
             {
@@ -352,7 +466,7 @@ namespace AzToolsFramework
         }
     }
 
-    DocumentPropertyEditor* DPERowWidget::GetDPE()
+    DocumentPropertyEditor* DPERowWidget::GetDPE() const
     {
         DocumentPropertyEditor* theDPE = nullptr;
         QWidget* ancestorWidget = parentWidget();
@@ -371,7 +485,7 @@ namespace AzToolsFramework
         for (auto childIter = m_domOrderedChildren.rbegin(); (lastDescendant == nullptr && childIter != m_domOrderedChildren.rend());
              ++childIter)
         {
-            lastDescendant = qobject_cast<DPERowWidget*>(childIter->data());
+            lastDescendant = qobject_cast<DPERowWidget*>(*childIter);
         }
         if (lastDescendant)
         {
@@ -385,10 +499,48 @@ namespace AzToolsFramework
         return lastDescendant;
     }
 
-    DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
-        : QFrame(parentWidget)
+    bool DPERowWidget::IsExpanded()
     {
-        m_layout = new QVBoxLayout(this);
+        return m_columnLayout->IsExpanded();
+    }
+
+    void DPERowWidget::onExpanderChanged(int expanderState)
+    {
+        if (expanderState == Qt::Unchecked)
+        {
+            // expander is collapsed; search for row children and delete them,
+            // which will zero out their QPointer in the deque, and remove them from the layout
+            for (auto& currentChild : m_domOrderedChildren)
+            {
+                DPERowWidget* rowChild = qobject_cast<DPERowWidget*>(currentChild);
+                if (rowChild)
+                {
+                    delete rowChild;
+                    currentChild = nullptr;
+                }
+            }
+        }
+        else
+        {
+            auto myValue = GetDPE()->GetDomValueForRow(this);
+            AZ_Assert(myValue.ArraySize() == m_domOrderedChildren.size(), "known child count does not match child count!");
+            for (int valueIndex = 0; valueIndex < m_domOrderedChildren.size(); ++valueIndex)
+            {
+                if (m_domOrderedChildren[valueIndex] == nullptr)
+                {
+                    AddChildFromDomValue(myValue[valueIndex], valueIndex);
+                }
+            }
+        }
+    }
+
+    DocumentPropertyEditor::DocumentPropertyEditor(QWidget* parentWidget)
+        : QScrollArea(parentWidget)
+    {
+        QWidget* scrollSurface = new QWidget(this);
+        m_layout = new QVBoxLayout(scrollSurface);
+        setWidget(scrollSurface);
+        setWidgetResizable(true);
 
         m_handlerCleanupTimer = new QTimer(this);
         m_handlerCleanupTimer->setSingleShot(true);
@@ -431,6 +583,41 @@ namespace AzToolsFramework
         }
     }
 
+    AZ::Dom::Value DocumentPropertyEditor::GetDomValueForRow(DPERowWidget* row) const
+    {
+        AZStd::vector<size_t> reversePath;
+        const DPERowWidget* thisRow = row;
+        const DPERowWidget* parentRow = thisRow->m_parentRow;
+
+        // little lambda for reuse in two different container settings
+        auto pushPathPiece = [&reversePath](auto container, const auto& element)
+        {
+            auto pathPiece = AZStd::find(container.begin(), container.end(), element);
+            AZ_Assert(pathPiece != container.end(), "these path indices should always be found!");
+            reversePath.push_back(pathPiece - container.begin());
+        };
+
+        // search upwards and get the index of each dom child going up the chain. We can then reverse this
+        // and use these indices to walk the adapter to get the Value for the node at this path
+        while (parentRow)
+        {
+            pushPathPiece(parentRow->m_domOrderedChildren, thisRow);
+            thisRow = parentRow;
+            parentRow = parentRow->m_parentRow;
+        }
+
+        // we've reached the top of the DPERowWidget chain, now we need to get that first row's index from the m_domOrderedRows
+        pushPathPiece(m_domOrderedRows, thisRow);
+
+        // full index path is built, now get the value from the adapter
+        auto returnValue = m_adapter->GetContents();
+        for (auto reverseIter = reversePath.rbegin(); reverseIter != reversePath.rend(); ++reverseIter)
+        {
+            returnValue = returnValue[*reverseIter];
+        }
+        return returnValue;
+    }
+
     void DocumentPropertyEditor::ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler)
     {
         m_unusedHandlers.emplace_back(AZStd::move(handler));
@@ -449,7 +636,7 @@ namespace AzToolsFramework
 
         if (indexInRange)
         {
-            auto newRow = new DPERowWidget(0, this);
+            auto newRow = new DPERowWidget(0, nullptr);
 
             if (rowIndex == 0)
             {
@@ -470,6 +657,7 @@ namespace AzToolsFramework
     {
         // clear any pre-existing DPERowWidgets
         DestroyLayoutContents(m_layout);
+        m_domOrderedRows.clear();
 
         auto topContents = m_adapter->GetContents();
 
@@ -518,7 +706,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
+                    auto& rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
                     if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
                     {
                         rowWidget->SetValueFromDom(operationIterator->GetValue());
@@ -526,13 +714,14 @@ namespace AzToolsFramework
                     else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
                     {
                         delete rowWidget;
+                        rowWidget = nullptr;
                     }
                 }
             }
             else
             {
                 // delegate the action to the rowWidget, which will, in turn, delegate to the next row in the path, if available
-                auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];;
+                auto rowWidget = m_domOrderedRows[aznumeric_cast<int>(firstAddressEntry.GetIndex())];
                 constexpr size_t pathDepth = 1; // top level has been handled, start the next operation at path depth 1
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }

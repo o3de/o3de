@@ -15,7 +15,7 @@
 #include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
@@ -71,8 +71,8 @@ namespace RecastNavigation
 
         //! RecastNavigationRequestBus overrides ...
         //! @{
-        void UpdateNavigationMeshBlockUntilCompleted() override;
-        void UpdateNavigationMeshAsync() override;
+        bool UpdateNavigationMeshBlockUntilCompleted() override;
+        bool UpdateNavigationMeshAsync() override;
         AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() override;
         //! @}
 
@@ -122,5 +122,8 @@ namespace RecastNavigation
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
+
+        //! If true, an update operation is in progress.
+        AZStd::atomic<bool> m_updateInProgress{ false };
     };
 } // namespace RecastNavigation

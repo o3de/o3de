@@ -199,18 +199,6 @@ class TestAutomation(TestAutomationBase):
         from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-        )
-        from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
-        self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
@@ -221,6 +209,24 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Successfully created a new event",
+            "Successfully created Child Event",
+            "Successfully saved event asset",
+            "Successfully added parameter",
+            "Successfully removed parameter",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvent_AddRemoveParameter_ActionsSuccessful.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
             "Verified no tabs open: True",
