@@ -18,7 +18,7 @@ TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
     "version": "0.0.0.0",
-    "compatible_engines" : [
+    "engine_dependencies" : [
         "o3de-sdk==2205.1"
     ],
     "display_name": "TestGem",
@@ -52,8 +52,8 @@ def init_gem_json_data(request):
 class TestEditGemProperties:
     @pytest.mark.parametrize("gem_path, gem_name, gem_new_name, gem_display, gem_origin,\
                             gem_type, gem_summary, gem_icon, gem_requirements, gem_documentation_url,\
-                            gem_license, gem_license_url, gem_version, add_compatible_engines, remove_compatible_engines, \
-                            replace_compatible_engines, expected_compatible_engines, add_tags, remove_tags, replace_tags,\
+                            gem_license, gem_license_url, gem_version, add_engine_dependencies, remove_engine_dependencies, \
+                            replace_engine_dependencies, expected_engine_dependencies, add_tags, remove_tags, replace_tags,\
                             expected_tags, expected_result", [
         pytest.param(pathlib.PurePath('D:/TestProject'),
                      None, 'TestGem2', 'New Gem Name', 'O3DE', 'Code', 'Gem that exercises Default Gem Template',
@@ -88,8 +88,8 @@ class TestEditGemProperties:
     def test_edit_gem_properties(self, gem_path, gem_name, gem_new_name, gem_display, gem_origin,
                                     gem_type, gem_summary, gem_icon, gem_requirements, 
                                     gem_documentation_url, gem_license, gem_license_url, 
-                                    gem_version, add_compatible_engines, remove_compatible_engines,
-                                    replace_compatible_engines, expected_compatible_engines,
+                                    gem_version, add_engine_dependencies, remove_engine_dependencies,
+                                    replace_engine_dependencies, expected_engine_dependencies,
                                     add_tags, remove_tags, replace_tags, expected_tags, expected_result):
 
         def get_gem_json_data(gem_path: pathlib.Path) -> dict:
@@ -108,8 +108,8 @@ class TestEditGemProperties:
             result = gem_properties.edit_gem_props(gem_path, gem_name, gem_new_name, gem_display, gem_origin,
                                                    gem_type, gem_summary, gem_icon, gem_requirements,
                                                    gem_documentation_url, gem_license, gem_license_url,
-                                                   gem_version, add_compatible_engines, remove_compatible_engines,
-                                                   replace_compatible_engines, 
+                                                   gem_version, add_engine_dependencies, remove_engine_dependencies,
+                                                   replace_engine_dependencies, 
                                                    add_tags, remove_tags, replace_tags)
             assert result == expected_result
             if expected_result == 0:
@@ -136,5 +136,5 @@ class TestEditGemProperties:
                 if gem_version:
                     assert self.gem_json.data.get('version', '') == gem_version
 
-                assert set(self.gem_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
+                assert set(self.gem_json.data.get('engine_dependencies', [])) == set(expected_engine_dependencies)
                 assert set(self.gem_json.data.get('user_tags', [])) == set(expected_tags)
