@@ -81,9 +81,9 @@ namespace AZ
                     ->Event("GetPropertyValueImage", &MaterialComponentRequestBus::Events::GetPropertyValueT<AZ::Data::AssetId>, "GetPropertyOverrideImage")
                     ->Event("GetPropertyValueString", &MaterialComponentRequestBus::Events::GetPropertyValueT<AZStd::string>, "GetPropertyOverrideString")
                     ->Event("GetPropertyValueEnum", &MaterialComponentRequestBus::Events::GetPropertyValueT<uint32_t>, "GetPropertyOverrideEnum")
-                    ->Event("ClearPropertyValue", &MaterialComponentRequestBus::Events::ClearPropertyValue, "ClearPropertyValue")
-                    ->Event("ClearPropertyValues", &MaterialComponentRequestBus::Events::ClearPropertyValues, "ClearPropertyValues")
-                    ->Event("ClearAllPropertyValues", &MaterialComponentRequestBus::Events::ClearAllPropertyValues, "ClearAllPropertyValues")
+                    ->Event("ClearPropertyValue", &MaterialComponentRequestBus::Events::ClearPropertyValue, "ClearPropertyOverride")
+                    ->Event("ClearPropertyValues", &MaterialComponentRequestBus::Events::ClearPropertyValues, "ClearPropertyOverrides")
+                    ->Event("ClearAllPropertyValues", &MaterialComponentRequestBus::Events::ClearAllPropertyValues, "ClearAllPropertyOverrides")
                     ->Event("SetPropertyValues", &MaterialComponentRequestBus::Events::SetPropertyValues, "SetPropertyOverrides")
                     ->Event("GetPropertyValues", &MaterialComponentRequestBus::Events::GetPropertyValues, "GetPropertyOverrides")
                     ;
