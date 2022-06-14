@@ -20,6 +20,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
 #include <Editor/SaveDirtyFilesCallbacks.h>
+#include <MCore/Source/LogManager.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -31,9 +32,12 @@
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
