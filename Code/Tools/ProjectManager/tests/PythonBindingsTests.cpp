@@ -10,30 +10,54 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Console/Console.h>
 #include <PythonBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
+
 
 #include <QDir>
 
 namespace O3DE::ProjectManager
 {
+    class TestablePythonBindings
+        : public PythonBindings
+    {
+    public:
+        TestablePythonBindings(const AZ::IO::PathView& enginePath)
+            : PythonBindings(enginePath)
+        {
+
+        }
+
+        FRIEND_TEST(PythonBindingsTests, PythonBindings_Print_Percent_Does_Not_Crash);
+    };
+
     class PythonBindingsTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
+        , public AZ::Debug::TraceMessageBus::Handler
     {
     public:
 
-        PythonBindingsTests()
+        void SetUp() override
         {
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
-            m_pythonBindings = AZStd::make_unique<PythonBindings>(AZ::IO::PathView(engineRootPath));
+            m_pythonBindings = AZStd::make_unique<TestablePythonBindings>(AZ::IO::PathView(engineRootPath));
         }
 
-        ~PythonBindingsTests()
+        void TearDown() override
         {
             m_pythonBindings.reset();
         }
 
-        AZStd::unique_ptr<ProjectManager::PythonBindings> m_pythonBindings;
+        //! AZ::Debug::TraceMessageBus
+        bool OnPrintf(const char*, const char* message) override
+        {
+            m_gatheredMessages.emplace_back(message);
+            return true;
+        }
+
+        AZStd::unique_ptr<ProjectManager::TestablePythonBindings> m_pythonBindings;
+        AZStd::vector<AZStd::string> m_gatheredMessages;
     };
 
     TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
@@ -67,4 +91,36 @@ namespace O3DE::ProjectManager
         EXPECT_EQ(projectInfo.m_path, resultProjectInfo.m_path);
         EXPECT_EQ(projectInfo.m_projectName, resultProjectInfo.m_projectName);
     }
-}
+
+    TEST_F(PythonBindingsTests, PythonBindings_Print_Percent_Does_Not_Crash)
+    {
+        bool testMessageFound = false;
+        bool testErrorFound = false;
+        const char* testMessage = "PythonTestMessage%";
+        const char* testError = "PythonTestError%";
+
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+
+        PythonBindings::OnStdOut(testMessage);
+        PythonBindings::OnStdError(testError);
+
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+
+        // currently, PythonBindings sends errors to AZ_TracePrintf instead of AZ_Error
+        // if this changes, we'll need to handle OnError() and check that instead
+        for (const auto& message : m_gatheredMessages)
+        {
+            if ( message.contains(testMessage))
+            {
+                testMessageFound = true;
+            }
+            else if ( message.contains(testError))
+            {
+                testErrorFound = true;
+            }
+        }
+
+        EXPECT_TRUE(testMessageFound);
+        EXPECT_TRUE(testErrorFound);
+    }
+} // namespace O3DE::ProjectManager
