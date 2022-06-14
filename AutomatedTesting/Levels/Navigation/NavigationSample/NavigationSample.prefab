@@ -37,6 +37,11 @@
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
             },
+            "Component_[532627723887461938]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 532627723887461938,
+                "LocalBookmarkFileName": "NavigationSample_7832416189.setreg"
+            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547

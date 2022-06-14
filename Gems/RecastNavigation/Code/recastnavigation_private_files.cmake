@@ -18,7 +18,6 @@ set(FILES
     Source/Components/RecastNavigationPhysXProviderComponent.h
     Source/Components/RecastNavigationPhysXProviderComponent.cpp
 
-    Source/Misc/RecastHelpers.h
     Source/Misc/RecastNavigationConstants.h
     Source/Misc/RecastNavigationDebugDraw.h
     Source/Misc/RecastNavigationDebugDraw.cpp
@@ -32,5 +31,4 @@ set(FILES
     Source/Misc/RecastNavigationPhysXProviderComponentController.cpp
     Source/Misc/RecastProcessing.h
     Source/Misc/RecastProcessing.cpp
-    Source/Misc/RecastSmartPointer.h
 )

@@ -14,60 +14,58 @@
 #include <QWidgetAction>
 
 class QAction;
-class QMenu;
+class QToolBar;
 class QWidget;
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-    class MenuManagerInterface;
-    
-    //! Editor Menu class definitions.
-    //! Wraps a QMenu and provides additional functionality to handle and sort its items.
-    class EditorMenu
+    class ToolBarManagerInterface;
+
+    //! Editor ToolBar class definitions.
+    //! Wraps a QToolBar and provides additional functionality to handle and sort its items.
+    class EditorToolBar
     {
     public:
-        EditorMenu();
-        explicit EditorMenu(const AZStd::string& name);
+        EditorToolBar();
+        explicit EditorToolBar(const AZStd::string& name);
 
         static void Initialize();
 
         void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
-        void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
         
-        // Returns the pointer to the menu.
-        QMenu* GetMenu();
-        const QMenu* GetMenu() const;
+        // Returns the pointer to the ToolBar.
+        QToolBar* GetToolBar();
+        const QToolBar* GetToolBar() const;
 
     private:
-        void RefreshMenu();
+        void RefreshToolBar();
 
-        enum class MenuItemType
+        enum class ToolBarItemType
         {
             Action = 0,
             Separator,
-            SubMenu,
             Widget
         };
 
-        struct MenuItem
+        struct ToolBarItem
         {
-            explicit MenuItem(MenuItemType type = MenuItemType::Separator, AZStd::string identifier = "");
-            explicit MenuItem(QWidget* widget);
+            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = "");
+            explicit ToolBarItem(QWidget* widget);
 
-            MenuItemType m_type;
+            ToolBarItemType m_type;
 
             AZStd::string m_identifier;
             QWidgetAction* m_widgetAction = nullptr;
         };
 
-        QMenu* m_menu = nullptr;
-        AZStd::multimap<int, MenuItem> m_menuItems;
+        QToolBar* m_toolBar = nullptr;
+        AZStd::multimap<int, ToolBarItem> m_toolBarItems;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
-        inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
+        inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
     };
 
 } // namespace AzToolsFramework
