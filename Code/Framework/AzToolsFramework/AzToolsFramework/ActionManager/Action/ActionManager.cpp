@@ -365,7 +365,7 @@ namespace AzToolsFramework
         if (actionUpdaterIterator->second.contains(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not add action \"%s\ to action updater \"%s\" twice.",
+                "Action Manager - Could not add action \"%s\" to action updater \"%s\" twice.",
                 actionIdentifier.c_str(),
                 actionUpdaterIdentifier.c_str()
             ));
