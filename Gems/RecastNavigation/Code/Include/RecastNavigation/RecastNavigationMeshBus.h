@@ -11,7 +11,7 @@
 #include <DetourNavMesh.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <Misc/RecastSmartPointer.h>
+#include <RecastNavigation/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {

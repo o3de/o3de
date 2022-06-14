@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
 #include <QWidget>
 
@@ -38,12 +39,14 @@ namespace UnitTest
     public:
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
         QWidget* m_widget = nullptr;
 
     private:
         AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
         AZStd::unique_ptr<AzToolsFramework::MenuManager> m_menuManager;
+        AZStd::unique_ptr<AzToolsFramework::ToolBarManager> m_toolBarManager;
     };
 
 } // namespace UnitTest
