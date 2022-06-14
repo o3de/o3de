@@ -10,10 +10,8 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/Console/Console.h>
 #include <PythonBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
-
 
 #include <QDir>
 
@@ -26,7 +24,6 @@ namespace O3DE::ProjectManager
         TestablePythonBindings(const AZ::IO::PathView& enginePath)
             : PythonBindings(enginePath)
         {
-
         }
 
         FRIEND_TEST(PythonBindingsTests, PythonBindings_Print_Percent_Does_Not_Crash);
@@ -110,11 +107,11 @@ namespace O3DE::ProjectManager
         // if this changes, we'll need to handle OnError() and check that instead
         for (const auto& message : m_gatheredMessages)
         {
-            if ( message.contains(testMessage))
+            if (message.contains(testMessage))
             {
                 testMessageFound = true;
             }
-            else if ( message.contains(testError))
+            else if (message.contains(testError))
             {
                 testErrorFound = true;
             }

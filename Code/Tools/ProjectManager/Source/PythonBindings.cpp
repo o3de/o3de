@@ -239,6 +239,7 @@ namespace O3DE::ProjectManager
     void PythonBindings::OnStdOut(const char* msg)
     {
         AZStd::string message{ msg };
+        // escape % characters by using %% in the format string to avoid crashing
         AZ::StringFunc::Replace(message, "%", "%%", true /* case sensitive since it is faster */);
         AZ_TracePrintf("Python", message.c_str());
     }
@@ -255,10 +256,7 @@ namespace O3DE::ProjectManager
         }
         O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
-        AZStd::string message{ msg };
-        // escape % characters by using %% in the format string to avoid crashing
-        AZ::StringFunc::Replace(message, "%", "%%", true /* case sensitive since it is faster */);
-        AZ_TracePrintf("Python", message.c_str());
+        OnStdOut(msg);
     }
 
     bool PythonBindings::PythonStarted()
