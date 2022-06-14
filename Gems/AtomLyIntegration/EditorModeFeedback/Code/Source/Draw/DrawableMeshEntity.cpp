@@ -130,6 +130,11 @@ namespace AZ::Render
     void DrawableMeshEntity::OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
     {
         m_meshHandle = meshHandle;
+        if (!m_meshHandle || !m_meshHandle->IsValid())
+        {
+            return;
+        }
+
         const DrawableMetaData drawabaleMetaData(m_entityId);
         const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
         const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
