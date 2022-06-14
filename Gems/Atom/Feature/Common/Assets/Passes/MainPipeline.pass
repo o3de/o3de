@@ -480,14 +480,34 @@
                     ]
                 },
                 {
+                    "Name": "SlowClearPass",
+                    "TemplateName": "SlowClearPassTemplate",
+                    "PassData": {
+                        "$type": "SlowClearPassData",
+                        "ClearValue" : {
+                            "Type" : "Vector4Float",
+                            "Value" : [1.0, 1.0, 0.0, 1.0]
+                        }
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "ClearInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "UIPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "CopyToSwapChain",
                     "TemplateName": "FullscreenCopyTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "UIPass",
-                                "Attachment": "InputOutput"
+                                "Pass": "SlowClearPass",
+                                "Attachment": "ClearInputOutput"
                             }
                         },
                         {
