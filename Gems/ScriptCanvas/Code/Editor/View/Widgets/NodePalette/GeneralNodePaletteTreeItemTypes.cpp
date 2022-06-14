@@ -305,7 +305,7 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path CustomNodePaletteTreeItem::GetTranslationDataPath() const
     {
-        AZStd::string filename = AZStd::string::format("%s_%s", GetInfo().m_categoryPath.c_str(), GetName().toUtf8().data());
+        AZStd::string filename = AZStd::string::format("%s_%zu", GetName().toUtf8().data(), GetInfo().m_nodeIdentifier);
         filename = GraphCanvas::TranslationKey::Sanitize(filename);
 
         return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::CustomNodePath) / filename;

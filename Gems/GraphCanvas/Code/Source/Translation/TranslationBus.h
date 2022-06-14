@@ -97,16 +97,20 @@ namespace GraphCanvas
         static AZStd::string Sanitize(const AZStd::string& text)
         {
             AZStd::string result = text;
-            AZ::StringFunc::Replace(result, "*", "x");
-            AZ::StringFunc::Replace(result, "(", "_");
-            AZ::StringFunc::Replace(result, ")", "_");
-            AZ::StringFunc::Replace(result, "{", "_");
-            AZ::StringFunc::Replace(result, "}", "_");
-            AZ::StringFunc::Replace(result, ":", "_");
-            AZ::StringFunc::Replace(result, "<", "_");
-            AZ::StringFunc::Replace(result, ",", "_");
-            AZ::StringFunc::Replace(result, ">", " ");
+            AZ::StringFunc::Replace(result, "+", "");
+            AZ::StringFunc::Replace(result, "-", "");
+            AZ::StringFunc::Replace(result, "*", "");
+            AZ::StringFunc::Replace(result, "(", "");
+            AZ::StringFunc::Replace(result, ")", "");
+            AZ::StringFunc::Replace(result, "{", "");
+            AZ::StringFunc::Replace(result, "}", "");
+            AZ::StringFunc::Replace(result, ":", "");
+            AZ::StringFunc::Replace(result, "<", "");
+            AZ::StringFunc::Replace(result, ",", "");
+            AZ::StringFunc::Replace(result, ">", "");
             AZ::StringFunc::Replace(result, "/", "");
+            AZ::StringFunc::Replace(result, "=", "");
+            AZ::StringFunc::Replace(result, "!", "");
             AZ::StringFunc::Strip(result, " ");
             AZ::StringFunc::Path::Normalize(result);
             return result;
