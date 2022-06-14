@@ -102,12 +102,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
-                Gem::EditorModeFeedback.Editor.Static
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Legacy::CryCommon
+        RUNTIME_DEPENDENCIES
+            3rdParty::OpenImageIO::Tools::Binaries
+            3rdParty::OpenImageIO::Tools::PythonPlugins
     )
 
     ly_add_target(

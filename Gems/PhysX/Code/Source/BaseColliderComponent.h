@@ -117,9 +117,5 @@ namespace PhysX
         bool InitMeshCollider();
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_shapes;
-        // This is here only to cover the edge case where GetColliderConfig (which expects a const reference to be
-        // returned) is called and m_shapeConfigList is empty. It can be removed as soon as the deprecation of
-        // GetColliderConfig is complete.
-        static const Physics::ColliderConfiguration s_defaultColliderConfig;
     };
 }

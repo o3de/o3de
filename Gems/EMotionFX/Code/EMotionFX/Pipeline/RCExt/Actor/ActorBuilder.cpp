@@ -32,7 +32,6 @@
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <MCore/Source/AzCoreConversions.h>
 
-#include <GFxFramework/MaterialIO/Material.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Quaternion.h>
@@ -40,7 +39,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-
 
 namespace EMotionFX
 {
@@ -55,10 +53,9 @@ namespace EMotionFX
         EMotionFX::Transform SceneDataMatrixToEmfxTransformConverted(
             const SceneDataTypes::MatrixType& azTransform, const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter)
         {
-            return EMotionFX::Transform(
-                coordSysConverter.ConvertVector3(azTransform.GetTranslation()),
-                coordSysConverter.ConvertQuaternion(AZ::Quaternion::CreateFromMatrix3x4(azTransform)),
-                coordSysConverter.ConvertScale(azTransform.RetrieveScale()));
+            EMotionFX::Transform transform;
+            transform.InitFromAZTransform(AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(azTransform)));
+            return transform;
         }
 
 

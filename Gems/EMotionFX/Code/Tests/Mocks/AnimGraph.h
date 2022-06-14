@@ -74,7 +74,6 @@ namespace EMotionFX
         //void RemoveAllNodeGroups(bool delFromMem = true);
         //AnimGraphNodeGroup* FindNodeGroupForNode(AnimGraphNode* animGraphNode) const;
         //void FindAndRemoveCycles(AZStd::string* outRemovedConnectionsMessage = nullptr);
-        //AnimGraphGameControllerSettings& GetGameControllerSettings();
         //bool GetRetargetingEnabled() const;
         //void SetRetargetingEnabled(bool enabled);
         //void RemoveAllObjectData(AnimGraphObject* object, bool delFromMem);

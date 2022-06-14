@@ -113,7 +113,7 @@ LUT_RESOLUTION = {
     '64x64x64': 2,
 }
 
-# Shaper Type options for the HDR Color Grading component.
+# Shaper Type options for the HDR Color Grading & Look Modification components.
 SHAPER_TYPE = {
     'None': 0,
     'linear_custom': 1,
@@ -139,11 +139,13 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Actor',
+            'Actor asset': 'Actor asset',
         }
         return properties[property]
 
@@ -513,14 +515,41 @@ class AtomComponentProperties:
         """
         Grid component properties.
           - 'Grid Size': The size of the grid, default value is 32
-          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
+          - 'Axis Color': Sets color of the grid axis using azlmbr.math.Color tuple, default value is 0,0,255 (blue)
+          - 'Primary Grid Spacing': Amount of space between grid lines, default value is 1.0
+          - 'Primary Color': Sets color of the primary grid lines using azlmbr.math.Color tuple,
+             default value is 64,64,64 (dark grey)
+          - 'Secondary Grid Spacing': Amount of space between sub-grid lines, default value is 0.25
+          - 'Secondary Color': Sets color of the secondary grid lines using azlmbr.math.Color tuple,
+             default value is 128,128,128 (light grey)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
             'Grid Size': 'Controller|Configuration|Grid Size',
+            'Axis Color': 'Controller|Configuration|Axis Color',
+            'Primary Grid Spacing': 'Controller|Configuration|Primary Grid Spacing',
+            'Primary Color': 'Controller|Configuration|Primary Color',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
+            'Secondary Color': 'Controller|Configuration|Secondary Color',
+        }
+        return properties[property]
+
+    @staticmethod
+    def hair(property: str = 'name') -> str:
+        """
+        Atom Hair component properties. Requires Actor component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Hair Asset' Asset.id of the hair TressFX asset.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Atom Hair',
+            'requires': [AtomComponentProperties.actor()],
+            'Hair Asset': 'Controller|Configuration|Hair Asset',
         }
         return properties[property]
 
@@ -675,6 +704,9 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Enable look modification' Toggle active state of the component True/False
           - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
+          - 'Shaper Type' Shaper type used for scene look modification from atom_constants.py SHAPER_TYPE.
+          - 'LUT Intensity' Overall influence of the LUT on the scene. (0.0, 1.0)
+          - 'LUT Override' Blend intensity of the LUT (for use with multiple Look Modification entities). (0.0, 1.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -683,6 +715,9 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable look modification': 'Controller|Configuration|Enable look modification',
             'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
+            'Shaper Type': 'Controller|Configuration|Shaper Type',
+            'LUT Intensity': 'Controller|Configuration|LUT Intensity',
+            'LUT Override': 'Controller|Configuration|LUT Override',
         }
         return properties[property]
 
@@ -724,7 +759,6 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
-          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
@@ -741,7 +775,6 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
-            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
@@ -875,11 +908,43 @@ class AtomComponentProperties:
         SSAO component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable SSAO' toggles the overall function of Screen Space Ambient Occlusion (bool)
+          - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
+          - 'Sampling Radius' (float 0.0 to 0.25, default 0.05)
+          - 'Enable Blur' toggles the blur feature of SSAO (bool)
+          - 'Blur Strength' (float 0.0 to 1.0 default 0.85)
+          - 'Blur Edge Threshold' (float default 0.0 to 1.0)
+          - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
+          - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
+          - 'Enabled Override' toggles a collection of override values (bool)
+          - 'Strength Override' (float 0.0 to default 1.0)
+          - 'SamplingRadius Override' (float 0.0 to default 1.0)
+          - 'EnableBlur Override' toggles blur overrides (bool)
+          - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffStrength Override' (float 0.0 to default 1.0)
+          - 'EnableDownsample Override' toggles override for enable downsampling (bool)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'SSAO',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable SSAO': 'Controller|Configuration|Enable SSAO',
+            'SSAO Strength': 'Controller|Configuration|SSAO Strength',
+            'Sampling Radius': 'Controller|Configuration|Sampling Radius',
+            'Enable Blur': 'Controller|Configuration|Enable Blur',
+            'Blur Strength': 'Controller|Configuration|Blur Strength',
+            'Blur Edge Threshold': 'Controller|Configuration|Blur Edge Threshold',
+            'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
+            'Enable Downsample': 'Controller|Configuration|Enable Downsample',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'SamplingRadius Override': 'Controller|Configuration|Overrides|SamplingRadius Override',
+            'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
+            'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
+            'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
+            'BlurDepthFalloffThreshold Override': 'Controller|Configuration|Overrides|BlurDepthFalloffThreshold Override',
+            'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]

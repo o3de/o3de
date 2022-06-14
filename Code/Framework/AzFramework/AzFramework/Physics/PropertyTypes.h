@@ -16,6 +16,5 @@ namespace Physics
     {
         const static AZ::Crc32 CollisionLayerSelector = AZ_CRC("CollisionLayerSelector", 0xae1da12d);
         const static AZ::Crc32 CollisionGroupSelector = AZ_CRC("CollisionGroupSelector", 0x7d498664);
-        const static AZ::Crc32 MaterialIdSelector = AZ_CRC("MaterialIdSelector", 0x494511ad);
     }
 }

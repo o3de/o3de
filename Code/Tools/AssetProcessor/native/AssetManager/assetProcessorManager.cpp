@@ -2158,6 +2158,8 @@ namespace AssetProcessor
         }
         else
         {
+            UpdateForCacheServer(jobDetails);
+
             // macOS requires that the cacheRootDir to not be all lowercase, otherwise file copies will not work correctly.
             // So use the lowerCasePath string to capture the parts that need to be lower case while keeping the cache root
             // mixed case.
@@ -2180,6 +2182,39 @@ namespace AssetProcessor
         }
 
         return true;
+    }
+
+    void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
+    {
+        if (AssetUtilities::ServerAddress().isEmpty())
+        {
+            // Asset Cache Server mode feature is turned off
+            return;
+        }
+        else if (!m_platformConfig)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, m_platformConfig, "Platform not configured. Called too soon?");
+            return;
+        }
+
+        auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
+        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        {
+            auto matchingPatternIt = AZStd::find_if(
+                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
+                jobDetails.m_assetBuilderDesc.m_patterns.end(),
+                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
+                {
+                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
+                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
+                }
+            );
+
+            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            {
+                jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+            }
+        }
     }
 
     void AssetProcessorManager::CheckDeletedCacheFolder(QString normalizedPath)
@@ -5033,16 +5068,24 @@ namespace AssetProcessor
         {
             reprocessList.append(normalizedSourcePath);
         }
+        return RequestReprocess(reprocessList);
+    }
 
+    AZ::u64 AssetProcessorManager::RequestReprocess(const QStringList& reprocessList)
+    {
         AZ::u64 filesFound{ 0 };
-        for (const auto& sourcePath : reprocessList)
+        for (QString sourcePath : reprocessList)
         {
+            // Remove invalid characters
+            sourcePath.remove(QRegExp("[\\n\\r]"));
+
             QString scanFolderName;
             QString relativePathToFile;
             if (!m_platformConfig->ConvertToRelativePath(sourcePath, relativePathToFile, scanFolderName))
             {
                 continue;
             }
+
             AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs; //should only find one when we specify builder, job key, platform
             m_stateData->GetJobsBySourceName(relativePathToFile, jobs);
             for (auto& job : jobs)

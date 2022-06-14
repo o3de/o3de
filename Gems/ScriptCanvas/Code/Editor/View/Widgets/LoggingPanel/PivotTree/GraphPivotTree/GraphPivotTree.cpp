@@ -353,7 +353,7 @@ namespace ScriptCanvasEditor
         m_assetModel = new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel();
 
         AzToolsFramework::AssetBrowser::AssetGroupFilter* assetFilter = new AzToolsFramework::AssetBrowser::AssetGroupFilter();
-        assetFilter->SetAssetGroup(ScriptCanvasEditor::SourceDescription::GetGroup());
+        assetFilter->SetAssetGroup(SourceDescription::GetGroup());
 
         assetFilter->SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 

@@ -41,6 +41,8 @@ namespace ScriptCanvasEditor
         virtual QMainWindow* GetMainWindow() = 0;
 
         virtual void OpenValidationPanel() = 0;
+
+        virtual void RefreshSelection() = 0;
     };
 
     using UIRequestBus = AZ::EBus<UIRequests>;

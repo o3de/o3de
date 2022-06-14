@@ -71,8 +71,7 @@ namespace AzNetworking
         virtual ConnectionId Connect(const IpAddress& remoteAddress) = 0;
 
         //! Updates the INetworkInterface.
-        //! @param deltaTimeMs milliseconds since update was last invoked
-        virtual void Update(AZ::TimeMs deltaTimeMs) = 0;
+        virtual void Update() = 0;
 
         //! A helper function that transmits a packet on this connection reliably.
         //! Note that a packetId is not returned here, since retransmits may cause the packetId to change

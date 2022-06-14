@@ -50,10 +50,6 @@ set(FILES
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/GameController.cpp
-    Source/AnimGraph/GameController.h
-    Source/AnimGraph/GameControllerWindow.cpp
-    Source/AnimGraph/GameControllerWindow.h
     Source/AnimGraph/GraphNode.cpp
     Source/AnimGraph/GraphNode.h
     Source/AnimGraph/GraphNodeFactory.cpp
@@ -162,14 +158,8 @@ set(FILES
     Source/MotionSetsWindow/MotionSetWindow.h
     Source/MotionWindow/MotionExtractionWindow.cpp
     Source/MotionWindow/MotionExtractionWindow.h
-    Source/MotionWindow/MotionListWindow.cpp
-    Source/MotionWindow/MotionListWindow.h
     Source/MotionWindow/MotionPropertiesWindow.cpp
     Source/MotionWindow/MotionPropertiesWindow.h
-    Source/MotionWindow/MotionRetargetingWindow.cpp
-    Source/MotionWindow/MotionRetargetingWindow.h
-    Source/MotionWindow/MotionWindowPlugin.cpp
-    Source/MotionWindow/MotionWindowPlugin.h
     Source/NodeGroups/NodeGroupManagementWidget.cpp
     Source/NodeGroups/NodeGroupManagementWidget.h
     Source/NodeGroups/NodeGroupsPlugin.cpp

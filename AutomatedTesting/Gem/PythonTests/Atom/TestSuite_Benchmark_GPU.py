@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import os
 import psutil
+import sys
 
 import pytest
 
@@ -14,6 +15,12 @@ import editor_python_test_tools.hydra_test_utils as hydra
 from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 
 logger = logging.getLogger(__name__)
+WINDOWS = sys.platform.startswith('win')
+
+if not WINDOWS:
+    pytestmark = pytest.mark.skipif(
+        not WINDOWS,
+        reason="TestSuite_Benchmark_GPU.py currently only runs on Windows")
 
 
 def filebeat_service_running():

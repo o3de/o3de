@@ -21,15 +21,15 @@ namespace AZ::DocumentPropertyEditor
         CurrentNode()[attribute] = AZStd::move(value);
     }
 
-    void AdapterBuilder::OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback)
+    void AdapterBuilder::OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&, Nodes::PropertyEditor::ValueChangeType)> onChangedCallback)
     {
         // The value path is the first child of the PropertyEditor node
         Dom::Path changedPath = GetCurrentPath() / Nodes::Label::Value.GetName();
         CallbackAttribute(
             Nodes::PropertyEditor::OnChanged,
-            [changedPath, onChangedCallback](const Dom::Value& value)
+            [changedPath, onChangedCallback](const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType)
             {
-                onChangedCallback(changedPath, value);
+                onChangedCallback(changedPath, value, changeType);
             });
     }
 
@@ -68,13 +68,10 @@ namespace AZ::DocumentPropertyEditor
 
     void AdapterBuilder::BeginNode(Name name)
     {
+        // For everything except our root node, add the current index to the path
         if (!m_entries.empty())
         {
             m_currentPath.Push(CurrentNode().ArraySize());
-        }
-        else
-        {
-            m_currentPath.Push(0);
         }
         m_entries.push(Dom::Value::CreateNode(name));
     }
@@ -85,7 +82,10 @@ namespace AZ::DocumentPropertyEditor
         AZ_Assert(
             expectedName.IsEmpty() || CurrentNode().GetNodeName() == expectedName,
             "AdapterBuilder::EndNode called for %s when %s was expected", CurrentNode().GetNodeName().GetCStr(), expectedName.GetCStr());
-        m_currentPath.Pop();
+        if (!m_currentPath.IsEmpty())
+        {
+            m_currentPath.Pop();
+        }
         Dom::Value value = AZStd::move(m_entries.top());
         m_entries.pop();
         if (!m_entries.empty())

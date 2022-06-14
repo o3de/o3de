@@ -48,6 +48,9 @@ class TestAutomation(EditorTestSuite):
     class test_GradientTransform_RequiresShape(EditorSharedTest):
         from .EditorScripts import GradientTransform_RequiresShape as test_module
 
+    class test_ImageGradient_BilinearFiltering(EditorSharedTest):
+        from .EditorScripts import ImageGradient_BilinearFiltering as test_module
+
     class test_ImageGradient_ModifiesSurfaces(EditorSharedTest):
         from .EditorScripts import ImageGradient_ModifiesSurfaces as test_module
 

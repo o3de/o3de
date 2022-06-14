@@ -26,6 +26,7 @@
 
 #include <AzFramework/Entity/EntityContext.h>
 
+
 namespace AZ
 {
     namespace RPI
@@ -113,8 +114,7 @@ namespace AZ
         {
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {
@@ -122,15 +122,13 @@ namespace AZ
             }
             SceneRequestBus::Handler::BusDisconnect();
 
-            // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+            // Remove all the render pipelines.
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
             {
                 RenderPipelinePtr pipelineToRemove = (*it);
                 pipelineToRemove->OnRemovedFromScene(this);
             }
             m_pipelines.clear();
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
 
             Deactivate();
 
@@ -312,7 +310,7 @@ namespace AZ
             {
                 fp->ApplyRenderPipelineChange(pipeline);
             }
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->ProcessQueuedPassChanges();
         }
 
         void Scene::AddRenderPipeline(RenderPipelinePtr pipeline)
@@ -344,7 +342,7 @@ namespace AZ
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
-            PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->ProcessQueuedPassChanges();
             pipeline->BuildPipelineViews();
 
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
@@ -360,8 +358,6 @@ namespace AZ
             {
                 if (pipelineId == (*it)->GetId())
                 {
-                    // process queued changes first before remove pipeline passes
-                    AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
                     RenderPipelinePtr pipelineToRemove = (*it);
 
                     if (m_defaultPipeline == pipelineToRemove)
@@ -382,7 +378,6 @@ namespace AZ
                         m_defaultPipeline = m_pipelines[0];
                     }
 
-                    AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
                     RebuildPipelineStatesLookup();
 
                     removed = true;
@@ -458,8 +453,7 @@ namespace AZ
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {
@@ -489,14 +483,14 @@ namespace AZ
             }
         }
 
-        void Scene::WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&&  completionTGEvent)
+        void Scene::WaitAndCleanTGEvent()
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanTGEvent");
-            if (completionTGEvent)
+            if (m_simulationFinishedTGEvent)
             {
-                completionTGEvent->Wait();
+                m_simulationFinishedTGEvent->Wait();
             }
-            // allow completionTGEvent to go out of scope and be deleted
+            m_simulationFinishedTGEvent = nullptr;
         }
 
         void Scene::WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob)
@@ -678,8 +672,7 @@ namespace AZ
 
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
-                m_simulationFinishedTGEvent.reset();
+                WaitAndCleanTGEvent();
             }
             else
             {

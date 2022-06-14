@@ -26,11 +26,6 @@ namespace AssetProcessor
     //! Time in milliseconds to wait after each message pump cycle
     static const int s_IdleBuilderPumpingDelayMS = 100;
 
-    //! Amount of time in seconds to wait for a builder to start up and connect
-    // sometimes, builders take a long time to start because of things like virus scanners scanning each
-    // builder DLL, so we give them a large margin.
-    static const int s_StartupConnectionWaitTimeS = 300;
-
     static const int s_MillisecondsInASecond = 1000;
 
     static const char* s_buildersFolderName = "Builders";
@@ -42,6 +37,15 @@ namespace AssetProcessor
 
     bool Builder::WaitForConnection()
     {
+        if (m_startupWaitTimeS == 0)
+        {
+            const auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(m_startupWaitTimeS, "/Amazon/AssetProcessor/Settings/BuilderManager/StartupTimeoutSeconds");
+            }
+        }
+
         if (m_connectionId == 0)
         {
             bool result = false;
@@ -55,7 +59,7 @@ namespace AssetProcessor
 
                 PumpCommunicator();
 
-                if (ticker.elapsed() > s_StartupConnectionWaitTimeS * s_MillisecondsInASecond
+                if (ticker.elapsed() > m_startupWaitTimeS * s_MillisecondsInASecond
                     || m_quitListener.WasQuitRequested()
                     || !IsRunning())
                 {
@@ -83,7 +87,7 @@ namespace AssetProcessor
             }
             else
             {
-                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", s_StartupConnectionWaitTimeS);
+                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
             return false;
@@ -381,6 +385,8 @@ namespace AssetProcessor
 
     BuilderManager::~BuilderManager()
     {
+        PrintDebugOutput();
+
         BusDisconnect();
         m_quitListener.BusDisconnect();
         m_quitListener.ApplicationShutdownRequested();
@@ -489,6 +495,11 @@ namespace AssetProcessor
         return builder;
     }
 
+    void BuilderManager::AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset)
+    {
+        m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
+    }
+
     BuilderRef BuilderManager::GetBuilder(bool doRegistration)
     {
         AZStd::shared_ptr<Builder> newBuilder;
@@ -564,4 +575,24 @@ namespace AssetProcessor
             }
         }
     }
+
+    void BuilderManager::PrintDebugOutput()
+    {
+        // If debug output was tracked, print it on shutdown.
+        // This prints each asset that was processed by each builder, in the order they were processed.
+        // This is useful for tracing issues like memory leaks across assets processed by the same builder.
+        for (auto builderInfo : m_builderDebugOutput)
+        {
+            AZ_TracePrintf("BuilderManager", "Builder %.*s processed these assets:\n",
+                AZ_STRING_ARG(builderInfo.first.ToString<AZStd::string>()));
+            for (auto asset : builderInfo.second.m_assetsProcessed)
+            {
+                AZ_TracePrintf(
+                    "BuilderManager", "Builder with ID %.*s processed %.*s\n",
+                    AZ_STRING_ARG(builderInfo.first.ToFixedString()),
+                    AZ_STRING_ARG(asset));
+            }
+        }
+    }
+
 } // namespace AssetProcessor

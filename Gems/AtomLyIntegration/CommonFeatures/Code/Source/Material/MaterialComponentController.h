@@ -48,6 +48,7 @@ namespace AZ
             //! MaterialComponentRequestBus overrides...
             MaterialAssignmentMap GetOriginalMaterialAssignments() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            AZ::Data::AssetId GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;
@@ -106,6 +107,9 @@ namespace AZ
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
+            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_defaultMaterialMap;
+            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_activeMaterialMap;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
         };

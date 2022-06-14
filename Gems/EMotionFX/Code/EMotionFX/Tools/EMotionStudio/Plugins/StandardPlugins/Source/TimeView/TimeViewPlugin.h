@@ -28,9 +28,7 @@ namespace EMStudio
     class TrackHeaderWidget;
     class TimeInfoWidget;
     class TimeViewToolBar;
-    class MotionWindowPlugin;
     class MotionEventsPlugin;
-    class MotionListWindow;
     class MotionEventWidget;
     class MotionEventPresetsWidget;
     class MotionSetsWindowPlugin;
@@ -212,9 +210,7 @@ namespace EMStudio
 
         TimeViewMode m_mode = TimeViewMode::None;
         EMotionFX::Motion*                  m_motion;
-        MotionWindowPlugin*                 m_motionWindowPlugin;
         MotionEventsPlugin*                 m_motionEventsPlugin;
-        MotionListWindow*                   m_motionListWindow;
         MotionSetsWindowPlugin*             m_motionSetPlugin;
         AZStd::vector<EventSelectionItem>    m_selectedEvents;
 

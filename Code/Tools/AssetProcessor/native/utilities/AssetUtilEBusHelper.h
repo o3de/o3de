@@ -124,6 +124,8 @@ namespace AssetProcessor
         virtual void OnAssetFailed(const AZStd::string& /*sourceFileName*/) {}
         // Notifies listener about a general error
         virtual void OnErrorMessage([[maybe_unused]] const char* error) {}
+        // Notifies listener about a builder registration failure
+        virtual void OnBuilderRegistrationFailure() {};
     };
 
     using MessageInfoBus = AZ::EBus<MessageInfoBusTraits>;
@@ -249,4 +251,20 @@ namespace AssetProcessor
     };
 
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
+
+    // This EBUS is used to retrieve asset server information
+    class AssetServerInfoBusTraits
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // single bus
+        using MutexType = AZStd::recursive_mutex;
+
+        virtual ~AssetServerInfoBusTraits() = default;
+
+        virtual const AZStd::string& ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams) = 0;
+    };
+
+    using  AssetServerInfoBus = AZ::EBus<AssetServerInfoBusTraits>;
 } // namespace AssetProcessor

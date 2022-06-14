@@ -68,6 +68,12 @@ function(ly_apply_debug_strip_options target)
         return()
     endif()
 
+    # If the target is IMPORTED, then there is no post-build process
+    get_target_property(is_imported ${target} IMPORTED)
+    if (${is_imported})
+        return()
+    endif()
+
     # Check the target type
     get_target_property(target_type ${target} TYPE)
 
