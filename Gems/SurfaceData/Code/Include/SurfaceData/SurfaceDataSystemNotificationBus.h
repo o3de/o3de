@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Entity.h>
+#include <SurfaceData/SurfaceDataTypes.h>
 
 namespace AZ
 {
