@@ -6,7 +6,7 @@
 #
 #
 
-set(FILES
+set(WRAPPED_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtpyside_module_wrapper.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/azqtcomponents_wrapper.cpp
     # ${CMAKE_CURRENT_BINARY_DIR}/${bindings_library}/az_wrapper.cpp

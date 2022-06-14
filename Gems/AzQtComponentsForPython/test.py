@@ -21,8 +21,6 @@ for pathItem in sys.path:
     if "pyside2-qt-5.15.1-rev2" in pathItem:
         sys.path.remove(pathItem)
 
-#sys.path.pop()
-
 # Add the path to the new version of pyside. Modify this to match your location.
 sys.path.append(package_path)
 

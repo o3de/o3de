@@ -21,7 +21,7 @@ endif()
 
 project(AzQtComponent_Bindings LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5 5.12 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt5 5.12 REQUIRED COMPONENTS Core Gui Widgets Qml)
 
 # The library we're creating bindings for.
 set(azqtcomponents_library "AzQtComponents")
@@ -68,6 +68,7 @@ set(pyside2_module_dir ${pyside2_DOWNLOAD_LOCATION}/${pyside_package_name}/pysid
 set(pyside2_path "${pyside2_module_dir}/PySide2")
 set(pyside2_include_dir "${pyside2_path}/include")
 set(pyside2_typesystem_path "${pyside2_path}/typesystems")
+set(pyside2_bin_path "${pyside2_path}/bin")
    
 set(shiboken_generator_dir "${pyside2_module_dir}/shiboken2_generator")   
 set(shiboken_generator_exe_path "${shiboken_generator_dir}/shiboken2${CMAKE_EXECUTABLE_SUFFIX}") 
@@ -78,10 +79,23 @@ endif()
   
 set(shiboken_module_path "${pyside2_module_dir}/shiboken2")
 
-set(shiboken_include_dir "${shiboken_generator_dir}/include")
-set(shiboken_shared_libraries "${shiboken_module_path}/shiboken2.abi3.lib")
+set(shiboken_lib_name "shiboken2.cp37-win_amd64")
 
-set(pyside2_shared_libraries "${pyside2_path}/pyside2.abi3.lib")
+if (CMAKE_BUILD_TYPE STREQUAL "debug")
+    set(shiboken_lib_name "shiboken2_d.cp37-win_amd64")
+endif()
+
+set(shiboken_include_dir "${shiboken_generator_dir}/include")
+set(shiboken_shared_libraries "${shiboken_module_path}/${shiboken_lib_name}.lib")
+set(shiboken_dll "${shiboken_module_path}/${shiboken_lib_name}.dll")
+
+set(pyside_lib_name "pyside2.cp37-win_amd64")
+
+if (CMAKE_BUILD_TYPE STREQUAL "debug")
+    set(pyside_lib_name "pyside2_d.cp37-win_amd64")
+endif()
+set(pyside2_shared_libraries "${pyside2_path}/${pyside_lib_name}.lib")
+set(pyside2_dll "${pyside2_path}/${pyside_lib_name}.dll")
 
 # Find the qt package location.
 ly_get_package_association("Qt" qt_package_name)
@@ -169,7 +183,7 @@ add_custom_command(TARGET ${bindings_library}.bindings
                     COMMAND ${shiboken_generator_exe_path} ${shiboken_options} ${wrapped_header} ${typesystem_file}
                     DEPENDS ${generated_sources_dependencies} 
                         Gem::AzQtComponentsForPython.WrappedFiles
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                    WORKING_DIRECTORY ${pyside2_bin_path}
                     COMMENT "Running generator for ${typesystem_file}.")
                     
 ly_add_target(
@@ -200,7 +214,7 @@ ly_add_target(
 
 # Add the wrapped files here, they can't be added to the FILES_CMAKE section as they don't exist yet.
 include(wrapped_files.cmake)
-target_sources(${bindings_library} PRIVATE ${LIBRARY_FILES})
+target_sources(${bindings_library} PRIVATE ${WRAPPED_FILES})
 
 # Building the wrapper files will not work with a unity build.
 set_target_properties(${bindings_library} PROPERTIES UNITY_BUILD OFF)
@@ -211,6 +225,14 @@ set_target_properties(${bindings_library} PROPERTIES UNITY_BUILD OFF)
 #"declaration of 'x' hides previous local declaration."
 #"declaration of 'x' hides class member."
 target_compile_options(${bindings_library} PRIVATE /wd4127 /wd4100 /wd4456 /wd4458)
+
+macro(remove_flag_from_target _target _flag)
+    get_target_property(_target_cxx_flags ${_target} COMPILE_OPTIONS)
+    if(_target_cxx_flags)
+        list(REMOVE_ITEM _target_cxx_flags ${_flag})
+        set_target_properties(${_target} PROPERTIES COMPILE_OPTIONS "${_target_cxx_flags}")
+    endif()
+endmacro()
 
 # Fix the name of the module.
 set_property(TARGET ${bindings_library} PROPERTY PREFIX "")
@@ -250,30 +272,21 @@ install(FILES ${windows_shiboken_shared_libraries} DESTINATION ${CMAKE_CURRENT_B
 # Temp: Copy dependencies.
 set(runtime_output_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${qt_module_dir}/bin/Qt5Qml.dll"
-    ${runtime_output_directory})
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+set(required_runtime_components "${qt_module_dir}/bin/Qt5Qml.dll"
     "${qt_module_dir}/bin/Qt5Quick.dll"
-    ${runtime_output_directory})
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${qt_module_dir}/bin/Qt5QmlModels.dll"
-    ${runtime_output_directory})
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${qt_module_dir}/bin/Qt5Core.dll"
-    ${runtime_output_directory})
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${qt_module_dir}/bin/Qt5Widgets.dll"
-    ${runtime_output_directory})
-add_custom_command(TARGET ${bindings_library} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${qt_module_dir}/bin/Qt5Gui.dll"
-    ${runtime_output_directory})
+    "${shiboken_dll}"
+    "${pyside_dll}"
+)
 
+foreach(requirement ${required_runtime_components})
+    add_custom_command(TARGET ${bindings_library} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${requirement}
+    ${runtime_output_directory})
+endforeach()
 
         
