@@ -14,7 +14,7 @@
 #include <QCoreApplication>
 
 #include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
-#include <native/resourcecompiler/RCBuilder.h> // for defines like BUILDER_ID_RC
+#include <native/resourcecompiler/RCBuilder.h>
 
 #include "AssetManager/FileStateCache.h"
 

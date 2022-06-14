@@ -148,13 +148,11 @@ namespace AssetProcessor
 
     const char* INTERNAL_BUILDER_UUID_STR = "589BE398-2EBB-4E3C-BE66-C894E34C944D";
     const BuilderIdAndName  BUILDER_ID_COPY("Internal Copy Builder", "31B74BFD-7046-47AC-A7DA-7D5167E9B2F8", BuilderIdAndName::Type::REGISTERED_BUILDER, ASSET_PROCESSOR_CONFIG_KEYWORD_COPY);
-//    const BuilderIdAndName  BUILDER_ID_RC  ("Internal RC Builder",   "0BBFC8C1-9137-4404-BD94-64C0364EFBFB", BuilderIdAndName::Type::REGISTERED_BUILDER);
     const BuilderIdAndName  BUILDER_ID_SKIP("Internal Skip Builder", "A033AF24-5041-4E24-ACEC-161A2E522BB6", BuilderIdAndName::Type::UNREGISTERED_BUILDER, ASSET_PROCESSOR_CONFIG_KEYWORD_SKIP);
 
     const QHash<QString, BuilderIdAndName> ALL_INTERNAL_BUILDER_BY_ID =
     {
         { BUILDER_ID_COPY.GetId(), BUILDER_ID_COPY },
-//        { BUILDER_ID_RC.GetId(), BUILDER_ID_RC },
         { BUILDER_ID_SKIP.GetId(), BUILDER_ID_SKIP }
     };
 
