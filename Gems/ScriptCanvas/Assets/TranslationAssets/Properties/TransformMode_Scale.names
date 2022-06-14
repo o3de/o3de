@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Scale",
+            "base": "TransformMode_Scale",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Scale"
+                "name": "Scale",
+                "category": "Constants/Transform/Mode"
             },
             "methods": [
                 {
-                    "key": "GetTransformMode_Scale",
+                    "base": "GetTransformMode_Scale",
                     "details": {
-                        "name": "Get Transform Mode_ Scale"
+                        "name": "Scale"
                     },
                     "results": [
                         {

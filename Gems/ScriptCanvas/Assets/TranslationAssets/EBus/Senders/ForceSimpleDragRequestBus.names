@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ForceSimpleDragRequestBus",
+            "base": "ForceSimpleDragRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetDensity",
+                    "base": "SetDensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Density"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetDensity",
+                    "base": "GetDensity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Density"

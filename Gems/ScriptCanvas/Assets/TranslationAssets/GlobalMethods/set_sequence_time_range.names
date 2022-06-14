@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_sequence_time_range",
+            "base": "set_sequence_time_range",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_sequence_time_range",
+                    "base": "set_sequence_time_range",
                     "context": "Global",
                     "entry": {
                         "name": "In",

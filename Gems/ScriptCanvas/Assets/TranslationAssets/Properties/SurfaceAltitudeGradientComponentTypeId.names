@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SurfaceAltitudeGradientComponentTypeId",
+            "base": "SurfaceAltitudeGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Surface Altitude Gradient Component Type Id"
+                "name": "Surface Altitude Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSurfaceAltitudeGradientComponentTypeId",
+                    "base": "GetSurfaceAltitudeGradientComponentTypeId",
                     "details": {
                         "name": "Get Surface Altitude Gradient Component Type Id"
                     },

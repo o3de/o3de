@@ -71,7 +71,7 @@ namespace SceneBuilder
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>());
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
             }
-            
+
             AZ::SceneAPI::SceneBuilderDependencyBus::Broadcast(&AZ::SceneAPI::SceneBuilderDependencyRequests::AddFingerprintInfo, fragments);
 
             for (const AZStd::string& element : fragments)
@@ -79,7 +79,7 @@ namespace SceneBuilder
                 m_cachedFingerprint.append(element);
             }
             // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 1");
+            m_cachedFingerprint.append("Version 4");
         }
 
         return m_cachedFingerprint.c_str();
@@ -99,6 +99,11 @@ namespace SceneBuilder
 
         auto manifestObject = document.GetObject();
         auto valuesIterator = manifestObject.FindMember("values");
+        if (valuesIterator == manifestObject.MemberEnd())
+        {
+            // a blank or unexpected JSON formated .assetinfo file
+            return;
+        }
         auto valuesArray = valuesIterator->value.GetArray();
 
         AZStd::vector<AZStd::string> paths;
@@ -223,7 +228,7 @@ namespace SceneBuilder
 
         // Only used during processing to redirect trace printfs with an warning or error window to the appropriate reporting function.
         TraceMessageHook messageHook;
-        
+
         // Load Scene graph and manifest from the provided path and then initialize them.
         if (m_isShuttingDown)
         {
@@ -282,9 +287,9 @@ namespace SceneBuilder
         }
         for (const AZStd::string& pathDependency : exportProduct.m_legacyPathDependencies)
         {
-            // SceneCore doesn't have access to AssetBuilderSDK, so it doesn't have access to the 
+            // SceneCore doesn't have access to AssetBuilderSDK, so it doesn't have access to the
             //  ProductPathDependency type or the ProductPathDependencyType enum. Exporters registered with the
-            //  Scene Builder should report path dependencies on source files as absolute paths, while dependencies 
+            //  Scene Builder should report path dependencies on source files as absolute paths, while dependencies
             //  on product files should be reported as relative paths.
             if (AzFramework::StringFunc::Path::IsRelative(pathDependency.c_str()))
             {
@@ -314,7 +319,7 @@ namespace SceneBuilder
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Containers;
         using namespace AZ::SceneAPI::Events;
-        
+
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
         SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID);
@@ -331,7 +336,7 @@ namespace SceneBuilder
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
             return false; // Still return false as there's no work so should exit.
         }
-        
+
         return true;
     }
 
@@ -379,7 +384,7 @@ namespace SceneBuilder
         using namespace AZ::SceneAPI::SceneCore;
 
         AZ_Assert(scene, "Invalid scene passed for exporting.");
-        
+
         const AZStd::string& outputFolder = request.m_tempDirPath;
         const char* platformIdentifier = request.m_jobDescription.GetPlatformIdentifier().c_str();
         AZ_TraceContext("Output folder", outputFolder.c_str());
@@ -389,18 +394,19 @@ namespace SceneBuilder
         AZ_TracePrintf(Utilities::LogWindow, "Creating export entities.\n");
         EntityConstructor::EntityPointer exporter = EntityConstructor::BuildEntity("Scene Exporters", ExportingComponent::TYPEINFO_Uuid());
 
+        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
+        const bool isDebug = (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true");
+
         ExportProductList productList;
         ProcessingResultCombiner result;
         AZ_TracePrintf(Utilities::LogWindow, "Preparing for export.\n");
-        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier);
+        result += Process<PreExportEventContext>(productList, outputFolder, *scene, platformIdentifier, isDebug);
         AZ_TracePrintf(Utilities::LogWindow, "Exporting...\n");
         result += Process<ExportEventContext>(productList, outputFolder, *scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing export process.\n");
         result += Process<PostExportEventContext>(productList, outputFolder, platformIdentifier);
 
-        auto itr = request.m_jobDescription.m_jobParameters.find(AZ_CRC_CE("DebugFlag"));
-
-        if (itr != request.m_jobDescription.m_jobParameters.end() && itr->second == "true")
+        if (isDebug)
         {
             AZStd::string productName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);

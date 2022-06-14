@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_FactorInverse",
+            "base": "BlendFactor_FactorInverse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Factor Inverse"
+                "name": "Factor Inverse",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_FactorInverse",
+                    "base": "GetBlendFactor_FactorInverse",
                     "details": {
-                        "name": "Get Blend Factor_ Factor Inverse"
+                        "name": "Get Factor Inverse"
                     },
                     "results": [
                         {

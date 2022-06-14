@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiScrollBoxSnapMode_Grid",
+            "base": "eUiScrollBoxSnapMode_Grid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scroll Box Snap Mode_ Grid"
+                "name": "Grid",
+                "category": "Constants/UI/Scroll Box Snap Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiScrollBoxSnapMode_Grid",
+                    "base": "GeteUiScrollBoxSnapMode_Grid",
                     "details": {
-                        "name": "Gete Ui Scroll Box Snap Mode_ Grid"
+                        "name": "Grid"
                     },
                     "results": [
                         {

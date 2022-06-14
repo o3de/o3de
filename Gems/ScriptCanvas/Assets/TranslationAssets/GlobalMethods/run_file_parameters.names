@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "run_file_parameters",
+            "base": "run_file_parameters",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "run_file_parameters",
+                    "base": "run_file_parameters",
                     "context": "Global",
                     "entry": {
                         "name": "In",

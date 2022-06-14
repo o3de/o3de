@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathPlane_VM",
+            "base": "MathPlane_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPlaneEquationCoefficients",
+                    "base": "GetPlaneEquationCoefficients",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetDistance",
+                    "base": "GetDistance",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "Project",
+                    "base": "Project",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "FromNormalAndPoint",
+                    "base": "FromNormalAndPoint",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -149,7 +149,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -181,7 +181,7 @@
                     ]
                 },
                 {
-                    "key": "Transform",
+                    "base": "Transform",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "DistanceToPoint",
+                    "base": "DistanceToPoint",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "FromCoefficients",
+                    "base": "FromCoefficients",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -307,7 +307,7 @@
                     ]
                 },
                 {
-                    "key": "FromNormalAndDistance",
+                    "base": "FromNormalAndDistance",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "ShapeComponentRequestsBus",
+            "base": "ShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ShapeComponentRequestsBus",
+                "name": "Shape Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "DistanceSquaredFromPoint",
+                    "base": "DistanceSquaredFromPoint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Distance Squared From Point"
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "DistanceFromPoint",
+                    "base": "DistanceFromPoint",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Distance From Point"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "IsPointInside",
+                    "base": "IsPointInside",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Point Inside"
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "GetEncompassingAabb",
+                    "base": "GetEncompassingAabb",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Encompassing Aabb"
@@ -132,7 +132,7 @@
                     ]
                 },
                 {
-                    "key": "GetShapeType",
+                    "base": "GetShapeType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shape Type"

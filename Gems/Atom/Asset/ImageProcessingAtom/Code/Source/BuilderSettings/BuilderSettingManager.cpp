@@ -43,7 +43,7 @@
 
 namespace ImageProcessingAtom
 {
-    const char* BuilderSettingManager::s_defaultConfigRelativeFolder = "Gems/Atom/Asset/ImageProcessingAtom/Assets/Config/";
+    const char* BuilderSettingManager::s_defaultConfigFolder = "@gemroot:ImageProcessingAtom@/Assets/Config/";
     const char* BuilderSettingManager::s_projectConfigRelativeFolder = "Config/AtomImageBuilder/";
     const char* BuilderSettingManager::s_builderSettingFileName = "ImageBuilder.settings";
     const char* BuilderSettingManager::s_presetFileExtension = "preset";
@@ -237,10 +237,9 @@ namespace ImageProcessingAtom
                 AZStd::string("File IO instance needs to be initialized to resolve ImageProcessing builder file aliases"));
         }
 
-        if (auto engineRoot = fileIoBase->ResolvePath("@engroot@"); engineRoot.has_value())
+        if (auto defaultConfigFolder = fileIoBase->ResolvePath(s_defaultConfigFolder); defaultConfigFolder.has_value())
         {
-            m_defaultConfigFolder = *engineRoot;
-            m_defaultConfigFolder /= s_defaultConfigRelativeFolder;
+            m_defaultConfigFolder = *defaultConfigFolder;
         }
 
         if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
@@ -620,6 +619,7 @@ namespace ImageProcessingAtom
     {
         PresetName emptyPreset;
 
+
         //get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
@@ -636,8 +636,17 @@ namespace ImageProcessingAtom
         }
 
         if (outPreset == emptyPreset)
-        {
-            outPreset = m_defaultPreset;
+        {        
+            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
+            if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
+                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)
+            {
+                outPreset = m_defaultPreset;
+            }
+            else
+            {
+                outPreset = m_defaultPresetAlpha;
+            }
         }
 
         return outPreset;

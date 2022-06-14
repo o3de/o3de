@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NetBindComponent",
+            "base": "NetBindComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "IsNetEntityRoleAuthority",
+                    "base": "IsNetEntityRoleAuthority",
                     "context": "NetBindComponent",
                     "entry": {
                         "name": "In",
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "IsNetEntityRoleAutonomous",
+                    "base": "IsNetEntityRoleAutonomous",
                     "context": "NetBindComponent",
                     "entry": {
                         "name": "In",
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "IsNetEntityRoleClient",
+                    "base": "IsNetEntityRoleClient",
                     "context": "NetBindComponent",
                     "entry": {
                         "name": "In",
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "IsNetEntityRoleServer",
+                    "base": "IsNetEntityRoleServer",
                     "context": "NetBindComponent",
                     "entry": {
                         "name": "In",

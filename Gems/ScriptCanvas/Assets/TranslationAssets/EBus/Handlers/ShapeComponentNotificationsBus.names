@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeComponentNotificationsBus",
+            "base": "ShapeComponentNotificationsBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnShapeChanged",
+                    "base": "OnShapeChanged",
                     "details": {
                         "name": "On Shape Changed"
                     },

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MathRandoms_RandomVector4",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Random Vector4",
+                "category": "Math/Random"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MathRandoms_RandomVector4",
+                    "details": {
+                        "name": "Random Vector4",
+                        "tooltip": "Returns a random Vector4."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Min Value"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Max Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

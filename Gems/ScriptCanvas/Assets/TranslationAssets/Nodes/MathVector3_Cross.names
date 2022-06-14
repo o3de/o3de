@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{8645F3FA-D1BE-59A2-B183-19FEA198101D}",
+            "base": "{8645F3FA-D1BE-59A2-B183-19FEA198101D}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Cross",
                 "category": "Math/Vector3",
-                "tooltip": "Returns the vector cross product of A X B"
+                "tooltip": "returns the vector cross product of A X B"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

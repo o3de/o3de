@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Provo",
+            "base": "SystemConfigPlatform_Provo",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Provo"
+                "name": "Provo",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Provo",
+                    "base": "GetSystemConfigPlatform_Provo",
                     "details": {
-                        "name": "Get System Config Platform_ Provo"
+                        "name": "Provo"
                     },
                     "results": [
                         {

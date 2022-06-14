@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "ShadowFilterMethod_ESM_PCF",
+            "base": "ShadowFilterMethod_ESM_PCF",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadow Filter Method_ESM_PCF"
+                "name": "ESM_PCF",
+                "category": "Constants/Shadowmap/Filter"
             },
             "methods": [
                 {
-                    "key": "GetShadowFilterMethod_ESM_PCF",
+                    "base": "GetShadowFilterMethod_ESM_PCF",
                     "details": {
-                        "name": "Get Shadow Filter Method_ESM_PCF"
+                        "name": "ESM_PCF"
                     },
                     "results": [
                         {

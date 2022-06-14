@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -13,7 +14,6 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <SharedPreview/SharedThumbnail.h>
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
@@ -71,6 +71,7 @@ namespace AZ
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("ThumbnailerService"));
+            required.push_back(AZ_CRC_CE("PreviewRendererSystem"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -88,14 +89,22 @@ namespace AZ
 
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
+            {
+                auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+                {
+                    SetupThumbnails();
+                };
+                AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler,
+                    AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+            }
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         }
 
         void EditorCommonFeaturesSystemComponent::Deactivate()
         {
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+            m_criticalAssetsHandler = {};
             AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
@@ -192,13 +201,6 @@ namespace AZ
             }
         }
 
-        void EditorCommonFeaturesSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-        {
-            AZ::TickBus::QueueFunction([this](){
-                SetupThumbnails();
-            });
-        }
-
         const AzToolsFramework::AssetBrowser::PreviewerFactory* EditorCommonFeaturesSystemComponent::GetPreviewerFactory(
             const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
         {
@@ -215,8 +217,8 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache), ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache));
 
             if (!m_thumbnailRenderer)
             {
@@ -234,9 +236,7 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName);
 
             m_thumbnailRenderer.reset();
             m_previewerFactory.reset();

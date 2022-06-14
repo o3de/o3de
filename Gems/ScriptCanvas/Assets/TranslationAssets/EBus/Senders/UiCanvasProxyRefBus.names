@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCanvasProxyRefBus",
+            "base": "UiCanvasProxyRefBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasProxyRefBus",
+                "name": "UI Canvas Proxy Ref",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetCanvasRefEntity",
+                    "base": "SetCanvasRefEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Canvas Ref Entity"

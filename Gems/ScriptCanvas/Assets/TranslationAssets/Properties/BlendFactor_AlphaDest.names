@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_AlphaDest",
+            "base": "BlendFactor_AlphaDest",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Alpha Dest"
+                "name": "Alpha Dest",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_AlphaDest",
+                    "base": "GetBlendFactor_AlphaDest",
                     "details": {
-                        "name": "Get Blend Factor_ Alpha Dest"
+                        "name": "Get Alpha Dest"
                     },
                     "results": [
                         {

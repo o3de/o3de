@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UVCoords",
+            "base": "UVCoords",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetUVCoords",
+                    "base": "SetUVCoords",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
@@ -86,7 +86,7 @@
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
@@ -144,7 +144,7 @@
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UVCoords",
                     "entry": {
                         "name": "In",
@@ -173,7 +173,7 @@
                     ]
                 },
                 {
-                    "key": "Getleft",
+                    "base": "Getleft",
                     "details": {
                         "name": "Left"
                     },
@@ -195,7 +195,7 @@
                     ]
                 },
                 {
-                    "key": "Setleft",
+                    "base": "Setleft",
                     "details": {
                         "name": "Set Left"
                     },
@@ -215,7 +215,7 @@
                     ]
                 },
                 {
-                    "key": "Gettop",
+                    "base": "Gettop",
                     "details": {
                         "name": "Top"
                     },
@@ -237,7 +237,7 @@
                     ]
                 },
                 {
-                    "key": "Settop",
+                    "base": "Settop",
                     "details": {
                         "name": "Set Top"
                     },
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "Getright",
+                    "base": "Getright",
                     "details": {
                         "name": "Get Right"
                     },
@@ -279,7 +279,7 @@
                     ]
                 },
                 {
-                    "key": "Setright",
+                    "base": "Setright",
                     "details": {
                         "name": "Set Right"
                     },
@@ -299,7 +299,7 @@
                     ]
                 },
                 {
-                    "key": "Getbottom",
+                    "base": "Getbottom",
                     "details": {
                         "name": "Get Bottom"
                     },
@@ -321,7 +321,7 @@
                     ]
                 },
                 {
-                    "key": "Setbottom",
+                    "base": "Setbottom",
                     "details": {
                         "name": "Bottom"
                     },

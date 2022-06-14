@@ -1,0 +1,71 @@
+{
+    "name": "specularF0",
+    "displayName": "Specular Reflectance f0",
+    "description": "The constant f0 represents the specular reflectance at normal incidence (Fresnel 0 Angle). Used to adjust reflectance of non-metal surfaces.",
+    "properties": [
+        {
+            "name": "factor",
+            "displayName": "Factor",
+            "description": "The default IOR is 1.5, which gives you 0.04 (4% of light reflected at 0 degree angle for dielectric materials). F0 values lie in the range 0-0.08, so that is why the default F0 slider is set on 0.5.",
+            "type": "Float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularF0Factor"
+            }
+        },
+        {
+            "name": "textureMap",
+            "displayName": "Texture",
+            "description": "Texture for defining surface reflectance.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularF0Map"
+            }
+        },
+        {
+            "name": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture, or just default to the Factor value.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Specular reflection map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularF0MapUvIndex"
+            }
+        },
+        // Consider moving this to the "general" group to be consistent with StandardMultilayerPBR
+        {
+            "name": "enableMultiScatterCompensation",
+            "displayName": "Multiscattering Compensation",
+            "description": "Whether to enable multiple scattering compensation.",
+            "type": "Bool",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_specularF0_enableMultiScatterCompensation"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "textureMap",
+                "useTextureProperty": "useTexture",
+                "dependentProperties": ["textureMapUv"],
+                "shaderOption": "o_specularF0_useTexture"
+            }
+        }
+    ]
+}

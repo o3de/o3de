@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "CreateCapsuleOverlapRequest",
+            "base": "CreateCapsuleOverlapRequest",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateCapsuleOverlapRequest",
+                    "base": "CreateCapsuleOverlapRequest",
                     "context": "Global",
                     "entry": {
                         "name": "In",

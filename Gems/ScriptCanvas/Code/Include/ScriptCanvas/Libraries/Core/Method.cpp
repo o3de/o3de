@@ -12,8 +12,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <Core/SlotConfigurationDefaults.h> 
 #include <Core/SlotExecutionMap.h>
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
+#include <ScriptCanvas/Utils/ReplacementUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace MethodCPP
@@ -230,6 +230,15 @@ namespace ScriptCanvas
                 default:
                     return PropertyStatus::None;
                 }
+            }
+
+            NodeReplacementConfiguration Method::GetReplacementNodeConfiguration() const
+            {
+                if (m_method)
+                {
+                    return ReplacementUtils::GetReplacementMethodNode(m_className.c_str(), m_lookupName.c_str());
+                }
+                return NodeReplacementConfiguration{};
             }
 
             void Method::InitializeMethod(const MethodConfiguration& config)
@@ -842,6 +851,20 @@ namespace ScriptCanvas
                 }
 
                 return false;
+            }
+
+            bool Method::IsDeprecated() const
+            {
+                bool isDeprecated = false;
+                if (m_method)
+                {
+                    if (auto isDeprecatedAttributePtr = AZ::FindAttribute(AZ::Script::Attributes::Deprecated, m_method->m_attributes))
+                    {
+                        AZ::AttributeReader(nullptr, isDeprecatedAttributePtr).Read<bool>(isDeprecated);
+                    }
+                }
+
+                return isDeprecated;
             }
 
             bool Method::IsIfBranch() const

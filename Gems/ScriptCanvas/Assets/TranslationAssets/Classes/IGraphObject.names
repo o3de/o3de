@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "IGraphObject",
+            "base": "IGraphObject",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

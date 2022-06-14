@@ -1,42 +1,41 @@
 {
     "entries": [
         {
-            "key": "{E9BB45A1-AE96-47B0-B2BF-2927D420A28C}",
+            "base": "{E9BB45A1-AE96-47B0-B2BF-2927D420A28C}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Multiply (*)",
                 "category": "Math",
-                "tooltip": "Multiplies two of more values",
-                "subtitle": "Math"
+                "tooltip": "Multiplies two of more values"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_1",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

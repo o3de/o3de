@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SimpleMotionComponentRequestBus",
+            "base": "SimpleMotionComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "BlendOutTime",
+                    "base": "BlendOutTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Blend Out Time"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlendInTime",
+                    "base": "GetBlendInTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Blend In Time"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "PlayMotion",
+                    "base": "PlayMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke PlayMotion"
@@ -68,7 +68,7 @@
                     }
                 },
                 {
-                    "key": "GetMotion",
+                    "base": "GetMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMotion"
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "GetBlendOutTime",
+                    "base": "GetBlendOutTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Blend Out Time"
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "ReverseMotion",
+                    "base": "ReverseMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reverse Motion"
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "GetPlaySpeed",
+                    "base": "GetPlaySpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Play Speed"
@@ -156,7 +156,7 @@
                     ]
                 },
                 {
-                    "key": "GetPlayTime",
+                    "base": "GetPlayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Play Time"
@@ -178,7 +178,7 @@
                     ]
                 },
                 {
-                    "key": "RetargetMotion",
+                    "base": "RetargetMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Retarget Motion"
@@ -200,7 +200,7 @@
                     ]
                 },
                 {
-                    "key": "SetPlaySpeed",
+                    "base": "SetPlaySpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Play Speed"
@@ -222,7 +222,7 @@
                     ]
                 },
                 {
-                    "key": "Motion",
+                    "base": "Motion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Motion"
@@ -244,7 +244,7 @@
                     ]
                 },
                 {
-                    "key": "BlendInTime",
+                    "base": "BlendInTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Blend In Time"
@@ -266,7 +266,7 @@
                     ]
                 },
                 {
-                    "key": "GetLoopMotion",
+                    "base": "GetLoopMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Loop Motion"
@@ -288,7 +288,7 @@
                     ]
                 },
                 {
-                    "key": "PlayTime",
+                    "base": "PlayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Play Time"
@@ -310,7 +310,7 @@
                     ]
                 },
                 {
-                    "key": "LoopMotion",
+                    "base": "LoopMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Loop Motion"
@@ -332,7 +332,7 @@
                     ]
                 },
                 {
-                    "key": "MirrorMotion",
+                    "base": "MirrorMotion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Mirror Motion"

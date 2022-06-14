@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "PerformanceStatisticsEBus",
+            "base": "PerformanceStatisticsEBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PerformanceStatisticsEBus"
+                "name": "Performance Statistics EBus"
             },
             "methods": [
                 {
-                    "key": "TrackPerFrameStop",
+                    "base": "TrackPerFrameStop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke TrackPerFrameStop"
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "key": "TrackPerFrameStart",
+                    "base": "TrackPerFrameStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke TrackPerFrameStart"
@@ -37,7 +37,7 @@
                     }
                 },
                 {
-                    "key": "TrackAccumulatedStart",
+                    "base": "TrackAccumulatedStart",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke TrackAccumulatedStart"
@@ -59,7 +59,7 @@
                     ]
                 },
                 {
-                    "key": "TrackAccumulatedStop",
+                    "base": "TrackAccumulatedStop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke TrackAccumulatedStop"
@@ -73,7 +73,7 @@
                     }
                 },
                 {
-                    "key": "ClearSnaphotStatistics",
+                    "base": "ClearSnaphotStatistics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ClearSnaphotStatistics"

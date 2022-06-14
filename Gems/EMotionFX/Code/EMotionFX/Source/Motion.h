@@ -9,14 +9,13 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <MCore/Source/StringIdPool.h>
+#include <MCore/Source/Distance.h>
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "PlayBackInfo.h"
 #include "BaseObject.h"
-
-#include <MCore/Source/StringIdPool.h>
-#include <MCore/Source/Distance.h>
-
+#include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
 
 namespace EMotionFX
 {
@@ -137,6 +136,8 @@ namespace EMotionFX
          * @param instance The motion instance to calculate the pose for.
          */
         void Update(const Pose* inputPose, Pose* outputPose, MotionInstance* instance);
+
+        void SamplePose(Pose* outputPose, const MotionDataSampleSettings& sampleSettings);
 
         /**
          * Specify the actor to use as retargeting source.

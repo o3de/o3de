@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiLayoutColumnComponent",
+            "base": "UiLayoutColumnComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

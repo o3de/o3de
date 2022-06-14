@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Presimulate event",
+            "base": "Presimulate event",
             "context": "AZEventHandler",
             "variant": "",
             "details": {
@@ -9,43 +9,43 @@
             },
             "slots": [
                 {
-                    "key": "Tick time",
+                    "base": "Tick time",
                     "details": {
                         "name": "Tick time"
                     }
                 },
                 {
-                    "key": "Presimulate event",
+                    "base": "Presimulate event",
                     "details": {
                         "name": "Presimulate event"
                     }
                 },
                 {
-                    "key": "Connect",
+                    "base": "Connect",
                     "details": {
                         "name": "Connect"
                     }
                 },
                 {
-                    "key": "Disconnect",
+                    "base": "Disconnect",
                     "details": {
                         "name": "Disconnect"
                     }
                 },
                 {
-                    "key": "On Connected",
+                    "base": "On Connected",
                     "details": {
                         "name": "On Connected"
                     }
                 },
                 {
-                    "key": "On Disconnected",
+                    "base": "On Disconnected",
                     "details": {
                         "name": "On Disconnected"
                     }
                 },
                 {
-                    "key": "OnEvent",
+                    "base": "OnEvent",
                     "details": {
                         "name": "OnEvent"
                     }

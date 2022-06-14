@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_TRANSLATEMANIPULATOR_H
-#define __MCOMMON_TRANSLATEMANIPULATOR_H
+#pragma once
 
 #include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
@@ -111,6 +110,3 @@ namespace MCommon
         bool                    m_zAxisVisible;
     };
 } // namespace MCommon
-
-
-#endif

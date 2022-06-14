@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SettingsRegistry",
+            "base": "SettingsRegistry",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SettingsRegistry",
+                    "base": "SettingsRegistry",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "ToolsApplicationRequestBus",
+            "base": "ToolsApplicationRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ToolsApplicationRequestBus"
+                "name": "Tools Application"
             },
             "methods": [
                 {
-                    "key": "MarkEntitySelected",
+                    "base": "MarkEntitySelected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MarkEntitySelected"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "IsSelected",
+                    "base": "IsSelected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsSelected"
@@ -63,7 +63,7 @@
                     ]
                 },
                 {
-                    "key": "GetSelectedEntitiesCount",
+                    "base": "GetSelectedEntitiesCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSelectedEntitiesCount"
@@ -85,7 +85,7 @@
                     ]
                 },
                 {
-                    "key": "GetSelectedEntities",
+                    "base": "GetSelectedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetSelectedEntities"
@@ -107,7 +107,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteEntitiesAndAllDescendants",
+                    "base": "DeleteEntitiesAndAllDescendants",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteEntitiesAndAllDescendants"
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "GetExistingEntity",
+                    "base": "GetExistingEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetExistingEntity"
@@ -160,7 +160,7 @@
                     ]
                 },
                 {
-                    "key": "SetSelectedEntities",
+                    "base": "SetSelectedEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetSelectedEntities"
@@ -182,7 +182,7 @@
                     ]
                 },
                 {
-                    "key": "MarkEntitiesSelected",
+                    "base": "MarkEntitiesSelected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MarkEntitiesSelected"
@@ -204,7 +204,7 @@
                     ]
                 },
                 {
-                    "key": "MarkEntityDeselected",
+                    "base": "MarkEntityDeselected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MarkEntityDeselected"
@@ -227,7 +227,7 @@
                     ]
                 },
                 {
-                    "key": "GetCurrentLevelEntityId",
+                    "base": "GetCurrentLevelEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCurrentLevelEntityId"
@@ -250,7 +250,7 @@
                     ]
                 },
                 {
-                    "key": "AreAnyEntitiesSelected",
+                    "base": "AreAnyEntitiesSelected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AreAnyEntitiesSelected"
@@ -272,7 +272,7 @@
                     ]
                 },
                 {
-                    "key": "CreateNewEntityAtPosition",
+                    "base": "CreateNewEntityAtPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateNewEntityAtPosition"
@@ -310,7 +310,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteEntityAndAllDescendants",
+                    "base": "DeleteEntityAndAllDescendants",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteEntityAndAllDescendants"
@@ -333,7 +333,7 @@
                     ]
                 },
                 {
-                    "key": "CreateNewEntity",
+                    "base": "CreateNewEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateNewEntity"
@@ -365,7 +365,7 @@
                     ]
                 },
                 {
-                    "key": "EntityExists",
+                    "base": "EntityExists",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke EntityExists"
@@ -396,7 +396,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteEntityById",
+                    "base": "DeleteEntityById",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteEntityById"
@@ -419,7 +419,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteEntities",
+                    "base": "DeleteEntities",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteEntities"
@@ -441,7 +441,7 @@
                     ]
                 },
                 {
-                    "key": "MarkEntitiesDeselected",
+                    "base": "MarkEntitiesDeselected",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MarkEntitiesDeselected"

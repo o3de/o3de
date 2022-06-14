@@ -31,6 +31,10 @@ namespace O3DE::ProjectManager
         IPythonBindings() = default;
         virtual ~IPythonBindings() = default;
 
+        //! First string in pair is general error, second is detailed
+        using ErrorPair = AZStd::pair<AZStd::string, AZStd::string>;
+        using DetailedOutcome = AZ::Outcome<void, ErrorPair>;
+
         /**
          * Get whether Python was started or not.  All Python functionality will fail if Python
          * failed to start. 
@@ -49,17 +53,25 @@ namespace O3DE::ProjectManager
         // Engine
 
         /**
-         * Get info about the engine 
+         * Get info about the current engine 
          * @return an outcome with EngineInfo on success
          */
         virtual AZ::Outcome<EngineInfo> GetEngineInfo() = 0;
 
         /**
-         * Set info about the engine 
-         * @param engineInfo an EngineInfo object 
+         * Get info about an engine by name
+         * @param engineName The name of the engine to get info about
+         * @return an outcome with EngineInfo on success
          */
-        virtual bool SetEngineInfo(const EngineInfo& engineInfo) = 0;
+        virtual AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) = 0;
 
+        /**
+         * Set info about the engine 
+         * @param force True to force registration even if an engine with the same name is already registered
+         * @param engineInfo an EngineInfo object 
+         * @return a detailed error outcome on failure.
+         */
+        virtual DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) = 0;
 
         // Gems
 
@@ -202,7 +214,7 @@ namespace O3DE::ProjectManager
          * @param repoUri the absolute filesystem path or url to the gem repo.
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
-        virtual AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> AddGemRepo(const QString& repoUri) = 0;
+        virtual DetailedOutcome AddGemRepo(const QString& repoUri) = 0;
 
         /**
          * Unregisters this gem repo with the current engine.
@@ -237,7 +249,7 @@ namespace O3DE::ProjectManager
          * @param force should we forcibly overwrite the old version of the gem.
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
-        virtual AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> DownloadGem(
+        virtual DetailedOutcome DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**

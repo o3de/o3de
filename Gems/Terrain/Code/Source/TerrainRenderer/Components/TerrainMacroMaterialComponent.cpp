@@ -93,7 +93,8 @@ namespace Terrain
     void TerrainMacroMaterialComponent::Reflect(AZ::ReflectContext* context)
     {
         TerrainMacroMaterialConfig::Reflect(context);
-
+        TerrainMacroMaterialRequests::Reflect(context);
+        
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {

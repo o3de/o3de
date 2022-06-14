@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI/ValidationLayer.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -47,13 +48,22 @@ namespace AZ
             RHI::PhysicalDeviceList GetSupportedDevices() const;
             AZ::RHI::ValidationMode GetValidationMode() const;
 
+            //! Since the native instance is created when the RHI::Vulkan module was initialized
+            //! this method allows us to re-update it if XR support is requested by XR module.
+            void UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem);
+
         private:
             RHI::PhysicalDeviceList EnumerateSupportedDevices() const;
+            void ShutdownNativeInstance();
+            void CreateDebugMessenger();
 
             Descriptor m_descriptor;
             VkInstance m_instance = VK_NULL_HANDLE;
             AZStd::unique_ptr<FunctionLoader> m_functionLoader;
             RHI::PhysicalDeviceList m_supportedDevices;
+            VkInstanceCreateInfo m_instanceCreateInfo = {};
+            VkApplicationInfo m_appInfo = {};
+            bool m_isXRInstanceCreated = false;
         };
     }
 }

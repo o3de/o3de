@@ -1,22 +1,22 @@
 {
     "entries": [
         {
-            "key": "Audio System Component Notifications",
+            "base": "Audio System Component Notifications",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "Audio  System",
-                "category": "EBus Handlers"
+                "name": "Audio System",
+                "category": "Audio"
             },
             "methods": [
                 {
-                    "key": "OnGamePaused",
+                    "base": "OnGamePaused",
                     "details": {
                         "name": "On Game Paused"
                     }
                 },
                 {
-                    "key": "OnGameUnpaused",
+                    "base": "OnGameUnpaused",
                     "details": {
                         "name": "On Game Unpaused"
                     }

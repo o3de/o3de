@@ -751,7 +751,7 @@ class TestFileBackup(unittest.TestCase):
         self._dummy_file = 'dummy.txt'
         self._dummy_backup_file = os.path.join(self._dummy_dir, '{}.bak'.format(self._dummy_file))
 
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_SourceExists_BackupCreated(self, mock_path_isdir, mock_backup_exists, mock_copy):
@@ -763,7 +763,7 @@ class TestFileBackup(unittest.TestCase):
         mock_copy.assert_called_with(self._dummy_file, self._dummy_backup_file)
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_BackupExists_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -776,7 +776,7 @@ class TestFileBackup(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_SourceNotExists_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -789,7 +789,7 @@ class TestFileBackup(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_CannotCopy_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -821,7 +821,7 @@ class TestFileBackupRestore(unittest.TestCase):
         self._dummy_file = 'dummy.txt'
         self._dummy_backup_file = os.path.join(self._dummy_dir, '{}.bak'.format(self._dummy_file))
 
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_BackupRestore_Success(self, mock_path_isdir, mock_exists, mock_copy):
@@ -832,7 +832,7 @@ class TestFileBackupRestore(unittest.TestCase):
         mock_copy.assert_called_with(self._dummy_backup_file, self._dummy_file)
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_CannotCopy_WarningLogged(self, mock_path_isdir, mock_exists, mock_copy, mock_logger_warning):
@@ -846,7 +846,7 @@ class TestFileBackupRestore(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_BackupNotExists_WarningLogged(self, mock_path_isdir, mock_exists, mock_copy, mock_logger_warning):
@@ -900,3 +900,14 @@ class TestReduceFileName(unittest.TestCase):
 
         with pytest.raises(TypeError):
             file_system.reduce_file_name_length(file_name=target_name)
+
+class TestFindAncestorFile(unittest.TestCase):
+
+    @mock.patch('os.path.exists', mock.MagicMock(side_effect=[False, False, True, True]))
+    def test_Find_OneLevel_ReturnsPath(self):
+        mock_file = 'mock_file.txt'
+        mock_start_path = os.path.join('foo1', 'foo2', 'foo3')
+        expected = os.path.abspath(os.path.join('foo1', mock_file))
+
+        actual = file_system.find_ancestor_file(mock_file, mock_start_path)
+        assert actual == expected

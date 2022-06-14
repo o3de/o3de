@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AssetData",
+            "base": "AssetData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetUseCount",
+                    "base": "GetUseCount",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "IsLoading",
+                    "base": "IsLoading",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "IsError",
+                    "base": "IsError",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
@@ -110,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "IsReady",
+                    "base": "IsReady",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "GetId",
+                    "base": "GetId",
                     "context": "AssetData",
                     "entry": {
                         "name": "In",

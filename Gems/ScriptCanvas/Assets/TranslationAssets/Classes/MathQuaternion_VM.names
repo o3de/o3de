@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathQuaternion_VM",
+            "base": "MathQuaternion_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Subtract",
+                    "base": "Subtract",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "RotationYDegrees",
+                    "base": "RotationYDegrees",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "Normalize",
+                    "base": "Normalize",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "LengthReciprocal",
+                    "base": "LengthReciprocal",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -143,7 +143,7 @@
                     ]
                 },
                 {
-                    "key": "CreateFromEulerAngles",
+                    "base": "CreateFromEulerAngles",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -187,7 +187,7 @@
                     ]
                 },
                 {
-                    "key": "IsIdentity",
+                    "base": "IsIdentity",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -225,7 +225,7 @@
                     ]
                 },
                 {
-                    "key": "FromTransform",
+                    "base": "FromTransform",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "Lerp",
+                    "base": "Lerp",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -301,7 +301,7 @@
                     ]
                 },
                 {
-                    "key": "RotationZDegrees",
+                    "base": "RotationZDegrees",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -333,7 +333,7 @@
                     ]
                 },
                 {
-                    "key": "ConvertTransformToRotation",
+                    "base": "ConvertTransformToRotation",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -365,7 +365,7 @@
                     ]
                 },
                 {
-                    "key": "ShortestArc",
+                    "base": "ShortestArc",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -403,7 +403,7 @@
                     ]
                 },
                 {
-                    "key": "RotationXDegrees",
+                    "base": "RotationXDegrees",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -435,7 +435,7 @@
                     ]
                 },
                 {
-                    "key": "IsZero",
+                    "base": "IsZero",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -517,7 +517,7 @@
                     ]
                 },
                 {
-                    "key": "Length",
+                    "base": "Length",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -549,7 +549,7 @@
                     ]
                 },
                 {
-                    "key": "Conjugate",
+                    "base": "Conjugate",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -581,7 +581,7 @@
                     ]
                 },
                 {
-                    "key": "ToAngleDegrees",
+                    "base": "ToAngleDegrees",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -613,7 +613,7 @@
                     ]
                 },
                 {
-                    "key": "Dot",
+                    "base": "Dot",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -651,7 +651,7 @@
                     ]
                 },
                 {
-                    "key": "Negate",
+                    "base": "Negate",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -683,7 +683,7 @@
                     ]
                 },
                 {
-                    "key": "Add",
+                    "base": "Add",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -721,7 +721,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByNumber",
+                    "base": "MultiplyByNumber",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -759,7 +759,7 @@
                     ]
                 },
                 {
-                    "key": "Slerp",
+                    "base": "Slerp",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -803,7 +803,7 @@
                     ]
                 },
                 {
-                    "key": "InvertFull",
+                    "base": "InvertFull",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -835,7 +835,7 @@
                     ]
                 },
                 {
-                    "key": "FromMatrix4x4",
+                    "base": "FromMatrix4x4",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -867,7 +867,7 @@
                     ]
                 },
                 {
-                    "key": "RotateVector3",
+                    "base": "RotateVector3",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -905,7 +905,7 @@
                     ]
                 },
                 {
-                    "key": "FromMatrix3x3",
+                    "base": "FromMatrix3x3",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -937,7 +937,7 @@
                     ]
                 },
                 {
-                    "key": "Squad",
+                    "base": "Squad",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -993,7 +993,7 @@
                     ]
                 },
                 {
-                    "key": "FromAxisAngleDegrees",
+                    "base": "FromAxisAngleDegrees",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -1031,7 +1031,7 @@
                     ]
                 },
                 {
-                    "key": "LengthSquared",
+                    "base": "LengthSquared",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -1063,7 +1063,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -1095,7 +1095,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
@@ -1133,7 +1133,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByRotation",
+                    "base": "MultiplyByRotation",
                     "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",

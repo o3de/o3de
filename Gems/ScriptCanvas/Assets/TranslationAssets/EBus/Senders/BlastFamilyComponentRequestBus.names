@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlastFamilyComponentRequestBus",
+            "base": "BlastFamilyComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Get Actors Data",
+                    "base": "Get Actors Data",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Actors Data"

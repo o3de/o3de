@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "ShadowmapSize_512",
+            "base": "ShadowmapSize_512",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shadowmap Size_ 512"
+                "name": "512",
+                "category": "Constants/Shadowmap/Size"
             },
             "methods": [
                 {
-                    "key": "GetShadowmapSize_512",
+                    "base": "GetShadowmapSize_512",
                     "details": {
-                        "name": "Get Shadowmap Size_ 512"
+                        "name": "512"
                     },
                     "results": [
                         {

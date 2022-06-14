@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "AssetCollectionAsyncLoaderTestBus",
+            "base": "AssetCollectionAsyncLoaderTestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AssetCollectionAsyncLoaderTestBus"
+                "name": "Asset Collection Async Loader Test"
             },
             "methods": [
                 {
-                    "key": "GetPendingAssetsList",
+                    "base": "GetPendingAssetsList",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPendingAssetsList"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetCountOfPendingAssets",
+                    "base": "GetCountOfPendingAssets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetCountOfPendingAssets"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "ValidateAssetWasLoaded",
+                    "base": "ValidateAssetWasLoaded",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ValidateAssetWasLoaded"
@@ -83,7 +83,7 @@
                     ]
                 },
                 {
-                    "key": "CancelLoadingAssets",
+                    "base": "CancelLoadingAssets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CancelLoadingAssets"
@@ -97,7 +97,7 @@
                     }
                 },
                 {
-                    "key": "StartLoadingAssetsFromAssetList",
+                    "base": "StartLoadingAssetsFromAssetList",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke StartLoadingAssetsFromAssetList"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "StartLoadingAssetsFromJsonFile",
+                    "base": "StartLoadingAssetsFromJsonFile",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke StartLoadingAssetsFromJsonFile"

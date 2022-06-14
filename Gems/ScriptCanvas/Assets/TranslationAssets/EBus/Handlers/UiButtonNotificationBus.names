@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiButtonNotificationBus",
+            "base": "UiButtonNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnButtonClick",
+                    "base": "OnButtonClick",
                     "details": {
                         "name": "On Button Click",
                         "tooltip": "Executes when the button has been clicked"

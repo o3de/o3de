@@ -8,10 +8,7 @@
 
 #include "SystemComponent.h"
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
+#include <PhysX/Debug/PhysXDebugInterface.h>
 
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MathConversion.h>
@@ -19,20 +16,24 @@
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
 
+#include <CryCommon/IConsole.h>
+#include <CryCommon/IRenderAuxGeom.h>
+#include <CryCommon/ISystem.h>
+#include <CryCommon/MathConversion.h>
+
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Components/CameraBus.h>
 
-#include <IRenderAuxGeom.h>
-#include <MathConversion.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
-#include <IConsole.h>
-#include <CryCommon/ISystem.h>
-
-#include <PhysX/Debug/PhysXDebugInterface.h>
 
 namespace PhysXDebug
 {
@@ -193,19 +194,19 @@ namespace PhysXDebug
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXDebugService"));
+        provided.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXDebugService"));
+        incompatible.push_back(AZ_CRC_CE("PhysXDebugService"));
     }
 
     void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PhysXService"));
+        required.push_back(AZ_CRC_CE("PhysXService"));
 #ifdef PHYSXDEBUG_GEM_EDITOR
-        required.push_back(AZ_CRC("PhysXEditorService"));
+        required.push_back(AZ_CRC_CE("PhysXEditorService"));
 #endif // PHYSXDEBUG_GEM_EDITOR
     }
 
@@ -834,7 +835,7 @@ namespace PhysXDebug
             if (AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus))
             {
                 const AZ::Color wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
-                debugDisplay->SetColor(wireframeColor.GetAsVector4());
+                debugDisplay->SetColor(wireframeColor);
                 debugDisplay->DrawWireBox(cullingBoxAabb.GetMin(), cullingBoxAabb.GetMax());
             }
         }

@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "PrefabPublicRequestBus",
+            "base": "PrefabPublicRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PrefabPublicRequestBus"
+                "name": "Prefab Public"
             },
             "methods": [
                 {
-                    "key": "CreatePrefabInMemory",
+                    "base": "CreatePrefabInMemory",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreatePrefabInMemory"
@@ -45,7 +45,7 @@
                     ]
                 },
                 {
-                    "key": "InstantiatePrefab",
+                    "base": "InstantiatePrefab",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke InstantiatePrefab"
@@ -88,7 +88,7 @@
                     ]
                 },
                 {
-                    "key": "DeleteEntitiesAndAllDescendantsInInstance",
+                    "base": "DeleteEntitiesAndAllDescendantsInInstance",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DeleteEntitiesAndAllDescendantsInInstance"

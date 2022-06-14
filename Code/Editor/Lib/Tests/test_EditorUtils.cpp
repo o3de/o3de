@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace EditorUtilsTest
 {
@@ -39,7 +40,7 @@ namespace EditorUtilsTest
 
 
     class TestWarningAbsorber
-        : public testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     };
 

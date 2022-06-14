@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AzFramework::SurfaceData::SurfacePoint",
+            "base": "AzFramework::SurfaceData::SurfacePoint",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Getposition",
+                    "base": "Getposition",
                     "details": {
                         "name": "Get Position"
                     },
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "Setposition",
+                    "base": "Setposition",
                     "details": {
                         "name": "Set Position"
                     },
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "Getnormal",
+                    "base": "Getnormal",
                     "details": {
                         "name": "Get Normal"
                     },
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "key": "Setnormal",
+                    "base": "Setnormal",
                     "details": {
                         "name": "Set Normal"
                     },
@@ -94,7 +94,7 @@
                     ]
                 },
                 {
-                    "key": "GetsurfaceTags",
+                    "base": "GetsurfaceTags",
                     "details": {
                         "name": "Get Surface Tags"
                     },
@@ -116,7 +116,7 @@
                     ]
                 },
                 {
-                    "key": "SetsurfaceTags",
+                    "base": "SetsurfaceTags",
                     "details": {
                         "name": "Set Surface Tags"
                     },

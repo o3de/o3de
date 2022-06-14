@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
 
     namespace Helpers
     {
-        static AZStd::string ConnectionToText(ScriptCanvasEditor::Graph* graph, ScriptCanvas::Endpoint& from, ScriptCanvas::Endpoint& to)
+        static AZStd::string ConnectionToText(ScriptCanvasEditor::EditorGraph* graph, ScriptCanvas::Endpoint& from, ScriptCanvas::Endpoint& to)
         {
             AZ_Assert(graph, "A valid graph must be provided");
 
@@ -328,7 +328,7 @@ namespace ScriptCanvasEditor
         {
             if (sm->m_assetSanitizationSet.find(currentIter->first) == sm->m_assetSanitizationSet.end())
             {
-                currentIter->second = {};
+                currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
                 currentIter = graph->GetGraphData()->m_scriptEventAssets.erase(currentIter);
                 sm->m_graphNeedsDirtying = true;
             }
@@ -434,14 +434,15 @@ namespace ScriptCanvasEditor
 
         for (auto& node : sm->m_deprecatedNodes)
         {
-            ScriptCanvas::NodeConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
+            ScriptCanvas::NodeReplacementConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
             if (nodeConfig.IsValid())
             {
                 ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
+                auto nodeEntity = node->GetEntityId();
                 auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
                 if (nodeOutcome.IsSuccess())
                 {
-                    ScriptCanvas::MergeUpdateSlotReport(node->GetEntityId(), sm->m_updateReport, nodeUpdateSlotReport);
+                    ScriptCanvas::MergeUpdateSlotReport(nodeEntity, sm->m_updateReport, nodeUpdateSlotReport);
 
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
@@ -519,7 +520,10 @@ namespace ScriptCanvasEditor
 
         if (validationResults.HasErrors())
         {
-            sm->MarkError("Failed to Parse");
+            if (!sm->GetConfig().saveParseErrors)
+            {
+                sm->MarkError("Failed to Parse");
+            }
 
             for (auto& err : validationResults.GetEvents())
             {
@@ -652,7 +656,7 @@ namespace ScriptCanvasEditor
 
 #define RegisterState(stateName) m_states.emplace_back(new stateName(this));
 
-    EditorGraphUpgradeMachine::EditorGraphUpgradeMachine(Graph* graph)
+    EditorGraphUpgradeMachine::EditorGraphUpgradeMachine(EditorGraph* graph)
         : m_graph(graph)
     {
         RegisterState(Start);
@@ -675,27 +679,27 @@ namespace ScriptCanvasEditor
         RegisterState(ParseGraph);
     }
 
-    void EditorGraphUpgradeMachine::SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void EditorGraphUpgradeMachine::SetAsset(SourceHandle& asset)
     {
         if (m_asset != asset)
         {
             m_asset = asset;
-            SetDebugPrefix(asset.GetHint());
+            SetDebugPrefix(asset.Path().c_str());
         }
     }
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
         UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
-
-        m_asset = {};
+        // releasing the asset at this stage of the system tick causes a memory crash
+        // m_asset = {};
     }
 
     //////////////////////////////////////////////////////////////////////
     // State Machine Internals
-    bool StateMachine::GetVerbose() const
+    const UpgradeGraphConfig& StateMachine::GetConfig() const
     {
-        return m_isVerbose;
+        return m_config;
     }
 
     void StateMachine::OnSystemTick()
@@ -752,9 +756,9 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void StateMachine::SetVerbose(bool isVerbose)
+    void StateMachine::SetConfig(const UpgradeGraphConfig& config)
     {
-        m_isVerbose = isVerbose;
+        m_config = config;
     }
 
     const AZStd::string& StateMachine::GetDebugPrefix() const

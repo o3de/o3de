@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiSpawnerBus",
+            "base": "UiSpawnerBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiSpawnerBus",
+                "name": "UI Spawner",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "Spawn",
+                    "base": "Spawn",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SpawnRelative",
+                    "base": "SpawnRelative",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn Relative"
@@ -66,7 +66,7 @@
                     ]
                 },
                 {
-                    "key": "SpawnAbsolute",
+                    "base": "SpawnAbsolute",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Spawn Absolute"

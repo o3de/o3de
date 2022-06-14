@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "AreaBlenderComponentTypeId",
+            "base": "AreaBlenderComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Area Blender Component Type Id"
+                "name": "Area Blender Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetAreaBlenderComponentTypeId",
+                    "base": "GetAreaBlenderComponentTypeId",
                     "details": {
                         "name": "Get Area Blender Component Type Id"
                     },

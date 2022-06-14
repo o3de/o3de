@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillCornerOrigin_BottomLeft",
+            "base": "eUiFillCornerOrigin_BottomLeft",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Corner Origin_ Bottom Left"
+                "name": "Bottom Left",
+                "category": "Constants/UI/Fill Corner"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillCornerOrigin_BottomLeft",
+                    "base": "GeteUiFillCornerOrigin_BottomLeft",
                     "details": {
-                        "name": "Gete Ui Fill Corner Origin_ Bottom Left"
+                        "name": "Bottom Left"
                     },
                     "results": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathOBB_VM",
+            "base": "MathOBB_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetAxisY",
+                    "base": "GetAxisY",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "GetAxisX",
+                    "base": "GetAxisX",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "FromAabb",
+                    "base": "FromAabb",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -137,7 +137,7 @@
                     ]
                 },
                 {
-                    "key": "FromPositionRotationAndHalfLengths",
+                    "base": "FromPositionRotationAndHalfLengths",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -181,7 +181,7 @@
                     ]
                 },
                 {
-                    "key": "GetAxisZ",
+                    "base": "GetAxisZ",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",
@@ -213,7 +213,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathOBB_VM",
                     "entry": {
                         "name": "In",

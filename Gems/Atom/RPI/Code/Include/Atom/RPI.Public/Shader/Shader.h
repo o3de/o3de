@@ -127,7 +127,7 @@ namespace AZ
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindFallbackShaderResourceGroupLayout() const;
 
             /// Returns the set of shader resource groups referenced by all variants in the shader asset.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const;
 
             /// Returns a reference to the asset used to initialize this shader.
             const Data::Asset<ShaderAsset>& GetAsset() const;
@@ -135,11 +135,6 @@ namespace AZ
             //! Returns the DrawListTag that identifies which Pass and View objects will process this shader.
             //! This tag corresponds to the ShaderAsset object's DrawListName.
             RHI::DrawListTag GetDrawListTag() const;
-
-            //! Changes the supervariant of the shader to the specified supervariantIndex.
-            //! [GFX TODO][ATOM-15813]: this can be removed when the shader InstanceDatabase can support multiple shader
-            //! instances with different supervariants.
-            void ChangeSupervariant(SupervariantIndex supervariantIndex);
 
         private:
             explicit Shader(const SupervariantIndex& supervariantIndex) : m_supervariantIndex(supervariantIndex){};

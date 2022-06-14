@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSScriptBehaviorDynamoDB",
+            "base": "AWSScriptBehaviorDynamoDB",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetItem",
+                    "base": "GetItem",
                     "context": "AWSScriptBehaviorDynamoDB",
                     "entry": {
                         "name": "In",
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "GetItemRaw",
+                    "base": "GetItemRaw",
                     "context": "AWSScriptBehaviorDynamoDB",
                     "entry": {
                         "name": "In",

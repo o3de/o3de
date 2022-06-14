@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "PhysicalSkyRequestBus",
+            "base": "PhysicalSkyRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "PhysicalSkyRequestBus"
+                "name": "Physical Sky",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetSkyIntensity",
+                    "base": "SetSkyIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSkyIntensity"
+                        "tooltip": "When signaled, this will invoke Set Sky Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSkyIntensity is invoked"
+                        "tooltip": "Signaled after Set Sky Intensity is invoked"
                     },
                     "details": {
-                        "name": "SetSkyIntensity"
+                        "name": "Set Sky Intensity"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "SetSunIntensity",
+                    "base": "SetSunIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSunIntensity"
+                        "tooltip": "When signaled, this will invoke Set Sun Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSunIntensity is invoked"
+                        "tooltip": "Signaled after Set Sun Intensity is invoked"
                     },
                     "details": {
-                        "name": "SetSunIntensity"
+                        "name": "Set Sun Intensity"
                     },
                     "params": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "GetSunIntensity",
+                    "base": "GetSunIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSunIntensity"
+                        "tooltip": "When signaled, this will invoke Get Sun Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSunIntensity is invoked"
+                        "tooltip": "Signaled after Get Sun Intensity is invoked"
                     },
                     "details": {
-                        "name": "GetSunIntensity"
+                        "name": "Get Sun Intensity"
                     },
                     "results": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "GetSunRadiusFactor",
+                    "base": "GetSunRadiusFactor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSunRadiusFactor"
+                        "tooltip": "When signaled, this will invoke Get Sun Radius Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSunRadiusFactor is invoked"
+                        "tooltip": "Signaled after Get Sun Radius Factor is invoked"
                     },
                     "details": {
-                        "name": "GetSunRadiusFactor"
+                        "name": "Get Sun Radius Factor"
                     },
                     "results": [
                         {
@@ -97,17 +98,17 @@
                     ]
                 },
                 {
-                    "key": "SetSunRadiusFactor",
+                    "base": "SetSunRadiusFactor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSunRadiusFactor"
+                        "tooltip": "When signaled, this will invoke Set Sun Radius Factor"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSunRadiusFactor is invoked"
+                        "tooltip": "Signaled after Set Sun Radius Factor is invoked"
                     },
                     "details": {
-                        "name": "SetSunRadiusFactor"
+                        "name": "Set Sun Radius Factor"
                     },
                     "params": [
                         {
@@ -119,17 +120,17 @@
                     ]
                 },
                 {
-                    "key": "GetTurbidity",
+                    "base": "GetTurbidity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTurbidity"
+                        "tooltip": "When signaled, this will invoke Get Turbidity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTurbidity is invoked"
+                        "tooltip": "Signaled after Get Turbidity is invoked"
                     },
                     "details": {
-                        "name": "GetTurbidity"
+                        "name": "Get Turbidity"
                     },
                     "results": [
                         {
@@ -141,17 +142,17 @@
                     ]
                 },
                 {
-                    "key": "GetSkyIntensity",
+                    "base": "GetSkyIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSkyIntensity"
+                        "tooltip": "When signaled, this will invoke Get Sky Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSkyIntensity is invoked"
+                        "tooltip": "Signaled after Get Sky Intensity is invoked"
                     },
                     "details": {
-                        "name": "GetSkyIntensity"
+                        "name": "Get Sky Intensity"
                     },
                     "results": [
                         {
@@ -163,17 +164,17 @@
                     ]
                 },
                 {
-                    "key": "SetTurbidity",
+                    "base": "SetTurbidity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTurbidity"
+                        "tooltip": "When signaled, this will invoke Set Turbidity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTurbidity is invoked"
+                        "tooltip": "Signaled after Set Turbidity is invoked"
                     },
                     "details": {
-                        "name": "SetTurbidity"
+                        "name": "Set Turbidity"
                     },
                     "params": [
                         {

@@ -21,7 +21,6 @@ class QTreeView;
 namespace AzToolsFramework
 {
     //! Defines a handler that can customize entity UI appearance and behavior in the Entity Outliner.
-    //! This class is meant to be abstract, entities do not have a handler by default.
     class EditorEntityUiHandlerBase
     {
     protected:
@@ -33,7 +32,7 @@ namespace AzToolsFramework
     public:
         EditorEntityUiHandlerId GetHandlerId();
 
-        // # Entity Outliner
+        // # Entity Outliner Item
 
         //! Returns the item info string that is appended to the item name in the Outliner.
         virtual QString GenerateItemInfoString(AZ::EntityId entityId) const;
@@ -41,10 +40,12 @@ namespace AzToolsFramework
         virtual QString GenerateItemTooltip(AZ::EntityId entityId) const;
         //! Returns the item icon pixmap to display in the Outliner.
         virtual QIcon GenerateItemIcon(AZ::EntityId entityId) const;
-        //! Returns whether the element's lock and visibility state should be accessible in the Outliner
-        virtual bool CanToggleLockVisibility(AZ::EntityId entityId) const;
         //! Returns whether the element's name should be editable
         virtual bool CanRename(AZ::EntityId entityId) const;
+        //! Returns whether the element's lock and visibility state should be accessible in the Outliner
+        virtual bool CanToggleLockVisibility(AZ::EntityId entityId) const;
+
+        // Qt-specific painting functions
 
         //! Paints the background of the item in the Outliner.
         virtual void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
@@ -54,24 +55,27 @@ namespace AzToolsFramework
         //! Paints the background of the descendant branches of the item in the Outliner.
         virtual void PaintDescendantBranchBackground(QPainter* painter, const QTreeView* view, const QRect& rect,
             const QModelIndex& index, const QModelIndex& descendantIndex) const;
-
         //! Paints visual elements on the foreground of the item in the Outliner.
         virtual void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
         //! Paints visual elements on the foreground of the descendants of the item in the Outliner.
         virtual void PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const;
 
+        // Outliner-specific interactions
+
         //! Triggered when the entity is clicked in the Outliner.
         //! @return True if the click has been handled and should not be propagated, false otherwise.
         virtual bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+        //! Triggered when the entity is double-clicked in the Outliner.
+        //! @return True if the double-click has been handled and should not be propagated, false otherwise.
+        virtual bool OnOutlinerItemDoubleClick(const QModelIndex& index) const;
         //! Triggered when an entity's children are expanded in the Outliner.
         virtual void OnOutlinerItemExpand(const QModelIndex& index) const;
         //! Triggered when an entity's children are collapsed in the Outliner.
         virtual void OnOutlinerItemCollapse(const QModelIndex& index) const;
 
-        //! Triggered when the entity is double clicked in the Outliner or in the Viewport.
-        //! @return True if the double click has been handled and should not be propagated, false otherwise.
-        virtual bool OnEntityDoubleClick(AZ::EntityId entityId) const;
+    protected:
+        static AZ::EntityId GetEntityIdFromIndex(const QModelIndex& index);
 
     private:
         EditorEntityUiHandlerId m_handlerId = 0;

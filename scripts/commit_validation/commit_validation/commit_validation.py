@@ -181,4 +181,6 @@ EXCLUDED_VALIDATION_PATTERNS = [
     'restricted/*/Tools/*RemoteControl',
     '*/user/Cache/*',
     '*/user/log/*',
+    '*/user/log_test_1/*',
+    '*/user/log_test_2/*',
 ]

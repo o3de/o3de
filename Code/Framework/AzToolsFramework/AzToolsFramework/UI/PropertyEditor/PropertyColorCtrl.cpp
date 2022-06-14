@@ -18,8 +18,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QToolButton>
-
-#include "../UICore/ColorPickerDelegate.hxx"
+#include <QtGui/QRegExpValidator>
 
 namespace AzToolsFramework
 {
@@ -162,7 +161,7 @@ namespace AzToolsFramework
         }
     }
 
-    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator() const
+    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator()
     {
         /*Use regex to validate the input
         *\d\d?    Match 0-99
@@ -175,11 +174,11 @@ namespace AzToolsFramework
 
         int numInitialChannelComponents = m_alphaChannelEnabled ? 3 : 2;
 
-        AZStd::string regex = AZStd::string::format(
-            "^\\s*((25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*,\\s*){%d}(25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*$",
-            numInitialChannelComponents);
+        const QString regex = QString(
+            R"(^\s*((25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*,\s*){%1}(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*$)"
+        ).arg(numInitialChannelComponents);
 
-        return new QRegExpValidator(QRegExp(regex.c_str()));
+        return new QRegExpValidator(QRegExp(regex), this);
     }
 
     void PropertyColorCtrl::CreateColorDialog()

@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/BuilderSettings.h>
 #include <AzCore/base.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/set.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 
 #include <QDateTime>
 #include <QFileSystemWatcher>
@@ -112,7 +112,7 @@ namespace ImageProcessingAtom
         static const PlatformName s_defaultPlatform;
 
         // The relative folder where the default image builder configuration files (builder setting, presets) are. 
-        static const char* s_defaultConfigRelativeFolder;
+        static const char* s_defaultConfigFolder;
         // The relative folder where project's image builder configuration files are
         static const char* s_projectConfigRelativeFolder;
         // Builder setting file name

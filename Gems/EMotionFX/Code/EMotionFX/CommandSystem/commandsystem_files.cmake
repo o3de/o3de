@@ -11,8 +11,6 @@ set(FILES
     Source/ActorCommands.h
     Source/ActorInstanceCommands.cpp
     Source/ActorInstanceCommands.h
-    Source/AttachmentCommands.cpp
-    Source/AttachmentCommands.h
     Source/AnimGraphCommands.cpp
     Source/AnimGraphCommands.h
     Source/AnimGraphConditionCommands.cpp
@@ -38,6 +36,8 @@ set(FILES
     Source/CommandSystemConfig.h
     Source/ImporterCommands.cpp
     Source/ImporterCommands.h
+    Source/JointLimitCommands.cpp
+    Source/JointLimitCommands.h
     Source/MetaData.cpp
     Source/MetaData.h
     Source/MiscCommands.cpp

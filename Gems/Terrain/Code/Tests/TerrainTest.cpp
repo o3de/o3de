@@ -7,5 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <TerrainTestFixtures.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+// This uses custom test / benchmark hooks so that we can load components from other gems in our unit tests and benchmarks.
+AZ_UNIT_TEST_HOOK(new UnitTest::TerrainTestEnvironment, UnitTest::TerrainBenchmarkEnvironment);

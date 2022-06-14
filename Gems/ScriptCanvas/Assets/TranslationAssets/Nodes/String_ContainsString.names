@@ -1,62 +1,61 @@
 {
     "entries": [
         {
-            "key": "{8481E892-DE37-4CCF-86AA-E4770DE90643}",
+            "base": "{8481E892-DE37-4CCF-86AA-E4770DE90643}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Contains String",
                 "category": "String",
-                "tooltip": "Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched.",
-                "subtitle": "String"
+                "tooltip": "Checks if a string contains an instance of a specified string, if true, it returns the index to the first instance matched."
             },
             "slots": [
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Pattern",
+                    "base": "DataInput_Pattern_1",
                     "details": {
                         "name": "Pattern"
                     }
                 },
                 {
-                    "key": "DataInput_Search From End",
+                    "base": "DataInput_Search From End_2",
                     "details": {
                         "name": "Search From End"
                     }
                 },
                 {
-                    "key": "DataInput_Case Sensitive",
+                    "base": "DataInput_Case Sensitive_3",
                     "details": {
                         "name": "Case Sensitive"
                     }
                 },
                 {
-                    "key": "DataOutput_Index",
+                    "base": "DataOutput_Index_0",
                     "details": {
                         "name": "Index"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_True",
+                    "base": "Output_True_0",
                     "details": {
                         "name": "True",
                         "tooltip": "The string contains the provided pattern."
                     }
                 },
                 {
-                    "key": "Output_False",
+                    "base": "Output_False_1",
                     "details": {
                         "name": "False",
                         "tooltip": "The string did not contain the provided pattern."

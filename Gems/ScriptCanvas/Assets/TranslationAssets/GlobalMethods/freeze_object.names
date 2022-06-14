@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "freeze_object",
+            "base": "freeze_object",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "freeze_object",
+                    "base": "freeze_object",
                     "context": "Global",
                     "entry": {
                         "name": "In",

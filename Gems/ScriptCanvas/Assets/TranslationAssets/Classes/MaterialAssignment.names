@@ -1,41 +1,117 @@
 {
     "entries": [
         {
-            "key": "MaterialAssignment",
+            "base": "MaterialAssignment",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MaterialAssignment"
+                "name": "Material Assignment",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "MaterialAssignment",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ToString"
+                        "tooltip": "When signaled, this will invoke To String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ToString is invoked"
+                        "tooltip": "Signaled after To String is invoked"
                     },
                     "details": {
-                        "name": "MaterialAssignment::ToString",
-                        "category": "Other"
+                        "name": "To String"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetmaterialAsset",
+                    "details": {
+                        "name": "Get Material Asset"
                     },
                     "params": [
                         {
                             "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
                             "details": {
-                                "name": "AZ::Render::MaterialAssignment*"
+                                "name": "Material Assignment"
                             }
                         }
                     ],
                     "results": [
                         {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "typeid": "{834DC049-5EC3-5C29-B621-5F0046864DC4}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "Material Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetmaterialAsset",
+                    "details": {
+                        "name": "Set Material Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+                            "details": {
+                                "name": "Material Assignment"
+                            }
+                        },
+                        {
+                            "typeid": "{834DC049-5EC3-5C29-B621-5F0046864DC4}",
+                            "details": {
+                                "name": "Material Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetpropertyOverrides",
+                    "details": {
+                        "name": "Get Property Overrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+                            "details": {
+                                "name": "Material Assignment"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "Override"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetpropertyOverrides",
+                    "details": {
+                        "name": "Set Property Overrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+                            "details": {
+                                "name": "Material Assignment"
+                            }
+                        },
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "Override"
                             }
                         }
                     ]

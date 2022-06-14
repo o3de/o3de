@@ -98,38 +98,32 @@ class FileManagement:
         """
         file_map = FileManagement._load_file_map()
         backup_path = FileManagement.backup_folder_path
-        backup_file_name = "{}.bak".format(file_name)
-        backup_file = os.path.join(backup_path, backup_file_name)
         # If backup directory DNE, make one
         if not os.path.exists(backup_path):
             os.mkdir(backup_path)
-        # If "traditional" backup file exists, delete it (myFile.txt.bak)
-        if os.path.exists(backup_file):
-            fs.delete([backup_file], True, False)
-        # Find my next storage name (myFile_1.txt.bak)
-        backup_storage_file_name = FileManagement._next_available_name(backup_file_name, file_map)
-        if backup_storage_file_name is None:
+            
+        # Find my next storage name (myFile_1.txt)
+        backup_file_name = FileManagement._next_available_name(file_name, file_map)
+        if backup_file_name is None:
             # If _next_available_name returns None, we have backed up MAX_BACKUPS of files name [file_name]
             raise Exception(
                 "FileManagement class ran out of backups per name. Max: {}".format(FileManagement.MAX_BACKUPS)
             )
-        backup_storage_file = os.path.join(backup_path, backup_storage_file_name)
+
+        # If this backup file already exists, delete it.
+        backup_storage_file = "{}.bak".format(os.path.normpath(os.path.join(backup_path, backup_file_name)))
         if os.path.exists(backup_storage_file):
-            # This file should not exists, but if it does it's about to get clobbered!
-            fs.unlock_file(backup_storage_file)
-        # Create "traditional" backup file (myFile.txt.bak)
-        fs.create_backup(os.path.join(file_path, file_name), backup_path)
-        # Copy "traditional" backup file into storage backup (myFile_1.txt.bak)
-        FileManagement._copy_file(backup_file_name, backup_path, backup_storage_file_name, backup_path)
-        fs.lock_file(backup_storage_file)
-        # Delete "traditional" back up file
-        fs.unlock_file(backup_file)
-        fs.delete([backup_file], True, False)
+            fs.delete([backup_storage_file], True, False)
+
+        # Create backup file (myFile_1.txt.bak)
+        original_file = os.path.normpath(os.path.join(file_path, file_name))
+        fs.create_backup(original_file, backup_path, backup_file_name)
+
         # Update file map with new file
-        file_map[os.path.join(file_path, file_name)] = backup_storage_file_name
+        file_map[original_file] = backup_file_name
         FileManagement._save_file_map(file_map)
         # Unlock original file to get it ready to be edited by the test
-        fs.unlock_file(os.path.join(file_path, file_name))
+        fs.unlock_file(original_file)
 
     @staticmethod
     def _restore_file(file_name, file_path):
@@ -143,20 +137,15 @@ class FileManagement:
         """
         file_map = FileManagement._load_file_map()
         backup_path = FileManagement.backup_folder_path
-        src_file = os.path.join(file_path, file_name)
+        src_file = os.path.normpath(os.path.join(file_path, file_name))
         if src_file in file_map:
-            backup_file = os.path.join(backup_path, file_map[src_file])
-            if os.path.exists(backup_file):
-                fs.unlock_file(backup_file)
-                fs.unlock_file(src_file)
-                # Make temporary copy of backed up file to restore from
-                temp_file = "{}.bak".format(file_name)
-                FileManagement._copy_file(file_map[src_file], backup_path, temp_file, backup_path)
-                fs.restore_backup(src_file, backup_path)
-                fs.lock_file(src_file)
-                # Delete backup file
-                fs.delete([os.path.join(backup_path, temp_file)], True, False)
+            backup_file_name = file_map[src_file]
+            backup_file = "{}.bak".format(os.path.join(backup_path, backup_file_name))
+            
+            fs.unlock_file(src_file)
+            if fs.restore_backup(src_file, backup_path, backup_file_name):
                 fs.delete([backup_file], True, False)
+
                 # Remove from file map
                 del file_map[src_file]
                 FileManagement._save_file_map(file_map)

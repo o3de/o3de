@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "EditorEntityInfoRequestBus",
+            "base": "EditorEntityInfoRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorEntityInfoRequestBus"
+                "name": "Editor Entity Info"
             },
             "methods": [
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetName"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "IsVisible",
+                    "base": "IsVisible",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsVisible"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildIndex",
+                    "base": "GetChildIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChildIndex"
@@ -84,7 +84,7 @@
                     ]
                 },
                 {
-                    "key": "GetStartStatus",
+                    "base": "GetStartStatus",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetStartStatus"
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "GetChild",
+                    "base": "GetChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChild"
@@ -137,7 +137,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildCount",
+                    "base": "GetChildCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChildCount"
@@ -159,7 +159,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildren",
+                    "base": "GetChildren",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetChildren"
@@ -181,7 +181,7 @@
                     ]
                 },
                 {
-                    "key": "IsLocked",
+                    "base": "IsLocked",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsLocked"
@@ -203,7 +203,7 @@
                     ]
                 },
                 {
-                    "key": "GetParent",
+                    "base": "GetParent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetParent"
@@ -226,7 +226,7 @@
                     ]
                 },
                 {
-                    "key": "IsHidden",
+                    "base": "IsHidden",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsHidden"

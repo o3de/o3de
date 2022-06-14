@@ -31,13 +31,21 @@ namespace AzFramework::AssetSystem::Platform
 
         if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
         {
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            AZ::IO::FixedMaxPath installedBinariesPath;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr
+                && settingsRegistry->Get(installedBinariesPath.Native(),
+                    AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
             {
-                if (AZ::IO::FixedMaxPath installedBinariesPath;
-                    settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
+                assetProcessorPath = AZ::IO::FixedMaxPath{ engineRoot } / installedBinariesPath / "AssetProcessor.app/Contents/MacOS/AssetProcessor";
+
+                if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
                 {
-                    // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
-                    assetProcessorPath = AZ::IO::FixedMaxPath{ engineRoot } / installedBinariesPath / "AssetProcessor.app/Contents/MacOS/AssetProcessor";
+                    // Now try with the "Default" permutation
+                    constexpr const char* BuildPermutation = "Default";
+
+                    assetProcessorPath = AZ::IO::FixedMaxPath{ engineRoot } / installedBinariesPath / BuildPermutation
+                        / "AssetProcessor.app/Contents/MacOS/AssetProcessor";
                 }
             }
 

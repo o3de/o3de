@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorPhysicsSceneName",
+            "base": "EditorPhysicsSceneName",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Physics Scene Name"
+                "name": "Editor Physics Scene Name",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorPhysicsSceneName",
+                    "base": "GetEditorPhysicsSceneName",
                     "details": {
                         "name": "Get Editor Physics Scene Name"
                     },

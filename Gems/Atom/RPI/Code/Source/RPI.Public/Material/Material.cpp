@@ -8,17 +8,19 @@
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/Utils/ScopedValue.h>
 
@@ -57,7 +59,7 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
@@ -207,6 +209,22 @@ namespace AZ
             return AZ::Success(appliedCount);
         }
 
+        void Material::ApplyGlobalShaderOptions()
+        {
+            // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
+            // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
+            ShaderSystemInterface* shaderSystem = ShaderSystemInterface::Get();
+            for (auto iter : shaderSystem->GetGlobalShaderOptions())
+            {
+                const Name& shaderOptionName = iter.first;
+                ShaderOptionValue value = iter.second;
+                if (!SetSystemShaderOption(shaderOptionName, value).IsSuccess())
+                {
+                    AZ_Warning("Material", false, "Shader option '%s' is owned by this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
+                }
+            }
+        }
+
         void Material::SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride)
         {
             m_psoHandling = psoHandlingOverride;
@@ -320,7 +338,7 @@ namespace AZ
 
         bool Material::Compile()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             if (NeedsCompile() && CanCompile())
             {
@@ -599,33 +617,39 @@ namespace AZ
             }
             else
             {
-                if (!imageAsset.IsReady())
+                AZ::Data::AssetType assetType = imageAsset.GetType();
+                if (assetType != azrtti_typeid<StreamingImageAsset>() && assetType != azrtti_typeid<AttachmentImageAsset>())
                 {
-                    imageAsset = Data::AssetManager::Instance().GetAsset<StreamingImageAsset>(imageAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    imageAsset.BlockUntilLoadComplete();
-                    if (!imageAsset.IsReady())
-                    {
-                        AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
-                        return false;
-                    }
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                    assetType = assetInfo.m_assetType;
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset))
+                Data::Instance<Image> image = nullptr;
+                if (assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
-                    if (!image)
-                    {
-                        AZ_Error(s_debugTraceName, false, "Could not create StreamingImage");
-                        return false;
-                    }
-
-                    return SetPropertyValue(index, image);
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
+                    image = StreamingImage::FindOrCreate(streamingImageAsset);
+                }
+                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
+                {
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
+                    image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
+                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type: %s", assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
+
+                if (!image)
+                {
+                    AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
+                    return false;
+                }
+
+                return SetPropertyValue(index, image);
             }
         }
 

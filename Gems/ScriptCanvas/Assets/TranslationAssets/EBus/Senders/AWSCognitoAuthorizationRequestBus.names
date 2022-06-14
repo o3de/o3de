@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSCognitoAuthorizationRequestBus",
+            "base": "AWSCognitoAuthorizationRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Reset",
+                    "base": "Reset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reset"
@@ -24,7 +24,7 @@
                     }
                 },
                 {
-                    "key": "GetIdentityId",
+                    "base": "GetIdentityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetIdentityId"
@@ -46,7 +46,7 @@
                     ]
                 },
                 {
-                    "key": "HasPersistedLogins",
+                    "base": "HasPersistedLogins",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke HasPersistedLogins"
@@ -68,7 +68,7 @@
                     ]
                 },
                 {
-                    "key": "Initialize",
+                    "base": "Initialize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Initialize"
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "RequestAWSCredentialsAsync",
+                    "base": "RequestAWSCredentialsAsync",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RequestAWSCredentialsAsync"

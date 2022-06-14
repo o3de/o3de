@@ -9,8 +9,6 @@
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/LtcCommon.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
@@ -192,6 +190,22 @@ namespace AZ
             QuadLightData& data = m_quadLightData.GetData(handle.GetIndex());
             data.m_halfWidth = width * 0.5f;
             data.m_halfHeight = height * 0.5f;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGI().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 

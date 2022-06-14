@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EntityComponentIdPair",
+            "base": "EntityComponentIdPair",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEntityId",
+                    "base": "GetEntityId",
                     "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "EntityComponentIdPair",
                     "entry": {
                         "name": "In",

@@ -90,8 +90,7 @@ def GradientPreviewSettings_DefaultPinnedEntityIsSelf():
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     for param in param_list:
         execute_test(param.required_components[param.accessed_component],

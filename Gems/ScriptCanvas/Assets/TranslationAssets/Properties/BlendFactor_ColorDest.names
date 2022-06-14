@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorDest",
+            "base": "BlendFactor_ColorDest",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Color Dest"
+                "name": "Color Dest",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_ColorDest",
+                    "base": "GetBlendFactor_ColorDest",
                     "details": {
-                        "name": "Get Blend Factor_ Color Dest"
+                        "name": "Get Color Dest"
                     },
                     "results": [
                         {

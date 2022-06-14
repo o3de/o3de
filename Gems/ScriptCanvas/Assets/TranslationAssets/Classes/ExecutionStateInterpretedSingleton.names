@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExecutionStateInterpretedSingleton",
+            "base": "ExecutionStateInterpretedSingleton",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

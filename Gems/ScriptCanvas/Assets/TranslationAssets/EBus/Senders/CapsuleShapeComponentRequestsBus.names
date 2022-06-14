@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "CapsuleShapeComponentRequestsBus",
+            "base": "CapsuleShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "CapsuleShapeComponentRequestsBus",
+                "name": "Capsule Shape Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "GetCapsuleConfiguration",
+                    "base": "GetCapsuleConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Configuration"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeight",
+                    "base": "SetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Height"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Radius"

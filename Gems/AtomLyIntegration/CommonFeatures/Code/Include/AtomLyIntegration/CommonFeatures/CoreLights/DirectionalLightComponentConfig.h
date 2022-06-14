@@ -102,7 +102,7 @@ namespace AZ
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
             // Reduces acne by biasing the shadowmap lookup along the geometric normal.
-            float m_normalShadowBias = 0.0f;
+            float m_normalShadowBias = 2.5f;
 
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
@@ -113,7 +113,24 @@ namespace AZ
             bool m_receiverPlaneBiasEnabled = true;
 
             //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
-            float m_shadowBias = 0.0f;
+            float m_shadowBias = 0.0015f;
+
+            // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
+            bool m_cascadeBlendingEnabled = false;
+
+            // Whether to enable fullscreen blur on fullscreen shadows
+            bool m_fullscreenBlurEnabled = true;
+
+            //! How much a value is reduced from pixel to pixel on a perfectly flat surface
+            float m_fullscreenBlurConstFalloff = 2.0f / 3.0f;
+
+            //! How much the difference in depth slopes between pixels affects the blur falloff.
+            //! The higher this value, the sharper edges will appear
+            float m_fullscreenBlurDepthFalloffStrength = 50.0f;
+
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
 
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;

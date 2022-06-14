@@ -1,51 +1,48 @@
 {
     "entries": [
         {
-            "key": "String",
+            "base": "String",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "String"
+                "name": "Utilities",
+                "category": "String"
             },
             "methods": [
                 {
-                    "key": "ReplaceString",
+                    "base": "ReplaceString",
                     "context": "String",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ReplaceString"
+                        "tooltip": "When signaled, this will invoke Replace String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ReplaceString is invoked"
+                        "tooltip": "Signaled after Replace String is invoked"
                     },
                     "details": {
-                        "name": "String::Replace String",
-                        "category": "Other"
+                        "name": "Replace String"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>&"
+                                "name": "Replace",
+                                "tooltip": "The substring to search for."
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
-                            }
-                        },
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "With",
+                                "tooltip": "The string to replace the substring with."
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
                             }
                         }
                     ],
@@ -53,13 +50,13 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Join",
+                    "base": "Join",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -70,20 +67,14 @@
                         "tooltip": "Signaled after Join is invoked"
                     },
                     "details": {
-                        "name": "String::Join",
-                        "category": "Other"
+                        "name": "Join"
                     },
                     "params": [
                         {
-                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
-                            "details": {
-                                "name": "const AZStd::vector<AZStd::basic_string<char, AZStd::char_trait"
-                            }
-                        },
-                        {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Separator",
+                                "tooltip": "Will use this string when concatenating the strings from the array."
                             }
                         }
                     ],
@@ -91,43 +82,38 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "StartsWith",
+                    "base": "StartsWith",
                     "context": "String",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke StartsWith"
+                        "tooltip": "When signaled, this will invoke Starts With"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after StartsWith is invoked"
+                        "tooltip": "Signaled after Starts With is invoked"
                     },
                     "details": {
-                        "name": "String::Starts With",
-                        "category": "Other"
+                        "name": "Starts With"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
-                            }
-                        },
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
                             }
                         }
                     ],
@@ -141,43 +127,39 @@
                     ]
                 },
                 {
-                    "key": "ContainsString",
+                    "base": "ContainsString",
                     "context": "String",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ContainsString"
+                        "tooltip": "When signaled, this will invoke Contains String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ContainsString is invoked"
+                        "tooltip": "Signaled after Contains String is invoked"
                     },
                     "details": {
-                        "name": "String::Contains String",
-                        "category": "Other"
+                        "name": "Contains String"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
-                            }
-                        },
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Search From End",
+                                "tooltip": "Start the match checking from the end of a string."
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
                             }
                         }
                     ],
@@ -185,13 +167,13 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "Split",
+                    "base": "Split",
                     "context": "String",
                     "entry": {
                         "name": "In",
@@ -202,20 +184,14 @@
                         "tooltip": "Signaled after Split is invoked"
                     },
                     "details": {
-                        "name": "String::Split",
-                        "category": "Other"
+                        "name": "Split"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
-                            }
-                        },
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Delimiters",
+                                "tooltip": "The characters that can be used as delimiters."
                             }
                         }
                     ],
@@ -223,34 +199,25 @@
                         {
                             "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
                             "details": {
-                                "name": "AZStd::vector<AZStd::basic_string<char, AZStd::char_traits<char>, allocator>, allocator>"
+                                "name": "AZ Std::vector<AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "IsValidFindPosition",
+                    "base": "IsValidFindPosition",
                     "context": "String",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke IsValidFindPosition"
+                        "tooltip": "When signaled, this will invoke Is Valid Find Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after IsValidFindPosition is invoked"
+                        "tooltip": "Signaled after Is Valid Find Position is invoked"
                     },
                     "details": {
-                        "name": "String::Is Valid Find Position",
-                        "category": "Other"
+                        "name": "Is Valid Find Position"
                     },
-                    "params": [
-                        {
-                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
-                            "details": {
-                                "name": "AZ::u64"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -261,37 +228,32 @@
                     ]
                 },
                 {
-                    "key": "EndsWith",
+                    "base": "EndsWith",
                     "context": "String",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke EndsWith"
+                        "tooltip": "When signaled, this will invoke Ends With"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after EndsWith is invoked"
+                        "tooltip": "Signaled after Ends With is invoked"
                     },
                     "details": {
-                        "name": "String::Ends With",
-                        "category": "Other"
+                        "name": "Ends With"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
-                            }
-                        },
-                        {
-                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
-                            "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
                             }
                         }
                     ],

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiNavigationBus",
+            "base": "UiNavigationBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiNavigationBus",
+                "name": "UI Navigation",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetOnRightEntity",
+                    "base": "GetOnRightEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Right Entity"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnLeftEntity",
+                    "base": "SetOnLeftEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Left Entity"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnLeftEntity",
+                    "base": "GetOnLeftEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Left Entity"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnDownEntity",
+                    "base": "SetOnDownEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Down Entity"
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnUpEntity",
+                    "base": "GetOnUpEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Up Entity"
@@ -130,7 +130,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnUpEntity",
+                    "base": "SetOnUpEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Up Entity"
@@ -154,7 +154,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnRightEntity",
+                    "base": "SetOnRightEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Right Entity"
@@ -178,7 +178,7 @@
                     ]
                 },
                 {
-                    "key": "SetNavigationMode",
+                    "base": "SetNavigationMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Navigation Mode"
@@ -202,7 +202,7 @@
                     ]
                 },
                 {
-                    "key": "GetOnDownEntity",
+                    "base": "GetOnDownEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Down Entity"
@@ -226,7 +226,7 @@
                     ]
                 },
                 {
-                    "key": "GetNavigationMode",
+                    "base": "GetNavigationMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Navigation Mode"

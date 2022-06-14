@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "GradientWeightModifierComponentTypeId",
+            "base": "GradientWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Gradient Weight Modifier Component Type Id"
+                "name": "Gradient Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetGradientWeightModifierComponentTypeId",
+                    "base": "GetGradientWeightModifierComponentTypeId",
                     "details": {
                         "name": "Get Gradient Weight Modifier Component Type Id"
                     },

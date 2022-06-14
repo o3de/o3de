@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AuthenticationProviderNotificationBus",
+            "base": "AuthenticationProviderNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnPasswordGrantSingleFactorSignInSuccess",
+                    "base": "OnPasswordGrantSingleFactorSignInSuccess",
                     "details": {
                         "name": "On Password Grant Single Factor Sign In Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnPasswordGrantSingleFactorSignInFail",
+                    "base": "OnPasswordGrantSingleFactorSignInFail",
                     "details": {
                         "name": "On Password Grant Single Factor Sign In Fail"
                     },
@@ -38,13 +38,13 @@
                     ]
                 },
                 {
-                    "key": "OnPasswordGrantMultiFactorSignInSuccess",
+                    "base": "OnPasswordGrantMultiFactorSignInSuccess",
                     "details": {
                         "name": "On Password Grant Multi Factor Sign In Success"
                     }
                 },
                 {
-                    "key": "OnPasswordGrantMultiFactorSignInFail",
+                    "base": "OnPasswordGrantMultiFactorSignInFail",
                     "details": {
                         "name": "On Password Grant Multi Factor Sign In Fail"
                     },
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "OnPasswordGrantMultiFactorConfirmSignInSuccess",
+                    "base": "OnPasswordGrantMultiFactorConfirmSignInSuccess",
                     "details": {
                         "name": "On Password Grant Multi Factor Confirm Sign In Success"
                     },
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "OnPasswordGrantMultiFactorConfirmSignInFail",
+                    "base": "OnPasswordGrantMultiFactorConfirmSignInFail",
                     "details": {
                         "name": "On Password Grant Multi Factor Confirm Sign In Fail"
                     },
@@ -86,7 +86,7 @@
                     ]
                 },
                 {
-                    "key": "OnDeviceCodeGrantSignInSuccess",
+                    "base": "OnDeviceCodeGrantSignInSuccess",
                     "details": {
                         "name": "On Device Code Grant Sign In Success"
                     },
@@ -112,7 +112,7 @@
                     ]
                 },
                 {
-                    "key": "OnDeviceCodeGrantSignInFail",
+                    "base": "OnDeviceCodeGrantSignInFail",
                     "details": {
                         "name": "On Device Code Grant Sign In Fail"
                     },
@@ -126,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "OnDeviceCodeGrantConfirmSignInSuccess",
+                    "base": "OnDeviceCodeGrantConfirmSignInSuccess",
                     "details": {
                         "name": "On Device Code Grant Confirm Sign In Success"
                     },
@@ -140,7 +140,7 @@
                     ]
                 },
                 {
-                    "key": "OnDeviceCodeGrantConfirmSignInFail",
+                    "base": "OnDeviceCodeGrantConfirmSignInFail",
                     "details": {
                         "name": "On Device Code Grant Confirm Sign In Fail"
                     },
@@ -154,7 +154,7 @@
                     ]
                 },
                 {
-                    "key": "OnRefreshTokensSuccess",
+                    "base": "OnRefreshTokensSuccess",
                     "details": {
                         "name": "On Refresh Tokens Success"
                     },
@@ -168,7 +168,7 @@
                     ]
                 },
                 {
-                    "key": "OnRefreshTokensFail",
+                    "base": "OnRefreshTokensFail",
                     "details": {
                         "name": "On Refresh Tokens Fail"
                     },

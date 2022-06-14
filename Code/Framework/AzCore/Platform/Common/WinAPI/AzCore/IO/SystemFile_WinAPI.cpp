@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/string/conversions.h>
 
@@ -142,7 +141,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
 
     if (m_handle == INVALID_HANDLE_VALUE)
     {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, (int)GetLastError());
         return false;
     }
     else
@@ -160,10 +158,7 @@ void SystemFile::PlatformClose()
 {
     if (m_handle != PlatformSpecificInvalidHandle)
     {
-        if (!CloseHandle(m_handle))
-        {
-            EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, (int)GetLastError());
-        }
+        CloseHandle(m_handle);
         m_handle = INVALID_HANDLE_VALUE;
     }
 }
@@ -177,7 +172,7 @@ namespace Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -185,14 +180,11 @@ namespace Platform
             LARGE_INTEGER distToMove;
             distToMove.QuadPart = offset;
 
-            if (!SetFilePointerEx(handle, distToMove, 0, dwMoveMethod))
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
-            }
+            SetFilePointerEx(handle, distToMove, 0, dwMoveMethod);
         }
     }
 
-    SystemFile::SizeType Tell(FileHandleType handle, const SystemFile* systemFile)
+    SystemFile::SizeType Tell(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -202,7 +194,6 @@ namespace Platform
             LARGE_INTEGER newFilePtr;
             if (!SetFilePointerEx(handle, distToMove, &newFilePtr, FILE_CURRENT))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return 0;
             }
 
@@ -212,7 +203,7 @@ namespace Platform
         return 0;
     }
 
-    bool Eof(FileHandleType handle, const SystemFile* systemFile)
+    bool Eof(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -222,14 +213,12 @@ namespace Platform
             LARGE_INTEGER currentFilePtr;
             if (!SetFilePointerEx(handle, zero, &currentFilePtr, FILE_CURRENT))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return false;
             }
 
             FILE_STANDARD_INFO fileInfo;
             if (!GetFileInformationByHandleEx(handle, FileStandardInfo, &fileInfo, sizeof(fileInfo)))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return false;
             }
 
@@ -239,14 +228,13 @@ namespace Platform
         return false;
     }
 
-    AZ::u64 ModificationTime(FileHandleType handle, const SystemFile* systemFile)
+    AZ::u64 ModificationTime(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
             FILE_BASIC_INFO fileInfo;
             if (!GetFileInformationByHandleEx(handle, FileBasicInfo, &fileInfo, sizeof(fileInfo)))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return 0;
             }
 
@@ -263,7 +251,7 @@ namespace Platform
         return 0;
     }
 
-    SystemFile::SizeType Read(FileHandleType handle, const SystemFile* systemFile, SizeType byteSize, void* buffer)
+    SystemFile::SizeType Read(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile, SizeType byteSize, void* buffer)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -271,7 +259,6 @@ namespace Platform
             DWORD nNumberOfBytesToRead = (DWORD)byteSize;
             if (!ReadFile(handle, buffer, nNumberOfBytesToRead, &dwNumBytesRead, 0))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return 0;
             }
             return static_cast<SizeType>(dwNumBytesRead);
@@ -280,7 +267,7 @@ namespace Platform
         return 0;
     }
 
-    SystemFile::SizeType Write(FileHandleType handle, const SystemFile* systemFile, const void* buffer, SizeType byteSize)
+    SystemFile::SizeType Write(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile, const void* buffer, SizeType byteSize)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -288,7 +275,6 @@ namespace Platform
             DWORD nNumberOfBytesToWrite = (DWORD)byteSize;
             if (!WriteFile(handle, buffer, nNumberOfBytesToWrite, &dwNumBytesWritten, 0))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return 0;
             }
             return static_cast<SizeType>(dwNumBytesWritten);
@@ -297,25 +283,21 @@ namespace Platform
         return 0;
     }
 
-    void Flush(FileHandleType handle, const SystemFile* systemFile)
+    void Flush(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            if (!FlushFileBuffers(handle))
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
-            }
+            FlushFileBuffers(handle);
         }
     }
 
-    SystemFile::SizeType Length(FileHandleType handle, const SystemFile* systemFile)
+    SystemFile::SizeType Length(FileHandleType handle, [[maybe_unused]] const SystemFile* systemFile)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
             LARGE_INTEGER size;
             if (!GetFileSizeEx(handle, &size))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, (int)GetLastError());
                 return 0;
             }
 
@@ -341,7 +323,6 @@ namespace Platform
     {
         WIN32_FIND_DATA fd;
         HANDLE hFile;
-        int lastError;
 
         AZ::IO::FixedMaxPathWString filterW;
         AZStd::to_wstring(filterW, filter);
@@ -367,20 +348,7 @@ namespace Platform
                 cb(fileName, (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0);
             }
 
-            lastError = (int)GetLastError();
             FindClose(hFile);
-            if (lastError != ERROR_NO_MORE_FILES)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, lastError);
-            }
-        }
-        else
-        {
-            lastError = (int)GetLastError();
-            if (lastError != ERROR_FILE_NOT_FOUND)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, lastError);
-            }
         }
     }
 
@@ -394,15 +362,11 @@ namespace Platform
 
         if (handle == INVALID_HANDLE_VALUE)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
             return 0;
         }
 
         FILE_BASIC_INFO fileInfo{};
-        if (!GetFileInformationByHandleEx(handle, FileBasicInfo, &fileInfo, sizeof(fileInfo)))
-        {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
-        }
+        GetFileInformationByHandleEx(handle, FileBasicInfo, &fileInfo, sizeof(fileInfo));
 
         CloseHandle(handle);
 
@@ -434,10 +398,6 @@ namespace Platform
             fileSize.HighPart = data.nFileSizeHigh;
             len = aznumeric_cast<SizeType>(fileSize.QuadPart);
         }
-        else
-        {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
-        }
 
         return len;
     }
@@ -448,7 +408,6 @@ namespace Platform
         AZStd::to_wstring(fileNameW, fileName);
         if (DeleteFileW(fileNameW.c_str()) == 0)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, fileName, (int)GetLastError());
             return false;
         }
 
@@ -463,7 +422,6 @@ namespace Platform
         AZStd::to_wstring(targetFileNameW, targetFileName);
         if (MoveFileExW(sourceFileNameW.c_str(), targetFileNameW.c_str(), overwrite ? MOVEFILE_REPLACE_EXISTING : 0) == 0)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, nullptr, sourceFileName, (int)GetLastError());
             return false;
         }
 
@@ -503,10 +461,6 @@ namespace Platform
             AZ::IO::FixedMaxPathWString dirNameW;
             AZStd::to_wstring(dirNameW, dirName);
             bool success = CreateDirRecursive(dirNameW);
-            if (!success)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, dirName, (int)GetLastError());
-            }
             return success;
         }
         return false;

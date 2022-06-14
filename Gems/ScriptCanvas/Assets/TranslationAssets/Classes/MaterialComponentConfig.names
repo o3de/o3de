@@ -1,12 +1,59 @@
 {
     "entries": [
         {
-            "key": "MaterialComponentConfig",
+            "base": "MaterialComponentConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MaterialComponentConfig"
-            }
+                "name": "Material Component Config",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "Getmaterials",
+                    "details": {
+                        "name": "Get Materials"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3366C279-32AE-48F6-839B-7700AE117A54}",
+                            "details": {
+                                "name": "",
+                                "tooltip": "Material Component Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "Material Assignment Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setmaterials",
+                    "details": {
+                        "name": "Set Materials"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3366C279-32AE-48F6-839B-7700AE117A54}",
+                            "details": {
+                                "name": "",
+                                "tooltip": "Material Component Config"
+                            }
+                        },
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "Material Assignment Map"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

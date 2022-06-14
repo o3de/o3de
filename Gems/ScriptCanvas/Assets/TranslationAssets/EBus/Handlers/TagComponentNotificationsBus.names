@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TagComponentNotificationsBus",
+            "base": "TagComponentNotificationsBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTagAdded",
+                    "base": "OnTagAdded",
                     "details": {
                         "name": "On Tag Added",
                         "tooltip": "Executes when a tag is added to the source entity"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnTagRemoved",
+                    "base": "OnTagRemoved",
                     "details": {
                         "name": "On Tag Removed",
                         "tooltip": "Executes when a tag is removed from the source entity"

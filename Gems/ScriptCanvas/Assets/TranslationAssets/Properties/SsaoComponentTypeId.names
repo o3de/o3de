@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SsaoComponentTypeId",
+            "base": "SsaoComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Ssao Component Type Id"
+                "name": "Ssao Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSsaoComponentTypeId",
+                    "base": "GetSsaoComponentTypeId",
                     "details": {
                         "name": "Get Ssao Component Type Id"
                     },

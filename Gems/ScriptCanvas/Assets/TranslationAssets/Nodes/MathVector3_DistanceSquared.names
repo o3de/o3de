@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{920C0CA6-3393-5AC7-805E-09D52E134ED4}",
+            "base": "{920C0CA6-3393-5AC7-805E-09D52E134ED4}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Distance Squared",
                 "category": "Math/Vector3",
-                "tooltip": "Returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
+                "tooltip": "returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

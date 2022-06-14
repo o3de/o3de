@@ -7,8 +7,6 @@
  */
 #include <Atom/RHI/StreamingImagePool.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -16,7 +14,7 @@ namespace AZ
         StreamingImageInitRequest::StreamingImageInitRequest(
             Image& image,
             const ImageDescriptor& descriptor,
-            AZStd::array_view<StreamingImageMipSlice> tailMipSlices)
+            AZStd::span<const StreamingImageMipSlice> tailMipSlices)
             : m_image{&image}
             , m_descriptor{descriptor}
             , m_tailMipSlices{tailMipSlices}
@@ -74,7 +72,7 @@ namespace AZ
 
         ResultCode StreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             return ResourcePool::Init(
                 device, descriptor,
@@ -93,7 +91,7 @@ namespace AZ
 
         ResultCode StreamingImagePool::InitImage(const StreamingImageInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized())
             {

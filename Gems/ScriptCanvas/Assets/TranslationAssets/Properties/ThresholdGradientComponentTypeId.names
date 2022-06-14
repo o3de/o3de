@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ThresholdGradientComponentTypeId",
+            "base": "ThresholdGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Threshold Gradient Component Type Id"
+                "name": "Threshold Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetThresholdGradientComponentTypeId",
+                    "base": "GetThresholdGradientComponentTypeId",
                     "details": {
                         "name": "Get Threshold Gradient Component Type Id"
                     },

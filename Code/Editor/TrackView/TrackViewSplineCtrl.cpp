@@ -57,7 +57,6 @@ protected:
     }
 
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return "UndoTrackViewSplineCtrl"; };
 
     void Undo(bool bUndo) override
     {

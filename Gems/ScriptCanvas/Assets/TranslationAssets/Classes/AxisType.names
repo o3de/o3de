@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "AxisType",
+            "base": "AxisType",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Axis Type"
+                "name": "Axis Type",
+                "category": "Constants"
             },
             "methods": [
                 {
-                    "key": "GetZNegative",
+                    "base": "GetZNegative",
                     "details": {
                         "name": "Get -Z"
                     },
@@ -23,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "GetZPositive",
+                    "base": "GetZPositive",
                     "details": {
                         "name": "Get +Z"
                     },
@@ -37,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "GetYPositive",
+                    "base": "GetYPositive",
                     "details": {
                         "name": "Get +Y"
                     },
@@ -51,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "GetXNegative",
+                    "base": "GetXNegative",
                     "details": {
                         "name": "Get -X"
                     },
@@ -65,7 +66,7 @@
                     ]
                 },
                 {
-                    "key": "GetXPositive",
+                    "base": "GetXPositive",
                     "details": {
                         "name": "Get +X"
                     },
@@ -79,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "GetYNegative",
+                    "base": "GetYNegative",
                     "details": {
                         "name": "Get -Y"
                     },

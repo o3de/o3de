@@ -45,13 +45,11 @@
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
-#include "SurfaceTypeValidator.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
 #include "GameExporter.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
-#include "StatObjBus.h"
 #include "Undo/Undo.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -59,7 +57,6 @@
 
 // LmbrCentral
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
-#include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
 
 static const char* kAutoBackupFolder = "_autobackup";
 static const char* kHoldFolder = "$tmp_hold"; // conform to the ignored file types $tmp[0-9]*_ regex
@@ -100,8 +97,7 @@ namespace Internal
 // CCryEditDoc construction/destruction
 
 CCryEditDoc::CCryEditDoc()
-    : doc_validate_surface_types(nullptr)
-    , m_modifiedModuleFlags(eModifiedNothing)
+    : m_modifiedModuleFlags(eModifiedNothing)
 {
     ////////////////////////////////////////////////////////////////////////
     // Set member variables to initial values
@@ -121,9 +117,12 @@ CCryEditDoc::CCryEditDoc()
 
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
-    RegisterConsoleVariables();
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
+    if (auto* actionManager = MainWindow::instance()->GetActionManager())
+    {
+        actionManager->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
+    }
+    
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (isPrefabSystemEnabled)
@@ -246,9 +245,6 @@ void CCryEditDoc::DeleteContents()
 
     EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
 
-    // [LY-90904] move this to the EditorVegetationManager component
-    InstanceStatObjEventBus::Broadcast(&InstanceStatObjEventBus::Events::ReleaseData);
-
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
     //////////////////////////////////////////////////////////////////////////
@@ -308,8 +304,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
 
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
     AfterSave();
@@ -381,7 +375,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (!usePrefabSystemForLevels)
         {
@@ -455,12 +449,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             }
         }
 
-        if (!isPrefabEnabled)
-        {
-            // Name Selection groups
-            SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
-        }
-
         {
             CAutoLogTime logtime("Post Load");
 
@@ -470,8 +458,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
                 listener->OnLoadDocument();
             }
         }
-
-        CSurfaceTypeValidator().Validate();
 
         LogLoadTime(GetTickCount() - t0);
         // Loaded with success, remove event from log file
@@ -595,16 +581,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
     }
 }
 
-void CCryEditDoc::SerializeNameSelection(CXmlArchive& xmlAr)
-{
-    IObjectManager* pObjManager = GetIEditor()->GetObjectManager();
-
-    if (pObjManager)
-    {
-        pObjManager->SerializeNameSelection(xmlAr.root, xmlAr.bLoading);
-    }
-}
-
 void CCryEditDoc::SetModifiedModules(EModifiedModule eModifiedModule, bool boSet)
 {
     if (!boSet)
@@ -664,7 +640,7 @@ bool CCryEditDoc::SaveModified()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
@@ -695,7 +671,7 @@ bool CCryEditDoc::SaveModified()
             return true;
         }
 
-        int prefabSaveSelection = m_prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
+        int prefabSaveSelection = m_prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
 
         // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
         // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
@@ -727,7 +703,7 @@ void CCryEditDoc::OnFileSaveAs()
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
             bool usePrefabSystemForLevels = false;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
             if (usePrefabSystemForLevels)
             {
                 AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
@@ -756,7 +732,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -1018,12 +994,6 @@ bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& conte
     {
         bSaved = false;
         return false;
-    }
-
-    // Save Tag Point locations to file if auto save of tag points disabled
-    if (!gSettings.bAutoSaveTagPoints)
-    {
-        CCryEditApp::instance()->SaveTagLocations();
     }
 
     QString normalizedPath = Path::ToUnixPath(filename);
@@ -1932,25 +1902,6 @@ void CCryEditDoc::SetDocumentReady(bool bReady)
     m_bDocumentReady = bReady;
 }
 
-void CCryEditDoc::RegisterConsoleVariables()
-{
-    doc_validate_surface_types = gEnv->pConsole->GetCVar("doc_validate_surface_types");
-
-    if (!doc_validate_surface_types)
-    {
-        doc_validate_surface_types = REGISTER_INT_CB("doc_validate_surface_types", 0, 0,
-            "Flag indicating whether icons are displayed on the animation graph.\n"
-            "Default is 1.\n",
-            OnValidateSurfaceTypesChanged);
-    }
-}
-
-void CCryEditDoc::OnValidateSurfaceTypesChanged(ICVar*)
-{
-    CErrorsRecorder errorsRecorder(GetIEditor());
-    CSurfaceTypeValidator().Validate();
-}
-
 void CCryEditDoc::OnStartLevelResourceList()
 {
     // after loading another level we clear the RFOM_Level list, the first time the list should be empty
@@ -2176,52 +2127,13 @@ void CCryEditDoc::ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr)
 
 //////////////////////////////////////////////////////////////////////////
 // AzToolsFramework::EditorEntityContextNotificationBus interface implementation
-void CCryEditDoc::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)
+void CCryEditDoc::OnSliceInstantiated([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] AZ::SliceComponent::SliceInstanceAddress& sliceAddress, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
 {
-    if (m_envProbeSliceAssetId == sliceAssetId)
-    {
-        const AZ::SliceComponent::EntityList& entities = sliceAddress.GetInstance()->GetInstantiated()->m_entities;
-        const AZ::Uuid editorEnvProbeComponentId("{8DBD6035-583E-409F-AFD9-F36829A0655D}");
-        AzToolsFramework::EntityIdList entityIds;
-        entityIds.reserve(entities.size());
-        for (const AZ::Entity* entity : entities)
-        {
-            if (entity->FindComponent(editorEnvProbeComponentId))
-            {
-                // Update Probe Area size to cover the whole terrain
-                LmbrCentral::EditorLightComponentRequestBus::Event(entity->GetId(), &LmbrCentral::EditorLightComponentRequests::SetProbeAreaDimensions, AZ::Vector3(m_terrainSize, m_terrainSize, m_envProbeHeight));
-
-                // Force update the light to apply cubemap
-                LmbrCentral::EditorLightComponentRequestBus::Event(entity->GetId(), &LmbrCentral::EditorLightComponentRequests::RefreshLight);
-            }
-            entityIds.push_back(entity->GetId());
-        }
-
-        //Detach instantiated env probe entities from engine slice
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::DetachSliceEntities, entityIds);
-
-        sliceAddress.SetInstance(nullptr);
-        sliceAddress.SetReference(nullptr);
-        SetModifiedFlag(true);
-        SetModifiedModules(eModifiedEntities);
-
-        AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
-
-        //save after level default slice fully instantiated
-        Save();
-    }
     GetIEditor()->ResumeUndo();
 }
 
-
-void CCryEditDoc::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/)
+void CCryEditDoc::OnSliceInstantiationFailed([[maybe_unused]] const AZ::Data::AssetId& sliceAssetId, [[maybe_unused]] const AzFramework::SliceInstantiationTicket& ticket)
 {
-    if (m_envProbeSliceAssetId == sliceAssetId)
-    {
-        AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
-        AZ_Warning("Editor", false, "Failed to instantiate default environment probe slice.");
-    }
     GetIEditor()->ResumeUndo();
 }
 //////////////////////////////////////////////////////////////////////////

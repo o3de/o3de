@@ -10,11 +10,10 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/View/Widgets/StatisticsDialog/NodeUsageTreeItem.h>
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace ScriptCanvasEditor
@@ -136,8 +135,6 @@ namespace ScriptCanvasEditor
 
     void ScriptCanvasAssetNodeUsageTreeItem::SetAssetId(const AZ::Data::AssetId& assetId, AZ::Data::AssetType assetType)
     {
-        // If we are setting up a new assetId, we wantt o register for the bus.
-        // Otherwise we just want to reload the asset to scrape some data from it.
         if (m_assetId != assetId)
         {
             if (AZ::Data::AssetBus::Handler::BusIsConnected())
@@ -151,9 +148,6 @@ namespace ScriptCanvasEditor
         }
 
         m_assetType = assetType;
-
-        auto onAssetReady = [](ScriptCanvasMemoryAsset&) {};
-        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Load, m_assetId, m_assetType, onAssetReady);
     }
 
     const AZ::Data::AssetId& ScriptCanvasAssetNodeUsageTreeItem::GetAssetId() const
@@ -188,6 +182,7 @@ namespace ScriptCanvasEditor
         return nodeIter->second;
     }
 
+    /*
     void ScriptCanvasAssetNodeUsageTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         ProcessAsset(asset);
@@ -206,7 +201,8 @@ namespace ScriptCanvasEditor
         ProcessAsset(asset);
     }
 
-    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset)
+    // #sc_editor_asset_redux fix graph use statistics
+    void ScriptCanvasAssetNodeUsageTreeItem::ProcessAsset(const AZ::Data::Asset<LegacyScriptCanvasBaseAsset>& scriptCanvasAsset)
     {
         if (scriptCanvasAsset.IsReady())
         {
@@ -228,6 +224,7 @@ namespace ScriptCanvasEditor
             }
         }
     }
+    */
 
     ///////////////////////////////////////////
     // ScriptCanvasAssetNodeUsageTreeItemRoot

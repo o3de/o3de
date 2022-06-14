@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EntityReferenceComponentTypeId",
+            "base": "EntityReferenceComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Entity Reference Component Type Id"
+                "name": "Entity Reference Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEntityReferenceComponentTypeId",
+                    "base": "GetEntityReferenceComponentTypeId",
                     "details": {
                         "name": "Get Entity Reference Component Type Id"
                     },

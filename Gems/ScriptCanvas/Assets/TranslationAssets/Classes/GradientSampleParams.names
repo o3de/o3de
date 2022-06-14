@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GradientSampleParams",
+            "base": "GradientSampleParams",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

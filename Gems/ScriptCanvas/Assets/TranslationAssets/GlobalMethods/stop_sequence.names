@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "stop_sequence",
+            "base": "stop_sequence",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "stop_sequence",
+                    "base": "stop_sequence",
                     "context": "Global",
                     "entry": {
                         "name": "In",

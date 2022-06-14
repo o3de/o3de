@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "LANDSCAPE_CANVAS_EDITOR_ID",
+            "base": "LANDSCAPE_CANVAS_EDITOR_ID",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "LANDSCAPE_CANVAS_EDITOR_ID"
+                "name": "Editor Id",
+                "category": "Constants/Landscape Canvas"
             },
             "methods": [
                 {
-                    "key": "GetLANDSCAPE_CANVAS_EDITOR_ID",
+                    "base": "GetLANDSCAPE_CANVAS_EDITOR_ID",
                     "details": {
-                        "name": "GetLANDSCAPE_CANVAS_EDITOR_ID"
+                        "name": "Editor Id"
                     },
                     "results": [
                         {

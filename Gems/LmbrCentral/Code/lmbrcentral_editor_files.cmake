@@ -8,7 +8,6 @@
 
 set(FILES
     include/LmbrCentral/Rendering/EditorCameraCorrectionBus.h
-    include/LmbrCentral/Rendering/EditorLightComponentBus.h
     include/LmbrCentral/Shape/EditorPolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/EditorSplineComponentBus.h
     include/LmbrCentral/Shape/EditorTubeShapeComponentBus.h
@@ -60,6 +59,8 @@ set(FILES
     Source/Shape/EditorCompoundShapeComponent.cpp
     Source/Shape/EditorQuadShapeComponent.h
     Source/Shape/EditorQuadShapeComponent.cpp
+    Source/Shape/EditorReferenceShapeComponent.h
+    Source/Shape/EditorReferenceShapeComponent.cpp
     Source/Shape/EditorSplineComponent.h
     Source/Shape/EditorSplineComponent.cpp
     Source/Shape/EditorSplineComponentMode.h

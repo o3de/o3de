@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ActorNotificationBus",
+            "base": "ActorNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnMotionEvent",
+                    "base": "OnMotionEvent",
                     "details": {
                         "name": "On Motion Event"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnMotionLoop",
+                    "base": "OnMotionLoop",
                     "details": {
                         "name": "On Motion Loop"
                     },
@@ -32,13 +32,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Motion Name"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateEntering",
+                    "base": "OnStateEntering",
                     "details": {
                         "name": "On State Entering"
                     },
@@ -46,13 +46,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "State Name"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateEntered",
+                    "base": "OnStateEntered",
                     "details": {
                         "name": "On State Entered"
                     },
@@ -60,13 +60,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "State Name"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateExiting",
+                    "base": "OnStateExiting",
                     "details": {
                         "name": "On State Exiting"
                     },
@@ -74,13 +74,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "State Name"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateExited",
+                    "base": "OnStateExited",
                     "details": {
                         "name": "On State Exited"
                     },
@@ -88,13 +88,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "State Name"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateTransitionStart",
+                    "base": "OnStateTransitionStart",
                     "details": {
                         "name": "On State Transition Start"
                     },
@@ -102,19 +102,19 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "From State"
+                                "name": "char"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "To State"
+                                "name": "char"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnStateTransitionEnd",
+                    "base": "OnStateTransitionEnd",
                     "details": {
                         "name": "On State Transition End"
                     },
@@ -122,13 +122,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "From State"
+                                "name": "char"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "To State"
+                                "name": "char"
                             }
                         }
                     ]

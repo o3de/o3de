@@ -13,6 +13,8 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
+#include <AzCore/Math/Vector2.h>
+
 #include <SandboxAPI.h>
 
 namespace SandboxEditor
@@ -35,10 +37,6 @@ namespace SandboxEditor
     private:
         bool IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton) const;
 
-        static AzToolsFramework::ViewportInteraction::MouseButton GetMouseButton(const AzFramework::InputChannel& inputChannel);
-        static bool IsMouseMove(const AzFramework::InputChannel& inputChannel);
-        static AzToolsFramework::ViewportInteraction::KeyboardModifier GetKeyboardModifier(const AzFramework::InputChannel& inputChannel);
-
         //! Represents the time and location of a click.
         struct ClickEvent
         {
@@ -50,5 +48,7 @@ namespace SandboxEditor
         AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, ClickEvent> m_pendingDoubleClicks;
 
         AZ::ScriptTimePoint m_currentTime;
+        
+        AZStd::optional<AZ::Vector2> m_virtualNormalizedPosition = AZStd::nullopt;
     };
 } // namespace SandboxEditor

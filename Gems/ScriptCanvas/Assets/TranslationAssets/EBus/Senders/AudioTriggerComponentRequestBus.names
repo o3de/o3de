@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AudioTriggerComponentRequestBus",
+            "base": "AudioTriggerComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetObstructionType",
+                    "base": "SetObstructionType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Obstruction Type"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "KillAllTriggers",
+                    "base": "KillAllTriggers",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Kill All Triggers"
@@ -48,7 +48,7 @@
                     }
                 },
                 {
-                    "key": "ExecuteTrigger",
+                    "base": "ExecuteTrigger",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Execute Trigger"
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "SetMovesWithEntity",
+                    "base": "SetMovesWithEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Moves With Entity"
@@ -96,7 +96,7 @@
                     ]
                 },
                 {
-                    "key": "Stop",
+                    "base": "Stop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stop"
@@ -111,7 +111,7 @@
                     }
                 },
                 {
-                    "key": "Play",
+                    "base": "Play",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Play"
@@ -126,7 +126,7 @@
                     }
                 },
                 {
-                    "key": "KillTrigger",
+                    "base": "KillTrigger",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Kill Trigger"

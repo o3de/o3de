@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "attach_debugger",
+            "base": "attach_debugger",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "attach_debugger",
+                    "base": "attach_debugger",
                     "context": "Global",
                     "entry": {
                         "name": "In",

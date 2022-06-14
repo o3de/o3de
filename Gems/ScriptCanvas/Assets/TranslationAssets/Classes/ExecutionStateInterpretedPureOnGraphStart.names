@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ExecutionStateInterpretedPureOnGraphStart",
+            "base": "ExecutionStateInterpretedPureOnGraphStart",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

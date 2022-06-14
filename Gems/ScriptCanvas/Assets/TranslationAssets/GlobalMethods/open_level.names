@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "open_level",
+            "base": "open_level",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "open_level",
+                    "base": "open_level",
                     "context": "Global",
                     "entry": {
                         "name": "In",

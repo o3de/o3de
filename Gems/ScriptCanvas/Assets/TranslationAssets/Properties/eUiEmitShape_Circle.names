@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Circle",
+            "base": "eUiEmitShape_Circle",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Emit Shape_ Circle"
+                "name": "Circle",
+                "category": "Constants/UI/Emit Shape"
             },
             "methods": [
                 {
-                    "key": "GeteUiEmitShape_Circle",
+                    "base": "GeteUiEmitShape_Circle",
                     "details": {
-                        "name": "Gete Ui Emit Shape_ Circle"
+                        "name": "Circle"
                     },
                     "results": [
                         {

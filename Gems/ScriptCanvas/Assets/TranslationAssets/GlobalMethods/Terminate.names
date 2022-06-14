@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Terminate",
+            "base": "Terminate",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "Terminate",
+                    "base": "Terminate",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -1,0 +1,85 @@
+{
+    "entries": [
+        {
+            "base": "Render::ShadowmapSize",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Shadowmap Size",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetShadowmapSize_512",
+                    "details": {
+                        "name": "Get Shadowmap Size_ 512"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShadowmapSize_1024",
+                    "details": {
+                        "name": "Get Shadowmap Size_ 1024"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShadowmapSize_2048",
+                    "details": {
+                        "name": "Get Shadowmap Size_ 2048"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShadowmapSize_256",
+                    "details": {
+                        "name": "Get Shadowmap Size_ 256"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShadowmapSize_None",
+                    "details": {
+                        "name": "Get Shadowmap Size_ None"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

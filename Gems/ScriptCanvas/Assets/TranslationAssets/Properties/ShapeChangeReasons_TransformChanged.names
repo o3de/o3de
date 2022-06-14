@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ShapeChangeReasons_TransformChanged",
+            "base": "ShapeChangeReasons_TransformChanged",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Shape Change Reasons_ Transform Changed"
+                "name": "Shape Change Reasons_ Transform Changed",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetShapeChangeReasons_TransformChanged",
+                    "base": "GetShapeChangeReasons_TransformChanged",
                     "details": {
                         "name": "Get Shape Change Reasons_ Transform Changed"
                     },

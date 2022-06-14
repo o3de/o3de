@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiImageSequenceBus",
+            "base": "UiImageSequenceBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiImageSequenceBus",
+                "name": "UI Image Sequence",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetImageType",
+                    "base": "GetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Type"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetImageType",
+                    "base": "SetImageType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Image Type"

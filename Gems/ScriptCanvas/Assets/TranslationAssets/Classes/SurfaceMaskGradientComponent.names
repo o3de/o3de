@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceMaskGradientComponent",
+            "base": "SurfaceMaskGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

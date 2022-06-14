@@ -1,39 +1,33 @@
 {
     "entries": [
         {
-            "key": "SceneManifest",
+            "base": "SceneManifest",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SceneManifest"
+                "name": "Scene Manifest",
+                "category": "Scene"
             },
             "methods": [
                 {
-                    "key": "ImportFromJson",
+                    "base": "ImportFromJson",
                     "context": "SceneManifest",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ImportFromJson"
+                        "tooltip": "When signaled, this will invoke Import From Json"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ImportFromJson is invoked"
+                        "tooltip": "Signaled after Import From Json is invoked"
                     },
                     "details": {
-                        "name": "SceneManifest::ImportFromJson",
-                        "category": "Other"
+                        "name": "Import From Json"
                     },
                     "params": [
                         {
-                            "typeid": "{9274AD17-3212-4651-9F3B-7DCCB080E467}",
-                            "details": {
-                                "name": "SceneManifest&"
-                            }
-                        },
-                        {
                             "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
                             "details": {
-                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                                "name": ""
                             }
                         }
                     ],
@@ -47,33 +41,24 @@
                     ]
                 },
                 {
-                    "key": "ExportToJson",
+                    "base": "ExportToJson",
                     "context": "SceneManifest",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExportToJson"
+                        "tooltip": "When signaled, this will invoke Export To Json"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExportToJson is invoked"
+                        "tooltip": "Signaled after Export To Json is invoked"
                     },
                     "details": {
-                        "name": "SceneManifest::ExportToJson",
-                        "category": "Other"
+                        "name": "Export To Json"
                     },
-                    "params": [
-                        {
-                            "typeid": "{9274AD17-3212-4651-9F3B-7DCCB080E467}",
-                            "details": {
-                                "name": "SceneManifest&"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
                             }
                         }
                     ]

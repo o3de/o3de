@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformPivot_Center",
+            "base": "TransformPivot_Center",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Pivot_ Center"
+                "name": "Center",
+                "category": "Constants/Transform/Pivot"
             },
             "methods": [
                 {
-                    "key": "GetTransformPivot_Center",
+                    "base": "GetTransformPivot_Center",
                     "details": {
-                        "name": "Get Transform Pivot_ Center"
+                        "name": "Center"
                     },
                     "results": [
                         {

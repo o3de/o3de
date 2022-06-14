@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiDropdownOptionNotificationBus",
+            "base": "UiDropdownOptionNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnDropdownOptionSelected",
+                    "base": "OnDropdownOptionSelected",
                     "details": {
                         "name": "On Dropdown Option Selected",
                         "tooltip": "Executes when the dropdown option was selected"

@@ -24,6 +24,7 @@ set(ENABLED_GEMS
     Camera
     EMotionFX
     AtomTressFX
+    EditorModeFeedback
     PhysX
     CameraFramework
     StartingPointMovement
@@ -57,4 +58,8 @@ set(ENABLED_GEMS
     Terrain
     Profiler
     Multiplayer
+    DevTextures
+    PrimitiveAssets
+    Stars
+    RecastNavigation
 )

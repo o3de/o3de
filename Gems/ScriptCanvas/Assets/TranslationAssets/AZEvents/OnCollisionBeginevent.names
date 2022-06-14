@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "On Collision Begin event",
+            "base": "On Collision Begin event",
             "context": "AZEventHandler",
             "variant": "",
             "details": {
@@ -9,49 +9,49 @@
             },
             "slots": [
                 {
-                    "key": "Simulated Body Handle",
+                    "base": "Simulated Body Handle",
                     "details": {
                         "name": "Simulated Body Handle"
                     }
                 },
                 {
-                    "key": "Collision Event",
+                    "base": "Collision Event",
                     "details": {
                         "name": "Collision Event"
                     }
                 },
                 {
-                    "key": "On Collision Begin event",
+                    "base": "On Collision Begin event",
                     "details": {
                         "name": "On Collision Begin event"
                     }
                 },
                 {
-                    "key": "Connect",
+                    "base": "Connect",
                     "details": {
                         "name": "Connect"
                     }
                 },
                 {
-                    "key": "Disconnect",
+                    "base": "Disconnect",
                     "details": {
                         "name": "Disconnect"
                     }
                 },
                 {
-                    "key": "On Connected",
+                    "base": "On Connected",
                     "details": {
                         "name": "On Connected"
                     }
                 },
                 {
-                    "key": "On Disconnected",
+                    "base": "On Disconnected",
                     "details": {
                         "name": "On Disconnected"
                     }
                 },
                 {
-                    "key": "OnEvent",
+                    "base": "OnEvent",
                     "details": {
                         "name": "OnEvent"
                     }

@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{0A1CA315-EFAB-50DC-8C61-2C9763D25E31}",
+            "base": "{0A1CA315-EFAB-50DC-8C61-2C9763D25E31}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Random Vector3",
+                "name": "Random Vector 3",
                 "category": "Math/Random",
-                "tooltip": "Returns a random Vector3"
+                "tooltip": "returns a random Vector3"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Min",
+                    "base": "DataInput_Min_0",
                     "details": {
                         "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Max",
+                    "base": "DataInput_Max_1",
                     "details": {
                         "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

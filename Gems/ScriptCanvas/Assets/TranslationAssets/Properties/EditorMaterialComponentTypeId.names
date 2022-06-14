@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorMaterialComponentTypeId",
+            "base": "EditorMaterialComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Material Component Type Id"
+                "name": "Editor Material Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorMaterialComponentTypeId",
+                    "base": "GetEditorMaterialComponentTypeId",
                     "details": {
                         "name": "Get Editor Material Component Type Id"
                     },

@@ -1,0 +1,2249 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "BushFlowerBlender",
+        "Components": {
+            "Component_[10351434005293588180]": {
+                "$type": "EditorLockComponent",
+                "Id": 10351434005293588180
+            },
+            "Component_[10967554916960846519]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 10967554916960846519
+            },
+            "Component_[14400678265986305456]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 14400678265986305456
+            },
+            "Component_[15365520792759708998]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 15365520792759708998
+            },
+            "Component_[16281192066639198814]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 16281192066639198814,
+                "Child Entity Order": [
+                    "Entity_[263598916892318]"
+                ]
+            },
+            "Component_[16356049875968660722]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 16356049875968660722,
+                "Parent Entity": ""
+            },
+            "Component_[16391695178646515457]": {
+                "$type": "SelectionComponent",
+                "Id": 16391695178646515457
+            },
+            "Component_[16407238476365087382]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 16407238476365087382
+            },
+            "Component_[3542701736829700396]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 3542701736829700396
+            },
+            "Component_[5160094530340900971]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5160094530340900971
+            },
+            "Component_[6432428663776737136]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 6432428663776737136
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[263573147088542]": {
+            "Id": "Entity_[263573147088542]",
+            "Name": "BushSpawner",
+            "Components": {
+                "Component_[11886309121583108836]": {
+                    "$type": "EditorPositionModifierComponent",
+                    "Id": 11886309121583108836,
+                    "Configuration": {
+                        "GradientX": {
+                            "GradientId": "Entity_[263590326957726]"
+                        },
+                        "GradientY": {
+                            "GradientId": "Entity_[263590326957726]"
+                        },
+                        "GradientZ": {
+                            "GradientId": ""
+                        }
+                    }
+                },
+                "Component_[1240444912193942742]": {
+                    "$type": "{DD96FD51-A86B-48BC-A6AB-89183B538269} EditorSpawnerComponent",
+                    "Id": 1240444912193942742,
+                    "PreviewEntity": "Entity_[263573147088542]"
+                },
+                "Component_[12813702285187817973]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 12813702285187817973,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 18133156195370267728
+                        },
+                        {
+                            "ComponentId": 13450250419263773680,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 8841963751527151666,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 1240444912193942742,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 17991239182321715249,
+                            "SortIndex": 4
+                        },
+                        {
+                            "ComponentId": 14175761523159824993,
+                            "SortIndex": 5
+                        },
+                        {
+                            "ComponentId": 2884829698060689565,
+                            "SortIndex": 6
+                        },
+                        {
+                            "ComponentId": 11886309121583108836,
+                            "SortIndex": 7
+                        }
+                    ]
+                },
+                "Component_[13179606361687972691]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 13179606361687972691
+                },
+                "Component_[13450250419263773680]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 13450250419263773680,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[13688014277574607552]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13688014277574607552
+                },
+                "Component_[14175761523159824993]": {
+                    "$type": "EditorDistributionFilterComponent",
+                    "Id": 14175761523159824993,
+                    "Configuration": {
+                        "ThresholdMin": 0.289000004529953,
+                        "ThresholdMax": 0.5690000057220459,
+                        "Gradient": {
+                            "GradientId": "Entity_[263603211859614]"
+                        }
+                    }
+                },
+                "Component_[14232774271081092639]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 14232774271081092639
+                },
+                "Component_[14811533745267383811]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 14811533745267383811
+                },
+                "Component_[17540078415915694273]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 17540078415915694273
+                },
+                "Component_[17991239182321715249]": {
+                    "$type": "EditorRotationModifierComponent",
+                    "Id": 17991239182321715249,
+                    "Configuration": {
+                        "GradientX": {
+                            "GradientId": ""
+                        },
+                        "GradientY": {
+                            "GradientId": ""
+                        },
+                        "GradientZ": {
+                            "GradientId": "Entity_[263590326957726]"
+                        }
+                    }
+                },
+                "Component_[18133156195370267728]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 18133156195370267728,
+                    "Parent Entity": "Entity_[263607506826910]"
+                },
+                "Component_[2884829698060689565]": {
+                    "$type": "EditorScaleModifierComponent",
+                    "Id": 2884829698060689565,
+                    "Configuration": {
+                        "RangeMin": 0.75,
+                        "RangeMax": 1.25,
+                        "Gradient": {
+                            "GradientId": "Entity_[263590326957726]"
+                        }
+                    }
+                },
+                "Component_[50628676751372416]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 50628676751372416,
+                    "Child Entity Order": [
+                        "Entity_[263603211859614]",
+                        "Entity_[263590326957726]"
+                    ]
+                },
+                "Component_[5689270312836823309]": {
+                    "$type": "SelectionComponent",
+                    "Id": 5689270312836823309
+                },
+                "Component_[7105803915999711758]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 7105803915999711758
+                },
+                "Component_[8841963751527151666]": {
+                    "$type": "EditorDescriptorListComponent",
+                    "Id": 8841963751527151666,
+                    "Configuration": {
+                        "Descriptors": [
+                            {
+                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
+                                "InstanceSpawner": {
+                                    "$type": "PrefabInstanceSpawner",
+                                    "SpawnableAsset": {
+                                        "assetId": {
+                                            "guid": "{EE51E73C-D753-54AC-A1C0-4F29844FB6C3}",
+                                            "subId": 2740536329
+                                        },
+                                        "assetHint": "assets/prefabs/bush.spawnable"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "Entity_[263577442055838]": {
+            "Id": "Entity_[263577442055838]",
+            "Name": "RandomNoise",
+            "Components": {
+                "Component_[13412023990029767074]": {
+                    "$type": "EditorRandomGradientComponent",
+                    "Id": 13412023990029767074,
+                    "PreviewEntity": "Entity_[263577442055838]"
+                },
+                "Component_[14048059127502350032]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 14048059127502350032,
+                    "Parent Entity": "Entity_[263581737023134]"
+                },
+                "Component_[15585968636846328006]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 15585968636846328006
+                },
+                "Component_[17356242264256499333]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 17356242264256499333
+                },
+                "Component_[2157320692130316849]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 2157320692130316849
+                },
+                "Component_[2167582872687341084]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 2167582872687341084,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[2794166072748175035]": {
+                    "$type": "SelectionComponent",
+                    "Id": 2794166072748175035
+                },
+                "Component_[4784966656524567789]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 4784966656524567789
+                },
+                "Component_[6185400249317227261]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 6185400249317227261
+                },
+                "Component_[639949486729001685]": {
+                    "$type": "EditorGradientTransformComponent",
+                    "Id": 639949486729001685,
+                    "Configuration": {
+                        "ShapeReference": "",
+                        "Bounds": [
+                            50.0,
+                            50.0,
+                            1.0
+                        ]
+                    }
+                },
+                "Component_[7347819195697153472]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 7347819195697153472
+                },
+                "Component_[9225409585951117678]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 9225409585951117678,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 14048059127502350032
+                        },
+                        {
+                            "ComponentId": 2167582872687341084,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 639949486729001685,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 13412023990029767074,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[9667056664436803603]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 9667056664436803603
+                }
+            }
+        },
+        "Entity_[263581737023134]": {
+            "Id": "Entity_[263581737023134]",
+            "Name": "FlowerSpawner",
+            "Components": {
+                "Component_[10064436441176637741]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 10064436441176637741
+                },
+                "Component_[10418076448308581948]": {
+                    "$type": "EditorRotationModifierComponent",
+                    "Id": 10418076448308581948,
+                    "Configuration": {
+                        "GradientX": {
+                            "GradientId": ""
+                        },
+                        "GradientY": {
+                            "GradientId": ""
+                        },
+                        "GradientZ": {
+                            "GradientId": "Entity_[263577442055838]"
+                        }
+                    }
+                },
+                "Component_[12484622175138429315]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 12484622175138429315
+                },
+                "Component_[12590590072231203407]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 12590590072231203407
+                },
+                "Component_[13079591667184987458]": {
+                    "$type": "EditorScaleModifierComponent",
+                    "Id": 13079591667184987458,
+                    "Configuration": {
+                        "RangeMin": 0.75,
+                        "RangeMax": 1.25,
+                        "Gradient": {
+                            "GradientId": "Entity_[263577442055838]"
+                        }
+                    }
+                },
+                "Component_[13174773394274524631]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 13174773394274524631,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 1915862229814997128
+                        },
+                        {
+                            "ComponentId": 582800388831726963,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 18006385801184712266,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 6902499453501456890,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 10418076448308581948,
+                            "SortIndex": 4
+                        },
+                        {
+                            "ComponentId": 13983302912005698250,
+                            "SortIndex": 5
+                        },
+                        {
+                            "ComponentId": 13079591667184987458,
+                            "SortIndex": 6
+                        },
+                        {
+                            "ComponentId": 7912787520673119502,
+                            "SortIndex": 7
+                        }
+                    ]
+                },
+                "Component_[13200009872392504010]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 13200009872392504010,
+                    "Child Entity Order": [
+                        "Entity_[263594621925022]",
+                        "Entity_[263577442055838]"
+                    ]
+                },
+                "Component_[13983302912005698250]": {
+                    "$type": "EditorDistributionFilterComponent",
+                    "Id": 13983302912005698250,
+                    "Configuration": {
+                        "ThresholdMin": 0.2879999876022339,
+                        "ThresholdMax": 0.5680000185966492,
+                        "Gradient": {
+                            "GradientId": "Entity_[263586031990430]"
+                        }
+                    }
+                },
+                "Component_[14726174657215669218]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 14726174657215669218
+                },
+                "Component_[18006385801184712266]": {
+                    "$type": "EditorDescriptorListComponent",
+                    "Id": 18006385801184712266,
+                    "Configuration": {
+                        "Descriptors": [
+                            {
+                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
+                                "InstanceSpawner": {
+                                    "$type": "PrefabInstanceSpawner",
+                                    "SpawnableAsset": {
+                                        "assetId": {
+                                            "guid": "{80C0CF4E-9A5E-544B-B89E-BC980175A259}",
+                                            "subId": 3875079122
+                                        },
+                                        "assetHint": "assets/prefabs/pinkflower.spawnable"
+                                    }
+                                }
+                            },
+                            {
+                                "SpawnerType": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
+                                "InstanceSpawner": {
+                                    "$type": "PrefabInstanceSpawner",
+                                    "SpawnableAsset": {
+                                        "assetId": {
+                                            "guid": "{20DD1202-A434-5482-9FB9-AED4C78F6CBF}",
+                                            "subId": 2669863854
+                                        },
+                                        "assetHint": "assets/prefabs/purpleflower.spawnable"
+                                    }
+                                }
+                            },
+                            {
+                                "SpawnerType": "{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}",
+                                "InstanceSpawner": {
+                                    "$type": "EmptyInstanceSpawner"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Component_[1915862229814997128]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 1915862229814997128,
+                    "Parent Entity": "Entity_[263607506826910]"
+                },
+                "Component_[2123416208548010747]": {
+                    "$type": "SelectionComponent",
+                    "Id": 2123416208548010747
+                },
+                "Component_[4172073657954183661]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 4172073657954183661
+                },
+                "Component_[4297556504463195307]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4297556504463195307
+                },
+                "Component_[582800388831726963]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 582800388831726963,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[6902499453501456890]": {
+                    "$type": "{DD96FD51-A86B-48BC-A6AB-89183B538269} EditorSpawnerComponent",
+                    "Id": 6902499453501456890,
+                    "PreviewEntity": "Entity_[263581737023134]"
+                },
+                "Component_[7912787520673119502]": {
+                    "$type": "EditorPositionModifierComponent",
+                    "Id": 7912787520673119502,
+                    "Configuration": {
+                        "GradientX": {
+                            "GradientId": "Entity_[263577442055838]"
+                        },
+                        "GradientY": {
+                            "GradientId": "Entity_[263577442055838]"
+                        },
+                        "GradientZ": {
+                            "GradientId": ""
+                        }
+                    }
+                }
+            }
+        },
+        "Entity_[263586031990430]": {
+            "Id": "Entity_[263586031990430]",
+            "Name": "Invert",
+            "Components": {
+                "Component_[11123278080744920525]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 11123278080744920525
+                },
+                "Component_[1199715693160400161]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 1199715693160400161,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 7438979211266329827
+                        },
+                        {
+                            "ComponentId": 6027557066164356793,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 8903771095804438921,
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[12162816428693886169]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 12162816428693886169
+                },
+                "Component_[14493180089799969074]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 14493180089799969074
+                },
+                "Component_[16206759293595766479]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16206759293595766479
+                },
+                "Component_[17566144032052847628]": {
+                    "$type": "SelectionComponent",
+                    "Id": 17566144032052847628
+                },
+                "Component_[17784057508127919200]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 17784057508127919200
+                },
+                "Component_[18377773171420051348]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 18377773171420051348
+                },
+                "Component_[6027557066164356793]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 6027557066164356793,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[7438979211266329827]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 7438979211266329827,
+                    "Parent Entity": "Entity_[263594621925022]"
+                },
+                "Component_[8421650081106982664]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 8421650081106982664
+                },
+                "Component_[8903771095804438921]": {
+                    "$type": "EditorInvertGradientComponent",
+                    "Id": 8903771095804438921,
+                    "Configuration": {
+                        "Gradient": {
+                            "GradientId": "Entity_[263594621925022]"
+                        }
+                    },
+                    "PreviewEntity": "Entity_[263586031990430]"
+                }
+            }
+        },
+        "Entity_[263590326957726]": {
+            "Id": "Entity_[263590326957726]",
+            "Name": "RandomNoise",
+            "Components": {
+                "Component_[10420548607186596407]": {
+                    "$type": "SelectionComponent",
+                    "Id": 10420548607186596407
+                },
+                "Component_[11351507264577024072]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 11351507264577024072,
+                    "Parent Entity": "Entity_[263573147088542]"
+                },
+                "Component_[11576941520191560445]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 11576941520191560445
+                },
+                "Component_[11787535428542045683]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 11787535428542045683
+                },
+                "Component_[11946132649485953311]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 11946132649485953311
+                },
+                "Component_[11970417753234451570]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 11970417753234451570
+                },
+                "Component_[13743879269876214143]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 13743879269876214143
+                },
+                "Component_[15614946697365576378]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15614946697365576378
+                },
+                "Component_[17045174842161759045]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 17045174842161759045
+                },
+                "Component_[3107716031616536910]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 3107716031616536910,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 11351507264577024072
+                        },
+                        {
+                            "ComponentId": 6316453818295975755,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 4846745402056100407,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 8967153379180885152,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[4846745402056100407]": {
+                    "$type": "EditorGradientTransformComponent",
+                    "Id": 4846745402056100407,
+                    "Configuration": {
+                        "ShapeReference": "",
+                        "Bounds": [
+                            50.0,
+                            50.0,
+                            1.0
+                        ]
+                    }
+                },
+                "Component_[6316453818295975755]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 6316453818295975755,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263573147088542]"
+                    }
+                },
+                "Component_[8967153379180885152]": {
+                    "$type": "EditorRandomGradientComponent",
+                    "Id": 8967153379180885152,
+                    "PreviewEntity": "Entity_[263590326957726]"
+                }
+            }
+        },
+        "Entity_[263594621925022]": {
+            "Id": "Entity_[263594621925022]",
+            "Name": "PerlinNoise",
+            "Components": {
+                "Component_[15798567753940523121]": {
+                    "$type": "EditorPerlinGradientComponent",
+                    "Id": 15798567753940523121,
+                    "Configuration": {
+                        "randomSeed": 33,
+                        "frequency": 0.25
+                    },
+                    "PreviewEntity": "Entity_[263594621925022]"
+                },
+                "Component_[16035848776632936419]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16035848776632936419
+                },
+                "Component_[16434108759160050253]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 16434108759160050253
+                },
+                "Component_[16805003046507210760]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 16805003046507210760,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[17679463569742913027]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 17679463569742913027
+                },
+                "Component_[18285870860955961523]": {
+                    "$type": "SelectionComponent",
+                    "Id": 18285870860955961523
+                },
+                "Component_[2330427084045350198]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 2330427084045350198
+                },
+                "Component_[5921906930080711994]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 5921906930080711994,
+                    "Child Entity Order": [
+                        "Entity_[263586031990430]"
+                    ]
+                },
+                "Component_[764117453152842781]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 764117453152842781,
+                    "Parent Entity": "Entity_[263581737023134]"
+                },
+                "Component_[7701931249281891300]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 7701931249281891300
+                },
+                "Component_[7967070680905543315]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 7967070680905543315,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 764117453152842781
+                        },
+                        {
+                            "ComponentId": 16805003046507210760,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 8029154041194694200,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 15798567753940523121,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[8029154041194694200]": {
+                    "$type": "EditorGradientTransformComponent",
+                    "Id": 8029154041194694200,
+                    "Configuration": {
+                        "ShapeReference": "",
+                        "Bounds": [
+                            50.0,
+                            50.0,
+                            1.0
+                        ]
+                    }
+                },
+                "Component_[8660028910391135744]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 8660028910391135744
+                }
+            }
+        },
+        "Entity_[263598916892318]": {
+            "Id": "Entity_[263598916892318]",
+            "Name": "LandscapeCanvas",
+            "Components": {
+                "Component_[12967746135199800648]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 12967746135199800648
+                },
+                "Component_[13081062505162225823]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 13081062505162225823
+                },
+                "Component_[16021195931295059075]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 16021195931295059075
+                },
+                "Component_[16134261272053586014]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 16134261272053586014
+                },
+                "Component_[17500735767968801510]": {
+                    "$type": "EditorLandscapeCanvasComponent",
+                    "Id": 17500735767968801510,
+                    "Graph": {
+                        "m_nodes": [
+                            {
+                                "Key": 1,
+                                "Value": {
+                                    "$type": "CylinderShapeNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "BushFlowerBlender"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263607506826910]",
+                                    "m_componentId": 6683290476113150719
+                                }
+                            },
+                            {
+                                "Key": 2,
+                                "Value": {
+                                    "$type": "RandomNoiseGradientNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "RandomNoise"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PreviewBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263590326957726]",
+                                    "m_componentId": 8967153379180885152
+                                }
+                            },
+                            {
+                                "Key": 3,
+                                "Value": {
+                                    "$type": "SpawnerAreaNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "BushSpawner"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PlacementBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263573147088542]",
+                                    "m_componentId": 1240444912193942742
+                                }
+                            },
+                            {
+                                "Key": 4,
+                                "Value": {
+                                    "$type": "PerlinNoiseGradientNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "PerlinNoise"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PreviewBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263603211859614]",
+                                    "m_componentId": 10160640699095155981
+                                }
+                            },
+                            {
+                                "Key": 5,
+                                "Value": {
+                                    "$type": "RandomNoiseGradientNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "RandomNoise"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PreviewBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263577442055838]",
+                                    "m_componentId": 13412023990029767074
+                                }
+                            },
+                            {
+                                "Key": 6,
+                                "Value": {
+                                    "$type": "SpawnerAreaNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "FlowerSpawner"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PlacementBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263581737023134]",
+                                    "m_componentId": 6902499453501456890
+                                }
+                            },
+                            {
+                                "Key": 7,
+                                "Value": {
+                                    "$type": "AreaBlenderNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "BushFlowerBlender"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_extendableSlots": {
+                                        "InboundArea": [
+                                            {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            },
+                                            {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                },
+                                                "m_subId": 1
+                                            }
+                                        ]
+                                    },
+                                    "m_vegetationEntityId": "Entity_[263607506826910]",
+                                    "m_componentId": 7229206794941734410
+                                }
+                            },
+                            {
+                                "Key": 8,
+                                "Value": {
+                                    "$type": "PerlinNoiseGradientNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "PerlinNoise"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "PreviewBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263594621925022]",
+                                    "m_componentId": 15798567753940523121
+                                }
+                            },
+                            {
+                                "Key": 9,
+                                "Value": {
+                                    "$type": "InvertGradientModifierNode",
+                                    "m_propertySlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "EntityName"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                    "Value": "Invert"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradient"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "PreviewBounds"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263586031990430]",
+                                    "m_componentId": 8903771095804438921
+                                }
+                            },
+                            {
+                                "Key": 10,
+                                "Value": {
+                                    "$type": "RotationModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientX"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientY"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientZ"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263573147088542]",
+                                    "m_componentId": 17991239182321715249
+                                }
+                            },
+                            {
+                                "Key": 11,
+                                "Value": {
+                                    "$type": "DistributionFilterNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradient"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263573147088542]",
+                                    "m_componentId": 14175761523159824993
+                                }
+                            },
+                            {
+                                "Key": 12,
+                                "Value": {
+                                    "$type": "ScaleModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradient"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263573147088542]",
+                                    "m_componentId": 2884829698060689565
+                                }
+                            },
+                            {
+                                "Key": 13,
+                                "Value": {
+                                    "$type": "PositionModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientX"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientY"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientZ"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263573147088542]",
+                                    "m_componentId": 11886309121583108836
+                                }
+                            },
+                            {
+                                "Key": 14,
+                                "Value": {
+                                    "$type": "RotationModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientX"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientY"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientZ"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263581737023134]",
+                                    "m_componentId": 10418076448308581948
+                                }
+                            },
+                            {
+                                "Key": 15,
+                                "Value": {
+                                    "$type": "DistributionFilterNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradient"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263581737023134]",
+                                    "m_componentId": 13983302912005698250
+                                }
+                            },
+                            {
+                                "Key": 16,
+                                "Value": {
+                                    "$type": "ScaleModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradient"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263581737023134]",
+                                    "m_componentId": 13079591667184987458
+                                }
+                            },
+                            {
+                                "Key": 17,
+                                "Value": {
+                                    "$type": "PositionModifierNode",
+                                    "m_inputDataSlots": [
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientX"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientY"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "Key": {
+                                                "m_name": "InboundGradientZ"
+                                            },
+                                            "Value": {
+                                                "m_value": {
+                                                    "$type": "EntityId",
+                                                    "Value": ""
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "m_vegetationEntityId": "Entity_[263581737023134]",
+                                    "m_componentId": 7912787520673119502
+                                }
+                            }
+                        ],
+                        "m_connections": [
+                            {
+                                "m_sourceEndpoint": [
+                                    8,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    9,
+                                    {
+                                        "m_name": "InboundGradient"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    3,
+                                    {
+                                        "m_name": "OutboundArea"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    7,
+                                    {
+                                        "m_name": "InboundArea"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    6,
+                                    {
+                                        "m_name": "OutboundArea"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    7,
+                                    {
+                                        "m_name": "InboundArea",
+                                        "m_subId": 1
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    1,
+                                    {
+                                        "m_name": "Bounds"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    3,
+                                    {
+                                        "m_name": "PlacementBounds"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    1,
+                                    {
+                                        "m_name": "Bounds"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    6,
+                                    {
+                                        "m_name": "PlacementBounds"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    2,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    10,
+                                    {
+                                        "m_name": "InboundGradientZ"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    4,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    11,
+                                    {
+                                        "m_name": "InboundGradient"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    2,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    12,
+                                    {
+                                        "m_name": "InboundGradient"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    2,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    13,
+                                    {
+                                        "m_name": "InboundGradientX"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    2,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    13,
+                                    {
+                                        "m_name": "InboundGradientY"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    5,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    14,
+                                    {
+                                        "m_name": "InboundGradientZ"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    9,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    15,
+                                    {
+                                        "m_name": "InboundGradient"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    5,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    16,
+                                    {
+                                        "m_name": "InboundGradient"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    5,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    17,
+                                    {
+                                        "m_name": "InboundGradientX"
+                                    }
+                                ]
+                            },
+                            {
+                                "m_sourceEndpoint": [
+                                    5,
+                                    {
+                                        "m_name": "OutboundGradient"
+                                    }
+                                ],
+                                "m_targetEndpoint": [
+                                    17,
+                                    {
+                                        "m_name": "InboundGradientY"
+                                    }
+                                ]
+                            }
+                        ],
+                        "m_uiMetadata": {
+                            "m_sceneMetadata": {
+                                "ComponentData": {
+                                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                                        "$type": "SceneComponentSaveData",
+                                        "ViewParams": {
+                                            "Scale": 0.3771495156249999,
+                                            "AnchorX": -498.4760437011719,
+                                            "AnchorY": 808.6978149414063
+                                        }
+                                    }
+                                }
+                            },
+                            "m_nodeMetadata": [
+                                {
+                                    "Key": 2,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "GradientNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    100.0,
+                                                    580.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{2D583FA2-5659-491F-8914-6302420E3F0B}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 3,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    480.0,
+                                                    600.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{A26480C4-A80B-4B36-ADE1-918E4541EA2B}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 5,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "GradientNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    100.0,
+                                                    1540.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{6CE9EA8B-85E7-4E17-B1D6-CA97D9D65276}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 6,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    480.0,
+                                                    1560.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{8FABE49F-1D73-46FE-8616-A982EEE46DDD}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 7,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    840.0,
+                                                    1580.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{C5EEBC1D-B91B-4852-A41D-425C6FED3FB9}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 9,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "GradientModifierNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    480.0,
+                                                    2060.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{5EB76670-0CBE-4F2A-9AE7-F65709D0BE92}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 10,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    147.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{5CB69A73-F7BA-4F76-AB86-F343052C3D7D}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 11,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    367.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{235DEBEC-E3F8-43C1-BA7E-41475B834D70}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 12,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    288.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{9E56E7B6-2ECE-42F9-9A23-FF7D192209D2}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 13,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    6.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{61759FE6-E6F7-4F4B-819B-FBFE125D7389}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 14,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    147.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{0AC1C6C8-7CC1-4068-A87D-F4B92AE8FCAF}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 15,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    367.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{5D698B90-830F-46FE-ADD8-6164EA098C3E}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 16,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    288.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{9DE6DE4A-2E6F-44BA-B292-3CD2215C1D5B}"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "Key": 17,
+                                    "Value": {
+                                        "ComponentData": {
+                                            "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                                "$type": "NodeSaveData"
+                                            },
+                                            "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                                "$type": "GeneralNodeTitleComponentSaveData",
+                                                "PaletteOverride": "VegetationAreaNodeTitlePalette"
+                                            },
+                                            "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                                "$type": "GeometrySaveData",
+                                                "Position": [
+                                                    6.0,
+                                                    6.0
+                                                ]
+                                            },
+                                            "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                                "$type": "StylingComponentSaveData"
+                                            },
+                                            "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                                "$type": "PersistentIdComponentSaveData",
+                                                "PersistentId": "{57FA822D-629F-4949-A8D7-D675544EBC0A}"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "m_nodeWrappings": [
+                            {
+                                "Key": 10,
+                                "Value": [
+                                    3,
+                                    1
+                                ]
+                            },
+                            {
+                                "Key": 11,
+                                "Value": [
+                                    3,
+                                    6
+                                ]
+                            },
+                            {
+                                "Key": 12,
+                                "Value": [
+                                    3,
+                                    2
+                                ]
+                            },
+                            {
+                                "Key": 13,
+                                "Value": [
+                                    3,
+                                    {}
+                                ]
+                            },
+                            {
+                                "Key": 14,
+                                "Value": [
+                                    6,
+                                    1
+                                ]
+                            },
+                            {
+                                "Key": 15,
+                                "Value": [
+                                    6,
+                                    6
+                                ]
+                            },
+                            {
+                                "Key": 16,
+                                "Value": [
+                                    6,
+                                    2
+                                ]
+                            },
+                            {
+                                "Key": 17,
+                                "Value": [
+                                    6,
+                                    {}
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "Component_[17574651838531525263]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 17574651838531525263,
+                    "Child Entity Order": [
+                        "Entity_[263607506826910]"
+                    ]
+                },
+                "Component_[3086205760978540160]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 3086205760978540160
+                },
+                "Component_[3102230753208284750]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 3102230753208284750,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 5796173638130327223
+                        },
+                        {
+                            "ComponentId": 17500735767968801510,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[4695341524212000585]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 4695341524212000585
+                },
+                "Component_[5796173638130327223]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 5796173638130327223,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[8278362871021770878]": {
+                    "$type": "SelectionComponent",
+                    "Id": 8278362871021770878
+                }
+            }
+        },
+        "Entity_[263603211859614]": {
+            "Id": "Entity_[263603211859614]",
+            "Name": "PerlinNoise",
+            "Components": {
+                "Component_[10006546776757889020]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 10006546776757889020
+                },
+                "Component_[10160640699095155981]": {
+                    "$type": "EditorPerlinGradientComponent",
+                    "Id": 10160640699095155981,
+                    "Configuration": {
+                        "randomSeed": 33,
+                        "frequency": 0.25
+                    },
+                    "PreviewEntity": "Entity_[263603211859614]"
+                },
+                "Component_[11506183926478566822]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 11506183926478566822
+                },
+                "Component_[13160180411150366392]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 13160180411150366392
+                },
+                "Component_[15083697380300161163]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15083697380300161163
+                },
+                "Component_[15404456223257061245]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 15404456223257061245,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 6484803030406851652
+                        },
+                        {
+                            "ComponentId": 4912800286535654244,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 2395166459126906105,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 10160640699095155981,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[2395166459126906105]": {
+                    "$type": "EditorGradientTransformComponent",
+                    "Id": 2395166459126906105,
+                    "Configuration": {
+                        "ShapeReference": "",
+                        "Bounds": [
+                            50.0,
+                            50.0,
+                            1.0
+                        ]
+                    }
+                },
+                "Component_[4417011400526470160]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4417011400526470160
+                },
+                "Component_[4601061670472962302]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 4601061670472962302
+                },
+                "Component_[4912800286535654244]": {
+                    "$type": "EditorReferenceShapeComponent",
+                    "Id": 4912800286535654244,
+                    "Configuration": {
+                        "ShapeEntityId": "Entity_[263607506826910]"
+                    }
+                },
+                "Component_[6233982345083723563]": {
+                    "$type": "SelectionComponent",
+                    "Id": 6233982345083723563
+                },
+                "Component_[6484803030406851652]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 6484803030406851652,
+                    "Parent Entity": "Entity_[263573147088542]"
+                },
+                "Component_[6813813525871080299]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 6813813525871080299
+                }
+            }
+        },
+        "Entity_[263607506826910]": {
+            "Id": "Entity_[263607506826910]",
+            "Name": "BushFlowerBlender",
+            "Components": {
+                "Component_[13725600808872754587]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 13725600808872754587
+                },
+                "Component_[15959807606564505710]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 15959807606564505710,
+                    "Parent Entity": "Entity_[263598916892318]"
+                },
+                "Component_[1596826146661515925]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 1596826146661515925
+                },
+                "Component_[4525591661239956058]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 4525591661239956058
+                },
+                "Component_[6683290476113150719]": {
+                    "$type": "EditorCylinderShapeComponent",
+                    "Id": 6683290476113150719,
+                    "CylinderShape": {
+                        "Configuration": {
+                            "Radius": 25.0
+                        }
+                    }
+                },
+                "Component_[6879394931668195375]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 6879394931668195375,
+                    "Child Entity Order": [
+                        "Entity_[263573147088542]",
+                        "Entity_[263581737023134]"
+                    ]
+                },
+                "Component_[7229206794941734410]": {
+                    "$type": "EditorAreaBlenderComponent",
+                    "Id": 7229206794941734410,
+                    "Configuration": {
+                        "Operations": [
+                            "Entity_[263573147088542]",
+                            "Entity_[263581737023134]"
+                        ]
+                    },
+                    "PreviewEntity": "Entity_[263607506826910]"
+                },
+                "Component_[8772711204845372843]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 8772711204845372843
+                },
+                "Component_[8959345022109725835]": {
+                    "$type": "SelectionComponent",
+                    "Id": 8959345022109725835
+                },
+                "Component_[9094488642973843583]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 9094488642973843583
+                },
+                "Component_[9112960617967513749]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 9112960617967513749,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 15959807606564505710
+                        },
+                        {
+                            "ComponentId": 7229206794941734410,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 6683290476113150719,
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[9541665258597207652]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 9541665258597207652
+                }
+            }
+        }
+    }
+}

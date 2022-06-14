@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FloatEpsilon",
+            "base": "FloatEpsilon",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Float Epsilon"
+                "name": "Float Epsilon",
+                "category": "Constants/Numeric"
             },
             "methods": [
                 {
-                    "key": "GetFloatEpsilon",
+                    "base": "GetFloatEpsilon",
                     "details": {
-                        "name": "Get Float Epsilon"
+                        "name": "Float Epsilon"
                     },
                     "results": [
                         {

@@ -18,6 +18,7 @@
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -35,7 +36,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -43,8 +43,6 @@
 
 #include "ViewManager.h"
 #include "AnimationContext.h"
-#include "UndoViewPosition.h"
-#include "UndoViewRotation.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
@@ -157,20 +155,20 @@ struct SSystemUserCallback
         }
     }
 
-    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
-            return IDOK;
+            return;
         }
 
         const UINT kMessageBoxButtonMask = 0x000f;
         if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
         {
             static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return IDOK;
+            return;
         }
-        return CryMessageBox(text, caption, uType);
+        CryMessageBox(text, caption, uType);
     }
 
     void OnSplashScreenDone()
@@ -443,7 +441,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     REGISTER_COMMAND("quit", CGameEngine::HandleQuitRequest, VF_RESTRICTEDMODE, "Quit/Shutdown the engine");
 
     EBUS_EVENT(CrySystemEventBus, OnCryEditorInitialized);
-    
+
     return AZ::Success();
 }
 
@@ -466,7 +464,7 @@ void CGameEngine::SetLevelPath(const QString& path)
     const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
     const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
-    // Store off if 
+    // Store off if
     if (QFileInfo(path + oldExtension).exists())
     {
         m_levelExtension = oldExtension;
@@ -479,7 +477,7 @@ void CGameEngine::SetLevelPath(const QString& path)
 
 bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
-    bool bReleaseResources)
+    [[maybe_unused]] bool bReleaseResources)
 {
      m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
@@ -491,7 +489,7 @@ bool CGameEngine::LoadLevel(
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -502,22 +500,6 @@ bool CGameEngine::LoadLevel(
         {
             CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
         }
-    }
-
-    // Initialize physics grid.
-    if (bReleaseResources)
-    {
-        AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-        int physicsEntityGridSize = static_cast<int>(terrainAabb.GetXExtent());
-
-        //CryPhysics under performs if physicsEntityGridSize < nTerrainSize.
-        if (physicsEntityGridSize <= 0)
-        {
-            ICVar* pCvar = m_pISystem->GetIConsole()->GetCVar("e_PhysEntityGridSizeDefault");
-            physicsEntityGridSize = pCvar ? pCvar->GetIVal() : 4096;
-        }
-
     }
 
     // Audio: notify audio of level loading start?
@@ -594,13 +576,6 @@ void CGameEngine::SwitchToInEditor()
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
-
-
-    // reset UI system
-    if (gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Reset();
-    }
 
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.

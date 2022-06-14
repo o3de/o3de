@@ -18,10 +18,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
-#include <Entity/EntityUtilityComponent.h>
-#include <Prefab/PrefabSystemComponentInterface.h>
-#include <Prefab/PrefabSystemScriptingBus.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -173,10 +169,13 @@ namespace AZ::SceneAPI::Behaviors
         UnloadPython();
     }
 
-    bool ScriptProcessorRuleBehavior::LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath)
+    bool ScriptProcessorRuleBehavior::LoadPython(const AZ::SceneAPI::Containers::Scene& scene, AZStd::string& scriptPath, Events::ProcessingResult& fallbackResult)
     {
+        using namespace AZ::SceneAPI;
+
+        fallbackResult = Events::ProcessingResult::Failure;
         int scriptDiscoveryAttempts = 0;
-        const AZ::SceneAPI::Containers::SceneManifest& manifest = scene.GetManifest();
+        const Containers::SceneManifest& manifest = scene.GetManifest();
         auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(manifest.GetValueStorage());
         for (const auto& scriptItem : view)
         {
@@ -188,6 +187,8 @@ namespace AZ::SceneAPI::Behaviors
             }
 
             ++scriptDiscoveryAttempts;
+            fallbackResult = (scriptItem.GetScriptProcessorFallbackLogic() == DataTypes::ScriptProcessorFallbackLogic::ContinueBuild) ?
+                Events::ProcessingResult::Ignored : Events::ProcessingResult::Failure;
 
             // check for file exist via absolute path
             if (!IO::FileIOBase::GetInstance()->Exists(scriptFilename.c_str()))
@@ -301,7 +302,8 @@ namespace AZ::SceneAPI::Behaviors
             }
         };
 
-        if (LoadPython(context.GetScene(), scriptPath))
+        [[maybe_unused]] Events::ProcessingResult fallbackResult;
+        if (LoadPython(context.GetScene(), scriptPath, fallbackResult))
         {
             EditorPythonConsoleNotificationHandler logger;
             m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
@@ -333,8 +335,9 @@ namespace AZ::SceneAPI::Behaviors
             return Events::ProcessingResult::Ignored;
         }
 
+        Events::ProcessingResult fallbackResult;
         AZStd::string scriptPath;
-        if (LoadPython(scene, scriptPath))
+        if (LoadPython(scene, scriptPath, fallbackResult))
         {
             AZStd::string manifestUpdate;
             auto executeCallback = [&scene, &manifestUpdate, &scriptPath]()
@@ -349,8 +352,11 @@ namespace AZ::SceneAPI::Behaviors
             EditorPythonConsoleNotificationHandler logger;
             m_editorPythonEventsInterface->ExecuteWithLock(executeCallback);
 
-            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
-            AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
+            // if the returned scene manifest is empty then ignore the script update
+            if (manifestUpdate.empty())
+            {
+                return Events::ProcessingResult::Ignored;
+            }
 
             // attempt to load the manifest string back to a JSON-scene-manifest
             auto sceneManifestLoader = AZStd::make_unique<AZ::SceneAPI::Containers::SceneManifest>();
@@ -363,6 +369,11 @@ namespace AZ::SceneAPI::Behaviors
                     scene.GetManifest().AddEntry(sceneManifestLoader->GetValue(entryIndex));
                 }
                 return Events::ProcessingResult::Success;
+            }
+            else
+            {
+                // if the manifest was not updated by the script, then return back the fallback result
+                return fallbackResult;
             }
         }
         return Events::ProcessingResult::Ignored;

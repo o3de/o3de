@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TriggerNotificationBus",
+            "base": "TriggerNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTriggerEnter",
+                    "base": "OnTriggerEnter",
                     "details": {
                         "name": "On Trigger Enter",
                         "tooltip": "Triggered when another collider enters this trigger"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnTriggerExit",
+                    "base": "OnTriggerExit",
                     "details": {
                         "name": "On Trigger Exit",
                         "tooltip": "Triggered when another collider exits this trigger"

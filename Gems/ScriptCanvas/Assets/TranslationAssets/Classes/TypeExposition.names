@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TypeExposition",
+            "base": "TypeExposition",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Reflect_AZStd__array_AZ__Vector3_2",
+                    "base": "Reflect_AZStd__array_AZ__Vector3_2",
                     "context": "TypeExposition",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "Reflect_AZ__Outcome_AZ__Vector3_void",
+                    "base": "Reflect_AZ__Outcome_AZ__Vector3_void",
                     "context": "TypeExposition",
                     "entry": {
                         "name": "In",

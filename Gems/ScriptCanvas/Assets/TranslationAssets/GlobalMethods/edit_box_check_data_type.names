@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "edit_box_check_data_type",
+            "base": "edit_box_check_data_type",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "edit_box_check_data_type",
+                    "base": "edit_box_check_data_type",
                     "context": "Global",
                     "entry": {
                         "name": "In",

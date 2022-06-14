@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDropTargetBus",
+            "base": "UiDropTargetBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDropTargetBus",
+                "name": "UI Drop Target",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetOnDropActionName",
+                    "base": "GetOnDropActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get On Drop Action Name"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetOnDropActionName",
+                    "base": "SetOnDropActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set On Drop Action Name"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetDropState",
+                    "base": "GetDropState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Drop State"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetDropState",
+                    "base": "SetDropState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Drop State"

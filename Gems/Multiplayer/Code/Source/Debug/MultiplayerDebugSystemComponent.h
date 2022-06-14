@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include "MultiplayerDebugAuditTrail.h"
 #include "MultiplayerDebugHierarchyReporter.h"
+#include "MultiplayerDebugPerEntityReporter.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <Debug/MultiplayerDebugPerEntityReporter.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <Debug/MultiplayerDebugNetworkMetrics.h>
 #include <Debug/MultiplayerDebugMultiplayerMetrics.h>
 #include <Multiplayer/IMultiplayerDebug.h>
@@ -33,6 +35,9 @@ namespace Multiplayer
 #endif
     {
     public:
+        static constexpr char HOST_BUTTON_TITLE[] = "Host";
+        static constexpr char LAUNCH_LOCAL_CLIENT_BUTTON_TITLE[] = "Launch Local Client";
+
         AZ_COMPONENT(MultiplayerDebugSystemComponent, "{060BF3F1-0BFE-4FCE-9C3C-EE991F0DA581}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -53,6 +58,12 @@ namespace Multiplayer
         //! @{
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
+        void AddAuditEntry(
+            const AuditCategory category,
+            const ClientInputId inputId,
+            const HostFrameId frameId,
+            const AZStd::string& name,
+            AZStd::vector<MultiplayerAuditingElement>&& entryDetails) override;
         //! @}
 
         //! ImGui::ImGuiUpdateListenerBus overrides
@@ -61,6 +72,10 @@ namespace Multiplayer
         void OnImGuiUpdate() override;
         //! @}
     private:
+
+        //! Constructs a filtered version of the audit trail based on a search string
+        void FilterAuditTrail();
+
         bool m_displayNetworkingStats = false;
         AZStd::unique_ptr<MultiplayerDebugNetworkMetrics> m_networkMetrics;
 
@@ -72,6 +87,19 @@ namespace Multiplayer
 
         bool m_displayHierarchyDebugger = false;
         AZStd::unique_ptr<MultiplayerDebugHierarchyReporter> m_hierarchyDebugger;
+
+        bool m_displayNetAuditTrail = false;
+        AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
+
+        AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown; //! The last system cursor state.
+
+        AZStd::string m_lastFilter;
+        AZStd::deque<AuditTrailInput> m_auditTrailElems;
+        AZStd::deque<AuditTrailInput> m_committedAuditTrail;
+        AZStd::deque<AuditTrailInput> m_pendingAuditTrail;
+        AZStd::deque<AuditTrailInput> m_filteredAuditTrail;
+
+        AZ::ApplicationTypeQuery m_applicationType;
 #endif
     };
 }

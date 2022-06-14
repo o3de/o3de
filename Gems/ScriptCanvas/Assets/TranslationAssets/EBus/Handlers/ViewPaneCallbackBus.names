@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ViewPaneCallbackBus",
+            "base": "ViewPaneCallbackBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateViewPaneWidget",
+                    "base": "CreateViewPaneWidget",
                     "details": {
                         "name": "CreateViewPaneWidget"
                     },

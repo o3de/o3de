@@ -16,11 +16,9 @@ namespace AZ
     {
         class Image;
 
-        /**
-         * ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
-         * It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
-         * (mip levels / array slices). They can additionally override the base format of the image.
-         */
+        //! ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
+        //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
+        //! (mip levels / array slices). They can additionally override the base format of the image
         class ImageView
             : public ResourceView
         {
@@ -28,22 +26,28 @@ namespace AZ
             AZ_RTTI(ImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", ResourceView);
             virtual ~ImageView() = default;
 
-            /// Initializes the image view.
+            //! Initializes the image view.
             ResultCode Init(const Image& image, const ImageViewDescriptor& viewDescriptor);
 
-            /// Returns the view descriptor used at initialization time.
+            //! Returns the view descriptor used at initialization time.
             const ImageViewDescriptor& GetDescriptor() const;
 
-            /// Returns the image associated with this view.
+            //! Returns the image associated with this view.
             const Image& GetImage() const;
 
-            /// Returns whether the view covers the entire image (i.e. isn't just a subset).
+            //! Returns whether the view covers the entire image (i.e. isn't just a subset).
             bool IsFullView() const override final;
+
+            //! Returns the hash of the view.
+            HashValue64 GetHash() const;
+
+        protected:
+            HashValue64 m_hash = HashValue64{ 0 };
 
         private:
             bool ValidateForInit(const Image& image, const ImageViewDescriptor& viewDescriptor) const;
 
-            /// The RHI descriptor for this view.
+            // The RHI descriptor for this view.
             ImageViewDescriptor m_descriptor;
         };
     }

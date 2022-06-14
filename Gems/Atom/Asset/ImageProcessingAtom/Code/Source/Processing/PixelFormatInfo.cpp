@@ -10,6 +10,8 @@
 #include <Processing/PixelFormatInfo.h>
 #include <Processing/DDSHeader.h>
 
+#include <AzCore/Math/MathUtils.h>
+
 namespace ImageProcessingAtom
 {
     CPixelFormats* CPixelFormats::s_instance = nullptr;
@@ -50,6 +52,24 @@ namespace ImageProcessingAtom
             return true;
         }
         return false;
+    }
+
+    bool IsHDRFormat(EPixelFormat fmt)
+    {
+        switch (fmt)
+        {
+        case ePixelFormat_BC6UH:
+        case ePixelFormat_R9G9B9E5:
+        case ePixelFormat_R32G32B32A32F:
+        case ePixelFormat_R32G32F:
+        case ePixelFormat_R32F:
+        case ePixelFormat_R16G16B16A16F:
+        case ePixelFormat_R16G16F:
+        case ePixelFormat_R16F:
+            return true;
+        default:
+            return false;
+        }
     }
 
     PixelFormatInfo::PixelFormatInfo(
@@ -352,11 +372,11 @@ namespace ImageProcessingAtom
         {
             if (outWidth % pFormatInfo->blockWidth != 0)
             {
-                outWidth = ((outWidth + pFormatInfo->blockWidth - 1) / pFormatInfo->blockWidth) * pFormatInfo->blockWidth;
+                outWidth = AZ::RoundUpToMultiple(outWidth, pFormatInfo->blockWidth);
             }
             if (outHeight % pFormatInfo->blockHeight != 0)
             {
-                outHeight = ((outHeight + pFormatInfo->blockHeight - 1) / pFormatInfo->blockHeight) * pFormatInfo->blockHeight;
+                outHeight = AZ::RoundUpToMultiple(outHeight, pFormatInfo->blockHeight);
             }
         }
     }
@@ -372,10 +392,11 @@ namespace ImageProcessingAtom
             return 0;
         }
 
-        // get number of blocks (ceiling round up for block count) and multiply with bits per block. Divided by 8 to get
+        // get number of blocks and multiply with bits per block. Divided by 8 to get
         // final byte size
-        return (((imageWidth + pFormatInfo->blockWidth - 1) / pFormatInfo->blockWidth) *
-                ((imageHeight + pFormatInfo->blockHeight - 1) / pFormatInfo->blockHeight) * pFormatInfo->bitsPerBlock) / 8;
+        return (AZ::DivideAndRoundUp(imageWidth, pFormatInfo->blockWidth) *
+                AZ::DivideAndRoundUp(imageHeight, pFormatInfo->blockHeight) *
+                pFormatInfo->bitsPerBlock) / 8;
     }
 
     bool CPixelFormats::IsFormatSingleChannel(EPixelFormat fmt)

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "RandomGradientComponentTypeId",
+            "base": "RandomGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Random Gradient Component Type Id"
+                "name": "Random Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetRandomGradientComponentTypeId",
+                    "base": "GetRandomGradientComponentTypeId",
                     "details": {
                         "name": "Get Random Gradient Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SequenceComponentRequestBus",
+            "base": "SequenceComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetPlaySpeed",
+                    "base": "GetPlaySpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPlaySpeed"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "JumpToTime",
+                    "base": "JumpToTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Jump To Time"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "Resume",
+                    "base": "Resume",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Resume"
@@ -71,7 +71,7 @@
                     }
                 },
                 {
-                    "key": "JumpToEnd",
+                    "base": "JumpToEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Jump To End"
@@ -86,7 +86,7 @@
                     }
                 },
                 {
-                    "key": "GetCurrentPlayTime",
+                    "base": "GetCurrentPlayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Current Play Time"
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "Pause",
+                    "base": "Pause",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Pause"
@@ -124,7 +124,7 @@
                     }
                 },
                 {
-                    "key": "PlayBetweenTimes",
+                    "base": "PlayBetweenTimes",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke PlayBetweenTimes"
@@ -153,7 +153,7 @@
                     ]
                 },
                 {
-                    "key": "Stop",
+                    "base": "Stop",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stop"
@@ -168,7 +168,7 @@
                     }
                 },
                 {
-                    "key": "JumpToBeginning",
+                    "base": "JumpToBeginning",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Jump To Beginning"
@@ -183,7 +183,7 @@
                     }
                 },
                 {
-                    "key": "Play",
+                    "base": "Play",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Play"
@@ -198,7 +198,7 @@
                     }
                 },
                 {
-                    "key": "SetPlaySpeed",
+                    "base": "SetPlaySpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetPlaySpeed"

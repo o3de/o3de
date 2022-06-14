@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiLayoutFitterBus",
+            "base": "UiLayoutFitterBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutFitterBus",
+                "name": "UI Layout Fitter",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetHorizontalFit",
+                    "base": "GetHorizontalFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Fit"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalFit",
+                    "base": "SetHorizontalFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Fit"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalFit",
+                    "base": "GetVerticalFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Fit"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalFit",
+                    "base": "SetVerticalFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Fit"

@@ -1,23 +1,16 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.11546501517295838,
-                0.11546501517295838,
-                0.11546501517295838,
-                1.0
-            ]
-        },
-        "roughness": {
-            "factor": 0.0
-        },
-        "specularF0": {
-            "factor": 1.0,
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
-        }
+    "propertyValues": {
+        "baseColor.color": [
+            0.11546501517295837,
+            0.11546501517295837,
+            0.11546501517295837,
+            1.0
+        ],
+        "roughness.factor": 0.0,
+        "specularF0.factor": 1.0,
+        "specularF0.textureMap": "TestData/Objects/cube/cube_diff.tif"
     }
 }

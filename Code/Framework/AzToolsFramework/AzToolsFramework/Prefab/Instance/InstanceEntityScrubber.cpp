@@ -12,11 +12,11 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        InstanceEntityScrubber::InstanceEntityScrubber(Instance::EntityList& entities)
+        InstanceEntityScrubber::InstanceEntityScrubber(EntityList& entities)
             : m_entities(entities)
         {}
 
-        void InstanceEntityScrubber::AddEntitiesToScrub(const EntityList& entities)
+        void InstanceEntityScrubber::AddEntitiesToScrub(const AZStd::span<AZ::Entity*>& entities)
         {
             m_entities.insert(m_entities.end(), entities.begin(), entities.end());
         }

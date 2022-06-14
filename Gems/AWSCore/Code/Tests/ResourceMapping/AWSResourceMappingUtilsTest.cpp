@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <ResourceMapping/AWSResourceMappingUtils.h>
 #include <TestFramework/AWSCoreFixture.h>
 
@@ -18,7 +16,7 @@ static constexpr const char TEST_VALID_RESTAPI_REGION[] = "us-west-2";
 static constexpr const char TEST_VALID_RESTAPI_CHINA_REGION[] = "cn-north-1";
 static constexpr const char TEST_VALID_RESTAPI_STAGE[] = "prod";
 
-using AWSResourceMappingUtilsTest = UnitTest::ScopedAllocatorSetupFixture;
+using AWSResourceMappingUtilsTest = AWSCoreFixture;
 
 TEST_F(AWSResourceMappingUtilsTest, FormatRESTApiUrl_PassingValidArguments_ReturnExpectedResult)
 {

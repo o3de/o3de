@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_One",
+            "base": "BlendFactor_One",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ One"
+                "name": "One",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_One",
+                    "base": "GetBlendFactor_One",
                     "details": {
-                        "name": "Get Blend Factor_ One"
+                        "name": "Get One"
                     },
                     "results": [
                         {

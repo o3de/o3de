@@ -40,7 +40,7 @@ Node Path: RootNode.Cylinder.Cylinder_1
 Node Type: MeshData
 	Positions: Count 192. Hash: 1283526254311745349
 	Normals: Count 192. Hash: 1873340970602844856
-	FaceList: Count 124. Hash: 3728991722746136013
+	FaceList: Count 124. Hash: 8546457964849634958
 	FaceMaterialIds: Count 124. Hash: 2372486708814455910
 
 Node Name: Cylinder_2
@@ -261,14 +261,14 @@ Node Type: MaterialData
 Node Name: TangentSet_0
 Node Path: RootNode.Cylinder.Cylinder_1.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 192. Hash: 11165448242141781141
+	Tangents: Count 192. Hash: 13347865366302598201
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
 Node Path: RootNode.Cylinder.Cylinder_1.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 192. Hash: 7987814487334449536
+	Bitangents: Count 192. Hash: 11177881960262055002
 	GenerationMethod: 1
 
 Node Name: transform

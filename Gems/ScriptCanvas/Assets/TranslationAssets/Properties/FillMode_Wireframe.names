@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FillMode_Wireframe",
+            "base": "FillMode_Wireframe",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Wireframe"
+                "name": "Wireframe",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Wireframe",
+                    "base": "GetFillMode_Wireframe",
                     "details": {
-                        "name": "Get Fill Mode_ Wireframe"
+                        "name": "Wireframe"
                     },
                     "results": [
                         {

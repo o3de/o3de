@@ -113,9 +113,9 @@ namespace AZ
             //! ShaderVariantAsset is loaded and ready.
             //! In the mean time, if the required variant is not available this function
             //! returns the Root Variant.
-            Data::Asset<ShaderVariantAsset> GetVariant(
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(
                 const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex);
-            Data::Asset<ShaderVariantAsset> GetVariant(const ShaderVariantId& shaderVariantId) { return GetVariant(shaderVariantId, DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(const ShaderVariantId& shaderVariantId) { return GetVariantAsset(shaderVariantId, DefaultSupervariantIndex); }
 
             //! Finds the best matching shader variant and returns its StableId.
             //! This function first loads and caches the ShaderVariantTreeAsset (if not done before).
@@ -131,12 +131,12 @@ namespace AZ
             //! Next time around if the variant has been loaded this function will return it. Alternatively
             //! the caller can register with the ShaderVariantFinderNotificationBus to get the asset as soon as is available.
             //! This function is thread safe.
-            Data::Asset<ShaderVariantAsset> GetVariant(
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(
                 ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex) const;
-            Data::Asset<ShaderVariantAsset> GetVariant(ShaderVariantStableId shaderVariantStableId) const { return GetVariant(shaderVariantStableId, DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(ShaderVariantStableId shaderVariantStableId) const { return GetVariantAsset(shaderVariantStableId, DefaultSupervariantIndex); }
 
-            Data::Asset<ShaderVariantAsset> GetRootVariant(SupervariantIndex supervariantIndex) const;
-            Data::Asset<ShaderVariantAsset> GetRootVariant() const { return GetRootVariant(DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetRootVariantAsset(SupervariantIndex supervariantIndex) const;
+            Data::Asset<ShaderVariantAsset> GetRootVariantAsset() const { return GetRootVariantAsset(DefaultSupervariantIndex); }
 
 
             //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
@@ -158,8 +158,8 @@ namespace AZ
 
 
             //! Returns the set of shader resource group layouts owned by a given supervariant.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
             {
                 return GetShaderResourceGroupLayouts(DefaultSupervariantIndex);
             }

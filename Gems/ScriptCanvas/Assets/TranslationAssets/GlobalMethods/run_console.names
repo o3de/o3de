@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "run_console",
+            "base": "run_console",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "run_console",
+                    "base": "run_console",
                     "context": "Global",
                     "entry": {
                         "name": "In",

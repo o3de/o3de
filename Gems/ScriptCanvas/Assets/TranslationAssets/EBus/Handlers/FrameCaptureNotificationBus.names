@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureNotificationBus",
+            "base": "FrameCaptureNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCaptureFinished",
+                    "base": "OnCaptureFinished",
                     "details": {
                         "name": "OnCaptureFinished"
                     },

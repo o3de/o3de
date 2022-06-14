@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "BlockerComponentTypeId",
+            "base": "BlockerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blocker Component Type Id"
+                "name": "Blocker Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetBlockerComponentTypeId",
+                    "base": "GetBlockerComponentTypeId",
                     "details": {
                         "name": "Get Blocker Component Type Id"
                     },

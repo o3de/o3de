@@ -1,42 +1,41 @@
 {
     "entries": [
         {
-            "key": "{DC17E19F-3829-410D-9A0B-AD60C6066DAA}",
+            "base": "{DC17E19F-3829-410D-9A0B-AD60C6066DAA}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Divide (/)",
                 "category": "Math",
-                "tooltip": "Divides two or more values",
-                "subtitle": "Math"
+                "tooltip": "Divides two or more values"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_1",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

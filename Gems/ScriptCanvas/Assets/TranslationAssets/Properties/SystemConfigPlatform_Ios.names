@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Ios",
+            "base": "SystemConfigPlatform_Ios",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Ios"
+                "name": "Ios",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Ios",
+                    "base": "GetSystemConfigPlatform_Ios",
                     "details": {
-                        "name": "Get System Config Platform_ Ios"
+                        "name": "Ios"
                     },
                     "results": [
                         {

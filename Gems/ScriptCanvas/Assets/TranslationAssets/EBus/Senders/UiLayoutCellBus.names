@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiLayoutCellBus",
+            "base": "UiLayoutCellBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutCellBus",
+                "name": "UI Layout Cell",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetExtraHeightRatio",
+                    "base": "SetExtraHeightRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Extra Height Ratio"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetExtraWidthRatio",
+                    "base": "GetExtraWidthRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Extra Width Ratio"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetExtraWidthRatio",
+                    "base": "SetExtraWidthRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Extra Width Ratio"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaxWidth",
+                    "base": "SetMaxWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetMaxWidth"
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaxHeight",
+                    "base": "SetMaxHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetMaxHeight"
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxWidth",
+                    "base": "GetMaxWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMaxWidth"
@@ -147,7 +147,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxHeight",
+                    "base": "GetMaxHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetMaxHeight"
@@ -169,7 +169,7 @@
                     ]
                 },
                 {
-                    "key": "GetExtraHeightRatio",
+                    "base": "GetExtraHeightRatio",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Extra Height Ratio"
@@ -192,7 +192,7 @@
                     ]
                 },
                 {
-                    "key": "GetTargetHeight",
+                    "base": "GetTargetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Target Height"
@@ -215,7 +215,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinWidth",
+                    "base": "SetMinWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Min Width"
@@ -239,7 +239,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinHeight",
+                    "base": "SetMinHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Min Height"
@@ -263,7 +263,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinWidth",
+                    "base": "GetMinWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Min Width"
@@ -286,7 +286,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinHeight",
+                    "base": "GetMinHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Min Height"
@@ -309,7 +309,7 @@
                     ]
                 },
                 {
-                    "key": "GetTargetWidth",
+                    "base": "GetTargetWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Target Width"
@@ -332,7 +332,7 @@
                     ]
                 },
                 {
-                    "key": "SetTargetWidth",
+                    "base": "SetTargetWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Target Width"
@@ -356,7 +356,7 @@
                     ]
                 },
                 {
-                    "key": "SetTargetHeight",
+                    "base": "SetTargetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Target Height"

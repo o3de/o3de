@@ -10,17 +10,18 @@
 
 # Unit tests.
 ly_add_pytest(
-    NAME LyTestTools_UnitTests
+    NAME LyTestTools_Unit
     TEST_SUITE smoke
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
     COMPONENT TestTools
 )
 
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
-if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
+get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
+if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST O3DE_PROJECTS_NAME)
     # Integration tests.
+
     ly_add_pytest(
-        NAME LyTestTools_IntegTests_Sanity_smoke_no_gpu
+        NAME LyTestTools_Integ_Sanity
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/sanity_tests.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -28,12 +29,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Legacy::Editor
             AssetProcessor
             AutomatedTesting.GameLauncher
+            AutomatedTesting.ServerLauncher
             AutomatedTesting.Assets
             COMPONENT TestTools
     )
 
     ly_add_pytest(
-        NAME LyTestTools_IntegTests_ProcessUtils_smoke_no_gpu
+        NAME LyTestTools_Integ_ProcessUtils
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -41,7 +43,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
     )
     
     ly_add_pytest(
-        NAME LyTestTools_IntegTests_ProcessUtilsLinux_smoke_no_gpu
+        NAME LyTestTools_Integ_ProcessUtilsLinux
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_process_utils_linux.py
         TEST_SERIAL
         TEST_SUITE smoke
@@ -50,7 +52,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
 
     # Regression tests.
     ly_add_pytest(
-        NAME LyTestTools_IntegTests_RegressionTests_periodic_no_gpu
+        NAME LyTestTools_Integ_RegressionTests
         PATH ${CMAKE_CURRENT_LIST_DIR}/integ/test_regression.py
         TEST_SERIAL
         TEST_SUITE periodic

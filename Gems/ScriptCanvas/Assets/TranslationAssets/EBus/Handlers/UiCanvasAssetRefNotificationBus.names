@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiCanvasAssetRefNotificationBus",
+            "base": "UiCanvasAssetRefNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCanvasLoadedIntoEntity",
+                    "base": "OnCanvasLoadedIntoEntity",
                     "details": {
                         "name": "On Canvas Loaded Into Entity",
                         "tooltip": "Executes when the canvas asset reference loads a canvas"

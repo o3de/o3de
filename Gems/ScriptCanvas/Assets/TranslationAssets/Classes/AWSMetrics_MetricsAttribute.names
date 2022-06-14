@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSMetrics_MetricsAttribute",
+            "base": "AWSMetrics_MetricsAttribute",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetName",
+                    "base": "SetName",
                     "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
@@ -39,7 +39,7 @@
                     ]
                 },
                 {
-                    "key": "SetStrValue",
+                    "base": "SetStrValue",
                     "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
@@ -68,7 +68,7 @@
                     ]
                 },
                 {
-                    "key": "SetIntValue",
+                    "base": "SetIntValue",
                     "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetDoubleValue",
+                    "base": "SetDoubleValue",
                     "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",

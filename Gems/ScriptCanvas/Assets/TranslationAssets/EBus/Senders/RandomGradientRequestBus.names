@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "RandomGradientRequestBus",
+            "base": "RandomGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "RandomGradientRequestBus"
+                "name": "Random Gradient"
             },
             "methods": [
                 {
-                    "key": "GetRandomSeed",
+                    "base": "GetRandomSeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRandomSeed"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetRandomSeed",
+                    "base": "SetRandomSeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRandomSeed"

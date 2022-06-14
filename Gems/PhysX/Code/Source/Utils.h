@@ -10,10 +10,11 @@
 
 #include <PhysX/ForceRegionComponentBus.h>
 
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/std/optional.h>
@@ -40,7 +41,6 @@ namespace PhysX
 {
     class Shape;
     class ActorData;
-    class Material;
     struct TerrainConfiguration;
 
     namespace Pipeline
@@ -142,6 +142,9 @@ namespace PhysX
         AZ::Transform GetColliderLocalTransform(const AZ::Vector3& colliderRelativePosition
             , const AZ::Quaternion& colliderRelativeRotation);
 
+        //! Gets the local transform for a collider (the position and rotation relative to its entity).
+        AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair);
+
         //! Combines collider position and orientation offsets and world transform to a transform.
         AZ::Transform GetColliderWorldTransform(const AZ::Transform& worldTransform
             , const AZ::Vector3& colliderRelativePosition
@@ -188,7 +191,45 @@ namespace PhysX
         //! Returns defaultValue if the input is infinite or NaN, otherwise returns the input unchanged.
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue = AZ::Vector3::CreateZero());
 
+        AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
+            const AZStd::vector<Physics::HeightMaterialPoint>& samples,
+            const size_t col, const size_t row, 
+            const size_t numCols, const size_t numRows);
+
+        Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId);
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
+
+        //! Refresh a portion of the heightfield shape in the given scene based on the data in the HeightfieldShapeConfiguration.
+        //! @param physicsScene The scene that the shape is located in. (Needed for write-locking the scene in the thread)
+        //! @param heightfieldShape The shape containing the heightfield in the scene.
+        //! @param heightfield The updated shape configuration that contains the new data for the heightfieldShape.
+        //! @param startCol The starting column of the heightfield to refresh
+        //! @param startRow The starting row of the heightfield to refresh
+        //! @param numColsToUpdate The number of columns to refresh in the heightfieldShape
+        //! @param numRowsToUpdate The number of rows to refresh in the heightfieldShape
+        void RefreshHeightfieldShape(
+            AzPhysics::Scene* physicsScene,
+            Physics::Shape* heightfieldShape,
+            Physics::HeightfieldShapeConfiguration& heightfield,
+            const size_t startCol,
+            const size_t startRow, 
+            const size_t numColsToUpdate,
+            const size_t numRowsToUpdate);
+
+        //! Sets an array of material slots from Physics Asset.
+        //! If the configuration indicates that it should use the physics materials
+        //! assignment from the physics asset it will also use those materials for the slots.
+        //! If the shape configuration passed does not use Physics Asset this call won't do any operations.
+        //! @param shapeConfiguration Shape configuration with the information about Physics Assets.
+        //! @param materialSlots Output materials slots.
+        void SetMaterialsFromPhysicsAssetShape(const Physics::ShapeConfiguration& shapeConfiguration, Physics::MaterialSlots& materialSlots);
+
+        //! Sets an array of material slots from a heightfield provider, plus
+        //! it will also set materials to the slots.
+        //! If the entity doesn't have a heightfield provider then the default slot will be used.
+        //! @param heightfieldProviderId Entity id for the heightfield provider.
+        //! @param materialSlots Output materials slots.
+        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSlots& materialSlots);
 
         namespace Geometry
         {
@@ -213,7 +254,8 @@ namespace PhysX
             void GetConvexMeshGeometry(const physx::PxConvexMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices);
 
             //! Generates vertices and indices representing the provided heightfield geometry, optionally limited to a bounding box
-            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds);
+            void GetHeightFieldGeometry(const physx::PxHeightFieldGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices,
+                AZStd::vector<AZ::u32>& indices, const AZ::Aabb* optionalBounds);
 
             //! Generates vertices and indices representing the provided sphere geometry and optional stacks and slices
             void GetSphereGeometry(const physx::PxSphereGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::u32 stacks, const AZ::u32 slices);

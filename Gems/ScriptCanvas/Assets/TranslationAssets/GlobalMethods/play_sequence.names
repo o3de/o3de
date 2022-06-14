@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "play_sequence",
+            "base": "play_sequence",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "play_sequence",
+                    "base": "play_sequence",
                     "context": "Global",
                     "entry": {
                         "name": "In",

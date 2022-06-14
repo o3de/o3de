@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ImageGradientComponent",
+            "base": "ImageGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

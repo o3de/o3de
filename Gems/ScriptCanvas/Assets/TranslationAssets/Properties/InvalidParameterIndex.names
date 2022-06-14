@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "InvalidParameterIndex",
+            "base": "InvalidParameterIndex",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Invalid Parameter Index"
+                "name": "Invalid Parameter Index",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetInvalidParameterIndex",
+                    "base": "GetInvalidParameterIndex",
                     "details": {
                         "name": "Get Invalid Parameter Index"
                     },

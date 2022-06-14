@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SliceInstanceAddress",
+            "base": "SliceInstanceAddress",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "SliceInstanceAddress",
                     "entry": {
                         "name": "In",

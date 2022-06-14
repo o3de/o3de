@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QProgressBar>
 #include <QLabel>
+#include <QStandardPaths>
 
 #include <AzCore/std/chrono/chrono.h>
 
@@ -520,12 +521,10 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             const QString& title)
         {
             QString resultOutput;
             QProcess execProcess;
-            execProcess.setProcessEnvironment(processEnv);
             execProcess.setProcessChannelMode(QProcess::MergedChannels);
 
             QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
@@ -611,11 +610,9 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> ExecuteCommandResult(
             const QString& cmd,
             const QStringList& arguments,
-            const QProcessEnvironment& processEnv,
             int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
         {
             QProcess execProcess;
-            execProcess.setProcessEnvironment(processEnv);
             execProcess.setProcessChannelMode(QProcess::MergedChannels);
             execProcess.start(cmd, arguments);
             if (!execProcess.waitForStarted())
@@ -663,5 +660,39 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString(projectBuildPath.c_str()));
         }
 
+    QString GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
+
+        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        {
+            const AZStd::string& generalError = outcome.GetError().first;
+            const AZStd::string& detailedError = outcome.GetError().second;
+
+            if (!detailedError.empty())
+            {
+                QMessageBox errorDialog(parent);
+                errorDialog.setIcon(QMessageBox::Critical);
+                errorDialog.setWindowTitle(title);
+                errorDialog.setText(generalError.c_str());
+                errorDialog.setDetailedText(detailedError.c_str());
+                errorDialog.exec();
+            }
+            else
+            {
+                QMessageBox::critical(parent, title, generalError.c_str());
+            }
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

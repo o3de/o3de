@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiCanvasRefNotificationBus",
+            "base": "UiCanvasRefNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnCanvasRefChanged",
+                    "base": "OnCanvasRefChanged",
                     "details": {
                         "name": "On Canvas Ref Changed",
                         "tooltip": "Executes when the canvas referenced by a UiCanvasAssetRefComponent has changed. This can happen when \"Load Canvas\", \"Unload Canvas\", or \"Set Canvas Ref Entity\" is called"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "RandomGradientComponent",
+            "base": "RandomGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDropdownOptionBus",
+            "base": "UiDropdownOptionBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDropdownOptionBus",
+                "name": "UI Dropdown Option",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetTextElement",
+                    "base": "GetTextElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Element"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetIconElement",
+                    "base": "GetIconElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Icon Element"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetIconElement",
+                    "base": "SetIconElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Icon Element"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "SetOwningDropdown",
+                    "base": "SetOwningDropdown",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Owning Dropdown"
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "SetTextElement",
+                    "base": "SetTextElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text Element"
@@ -130,7 +130,7 @@
                     ]
                 },
                 {
-                    "key": "GetOwningDropdown",
+                    "base": "GetOwningDropdown",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Owning Dropdown"

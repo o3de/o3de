@@ -6,57 +6,60 @@
  *
  */
 
-#include <QVBoxLayout>
 #include <QApplication>
 #include <QClipboard>
-#include <QMimeData>
+#include <QFileDialog>
 #include <QInputDialog>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QVBoxLayout>
 
 #include <AzCore/UserSettings/UserSettings.h>
-
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-
-#include <Editor/Nodes/NodeUtils.h>
-#include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
-#include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
-#include <Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h>
-
-#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <ScriptCanvas/Bus/RequestBus.h>
-#include <ScriptCanvas/Bus/NodeIdPair.h>
-#include <ScriptCanvas/Core/GraphBus.h>
-
-#include <GraphCanvas/Components/GridBus.h>
-#include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
-#include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
-#include <GraphCanvas/Components/Nodes/NodeBus.h>
-#include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/Components/ViewBus.h>
-#include <GraphCanvas/Components/VisualBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
-#include <GraphCanvas/Utils/NodeNudgingController.h>
-#include <GraphCanvas/Utils/ConversionUtils.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
+#include <Editor/Nodes/NodeUtils.h>
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
+#include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
+#include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
+#include <Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h>
+
+#include <GraphCanvas/Components/GridBus.h>
+#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
+#include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
+#include <GraphCanvas/Components/Nodes/Group/NodeGroupBus.h>
+#include <GraphCanvas/Components/Nodes/NodeBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/Components/ViewBus.h>
+#include <GraphCanvas/Components/VisualBus.h>
+#include <GraphCanvas/Editor/EditorTypes.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphCanvas/Types/Endpoint.h>
+#include <GraphCanvas/Utils/ConversionUtils.h>
+#include <GraphCanvas/Utils/NodeNudgingController.h>
+#include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h>
+
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Bus/NodeIdPair.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Core/GraphBus.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
+#include <ScriptCanvas/Core/Node.h>
+#include <ScriptCanvas/Core/NodeBus.h>
+#include <ScriptCanvas/Core/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Slot.h>
+#include <ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.h>
+#include <ScriptCanvas/GraphCanvas/MappingBus.h>
+#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
+
+#include <ScriptEvents/ScriptEventsBus.h>
 
 #include "ScriptCanvasContextMenus.h"
 #include "Settings.h"
-
-#include <ScriptCanvas/Core/NodeBus.h>
-#include <ScriptCanvas/Core/Slot.h>
-#include <GraphCanvas/Editor/EditorTypes.h>
-#include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
-#include <ScriptCanvas/Libraries/Core/Method.h>
-#include <GraphCanvas/Types/Endpoint.h>
-#include <ScriptCanvas/Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/GraphCanvas/MappingBus.h>
-#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
-#include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
-
 
 namespace ScriptCanvasEditor
 {
@@ -516,7 +519,7 @@ namespace ScriptCanvasEditor
             GraphCanvas::SlotRequestBus::EventResult(endpoint, slotId2, &GraphCanvas::SlotRequests::GetEndpoint);
 
             bool promotedElement = false;
-            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
+            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint, false);
 
             if (promotedElement)
             {
@@ -570,29 +573,52 @@ namespace ScriptCanvasEditor
             return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
         }
 
-        // Show the selection dialog
-        bool createSlot = false;
-        VariablePaletteRequests::SlotSetup selectedSlotSetup;
+        auto variable = slot->GetVariable();
+        if (!variable)
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        ScriptCanvas::ScriptCanvasId scriptCanvasGraphId;
+        GeneralRequestBus::BroadcastResult(scriptCanvasGraphId, &GeneralRequests::GetScriptCanvasId, graphId);
+        if (!scriptCanvasGraphId.IsValid())
+        {
+            return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
+        }
+
+        VariablePaletteRequests::VariableConfigurationInput selectedSlotSetup;
+        selectedSlotSetup.m_changeVariableType = true;
+        selectedSlotSetup.m_graphVariable = variable;
+        selectedSlotSetup.m_currentName = slot->GetName();
+        selectedSlotSetup.m_currentType = slot->GetDataType();
+
         QPoint scenePoint(static_cast<int>(scenePos.GetX()), static_cast<int>(scenePos.GetY()));
-        VariablePaletteRequestBus::BroadcastResult(createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+        VariablePaletteRequests::VariableConfigurationOutput output;
+        VariablePaletteRequestBus::BroadcastResult(output, &VariablePaletteRequests::ShowVariableConfigurationWidget
+            , selectedSlotSetup, scenePoint);
 
         bool changed = false;
-        if (createSlot && !selectedSlotSetup.m_type.IsNull())
+
+        if (output.m_actionIsValid)
         {
-            if (slot)
+            if ((output.m_nameChanged && !output.m_name.empty()) || (output.m_typeChanged && output.m_type.IsValid()))
             {
-                auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
-                if (displayType.IsValid())
+                GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, scriptCanvasGraphId);
+                GraphCanvas::ScopedGraphUndoBlocker undoBlocker(graphId);
+
+                if ((output.m_nameChanged && !output.m_name.empty()))
                 {
-                    slot->SetDisplayType(displayType);
-                    changed = true;
+                    variable->SetVariableName(output.m_name);
                 }
 
-                if (!selectedSlotSetup.m_name.empty())
+                if (output.m_typeChanged && output.m_type.IsValid())
                 {
-                    slot->Rename(selectedSlotSetup.m_name);
-                    changed = true;
+                    variable->ModDatum().SetType(output.m_type, ScriptCanvas::Datum::TypeChange::Forced);
+                    ScriptCanvas::GraphRequestBus::Event(scriptCanvasGraphId, &ScriptCanvas::GraphRequests::RefreshVariableReferences
+                        , variable->GetVariableId());
                 }
+
+                changed = true;
             }
         }
 
@@ -908,7 +934,6 @@ namespace ScriptCanvasEditor
 
         return GraphCanvas::ContextMenuAction::SceneReaction::Nothing;
     }
-
 
     #include "Editor/View/Windows/moc_ScriptCanvasContextMenus.cpp"
 }

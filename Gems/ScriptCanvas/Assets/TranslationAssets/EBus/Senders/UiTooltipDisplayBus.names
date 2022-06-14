@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiTooltipDisplayBus",
+            "base": "UiTooltipDisplayBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTooltipDisplayBus",
+                "name": "UI Tooltip Display",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetAutoSize",
+                    "base": "GetAutoSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Size"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextEntity",
+                    "base": "GetTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Entity"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetDelayTime",
+                    "base": "GetDelayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Delay Time"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "SetDelayTime",
+                    "base": "SetDelayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Delay Time"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "SetDisplayTime",
+                    "base": "SetDisplayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Display Time"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "SetOffset",
+                    "base": "SetOffset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Offset"
@@ -152,7 +152,7 @@
                     ]
                 },
                 {
-                    "key": "GetOffset",
+                    "base": "GetOffset",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Offset"
@@ -175,7 +175,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoPositionMode",
+                    "base": "GetAutoPositionMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Position Mode"
@@ -198,7 +198,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoPosition",
+                    "base": "SetAutoPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Position"
@@ -222,7 +222,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoSize",
+                    "base": "SetAutoSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Size"
@@ -246,7 +246,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoPosition",
+                    "base": "GetAutoPosition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto Position"
@@ -269,7 +269,7 @@
                     ]
                 },
                 {
-                    "key": "SetTextEntity",
+                    "base": "SetTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text Entity"
@@ -293,7 +293,7 @@
                     ]
                 },
                 {
-                    "key": "GetDisplayTime",
+                    "base": "GetDisplayTime",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Display Time"
@@ -316,7 +316,7 @@
                     ]
                 },
                 {
-                    "key": "GetTriggerMode",
+                    "base": "GetTriggerMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTriggerMode"
@@ -338,7 +338,7 @@
                     ]
                 },
                 {
-                    "key": "SetTriggerMode",
+                    "base": "SetTriggerMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetTriggerMode"
@@ -360,7 +360,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoPositionMode",
+                    "base": "SetAutoPositionMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto Position Mode"

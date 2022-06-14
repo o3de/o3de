@@ -149,7 +149,7 @@ namespace O3DE::ProjectManager
 
     void ProjectSettingsScreen::OnProjectPathUpdated()
     {
-        Validate();
+        ValidateProjectName() && ValidateProjectPath();
     }
 
     bool ProjectSettingsScreen::Validate()

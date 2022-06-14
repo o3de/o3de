@@ -40,7 +40,7 @@ Node Path: RootNode.Cone.Cone_1
 Node Type: MeshData
 	Positions: Count 128. Hash: 12506421592104186200
 	Normals: Count 128. Hash: 367461522682321485
-	FaceList: Count 62. Hash: 13208951979626973193
+	FaceList: Count 62. Hash: 5910399941817424750
 	FaceMaterialIds: Count 62. Hash: 15454348664434923102
 
 Node Name: Cone_2
@@ -57,7 +57,7 @@ Node Path: RootNode.Cone.Cone_1_optimized
 Node Type: MeshData
 	Positions: Count 128. Hash: 14946490408303214595
 	Normals: Count 128. Hash: 367461522682321485
-	FaceList: Count 62. Hash: 11102693598481718079
+	FaceList: Count 62. Hash: 17210030509394354449
 	FaceMaterialIds: Count 62. Hash: 15454348664434923102
 
 Node Name: transform
@@ -389,14 +389,14 @@ Node Type: MaterialData
 Node Name: TangentSet_0
 Node Path: RootNode.Cone.Cone_1.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 128. Hash: 12695232913942738512
+	Tangents: Count 128. Hash: 11574815809363656385
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
 Node Path: RootNode.Cone.Cone_1.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 128. Hash: 9034210764777745751
+	Bitangents: Count 128. Hash: 1026129762512670051
 	GenerationMethod: 1
 
 Node Name: transform
@@ -483,14 +483,14 @@ Node Type: MeshVertexUVData
 Node Name: TangentSet_0
 Node Path: RootNode.Cone.Cone_1_optimized.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 128. Hash: 10740776669168782230
+	Tangents: Count 128. Hash: 5198081677141836233
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
 Node Path: RootNode.Cone.Cone_1_optimized.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 128. Hash: 6990068477421150065
+	Bitangents: Count 128. Hash: 6948605204859680167
 	GenerationMethod: 1
 
 Node Name: transform

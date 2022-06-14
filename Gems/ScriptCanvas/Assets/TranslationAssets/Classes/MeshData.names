@@ -1,35 +1,29 @@
 {
     "entries": [
         {
-            "key": "MeshData",
+            "base": "MeshData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MeshData"
+                "name": "Mesh Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetVertexIndex",
+                    "base": "GetVertexIndex",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetVertexIndex"
+                        "tooltip": "When signaled, this will invoke Get Vertex Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetVertexIndex is invoked"
+                        "tooltip": "Signaled after Get Vertex Index is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetVertexIndex",
-                        "category": "Other"
+                        "name": "Get Vertex Index"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -53,27 +47,20 @@
                     ]
                 },
                 {
-                    "key": "GetPosition",
+                    "base": "GetPosition",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetPosition"
+                        "tooltip": "When signaled, this will invoke Get Position"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetPosition is invoked"
+                        "tooltip": "Signaled after Get Position is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetPosition",
-                        "category": "Other"
+                        "name": "Get Position"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -85,33 +72,26 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFaceInfo",
+                    "base": "GetFaceInfo",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceInfo"
+                        "tooltip": "When signaled, this will invoke Get Face Info"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceInfo is invoked"
+                        "tooltip": "Signaled after Get Face Info is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetFaceInfo",
-                        "category": "Other"
+                        "name": "Get Face Info"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -123,34 +103,25 @@
                         {
                             "typeid": "{F9F49C1A-014F-46F5-A46F-B56D8CB46C2B}",
                             "details": {
-                                "name": "const AZ::SceneAPI::DataTypes::IMeshData::Face&"
+                                "name": "const AZ:: SceneAPI:: Data Types::I Mesh Data:: Face&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "HasNormalData",
+                    "base": "HasNormalData",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke HasNormalData"
+                        "tooltip": "When signaled, this will invoke Has Normal Data"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after HasNormalData is invoked"
+                        "tooltip": "Signaled after Has Normal Data is invoked"
                     },
                     "details": {
-                        "name": "MeshData::HasNormalData",
-                        "category": "Other"
+                        "name": "Has Normal Data"
                     },
-                    "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
@@ -161,27 +132,20 @@
                     ]
                 },
                 {
-                    "key": "GetNormal",
+                    "base": "GetNormal",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetNormal"
+                        "tooltip": "When signaled, this will invoke Get Normal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetNormal is invoked"
+                        "tooltip": "Signaled after Get Normal is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetNormal",
-                        "category": "Other"
+                        "name": "Get Normal"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -193,33 +157,26 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "const Vector3&"
+                                "name": "const Vector 3&"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetUsedPointIndexForControlPoint",
+                    "base": "GetUsedPointIndexForControlPoint",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUsedPointIndexForControlPoint"
+                        "tooltip": "When signaled, this will invoke Get Used Point Index For Control Point"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUsedPointIndexForControlPoint is invoked"
+                        "tooltip": "Signaled after Get Used Point Index For Control Point is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetUsedPointIndexForControlPoint",
-                        "category": "Other"
+                        "name": "Get Used Point Index For Control Point"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
@@ -237,28 +194,19 @@
                     ]
                 },
                 {
-                    "key": "GetVertexCount",
+                    "base": "GetVertexCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetVertexCount"
+                        "tooltip": "When signaled, this will invoke Get Vertex Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetVertexCount is invoked"
+                        "tooltip": "Signaled after Get Vertex Count is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetVertexCount",
-                        "category": "Other"
+                        "name": "Get Vertex Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
@@ -269,28 +217,19 @@
                     ]
                 },
                 {
-                    "key": "GetFaceCount",
+                    "base": "GetFaceCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceCount"
+                        "tooltip": "When signaled, this will invoke Get Face Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceCount is invoked"
+                        "tooltip": "Signaled after Get Face Count is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetFaceCount",
-                        "category": "Other"
+                        "name": "Get Face Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
@@ -301,59 +240,43 @@
                     ]
                 },
                 {
-                    "key": "GetUsedControlPointCount",
+                    "base": "GetUsedControlPointCount",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetUsedControlPointCount"
+                        "tooltip": "When signaled, this will invoke Get Used Control Point Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetUsedControlPointCount is invoked"
+                        "tooltip": "Signaled after Get Used Control Point Count is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetUsedControlPointCount",
-                        "category": "Other"
+                        "name": "Get Used Control Point Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetFaceMaterialId",
+                    "base": "GetFaceMaterialId",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetFaceMaterialId"
+                        "tooltip": "When signaled, this will invoke Get Face Material Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetFaceMaterialId is invoked"
+                        "tooltip": "Signaled after Get Face Material Id is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetFaceMaterialId",
-                        "category": "Other"
+                        "name": "Get Face Material Id"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
@@ -371,27 +294,20 @@
                     ]
                 },
                 {
-                    "key": "GetControlPointIndex",
+                    "base": "GetControlPointIndex",
                     "context": "MeshData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetControlPointIndex"
+                        "tooltip": "When signaled, this will invoke Get Control Point Index"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetControlPointIndex is invoked"
+                        "tooltip": "Signaled after Get Control Point Index is invoked"
                     },
                     "details": {
-                        "name": "MeshData::GetControlPointIndex",
-                        "category": "Other"
+                        "name": "Get Control Point Index"
                     },
                     "params": [
-                        {
-                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
-                            "details": {
-                                "name": "MeshData*"
-                            }
-                        },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {

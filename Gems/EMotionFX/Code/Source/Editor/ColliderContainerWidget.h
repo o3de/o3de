@@ -46,11 +46,11 @@ namespace EMotionFX
     public:
         ColliderPropertyNotify(ColliderWidget* colliderWidget);
 
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
+        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* node) override;
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* node) override;
 
-        void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
-        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
+        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {}
+        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* node) override;
 
         void SealUndoStack() override {}
 
@@ -166,17 +166,6 @@ namespace EMotionFX
             const MCore::RGBAColor& selectedColor,
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo);
-
-        static void RenderColliders(
-            const AzPhysics::ShapeColliderPairList& colliders,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const AZ::Color& colliderColor);
-
-        static void RenderColliders(
-            PhysicsSetup::ColliderConfigType colliderConfigType,
-            const AZ::Color& defaultColor,
-            const AZ::Color& selectedColor);
 
         static int s_layoutSpacing;
 

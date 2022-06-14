@@ -38,6 +38,7 @@
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
+    const QString s_addMenuStyleSheetAdjustments("QMenu::icon { left: 0px; right: 6px; }");
 
     QFilterButton::QFilterButton(const QIcon& icon, [[maybe_unused]] const QString& text, QWidget* parent)
         : QWidget(parent)
@@ -64,9 +65,9 @@ namespace AudioControls
         m_checkIcon.setSizePolicy(sp);
         layout->addWidget(&m_checkIcon);
         m_filterIcon.setPixmap(icon.pixmap(16, 16));
-        layout->addWidget(&m_filterIcon);
         layout->addWidget(&m_actionText);
         layout->addStretch();
+        layout->addWidget(&m_filterIcon);
         layout->setContentsMargins(margin);
         m_background->setLayout(layout);
         mainLayout->addWidget(m_background);
@@ -109,6 +110,7 @@ namespace AudioControls
         m_pATLControlsTree->viewport()->installEventFilter(this);
 
         // ************ Context Menu ************
+        m_addItemMenu.setStyleSheet(s_addMenuStyleSheetAdjustments);
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_TRIGGER), tr("Trigger"), this, SLOT(CreateTriggerControl()));
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_RTPC), tr("RTPC"), this, SLOT(CreateRTPCControl()));
         m_addItemMenu.addAction(GetControlTypeIcon(eACET_SWITCH), tr("Switch"), this, SLOT(CreateSwitchControl()));
@@ -167,6 +169,12 @@ namespace AudioControls
         pProxyModel->setSourceModel(m_pTreeModel);
         m_pATLControlsTree->setModel(pProxyModel);
         m_pProxyModel = pProxyModel;
+
+        QAction* pAction = new QAction(tr("Delete"), this);
+        pAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        pAction->setShortcut(QKeySequence::Delete);
+        connect(pAction, SIGNAL(triggered()), this, SLOT(DeleteSelectedControl()));
+        m_pATLControlsTree->addAction(pAction);
 
         connect(m_pATLControlsTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SIGNAL(SelectedControlChanged()));
         connect(m_pATLControlsTree->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(StopControlExecution()));
@@ -576,6 +584,7 @@ namespace AudioControls
             }
         }
 
+        addMenu.setStyleSheet(s_addMenuStyleSheetAdjustments);
         addMenu.addAction(GetControlTypeIcon(eACET_TRIGGER), tr("Trigger"), this, SLOT(CreateTriggerControl()));
         addMenu.addAction(GetControlTypeIcon(eACET_RTPC), tr("RTPC"), this, SLOT(CreateRTPCControl()));
         addMenu.addAction(GetControlTypeIcon(eACET_SWITCH), tr("Switch"), this, SLOT(CreateSwitchControl()));
@@ -801,6 +810,21 @@ namespace AudioControls
                                 if (eControlType  == eACET_PRELOAD)
                                 {
                                     AZ::StringFunc::Path::StripExtension(sControlName);
+                                }
+                                else if (eControlType == eACET_SWITCH_STATE)
+                                {
+                                    if (!pATLParent->SwitchStateConnectionCheck(pAudioSystemControl))
+                                    {
+                                        QMessageBox messageBox(this);
+                                        messageBox.setStandardButtons(QMessageBox::Ok);
+                                        messageBox.setDefaultButton(QMessageBox::Ok);
+                                        messageBox.setWindowTitle("Audio Controls Editor");
+                                        messageBox.setText("Not in the same switch group, connection failed.");
+                                        if (messageBox.exec() == QMessageBox::Ok)
+                                        {
+                                            return;
+                                        }
+                                    }
                                 }
                                 CATLControl* pTargetControl2 = m_pTreeModel->CreateControl(eControlType, sControlName, pATLParent);
                                 if (pTargetControl2)

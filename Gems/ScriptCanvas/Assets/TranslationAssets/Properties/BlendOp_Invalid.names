@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendOp_Invalid",
+            "base": "BlendOp_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Op_ Invalid"
+                "name": "Invalid",
+                "category": "Constants/Blend Operation"
             },
             "methods": [
                 {
-                    "key": "GetBlendOp_Invalid",
+                    "base": "GetBlendOp_Invalid",
                     "details": {
-                        "name": "Get Blend Op_ Invalid"
+                        "name": "Get Invalid"
                     },
                     "results": [
                         {

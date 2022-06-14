@@ -16,11 +16,13 @@
 
 #include <scenesrg.srgi>
 
+#include <Atom/Features/Debug.azsli>
+
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2DMS<float4>  m_reflection;
 }
@@ -40,6 +42,13 @@ VSOutput MainVS(VSInput input)
 // Pixel Shader
 PSOutput MainPS(VSOutput IN)
 {
+    if(!IsSpecularLightingEnabled() || !IsIndirectLightingEnabled())
+    {
+        PSOutput OUT;
+        OUT.m_color = float4(0, 0, 0, 0);
+        return OUT;
+    }
+
     // read reflection image, box filter samples for MSAA
     // Note: output will only be written to the sub-pixel samples that pass the stencil test
     float3 reflection = float3(0.0f, 0.0f, 0.0f);

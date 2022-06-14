@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiScaleToDeviceMode_ScaleYOnly",
+            "base": "eUiScaleToDeviceMode_ScaleYOnly",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Scale To Device Mode_ ScaleY Only"
+                "name": "Scale Y Only",
+                "category": "Constants/UI/Scale To Device Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiScaleToDeviceMode_ScaleYOnly",
+                    "base": "GeteUiScaleToDeviceMode_ScaleYOnly",
                     "details": {
-                        "name": "Gete Ui Scale To Device Mode_ ScaleY Only"
+                        "name": "Scale Y Only"
                     },
                     "results": [
                         {

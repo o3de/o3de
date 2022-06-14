@@ -46,11 +46,6 @@ namespace AZ::IO
         "If set to 0, tells Archive to try to open the file on the file system first othewise check mounted paks.\n"
         "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
         "If set to 2, tells the Archive to only open files from the pak");
-    AZ_CVAR(int, sys_PakMessageInvalidFileAccess, ArchiveVars{}.nMessageInvalidFileAccess, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "Message Box synchronous file access when in game");
-
-    AZ_CVAR(int, sys_PakWarnOnPakAccessFailures, ArchiveVars{}.nWarnOnPakAccessFails, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "If 1, access failure for Paks is treated as a warning, if zero it is only a log message.");
     AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
     AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -1213,7 +1208,7 @@ namespace AZ::IO
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (usePrefabSystemForLevels)
         {
@@ -1279,7 +1274,7 @@ namespace AZ::IO
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         AZStd::unique_lock lock(m_csZips);
         for (auto it = m_arrZips.begin(); it != m_arrZips.end();)
@@ -1980,7 +1975,7 @@ namespace AZ::IO
             AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
             return {};
         }
-        AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
         auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
         {
@@ -1999,14 +1994,16 @@ namespace AZ::IO
         return memoryBlock;
     }
 
-    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename)
+    void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath)
     {
         if (!found)
         {
-            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename);
+            auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filePath);
             if (!correctedFilename)
             {
-                AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(filename.size()), filename.data());
+                AZ_Assert(
+                    false, "Unable to resolve path for file path %.*s", aznumeric_cast<int>(filePath.Native().size()),
+                    filePath.Native().data());
                 return;
             }
 
@@ -2025,7 +2022,7 @@ namespace AZ::IO
             {
                 found = true;
 
-                info.m_archiveFilename.InitFromRelativePath(archive->GetFilePath().Native());
+                info.m_archiveFilename = archive->GetFilePath();
                 info.m_offset = pFileData->GetFileDataOffset();
                 info.m_compressedSize = entry->desc.lSizeCompressed;
                 info.m_uncompressedSize = entry->desc.lSizeUncompressed;

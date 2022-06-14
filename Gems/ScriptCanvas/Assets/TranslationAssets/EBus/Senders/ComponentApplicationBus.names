@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ComponentApplicationBus",
+            "base": "ComponentApplicationBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEntityName",
+                    "base": "GetEntityName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Entity Name"
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "SetEntityName",
+                    "base": "SetEntityName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Entity Name"

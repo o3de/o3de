@@ -26,9 +26,9 @@ def Menus_EditMenuOptions_Work():
     :return: None
     """
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     edit_menu_options = [
         ("Undo",),
@@ -40,30 +40,32 @@ def Menus_EditMenuOptions_Work():
         ("Toggle Pivot Location",),
         ("Reset Entity Transform",),
         ("Reset Manipulator",),
-        ("Reset Transform (Local)",),
-        ("Reset Transform (World)",),
         ("Hide Selection",),
         ("Show All",),
-        ("Modify", "Snap", "Snap angle"),
+        ("Lock Selection",),
+        ("Unlock All Entities",),
+        ("Modify", "Snap", "Angle snapping"),
+        ("Modify", "Snap", "Grid snapping"),
         ("Modify", "Transform Mode", "Move"),
         ("Modify", "Transform Mode", "Rotate"),
         ("Modify", "Transform Mode", "Scale"),
         ("Editor Settings", "Global Preferences"),
         ("Editor Settings", "Editor Settings Manager"),
         ("Editor Settings", "Keyboard Customization", "Customize Keyboard"),
-        ("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
-        ("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
+        # The following menu options are temporarily disabled due to https://github.com/o3de/o3de/issues/6746
+        #("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
+        #("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
     ]
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Interact with Edit Menu options
     editor_window = pyside_utils.get_editor_main_window()
     for option in edit_menu_options:
         try:
             action = pyside_utils.get_action_for_menu_path(editor_window, "Edit", *option)
+            Report.info(f"Triggering {action.iconText()}")
             action.trigger()
             action_triggered = True
         except Exception as e:

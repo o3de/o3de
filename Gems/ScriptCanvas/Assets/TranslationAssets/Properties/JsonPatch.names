@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "JsonPatch",
+            "base": "JsonPatch",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Json Patch"
+                "name": "Json Patch",
+                "category": "Constants/Json"
             },
             "methods": [
                 {
-                    "key": "GetJsonPatch",
+                    "base": "GetJsonPatch",
                     "details": {
                         "name": "Get Json Patch"
                     },

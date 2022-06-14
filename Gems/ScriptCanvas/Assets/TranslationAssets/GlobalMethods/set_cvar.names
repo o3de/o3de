@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_cvar",
+            "base": "set_cvar",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_cvar",
+                    "base": "set_cvar",
                     "context": "Global",
                     "entry": {
                         "name": "In",

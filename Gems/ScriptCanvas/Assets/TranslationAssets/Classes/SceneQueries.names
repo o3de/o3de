@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SceneQueries",
+            "base": "SceneQueries",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateRayCastRequest",
+                    "base": "CreateRayCastRequest",
                     "context": "SceneQueries",
                     "entry": {
                         "name": "In",

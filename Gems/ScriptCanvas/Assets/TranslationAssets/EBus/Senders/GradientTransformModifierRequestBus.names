@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "GradientTransformModifierRequestBus",
+            "base": "GradientTransformModifierRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GradientTransformModifierRequestBus"
+                "name": "Gradient TransformModifier"
             },
             "methods": [
                 {
-                    "key": "SetOverrideTranslate",
+                    "base": "SetOverrideTranslate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOverrideTranslate"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "GetRotate",
+                    "base": "GetRotate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRotate"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetBounds",
+                    "base": "GetBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetBounds"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetTransformType",
+                    "base": "SetTransformType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetTransformType"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideTranslate",
+                    "base": "GetOverrideTranslate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOverrideTranslate"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideBounds",
+                    "base": "GetOverrideBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOverrideBounds"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "SetRotate",
+                    "base": "SetRotate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetRotate"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "SetOverrideScale",
+                    "base": "SetOverrideScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOverrideScale"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "GetScale",
+                    "base": "GetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetScale"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "SetScale",
+                    "base": "SetScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetScale"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetIs3D",
+                    "base": "GetIs3D",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetIs3D"
@@ -251,7 +251,7 @@
                     ]
                 },
                 {
-                    "key": "SetShapeReference",
+                    "base": "SetShapeReference",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetShapeReference"
@@ -274,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "SetBounds",
+                    "base": "SetBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetBounds"
@@ -296,7 +296,7 @@
                     ]
                 },
                 {
-                    "key": "SetFrequencyZoom",
+                    "base": "SetFrequencyZoom",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetFrequencyZoom"
@@ -318,7 +318,7 @@
                     ]
                 },
                 {
-                    "key": "SetWrappingType",
+                    "base": "SetWrappingType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetWrappingType"
@@ -340,7 +340,7 @@
                     ]
                 },
                 {
-                    "key": "GetShapeReference",
+                    "base": "GetShapeReference",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShapeReference"
@@ -363,7 +363,7 @@
                     ]
                 },
                 {
-                    "key": "SetOverrideBounds",
+                    "base": "SetOverrideBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOverrideBounds"
@@ -385,7 +385,7 @@
                     ]
                 },
                 {
-                    "key": "GetTransformType",
+                    "base": "GetTransformType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTransformType"
@@ -407,7 +407,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideScale",
+                    "base": "GetOverrideScale",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOverrideScale"
@@ -429,7 +429,7 @@
                     ]
                 },
                 {
-                    "key": "SetIs3D",
+                    "base": "SetIs3D",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetIs3D"
@@ -451,7 +451,7 @@
                     ]
                 },
                 {
-                    "key": "SetAllowReference",
+                    "base": "SetAllowReference",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAllowReference"
@@ -473,7 +473,7 @@
                     ]
                 },
                 {
-                    "key": "SetTranslate",
+                    "base": "SetTranslate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetTranslate"
@@ -495,7 +495,7 @@
                     ]
                 },
                 {
-                    "key": "SetOverrideRotate",
+                    "base": "SetOverrideRotate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOverrideRotate"
@@ -517,7 +517,7 @@
                     ]
                 },
                 {
-                    "key": "GetAllowReference",
+                    "base": "GetAllowReference",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAllowReference"
@@ -539,7 +539,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranslate",
+                    "base": "GetTranslate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTranslate"
@@ -561,7 +561,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverrideRotate",
+                    "base": "GetOverrideRotate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOverrideRotate"
@@ -583,7 +583,7 @@
                     ]
                 },
                 {
-                    "key": "GetFrequencyZoom",
+                    "base": "GetFrequencyZoom",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetFrequencyZoom"
@@ -605,7 +605,7 @@
                     ]
                 },
                 {
-                    "key": "GetWrappingType",
+                    "base": "GetWrappingType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetWrappingType"

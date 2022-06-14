@@ -1,12 +1,225 @@
 {
     "entries": [
         {
-            "key": "ExportProduct",
+            "base": "ExportProduct",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "ExportProduct"
-            }
+                "name": "Export Product",
+                "category": "Scene"
+            },
+            "methods": [
+                {
+                    "base": "GetsubId",
+                    "details": {
+                        "name": "Getsub Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsubId",
+                    "details": {
+                        "name": "Setsub Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetproductDependencies",
+                    "details": {
+                        "name": "Getproduct Dependencies"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{BFBA17B6-CDE2-5239-AEE0-58DF7FA14E3C}",
+                            "details": {
+                                "name": "AZ Std::vector< SceneAPI:: Events:: Export Product, allocator>&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetproductDependencies",
+                    "details": {
+                        "name": "Setproduct Dependencies"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        },
+                        {
+                            "typeid": "{BFBA17B6-CDE2-5239-AEE0-58DF7FA14E3C}",
+                            "details": {
+                                "name": "const AZ Std::vector< SceneAPI:: Events:: Export Product, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetassetType",
+                    "details": {
+                        "name": "Getasset Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetassetType",
+                    "details": {
+                        "name": "Setasset Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getfilename",
+                    "details": {
+                        "name": "Getfilename"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setfilename",
+                    "details": {
+                        "name": "Setfilename"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsourceId",
+                    "details": {
+                        "name": "Getsource Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsourceId",
+                    "details": {
+                        "name": "Setsource Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
+                            "details": {
+                                "name": "SceneAPI:: Events:: Export Product*"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

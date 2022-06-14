@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCanvasBus",
+            "base": "UiCanvasBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasBus",
+                "name": "UI Canvas",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "ForceHoverInteractable",
+                    "base": "ForceHoverInteractable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Force Hover Interactable"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetNavigationRepeatPeriod",
+                    "base": "GetNavigationRepeatPeriod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNavigationRepeatPeriod"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetNavigationRepeatDelay",
+                    "base": "GetNavigationRepeatDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNavigationRepeatDelay"
@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "key": "GetHoverInteractable",
+                    "base": "GetHoverInteractable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Hover Interactable"
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "SetNavigationThreshold",
+                    "base": "SetNavigationThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetNavigationThreshold"
@@ -124,7 +124,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsConsumingAllInputEvents",
+                    "base": "SetIsConsumingAllInputEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Consuming All Input Events"
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "key": "SetDrawOrder",
+                    "base": "SetDrawOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Draw Order"
@@ -172,7 +172,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsPositionalInputSupported",
+                    "base": "GetIsPositionalInputSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Positional Input Supported"
@@ -195,7 +195,7 @@
                     ]
                 },
                 {
-                    "key": "RecomputeChangedLayouts",
+                    "base": "RecomputeChangedLayouts",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Recompute Changed Layouts"
@@ -210,7 +210,7 @@
                     }
                 },
                 {
-                    "key": "SetRenderTargetName",
+                    "base": "SetRenderTargetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Render Target Name"
@@ -234,7 +234,7 @@
                     ]
                 },
                 {
-                    "key": "GetTooltipDisplayElement",
+                    "base": "GetTooltipDisplayElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tooltip Display Element"
@@ -258,7 +258,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsNavigationSupported",
+                    "base": "GetIsNavigationSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Navigation Supported"
@@ -281,7 +281,7 @@
                     ]
                 },
                 {
-                    "key": "SetNavigationRepeatPeriod",
+                    "base": "SetNavigationRepeatPeriod",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetNavigationRepeatPeriod"
@@ -303,7 +303,7 @@
                     ]
                 },
                 {
-                    "key": "GetRenderTargetName",
+                    "base": "GetRenderTargetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Render Target Name"
@@ -326,7 +326,7 @@
                     ]
                 },
                 {
-                    "key": "FindElementByName",
+                    "base": "FindElementByName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Element By Name"
@@ -359,7 +359,7 @@
                     ]
                 },
                 {
-                    "key": "SetTooltipDisplayElement",
+                    "base": "SetTooltipDisplayElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Tooltip Display Element"
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildElement",
+                    "base": "GetChildElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Child Element"
@@ -416,7 +416,7 @@
                     ]
                 },
                 {
-                    "key": "GetKeepLoadedOnLevelUnload",
+                    "base": "GetKeepLoadedOnLevelUnload",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Keep Loaded On Level Unload"
@@ -439,7 +439,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsTextPixelAligned",
+                    "base": "GetIsTextPixelAligned",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Text Pixel Aligned"
@@ -462,7 +462,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsConsumingAllInputEvents",
+                    "base": "GetIsConsumingAllInputEvents",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Consuming All Input Events"
@@ -485,7 +485,7 @@
                     ]
                 },
                 {
-                    "key": "GetNavigationThreshold",
+                    "base": "GetNavigationThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNavigationThreshold"
@@ -507,7 +507,7 @@
                     ]
                 },
                 {
-                    "key": "SetKeepLoadedOnLevelUnload",
+                    "base": "SetKeepLoadedOnLevelUnload",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Keep Loaded On Level Unload"
@@ -531,7 +531,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsMultiTouchSupported",
+                    "base": "SetIsMultiTouchSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Multi-touch Supported"
@@ -555,7 +555,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsRenderToTexture",
+                    "base": "SetIsRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Render To Texture"
@@ -579,7 +579,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildElements",
+                    "base": "GetChildElements",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Child Elements"
@@ -602,7 +602,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumChildElements",
+                    "base": "GetNumChildElements",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Number Of Child Elements"
@@ -625,7 +625,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsPixelAligned",
+                    "base": "GetIsPixelAligned",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Pixel Aligned"
@@ -648,7 +648,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Enabled"
@@ -671,7 +671,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsNavigationSupported",
+                    "base": "SetIsNavigationSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Navigation Supported"
@@ -695,7 +695,7 @@
                     ]
                 },
                 {
-                    "key": "GetDrawOrder",
+                    "base": "GetDrawOrder",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Draw Order"
@@ -718,7 +718,7 @@
                     ]
                 },
                 {
-                    "key": "ForceEnterInputEventOnInteractable",
+                    "base": "ForceEnterInputEventOnInteractable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ForceEnterInputEventOnInteractable"
@@ -741,7 +741,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsMultiTouchSupported",
+                    "base": "GetIsMultiTouchSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Multi-touch Supported"
@@ -764,7 +764,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsPixelAligned",
+                    "base": "SetIsPixelAligned",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Pixel Aligned"
@@ -788,7 +788,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsPositionalInputSupported",
+                    "base": "SetIsPositionalInputSupported",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Positional Input Supported"
@@ -812,7 +812,7 @@
                     ]
                 },
                 {
-                    "key": "CloneElement",
+                    "base": "CloneElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clone Element"
@@ -859,7 +859,7 @@
                     ]
                 },
                 {
-                    "key": "SetNavigationRepeatDelay",
+                    "base": "SetNavigationRepeatDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetNavigationRepeatDelay"
@@ -881,7 +881,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsRenderToTexture",
+                    "base": "GetIsRenderToTexture",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Render To Texture"
@@ -904,7 +904,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Enabled"
@@ -928,7 +928,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsTextPixelAligned",
+                    "base": "SetIsTextPixelAligned",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Text Pixel Aligned"

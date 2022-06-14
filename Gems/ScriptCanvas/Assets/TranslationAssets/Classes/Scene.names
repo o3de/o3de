@@ -1,27 +1,69 @@
 {
     "entries": [
         {
-            "key": "Scene",
+            "base": "Scene",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Scene"
+                "name": "Scene",
+                "category": "Scene"
             },
             "methods": [
                 {
-                    "key": "GetOriginalSceneOrientation",
+                    "base": "GetOriginalSceneOrientation",
                     "context": "Scene",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetOriginalSceneOrientation"
+                        "tooltip": "When signaled, this will invoke Get Original Scene Orientation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetOriginalSceneOrientation is invoked"
+                        "tooltip": "Signaled after Get Original Scene Orientation is invoked"
                     },
                     "details": {
-                        "name": "Scene::GetOriginalSceneOrientation",
-                        "category": "Other"
+                        "name": "Get Original Scene Orientation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_XUp",
+                    "details": {
+                        "name": "Get Scene Orientation_X Up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_NegYUp",
+                    "details": {
+                        "name": "Get Scene Orientation_ NegY Up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetwatchFolder",
+                    "details": {
+                        "name": "Getwatch Folder"
                     },
                     "params": [
                         {
@@ -31,6 +73,194 @@
                             }
                         }
                     ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_NegZUp",
+                    "details": {
+                        "name": "Get Scene Orientation_ NegZ Up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getgraph",
+                    "details": {
+                        "name": "Getgraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "AZ:: SceneAPI:: Containers:: Scene Graph&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsourceGuid",
+                    "details": {
+                        "name": "Getsource Guid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_YUp",
+                    "details": {
+                        "name": "Get Scene Orientation_Y Up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsourceFilename",
+                    "details": {
+                        "name": "Getsource Filename"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetmanifestFilename",
+                    "details": {
+                        "name": "Getmanifest Filename"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_NegXUp",
+                    "details": {
+                        "name": "Get Scene Orientation_ NegX Up"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getname",
+                    "details": {
+                        "name": "Getname"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getmanifest",
+                    "details": {
+                        "name": "Getmanifest"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9274AD17-3212-4651-9F3B-7DCCB080E467}",
+                            "details": {
+                                "name": "Scene Manifest"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSceneOrientation_ZUp",
+                    "details": {
+                        "name": "Get Scene Orientation_Z Up"
+                    },
                     "results": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",

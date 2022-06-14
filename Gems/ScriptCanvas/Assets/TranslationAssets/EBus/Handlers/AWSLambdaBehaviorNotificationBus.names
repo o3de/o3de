@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSLambdaBehaviorNotificationBus",
+            "base": "AWSLambdaBehaviorNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnInvokeSuccess",
+                    "base": "OnInvokeSuccess",
                     "details": {
                         "name": "On Invoke Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnInvokeError",
+                    "base": "OnInvokeError",
                     "details": {
                         "name": "On Invoke Error"
                     },

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_InvalidPlatform",
+            "base": "SystemConfigPlatform_InvalidPlatform",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Invalid Platform"
+                "name": "Invalid Platform",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_InvalidPlatform",
+                    "base": "GetSystemConfigPlatform_InvalidPlatform",
                     "details": {
-                        "name": "Get System Config Platform_ Invalid Platform"
+                        "name": "Invalid Platform"
                     },
                     "results": [
                         {

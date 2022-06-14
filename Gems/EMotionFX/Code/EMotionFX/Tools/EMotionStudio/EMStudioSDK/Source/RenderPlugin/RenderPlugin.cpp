@@ -68,13 +68,11 @@ namespace EMStudio
         SaveRenderOptions();
         CleanEMStudioActors();
 
-        // Get rid of the OpenGL view widgets.
-        // Don't delete them directly as there might be still paint events in the Qt message queue which will cause a crash.
-        // deleteLater will make sure all events will be processed before actually destructing the object.
         for (RenderViewWidget* viewWidget : m_viewWidgets)
         {
-            viewWidget->deleteLater();
+            delete viewWidget;
         }
+        m_viewWidgets.clear();
 
         for (Layout* layout : m_layouts)
         {
@@ -429,6 +427,7 @@ namespace EMStudio
 
         // 3. Relink the actor instances with the emstudio actors
         const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        size_t numActorInstancesInRenderPlugin = 0;
         for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -440,6 +439,12 @@ namespace EMStudio
                 continue;
             }
 
+            if (actorInstance->GetEntity())
+            {
+                continue;
+            }
+
+            numActorInstancesInRenderPlugin++;
             if (!emstudioActor)
             {
                 for (EMStudioRenderActor* currentEMStudioActor : m_actors)
@@ -485,6 +490,7 @@ namespace EMStudio
                 if (found == false)
                 {
                     emstudioActor->m_actorInstances.erase(AZStd::next(begin(emstudioActor->m_actorInstances), j));
+                    numActorInstancesInRenderPlugin--;
                 }
                 else
                 {
@@ -497,7 +503,7 @@ namespace EMStudio
         m_reinitRequested = false;
 
         // zoom the camera to the available character only in case we're dealing with a single instance
-        if (resetViewCloseup && numActorInstances == 1)
+        if (resetViewCloseup && numActorInstancesInRenderPlugin == 1)
         {
             ViewCloseup(false);
         }
@@ -631,11 +637,6 @@ namespace EMStudio
         m_viewWidgets.clear();
     }
 
-    void RenderPlugin::Reflect(AZ::ReflectContext* context)
-    {
-        RenderOptions::Reflect(context);
-    }
-
     bool RenderPlugin::Init()
     {
         // load the cursors
@@ -701,8 +702,10 @@ namespace EMStudio
         renderOptionsFilename += "EMStudioRenderOptions.cfg";
         QSettings settings(renderOptionsFilename.c_str(), QSettings::IniFormat, this);
 
-        // save the general render options
-        m_renderOptions.Save(&settings);
+        // Deprecation of renderPlugin.
+        // Since we are using the same render option save file for atom render plugin, do not save the render options in the RenderPlugin to
+        // prevent double save.
+        // m_renderOptions.Save(&settings);
 
         AZStd::string groupName;
         if (m_currentLayout)
@@ -933,6 +936,7 @@ namespace EMStudio
 
         // save the current settings and disable rendering
         m_renderOptions.SetLastUsedLayout(layout->GetName());
+        SaveRenderOptions();
         ClearViewWidgets();
         VisibilityChanged(false);
 

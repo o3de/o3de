@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiScrollBarBus",
+            "base": "UiScrollBarBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiScrollBarBus",
+                "name": "UI Scroll Bar",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetAutoFadeSpeed",
+                    "base": "GetAutoFadeSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAutoFadeSpeed"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "IsAutoFadeEnabled",
+                    "base": "IsAutoFadeEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsAutoFadeEnabled"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFadeSpeed",
+                    "base": "SetAutoFadeSpeed",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAutoFadeSpeed"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "SetHandleEntity",
+                    "base": "SetHandleEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Handle Entity"
@@ -100,7 +100,7 @@
                     ]
                 },
                 {
-                    "key": "GetHandleEntity",
+                    "base": "GetHandleEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Handle Entity"
@@ -124,7 +124,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoFadeDelay",
+                    "base": "GetAutoFadeDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetAutoFadeDelay"
@@ -146,7 +146,7 @@
                     ]
                 },
                 {
-                    "key": "GetMinHandlePixelSize",
+                    "base": "GetMinHandlePixelSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Min Handle Pixel Size"
@@ -169,7 +169,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFadeEnabled",
+                    "base": "SetAutoFadeEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAutoFadeEnabled"
@@ -191,7 +191,7 @@
                     ]
                 },
                 {
-                    "key": "SetHandleSize",
+                    "base": "SetHandleSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Handle Size"
@@ -215,7 +215,7 @@
                     ]
                 },
                 {
-                    "key": "SetMinHandlePixelSize",
+                    "base": "SetMinHandlePixelSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Min Handle Pixel Size"
@@ -239,7 +239,7 @@
                     ]
                 },
                 {
-                    "key": "GetHandleSize",
+                    "base": "GetHandleSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Handle Size"
@@ -262,7 +262,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoFadeDelay",
+                    "base": "SetAutoFadeDelay",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetAutoFadeDelay"

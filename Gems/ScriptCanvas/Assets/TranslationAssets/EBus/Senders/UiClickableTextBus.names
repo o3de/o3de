@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiClickableTextBus",
+            "base": "UiClickableTextBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiClickableTextBus",
+                "name": "UI Clickable Text",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetClickableTextColor",
+                    "base": "SetClickableTextColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Clickable Text Color"

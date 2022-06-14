@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_ShowDimensionFigures",
+            "base": "DisplaySettings_ShowDimensionFigures",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ Show Dimension Figures"
+                "name": "Show Dimension Figures",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_ShowDimensionFigures",
+                    "base": "GetDisplaySettings_ShowDimensionFigures",
                     "details": {
-                        "name": "Get Display Settings_ Show Dimension Figures"
+                        "name": "Get Show Dimension Figures"
                     },
                     "results": [
                         {

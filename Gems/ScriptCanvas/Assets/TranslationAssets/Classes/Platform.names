@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Platform",
+            "base": "Platform",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "context": "Platform",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetMac",
+                    "base": "GetMac",
                     "details": {
                         "name": "Get Mac"
                     },
@@ -55,7 +55,7 @@
                     ]
                 },
                 {
-                    "key": "GetLinux",
+                    "base": "GetLinux",
                     "details": {
                         "name": "Get Linux"
                     },
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "GetiOS",
+                    "base": "GetiOS",
                     "details": {
                         "name": "Get iOS"
                     },
@@ -83,7 +83,7 @@
                     ]
                 },
                 {
-                    "key": "GetWindows64",
+                    "base": "GetWindows64",
                     "details": {
                         "name": "Get Windows64"
                     },
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "GetAndroid64",
+                    "base": "GetAndroid64",
                     "details": {
                         "name": "Get Android64"
                     },
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "GetCurrent",
+                    "base": "GetCurrent",
                     "details": {
                         "name": "Get Current"
                     },

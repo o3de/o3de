@@ -22,6 +22,7 @@ namespace AZ
     class BehaviorContext;
     class BehaviorEBus;
     class BehaviorMethod;
+    struct BehaviorParameter;
     class BehaviorProperty;
     class Entity;
     class SerializeContext;
@@ -108,7 +109,7 @@ namespace ScriptCanvasEditorTools
         void TranslateEBus(const AZ::BehaviorEBus* behaviorEBus);
 
         //! Generate the translation data for a specific AZ::Event
-        AZ::Entity* TranslateAZEvent(const AZ::BehaviorMethod& method);
+        bool TranslateSingleAZEvent(const AZ::BehaviorMethod* method);
 
         //! Generate the translation data for AZ::Events
         void TranslateAZEvents();
@@ -125,16 +126,31 @@ namespace ScriptCanvasEditorTools
         //! Generates the translation data for all global properties and methods in the BehaviorContext
         void TranslateBehaviorGlobals();
 
+        //! Generates the translation data for the specified global method in the BehaviorContext (global, by name)
+        void TranslateBehaviorGlobalMethod(const AZStd::string& methodName);
+
         //! Generates the translation data for the specified property in the BehaviorContext (global, by name)
         void TranslateBehaviorProperty(const AZStd::string& propertyName);
 
         //! Generates the translation data for the specified property in the BehaviorContext
         void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
 
+        //! Generates a type map from reflected types that are suitable for BehaviorContext objects used by ScriptCanvas
+        void TranslateDataTypes();
+
     private:
+
+        //! Returns the entity for a valid AZ::Event
+        AZ::Entity* GetAZEventNode(const AZ::BehaviorMethod& method);
 
         //! Utility to populate a BehaviorMethod's translation data
         void TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
+
+        //! Utility function to populate BehaviorMethod arguments translation data
+        void TranslateMethodArguments(const AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
+
+        //! Utility function to populate BehaviorMethod results translation data
+        void TranslateMethodResults(const AZ::BehaviorParameter* resultParameter, Method& methodEntry);
 
         //! Generates the translation data for a BehaviorEBus that has an BehaviorEBusHandler
         bool TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot);
@@ -198,6 +214,8 @@ namespace ScriptCanvasEditorTools
 
         //! Get the category for a ScriptCanvas node library
         AZStd::string GetLibraryCategory(const AZ::SerializeContext& serializeContext, const AZStd::string& nodeName);
+
+        AZStd::vector<AZ::TypeId> GetUnpackedTypes(const AZ::TypeId& typeID);
     }
 
 }

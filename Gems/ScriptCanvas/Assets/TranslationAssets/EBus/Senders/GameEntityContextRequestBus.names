@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "GameEntityContextRequestBus",
+            "base": "GameEntityContextRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "DeactivateGameEntity",
+                    "base": "DeactivateGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Deactivate Game Entity"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetEntityName",
+                    "base": "GetEntityName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Entity Name"
@@ -64,7 +64,7 @@
                     ]
                 },
                 {
-                    "key": "ActivateGameEntity",
+                    "base": "ActivateGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Activate Game Entity"
@@ -87,7 +87,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyGameEntityAndDescendants",
+                    "base": "DestroyGameEntityAndDescendants",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Game Entity And Descendants"
@@ -110,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyGameEntity",
+                    "base": "DestroyGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Game Entity"
@@ -133,7 +133,7 @@
                     ]
                 },
                 {
-                    "key": "CreateGameEntity",
+                    "base": "CreateGameEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Game Entity"

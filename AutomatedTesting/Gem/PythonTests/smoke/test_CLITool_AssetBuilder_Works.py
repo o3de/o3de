@@ -14,7 +14,7 @@ import pytest
 import subprocess
 
 
-@pytest.mark.SUITE_smoke
+@pytest.mark.SUITE_sandbox
 class TestCLIToolAssetBuilderWorks(object):
     def test_CLITool_AssetBuilder_Works(self, build_directory):
         file_path = os.path.join(build_directory, "AssetBuilder")

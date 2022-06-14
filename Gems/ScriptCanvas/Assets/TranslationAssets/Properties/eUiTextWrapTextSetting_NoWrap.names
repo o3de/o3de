@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextWrapTextSetting_NoWrap",
+            "base": "eUiTextWrapTextSetting_NoWrap",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Wrap Text Setting_ No Wrap"
+                "name": "No Wrap",
+                "category": "Constants/UI/Text Wrap"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextWrapTextSetting_NoWrap",
+                    "base": "GeteUiTextWrapTextSetting_NoWrap",
                     "details": {
-                        "name": "Gete Ui Text Wrap Text Setting_ No Wrap"
+                        "name": "No Wrap"
                     },
                     "results": [
                         {

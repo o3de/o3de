@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "FlyCameraInputBus",
+            "base": "FlyCameraInputBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SetIsEnabled",
+                    "base": "SetIsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Enabled"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsEnabled",
+                    "base": "GetIsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Is Enabled"

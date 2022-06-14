@@ -1,24 +1,23 @@
 {
     "entries": [
         {
-            "key": "{BAFDA139-49A8-453B-A556-D4F4BA213B5C}",
+            "base": "{BAFDA139-49A8-453B-A556-D4F4BA213B5C}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Ordered Sequencer",
                 "category": "Logic",
-                "tooltip": "Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)",
-                "subtitle": "Logic"
+                "tooltip": "Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out 0",
+                    "base": "Output_Out 0_0",
                     "details": {
                         "name": "Out 0",
                         "tooltip": "Output 0"

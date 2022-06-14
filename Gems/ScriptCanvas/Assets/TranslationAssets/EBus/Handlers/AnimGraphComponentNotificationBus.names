@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AnimGraphComponentNotificationBus",
+            "base": "AnimGraphComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnAnimGraphInstanceCreated",
+                    "base": "OnAnimGraphInstanceCreated",
                     "details": {
                         "name": "On Anim Graph Instance Created"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphInstanceDestroyed",
+                    "base": "OnAnimGraphInstanceDestroyed",
                     "details": {
                         "name": "On Anim Graph Instance Destroyed"
                     },
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphFloatParameterChanged",
+                    "base": "OnAnimGraphFloatParameterChanged",
                     "details": {
                         "name": "On Anim Graph Float Parameter Changed"
                     },
@@ -70,7 +70,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphBoolParameterChanged",
+                    "base": "OnAnimGraphBoolParameterChanged",
                     "details": {
                         "name": "On Anim Graph Bool Parameter Changed"
                     },
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphStringParameterChanged",
+                    "base": "OnAnimGraphStringParameterChanged",
                     "details": {
                         "name": "On Anim Graph String Parameter Changed"
                     },
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphVector2ParameterChanged",
+                    "base": "OnAnimGraphVector2ParameterChanged",
                     "details": {
                         "name": "On Anim Graph Vector2 Parameter Changed"
                     },
@@ -166,7 +166,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphVector3ParameterChanged",
+                    "base": "OnAnimGraphVector3ParameterChanged",
                     "details": {
                         "name": "On Anim Graph Vector3 Parameter Changed"
                     },
@@ -198,7 +198,7 @@
                     ]
                 },
                 {
-                    "key": "OnAnimGraphRotationParameterChanged",
+                    "base": "OnAnimGraphRotationParameterChanged",
                     "details": {
                         "name": "On Anim Graph Rotation Parameter Changed"
                     },

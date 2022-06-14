@@ -63,7 +63,7 @@ def ComponentCRUD_Add_Delete_Components():
         :return: None
         """
 
-        from PySide2 import QtWidgets, QtTest, QtCore
+        from PySide2 import QtWidgets, QtTest
         from PySide2.QtCore import Qt
 
         import azlmbr.legacy.general as general
@@ -74,7 +74,6 @@ def ComponentCRUD_Add_Delete_Components():
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
-        from editor_python_test_tools.utils import TestHelper as helper
 
         async def add_component(component_name):
             pyside_utils.click_button_async(add_comp_btn)
@@ -88,8 +87,7 @@ def ComponentCRUD_Add_Delete_Components():
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
 
         # 1) Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Physics", "Base")
+        hydra.open_base_level()
 
         # 2) Create entity
         entity_position = math.Vector3(125.0, 136.0, 32.0)

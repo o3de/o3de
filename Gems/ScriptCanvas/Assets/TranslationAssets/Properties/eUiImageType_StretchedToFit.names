@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_StretchedToFit",
+            "base": "eUiImageType_StretchedToFit",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Type_ Stretched To Fit"
+                "name": "Stretched To Fit",
+                "category": "Constants/UI/Image Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_StretchedToFit",
+                    "base": "GeteUiImageType_StretchedToFit",
                     "details": {
-                        "name": "Gete Ui Image Type_ Stretched To Fit"
+                        "name": "Stretched To Fit"
                     },
                     "results": [
                         {

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiSpriteType_RenderTarget",
+            "base": "eUiSpriteType_RenderTarget",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Sprite Type_ Render Target"
+                "name": "Render Target",
+                "category": "Constants/UI/Sprite Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiSpriteType_RenderTarget",
+                    "base": "GeteUiSpriteType_RenderTarget",
                     "details": {
-                        "name": "Gete Ui Sprite Type_ Render Target"
+                        "name": "Render Target"
                     },
                     "results": [
                         {

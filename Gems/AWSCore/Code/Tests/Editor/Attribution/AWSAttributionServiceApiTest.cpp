@@ -11,7 +11,7 @@
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <Framework/JsonObjectHandler.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
@@ -36,7 +36,7 @@ namespace AWSCoreUnitTest
     };
 
     class AWSAttributionServiceApiTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public AWSCoreFixture
     {
     public:
         testing::NiceMock<JsonReaderMock> JsonReader;
@@ -72,12 +72,11 @@ namespace AWSCoreUnitTest
         AWSCore::RequestBuilder requestBuilder{};
         EXPECT_TRUE(request.parameters.BuildRequest(requestBuilder));
         std::shared_ptr<Aws::StringStream> bodyContent = requestBuilder.GetBodyContent();
-        EXPECT_TRUE(bodyContent != nullptr);
+        EXPECT_NE(nullptr, bodyContent);
 
-        AZStd::string bodyString;
         std::istreambuf_iterator<AZStd::string::value_type> eos;
-        bodyString = AZStd::string{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
-        AZ_Printf("AWSAttributionServiceApiTest", bodyString.c_str());
-        EXPECT_TRUE(bodyString.find(AZStd::string::format("{\"%s\":\"1.1\"", AwsAttributionAttributeKeyVersion)) != AZStd::string::npos);
+        AZStd::string bodyString{ std::istreambuf_iterator<AZStd::string::value_type>(*bodyContent), eos };
+        AZ_Printf("AWSAttributionServiceApiTest", "%s", bodyString.c_str());
+        EXPECT_TRUE(bodyString.contains(AZStd::string::format("{\"%s\":\"1.1\"", AwsAttributionAttributeKeyVersion)));
     }
 }

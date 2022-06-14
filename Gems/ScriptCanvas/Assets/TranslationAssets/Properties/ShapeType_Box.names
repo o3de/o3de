@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Box",
+            "base": "ShapeType_Box",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ShapeType_Box",
+                    "base": "ShapeType_Box",
                     "details": {
                         "name": "Get Shape Type: Box",
                         "subtitle": "Shape Type"

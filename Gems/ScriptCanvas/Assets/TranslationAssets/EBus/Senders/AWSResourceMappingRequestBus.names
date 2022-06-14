@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSResourceMappingRequestBus",
+            "base": "AWSResourceMappingRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetResourceNameId",
+                    "base": "GetResourceNameId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Resource Name Id"
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetResourceRegion",
+                    "base": "GetResourceRegion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Resource Region"
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "GetDefaultRegion",
+                    "base": "GetDefaultRegion",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Default Region"
@@ -94,7 +94,7 @@
                     ]
                 },
                 {
-                    "key": "GetDefaultAccountId",
+                    "base": "GetDefaultAccountId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Default Account Id"
@@ -116,7 +116,7 @@
                     ]
                 },
                 {
-                    "key": "GetResourceAccountId",
+                    "base": "GetResourceAccountId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Resource Account Id"
@@ -147,7 +147,7 @@
                     ]
                 },
                 {
-                    "key": "GetResourceType",
+                    "base": "GetResourceType",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Resource Type"
@@ -178,7 +178,7 @@
                     ]
                 },
                 {
-                    "key": "ReloadConfigFile",
+                    "base": "ReloadConfigFile",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reload Config File"

@@ -1,24 +1,23 @@
 {
     "entries": [
         {
-            "key": "{30FED030-71ED-4498-AB2C-F5586DFA490E}",
+            "base": "{30FED030-71ED-4498-AB2C-F5586DFA490E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "OperatorBase",
-                "category": "Operators",
-                "subtitle": "Operators"
+                "name": "Operator Base",
+                "category": "Operators"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"

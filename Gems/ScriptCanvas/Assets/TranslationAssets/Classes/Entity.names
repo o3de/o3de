@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Entity",
+            "base": "Entity",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetComponentName",
+                    "base": "GetComponentName",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -49,7 +49,7 @@
                     ]
                 },
                 {
-                    "key": "GetComponentType",
+                    "base": "GetComponentType",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -88,7 +88,7 @@
                     ]
                 },
                 {
-                    "key": "CreateComponent",
+                    "base": "CreateComponent",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -133,7 +133,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyComponent",
+                    "base": "DestroyComponent",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -172,7 +172,7 @@
                     ]
                 },
                 {
-                    "key": "FindComponentOfType",
+                    "base": "FindComponentOfType",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -211,7 +211,7 @@
                     ]
                 },
                 {
-                    "key": "SetComponentConfiguration",
+                    "base": "SetComponentConfiguration",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -256,7 +256,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -289,7 +289,7 @@
                     ]
                 },
                 {
-                    "key": "GetId",
+                    "base": "GetId",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -323,7 +323,7 @@
                     ]
                 },
                 {
-                    "key": "GetOwningContextId",
+                    "base": "GetOwningContextId",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -355,7 +355,7 @@
                     ]
                 },
                 {
-                    "key": "GetComponents",
+                    "base": "GetComponents",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -388,7 +388,7 @@
                     ]
                 },
                 {
-                    "key": "FindAllComponentsOfType",
+                    "base": "FindAllComponentsOfType",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "key": "GetComponentConfiguration",
+                    "base": "GetComponentConfiguration",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -472,7 +472,7 @@
                     ]
                 },
                 {
-                    "key": "SetName",
+                    "base": "SetName",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -503,7 +503,7 @@
                     ]
                 },
                 {
-                    "key": "IsActivated",
+                    "base": "IsActivated",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -536,7 +536,7 @@
                     ]
                 },
                 {
-                    "key": "Activate",
+                    "base": "Activate",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -561,7 +561,7 @@
                     ]
                 },
                 {
-                    "key": "Deactivate",
+                    "base": "Deactivate",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -586,7 +586,7 @@
                     ]
                 },
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "context": "Entity",
                     "entry": {
                         "name": "In",
@@ -619,7 +619,7 @@
                     ]
                 },
                 {
-                    "key": "Exists",
+                    "base": "Exists",
                     "context": "Entity",
                     "entry": {
                         "name": "In",

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextOverflowMode_OverflowText",
+            "base": "eUiTextOverflowMode_OverflowText",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Overflow Mode_ Overflow Text"
+                "name": "Overflow Text",
+                "category": "Constants/UI/Text Overflow Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextOverflowMode_OverflowText",
+                    "base": "GeteUiTextOverflowMode_OverflowText",
                     "details": {
-                        "name": "Gete Ui Text Overflow Mode_ Overflow Text"
+                        "name": "Overflow Text"
                     },
                     "results": [
                         {

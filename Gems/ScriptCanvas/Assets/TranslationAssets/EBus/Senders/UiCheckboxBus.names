@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCheckboxBus",
+            "base": "UiCheckboxBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCheckboxBus",
+                "name": "UI Checkbox",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetChangedActionName",
+                    "base": "SetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Changed Action Name"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetChangedActionName",
+                    "base": "GetChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Changed Action Name"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetCheckedEntity",
+                    "base": "SetCheckedEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Checked Entity"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "SetUncheckedEntity",
+                    "base": "SetUncheckedEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Unchecked Entity"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "SetTurnOnActionName",
+                    "base": "SetTurnOnActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Turn On Action Name"
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "GetTurnOffActionName",
+                    "base": "GetTurnOffActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Turn Off Action Name"
@@ -152,7 +152,7 @@
                     ]
                 },
                 {
-                    "key": "SetState",
+                    "base": "SetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set State"
@@ -176,7 +176,7 @@
                     ]
                 },
                 {
-                    "key": "ToggleState",
+                    "base": "ToggleState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Toggle State"
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "GetState",
+                    "base": "GetState",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get State"
@@ -222,7 +222,7 @@
                     ]
                 },
                 {
-                    "key": "GetCheckedEntity",
+                    "base": "GetCheckedEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Checked Entity"
@@ -246,7 +246,7 @@
                     ]
                 },
                 {
-                    "key": "GetUncheckedEntity",
+                    "base": "GetUncheckedEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Unchecked Entity"
@@ -270,7 +270,7 @@
                     ]
                 },
                 {
-                    "key": "GetTurnOnActionName",
+                    "base": "GetTurnOnActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Turn On Action Name"
@@ -293,7 +293,7 @@
                     ]
                 },
                 {
-                    "key": "SetTurnOffActionName",
+                    "base": "SetTurnOffActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Turn Off Action Name"

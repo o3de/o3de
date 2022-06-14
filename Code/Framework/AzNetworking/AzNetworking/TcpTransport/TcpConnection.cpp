@@ -55,8 +55,7 @@ namespace AzNetworking
         , m_registeredSocketFd(InvalidSocketFd)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_TcpCompressor);
-        const AZ::Name compressorName = AZ::Name(compressor);
-        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
 
         if (useEncryption)
         {
@@ -383,7 +382,7 @@ namespace AzNetworking
 
         if (compErr != CompressorError::Ok)
         {
-            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", compErr);
+            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
             return false;
         }
 

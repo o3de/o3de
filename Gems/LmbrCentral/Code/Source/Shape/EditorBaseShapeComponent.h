@@ -72,7 +72,8 @@ namespace LmbrCentral
         bool EditorSelectionIntersectRayViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
-        bool SupportsEditorRayIntersect() override { return true; }
+        bool SupportsEditorRayIntersect() override;
+        bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
 
         // EditorComponentSelectionNotificationsBus overrides ... 
         void OnAccentTypeChanged(AzToolsFramework::EntityAccentType accent) override;

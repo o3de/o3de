@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef CRYSYSTEM_EXPORTS
-#define CRYSYSTEM_API DLL_EXPORT
+#define CRYSYSTEM_API AZ_DLL_EXPORT
 #else
-#define CRYSYSTEM_API DLL_IMPORT
+#define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
 
@@ -46,13 +48,8 @@ namespace AZ::IO
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
-struct IProcess;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -86,19 +83,6 @@ enum ESystemUpdateFlags
     // Summary:
     //   Special update mode for editor.
     ESYSUPDATE_EDITOR = 0x0004
-};
-
-// Description:
-//   Configuration specification, depends on user selected machine specification.
-enum ESystemConfigSpec
-{
-    CONFIG_AUTO_SPEC = 0,
-    CONFIG_LOW_SPEC = 1,
-    CONFIG_MEDIUM_SPEC = 2,
-    CONFIG_HIGH_SPEC = 3,
-    CONFIG_VERYHIGH_SPEC = 4,
-
-    END_CONFIG_SPEC_ENUM, // MUST BE LAST VALUE. USED FOR ERROR CHECKING.
 };
 
 // Description:
@@ -427,7 +411,7 @@ struct ISystemUserCallback
 
     // Description:
     //   Show message by provider.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) { return CryMessageBox(text, caption, uType); }
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) { CryMessageBox(text, caption, uType); }
 
     // </interfuscator:shuffle>
 
@@ -614,7 +598,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    ILyShine*                      pLyShine;
     SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -811,14 +794,13 @@ struct ISystem
     // Description:
     //   Report message by provider or by using CryMessageBox.
     //   Doesn't terminate the execution.
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
+    virtual void ShowMessage(const char* text, const char* caption, unsigned int uType) = 0;
 
     // Summary:
     //   Compare specified verbosity level to the one currently set.
     virtual bool CheckLogVerbosity(int verbosity) = 0;
 
     // return the related subsystem interface
-
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
@@ -829,13 +811,6 @@ struct ISystem
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
 
-    // Arguments:
-    //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual void SetForceNonDevMode(bool bValue) = 0;
-    // Return Value:
-    //   True when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual bool GetForceNonDevMode() const = 0;
-    virtual bool WasInDevMode() const = 0;
     virtual bool IsDevMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -859,18 +834,6 @@ struct ISystem
     // Description:
     //   When ignore update sets to true, system will ignore and updates and render calls.
     virtual void IgnoreUpdates(bool bIgnore) = 0;
-
-    // Summary:
-    //   Sets the active process
-    // Arguments:
-    //   process - A pointer to a class that implement the IProcess interface.
-    virtual void SetIProcess(IProcess* process) = 0;
-
-    // Summary:
-    //   Gets the active process.
-    // Return Value:
-    //   A pointer to the current active process.
-    virtual IProcess* GetIProcess() = 0;
 
     // Return Value:
     //   True if system running in Test mode.
@@ -911,8 +874,6 @@ struct ISystem
     //   pCallback - 0 means normal LoadConfigVar behaviour is used
     virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true) = 0;
 
-    virtual ESystemConfigSpec GetMaxConfigSpec() const = 0;
-
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
@@ -936,10 +897,6 @@ struct ISystem
     // Summary:
     //   Retrieves the perlin noise singleton instance.
     virtual CPNoise3* GetNoiseGen() = 0;
-
-    // Summary:
-    //   Retrieves system update counter.
-    virtual uint64 GetUpdateCounter() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -974,13 +931,6 @@ struct ISystem
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
-    //  Enable/Disable drawing the console
-    virtual void SetConsoleDrawEnabled(bool enabled) = 0;
-
-    //  Enable/Disable drawing the UI
-    virtual void SetUIDrawEnabled(bool enabled) = 0;
-
-    // Summary:
     //   Get the index of the currently running O3DE application. (0 = first instance, 1 = second instance, etc)
     virtual int GetApplicationInstance() = 0;
 
@@ -1011,7 +961,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:
@@ -1028,12 +978,6 @@ struct ISystem
 #endif
 
     // Summary:
-    //      Gets the root window message handler function
-    //      The returned pointer is platform-specific:
-    //      For Windows OS, the pointer is of type WNDPROC
-    virtual void* GetRootWindowMessageHandler() = 0;
-
-    // Summary:
     //      Register a IWindowMessageHandler that will be informed about window messages
     //      The delivered messages are platform-specific
     virtual void RegisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
@@ -1041,10 +985,6 @@ struct ISystem
     // Summary:
     //      Unregister an IWindowMessageHandler that was previously registered using RegisterWindowMessageHandler
     virtual void UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
-
-    // Create an instance of a Local File IO object (which reads directly off the local filesystem, instead of,
-    // for example, reading from the network or a pack or USB or such.
-    virtual std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO() = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // EBus interface used to listen for cry system notifications
@@ -1109,7 +1049,10 @@ void* GetModuleShutdownISystemSymbol();
 //   Interface of the DLL.
 extern "C"
 {
-    CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
+#if !defined(AZ_MONOLITHIC_BUILD)
+    CRYSYSTEM_API
+#endif
+    ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
 }
 
 // Description:
@@ -1338,56 +1281,72 @@ namespace Detail
 
 #endif
 
-#if defined(USE_CRY_ASSERT)
-static void AssertConsoleExists(void)
-{
-    CRY_ASSERT(gEnv->pConsole != NULL);
-}
-#define ASSERT_CONSOLE_EXISTS AssertConsoleExists()
-#else
-#define ASSERT_CONSOLE_EXISTS 0
-#endif // defined(USE_CRY_ASSERT)
-
 // the following macros allow the help text to be easily stripped out
 
 // Summary:
 //   Preferred way to register a CVar
-#define REGISTER_CVAR(_var, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR(_var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a CVar with a callback
-#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a string CVar
-#define REGISTER_STRING(_name, _def_val, _flags, _comment)                                                     (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_STRING(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a string CVar with a callback
-#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction)            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register an int CVar
-#define REGISTER_INT(_name, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_INT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register an int CVar with a callback
-#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a float CVar
-#define REGISTER_FLOAT(_name, _def_val, _flags, _comment)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_FLOAT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction)    (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Offers more flexibility but more code is required, explicit address taking of destination variable
-#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a console command
-#define REGISTER_COMMAND(_name, _func, _flags, _comment)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+#define REGISTER_COMMAND(_name, _func, _flags, _comment) \
+    (gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to unregister a CVar
-#define UNREGISTER_CVAR(_name)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+#define UNREGISTER_CVAR(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+
+// Summary:
 //   Preferred way to unregister a console command
-#define UNREGISTER_COMMAND(_name)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
+#define UNREGISTER_COMMAND(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
 
 ////////////////////////////////////////////////////////////////////////////////
 //

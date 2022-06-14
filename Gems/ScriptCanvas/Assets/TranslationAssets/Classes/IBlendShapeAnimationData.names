@@ -1,36 +1,28 @@
 {
     "entries": [
         {
-            "key": "IBlendShapeAnimationData",
+            "base": "IBlendShapeAnimationData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "IBlendShapeAnimationData"
+                "name": "IBlend Shape Animation Data",
+                "category": "Animation"
             },
             "methods": [
                 {
-                    "key": "GetBlendShapeName",
+                    "base": "GetBlendShapeName",
                     "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetBlendShapeName"
+                        "tooltip": "When signaled, this will invoke Get Blend Shape Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetBlendShapeName is invoked"
+                        "tooltip": "Signaled after Get Blend Shape Name is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeAnimationData::GetBlendShapeName",
-                        "category": "Other"
+                        "name": "Get Blend Shape Name"
                     },
-                    "params": [
-                        {
-                            "typeid": "{CD2004EB-8B88-42B2-A539-079A557C98C9}",
-                            "details": {
-                                "name": "IBlendShapeAnimationData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
@@ -41,63 +33,47 @@
                     ]
                 },
                 {
-                    "key": "GetKeyFrameCount",
+                    "base": "GetKeyFrameCount",
                     "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetKeyFrameCount"
+                        "tooltip": "When signaled, this will invoke Get Key Frame Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetKeyFrameCount is invoked"
+                        "tooltip": "Signaled after Get Key Frame Count is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeAnimationData::GetKeyFrameCount",
-                        "category": "Other"
+                        "name": "Get Key Frame Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{CD2004EB-8B88-42B2-A539-079A557C98C9}",
-                            "details": {
-                                "name": "IBlendShapeAnimationData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetKeyFrame",
+                    "base": "GetKeyFrame",
                     "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetKeyFrame"
+                        "tooltip": "When signaled, this will invoke Get Key Frame"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetKeyFrame is invoked"
+                        "tooltip": "Signaled after Get Key Frame is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeAnimationData::GetKeyFrame",
-                        "category": "Other"
+                        "name": "Get Key Frame"
                     },
                     "params": [
                         {
-                            "typeid": "{CD2004EB-8B88-42B2-A539-079A557C98C9}",
-                            "details": {
-                                "name": "IBlendShapeAnimationData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -111,28 +87,19 @@
                     ]
                 },
                 {
-                    "key": "GetTimeStepBetweenFrames",
+                    "base": "GetTimeStepBetweenFrames",
                     "context": "IBlendShapeAnimationData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTimeStepBetweenFrames"
+                        "tooltip": "When signaled, this will invoke Get Time Step Between Frames"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTimeStepBetweenFrames is invoked"
+                        "tooltip": "Signaled after Get Time Step Between Frames is invoked"
                     },
                     "details": {
-                        "name": "IBlendShapeAnimationData::GetTimeStepBetweenFrames",
-                        "category": "Other"
+                        "name": "Get Time Step Between Frames"
                     },
-                    "params": [
-                        {
-                            "typeid": "{CD2004EB-8B88-42B2-A539-079A557C98C9}",
-                            "details": {
-                                "name": "IBlendShapeAnimationData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",

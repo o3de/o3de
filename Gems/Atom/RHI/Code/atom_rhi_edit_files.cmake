@@ -9,8 +9,10 @@
 set(FILES
     Include/Atom/RHI.Edit/ShaderPlatformInterface.h
     Include/Atom/RHI.Edit/ShaderPlatformInterfaceBus.h
-    Include/Atom/RHI.Edit/ShaderCompilerArguments.h
     Include/Atom/RHI.Edit/Utils.h
+    Include/Atom/RHI.Edit/ShaderBuildArguments.h
+    Include/Atom/RHI.Edit/ShaderBuildOptions.h
     Source/RHI.Edit/Utils.cpp
-    Source/RHI.Edit/ShaderCompilerArguments.cpp
+    Source/RHI.Edit/ShaderBuildArguments.cpp
+    Source/RHI.Edit/ShaderBuildOptions.cpp
 )

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "test_output",
+            "base": "test_output",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "test_output",
+                    "base": "test_output",
                     "context": "Global",
                     "entry": {
                         "name": "In",

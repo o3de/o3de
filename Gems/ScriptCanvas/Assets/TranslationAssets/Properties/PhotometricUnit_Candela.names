@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Candela",
+            "base": "PhotometricUnit_Candela",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Candela"
+                "name": "Candela",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Candela",
+                    "base": "GetPhotometricUnit_Candela",
                     "details": {
-                        "name": "Get Photometric Unit_ Candela"
+                        "name": "Candela"
                     },
                     "results": [
                         {

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DefaultMaterialAssignment",
+            "base": "DefaultMaterialAssignment",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Default Material Assignment"
+                "name": "Default Material Assignment",
+                "category": "Constants/Defaults"
             },
             "methods": [
                 {
-                    "key": "GetDefaultMaterialAssignment",
+                    "base": "GetDefaultMaterialAssignment",
                     "details": {
                         "name": "Get Default Material Assignment"
                     },

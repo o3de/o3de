@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "PhotometricUnit_Lux",
+            "base": "PhotometricUnit_Lux",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Photometric Unit_ Lux"
+                "name": "Lux",
+                "category": "Constants/Photometric Unit"
             },
             "methods": [
                 {
-                    "key": "GetPhotometricUnit_Lux",
+                    "base": "GetPhotometricUnit_Lux",
                     "details": {
-                        "name": "Get Photometric Unit_ Lux"
+                        "name": "Lux"
                     },
                     "results": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "idle_wait_frames",
+            "base": "idle_wait_frames",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "idle_wait_frames",
+                    "base": "idle_wait_frames",
                     "context": "Global",
                     "entry": {
                         "name": "In",

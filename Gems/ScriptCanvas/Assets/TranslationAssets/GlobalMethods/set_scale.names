@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_scale",
+            "base": "set_scale",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_scale",
+                    "base": "set_scale",
                     "context": "Global",
                     "entry": {
                         "name": "In",

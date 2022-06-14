@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "save_level",
+            "base": "save_level",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "save_level",
+                    "base": "save_level",
                     "context": "Global",
                     "entry": {
                         "name": "In",

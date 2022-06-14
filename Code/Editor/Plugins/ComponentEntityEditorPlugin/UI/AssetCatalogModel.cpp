@@ -16,7 +16,6 @@
 #include <qevent.h>
 #include <qmimedata.h>
 
-#include <LmbrCentral/Rendering/LensFlareAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 
 #include <AzCore/Memory/Memory.h>

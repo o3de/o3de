@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SubmarineEvents",
+            "base": "SubmarineEvents",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "SetSpeed",
+                    "base": "SetSpeed",
                     "details": {
                         "name": "SetSpeed"
                     },

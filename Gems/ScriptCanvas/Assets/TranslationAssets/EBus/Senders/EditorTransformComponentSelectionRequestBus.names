@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorTransformComponentSelectionRequestBus",
+            "base": "EditorTransformComponentSelectionRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CopyTranslationToSelectedEntitiesGroup",
+                    "base": "CopyTranslationToSelectedEntitiesGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Group"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "CopyOrientationToSelectedEntitiesIndividual",
+                    "base": "CopyOrientationToSelectedEntitiesIndividual",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Individual"
@@ -54,7 +54,7 @@
                     ]
                 },
                 {
-                    "key": "CopyOrientationToSelectedEntitiesGroup",
+                    "base": "CopyOrientationToSelectedEntitiesGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Group"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "CopyTranslationToSelectedEntitiesIndividual",
+                    "base": "CopyTranslationToSelectedEntitiesIndividual",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Individual"
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "key": "CopyScaleToSelectedEntitiesIndividualLocal",
+                    "base": "CopyScaleToSelectedEntitiesIndividualLocal",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual Local"
@@ -120,7 +120,7 @@
                     ]
                 },
                 {
-                    "key": "OverrideManipulatorTranslation",
+                    "base": "OverrideManipulatorTranslation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Override Manipulator Translation"
@@ -142,7 +142,7 @@
                     ]
                 },
                 {
-                    "key": "RefreshManipulators",
+                    "base": "RefreshManipulators",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Refresh Manipulators"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "OverrideManipulatorOrientation",
+                    "base": "OverrideManipulatorOrientation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Override Manipulator Orientation"
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetTransformMode",
+                    "base": "GetTransformMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Transform Mode"
@@ -208,7 +208,7 @@
                     ]
                 },
                 {
-                    "key": "CopyScaleToSelectedEntitiesIndividualWorld",
+                    "base": "CopyScaleToSelectedEntitiesIndividualWorld",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual World"
@@ -230,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "SetTransformMode",
+                    "base": "SetTransformMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Transform Mode"
@@ -252,7 +252,7 @@
                     ]
                 },
                 {
-                    "key": "ResetTranslationForSelectedEntitiesLocal",
+                    "base": "ResetTranslationForSelectedEntitiesLocal",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reset Translation For Selected Entities Local"
@@ -266,7 +266,7 @@
                     }
                 },
                 {
-                    "key": "ResetOrientationForSelectedEntitiesLocal",
+                    "base": "ResetOrientationForSelectedEntitiesLocal",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reset Orientation For Selected Entities Local"

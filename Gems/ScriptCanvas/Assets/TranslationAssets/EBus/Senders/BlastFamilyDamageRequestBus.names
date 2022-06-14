@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlastFamilyDamageRequestBus",
+            "base": "BlastFamilyDamageRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Get Family Id",
+                    "base": "Get Family Id",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Family Id"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "Destroy actor",
+                    "base": "Destroy actor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy actor"
@@ -46,7 +46,7 @@
                     }
                 },
                 {
-                    "key": "Triangle Damage",
+                    "base": "Triangle Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Triangle Damage"
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "Impact Spread Damage",
+                    "base": "Impact Spread Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Impact Spread Damage"
@@ -134,7 +134,7 @@
                     ]
                 },
                 {
-                    "key": "Stress Damage",
+                    "base": "Stress Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Stress Damage"
@@ -164,7 +164,7 @@
                     ]
                 },
                 {
-                    "key": "Shear Damage",
+                    "base": "Shear Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Shear Damage"
@@ -215,7 +215,7 @@
                     ]
                 },
                 {
-                    "key": "Capsule Damage",
+                    "base": "Capsule Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Capsule Damage"
@@ -266,7 +266,7 @@
                     ]
                 },
                 {
-                    "key": "Radial Damage",
+                    "base": "Radial Damage",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Radial Damage"

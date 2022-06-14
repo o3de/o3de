@@ -80,12 +80,11 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
@@ -234,7 +233,7 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
     inputs.m_sampler = MaterialSrg::m_sampler;                                                                     \
     inputs.m_vertexUv = IN.m_uv;                                                                                   \
     inputs.m_uvMatrix = srgLayerPrefix##m_uvMatrix;                                                                \
-    inputs.m_normal = IN.m_normal;                                                                                 \
+    inputs.m_normal = vertexNormal;                                                                                \
     inputs.m_tangents = tangents;                                                                                  \
     inputs.m_bitangents = bitangents;                                                                              \
     inputs.m_isFrontFace = isFrontFace;                                                                            \
@@ -359,19 +358,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
         float parallaxOverallOffset = MaterialSrg::m_displacementMax;
         float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
+        GetParallaxInput(vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
-        // Adjust directional light shadow coorinates for parallax correction
-        if(o_parallax_enablePixelDepthOffset)
-        {
-            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-            {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
-            }
-        }
     }
     
     // ------- Calculate Layer Blend Mask Values -------
@@ -428,7 +418,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     Surface surface;
     surface.position = IN.m_worldPosition;
-    surface.transmission.InitializeToZero();
 
     // ------- Combine Normals ---------
 
@@ -447,13 +436,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     }
     // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
     surface.vertexNormal = vertexNormal;
-    surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
+    surface.normal = normalize(TangentSpaceToWorld(normalTS, vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
         
     // ------- Combine Albedo, roughness, specular, roughness ---------
 
     float3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
-    float3 specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
-    float3 metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
+    float specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
+    float metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
     
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
@@ -473,8 +462,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // Directional light shadow coordinates
-    lightingData.shadowCoords = IN.m_shadowCoords;
     
     lightingData.emissiveLighting = BlendLayers(lightingInputLayer1.m_emissiveLighting, lightingInputLayer2.m_emissiveLighting, lightingInputLayer3.m_emissiveLighting, blendWeights);
     lightingData.specularOcclusion = BlendLayers(lightingInputLayer1.m_specularOcclusion, lightingInputLayer2.m_specularOcclusion, lightingInputLayer3.m_specularOcclusion, blendWeights);
@@ -517,13 +504,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(0);
+    lightingData.FinalizeLighting();
 
 
     const float alpha = 1.0;
@@ -531,6 +518,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
     lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
+
+    // Debug output
+    DebugModifyOutput(lightingOutput.m_diffuseColor, lightingOutput.m_specularColor, lightingOutput.m_albedo, lightingOutput.m_specularF0,
+                      surface.normal, tangents[MaterialSrg::m_layer1_m_normalMapUvIndex], bitangents[MaterialSrg::m_layer1_m_normalMapUvIndex],
+                      surface.baseColor, surface.albedo, surface.roughnessLinear, surface.metallic);
 
     return lightingOutput;
 }

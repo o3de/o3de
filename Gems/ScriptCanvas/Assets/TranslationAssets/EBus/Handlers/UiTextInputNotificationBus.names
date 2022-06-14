@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiTextInputNotificationBus",
+            "base": "UiTextInputNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTextInputChange",
+                    "base": "OnTextInputChange",
                     "details": {
                         "name": "On Text Input Change",
                         "tooltip": "Executes when a character is added, removed, or changed"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnTextInputEndEdit",
+                    "base": "OnTextInputEndEdit",
                     "details": {
                         "name": "On Text Input End Edit",
                         "tooltip": "Executes when edit of text is completed"
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "OnTextInputEnter",
+                    "base": "OnTextInputEnter",
                     "details": {
                         "name": "On Text Input Enter",
                         "tooltip": "Executes when \"Enter\" is pressed on the keyboard"

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiTextInputBus",
+            "base": "UiTextInputBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTextInputBus",
+                "name": "UI Text Input",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetChangeAction",
+                    "base": "SetChangeAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Change Action"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetEndEditAction",
+                    "base": "GetEndEditAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get End Edit Action"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetEndEditAction",
+                    "base": "SetEndEditAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set End Edit Action"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetPlaceHolderTextEntity",
+                    "base": "GetPlaceHolderTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Placeholder Text Entity"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsPasswordField",
+                    "base": "GetIsPasswordField",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Password Field"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "GetChangeAction",
+                    "base": "GetChangeAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Change Action"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "SetEnterAction",
+                    "base": "SetEnterAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Enter Action"
@@ -175,7 +175,7 @@
                     ]
                 },
                 {
-                    "key": "SetText",
+                    "base": "SetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text"
@@ -199,7 +199,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsClipboardEnabled",
+                    "base": "SetIsClipboardEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetIsClipboardEnabled"
@@ -221,7 +221,7 @@
                     ]
                 },
                 {
-                    "key": "SetMaxStringLength",
+                    "base": "SetMaxStringLength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Max String Length"
@@ -245,7 +245,7 @@
                     ]
                 },
                 {
-                    "key": "GetEnterAction",
+                    "base": "GetEnterAction",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Enter Action"
@@ -268,7 +268,7 @@
                     ]
                 },
                 {
-                    "key": "GetText",
+                    "base": "GetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text"
@@ -291,7 +291,7 @@
                     ]
                 },
                 {
-                    "key": "GetCursorBlinkInterval",
+                    "base": "GetCursorBlinkInterval",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Cursor Blink Interval"
@@ -314,7 +314,7 @@
                     ]
                 },
                 {
-                    "key": "GetMaxStringLength",
+                    "base": "GetMaxStringLength",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Max String Length"
@@ -337,7 +337,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsPasswordField",
+                    "base": "SetIsPasswordField",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Password Field"
@@ -361,7 +361,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextCursorColor",
+                    "base": "GetTextCursorColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Cursor Color"
@@ -384,7 +384,7 @@
                     ]
                 },
                 {
-                    "key": "SetTextEntity",
+                    "base": "SetTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text Entity"
@@ -408,7 +408,7 @@
                     ]
                 },
                 {
-                    "key": "SetTextSelectionColor",
+                    "base": "SetTextSelectionColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text Selection Color"
@@ -432,7 +432,7 @@
                     ]
                 },
                 {
-                    "key": "SetTextCursorColor",
+                    "base": "SetTextCursorColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text Cursor Color"
@@ -456,7 +456,7 @@
                     ]
                 },
                 {
-                    "key": "SetCursorBlinkInterval",
+                    "base": "SetCursorBlinkInterval",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Cursor Blink Interval"
@@ -480,7 +480,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextEntity",
+                    "base": "GetTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Entity"
@@ -504,7 +504,7 @@
                     ]
                 },
                 {
-                    "key": "SetPlaceHolderTextEntity",
+                    "base": "SetPlaceHolderTextEntity",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Placeholder Text Entity"
@@ -528,7 +528,7 @@
                     ]
                 },
                 {
-                    "key": "GetReplacementCharacter",
+                    "base": "GetReplacementCharacter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Replacement Character"
@@ -551,7 +551,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsClipboardEnabled",
+                    "base": "GetIsClipboardEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetIsClipboardEnabled"
@@ -573,7 +573,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextSelectionColor",
+                    "base": "GetTextSelectionColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Selection Color"
@@ -596,7 +596,7 @@
                     ]
                 },
                 {
-                    "key": "SetReplacementCharacter",
+                    "base": "SetReplacementCharacter",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Replacement Character"

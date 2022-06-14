@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     {
         // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
         // otherwise default to the the default for Linux (Unix Makefiles)
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
         QString cmakeGenerator = (whichNinjaResult.IsSuccess()) ? "Ninja Multi-Config" : "Unix Makefiles";
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
 
@@ -38,14 +38,14 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"}, QProcessEnvironment::systemEnvironment());
+        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
         bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
-        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+        const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+        const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
 
         QStringList buildProjectArgs = QStringList{ProjectCMakeCommand,
                                                    "--build", ProjectBuildPathPostfix,
-                                                   "--target", launcherTargetName, ProjectCMakeBuildTargetEditor};
+                                                   "--target", gameLauncherTargetName, serverLauncherTargetName, ProjectCMakeBuildTargetEditor};
         if (compileProfileOnBuild)
         {
             buildProjectArgs.append(QStringList{"--config","profile"});

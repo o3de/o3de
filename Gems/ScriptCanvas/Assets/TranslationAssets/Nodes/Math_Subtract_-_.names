@@ -1,42 +1,41 @@
 {
     "entries": [
         {
-            "key": "{D0615D0A-027F-47F6-A02B-E35DAF22F431}",
+            "base": "{D0615D0A-027F-47F6-A02B-E35DAF22F431}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Subtract (-)",
                 "category": "Math",
-                "tooltip": "Subtracts two of more elements",
-                "subtitle": "Math"
+                "tooltip": "Subtracts two of more elements"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataInput_Value",
+                    "base": "DataInput_Value_1",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

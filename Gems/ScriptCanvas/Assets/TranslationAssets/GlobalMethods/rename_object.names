@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "rename_object",
+            "base": "rename_object",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "rename_object",
+                    "base": "rename_object",
                     "context": "Global",
                     "entry": {
                         "name": "In",

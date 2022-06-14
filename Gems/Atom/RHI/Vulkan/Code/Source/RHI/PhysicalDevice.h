@@ -63,9 +63,11 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
             AZ_RTTI(PhysicalDevice, "AD5F2BAD-A9B3-48F4-962F-C6D0760EEE17", Base);
+            PhysicalDevice() = default;
             ~PhysicalDevice() = default;
 
             static RHI::PhysicalDeviceList Enumerate();
+            void Init(VkPhysicalDevice vkPhysicalDevice);
             const VkPhysicalDevice& GetNativePhysicalDevice() const;
             const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const;
             bool IsFeatureSupported(DeviceFeature feature) const;
@@ -82,7 +84,9 @@ namespace AZ
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
             const VkPhysicalDeviceAccelerationStructurePropertiesKHR& GetPhysicalDeviceAccelerationStructureProperties() const;
+            const VkPhysicalDeviceAccelerationStructureFeaturesKHR& GetPhysicalDeviceAccelerationStructureFeatures() const;
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
+            const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -93,8 +97,7 @@ namespace AZ
             void CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const;
 
         private:
-            PhysicalDevice() = default;
-            void Init(VkPhysicalDevice vkPhysicalDevice);
+            
 
             ///////////////////////////////////////////////////////////////////
             // RHI::PhysicalDevice
@@ -116,7 +119,9 @@ namespace AZ
             VkPhysicalDeviceBufferDeviceAddressFeaturesEXT m_bufferDeviceAddressFeatures{};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR m_separateDepthStencilFeatures{};
             VkPhysicalDeviceAccelerationStructurePropertiesKHR m_accelerationStructureProperties{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR m_accelerationStructureFeatures{};
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_rayTracingPipelineProperties{};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
         };
     }

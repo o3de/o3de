@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "GraphManagerRequestBus",
+            "base": "GraphManagerRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "GraphManagerRequestBus"
+                "name": "Graph Manager"
             },
             "methods": [
                 {
-                    "key": "GetGraph",
+                    "base": "GetGraph",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGraph"

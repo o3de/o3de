@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDynamicLayoutBus",
+            "base": "UiDynamicLayoutBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDynamicLayoutBus",
+                "name": "UI Dynamic Layout",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetNumChildElements",
+                    "base": "SetNumChildElements",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Number Of Child Elements"

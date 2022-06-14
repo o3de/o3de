@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "LookModificationRequestBus",
+            "base": "LookModificationRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "LookModificationRequestBus"
+                "name": "Look Modification",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetColorGradingLutOverride",
+                    "base": "SetColorGradingLutOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColorGradingLutOverride"
+                        "tooltip": "When signaled, this will invoke Set Color Grading Lut Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColorGradingLutOverride is invoked"
+                        "tooltip": "Signaled after Set Color Grading Lut Override is invoked"
                     },
                     "details": {
-                        "name": "SetColorGradingLutOverride"
+                        "name": "Set Color Grading Lut Override"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "SetCustomMaxExposure",
+                    "base": "SetCustomMaxExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCustomMaxExposure"
+                        "tooltip": "When signaled, this will invoke Set Custom Max Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCustomMaxExposure is invoked"
+                        "tooltip": "Signaled after Set Custom Max Exposure is invoked"
                     },
                     "details": {
-                        "name": "SetCustomMaxExposure"
+                        "name": "Set Custom Max Exposure"
                     },
                     "params": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetCustomMinExposure",
+                    "base": "SetCustomMinExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetCustomMinExposure"
+                        "tooltip": "When signaled, this will invoke Set Custom Min Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetCustomMinExposure is invoked"
+                        "tooltip": "Signaled after Set Custom Min Exposure is invoked"
                     },
                     "details": {
-                        "name": "SetCustomMinExposure"
+                        "name": "Set Custom Min Exposure"
                     },
                     "params": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMinExposure",
+                    "base": "GetCustomMinExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCustomMinExposure"
+                        "tooltip": "When signaled, this will invoke Get Custom Min Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCustomMinExposure is invoked"
+                        "tooltip": "Signaled after Get Custom Min Exposure is invoked"
                     },
                     "details": {
-                        "name": "GetCustomMinExposure"
+                        "name": "Get Custom Min Exposure"
                     },
                     "results": [
                         {
@@ -97,17 +98,17 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLut",
+                    "base": "GetColorGradingLut",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColorGradingLut"
+                        "tooltip": "When signaled, this will invoke Get Color Grading Lut"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColorGradingLut is invoked"
+                        "tooltip": "Signaled after Get Color Grading Lut is invoked"
                     },
                     "details": {
-                        "name": "GetColorGradingLut"
+                        "name": "Get Color Grading Lut"
                     },
                     "results": [
                         {
@@ -119,17 +120,17 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLutIntensity",
+                    "base": "GetColorGradingLutIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColorGradingLutIntensity"
+                        "tooltip": "When signaled, this will invoke Get Color Grading Lut Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColorGradingLutIntensity is invoked"
+                        "tooltip": "Signaled after Get Color Grading Lut Intensity is invoked"
                     },
                     "details": {
-                        "name": "GetColorGradingLutIntensity"
+                        "name": "Get Color Grading Lut Intensity"
                     },
                     "results": [
                         {
@@ -141,17 +142,17 @@
                     ]
                 },
                 {
-                    "key": "GetColorGradingLutOverride",
+                    "base": "GetColorGradingLutOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColorGradingLutOverride"
+                        "tooltip": "When signaled, this will invoke Get Color Grading Lut Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColorGradingLutOverride is invoked"
+                        "tooltip": "Signaled after Get Color Grading Lut Override is invoked"
                     },
                     "details": {
-                        "name": "GetColorGradingLutOverride"
+                        "name": "Get Color Grading Lut Override"
                     },
                     "results": [
                         {
@@ -163,17 +164,17 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingLut",
+                    "base": "SetColorGradingLut",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColorGradingLut"
+                        "tooltip": "When signaled, this will invoke Set Color Grading Lut"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColorGradingLut is invoked"
+                        "tooltip": "Signaled after Set Color Grading Lut is invoked"
                     },
                     "details": {
-                        "name": "SetColorGradingLut"
+                        "name": "Set Color Grading Lut"
                     },
                     "params": [
                         {
@@ -185,17 +186,17 @@
                     ]
                 },
                 {
-                    "key": "SetColorGradingLutIntensity",
+                    "base": "SetColorGradingLutIntensity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetColorGradingLutIntensity"
+                        "tooltip": "When signaled, this will invoke Set Color Grading Lut Intensity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetColorGradingLutIntensity is invoked"
+                        "tooltip": "Signaled after Set Color Grading Lut Intensity is invoked"
                     },
                     "details": {
-                        "name": "SetColorGradingLutIntensity"
+                        "name": "Set Color Grading Lut Intensity"
                     },
                     "params": [
                         {
@@ -207,17 +208,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
+                        "tooltip": "Signaled after Set Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enabled"
                     },
                     "params": [
                         {
@@ -229,17 +230,17 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabled"
+                        "tooltip": "When signaled, this will invoke Get Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabled is invoked"
+                        "tooltip": "Signaled after Get Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetEnabled"
+                        "name": "Get Enabled"
                     },
                     "results": [
                         {
@@ -251,17 +252,17 @@
                     ]
                 },
                 {
-                    "key": "SetShaperPresetType",
+                    "base": "SetShaperPresetType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetShaperPresetType"
+                        "tooltip": "When signaled, this will invoke Set Shaper Preset Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetShaperPresetType is invoked"
+                        "tooltip": "Signaled after Set Shaper Preset Type is invoked"
                     },
                     "details": {
-                        "name": "SetShaperPresetType"
+                        "name": "Set Shaper Preset Type"
                     },
                     "params": [
                         {
@@ -273,17 +274,17 @@
                     ]
                 },
                 {
-                    "key": "GetShaperPresetType",
+                    "base": "GetShaperPresetType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetShaperPresetType"
+                        "tooltip": "When signaled, this will invoke Get Shaper Preset Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetShaperPresetType is invoked"
+                        "tooltip": "Signaled after Get Shaper Preset Type is invoked"
                     },
                     "details": {
-                        "name": "GetShaperPresetType"
+                        "name": "Get Shaper Preset Type"
                     },
                     "results": [
                         {
@@ -295,17 +296,17 @@
                     ]
                 },
                 {
-                    "key": "GetCustomMaxExposure",
+                    "base": "GetCustomMaxExposure",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCustomMaxExposure"
+                        "tooltip": "When signaled, this will invoke Get Custom Max Exposure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCustomMaxExposure is invoked"
+                        "tooltip": "Signaled after Get Custom Max Exposure is invoked"
                     },
                     "details": {
-                        "name": "GetCustomMaxExposure"
+                        "name": "Get Custom Max Exposure"
                     },
                     "results": [
                         {

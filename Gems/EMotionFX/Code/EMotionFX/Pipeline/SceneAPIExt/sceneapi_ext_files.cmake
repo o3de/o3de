@@ -61,4 +61,6 @@ set(FILES
     Data/LodNodeSelectionList.cpp
     Utilities/LODSelector.h
     Utilities/LODSelector.cpp
+    Utilities/LegacyPhysicsMaterialFbxManifestConversion.h
+    Utilities/LegacyPhysicsMaterialFbxManifestConversion.cpp
 )

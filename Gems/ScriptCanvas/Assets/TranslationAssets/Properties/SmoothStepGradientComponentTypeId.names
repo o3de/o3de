@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "SmoothStepGradientComponentTypeId",
+            "base": "SmoothStepGradientComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Smooth Step Gradient Component Type Id"
+                "name": "Smooth Step Gradient Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetSmoothStepGradientComponentTypeId",
+                    "base": "GetSmoothStepGradientComponentTypeId",
                     "details": {
                         "name": "Get Smooth Step Gradient Component Type Id"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathColor_VM",
+            "base": "MathColor_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "One",
+                    "base": "One",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "LinearToGamma",
+                    "base": "LinearToGamma",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -65,7 +65,7 @@
                     ]
                 },
                 {
-                    "key": "FromVector3",
+                    "base": "FromVector3",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByNumber",
+                    "base": "MultiplyByNumber",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -135,7 +135,7 @@
                     ]
                 },
                 {
-                    "key": "Negate",
+                    "base": "Negate",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "Dot3",
+                    "base": "Dot3",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "Dot",
+                    "base": "Dot",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -243,7 +243,7 @@
                     ]
                 },
                 {
-                    "key": "FromValues",
+                    "base": "FromValues",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -293,7 +293,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -331,7 +331,7 @@
                     ]
                 },
                 {
-                    "key": "FromVector3AndNumber",
+                    "base": "FromVector3AndNumber",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -369,7 +369,7 @@
                     ]
                 },
                 {
-                    "key": "GammaToLinear",
+                    "base": "GammaToLinear",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -401,7 +401,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -445,7 +445,7 @@
                     ]
                 },
                 {
-                    "key": "IsZero",
+                    "base": "IsZero",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -483,7 +483,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByColor",
+                    "base": "MultiplyByColor",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -521,7 +521,7 @@
                     ]
                 },
                 {
-                    "key": "Add",
+                    "base": "Add",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",
@@ -559,7 +559,7 @@
                     ]
                 },
                 {
-                    "key": "Subtract",
+                    "base": "Subtract",
                     "context": "MathColor_VM",
                     "entry": {
                         "name": "In",

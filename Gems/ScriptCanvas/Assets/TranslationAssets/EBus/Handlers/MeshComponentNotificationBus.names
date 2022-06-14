@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "MeshComponentNotificationBus",
+            "base": "MeshComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "MeshComponentNotificationBus"
+                "name": "Mesh",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "OnModelReady",
+                    "base": "OnModelReady",
                     "details": {
-                        "name": "OnModelReady"
+                        "name": "On Model Ready"
                     },
                     "params": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Sphere",
+            "base": "ShapeType_Sphere",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ShapeType_Sphere",
+                    "base": "ShapeType_Sphere",
                     "details": {
                         "name": "SGet Shape Type: Sphere",
                         "subtitle": "Shape Type"

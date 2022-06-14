@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "ThresholdGradientRequestBus",
+            "base": "ThresholdGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ThresholdGradientRequestBus"
+                "name": "Threshold Gradient"
             },
             "methods": [
                 {
-                    "key": "GetThreshold",
+                    "base": "GetThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetThreshold"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetThreshold",
+                    "base": "SetThreshold",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetThreshold"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "GetGradientSampler",
+                    "base": "GetGradientSampler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGradientSampler"

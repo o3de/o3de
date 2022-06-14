@@ -1,53 +1,53 @@
 {
     "entries": [
         {
-            "key": "{B5272AB2-1312-5B55-A801-2A976B31665E}",
+            "base": "{B5272AB2-1312-5B55-A801-2A976B31665E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Rows",
                 "category": "Math/Matrix4x4",
-                "tooltip": "Returns a matrix from three row"
+                "tooltip": "returns a matrix from three row"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Row1",
+                    "base": "DataInput_Row1_0",
                     "details": {
-                        "name": "Row 1"
+                        "name": "Row1"
                     }
                 },
                 {
-                    "key": "DataInput_Row2",
+                    "base": "DataInput_Row2_1",
                     "details": {
-                        "name": "Row 2"
+                        "name": "Row2"
                     }
                 },
                 {
-                    "key": "DataInput_Row3",
+                    "base": "DataInput_Row3_2",
                     "details": {
-                        "name": "Row 3"
+                        "name": "Row3"
                     }
                 },
                 {
-                    "key": "DataInput_Row4",
+                    "base": "DataInput_Row4_3",
                     "details": {
-                        "name": "Row 4"
+                        "name": "Row4"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

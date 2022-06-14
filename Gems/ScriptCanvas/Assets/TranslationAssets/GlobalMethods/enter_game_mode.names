@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "enter_game_mode",
+            "base": "enter_game_mode",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "enter_game_mode",
+                    "base": "enter_game_mode",
                     "context": "Global",
                     "entry": {
                         "name": "In",

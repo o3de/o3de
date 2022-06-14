@@ -1,12 +1,9 @@
 {
-    "description": "",
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
     "parentMaterial": "TestData/Materials/StandardPbrTestCases/104_DetailMaps_Normal.material",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "detailLayerGroup": {
-            "blendDetailMask": "TestData/Textures/checker8x8_gray_512.png",
-            "blendDetailMaskUv": "Unwrapped"
-        }
+    "propertyValues": {
+        "detailLayerGroup.blendDetailMask": "TestData/Textures/checker8x8_gray_512.png",
+        "detailLayerGroup.blendDetailMaskUv": "Unwrapped"
     }
 }

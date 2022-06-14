@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "dump_exposed_classes",
+            "base": "dump_exposed_classes",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "dump_exposed_classes",
+                    "base": "dump_exposed_classes",
                     "context": "Global",
                     "entry": {
                         "name": "In",

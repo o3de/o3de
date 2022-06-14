@@ -1,0 +1,3 @@
+[General]
+version=1
+startScript="ImportActor -filename \"character/rinmm.actor\"\nCreateActorInstance -actorID %LASTRESULT% -xPos 3.446852 -yPos 4.907353 -zPos 0.000000 -xScale 1.000000 -yScale 1.000000 -zScale 1.000000 -rot 0.00000000,0.00000000,-0.19918647,0.97996163\nLoadMotionSet -filename \"@products@/MotionMatching.motionset\"\nLoadAnimGraph -filename \"@products@/AutomaticDemo/MotionMatching_AutomaticDemo.animgraph\"\nActivateAnimGraph -actorInstanceID -1 -animGraphID %LASTRESULT1% -motionSetID %LASTRESULT2% -visualizeScale 1.000000\n"

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TriggerEvent",
+            "base": "TriggerEvent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetTriggerEntityId",
+                    "base": "GetTriggerEntityId",
                     "context": "TriggerEvent",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "GetOtherEntityId",
+                    "base": "GetOtherEntityId",
                     "context": "TriggerEvent",
                     "entry": {
                         "name": "In",

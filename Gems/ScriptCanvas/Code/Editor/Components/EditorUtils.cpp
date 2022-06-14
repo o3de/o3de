@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
@@ -30,6 +31,60 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
+    {
+        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+        if (assetSystem)
+        {
+            if (!source.Id().IsNull())
+            {
+                AZStd::string watchFolderID;
+                AZ::Data::AssetInfo assetInfoID;
+                if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfoID, watchFolderID))
+                {
+                    AZStd::string watchFolderPath;
+                    AZ::Data::AssetInfo assetInfoPath;
+                    if (assetSystem->GetSourceInfoBySourcePath(assetInfoID.m_relativePath.c_str(), assetInfoPath, watchFolderPath)
+                    && assetInfoPath.m_assetId.IsValid())
+                    {
+                        AZ_Warning("ScriptCanvas", assetInfoID.m_assetId.m_guid == source.Id()
+                            , "SourceHandle completion produced conflicting AssetIds.");
+                        AZ::IO::Path watchPath(watchFolderPath);
+                        AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
+                        return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                    }
+                }
+            }
+            else if (!source.Path().empty())
+            {
+                AZStd::string watchFolderPath;
+                AZ::Data::AssetInfo assetInfoPath;
+                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath) && assetInfoPath.m_assetId.IsValid())
+                {
+                    AZ::IO::Path watchPath(watchFolderPath);
+                    AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
+                    return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                }
+            }
+        }
+
+
+        return AZStd::nullopt;
+    }
+
+    bool CompleteDescriptionInPlace(SourceHandle& source)
+    {
+        if (auto completed = CompleteDescription(source))
+        {
+            source = *completed;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     //////////////////////////
     // NodeIdentifierFactory
     //////////////////////////
@@ -114,7 +169,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void GraphStatisticsHelper::PopulateStatisticData(const Graph* editorGraph)
+    void GraphStatisticsHelper::PopulateStatisticData(const EditorGraph* editorGraph)
     {
         // Opportunistically use this time to refresh out node count array.
         m_nodeIdentifierCount.clear();

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "Math_VM",
+            "base": "Math_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ThreeGeneric",
+                    "base": "ThreeGeneric",
                     "context": "Math_VM",
                     "entry": {
                         "name": "In",
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyAndAdd",
+                    "base": "MultiplyAndAdd",
                     "context": "Math_VM",
                     "entry": {
                         "name": "In",
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "StringToNumber",
+                    "base": "StringToNumber",
                     "context": "Math_VM",
                     "entry": {
                         "name": "In",

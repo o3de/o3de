@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_SYSTEM_COMPONENT_H
-#define AZCORE_SCRIPT_SYSTEM_COMPONENT_H
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -105,8 +104,9 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////////////////////////
         // AssetBus
         /// Called before an asset reload has started.
-        void OnAssetPreReload(Data::Asset<Data::AssetData> asset) override;
+        void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
         //////////////////////////////////////////////////////////////////////////////////////////////
+        void LoadReadyAsset(Data::Asset<Data::AssetData> asset);
 
         /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
@@ -131,6 +131,7 @@ namespace AZ
             bool m_isOwner = true;
             int m_garbageCollectorSteps = 0;
             AZStd::unordered_map<Uuid, LoadedScriptInfo> m_loadedScripts;
+            AZStd::unordered_map<Uuid, Data::Asset<ScriptAsset>> m_trackedScripts;
             AZStd::recursive_mutex m_loadedScriptsMutex;
 
             ContextContainer() = default;
@@ -172,16 +173,5 @@ namespace AZ
         InMemoryScriptModules m_inMemoryModules;
 
         AZStd::vector<ContextContainer> m_contexts;
-
-        // #TEMP: Remove when asset dependencies are in place
-        // Used to avoid cascading reloads
-        bool m_isReloadQueued = false;
-        // Used to store scripts needing reloading
-        AZStd::unordered_set<Data::AssetId> m_queuedReloads;
-        // Used for being alerted when a require()'d script has finished reloading
-        void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
     };
 }
-
-#endif // AZCORE_SCRIPT_SYSTEM_COMPONENT_H
-#pragma once

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "LookModificationComponentTypeId",
+            "base": "LookModificationComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Look Modification Component Type Id"
+                "name": "Look Modification Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetLookModificationComponentTypeId",
+                    "base": "GetLookModificationComponentTypeId",
                     "details": {
                         "name": "Get Look Modification Component Type Id"
                     },

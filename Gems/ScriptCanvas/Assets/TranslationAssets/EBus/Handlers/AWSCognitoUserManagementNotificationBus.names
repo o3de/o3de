@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSCognitoUserManagementNotificationBus",
+            "base": "AWSCognitoUserManagementNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnEmailSignUpSuccess",
+                    "base": "OnEmailSignUpSuccess",
                     "details": {
                         "name": "On Email Sign Up Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnEmailSignUpFail",
+                    "base": "OnEmailSignUpFail",
                     "details": {
                         "name": "On Email Sign Up Fail"
                     },
@@ -38,7 +38,7 @@
                     ]
                 },
                 {
-                    "key": "OnPhoneSignUpSuccess",
+                    "base": "OnPhoneSignUpSuccess",
                     "details": {
                         "name": "On Phone Sign Up Success"
                     },
@@ -52,7 +52,7 @@
                     ]
                 },
                 {
-                    "key": "OnPhoneSignUpFail",
+                    "base": "OnPhoneSignUpFail",
                     "details": {
                         "name": "On Phone Sign Up Fail"
                     },
@@ -66,13 +66,13 @@
                     ]
                 },
                 {
-                    "key": "OnConfirmSignUpSuccess",
+                    "base": "OnConfirmSignUpSuccess",
                     "details": {
                         "name": "On Confirm Sign Up Success"
                     }
                 },
                 {
-                    "key": "OnConfirmSignUpFail",
+                    "base": "OnConfirmSignUpFail",
                     "details": {
                         "name": "On Confirm Sign Up Fail"
                     },
@@ -86,13 +86,13 @@
                     ]
                 },
                 {
-                    "key": "OnForgotPasswordSuccess",
+                    "base": "OnForgotPasswordSuccess",
                     "details": {
                         "name": "On Forgot Password Success"
                     }
                 },
                 {
-                    "key": "OnForgotPasswordFail",
+                    "base": "OnForgotPasswordFail",
                     "details": {
                         "name": "On Forgot Password Fail"
                     },
@@ -106,13 +106,13 @@
                     ]
                 },
                 {
-                    "key": "OnConfirmForgotPasswordSuccess",
+                    "base": "OnConfirmForgotPasswordSuccess",
                     "details": {
                         "name": "On Confirm Forgot Password Success"
                     }
                 },
                 {
-                    "key": "OnConfirmForgotPasswordFail",
+                    "base": "OnConfirmForgotPasswordFail",
                     "details": {
                         "name": "On Confirm Forgot Password Fail"
                     },
@@ -126,13 +126,13 @@
                     ]
                 },
                 {
-                    "key": "OnEnableMFASuccess",
+                    "base": "OnEnableMFASuccess",
                     "details": {
                         "name": "On Enable MFA Success"
                     }
                 },
                 {
-                    "key": "OnEnableMFAFail",
+                    "base": "OnEnableMFAFail",
                     "details": {
                         "name": "On Enable MFA Fail"
                     },

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EntityEntity_VM",
+            "base": "EntityEntity_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
@@ -42,7 +42,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "GetEntityForward",
+                    "base": "GetEntityForward",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
@@ -114,7 +114,7 @@
                     ]
                 },
                 {
-                    "key": "IsActive",
+                    "base": "IsActive",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
@@ -147,7 +147,7 @@
                     ]
                 },
                 {
-                    "key": "GetEntityRight",
+                    "base": "GetEntityRight",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",
@@ -186,7 +186,7 @@
                     ]
                 },
                 {
-                    "key": "GetEntityUp",
+                    "base": "GetEntityUp",
                     "context": "EntityEntity_VM",
                     "entry": {
                         "name": "In",

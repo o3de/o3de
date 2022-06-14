@@ -41,8 +41,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         ->Field("ShowBBoxes", &Display::m_showBBoxes)
         ->Field("DrawEntityLabels", &Display::m_drawEntityLabels)
         ->Field("ShowTriggerBounds", &Display::m_showTriggerBounds)
-        ->Field("ShowIcons", &Display::m_showIcons)
-        ->Field("DistanceScaleIcons", &Display::m_distanceScaleIcons)
         ->Field("ShowFrozenHelpers", &Display::m_showFrozenHelpers)
         ->Field("FillSelectedShapes", &Display::m_fillSelectedShapes)
         ->Field("ShowGridGuide", &Display::m_showGridGuide)
@@ -118,10 +116,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
                 AZ::Edit::UIHandlers::CheckBox, &Display::m_drawEntityLabels, "Always Draw Entity Labels", "Always Draw Entity Labels")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Display::m_showTriggerBounds, "Always Show Trigger Bounds", "Always Show Trigger Bounds")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Display::m_showIcons, "Show Object Icons", "Show Object Icons")
-            ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_distanceScaleIcons, "Scale Object Icons with Distance",
-                "Scale Object Icons with Distance")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Display::m_showFrozenHelpers, "Show Helpers of Frozen Objects",
                 "Show Helpers of Frozen Objects")
@@ -244,8 +238,6 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     }
     gSettings.viewports.bDrawEntityLabels = m_display.m_drawEntityLabels;
     gSettings.viewports.bShowTriggerBounds = m_display.m_showTriggerBounds;
-    gSettings.viewports.bShowIcons = m_display.m_showIcons;
-    gSettings.viewports.bDistanceScaleIcons = m_display.m_distanceScaleIcons;
     gSettings.viewports.nShowFrozenHelpers = m_display.m_showFrozenHelpers;
     gSettings.viewports.bFillSelectedShapes = m_display.m_fillSelectedShapes;
     gSettings.viewports.bShowGridGuide = m_display.m_showGridGuide;
@@ -300,8 +292,6 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     m_display.m_showBBoxes = (ds->GetRenderFlags() & RENDER_FLAG_BBOX) == RENDER_FLAG_BBOX;
     m_display.m_drawEntityLabels = gSettings.viewports.bDrawEntityLabels;
     m_display.m_showTriggerBounds = gSettings.viewports.bShowTriggerBounds;
-    m_display.m_showIcons = gSettings.viewports.bShowIcons;
-    m_display.m_distanceScaleIcons = gSettings.viewports.bDistanceScaleIcons;
     m_display.m_showFrozenHelpers = gSettings.viewports.nShowFrozenHelpers;
     m_display.m_fillSelectedShapes = gSettings.viewports.bFillSelectedShapes;
     m_display.m_showGridGuide = gSettings.viewports.bShowGridGuide;

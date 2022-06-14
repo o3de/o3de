@@ -13,6 +13,11 @@ then
     exit 1
 fi
 
+echo Configuring environment settings
+
+# Enable coredumps - Will be written to /var/lib/apport/coredump
+ulimit -c unlimited
+
 echo Installing packages and tools for O3DE development
 
 # Install awscli

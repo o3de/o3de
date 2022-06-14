@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Normal",
+            "base": "eUiInteractableState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Normal"
+                "name": "Normal",
+                "category": "Constants/UI/Interactable State"
             },
             "methods": [
                 {
-                    "key": "GeteUiInteractableState_Normal",
+                    "base": "GeteUiInteractableState_Normal",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Normal"
+                        "name": "Normal"
                     },
                     "results": [
                         {

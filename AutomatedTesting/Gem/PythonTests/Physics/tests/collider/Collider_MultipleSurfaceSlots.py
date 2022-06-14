@@ -17,7 +17,7 @@ class Tests():
     mesh_added             = ("Added Mesh component",                        "Failed to add Mesh component")
     physx_collider_added   = ("Added PhysX Collider component",              "Failed to add PhysX Collider component")
     shape_is_correct       = ("PhysX Collider Shape is correct",             "PhysX Collider Shape is not PhysicsAsset")
-    assign_mesh_asset      = ("Assigned Mesh asset to Mesh component",       "Failed to assign mesh asset to Mesh component")
+    assign_model_asset      = ("Assigned Model asset to Mesh component",       "Failed to assign model asset to Mesh component")
     assign_px_mesh_asset   = ("Assigned PxMesh asset to Collider component", "Failed to assign PxMesh asset to Collider component")
     count_mesh_surface     = ("Multiple slots show under materials",         "Failed to show required surface materials")
 # fmt: on
@@ -54,6 +54,8 @@ def Collider_MultipleSurfaceSlots():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
     # Constants
     PHYSICS_ASSET_INDEX = 7  # Hardcoded enum index value for Shape property
     SURFACE_TAG_COUNT = 4  # Number of surface tags included in used asset
@@ -62,9 +64,8 @@ def Collider_MultipleSurfaceSlots():
     STATIC_MESH = os.path.join("assets", "Physics", "Collider_MultipleSurfaceSlots", "test.azmodel")
     PHYSX_MESH = os.path.join("assets", "Physics","Collider_MultipleSurfaceSlots", "test.pxmesh")
 
-    helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create an entity
     test_entity = Entity.create_editor_entity("test_entity")
@@ -88,10 +89,10 @@ def Collider_MultipleSurfaceSlots():
     px_asset.id = collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
     Report.result(Tests.assign_px_mesh_asset, px_asset.get_path().lower() == PHYSX_MESH.replace(os.sep, "/").lower())
 
-    mesh_asset = Asset.find_asset_by_path(STATIC_MESH)
-    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset.id)
-    mesh_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset")
-    Report.result(Tests.assign_mesh_asset, mesh_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
+    model_asset = Asset.find_asset_by_path(STATIC_MESH)
+    mesh_component.set_component_property_value("Controller|Configuration|Model Asset", model_asset.id)
+    model_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Model Asset")
+    Report.result(Tests.assign_model_asset, model_asset.get_path().lower() == STATIC_MESH.replace(os.sep, "/").lower())
 
     # 6) Check if multiple material slots show up under Materials section in the PhysX Collider component
     pte = collider_component.get_property_tree()

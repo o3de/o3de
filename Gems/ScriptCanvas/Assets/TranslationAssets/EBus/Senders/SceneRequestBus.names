@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "SceneRequestBus",
+            "base": "SceneRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SceneRequestBus"
+                "name": "Scene"
             },
             "methods": [
                 {
-                    "key": "CutSelection",
+                    "base": "CutSelection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CutSelection"
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "key": "CopySelection",
+                    "base": "CopySelection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CopySelection"
@@ -37,7 +37,7 @@
                     }
                 },
                 {
-                    "key": "Paste",
+                    "base": "Paste",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Paste"
@@ -51,7 +51,7 @@
                     }
                 },
                 {
-                    "key": "DuplicateSelection",
+                    "base": "DuplicateSelection",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DuplicateSelection"

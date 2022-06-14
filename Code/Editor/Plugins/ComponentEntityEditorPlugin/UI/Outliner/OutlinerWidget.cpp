@@ -1281,6 +1281,8 @@ void OutlinerWidget::OnSearchTextChanged(const QString& activeTextFilter)
 
     m_listModel->SearchStringChanged(filterString);
     m_proxyModel->UpdateFilter();
+
+    m_gui->m_objectTree->expandAll();
 }
 
 void OutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)

@@ -143,7 +143,7 @@ namespace LmbrCentral
     using EditorPolygonPrismShapeComponentManipulatorFixture =
         UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorPolygonPrismShapeComponentFixture>;
 
-    TEST_F(EditorPolygonPrismShapeComponentManipulatorFixture, PolygonPrismNonUniformScale_ManipulatorsScaleCorrectly)
+    TEST_F(EditorPolygonPrismShapeComponentManipulatorFixture, PolygonPrismNonUniformScaleManipulatorsScaleCorrectly)
     {
         // set the non-uniform scale and enter the polygon prism shape component's component mode
         const AZ::Vector3 nonUniformScale(2.0f, 3.0f, 4.0f);
@@ -171,8 +171,8 @@ namespace LmbrCentral
         const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
         const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
 
-        // small diagonal offset to ensure we interact with the planar manipulator and not one of the linear manipulators
-        const AzFramework::ScreenVector offset(5, -5);
+        // diagonal offset to ensure we interact with the planar manipulator and not one of the linear manipulators
+        const AzFramework::ScreenVector offset(50, -50);
 
         m_actionDispatcher
             ->CameraState(m_cameraState)

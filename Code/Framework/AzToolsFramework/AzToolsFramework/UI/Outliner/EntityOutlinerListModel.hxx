@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -38,6 +39,7 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -51,6 +53,7 @@ namespace AzToolsFramework
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
+        , private FocusModeNotificationBus::Handler
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
@@ -68,6 +71,7 @@ namespace AzToolsFramework
             ColumnName,                 //!< Entity name
             ColumnVisibilityToggle,     //!< Visibility Icons
             ColumnLockToggle,           //!< Lock Icons
+            ColumnSpacing,              //!< Spacing to allow for drag select
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
         };
@@ -122,6 +126,9 @@ namespace AzToolsFramework
 
         void Initialize();
 
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
+
         // Qt overrides.
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         int columnCount(const QModelIndex&) const override;
@@ -155,7 +162,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();
@@ -189,7 +195,6 @@ namespace AzToolsFramework
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
-        AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityChangeQueue;
         bool m_entityChangeQueued;
         bool m_entityLayoutQueued;
@@ -289,6 +294,7 @@ namespace AzToolsFramework
         
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
     class EntityOutlinerCheckBox
@@ -344,6 +350,9 @@ namespace AzToolsFramework
         // Paint the entity name using rich text
         void PaintEntityNameAsRichText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
+        // Paint the read-only icon on the entity
+        void PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+
         struct CheckboxGroup
         {
             EntityOutlinerCheckBox m_default;
@@ -372,10 +381,17 @@ namespace AzToolsFramework
         // this is a cache, and is hence mutable
         mutable QRect m_cachedBoundingRectOfTallCharacter;
 
-        const QColor m_selectedColor = QColor(255, 255, 255, 45);
-        const QColor m_hoverColor = QColor(255, 255, 255, 30);
+        inline static const QColor s_selectedColor = QColor(255, 255, 255, 45);
+        inline static const QColor s_hoverColor = QColor(255, 255, 255, 30);
+
+        inline static const QColor s_readOnlyBackgroundColor = QColor("#444444");
+        inline static const QPoint s_readOnlyOffset = QPoint(10, 10);
+        inline static const int s_readOnlyRadius = 6;
+
+        QIcon s_readOnlyIcon = QIcon(QString(":/Entity/readonly.svg"));
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "select_object",
+            "base": "select_object",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "select_object",
+                    "base": "select_object",
                     "context": "Global",
                     "entry": {
                         "name": "In",

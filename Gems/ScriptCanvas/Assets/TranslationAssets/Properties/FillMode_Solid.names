@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FillMode_Solid",
+            "base": "FillMode_Solid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Solid"
+                "name": "Solid",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Solid",
+                    "base": "GetFillMode_Solid",
                     "details": {
-                        "name": "Get Fill Mode_ Solid"
+                        "name": "Solid"
                     },
                     "results": [
                         {

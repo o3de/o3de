@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiImageType_Stretched",
+            "base": "eUiImageType_Stretched",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Image Type_ Stretched"
+                "name": "Stretched",
+                "category": "Constants/UI/Image Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiImageType_Stretched",
+                    "base": "GeteUiImageType_Stretched",
                     "details": {
-                        "name": "Gete Ui Image Type_ Stretched"
+                        "name": "Stretched"
                     },
                     "results": [
                         {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AtomToolsDocumentRequestBus",
+            "base": "AtomToolsDocumentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CanRedo",
+                    "base": "CanRedo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Can Redo"
@@ -32,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "SaveAsChild",
+                    "base": "SaveAsChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save As Child"
@@ -62,7 +62,7 @@
                     ]
                 },
                 {
-                    "key": "Reopen",
+                    "base": "Reopen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reopen"
@@ -84,7 +84,7 @@
                     ]
                 },
                 {
-                    "key": "Save",
+                    "base": "Save",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save"
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "IsOpen",
+                    "base": "IsOpen",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Open"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "Undo",
+                    "base": "Undo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Undo"
@@ -150,7 +150,7 @@
                     ]
                 },
                 {
-                    "key": "Open",
+                    "base": "Open",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Open"
@@ -180,7 +180,7 @@
                     ]
                 },
                 {
-                    "key": "CanUndo",
+                    "base": "CanUndo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Can Undo"
@@ -202,7 +202,7 @@
                     ]
                 },
                 {
-                    "key": "SetPropertyValue",
+                    "base": "SetPropertyValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Property Value"
@@ -230,7 +230,7 @@
                     ]
                 },
                 {
-                    "key": "SaveAsCopy",
+                    "base": "SaveAsCopy",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Save As Copy"
@@ -260,7 +260,7 @@
                     ]
                 },
                 {
-                    "key": "BeginEdit",
+                    "base": "BeginEdit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Begin Edit"
@@ -282,7 +282,7 @@
                     ]
                 },
                 {
-                    "key": "GetPropertyValue",
+                    "base": "GetPropertyValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Property Value"
@@ -312,7 +312,7 @@
                     ]
                 },
                 {
-                    "key": "Close",
+                    "base": "Close",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Close"
@@ -334,7 +334,7 @@
                     ]
                 },
                 {
-                    "key": "IsModified",
+                    "base": "IsModified",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsModified"
@@ -356,7 +356,7 @@
                     ]
                 },
                 {
-                    "key": "EndEdit",
+                    "base": "EndEdit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke End Edit"
@@ -378,7 +378,7 @@
                     ]
                 },
                 {
-                    "key": "GetAbsolutePath",
+                    "base": "GetAbsolutePath",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Absolute Path"
@@ -400,7 +400,7 @@
                     ]
                 },
                 {
-                    "key": "GetRelativePath",
+                    "base": "GetRelativePath",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Relative Path"
@@ -422,7 +422,7 @@
                     ]
                 },
                 {
-                    "key": "IsSavable",
+                    "base": "IsSavable",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Savable"
@@ -444,7 +444,7 @@
                     ]
                 },
                 {
-                    "key": "Redo",
+                    "base": "Redo",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Redo"

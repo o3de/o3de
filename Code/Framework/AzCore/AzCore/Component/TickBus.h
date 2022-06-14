@@ -16,7 +16,6 @@
 #define AZCORE_COMPONENT_TICK_BUS_H
 
 #include <AzCore/Component/ComponentBus.h>
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/mutex.h> // For TickBus thread events.
 #include <AzCore/Script/ScriptTimePoint.h>
@@ -112,10 +111,6 @@ namespace AZ
             AZ_FORCE_INLINE bool operator()(TickEvents* left, TickEvents* right) const { return left->GetTickOrder() < right->GetTickOrder(); }
         };
 
-        /**
-        * Enable tick bus to work with the AssetTracking
-        */
-        using EventProcessingPolicy = Debug::AssetTrackingEventProcessingPolicy<>;
         //////////////////////////////////////////////////////////////////////////
 
         /**
@@ -217,10 +212,6 @@ namespace AZ
          */
         typedef AZStd::mutex EventQueueMutexType; 
 
-        /**
-        * Enable tick bus to work with the AssetTracking
-        */
-        using EventProcessingPolicy = Debug::AssetTrackingEventProcessingPolicy<>;
         //////////////////////////////////////////////////////////////////////////
 
         /**

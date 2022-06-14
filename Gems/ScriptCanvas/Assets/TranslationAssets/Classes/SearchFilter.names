@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SearchFilter",
+            "base": "SearchFilter",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

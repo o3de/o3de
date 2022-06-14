@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{07875A9A-81DF-59BA-95E8-3BB5D3E7CF0E}",
+            "base": "{07875A9A-81DF-59BA-95E8-3BB5D3E7CF0E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Build Tangent Basis",
                 "category": "Math/Vector3",
-                "tooltip": "Returns a tangent basis from the normal"
+                "tooltip": "returns a tangent basis from the normal"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Normal",
+                    "base": "DataInput_Normal_0",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataOutput_Tangent",
+                    "base": "DataOutput_Tangent_0",
                     "details": {
                         "name": "Tangent"
                     }
                 },
                 {
-                    "key": "DataOutput_Bitangent",
+                    "base": "DataOutput_Bitangent_1",
                     "details": {
                         "name": "Bitangent"
                     }

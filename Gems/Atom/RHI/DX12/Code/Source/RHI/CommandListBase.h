@@ -52,7 +52,7 @@ namespace AZ
 
             RHI::HardwareQueueClass GetHardwareQueueClass() const;
 
-            void SetAftermathEventMarker(const AZStd::string& markerData);
+            void SetAftermathEventMarker(const char* markerData);
 
         protected:
             void Init(Device& device, RHI::HardwareQueueClass hardwareQueueClass, ID3D12CommandAllocator* commandAllocator);

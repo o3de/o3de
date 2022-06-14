@@ -422,7 +422,7 @@ namespace PhysX
                     return d1.m_depth < d2.m_depth;
                 });
 
-            bool massesClamped = false;
+            [[maybe_unused]] bool massesClamped = false;
             for (const auto& nodeDepth : nodeDepths)
             {
                 const size_t nodeIndex = nodeDepth.m_index;

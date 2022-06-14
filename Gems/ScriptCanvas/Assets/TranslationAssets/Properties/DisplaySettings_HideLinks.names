@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "DisplaySettings_HideLinks",
+            "base": "DisplaySettings_HideLinks",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Display Settings_ Hide Links"
+                "name": "Hide Links",
+                "category": "Constants/Display Settings"
             },
             "methods": [
                 {
-                    "key": "GetDisplaySettings_HideLinks",
+                    "base": "GetDisplaySettings_HideLinks",
                     "details": {
-                        "name": "Get Display Settings_ Hide Links"
+                        "name": "Get Hide Links"
                     },
                     "results": [
                         {

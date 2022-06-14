@@ -1,47 +1,47 @@
 {
     "entries": [
         {
-            "key": "{B70E2447-DE12-5D81-80E4-06BEE5A0219E}",
+            "base": "{B70E2447-DE12-5D81-80E4-06BEE5A0219E}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Rows",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns a matrix from three row"
+                "tooltip": "returns a matrix from three row"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Row1",
+                    "base": "DataInput_Row1_0",
                     "details": {
-                        "name": "Row 1"
+                        "name": "Row1"
                     }
                 },
                 {
-                    "key": "DataInput_Row2",
+                    "base": "DataInput_Row2_1",
                     "details": {
-                        "name": "Row 2"
+                        "name": "Row2"
                     }
                 },
                 {
-                    "key": "DataInput_Row3",
+                    "base": "DataInput_Row3_2",
                     "details": {
-                        "name": "Row 3"
+                        "name": "Row3"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

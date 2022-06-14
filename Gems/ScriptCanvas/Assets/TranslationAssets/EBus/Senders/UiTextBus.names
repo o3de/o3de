@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiTextBus",
+            "base": "UiTextBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiTextBus",
+                "name": "UI Text",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetTextHeight",
+                    "base": "GetTextHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Height"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Color"
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetLineSpacing",
+                    "base": "GetLineSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Line Spacing"
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextWidth",
+                    "base": "GetTextWidth",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text Width"
@@ -102,7 +102,7 @@
                     ]
                 },
                 {
-                    "key": "SetWrapText",
+                    "base": "SetWrapText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Wrap Text"
@@ -126,7 +126,7 @@
                     ]
                 },
                 {
-                    "key": "GetFontEffectName",
+                    "base": "GetFontEffectName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Font Effect Name"
@@ -159,7 +159,7 @@
                     ]
                 },
                 {
-                    "key": "GetShrinkToFit",
+                    "base": "GetShrinkToFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Shrink To Fit"
@@ -182,7 +182,7 @@
                     ]
                 },
                 {
-                    "key": "GetOverflowMode",
+                    "base": "GetOverflowMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Overflow Mode"
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "GetFontEffect",
+                    "base": "GetFontEffect",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Font Effect"
@@ -228,7 +228,7 @@
                     ]
                 },
                 {
-                    "key": "SetFontEffect",
+                    "base": "SetFontEffect",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Font Effect"
@@ -252,7 +252,7 @@
                     ]
                 },
                 {
-                    "key": "GetHorizontalTextAlignment",
+                    "base": "GetHorizontalTextAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Text Alignment"
@@ -275,7 +275,7 @@
                     ]
                 },
                 {
-                    "key": "GetFont",
+                    "base": "GetFont",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Font"
@@ -298,7 +298,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalTextAlignment",
+                    "base": "SetVerticalTextAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Text Alignment"
@@ -322,7 +322,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalTextAlignment",
+                    "base": "GetVerticalTextAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Text Alignment"
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "SetOverflowMode",
+                    "base": "SetOverflowMode",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Overflow Mode"
@@ -369,7 +369,7 @@
                     ]
                 },
                 {
-                    "key": "SetColor",
+                    "base": "SetColor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Color"
@@ -393,7 +393,7 @@
                     ]
                 },
                 {
-                    "key": "SetFontSize",
+                    "base": "SetFontSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Font Size"
@@ -417,7 +417,7 @@
                     ]
                 },
                 {
-                    "key": "SetCharacterSpacing",
+                    "base": "SetCharacterSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Character Spacing"
@@ -441,7 +441,7 @@
                     ]
                 },
                 {
-                    "key": "SetLineSpacing",
+                    "base": "SetLineSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Line Spacing"
@@ -465,7 +465,7 @@
                     ]
                 },
                 {
-                    "key": "GetCharacterSpacing",
+                    "base": "GetCharacterSpacing",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Character Spacing"
@@ -488,7 +488,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalTextAlignment",
+                    "base": "SetHorizontalTextAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Text Alignment"
@@ -512,7 +512,7 @@
                     ]
                 },
                 {
-                    "key": "SetText",
+                    "base": "SetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Text"
@@ -536,7 +536,7 @@
                     ]
                 },
                 {
-                    "key": "SetFont",
+                    "base": "SetFont",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Font"
@@ -560,7 +560,7 @@
                     ]
                 },
                 {
-                    "key": "SetFontEffectByName",
+                    "base": "SetFontEffectByName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Font Effect By Name"
@@ -584,7 +584,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsMarkupEnabled",
+                    "base": "SetIsMarkupEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Markup Enabled"
@@ -608,7 +608,7 @@
                     ]
                 },
                 {
-                    "key": "GetWrapText",
+                    "base": "GetWrapText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Wrap Text"
@@ -631,7 +631,7 @@
                     ]
                 },
                 {
-                    "key": "GetText",
+                    "base": "GetText",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Text"
@@ -654,7 +654,7 @@
                     ]
                 },
                 {
-                    "key": "GetTextSize",
+                    "base": "GetTextSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTextSize"
@@ -676,7 +676,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsMarkupEnabled",
+                    "base": "GetIsMarkupEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Is Markup Enabled"
@@ -699,7 +699,7 @@
                     ]
                 },
                 {
-                    "key": "GetFontSize",
+                    "base": "GetFontSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Font Size"
@@ -722,7 +722,7 @@
                     ]
                 },
                 {
-                    "key": "SetShrinkToFit",
+                    "base": "SetShrinkToFit",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Shrink To Fit"

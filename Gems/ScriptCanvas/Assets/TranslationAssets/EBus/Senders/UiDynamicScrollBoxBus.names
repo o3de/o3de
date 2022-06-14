@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiDynamicScrollBoxBus",
+            "base": "UiDynamicScrollBoxBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiDynamicScrollBoxBus",
+                "name": "UI Dynamic Scroll Box",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetSectionsEnabled",
+                    "base": "SetSectionsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Sections Enabled"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "GetEstimatedVariableElementSize",
+                    "base": "GetEstimatedVariableElementSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Estimated Variable Element Size"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoCalculateVariableElementSize",
+                    "base": "SetAutoCalculateVariableElementSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto-calculate Variable Element Size"
@@ -81,7 +81,7 @@
                     ]
                 },
                 {
-                    "key": "GetEstimatedVariableHeaderSize",
+                    "base": "GetEstimatedVariableHeaderSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Estimated Variable Header Size"
@@ -104,7 +104,7 @@
                     ]
                 },
                 {
-                    "key": "SetEstimatedVariableHeaderSize",
+                    "base": "SetEstimatedVariableHeaderSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Estimated Variable Header Size"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "SetPrototypeElement",
+                    "base": "SetPrototypeElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Prototype Element"
@@ -152,7 +152,7 @@
                     ]
                 },
                 {
-                    "key": "SetElementsVaryInSize",
+                    "base": "SetElementsVaryInSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Elements Vary In Size"
@@ -176,7 +176,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveElementsFromFront",
+                    "base": "RemoveElementsFromFront",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Remove Elements From Front"
@@ -200,7 +200,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementIndexOfChild",
+                    "base": "GetElementIndexOfChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Element Index Of Child"
@@ -233,7 +233,7 @@
                     ]
                 },
                 {
-                    "key": "GetElementsVaryInSize",
+                    "base": "GetElementsVaryInSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Elements Vary In Size"
@@ -256,7 +256,7 @@
                     ]
                 },
                 {
-                    "key": "GetHeadersSticky",
+                    "base": "GetHeadersSticky",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Headers Sticky"
@@ -279,7 +279,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoRefreshOnPostActivate",
+                    "base": "GetAutoRefreshOnPostActivate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto-refresh On Post-activate"
@@ -302,7 +302,7 @@
                     ]
                 },
                 {
-                    "key": "SetEstimatedVariableElementSize",
+                    "base": "SetEstimatedVariableElementSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Estimated Variable Element Size"
@@ -326,7 +326,7 @@
                     ]
                 },
                 {
-                    "key": "SetPrototypeHeader",
+                    "base": "SetPrototypeHeader",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Prototype Header"
@@ -350,7 +350,7 @@
                     ]
                 },
                 {
-                    "key": "GetSectionsEnabled",
+                    "base": "GetSectionsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Sections Enabled"
@@ -373,7 +373,7 @@
                     ]
                 },
                 {
-                    "key": "ScrollToEnd",
+                    "base": "ScrollToEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Scroll To End"
@@ -388,7 +388,7 @@
                     }
                 },
                 {
-                    "key": "GetPrototypeElement",
+                    "base": "GetPrototypeElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Prototype Element"
@@ -412,7 +412,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeadersVaryInSize",
+                    "base": "SetHeadersVaryInSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Headers Vary In Size"
@@ -436,7 +436,7 @@
                     ]
                 },
                 {
-                    "key": "AddElementsToEnd",
+                    "base": "AddElementsToEnd",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add Elements To End"
@@ -467,7 +467,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildAtElementIndex",
+                    "base": "GetChildAtElementIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Child At Element Index"
@@ -500,7 +500,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeadersSticky",
+                    "base": "SetHeadersSticky",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Headers Sticky"
@@ -524,7 +524,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildAtSectionAndElementIndex",
+                    "base": "GetChildAtSectionAndElementIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Child At Section And Element Index"
@@ -564,7 +564,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoRefreshOnPostActivate",
+                    "base": "SetAutoRefreshOnPostActivate",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto-refresh On Post-activate"
@@ -588,7 +588,7 @@
                     ]
                 },
                 {
-                    "key": "GetSectionIndexOfChild",
+                    "base": "GetSectionIndexOfChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Section Index Of Child"
@@ -621,7 +621,7 @@
                     ]
                 },
                 {
-                    "key": "RefreshContent",
+                    "base": "RefreshContent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Refresh Content"
@@ -636,7 +636,7 @@
                     }
                 },
                 {
-                    "key": "GetHeadersVaryInSize",
+                    "base": "GetHeadersVaryInSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Headers Vary In Size"
@@ -659,7 +659,7 @@
                     ]
                 },
                 {
-                    "key": "GetPrototypeHeader",
+                    "base": "GetPrototypeHeader",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Prototype Header"
@@ -683,7 +683,7 @@
                     ]
                 },
                 {
-                    "key": "SetAutoCalculateVariableHeaderSize",
+                    "base": "SetAutoCalculateVariableHeaderSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Auto-calculate Variable Header Size"
@@ -707,7 +707,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoCalculateVariableElementSize",
+                    "base": "GetAutoCalculateVariableElementSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto-calculate Variable Element Size"
@@ -730,7 +730,7 @@
                     ]
                 },
                 {
-                    "key": "GetAutoCalculateVariableHeaderSize",
+                    "base": "GetAutoCalculateVariableHeaderSize",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Auto-calculate Variable Header Size"

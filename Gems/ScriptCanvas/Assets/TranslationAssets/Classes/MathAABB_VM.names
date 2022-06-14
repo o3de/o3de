@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathAABB_VM",
+            "base": "MathAABB_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Overlaps",
+                    "base": "Overlaps",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "SurfaceArea",
+                    "base": "SurfaceArea",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "ToSphere",
+                    "base": "ToSphere",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "FromOBB",
+                    "base": "FromOBB",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -143,7 +143,7 @@
                     ]
                 },
                 {
-                    "key": "Translate",
+                    "base": "Translate",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -181,7 +181,7 @@
                     ]
                 },
                 {
-                    "key": "ContainsVector3",
+                    "base": "ContainsVector3",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -219,7 +219,7 @@
                     ]
                 },
                 {
-                    "key": "Distance",
+                    "base": "Distance",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "FromPoint",
+                    "base": "FromPoint",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -289,7 +289,7 @@
                     ]
                 },
                 {
-                    "key": "Null",
+                    "base": "Null",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -313,7 +313,7 @@
                     ]
                 },
                 {
-                    "key": "YExtent",
+                    "base": "YExtent",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "Clamp",
+                    "base": "Clamp",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "ContainsAABB",
+                    "base": "ContainsAABB",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -421,7 +421,7 @@
                     ]
                 },
                 {
-                    "key": "Expand",
+                    "base": "Expand",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -459,7 +459,7 @@
                     ]
                 },
                 {
-                    "key": "Extents",
+                    "base": "Extents",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -491,7 +491,7 @@
                     ]
                 },
                 {
-                    "key": "FromCenterHalfExtents",
+                    "base": "FromCenterHalfExtents",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -529,7 +529,7 @@
                     ]
                 },
                 {
-                    "key": "GetMin",
+                    "base": "GetMin",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -561,7 +561,7 @@
                     ]
                 },
                 {
-                    "key": "ApplyTransform",
+                    "base": "ApplyTransform",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -599,7 +599,7 @@
                     ]
                 },
                 {
-                    "key": "Center",
+                    "base": "Center",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -631,7 +631,7 @@
                     ]
                 },
                 {
-                    "key": "FromMinMax",
+                    "base": "FromMinMax",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -669,7 +669,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -701,7 +701,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -733,7 +733,7 @@
                     ]
                 },
                 {
-                    "key": "GetMax",
+                    "base": "GetMax",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -765,7 +765,7 @@
                     ]
                 },
                 {
-                    "key": "XExtent",
+                    "base": "XExtent",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -797,7 +797,7 @@
                     ]
                 },
                 {
-                    "key": "AddPoint",
+                    "base": "AddPoint",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -835,7 +835,7 @@
                     ]
                 },
                 {
-                    "key": "AddAABB",
+                    "base": "AddAABB",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -873,7 +873,7 @@
                     ]
                 },
                 {
-                    "key": "FromCenterRadius",
+                    "base": "FromCenterRadius",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",
@@ -911,7 +911,7 @@
                     ]
                 },
                 {
-                    "key": "ZExtent",
+                    "base": "ZExtent",
                     "context": "MathAABB_VM",
                     "entry": {
                         "name": "In",

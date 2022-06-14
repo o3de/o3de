@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_Zero",
+            "base": "BlendFactor_Zero",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Zero"
+                "name": "Zero",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_Zero",
+                    "base": "GetBlendFactor_Zero",
                     "details": {
-                        "name": "Get Blend Factor_ Zero"
+                        "name": "Get Zero"
                     },
                     "results": [
                         {

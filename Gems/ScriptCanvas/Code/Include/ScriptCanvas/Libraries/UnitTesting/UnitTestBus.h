@@ -8,11 +8,13 @@
 
 #pragma once
 
-#include "UnitTesting.h"
-#include "UnitTestBusMacros.h"
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/EBus/EBus.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
+
+#include "UnitTestBusMacros.h"
+#include "UnitTesting.h"
 
 namespace AZ
 {
@@ -27,7 +29,8 @@ namespace ScriptCanvas
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            using BusIdType = ScriptCanvasId;
+
+            using BusIdType = AZ::Data::AssetId;
 
             virtual void AddFailure(const Report& report) = 0;
             
@@ -61,6 +64,5 @@ namespace ScriptCanvas
         };
 
         using Bus = AZ::EBus<BusTraits>;
-
     }
 } 

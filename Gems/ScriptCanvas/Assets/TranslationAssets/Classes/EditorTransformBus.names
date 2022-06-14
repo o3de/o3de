@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorTransformBus",
+            "base": "EditorTransformBus",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

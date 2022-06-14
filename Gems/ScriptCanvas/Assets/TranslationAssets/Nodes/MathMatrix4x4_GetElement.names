@@ -1,47 +1,47 @@
 {
     "entries": [
         {
-            "key": "{2677AF1E-FAC3-5360-96E4-CC3054372340}",
+            "base": "{2677AF1E-FAC3-5360-96E4-CC3054372340}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Get Element",
                 "category": "Math/Matrix4x4",
-                "tooltip": "Returns scalar from matrix corresponding to the (Row,Column) pair"
+                "tooltip": "returns scalar from matrix corresponding to the (Row,Column) pair"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Row",
+                    "base": "DataInput_Row_1",
                     "details": {
                         "name": "Row"
                     }
                 },
                 {
-                    "key": "DataInput_Column",
+                    "base": "DataInput_Column_2",
                     "details": {
                         "name": "Column"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

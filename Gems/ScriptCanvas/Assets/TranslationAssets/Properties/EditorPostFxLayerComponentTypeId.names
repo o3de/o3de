@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorPostFxLayerComponentTypeId",
+            "base": "EditorPostFxLayerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Post Fx Layer Component Type Id"
+                "name": "Editor Post Fx Layer Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorPostFxLayerComponentTypeId",
+                    "base": "GetEditorPostFxLayerComponentTypeId",
                     "details": {
                         "name": "Get Editor Post Fx Layer Component Type Id"
                     },

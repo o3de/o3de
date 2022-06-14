@@ -34,11 +34,11 @@
                             "Attachment": "Output"
                         }
                     },
+                    "MultisampleSource": {
+                        "Pass": "Pipeline"
+                    },
                     "ImageDescriptor": {
                         "Format": "D32_FLOAT_S8X24_UINT",
-                        "MultisampleState": {
-                            "samples": 4
-                        },
                         "SharedQueueMask": "Graphics"
                     }
                 }

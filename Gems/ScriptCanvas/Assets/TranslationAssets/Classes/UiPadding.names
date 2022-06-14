@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiPadding",
+            "base": "UiPadding",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,182 +10,332 @@
             },
             "methods": [
                 {
-                    "key": "SetPadding",
+                    "base": "SetPadding",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetPadding"
+                        "tooltip": "When signaled, this will invoke Set Padding"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetPadding is invoked"
+                        "tooltip": "Signaled after Set Padding is invoked"
                     },
                     "details": {
-                        "name": "UiPadding::SetPadding",
-                        "category": "UI"
+                        "name": "Set Padding"
                     },
                     "params": [
                         {
                             "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
                             "details": {
-                                "name": "Padding",
-                                "tooltip": "The padding to set"
+                                "name": "Padding"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The padding inside the left edge of the element"
+                                "name": "int"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The padding inside the top edge of the element"
+                                "name": "int"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The padding inside the right edge of the element"
+                                "name": "int"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The padding inside the bottom edge of the element"
+                                "name": "int"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetBottom",
+                    "base": "SetBottom",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottom"
+                        "tooltip": "When signaled, this will invoke Set Bottom"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottom is invoked"
+                        "tooltip": "Signaled after Set Bottom is invoked"
                     },
                     "details": {
-                        "name": "UiPadding::SetBottom",
-                        "category": "UI"
+                        "name": "Set Bottom"
                     },
                     "params": [
                         {
                             "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
                             "details": {
-                                "name": "Padding",
-                                "tooltip": "The padding for which to set the bottom padding"
+                                "name": "Padding"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The padding inside the bottom edge of the element"
+                                "name": "int"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetRight",
+                    "base": "SetRight",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRight"
+                        "tooltip": "When signaled, this will invoke Set Right"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRight is invoked"
+                        "tooltip": "Signaled after Set Right is invoked"
                     },
                     "details": {
-                        "name": "UiPadding::SetRight",
-                        "category": "UI"
+                        "name": "Set Right"
                     },
                     "params": [
                         {
                             "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
                             "details": {
-                                "name": "Padding",
-                                "tooltip": "The padding for which to set the right padding"
+                                "name": "Padding"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The padding inside the right edge of the element"
+                                "name": "int"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetTop",
+                    "base": "SetTop",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTop"
+                        "tooltip": "When signaled, this will invoke Set Top"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTop is invoked"
+                        "tooltip": "Signaled after Set Top is invoked"
                     },
                     "details": {
-                        "name": "UiPadding::SetTop",
-                        "category": "UI"
+                        "name": "Set Top"
                     },
                     "params": [
                         {
                             "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
                             "details": {
-                                "name": "Padding",
-                                "tooltip": "The padding for which to set the top padding"
+                                "name": "Padding"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The padding inside the top edge of the element"
+                                "name": "int"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLeft",
+                    "base": "SetLeft",
                     "context": "UiPadding",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLeft"
+                        "tooltip": "When signaled, this will invoke Set Left"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLeft is invoked"
+                        "tooltip": "Signaled after Set Left is invoked"
                     },
                     "details": {
-                        "name": "UiPadding::SetLeft",
-                        "category": "UI"
+                        "name": "Set Left"
                     },
                     "params": [
                         {
                             "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
                             "details": {
-                                "name": "Padding",
-                                "tooltip": "The padding for which to set the left padding"
+                                "name": "Padding"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The padding inside the left edge of the element"
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getleft",
+                    "details": {
+                        "name": "Getleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setleft",
+                    "details": {
+                        "name": "Setleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getright",
+                    "details": {
+                        "name": "Getright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setright",
+                    "details": {
+                        "name": "Setright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Gettop",
+                    "details": {
+                        "name": "Gettop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Settop",
+                    "details": {
+                        "name": "Settop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getbottom",
+                    "details": {
+                        "name": "Getbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setbottom",
+                    "details": {
+                        "name": "Setbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
                             }
                         }
                     ]

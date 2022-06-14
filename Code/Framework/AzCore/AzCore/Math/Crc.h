@@ -16,7 +16,7 @@
 //
 // When AZ_CRC("My string") is used by default it will map to AZ::Crc32("My string").
 // We do have a pro-processor program which will precompute the crc for you and
-// transform that macro to AZ_CRC("My string",0xabcdef00) this will expand to just 0xabcdef00.
+// transform that macro to AZ_CRC("My string", 0x18fbd270) this will expand to just 0x18fbd270.
 // This will remove completely the "My string" from your executable, it will add it to a database and so on.
 // WHen you want to update the string, just change the string.
 // If you don't run the precompile step the code should still run fine, except it will be slower,
@@ -24,7 +24,7 @@
 // a constant expression.
 // For example
 // switch(id) {
-//  case AZ_CRC("My string",0xabcdef00): {} break; // this will compile fine
+//  case AZ_CRC("My string",0x18fbd270): {} break; // this will compile fine
 //  case AZ_CRC("My string"): {} break; // this will cause "error C2051: case expression not constant"
 // }
 // So it's you choice what you do, depending on your needs.

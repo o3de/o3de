@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "CYLINDER",
+            "base": "CYLINDER",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "CYLINDER"
+                "name": "Cylinder",
+                "category": "Constants/White Box"
             },
             "methods": [
                 {
-                    "key": "GetCYLINDER",
+                    "base": "GetCYLINDER",
                     "details": {
-                        "name": "GetCYLINDER"
+                        "name": "Cylinder"
                     },
                     "results": [
                         {

@@ -13,6 +13,21 @@
 #include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
 #include <Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli>
 
+// This data varies across different surfaces, but is uniform within a surface
+class SurfaceSettings
+{
+    //! Subsurface scattering parameters
+    float subsurfaceScatteringQuality;
+    float3 scatterDistance;
+
+    // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+    // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+    // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+    // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+    // not apply.
+    float opacityAffectsSpecularFactor;
+};
+
 class Surface
 {
     AnisotropicSurfaceData anisotropy;
@@ -24,11 +39,19 @@ class Surface
     float3 position;            //!< Position in world-space
     float3 normal;              //!< Normal in world-space
     float3 vertexNormal;        //!< Vertex normal in world-space
-    float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
-    float3 specularF0;          //!< Fresnel f0 spectral value of the surface
+    float3 baseColor;           //!< Surface base color
+    float metallic;             //!< Surface metallic property
     float roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
     float roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
     float roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float subsurfaceScatteringFactor;
+
+    //! Surface lighting inputs
+    float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
+    float3 specularF0;          //!< Fresnel f0 spectral value of the surface
+    float3 emissiveLighting;    //!< Emissive lighting
+    float diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+    float specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
 
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();
@@ -76,12 +99,13 @@ void Surface::CalculateRoughnessA()
     }
 }
 
-void Surface::SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic)
+void Surface::SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor, float newMetallic)
 {
+    baseColor = newBaseColor;
+    metallic = newMetallic;
     float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
 
     // Compute albedo and specularF0 based on metalness
     albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
     specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
 }
-

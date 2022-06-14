@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorTransformComponentTypeId",
+            "base": "EditorTransformComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Transform Component Type Id"
+                "name": "Editor Transform Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorTransformComponentTypeId",
+                    "base": "GetEditorTransformComponentTypeId",
                     "details": {
                         "name": "Get Editor Transform Component Type Id"
                     },

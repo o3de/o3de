@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "On Gravity Changed event",
+            "base": "On Gravity Changed event",
             "context": "AZEventHandler",
             "variant": "",
             "details": {
@@ -9,49 +9,49 @@
             },
             "slots": [
                 {
-                    "key": "Scene Handle",
+                    "base": "Scene Handle",
                     "details": {
                         "name": "Scene Handle"
                     }
                 },
                 {
-                    "key": "Gravity Vector",
+                    "base": "Gravity Vector",
                     "details": {
                         "name": "Gravity Vector"
                     }
                 },
                 {
-                    "key": "On Gravity Changed event",
+                    "base": "On Gravity Changed event",
                     "details": {
                         "name": "On Gravity Changed event"
                     }
                 },
                 {
-                    "key": "Connect",
+                    "base": "Connect",
                     "details": {
                         "name": "Connect"
                     }
                 },
                 {
-                    "key": "Disconnect",
+                    "base": "Disconnect",
                     "details": {
                         "name": "Disconnect"
                     }
                 },
                 {
-                    "key": "On Connected",
+                    "base": "On Connected",
                     "details": {
                         "name": "On Connected"
                     }
                 },
                 {
-                    "key": "On Disconnected",
+                    "base": "On Disconnected",
                     "details": {
                         "name": "On Disconnected"
                     }
                 },
                 {
-                    "key": "OnEvent",
+                    "base": "OnEvent",
                     "details": {
                         "name": "OnEvent"
                     }

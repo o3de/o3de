@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiTransform2dComponent",
+            "base": "UiTransform2dComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

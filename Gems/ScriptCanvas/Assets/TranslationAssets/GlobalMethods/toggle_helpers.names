@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "toggle_helpers",
+            "base": "toggle_helpers",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "toggle_helpers",
+                    "base": "toggle_helpers",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -1,35 +1,35 @@
 {
     "entries": [
         {
-            "key": "{1328993D-4413-5E46-9116-3AA5C25E97D2}",
+            "base": "{1328993D-4413-5E46-9116-3AA5C25E97D2}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Conjugate",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns the conjugate of the source, (-x, -y, -z, w)"
+                "tooltip": "returns the conjugate of the source, (-x, -y, -z, w)"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

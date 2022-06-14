@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "RenderMeshComponentRequestBus",
+            "base": "RenderMeshComponentRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "RenderMeshComponentRequestBus"
+                "name": "Render Mesh Component",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetLodOverride",
+                    "base": "GetLodOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetLodOverride"
+                        "tooltip": "When signaled, this will invoke Get Lod Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetLodOverride is invoked"
+                        "tooltip": "Signaled after Get Lod Override is invoked"
                     },
                     "details": {
-                        "name": "GetLodOverride"
+                        "name": "Get Lod Override"
                     },
                     "results": [
                         {
@@ -31,39 +32,39 @@
                     ]
                 },
                 {
-                    "key": "GetSortKey",
+                    "base": "GetSortKey",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetSortKey"
+                        "tooltip": "When signaled, this will invoke Get Sort Key"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetSortKey is invoked"
+                        "tooltip": "Signaled after Get Sort Key is invoked"
                     },
                     "details": {
-                        "name": "GetSortKey"
+                        "name": "Get Sort Key"
                     },
                     "results": [
                         {
                             "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
                             "details": {
-                                "name": "AZ::s64"
+                                "name": "AZ::s 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetQualityDecayRate",
+                    "base": "SetQualityDecayRate",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQualityDecayRate"
+                        "tooltip": "When signaled, this will invoke Set Quality Decay Rate"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetQualityDecayRate is invoked"
+                        "tooltip": "Signaled after Set Quality Decay Rate is invoked"
                     },
                     "details": {
-                        "name": "SetQualityDecayRate"
+                        "name": "Set Quality Decay Rate"
                     },
                     "params": [
                         {
@@ -75,61 +76,61 @@
                     ]
                 },
                 {
-                    "key": "SetSortKey",
+                    "base": "SetSortKey",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetSortKey"
+                        "tooltip": "When signaled, this will invoke Set Sort Key"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetSortKey is invoked"
+                        "tooltip": "Signaled after Set Sort Key is invoked"
                     },
                     "details": {
-                        "name": "SetSortKey"
+                        "name": "Set Sort Key"
                     },
                     "params": [
                         {
                             "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
                             "details": {
-                                "name": "AZ::s64"
+                                "name": "AZ::s 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetModelAssetPath",
+                    "base": "GetModelAssetPath",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetModelAssetPath"
+                        "tooltip": "When signaled, this will invoke Get Model Asset Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetModelAssetPath is invoked"
+                        "tooltip": "Signaled after Get Model Asset Path is invoked"
                     },
                     "details": {
-                        "name": "GetModelAssetPath"
+                        "name": "Get Model Asset Path"
                     },
                     "results": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "AZ Std::string"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetLodType",
+                    "base": "SetLodType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLodType"
+                        "tooltip": "When signaled, this will invoke Set Lod Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLodType is invoked"
+                        "tooltip": "Signaled after Set Lod Type is invoked"
                     },
                     "details": {
-                        "name": "SetLodType"
+                        "name": "Set Lod Type"
                     },
                     "params": [
                         {
@@ -141,17 +142,17 @@
                     ]
                 },
                 {
-                    "key": "SetLodOverride",
+                    "base": "SetLodOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLodOverride"
+                        "tooltip": "When signaled, this will invoke Set Lod Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLodOverride is invoked"
+                        "tooltip": "Signaled after Set Lod Override is invoked"
                     },
                     "details": {
-                        "name": "SetLodOverride"
+                        "name": "Set Lod Override"
                     },
                     "params": [
                         {
@@ -163,17 +164,17 @@
                     ]
                 },
                 {
-                    "key": "SetMinimumScreenCoverage",
+                    "base": "SetMinimumScreenCoverage",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetMinimumScreenCoverage"
+                        "tooltip": "When signaled, this will invoke Set Minimum Screen Coverage"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetMinimumScreenCoverage is invoked"
+                        "tooltip": "Signaled after Set Minimum Screen Coverage is invoked"
                     },
                     "details": {
-                        "name": "SetMinimumScreenCoverage"
+                        "name": "Set Minimum Screen Coverage"
                     },
                     "params": [
                         {
@@ -185,39 +186,39 @@
                     ]
                 },
                 {
-                    "key": "SetModelAssetId",
+                    "base": "SetModelAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetModelAssetId"
+                        "tooltip": "When signaled, this will invoke Set Model Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetModelAssetId is invoked"
+                        "tooltip": "Signaled after Set Model Asset Id is invoked"
                     },
                     "details": {
-                        "name": "SetModelAssetId"
+                        "name": "Set Model Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetLodType",
+                    "base": "GetLodType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetLodType"
+                        "tooltip": "When signaled, this will invoke Get Lod Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetLodType is invoked"
+                        "tooltip": "Signaled after Get Lod Type is invoked"
                     },
                     "details": {
-                        "name": "GetLodType"
+                        "name": "Get Lod Type"
                     },
                     "results": [
                         {
@@ -229,17 +230,17 @@
                     ]
                 },
                 {
-                    "key": "GetMinimumScreenCoverage",
+                    "base": "GetMinimumScreenCoverage",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetMinimumScreenCoverage"
+                        "tooltip": "When signaled, this will invoke Get Minimum Screen Coverage"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetMinimumScreenCoverage is invoked"
+                        "tooltip": "Signaled after Get Minimum Screen Coverage is invoked"
                     },
                     "details": {
-                        "name": "GetMinimumScreenCoverage"
+                        "name": "Get Minimum Screen Coverage"
                     },
                     "results": [
                         {
@@ -251,61 +252,61 @@
                     ]
                 },
                 {
-                    "key": "GetModelAssetId",
+                    "base": "GetModelAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetModelAssetId"
+                        "tooltip": "When signaled, this will invoke Get Model Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetModelAssetId is invoked"
+                        "tooltip": "Signaled after Get Model Asset Id is invoked"
                     },
                     "details": {
-                        "name": "GetModelAssetId"
+                        "name": "Get Model Asset Id"
                     },
                     "results": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "AssetId"
+                                "name": "Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "SetModelAssetPath",
+                    "base": "SetModelAssetPath",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetModelAssetPath"
+                        "tooltip": "When signaled, this will invoke Set Model Asset Path"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetModelAssetPath is invoked"
+                        "tooltip": "Signaled after Set Model Asset Path is invoked"
                     },
                     "details": {
-                        "name": "SetModelAssetPath"
+                        "name": "Set Model Asset Path"
                     },
                     "params": [
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "AZ Std::string"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetQualityDecayRate",
+                    "base": "GetQualityDecayRate",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetQualityDecayRate"
+                        "tooltip": "When signaled, this will invoke Get Quality Decay Rate"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetQualityDecayRate is invoked"
+                        "tooltip": "Signaled after Get Quality Decay Rate is invoked"
                     },
                     "details": {
-                        "name": "GetQualityDecayRate"
+                        "name": "Get Quality Decay Rate"
                     },
                     "results": [
                         {

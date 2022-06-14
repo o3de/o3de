@@ -35,12 +35,6 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* ClothJointInspectorPlugin::Clone()
-    {
-        ClothJointInspectorPlugin* newPlugin = new ClothJointInspectorPlugin();
-        return newPlugin;
-    }
-
     bool ClothJointInspectorPlugin::IsNvClothGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;
@@ -194,17 +188,5 @@ namespace EMotionFX
             renderOptions->GetSelectedClothColliderColor(),
             renderPlugin,
             renderInfo);
-    }
-
-    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
-    {
-        const bool renderColliders = renderFlags[RENDER_CLOTH_COLLIDERS];
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth, settings.m_clothColliderColor, settings.m_selectedClothColliderColor);
     }
 } // namespace EMotionFX

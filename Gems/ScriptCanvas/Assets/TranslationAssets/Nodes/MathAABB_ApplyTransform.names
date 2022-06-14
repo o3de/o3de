@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{B1930C91-3527-593E-A382-DACC9E9C2245}",
+            "base": "{B1930C91-3527-593E-A382-DACC9E9C2245}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Apply Transform",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the AABB translated and possibly scaled by the Transform",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the AABB translated and possibly scaled by the Transform"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Transform",
+                    "base": "DataInput_Transform_1",
                     "details": {
                         "name": "Transform"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "AABB"
+                        "name": "Result"
                     }
                 }
             ]

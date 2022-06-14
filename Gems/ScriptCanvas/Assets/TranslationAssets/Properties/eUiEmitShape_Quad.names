@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiEmitShape_Quad",
+            "base": "eUiEmitShape_Quad",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Emit Shape_ Quad"
+                "name": "Quad",
+                "category": "Constants/UI/Emit Shape"
             },
             "methods": [
                 {
-                    "key": "GeteUiEmitShape_Quad",
+                    "base": "GeteUiEmitShape_Quad",
                     "details": {
-                        "name": "Gete Ui Emit Shape_ Quad"
+                        "name": "Quad"
                     },
                     "results": [
                         {

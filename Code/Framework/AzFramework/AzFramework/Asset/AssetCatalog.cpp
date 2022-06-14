@@ -489,6 +489,21 @@ namespace AzFramework
     //=========================================================================
     void AssetCatalog::EnumerateAssets(BeginAssetEnumerationCB beginCB, AssetEnumerationCB enumerateCB, EndAssetEnumerationCB endCB)
     {
+        using AssetCatalogRequestBusContext = typename AZ::Data::AssetCatalogRequestBus::Context;
+
+        // Setting trackCallstack to true causes the context mutex to attempt to re-lock.
+        // That is being avoided here as the code only wants to unlock the Context mutex if it is in a dispatch.
+        constexpr bool trackCallstack = false;
+        AssetCatalogRequestBusContext* assetCatalogContext = AZ::Data::AssetCatalogRequestBus::GetContext(trackCallstack);
+
+        bool hasAssetCatalogMutex = false;
+        if (assetCatalogContext != nullptr && AZ::Data::AssetCatalogRequestBus::IsInDispatchThisThread(assetCatalogContext))
+        {
+            hasAssetCatalogMutex = true;
+            // Unlock the dispatch mutex for the AssetCatalogRequestBus
+            assetCatalogContext->m_contextMutex.unlock();
+        }
+
         if (beginCB)
         {
             beginCB();
@@ -496,9 +511,13 @@ namespace AzFramework
 
         if (enumerateCB)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
+            // Make sure we don't hold on to any locks during the enumerateCB, so copy the registry info to a local variable
+            // and unlock the registryMutex before calling the callback.
+            m_registryMutex.lock();
+            auto assetIdToInfoCopy = m_registry->m_assetIdToInfo;
+            m_registryMutex.unlock();
 
-            for (auto& it : m_registry->m_assetIdToInfo)
+            for (auto& it : assetIdToInfoCopy)
             {
                 enumerateCB(it.first, it.second);
             }
@@ -507,6 +526,12 @@ namespace AzFramework
         if (endCB)
         {
             endCB();
+        }
+
+        if (hasAssetCatalogMutex)
+        {
+            // Relock the mutex if it was unlocked earlier
+            assetCatalogContext->m_contextMutex.lock();
         }
     }
 
@@ -522,9 +547,11 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
             // Get asset root from application.
+            AZStd::string assetRoot;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
+                settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
             }
 
             // Reflect registry for serialization.
@@ -536,7 +563,7 @@ namespace AzFramework
                 AssetRegistry::ReflectSerialize(serializeContext);
             }
 
-            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", m_assetRoot.c_str());
+            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", assetRoot.c_str());
 
             // even though this could be a chunk of memory to allocate and deallocate, this is many times faster and more efficient
             // in terms of memory AND fragmentation than allowing it to perform thousands of reads on physical media.

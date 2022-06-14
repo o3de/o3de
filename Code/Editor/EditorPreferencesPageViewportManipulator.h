@@ -41,6 +41,16 @@ private:
 
         float m_manipulatorLineBoundWidth = 0.0f;
         float m_manipulatorCircleBoundWidth = 0.0f;
+        float m_linearManipulatorAxisLength = 0.0f;
+        float m_planarManipulatorAxisLength = 0.0f;
+        float m_surfaceManipulatorRadius = 0.0f;
+        float m_surfaceManipulatorOpacity = 0.0f;
+        float m_linearManipulatorConeLength = 0.0f;
+        float m_linearManipulatorConeRadius = 0.0f;
+        float m_scaleManipulatorBoxHalfExtent = 0.0f;
+        float m_rotationManipulatorRadius = 0.0f;
+        float m_manipulatorViewBaseScale = 0.0f;
+        bool m_flipManipulatorAxesTowardsView = false;
     };
 
     Manipulators m_manipulators;

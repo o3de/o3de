@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PhysicsScene",
+            "base": "PhysicsScene",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetOnGravityChangeEvent",
+                    "base": "GetOnGravityChangeEvent",
                     "context": "PhysicsScene",
                     "entry": {
                         "name": "In",
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "QueryScene",
+                    "base": "QueryScene",
                     "context": "PhysicsScene",
                     "entry": {
                         "name": "In",

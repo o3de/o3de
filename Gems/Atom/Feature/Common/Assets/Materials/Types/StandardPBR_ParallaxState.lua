@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"parallax.textureMap", "parallax.useTexture"}
+    return {"textureMap", "useTexture", "pdo"}
 end
 
 function GetShaderOptionDependencies()
@@ -18,23 +18,23 @@ function GetShaderOptionDependencies()
 end
  
 function Process(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
-    local useTexture = context:GetMaterialPropertyValue_bool("parallax.useTexture")
+    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
     local enable = textureMap ~= nil and useTexture 
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enable)
     context:SetShaderOptionValue_bool("o_useHeightmap", enable)
 end
 
 function ProcessEditor(context)
-    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
     
     if textureMap ~= nil then
-        context:SetMaterialPropertyVisibility("parallax.useTexture", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Enabled)
     else 
-        context:SetMaterialPropertyVisibility("parallax.useTexture", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("useTexture", MaterialPropertyVisibility_Hidden)
     end
     
-    local useTexture = context:GetMaterialPropertyValue_bool("parallax.useTexture")
+    local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
 
     local visibility = MaterialPropertyVisibility_Enabled
     if(textureMap == nil) then
@@ -43,11 +43,17 @@ function ProcessEditor(context)
         visibility = MaterialPropertyVisibility_Disabled
     end
         
-    context:SetMaterialPropertyVisibility("parallax.factor", visibility)
-    context:SetMaterialPropertyVisibility("parallax.offset", visibility)
-    context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)
-    context:SetMaterialPropertyVisibility("parallax.algorithm", visibility)
-    context:SetMaterialPropertyVisibility("parallax.quality", visibility)
-    context:SetMaterialPropertyVisibility("parallax.pdo", visibility)
-    context:SetMaterialPropertyVisibility("parallax.textureMapUv", visibility)
+    context:SetMaterialPropertyVisibility("factor", visibility)
+    context:SetMaterialPropertyVisibility("offset", visibility)
+    context:SetMaterialPropertyVisibility("showClipping", visibility)
+    context:SetMaterialPropertyVisibility("algorithm", visibility)
+    context:SetMaterialPropertyVisibility("quality", visibility)
+    context:SetMaterialPropertyVisibility("pdo", visibility)
+    context:SetMaterialPropertyVisibility("shadowFactor", visibility)
+    context:SetMaterialPropertyVisibility("textureMapUv", visibility)
+
+    local pdoEnabled = context:GetMaterialPropertyValue_bool("pdo")
+    if(not pdoEnabled) then
+        context:SetMaterialPropertyVisibility("shadowFactor", MaterialPropertyVisibility_Hidden)
+    end
 end

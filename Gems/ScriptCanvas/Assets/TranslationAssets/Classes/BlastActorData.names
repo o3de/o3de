@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "BlastActorData",
+            "base": "BlastActorData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetEntityId",
+                    "base": "GetEntityId",
                     "details": {
                         "name": "Get Entity Id"
                     },
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetEntityId",
+                    "base": "SetEntityId",
                     "details": {
                         "name": "Set Entity Id"
                     },
@@ -56,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "GetIsStatic",
+                    "base": "GetIsStatic",
                     "details": {
                         "name": "Get Is Static"
                     },
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsStatic",
+                    "base": "SetIsStatic",
                     "details": {
                         "name": "Set Is Static"
                     },

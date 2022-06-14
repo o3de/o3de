@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FillMode_Invalid",
+            "base": "FillMode_Invalid",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Fill Mode_ Invalid"
+                "name": "Invalid",
+                "category": "Constants/Fill Mode"
             },
             "methods": [
                 {
-                    "key": "GetFillMode_Invalid",
+                    "base": "GetFillMode_Invalid",
                     "details": {
-                        "name": "Get Fill Mode_ Invalid"
+                        "name": "Invalid"
                     },
                     "results": [
                         {

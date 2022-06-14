@@ -29,12 +29,13 @@ namespace AZ
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext->Class<ComputePassData, RenderPassData>()
-                        ->Version(1)
+                        ->Version(2)
                         ->Field("ShaderAsset", &ComputePassData::m_shaderReference)
                         ->Field("Target Thread Count X", &ComputePassData::m_totalNumberOfThreadsX)
                         ->Field("Target Thread Count Y", &ComputePassData::m_totalNumberOfThreadsY)
                         ->Field("Target Thread Count Z", &ComputePassData::m_totalNumberOfThreadsZ)
                         ->Field("Make Fullscreen Pass", &ComputePassData::m_makeFullscreenPass)
+                        ->Field("Use Async Compute", &ComputePassData::m_useAsyncCompute)
                         ;
                 }
             }
@@ -46,6 +47,9 @@ namespace AZ
             uint32_t m_totalNumberOfThreadsZ = 0;
 
             bool m_makeFullscreenPass = false;
+
+            // Whether the pass should use async compute and run on the compute hardware queue.
+            bool m_useAsyncCompute = false;
         };
     } // namespace RPI
 } // namespace AZ

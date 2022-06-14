@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiScrollerBus",
+            "base": "UiScrollerBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiScrollerBus",
+                "name": "UI Scroller Bus",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetValueChangedActionName",
+                    "base": "GetValueChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value Changed Action Name"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "SetOrientation",
+                    "base": "SetOrientation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Orientation"
@@ -57,7 +57,7 @@
                     ]
                 },
                 {
-                    "key": "GetOrientation",
+                    "base": "GetOrientation",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Orientation"
@@ -80,7 +80,7 @@
                     ]
                 },
                 {
-                    "key": "GetValueChangingActionName",
+                    "base": "GetValueChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value Changing Action Name"
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "SetValueChangingActionName",
+                    "base": "SetValueChangingActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value Changing Action Name"
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "key": "SetValue",
+                    "base": "SetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value"
@@ -151,7 +151,7 @@
                     ]
                 },
                 {
-                    "key": "GetValue",
+                    "base": "GetValue",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Value"
@@ -174,7 +174,7 @@
                     ]
                 },
                 {
-                    "key": "SetValueChangedActionName",
+                    "base": "SetValueChangedActionName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Value Changed Action Name"

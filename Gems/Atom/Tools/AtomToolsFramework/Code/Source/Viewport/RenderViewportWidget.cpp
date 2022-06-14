@@ -68,6 +68,7 @@ namespace AtomToolsFramework
         {
             return false;
         }
+        const AzFramework::ViewportId newId = m_viewportContext->GetId();
 
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
@@ -78,14 +79,14 @@ namespace AtomToolsFramework
         m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(m_defaultCamera);
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
         m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
-        m_viewportInteractionImpl->Connect(id);
+        m_viewportInteractionImpl->Connect(newId);
 
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
-        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
+        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, newId);
 
         // Forward input events to our controller list.
         QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
@@ -146,11 +147,17 @@ namespace AtomToolsFramework
         if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
         {
             m_viewportContext->SetRenderScene(*existingScene);
-            if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
+            if (m_viewportContext->GetCurrentPipeline())
             {
-                m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+                {
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                }
+                return;
             }
-            return;
         }
 
         AZ::RPI::ScenePtr atomScene;
@@ -215,23 +222,56 @@ namespace AtomToolsFramework
         switch (event->type()) 
         {
             case QEvent::Resize:
+
+            // This event exists to capture the case where a resize event is missed "after" the underlying surface is 
+            // modified by Qt (Seen during level load in Editor)
+            case QEvent::ShowToParent:  
+
+            // Qt is sending this event as the final events after a viewport change. The resize signal is sent multiple
+            // times per viewport (one for ShowToParent, one for Resize). The final resize will correctly set the
+            // swapchain dimensions, but there is an issue on vulkan where even though the swap chain is created and
+            // updated after the last resize, it does not refresh to the viewport widget. We need to also invoke a resize
+            // after the UpdateLater event to force this.
+            case QEvent::UpdateLater:   
+            {
                 SendWindowResizeEvent();
                 break;
-
+            }
+            case QEvent::PlatformSurface:
+            {
+                //Surface is about to be destroyed by QT. Lets close the window
+                QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+                if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+                {
+                    SendWindowCloseEvent();
+                }
+                break;
+            }
             default:
                 break;
         }
         return QWidget::event(event);
     }
 
-    void RenderViewportWidget::enterEvent([[maybe_unused]] QEvent* event)
+
+    void RenderViewportWidget::enterEvent(QEvent* event)
     {
-        m_mouseOver = true;
+        if (const auto eventType = event->type();
+            eventType == QEvent::Type::MouseMove)
+        {
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        }
     }
 
     void RenderViewportWidget::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mouseOver = false;
+        m_mousePosition.reset();
+    }
+
+    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+    {
+        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -245,6 +285,13 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+    }
+
+    void RenderViewportWidget::SendWindowCloseEvent()
+    {
+        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowClosed);
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -320,17 +367,27 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mouseOver;
+        return m_mousePosition.has_value();
+    }
+
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
+    {
+        return m_mousePosition;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(true);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(false);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
+    }
+
+    void RenderViewportWidget::SetCursorMode(AzToolsFramework::CursorInputMode mode) 
+    {
+        m_inputChannelMapper->SetCursorMode(mode);
     }
 
     void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
@@ -395,4 +452,11 @@ namespace AtomToolsFramework
     {
         return 1;
     }
+
+    // Editor ignores requests to change the sync interval
+    bool RenderViewportWidget::SetSyncInterval(uint32_t /*ignored*/)
+    {
+        return false;
+    }
+
 } //namespace AtomToolsFramework

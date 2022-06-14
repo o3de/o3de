@@ -13,70 +13,8 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class CCommentKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariable<QString> mv_comment;
-    CSmartVariable<float> mv_duration;
-    CSmartVariable<float> mv_size;
-    CSmartVariable<Vec3> mv_color;
-    CSmartVariableEnum<int> mv_align;
-    CSmartVariableEnum<QString> mv_font;
-
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_comment, "Comment");
-        AddVariable(mv_table, mv_duration, "Duration");
-
-        mv_size->SetLimits(1.f, 10.f);
-        AddVariable(mv_table, mv_size, "Size");
-
-        AddVariable(mv_table, mv_color, "Color", IVariable::DT_COLOR);
-
-        mv_align->SetEnumList(nullptr);
-        mv_align->AddEnumItem("Left", ICommentKey::eTA_Left);
-        mv_align->AddEnumItem("Center", ICommentKey::eTA_Center);
-        mv_align->AddEnumItem("Right", ICommentKey::eTA_Right);
-        AddVariable(mv_table, mv_align, "Align");
-
-        mv_font->SetEnumList(nullptr);
-        IFileUtil::FileArray fa;
-        CFileUtil::ScanDirectory((Path::GetEditingGameDataFolder() + "/Fonts/").c_str(), "*.xml", fa, true);
-        for (size_t i = 0; i < fa.size(); ++i)
-        {
-            AZStd::string name = fa[i].filename.toUtf8().data();
-            PathUtil::RemoveExtension(name);
-            mv_font->AddEnumItem(name.c_str(), name.c_str());
-        }
-        AddVariable(mv_table, mv_font, "Font");
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        return paramType == AnimParamType::CommentText;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {FA250B8B-FC2A-43b1-AF7A-8C3B6672B49D}
-        static const GUID guid =
-        {
-            0xfa250b8b, 0xfc2a, 0x43b1, { 0xaf, 0x7a, 0x8c, 0x3b, 0x66, 0x72, 0xb4, 0x9d }
-        };
-        return guid;
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CCommentKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -169,5 +107,3 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CCommentKeyUIControls, "TrackView.KeyUI.Comment", "TrackViewKeyUI");

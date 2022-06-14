@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_sequence_name",
+            "base": "get_sequence_name",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_sequence_name",
+                    "base": "get_sequence_name",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -47,7 +47,6 @@ namespace AssetProcessor
 
 class ApplicationServer;
 class ConnectionManager;
-class FolderWatchCallbackEx;
 class ControlRequestHandler;
 
 class ApplicationManagerBase
@@ -59,6 +58,7 @@ class ApplicationManagerBase
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     , public AssetProcessor::DiskSpaceInfoBus::Handler
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
+    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -110,6 +110,9 @@ public:
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;
 
+    //! MessageInfoBus::Handler
+    void OnBuilderRegistrationFailure() override;
+
     void RemoveOldTempFolders();
 
     void Rescan();
@@ -135,7 +138,7 @@ protected:
     virtual void DestroyAssetScanner();
     virtual bool InitPlatformConfiguration();
     virtual void DestroyPlatformConfiguration();
-    virtual void InitFileMonitor();
+    virtual void InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher);
     virtual void DestroyFileMonitor();
     virtual bool InitBuilderConfiguration();
     virtual void InitControlRequestHandler();
@@ -149,7 +152,6 @@ protected:
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
-    bool InitializeExternalBuilders();
     void InitBuilderManager();
     void ShutdownBuilderManager();
     bool InitAssetDatabase();
@@ -173,7 +175,7 @@ protected:
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
 
-    static bool WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
+    bool CheckReprocessFileList();
 
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;
@@ -188,16 +190,14 @@ protected Q_SLOTS:
 
 protected:
     int m_processedAssetCount = 0;
-    int m_failedAssetsCount = 0;
     int m_warningCount = 0;
     int m_errorCount = 0;
+    AZStd::set<AZStd::string> m_failedAssets;
     bool m_AssetProcessorManagerIdleState = false;
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::vector<AZStd::unique_ptr<FolderWatchCallbackEx> > m_folderWatches;
-    FileWatcher m_fileWatcher;
-    AZStd::vector<int> m_watchHandles;
+    AZStd::unique_ptr<FileWatcher> m_fileWatcher;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
@@ -218,6 +218,8 @@ protected:
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;
     AZStd::shared_ptr<AssetProcessor::SettingsRegistryBuilder> m_settingsRegistryBuilder;
 
+    bool m_builderRegistrationComplete = false;
+
     // Builder description map based on the builder id
     AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
 
@@ -231,7 +233,7 @@ protected:
     AZStd::list<AssetProcessor::ExternalModuleAssetBuilderInfo*>    m_externalAssetBuilders;
 
     AssetProcessor::ExternalModuleAssetBuilderInfo* m_currentExternalAssetBuilder = nullptr;
-    
+
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;
@@ -247,6 +249,8 @@ protected:
     QList<QMetaObject::Connection> m_connectionsToRemoveOnShutdown;
     QString m_dependencyScanPattern;
     QString m_fileDependencyScanPattern;
+    QString m_reprocessFileList;
+    QStringList m_filesToReprocess;
     AZStd::vector<AZStd::string> m_dependencyAddtionalScanFolders;
     int m_dependencyScanMaxIteration = AssetProcessor::MissingDependencyScanner::DefaultMaxScanIteration; // The maximum number of times to recurse when scanning a file for missing dependencies.
 };

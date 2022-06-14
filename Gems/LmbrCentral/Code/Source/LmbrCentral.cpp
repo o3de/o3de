@@ -60,7 +60,6 @@
 #include <AzCore/Slice/SliceAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <LmbrCentral/Rendering/MaterialHandle.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -77,6 +76,7 @@
 #include "Shape/CompoundShapeComponent.h"
 #include "Shape/SplineComponent.h"
 #include "Shape/PolygonPrismShapeComponent.h"
+#include "Shape/ReferenceShapeComponent.h"
 
 namespace LmbrCentral
 {
@@ -203,6 +203,7 @@ namespace LmbrCentral
             CapsuleShapeComponent::CreateDescriptor(),
             TubeShapeComponent::CreateDescriptor(),
             CompoundShapeComponent::CreateDescriptor(),
+            ReferenceShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
             NavigationSystemComponent::CreateDescriptor(),
@@ -218,9 +219,6 @@ namespace LmbrCentral
             PolygonPrismShapeDebugDisplayComponent::CreateDescriptor(),
             TubeShapeDebugDisplayComponent::CreateDescriptor(),
             AssetSystemDebugComponent::CreateDescriptor(),
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-            LoadScreenComponent::CreateDescriptor(),
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
             });
 
         // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
@@ -247,9 +245,6 @@ namespace LmbrCentral
                    azrtti_typeid<AudioSystemComponent>(),
                    azrtti_typeid<BundlingSystemComponent>(),
                    azrtti_typeid<AssetSystemDebugComponent>(),
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-                   azrtti_typeid<LoadScreenComponent>(),
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
         };
     }
 

@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiIndexableImageBus",
+            "base": "UiIndexableImageBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiIndexableImageBus",
+                "name": "UI Indexable Image",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "GetImageIndexAlias",
+                    "base": "GetImageIndexAlias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Index Alias"
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "GetImageIndexCount",
+                    "base": "GetImageIndexCount",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Index Count"
@@ -66,7 +66,7 @@
                     ]
                 },
                 {
-                    "key": "SetImageIndex",
+                    "base": "SetImageIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Image Index"
@@ -90,7 +90,7 @@
                     ]
                 },
                 {
-                    "key": "SetImageIndexAlias",
+                    "base": "SetImageIndexAlias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Image Index Alias"
@@ -121,7 +121,7 @@
                     ]
                 },
                 {
-                    "key": "GetImageIndexFromAlias",
+                    "base": "GetImageIndexFromAlias",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Index From Alias"
@@ -154,7 +154,7 @@
                     ]
                 },
                 {
-                    "key": "GetImageIndex",
+                    "base": "GetImageIndex",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Image Index"

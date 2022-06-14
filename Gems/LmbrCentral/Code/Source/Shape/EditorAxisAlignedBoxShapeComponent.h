@@ -38,7 +38,7 @@ namespace LmbrCentral
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
@@ -58,6 +58,7 @@ namespace LmbrCentral
         AZ::Vector3 GetDimensions() override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
         AZ::Transform GetCurrentTransform() override;
+        AZ::Transform GetCurrentLocalTransform() override;
         AZ::Vector3 GetBoxScale() override;
 
         void ConfigurationChanged();        

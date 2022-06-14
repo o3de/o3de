@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSScriptBehaviorS3",
+            "base": "AWSScriptBehaviorS3",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "GetObject",
+                    "base": "GetObject",
                     "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
@@ -45,7 +45,7 @@
                     ]
                 },
                 {
-                    "key": "GetObjectRaw",
+                    "base": "GetObjectRaw",
                     "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
@@ -86,7 +86,7 @@
                     ]
                 },
                 {
-                    "key": "HeadObject",
+                    "base": "HeadObject",
                     "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "HeadObjectRaw",
+                    "base": "HeadObjectRaw",
                     "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",

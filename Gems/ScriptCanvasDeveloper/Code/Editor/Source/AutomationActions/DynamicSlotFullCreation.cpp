@@ -295,11 +295,11 @@ namespace ScriptCanvasDeveloperEditor
                                 GraphCanvas::Endpoint endpoint = ConvertToGraphCanvasEndpoint(slot->GetEndpoint());
 
                                 bool canConvertToReference = false;
-                                GraphCanvas::DataSlotRequestBus::EventResult(canConvertToReference, endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::CanConvertToReference);
+                                GraphCanvas::DataSlotRequestBus::EventResult(canConvertToReference, endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::CanConvertToReference, false);
 
                                 if (canConvertToReference)
                                 {
-                                    GraphCanvas::DataSlotRequestBus::Event(endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference);
+                                    GraphCanvas::DataSlotRequestBus::Event(endpoint.GetSlotId(), &GraphCanvas::DataSlotRequests::ConvertToReference, false);
                                 }
                             }
 

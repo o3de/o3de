@@ -16,7 +16,6 @@
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 
 namespace
@@ -81,7 +80,7 @@ namespace AZ::Render
 
     void AcesDisplayMapperFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
     {
-        AZ_TRACE_METHOD();
+        AZ_PROFILE_FUNCTION(AzRender);
         AZ_UNUSED(packet);
     }
 

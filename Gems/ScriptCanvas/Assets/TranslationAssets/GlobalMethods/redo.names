@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "redo",
+            "base": "redo",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "redo",
+                    "base": "redo",
                     "context": "Global",
                     "entry": {
                         "name": "In",

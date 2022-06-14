@@ -101,12 +101,12 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::CreateDedicatedCacheData>)
             {
                 args.m_range = FileRange::CreateRangeForEntireFile();
                 m_context->PushPreparedRequest(request);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::DestroyDedicatedCacheData>)
             {
                 args.m_range = FileRange::CreateRangeForEntireFile();
                 m_context->PushPreparedRequest(request);
@@ -125,30 +125,34 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 ReadFile(request, args);
                 return;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CreateDedicatedCacheData>)
             {
                 CreateDedicatedCache(request, args);
                 return;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::DestroyDedicatedCacheData>)
             {
                 DestroyDedicatedCache(request, args);
                 return;
             }
             else
             {
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
                 {
                     FlushCache(args.m_path);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
                 {
                     FlushEntireCache();
+                }
+                else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
+                {
+                    Report(args);
                 }
                 StreamStackEntry::QueueRequest(request);
             }
@@ -200,7 +204,7 @@ namespace AZ::IO
         }
     }
 
-    void DedicatedCache::ReadFile(FileRequest* request, FileRequest::ReadData& data)
+    void DedicatedCache::ReadFile(FileRequest* request, Requests::ReadData& data)
     {
         size_t index = FindCache(data.m_path, data.m_offset);
         if (index == s_fileNotFound)
@@ -246,16 +250,34 @@ namespace AZ::IO
 
     void DedicatedCache::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        statistics.push_back(Statistic::CreatePercentage(m_name, "Reads from dedicated cache", m_usagePercentageStat.GetAverage()));
+        if (!m_cachedFileCaches.empty())
+        {
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, "Reads from dedicated cache", m_usagePercentageStat.GetAverage(), m_usagePercentageStat.GetMinimum(),
+                m_usagePercentageStat.GetMaximum(), "The percentage of requests that were serviced from a dedicated cache."));
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        statistics.push_back(Statistic::CreatePercentage(m_name, "Overall cacheable rate", m_overallCacheableRateStat.GetAverage()));
-        statistics.push_back(Statistic::CreatePercentage(m_name, "Overall hit rate", m_overallHitRateStat.GetAverage()));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, "Overall cacheable rate", m_overallCacheableRateStat.GetAverage(), m_overallCacheableRateStat.GetMinimum(),
+                m_overallCacheableRateStat.GetMaximum(),
+                "The percentage of requests that could be (partially) serviced with cached data. When running from loose files a lower "
+                "value is better as it indicate full file reads. When running from archives higher values are better as it indicates "
+                "better scheduling efficiency and/or better archive layouts."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, "Overall hit rate", m_overallHitRateStat.GetAverage(), m_overallHitRateStat.GetMinimum(),
+                m_overallHitRateStat.GetMaximum(),
+                "The percentage of requests that were candidates for caching. The percentage of requests that could be (partially) "
+                "serviced with cached data. When running from loose files a lower value is better as it indicate full file reads. When "
+                "running from archives higher values are better as it indicates better scheduling efficiency and/or better archive "
+                "layouts."));
 #endif
-        statistics.push_back(Statistic::CreateInteger(m_name, "Num dedicated caches", aznumeric_caster(m_cachedFileNames.size())));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Num dedicated caches", aznumeric_caster(m_cachedFileNames.size()),
+                "The total number of active dedicated caches."));
+        }
         StreamStackEntry::CollectStatistics(statistics);
     }
 
-    void DedicatedCache::CreateDedicatedCache(FileRequest* request, FileRequest::CreateDedicatedCacheData& data)
+    void DedicatedCache::CreateDedicatedCache(FileRequest* request, Requests::CreateDedicatedCacheData& data)
     {
         size_t index = FindCache(data.m_path, data.m_range);
         if (index == s_fileNotFound)
@@ -276,7 +298,7 @@ namespace AZ::IO
         m_context->MarkRequestAsCompleted(request);
     }
 
-    void DedicatedCache::DestroyDedicatedCache(FileRequest* request, FileRequest::DestroyDedicatedCacheData& data)
+    void DedicatedCache::DestroyDedicatedCache(FileRequest* request, Requests::DestroyDedicatedCacheData& data)
     {
         size_t index = FindCache(data.m_path, data.m_range);
         if (index != s_fileNotFound)
@@ -324,5 +346,33 @@ namespace AZ::IO
             }
         }
         return s_fileNotFound;
+    }
+
+    void DedicatedCache::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Cache size", m_cacheSize,
+                "The size of the cache. Increasing the size will allow more blocks to be created and as a result more file data to "
+                "be cached."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Blocks size", m_blockSize,
+                "The size of the individual blocks in the cache. Larger blocks means fewer blocks, but larger blocks can also hold more "
+                "additional data. Use a drive nodes sector size as a guide."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Alignment", m_alignment,
+                "The number of bytes the cache instance will align to. For prologs this means adding bytes to the start of the request to meet the "
+                "alignment and for the epilog adding additional bytes at the end of the request. If the alignment matches sector sizes it "
+                "typically means there's no additional cost and the additional data is essentially read for free."));
+            data.m_output.push_back(Statistic::CreateBoolean(
+                m_name, "Only epilog writes", m_onlyEpilogWrites,
+                "Whether or not only the epilog is considered or that both prolog and epilog are used for caching."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

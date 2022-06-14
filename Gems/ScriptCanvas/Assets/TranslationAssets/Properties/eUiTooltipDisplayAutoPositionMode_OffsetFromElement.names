@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement",
+            "base": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Tooltip Display Auto Position Mode_ Offset From Element"
+                "name": "Offset From Element",
+                "category": "Constants/UI/Tooltip Display Auto Position Mode"
             },
             "methods": [
                 {
-                    "key": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromElement",
+                    "base": "GeteUiTooltipDisplayAutoPositionMode_OffsetFromElement",
                     "details": {
-                        "name": "Gete Ui Tooltip Display Auto Position Mode_ Offset From Element"
+                        "name": "Offset From Element"
                     },
                     "results": [
                         {

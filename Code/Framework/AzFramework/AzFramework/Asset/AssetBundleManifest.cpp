@@ -15,7 +15,7 @@ namespace AzFramework
 {
     // Redirects writing of the AssetBundleManifest to an older version if the bundle version
     // is not set to the current version
-    static void OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
+    static AZ::ObjectStreamWriteOverrideResponse OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
         const AZ::SerializeContext::ClassData&, const AZ::SerializeContext::ClassElement* assetBundleManifestClassElement);
 
     static bool BundleManifestVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement);
@@ -67,7 +67,7 @@ namespace AzFramework
         return true;
     }
 
-    void OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
+    AZ::ObjectStreamWriteOverrideResponse OldBundleManifestWriter(AZ::SerializeContext::EnumerateInstanceCallContext& callContext, const void* bundleManifestPointer,
         const AZ::SerializeContext::ClassData&, const AZ::SerializeContext::ClassElement* assetBundleManifestClassElement)
     {
         // Copy the AssetBundleManifest current version instance to the AssetBundleManifest V2 instance
@@ -145,7 +145,10 @@ namespace AzFramework
             ReflectAssetBundleManifestV2(serializeContext);
             serializeContext->DisableRemoveReflection();
             AssetBundleManifest::ReflectSerialize(serializeContext);
+            return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
         }
+
+        return AZ::ObjectStreamWriteOverrideResponse::FallbackToDefaultWrite;
     }
 
     const AZStd::vector<AZ::IO::Path>& AssetBundleManifest::GetLevelDirectories() const

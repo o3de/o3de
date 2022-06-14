@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFillType_None",
+            "base": "eUiFillType_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Fill Type_ None"
+                "name": "None",
+                "category": "Constants/UI/Fill Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFillType_None",
+                    "base": "GeteUiFillType_None",
                     "details": {
-                        "name": "Gete Ui Fill Type_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

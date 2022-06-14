@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "CylinderShapeComponentRequestsBus",
+            "base": "CylinderShapeComponentRequestsBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "CylinderShapeComponentRequestsBus",
+                "name": "Cylinder Shape Component",
                 "category": "Shape"
             },
             "methods": [
                 {
-                    "key": "GetCylinderConfiguration",
+                    "base": "GetCylinderConfiguration",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Configuration"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetHeight",
+                    "base": "SetHeight",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Height"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetRadius",
+                    "base": "SetRadius",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Radius"

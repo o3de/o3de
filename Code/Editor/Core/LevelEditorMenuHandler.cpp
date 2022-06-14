@@ -9,29 +9,30 @@
 #include "EditorDefs.h"
 
 // Editor
-#include "Resource.h"
-#include "LevelEditorMenuHandler.h"
 #include "CryEdit.h"
-#include "MainWindow.h"
-#include "QtViewPaneManager.h"
-#include "ToolBox.h"
 #include "Include/IObjectManager.h"
+#include "LevelEditorMenuHandler.h"
+#include "MainWindow.h"
 #include "Objects/SelectionGroup.h"
+#include "QtViewPaneManager.h"
+#include "Resource.h"
+#include "ToolBox.h"
 #include "ViewManager.h"
 
 #include <AzCore/Interface/Interface.h>
 
 // Qt
-#include <QMenuBar>
-#include <QUrlQuery>
 #include <QDesktopServices>
 #include <QHBoxLayout>
+#include <QMenuBar>
 #include <QUrl>
+#include <QUrlQuery>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -104,6 +105,11 @@ namespace
         }
     }
 
+    // Currently (December 13, 2021), this function is only used by slice editor code.
+    // When the slice editor is not enabled, there are no references to the
+    // HideActionWhileEntitiesDeselected function, causing a compiler warning and
+    // subsequently a build error.
+#ifdef ENABLE_SLICE_EDITOR
     void HideActionWhileEntitiesDeselected(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
         if (action == nullptr)
@@ -127,6 +133,7 @@ namespace
             break;
         }
     }
+#endif
 
     void DisableActionWhileInSimMode(QAction* action, EEditorNotifyEvent editorNotifyEvent)
     {
@@ -179,6 +186,11 @@ LevelEditorMenuHandler::~LevelEditorMenuHandler()
 
 void LevelEditorMenuHandler::Initialize()
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     // make sure we can fix the view menus
     connect(
         m_viewPaneManager, &QtViewPaneManager::registeredPanesChanged,
@@ -374,7 +386,6 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         DisableActionWhileLevelChanges(fileOpenSlice, e);
     }));
-#endif
 
     // Save Selected Slice
     auto saveSelectedSlice = fileMenu.AddAction(ID_FILE_SAVE_SELECTED_SLICE);
@@ -391,7 +402,7 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     {
         HideActionWhileEntitiesDeselected(saveSliceToRoot, e);
     }));
-
+#endif
     // Open Recent
     m_mostRecentLevelsMenu = fileMenu.AddMenu(tr("Open Recent"));
     connect(m_mostRecentLevelsMenu, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateMRUFiles);
@@ -439,9 +450,10 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     // Show Log File
     fileMenu.AddAction(ID_FILE_EDITLOGFILE);
 
+#ifdef ENABLE_SLICE_EDITOR
     fileMenu.AddSeparator();
-
     fileMenu.AddAction(ID_FILE_RESAVESLICES);
+#endif
 
     fileMenu.AddSeparator();
 
@@ -538,6 +550,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
     snapMenu.AddAction(AzToolsFramework::SnapAngle);
+    snapMenu.AddAction(AzToolsFramework::SnapToGrid);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
     transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
@@ -581,7 +594,7 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         // Export to Engine
@@ -644,17 +657,15 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     viewMenu.AddAction(ID_OPEN_QUICK_ACCESS_BAR);
 
     // Layouts
-    if (CViewManager::IsMultiViewportEnabled()) // Only supports 1 viewport for now.
-    {
-        // Disable Layouts menu
-        m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
-        connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
-            {
-                UpdateViewLayoutsMenu(m_layoutsMenu);
-            });
+    // Disable Layouts menu
+    m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
+    connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
+        {
+            UpdateViewLayoutsMenu(m_layoutsMenu);
+        }
+    );
 
-        UpdateViewLayoutsMenu(m_layoutsMenu);
-    }
+    UpdateViewLayoutsMenu(m_layoutsMenu);
 
     // Viewport
     auto viewportViewsMenuWrapper = viewMenu.AddMenu(tr("Viewport"));
@@ -723,7 +734,8 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(ID_DISPLAY_SHOWHELPERS);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);
@@ -744,7 +756,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     layout->addWidget(lineEdit);
     containerWidget->setLayout(layout);
     containerWidget->setContentsMargins(2, 0, 2, 0);
-    lineEdit->setPlaceholderText(tr("Search documentation"));
+    lineEdit->setPlaceholderText(tr("Search documentation..."));
     lineEditSearchAction->setDefaultWidget(containerWidget);
 
     auto searchAction = [lineEdit]()
@@ -752,7 +764,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+                QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/"));
             }
             else
             {
@@ -761,7 +773,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
 
-                QUrl docSearchUrl("https://o3de.org/docs/");
+                QUrl docSearchUrl("https://www.o3de.org/search/");
                 QUrlQuery docSearchQuery;
                 docSearchQuery.addQueryItem("query", text);
                 docSearchUrl.setQuery(docSearchQuery);
@@ -1187,6 +1199,11 @@ void LevelEditorMenuHandler::AddDisableActionInSimModeListener(QAction* action)
 void LevelEditorMenuHandler::OnEditorModeActivated(
     [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (mode == ViewportEditorMode::Component)
     {
         if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
@@ -1220,6 +1237,11 @@ void LevelEditorMenuHandler::OnEditorModeDeactivated(
 
 void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
         !menuWrapper.isNull())
     {
@@ -1229,6 +1251,11 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
 
 void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
     {
@@ -1245,6 +1272,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     if (auto menuWrapper = m_actionManager->FindMenu(s_editMenuId);
         !menuWrapper.isNull())
     {

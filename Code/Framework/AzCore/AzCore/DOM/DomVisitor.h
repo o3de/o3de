@@ -11,13 +11,15 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     //
     // Lifetime enum
-    // 
+    //
     //! Specifies the period in which a reference value will still be alive and safe to read.
     enum class Lifetime
     {
@@ -30,7 +32,7 @@ namespace AZ::DOM
 
     //
     // VisitorErrorCode enum
-    // 
+    //
     //! Error code specifying the reason a Visitor operation failed.
     enum class VisitorErrorCode
     {
@@ -75,7 +77,7 @@ namespace AZ::DOM
     };
 
     //! A type alias for opaque DOM types that aren't meant to be serializable.
-    //! /see VisitorInterface::OpaqueValue
+    //! \see VisitorInterface::OpaqueValue
     using OpaqueType = AZStd::any;
 
     //
@@ -116,7 +118,7 @@ namespace AZ::DOM
     //!     - \ref Double: 64 bit double precision float
     //!     - \ref Null: sentinel "empty" type with no value representation
     //! - \ref String: UTF8 encoded string
-    //! - \ref Object: an ordered container of key/value pairs where keys are  AZ::Names and values may be any DOM type
+    //! - \ref Object: an ordered container of key/value pairs where keys are \ref AZ::Name and values may be any DOM type
     //!   (including Object)
     //! - \ref Array: an ordered container of values, in which values are any DOM value type (including Array)
     //! - \ref Node: a container
@@ -144,17 +146,17 @@ namespace AZ::DOM
         //! Raw (\see VisitorFlags::SupportsRawValues) and opaque values (\see VisitorFlags::SupportsOpaqueValues)
         //! are disallowed by default, as their handling is intended to be implementation-specific.
         virtual VisitorFlags GetVisitorFlags() const;
-        //! /see VisitorFlags::SupportsRawValues
+        //! \see VisitorFlags::SupportsRawValues
         bool SupportsRawValues() const;
-        //! /see VisitorFlags::SupportsRawKeys
+        //! \see VisitorFlags::SupportsRawKeys
         bool SupportsRawKeys() const;
-        //! /see VisitorFlags::SupportsObjects
+        //! \see VisitorFlags::SupportsObjects
         bool SupportsObjects() const;
-        //! /see VisitorFlags::SupportsArrays
+        //! \see VisitorFlags::SupportsArrays
         bool SupportsArrays() const;
-        //! /see VisitorFlags::SupportsNodes
+        //! \see VisitorFlags::SupportsNodes
         bool SupportsNodes() const;
-        //! /see VisitorFlags::SupportsOpaqueValues
+        //! \see VisitorFlags::SupportsOpaqueValues
         bool SupportsOpaqueValues() const;
 
         //! Operates on an empty null value.
@@ -167,15 +169,20 @@ namespace AZ::DOM
         virtual Result Uint64(AZ::u64 value);
         //! Operates on a double precision, 64 bit floating point value.
         virtual Result Double(double value);
-        //! Operates on a string value. As strings are a reference type.
-        //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
+        //! Operates on a string value. As strings are a reference type,
+        //! storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
+        //! \param lifetime Specifies the lifetime of this string - if the string has a temporary lifetime, it cannot
+        //! safely be stored as a reference.
         virtual Result String(AZStd::string_view value, Lifetime lifetime);
+        //! Operates on a ref-counted string value. S
+        //! \param lifetime Specifies the lifetime of this string. If the string has a temporary lifetime, it may not
+        //! be safely stored as a reference, but may still be safely stored as a ref-counted shared_ptr.
+        virtual Result RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, Lifetime lifetime);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
         //! cases with specific implementations, not generic usage.
-        //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
-        virtual Result OpaqueValue(const OpaqueType& value, Lifetime lifetime);
+        virtual Result OpaqueValue(OpaqueType& value);
         //! Operates on a raw value encoded as a UTF-8 string that hasn't had its type deduced.
         //! Visitors that support raw values (\see VisitorFlags::SupportsRawValues) may parse the raw value and
         //! forward it to the corresponding value call or calls of their choice.
@@ -231,7 +238,8 @@ namespace AZ::DOM
         static Result VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo);
         //! Helper method, constructs a failure \ref Result with the specified error.
         static Result VisitorFailure(VisitorError error);
+
         //! Helper method, constructs a success \ref Result.
         static Result VisitorSuccess();
     };
-} // namespace AZ::DOM
+} // namespace AZ::Dom

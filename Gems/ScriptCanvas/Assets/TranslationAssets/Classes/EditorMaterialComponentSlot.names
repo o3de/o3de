@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorMaterialComponentSlot",
+            "base": "EditorMaterialComponentSlot",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

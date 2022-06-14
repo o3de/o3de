@@ -9,8 +9,10 @@
 #include <API/EditorAssetSystemAPI.h>
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -22,9 +24,10 @@ namespace AZ
     {
         namespace SharedPreviewUtils
         {
-            AZStd::unordered_set<AZ::Uuid> GetSupportedAssetTypes()
+            AZStd::vector<AZ::Uuid> GetSupportedAssetTypes()
             {
-                return { RPI::AnyAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::ModelAsset::RTTI_Type() };
+                return { RPI::ModelAsset::RTTI_Type(), RPI::MaterialAsset::RTTI_Type(), RPI::MaterialTypeAsset::RTTI_Type(),
+                         RPI::AnyAsset::RTTI_Type() };
             }
 
             bool IsSupportedAssetType(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
@@ -34,43 +37,57 @@ namespace AZ
 
             AZ::Data::AssetInfo GetSupportedAssetInfo(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
             {
-                const auto& supportedTypeIds = GetSupportedAssetTypes();
+                AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
                 // if it's a source thumbnail key, find first product with a matching asset type
                 auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
                 if (sourceKey)
                 {
                     bool foundIt = false;
-                    AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                         foundIt, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetsProducedBySourceUUID,
                         sourceKey->GetSourceUuid(), productsAssetInfo);
+                }
 
+                // if it's a product thumbnail key just return its assetInfo
+                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
+                if (productKey)
+                {
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, productKey->GetAssetId());
+                    productsAssetInfo.push_back(assetInfo);
+                }
+
+                // Search the product assets for a matching asset type ID in priority order of the supported type IDs
+                for (const auto& typeId : GetSupportedAssetTypes())
+                {
                     for (const auto& assetInfo : productsAssetInfo)
                     {
-                        if (supportedTypeIds.find(assetInfo.m_assetType) != supportedTypeIds.end())
+                        if (assetInfo.m_assetType == typeId)
                         {
+                            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                            if (!AtomToolsFramework::IsDocumentPathPreviewable(path))
+                            {
+                                continue;
+                            }
+
+                            // Reject any assets that don't match supported source file extensions
+                            if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type())
+                            {
+                                if (!AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset") &&
+                                    !AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
+                                {
+                                    continue;
+                                }
+                            }
+
                             return assetInfo;
                         }
                     }
-                    return AZ::Data::AssetInfo();
                 }
 
-                // if it's a product thumbnail key just return its assetId
-                AZ::Data::AssetInfo assetInfo;
-                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
-                if (productKey && supportedTypeIds.find(productKey->GetAssetType()) != supportedTypeIds.end())
-                {
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                        assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, productKey->GetAssetId());
-                }
-                return assetInfo;
-            }
-
-            AZ::Data::AssetId GetSupportedAssetId(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const AZ::Data::AssetId& defaultAssetId)
-            {
-                const AZ::Data::AssetInfo assetInfo = GetSupportedAssetInfo(key);
-                return assetInfo.m_assetId.IsValid() ? assetInfo.m_assetId : defaultAssetId;
+                return AZ::Data::AssetInfo();
             }
 
             AZ::Data::AssetId GetAssetIdForProductPath(const AZStd::string_view productPath)

@@ -40,7 +40,7 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
@@ -60,28 +60,25 @@ namespace AZ
                 if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
                     RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
-                    RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
+                    RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
                     RHI::RayTracingTlasDescriptor tlasDescriptor;
                     RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
-                    uint32_t blasIndex = 0;
-                    for (auto& rayTracingMesh : rayTracingMeshes)
+                    uint32_t instanceIndex = 0;
+                    for (auto& subMesh : subMeshes)
                     {
-                        for (auto& rayTracingSubMesh : rayTracingMesh.second.m_subMeshes)
-                        {
-                            tlasDescriptorBuild->Instance()
-                                ->InstanceID(blasIndex)
-                                ->HitGroupIndex(blasIndex)
-                                ->Blas(rayTracingSubMesh.m_blas)
-                                ->Transform(rayTracingMesh.second.m_transform)
-                                ->NonUniformScale(rayTracingMesh.second.m_nonUniformScale)
-                                ;
-                        }
+                        tlasDescriptorBuild->Instance()
+                            ->InstanceID(instanceIndex)
+                            ->HitGroupIndex(0)
+                            ->Blas(subMesh.m_blas)
+                            ->Transform(subMesh.m_mesh->m_transform)
+                            ->NonUniformScale(subMesh.m_mesh->m_nonUniformScale)
+                            ;
 
-                        blasIndex++;
+                        instanceIndex++;
                     }
 
                     // create the TLAS buffers based on the descriptor
@@ -150,18 +147,17 @@ namespace AZ
             }
 
             // build newly added BLAS objects
-            // [GFX TODO][ATOM-14159] Add changelist for meshes in the RayTracingFeatureProcessor
-            RayTracingFeatureProcessor::MeshMap& rayTracingMeshes = rayTracingFeatureProcessor->GetMeshes();
-            for (auto& rayTracingMesh : rayTracingMeshes)
+            RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
+            for (auto& blasInstance : blasInstances)
             {
-                if (rayTracingMesh.second.m_blasBuilt == false)
+                if (blasInstance.second.m_blasBuilt == false)
                 {
-                    for (auto& rayTracingSubMesh : rayTracingMesh.second.m_subMeshes)
+                    for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
                     {
-                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*rayTracingSubMesh.m_blas);
+                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*blasInstanceSubMesh.m_blas);
                     }
 
-                    rayTracingMesh.second.m_blasBuilt = true;
+                    blasInstance.second.m_blasBuilt = true;
                 }
             }
 

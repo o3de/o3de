@@ -17,7 +17,7 @@ namespace AZ
      * Internally uses use dlmalloc or version of it (nedmalloc, ptmalloc3).
      */
     class HeapSchema
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         typedef void*       pointer_type;
@@ -32,17 +32,11 @@ namespace AZ
          */
         struct Descriptor
         {
-            Descriptor()
-                : m_numMemoryBlocks(0)
-                , m_isMultithreadAlloc(true)
-            {}
-
-            static const int        m_memoryBlockAlignment = 64 * 1024;
             static const int        m_maxNumBlocks = 5;
-            int                     m_numMemoryBlocks;                          ///< Number of memory blocks to use.
-            void*                   m_memoryBlocks[m_maxNumBlocks];             ///< Pointers to provided memory blocks or NULL if you want the system to allocate them for you with the System Allocator.
-            size_t                  m_memoryBlocksByteSize[m_maxNumBlocks];     ///< Sizes of different memory blocks, if m_memoryBlock is 0 the block will be allocated for you with the System Allocator.
-            bool                    m_isMultithreadAlloc;                       ///< Set to true to enable multi threading safe allocation.
+            int                     m_numMemoryBlocks = 1;                      ///< Number of memory blocks to use.
+            void*                   m_memoryBlocks[m_maxNumBlocks] = {};        ///< Pointers to provided memory blocks or NULL if you want the system to allocate them for you with the System Allocator.
+            size_t                  m_memoryBlocksByteSize[m_maxNumBlocks] = {4 * 1024}; ///< Sizes of different memory blocks, if m_memoryBlock is 0 the block will be allocated for you with the System Allocator.
+            bool                    m_isMultithreadAlloc = true;                ///< Set to true to enable multi threading safe allocation.
         };
 
         HeapSchema(const Descriptor& desc);
@@ -58,7 +52,6 @@ namespace AZ
         size_type       Capacity() const override                        { return m_capacity; }
         size_type       GetMaxAllocationSize() const override;
         size_type       GetMaxContiguousAllocationSize() const override;
-        IAllocatorAllocate* GetSubAllocator() override                   { return m_subAllocator; }
         void GarbageCollect() override                                   {}
 
     private:
@@ -68,7 +61,7 @@ namespace AZ
         Descriptor      m_desc;
         size_type       m_capacity;         ///< Capacity in bytes.
         size_type       m_used;             ///< Number of bytes in use.
-        IAllocatorAllocate* m_subAllocator;
+        IAllocatorSchema* m_subAllocator;
         bool            m_ownMemoryBlock[Descriptor::m_maxNumBlocks];
     };
 }

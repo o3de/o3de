@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "TransformMode_Translation",
+            "base": "TransformMode_Translation",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Transform Mode_ Translation"
+                "name": "Translation",
+                "category": "Constants/Transform/Mode"
             },
             "methods": [
                 {
-                    "key": "GetTransformMode_Translation",
+                    "base": "GetTransformMode_Translation",
                     "details": {
-                        "name": "Get Transform Mode_ Translation"
+                        "name": "Translation"
                     },
                     "results": [
                         {

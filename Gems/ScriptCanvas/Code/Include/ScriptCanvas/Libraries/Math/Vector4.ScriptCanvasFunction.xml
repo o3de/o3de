@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Vector4.h"
+        Namespace="ScriptCanvas::Vector4Functions"
+        Category="Math/Vector4">
+        
+        <Function Name="Absolute">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Dot">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="FromValues">
+            <Parameter Name="X"/>
+            <Parameter Name="Y"/>
+            <Parameter Name="Z"/>
+            <Parameter Name="W"/>
+        </Function>
+        
+        <Function Name="GetElement">
+            <Parameter Name="Source"/>
+            <Parameter Name="Index"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsNormalized">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsZero">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="Data::ToleranceEpsilon()"/>
+        </Function>
+        
+        <Function Name="Length">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="LengthReciprocal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="LengthSquared">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="SetW">
+            <Parameter Name="Source"/>
+            <Parameter Name="W"/>
+        </Function>
+        
+        <Function Name="SetX">
+            <Parameter Name="Source"/>
+            <Parameter Name="X"/>
+        </Function>
+        
+        <Function Name="SetY">
+            <Parameter Name="Source"/>
+            <Parameter Name="Y"/>
+        </Function>
+        
+        <Function Name="SetZ">
+            <Parameter Name="Source"/>
+            <Parameter Name="Z"/>
+        </Function>
+        
+        <Function Name="MultiplyByNumber">
+            <Parameter Name="Source"/>
+            <Parameter Name="Multiplier"/>
+        </Function>
+        
+        <Function Name="Negate">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Normalize">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Reciprocal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="DirectionTo">
+            <Parameter Name="From" DefaultValue="Data::Vector4Type()"/>
+            <Parameter Name="To" DefaultValue="Data::Vector4Type()"/>
+            <Parameter Name="Scale" DefaultValue="1.0"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

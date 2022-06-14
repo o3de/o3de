@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "SystemConfigPlatform_Android",
+            "base": "SystemConfigPlatform_Android",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "System Config Platform_ Android"
+                "name": "Android",
+                "category": "Constants/System Configuration"
             },
             "methods": [
                 {
-                    "key": "GetSystemConfigPlatform_Android",
+                    "base": "GetSystemConfigPlatform_Android",
                     "details": {
-                        "name": "Get System Config Platform_ Android"
+                        "name": "Android"
                     },
                     "results": [
                         {

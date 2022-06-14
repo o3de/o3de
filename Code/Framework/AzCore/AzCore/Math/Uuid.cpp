@@ -77,7 +77,7 @@ namespace AZ
 
         // check open brace
         char c = *current++;
-        bool has_open_brace = false;
+        [[maybe_unused]] bool has_open_brace = false;
         if (c == '{')
         {
             c = *current++;
@@ -417,6 +417,11 @@ namespace AZ
         memcpy(mergedData, data, sizeof(data));
         memcpy(mergedData + sizeof(data), rhs.data, sizeof(data));
         return CreateData(&mergedData, AZ_ARRAY_SIZE(mergedData));
+    }
+
+    Uuid::FixedString Uuid::ToFixedString(bool isBrackets, bool isDashes) const
+    {
+        return ToString<FixedString>(isBrackets, isDashes);
     }
 
 #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION

@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetContainer.h>
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // used as allocator for most components
 #include <AzCore/std/parallel/mutex.h>
@@ -571,7 +570,7 @@ namespace AZ
             //! Asset Handlers have the ability to provide custom asset buffer allocators for any non-standard allocation needs.
             virtual IO::IStreamerTypes::RequestMemoryAllocator* GetAssetBufferAllocator() { return nullptr; }
 
-            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, AZStd::chrono::milliseconds& defaultDeadline,
+            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, IO::IStreamerTypes::Deadline& defaultDeadline,
                 AZ::IO::IStreamerTypes::Priority& defaultPriority) const
             {
                 defaultDeadline = IO::IStreamerTypes::s_noDeadline;

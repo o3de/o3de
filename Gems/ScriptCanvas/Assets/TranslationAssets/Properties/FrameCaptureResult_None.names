@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "FrameCaptureResult_None",
+            "base": "FrameCaptureResult_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Frame Capture Result_ None"
+                "name": "None",
+                "category": "Constants/Frame Capture Result"
             },
             "methods": [
                 {
-                    "key": "GetFrameCaptureResult_None",
+                    "base": "GetFrameCaptureResult_None",
                     "details": {
-                        "name": "Get Frame Capture Result_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

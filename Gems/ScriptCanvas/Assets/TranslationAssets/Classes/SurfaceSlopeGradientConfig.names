@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "SurfaceSlopeGradientConfig",
+            "base": "SurfaceSlopeGradientConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumTags",
+                    "base": "GetNumTags",
                     "context": "SurfaceSlopeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "GetTag",
+                    "base": "GetTag",
                     "context": "SurfaceSlopeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveTag",
+                    "base": "RemoveTag",
                     "context": "SurfaceSlopeGradientConfig",
                     "entry": {
                         "name": "In",
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "key": "AddTag",
+                    "base": "AddTag",
                     "context": "SurfaceSlopeGradientConfig",
                     "entry": {
                         "name": "In",

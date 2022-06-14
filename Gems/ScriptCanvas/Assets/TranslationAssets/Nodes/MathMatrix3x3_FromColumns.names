@@ -1,47 +1,47 @@
 {
     "entries": [
         {
-            "key": "{2185A730-0CA3-5B97-8150-51D9F28EA9C8}",
+            "base": "{2185A730-0CA3-5B97-8150-51D9F28EA9C8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Columns",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns a rotation matrix based on angle around Z axis"
+                "tooltip": "returns a rotation matrix based on angle around Z axis"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Column1",
+                    "base": "DataInput_Column1_0",
                     "details": {
-                        "name": "Column 1"
+                        "name": "Column1"
                     }
                 },
                 {
-                    "key": "DataInput_Column2",
+                    "base": "DataInput_Column2_1",
                     "details": {
-                        "name": "Column 2"
+                        "name": "Column2"
                     }
                 },
                 {
-                    "key": "DataInput_Column3",
+                    "base": "DataInput_Column3_2",
                     "details": {
-                        "name": "Column 3"
+                        "name": "Column3"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

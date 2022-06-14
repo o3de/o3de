@@ -15,6 +15,7 @@ import time
 import azlmbr.atom
 import azlmbr.atomtools as atomtools
 import azlmbr.materialeditor as materialeditor
+import azlmbr.math as math
 import azlmbr.bus as bus
 
 
@@ -50,11 +51,11 @@ def open_material(file_path):
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
 
 
-def is_open(document_id):
+def is_document_open(document_id):
     """
     :return: bool
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "IsOpen", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "IsDocumentOpen", document_id)
 
 
 def save_document(document_id):
@@ -114,52 +115,61 @@ def get_property(document_id, property_name):
     """
     :return: property value or invalid value if the document is not open or the property_name can't be found
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
+    return azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
 def set_property(document_id, property_name, value):
-    azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
+    azlmbr.materialeditor.MaterialDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
 
 
 def is_pane_visible(pane_name):
     """
     :return: bool
     """
-    return atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
+    return atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
 
 
 def set_pane_visibility(pane_name, value):
-    atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
+    atomtools.AtomToolsMainWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
-def select_lighting_config(config_name):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectLightingPresetByName", config_name)
+def select_lighting_config(asset_path):
+    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
 
 
 def set_grid_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
 def get_grid_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
 def set_shadowcatcher_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
 def get_shadowcatcher_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
-def select_model_config(configname):
-    azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, "SelectModelPresetByName", configname)
+def select_model_config(asset_path):
+    asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+
+
+def exit():
+    """
+    Closes the Material Editor
+    """
+    azlmbr.atomtools.general.exit()
 
 
 def wait_for_condition(function, timeout_in_seconds=1.0):

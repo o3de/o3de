@@ -12,10 +12,9 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include <Source/Components/SurfaceDataColliderComponent.h>
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Shape.h>
@@ -23,28 +22,12 @@
 
 namespace UnitTest
 {
-    // Mock out a generic Physics Collider Component, which is a required dependency for adding a SurfaceDataColliderComponent.
-    struct MockPhysicsColliderComponent
-        : public AZ::Component
-    {
-    public:
-        AZ_COMPONENT(MockPhysicsColliderComponent, "{4F7C36DE-6475-4E0A-96A7-BFAF21C07C95}", AZ::Component);
-
-        void Activate() override {}
-        void Deactivate() override {}
-
-        static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        }
-    };
-
     class MockPhysicsWorldBusProvider
         : public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
-        MockPhysicsWorldBusProvider(const AZ::EntityId& id, AZ::Vector3 inPosition, bool setHitResult, const SurfaceData::SurfacePoint& hitResult)
+        MockPhysicsWorldBusProvider(
+            const AZ::EntityId& id, AZ::Vector3 inPosition, bool setHitResult, const AzFramework::SurfaceData::SurfacePoint& hitResult)
         {
             AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(id);
 
@@ -95,33 +78,36 @@ namespace UnitTest
     {
     protected:
         // Create a new SurfacePoint with the given fields.
-        SurfaceData::SurfacePoint CreateSurfacePoint(AZ::EntityId id, AZ::Vector3 position, AZ::Vector3 normal, AZStd::vector<AZStd::pair<AZStd::string, float>> tags)
+        AzFramework::SurfaceData::SurfacePoint CreateSurfacePoint(
+            AZ::Vector3 position, AZ::Vector3 normal, AZStd::vector<AZStd::pair<AZStd::string, float>> tags)
         {
-            SurfaceData::SurfacePoint point;
-            point.m_entityId = id;
+            AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = position;
             point.m_normal = normal;
             for (auto& tag : tags)
             {
-                point.m_masks[SurfaceData::SurfaceTag(tag.first)] = tag.second;
+                point.m_surfaceTags.emplace_back(SurfaceData::SurfaceTag(tag.first), tag.second);
             }
             return point;
         }
 
         // Compare two surface points.
-        bool SurfacePointsAreEqual(const SurfaceData::SurfacePoint& lhs, const SurfaceData::SurfacePoint& rhs)
+        bool SurfacePointsAreEqual(
+            const AZ::Vector3& lhsPosition,
+            const AZ::Vector3& lhsNormal,
+            const SurfaceData::SurfaceTagWeights& lhsMasks,
+            const AzFramework::SurfaceData::SurfacePoint& rhs)
         {
-            return (lhs.m_entityId == rhs.m_entityId)
-                && (lhs.m_position == rhs.m_position)
-                && (lhs.m_normal == rhs.m_normal)
-                && (lhs.m_masks == rhs.m_masks);
+            return ((lhsPosition == rhs.m_position)
+                && (lhsNormal == rhs.m_normal)
+                && (lhsMasks.SurfaceWeightsAreEqual(rhs.m_surfaceTags)));
         }
 
         // Common test function for testing the "Provider" functionality of the component.
         // Given a set of tags and an expected output, check to see if the component provides the
         // expected output point.
         void TestSurfaceDataColliderProvider(AZStd::vector<AZStd::string> providerTags, bool pointOnProvider,
-                                             AZ::Vector3 queryPoint, const SurfaceData::SurfacePoint& expectedOutput)
+                                             AZ::Vector3 queryPoint, const AzFramework::SurfaceData::SurfacePoint& expectedOutput)
         {
             // This lets our component register with surfaceData successfully.
             MockSurfaceDataSystem mockSurfaceDataSystem;
@@ -135,8 +121,6 @@ namespace UnitTest
 
             // Create the test entity with the SurfaceDataCollider component and the required physics collider dependency
             auto entity = CreateEntity();
-            // Initialize our Entity ID to the one passed in on the expectedOutput
-            entity->SetId(expectedOutput.m_entityId);
             // Create the components
             CreateComponent<MockPhysicsColliderComponent>(entity.get());
             CreateComponent<SurfaceData::SurfaceDataColliderComponent>(entity.get(), config);
@@ -151,21 +135,32 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
+            pointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&queryPoint, 1), 1, {});
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
+            pointList.EndListConstruction();
+
             if (pointOnProvider)
             {
-                ASSERT_TRUE(pointList.size() == 1);
-                EXPECT_TRUE(SurfacePointsAreEqual(pointList[0], expectedOutput));
+                ASSERT_EQ(pointList.GetSize(), 1);
+                pointList.EnumeratePoints([this, expectedOutput](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                        const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                    {
+                        EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
+                        return true;
+                    });
             }
             else
             {
-                EXPECT_TRUE(pointList.empty());
+                EXPECT_TRUE(pointList.IsEmpty());
             }
         }
 
         void TestSurfaceDataColliderModifier(AZStd::vector<AZStd::string> modifierTags,
-            const SurfaceData::SurfacePoint& input, bool pointInCollider, const SurfaceData::SurfacePoint& expectedOutput)
+            const AzFramework::SurfaceData::SurfacePoint& input,
+            bool pointInCollider,
+            const AzFramework::SurfaceData::SurfacePoint& expectedOutput)
         {
             // This lets our component register with surfaceData successfully.
             MockSurfaceDataSystem mockSurfaceDataSystem;
@@ -191,11 +186,20 @@ namespace UnitTest
             EXPECT_TRUE(modifierHandle != SurfaceData::InvalidSurfaceDataRegistryHandle);
 
             // Call ModifySurfacePoints and verify the results
+            // Add the surface point with a different entity ID than the entity doing the modification, so that the point doesn't get
+            // filtered out.
             SurfaceData::SurfacePointList pointList;
-            pointList.emplace_back(input);
-            SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            ASSERT_TRUE(pointList.size() == 1);
-            EXPECT_TRUE(SurfacePointsAreEqual(pointList[0], expectedOutput));
+            pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&input, 1));
+            pointList.ModifySurfaceWeights(modifierHandle);
+            pointList.EndListConstruction();
+            ASSERT_EQ(pointList.GetSize(), 1);
+            pointList.EnumeratePoints([this, expectedOutput](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                {
+                    EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
+                    return true;
+                });
         }
     };
 
@@ -232,7 +236,8 @@ namespace UnitTest
         // Set the expected output to an arbitrary entity ID, position, and normal.
         // We'll use this to initialize the mock physics, so the output of the query should match.
         const char* tag = "test_mask";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
+        AzFramework::SurfaceData::SurfacePoint expectedOutput =
+            CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
             { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z, just so we can verify that the output returns the collision
@@ -248,7 +253,8 @@ namespace UnitTest
         // Set the expected output to an arbitrary entity ID, position, and normal.
         // We'll use this to initialize the mock physics.
         const char* tag = "test_mask";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
+        AzFramework::SurfaceData::SurfacePoint expectedOutput =
+            CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
             { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z.  However, we're also telling our test to provide
@@ -266,9 +272,9 @@ namespace UnitTest
         // We'll use this to initialize the mock physics.
         const char* tag1 = "test_mask1";
         const char* tag2 = "test_mask2";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
-                                                                      { AZStd::make_pair<AZStd::string, float>(tag1, 1.0f),
-                                                                        AZStd::make_pair<AZStd::string, float>(tag2, 1.0f) });
+        AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
+            AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
+            { AZStd::make_pair<AZStd::string, float>(tag1, 1.0f), AZStd::make_pair<AZStd::string, float>(tag2, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z, just so we can verify that the output returns the collision
         // result, not the input point.
@@ -281,11 +287,12 @@ namespace UnitTest
         // Verify that for a point inside the collider, the output point contains the correct tag and value.
 
         // Set arbitrary input data
-        SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
+        AzFramework::SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
         // Output should match the input, but with an added tag / value
         const char* tag = "test_mask";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_entityId, input.m_position, input.m_normal,
-                                                                      { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
+        AzFramework::SurfaceData::SurfacePoint expectedOutput =
+            CreateSurfacePoint(input.m_position, input.m_normal,
+            { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ tag }, input, pointInCollider, expectedOutput);
@@ -296,10 +303,10 @@ namespace UnitTest
         // Verify that for a point outside the collider, the output point contains no tags / values.
 
         // Set arbitrary input data
-        SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
+        AzFramework::SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
         // Output should match the input - no extra tags / values should be added.
         const char* tag = "test_mask";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_entityId, input.m_position, input.m_normal, {});
+        AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_position, input.m_normal, {});
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ tag }, input, !pointInCollider, expectedOutput);
@@ -310,11 +317,12 @@ namespace UnitTest
         // Verify that if the component has multiple tags, all of them get put on the output with the same value.
 
         // Set arbitrary input data
-        SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
+        AzFramework::SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
         // Output should match the input, but with two added tags
         const char* tag1 = "test_mask1";
         const char* tag2 = "test_mask2";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_entityId, input.m_position, input.m_normal,
+        AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
+            input.m_position, input.m_normal,
             { AZStd::make_pair<AZStd::string, float>(tag1, 1.0f), AZStd::make_pair<AZStd::string, float>(tag2, 1.0f) });
 
         constexpr bool pointInCollider = true;
@@ -328,11 +336,13 @@ namespace UnitTest
 
         // Set arbitrary input data
         const char* preservedTag = "preserved_tag";
-        SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3(0.0f),
+        AzFramework::SurfaceData::SurfacePoint input =
+            CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f),
                                                              { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f) });
         // Output should match the input, but with two added tags
         const char* modifierTag = "modifier_tag";
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_entityId, input.m_position, input.m_normal,
+        AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
+            input.m_position, input.m_normal,
             { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f), AZStd::make_pair<AZStd::string, float>(modifierTag, 1.0f) });
 
         constexpr bool pointInCollider = true;
@@ -349,10 +359,12 @@ namespace UnitTest
         float inputValue = 0.25f;
 
         // Set arbitrary input data
-        SurfaceData::SurfacePoint input = CreateSurfacePoint(AZ::EntityId(0x12345678), AZ::Vector3(1.0f), AZ::Vector3(0.0f),
+        AzFramework::SurfaceData::SurfacePoint input =
+            CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f),
                                                              { AZStd::make_pair<AZStd::string, float>(tag, inputValue) });
         // Output should match the input, except that the value on the tag gets the higher modifier value
-        SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(input.m_entityId, input.m_position, input.m_normal,
+        AzFramework::SurfaceData::SurfacePoint expectedOutput =
+            CreateSurfacePoint(input.m_position, input.m_normal,
             { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
 
         constexpr bool pointInCollider = true;

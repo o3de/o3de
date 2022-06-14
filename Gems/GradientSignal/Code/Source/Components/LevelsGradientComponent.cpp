@@ -6,7 +6,7 @@
  *
  */
 
-#include "LevelsGradientComponent.h"
+#include <GradientSignal/Components/LevelsGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -139,14 +139,18 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         LevelsGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void LevelsGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         LevelsGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -172,7 +176,7 @@ namespace GradientSignal
 
     float LevelsGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZStd::shared_lock lock(m_queryMutex);
 
         float output = 0.0f;
 
@@ -187,6 +191,23 @@ namespace GradientSignal
         return output;
     }
 
+    void LevelsGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+
+        GetLevels(outValues, 
+                m_configuration.m_inputMid, m_configuration.m_inputMin, m_configuration.m_inputMax,
+                m_configuration.m_outputMin, m_configuration.m_outputMax);
+    }
+
     bool LevelsGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);
@@ -199,7 +220,13 @@ namespace GradientSignal
 
     void LevelsGradientComponent::SetInputMin(float value)
     {
-        m_configuration.m_inputMin = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_inputMin = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -210,7 +237,13 @@ namespace GradientSignal
 
     void LevelsGradientComponent::SetInputMid(float value)
     {
-        m_configuration.m_inputMid = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_inputMid = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -221,7 +254,13 @@ namespace GradientSignal
 
     void LevelsGradientComponent::SetInputMax(float value)
     {
-        m_configuration.m_inputMax = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_inputMax = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -232,7 +271,13 @@ namespace GradientSignal
 
     void LevelsGradientComponent::SetOutputMin(float value)
     {
-        m_configuration.m_outputMin = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_outputMin = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -243,7 +288,13 @@ namespace GradientSignal
 
     void LevelsGradientComponent::SetOutputMax(float value)
     {
-        m_configuration.m_outputMax = value;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_outputMax = value;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

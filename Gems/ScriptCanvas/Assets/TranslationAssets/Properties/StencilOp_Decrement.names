@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Decrement",
+            "base": "StencilOp_Decrement",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Decrement"
+                "name": "Decrement",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Decrement",
+                    "base": "GetStencilOp_Decrement",
                     "details": {
-                        "name": "Get Stencil Op_ Decrement"
+                        "name": "Decrement"
                     },
                     "results": [
                         {

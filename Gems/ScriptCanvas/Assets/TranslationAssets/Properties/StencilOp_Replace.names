@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "StencilOp_Replace",
+            "base": "StencilOp_Replace",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Stencil Op_ Replace"
+                "name": "Replace",
+                "category": "Constants/Stencil Op"
             },
             "methods": [
                 {
-                    "key": "GetStencilOp_Replace",
+                    "base": "GetStencilOp_Replace",
                     "details": {
-                        "name": "Get Stencil Op_ Replace"
+                        "name": "Replace"
                     },
                     "results": [
                         {

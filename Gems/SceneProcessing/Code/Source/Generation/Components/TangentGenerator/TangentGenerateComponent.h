@@ -58,9 +58,19 @@ namespace AZ::SceneGenerationComponents
         void FindBlendShapes(
             AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
             AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*>& outBlendShapes) const;
-        bool GenerateTangentsForMesh(AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData);
-        void UpdateFbxTangentWValues(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::SceneAPI::DataTypes::IMeshData* meshData);
+        bool GenerateTangentsForMesh(
+            AZ::SceneAPI::Containers::Scene& scene,
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            AZ::SceneAPI::DataTypes::IMeshData* meshData,
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod defaultGenerationMethod);
+        bool UpdateFbxTangentWValues(
+            AZ::SceneAPI::Containers::SceneGraph& graph,
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            const AZ::SceneAPI::DataTypes::IMeshData* meshData,
+            bool deubgBitangentFlip);
         const AZ::SceneAPI::SceneData::TangentsRule* GetTangentRule(const AZ::SceneAPI::Containers::Scene& scene) const;
+        void GetRegistrySettings(
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod& defaultTangentGenrationMethod, bool& debugBitangentFlip) const;
 
         size_t CalcUvSetCount(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const;
         AZ::SceneAPI::DataTypes::IMeshVertexUVData* FindUvData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet) const;

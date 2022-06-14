@@ -56,5 +56,73 @@ namespace UnitTest
         MOCK_METHOD1(GenerateRandomPointInside, AZ::Vector3(AZ::RandomDistributionType randomDistribution));
         MOCK_METHOD3(IntersectRay, bool(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance));
     };
+
+    class MockShape : public LmbrCentral::ShapeComponentRequestsBus::Handler
+    {
+    public:
+        AZ::Entity m_entity;
+        int m_count = 0;
+
+        MockShape()
+        {
+            LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(m_entity.GetId());
+        }
+
+        ~MockShape()
+        {
+            LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
+        }
+
+        AZ::Crc32 GetShapeType() override
+        {
+            ++m_count;
+            return AZ_CRC("TestShape", 0x856ca50c);
+        }
+
+        AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
+        AZ::Aabb GetEncompassingAabb() override
+        {
+            ++m_count;
+            return m_aabb;
+        }
+
+        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity();
+        AZ::Aabb m_localBounds = AZ::Aabb::CreateNull();
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        {
+            ++m_count;
+            transform = m_localTransform;
+            bounds = m_localBounds;
+        }
+
+        bool m_pointInside = true;
+        bool IsPointInside([[maybe_unused]] const AZ::Vector3& point) override
+        {
+            ++m_count;
+            return m_pointInside;
+        }
+
+        float m_distanceSquaredFromPoint = 0.0f;
+        float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) override
+        {
+            ++m_count;
+            return m_distanceSquaredFromPoint;
+        }
+
+        AZ::Vector3 m_randomPointInside = AZ::Vector3::CreateZero();
+        AZ::Vector3 GenerateRandomPointInside([[maybe_unused]] AZ::RandomDistributionType randomDistribution) override
+        {
+            ++m_count;
+            return m_randomPointInside;
+        }
+
+        bool m_intersectRay = false;
+        bool IntersectRay(
+            [[maybe_unused]] const AZ::Vector3& src, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance) override
+        {
+            ++m_count;
+            return m_intersectRay;
+        }
+    };
 }
 

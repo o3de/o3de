@@ -13,9 +13,6 @@
 #include <Atom/Features/PBR/BackLighting.azsli>
 #include <Atom/Features/PBR/Hammersley.azsli>
 
-option bool o_area_light_validation = false;
-
-
 //! Adjust the intensity of specular light based on the radius of the light source and roughness of the surface to approximate energy conservation.
 float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, float distance2)
 {
@@ -49,6 +46,16 @@ void AddSampleContribution(
     float3 intensityRgb = float3(intensity, intensity, intensity);
 
     diffuseAcc += GetDiffuseLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
-    translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, 0.0);
+
+    // Transmission contribution
+    // We cannot compute the actual transmission distance so we want to:
+    // - If transmission mode is thick object -> use transmission thickness parameter instead
+    // - If transmission mode is thin object -> ignore back lighting
+    // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
+    const float transmissionDistance = -1.0f;
+    // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
+    const float attenuationDistance = 0.0f;
+    translucentAcc += GetBackLighting(surface, lightingData, intensityRgb, posToLightSampleDir, transmissionDistance, attenuationDistance);
+
     specularAcc += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
 }

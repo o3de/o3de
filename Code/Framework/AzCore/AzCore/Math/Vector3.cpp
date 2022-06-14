@@ -206,7 +206,7 @@ namespace AZ
             behaviorContext->Class<Vector3>()->
                 Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)->
                 Attribute(Script::Attributes::Module, "math")->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Constructor<float>()->
                 Constructor<float, float, float>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
@@ -251,7 +251,7 @@ namespace AZ
                 Method("GetElement", &Vector3::GetElement)->
                 Method("SetElement", &Vector3::SetElement)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Method("GetLength", &Vector3::GetLength)->
+                Method("GetLength", &Vector3::GetLength, { "Source", "The source of the magnitude calculation." }, {})->
                     Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Length", "Math"))->
                 Method("GetLengthSq", &Vector3::GetLengthSq)->
                 Method("GetLengthReciprocal", &Vector3::GetLengthReciprocal)->
@@ -341,7 +341,7 @@ namespace AZ
                 Method("CreateZero", &Vector3::CreateZero)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("ConstructFromValues", &ScriptCanvas::ConstructVector3)->
-                Method<Vector3(Vector3::*)(float) const>("DivideFloatExplicit", &Vector3::operator/)->
+                Method<Vector3(Vector3::*)(float) const>("DivideFloatExplicit", &Vector3::operator/, { "Source", "The source value gets divided." }, { { { "Divisor", "The value that divides Source." } } })->
                     Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Divide By Number (/)", "Math"))->
                     Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "DivideGroup", "" }, { "DivideGroup" }))
                 ;

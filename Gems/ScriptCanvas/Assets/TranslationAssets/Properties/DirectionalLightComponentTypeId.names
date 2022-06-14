@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DirectionalLightComponentTypeId",
+            "base": "DirectionalLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Directional Light Component Type Id"
+                "name": "Directional Light Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetDirectionalLightComponentTypeId",
+                    "base": "GetDirectionalLightComponentTypeId",
                     "details": {
                         "name": "Get Directional Light Component Type Id"
                     },

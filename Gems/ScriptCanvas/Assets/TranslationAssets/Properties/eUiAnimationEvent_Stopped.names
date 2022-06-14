@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiAnimationEvent_Stopped",
+            "base": "eUiAnimationEvent_Stopped",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Animation Event_ Stopped"
+                "name": "Stopped",
+                "category": "Constants/UI/Animation Event"
             },
             "methods": [
                 {
-                    "key": "GeteUiAnimationEvent_Stopped",
+                    "base": "GeteUiAnimationEvent_Stopped",
                     "details": {
-                        "name": "Gete Ui Animation Event_ Stopped"
+                        "name": "Stopped"
                     },
                     "results": [
                         {

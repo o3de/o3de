@@ -82,7 +82,6 @@ protected:
     }
 
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return "UndoSplineCtrlEx"; };
 
     void Undo(bool bUndo) override
     {

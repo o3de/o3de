@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PolygonPrism",
+            "base": "PolygonPrism",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "height",
+                    "base": "height",
                     "details": {
                         "name": "Get Height"
                     },
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "vertexContainer",
+                    "base": "vertexContainer",
                     "details": {
                         "name": "Get Vertex Container"
                     },

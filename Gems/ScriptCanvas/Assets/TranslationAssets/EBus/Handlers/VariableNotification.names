@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "VariableNotification",
+            "base": "VariableNotification",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -11,7 +11,7 @@
             },
             "methods": [
                 {
-                    "key": "OnVariableValueChanged",
+                    "base": "OnVariableValueChanged",
                     "details": {
                         "name": "On Variable Value Changed"
                     }

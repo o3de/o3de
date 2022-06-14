@@ -13,10 +13,10 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
+
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     namespace UndoSystem
     {
         class URSequencePoint;
@@ -101,6 +101,13 @@ namespace AzToolsFramework
              */
             virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
+
+            /**
+             * Detects if an entity is owned by a procedural prefab.
+             * @param entityId The entity to query.
+             * @return True if the entity is owned by a procedural prefab instance, false otherwise.
+             */
+            virtual bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const = 0;
             
             /**
              * Detects if an entity is the container entity for its owning prefab instance.
@@ -144,6 +151,7 @@ namespace AzToolsFramework
             virtual PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const = 0;
 
             /**
+             * [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
              * Deletes all entities from the owning instance. Bails if the entities don't all belong to the same instance.
              * @param entities The entities to delete.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.

@@ -37,6 +37,7 @@
 #include <AssetBuilderInfo.h>
 #include <AzCore/Interface/Interface.h>
 #include <Entity/EntityUtilityComponent.h>
+#include <AssetBuilderStatic.h>
 
 namespace AssetBuilder
 {
@@ -165,6 +166,7 @@ void AssetBuilderApplication::StartCommon(AZ::Entity* systemEntity)
 
     AssetBuilderSDK::InitializeSerializationContext();
     AssetBuilderSDK::InitializeBehaviorContext();
+    AssetBuilder::InitializeSerializationContext();
     // the asset builder app never writes source files, only assets, so there is no need to do any kind of asset upgrading
     AZ::Data::AssetManager::Instance().SetAssetInfoUpgradingEnabled(false);
 

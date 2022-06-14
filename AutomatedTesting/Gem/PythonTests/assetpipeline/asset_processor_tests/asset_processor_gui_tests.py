@@ -8,6 +8,7 @@ General Asset Processor GUI Tests
 """
 
 # Import builtin libraries
+import psutil
 import pytest
 import logging
 import os
@@ -62,7 +63,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
 class TestsAssetProcessorGUI_Windows(object):
     """
@@ -234,7 +235,6 @@ class TestsAssetProcessorGUI_Windows(object):
 
     @pytest.mark.test_case_id("C24168803")
     @pytest.mark.BAT
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.assetpipeline
     def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
         """
@@ -296,22 +296,10 @@ class TestsAssetProcessorGUI_Windows(object):
         cache_level_dir = os.path.join(asset_processor.temp_project_cache(), "levels", level_name.lower())
 
         # Expected test asset sources and products
-        exp_project_level_assets = [
-            "filelist.xml",
-            "level.pak",
-            "tags.txt",
-            "terraintexture.pak",
-            f"{level_name}.ly",
-            os.path.join("leveldata", "Environment.xml"),
-            os.path.join("leveldata", "Heightmap.dat"),
-            os.path.join("leveldata", "TerrainTexture.xml"),
-            os.path.join("leveldata", "TimeOfDay.xml"),
-            os.path.join("leveldata", "VegetationMap.dat"),
-            os.path.join("terrain", "cover.ctc"),
-        ]
+        exp_project_level_assets = ["TestDependenciesLevel.prefab"]
         exp_project_test_assets = [new_asset]
-        exp_cache_level_assets = [asset.lower() for asset in exp_project_level_assets if not asset.endswith(".ly")]
-        exp_cache_test_assets = [new_asset_lower, f"{new_asset_lower}_compiled"]
+        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower()]
+        exp_cache_test_assets = [f"{new_asset_lower}_compiled", f"{new_asset_lower}_fn_compiled", "c1564064_vm.luac"]
 
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
@@ -348,33 +336,8 @@ class TestsAssetProcessorGUI_Windows(object):
         # fmt:on
         asset_processor.stop()
 
-    @pytest.mark.test_case_id("C24256593")
-    @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_LaunchAP_LogReportsIdle(self, asset_processor, workspace, ap_idle):
-        """
-        Asset Processor creates a log entry when it goes idle
-
-        Test Steps:
-        1. Create temporary testing environment
-        2. Run Asset Processor batch to pre-process assets
-        3. Run Asset Processor GUI
-        4. Check if Asset Processor GUI reports that it has gone idle
-        """
-
-        asset_processor.create_temp_asset_root()
-        # Run batch process to ensure project assets are processed
-        assert asset_processor.batch_process(), "AP Batch failed"
-
-        ap_idle.set_file_path(workspace.paths.ap_gui_log())
-        # Launch Asset Processor and wait for it to go idle
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
-        ap_idle.check_if_idle()
-        asset_processor.stop()
-
-
-    @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox
     def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out

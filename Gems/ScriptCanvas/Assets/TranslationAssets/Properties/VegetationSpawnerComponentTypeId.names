@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "VegetationSpawnerComponentTypeId",
+            "base": "VegetationSpawnerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Vegetation Spawner Component Type Id"
+                "name": "Vegetation Spawner Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetVegetationSpawnerComponentTypeId",
+                    "base": "GetVegetationSpawnerComponentTypeId",
                     "details": {
                         "name": "Get Vegetation Spawner Component Type Id"
                     },

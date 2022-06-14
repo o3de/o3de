@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextShrinkToFit_Uniform",
+            "base": "eUiTextShrinkToFit_Uniform",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Shrink To Fit_ Uniform"
+                "name": "Uniform",
+                "category": "Constants/UI/Text Shrink To Fit"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextShrinkToFit_Uniform",
+                    "base": "GeteUiTextShrinkToFit_Uniform",
                     "details": {
-                        "name": "Gete Ui Text Shrink To Fit_ Uniform"
+                        "name": "Uniform"
                     },
                     "results": [
                         {

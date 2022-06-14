@@ -11,7 +11,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
 #include <GraphCanvas/Types/SceneMemberComponentSaveData.h>

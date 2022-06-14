@@ -1,53 +1,53 @@
 {
     "entries": [
         {
-            "key": "{84F9B63C-F6F5-58AD-8669-C25287CDC037}",
+            "base": "{84F9B63C-F6F5-58AD-8669-C25287CDC037}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "From Values",
                 "category": "Math/Color",
-                "tooltip": "Returns a Color from the R, G, B, A inputs"
+                "tooltip": "returns a Color from the R, G, B, A inputs"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_R",
+                    "base": "DataInput_R_0",
                     "details": {
                         "name": "R"
                     }
                 },
                 {
-                    "key": "DataInput_G",
+                    "base": "DataInput_G_1",
                     "details": {
                         "name": "G"
                     }
                 },
                 {
-                    "key": "DataInput_B",
+                    "base": "DataInput_B_2",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_A",
+                    "base": "DataInput_A_3",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

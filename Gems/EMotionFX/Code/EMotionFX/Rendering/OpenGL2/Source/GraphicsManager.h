@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_GRAPHICSMANAGER__H
-#define __RENDERGL_GRAPHICSMANAGER__H
+#pragma once
 
 #include <AzCore/IO/Path/Path.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -198,6 +197,4 @@ namespace RenderGL
     };
 
     GraphicsManager* GetGraphicsManager();
-}
-
-#endif
+} // namespace RenderGL

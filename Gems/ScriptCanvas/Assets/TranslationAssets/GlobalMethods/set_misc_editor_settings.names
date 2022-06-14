@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_misc_editor_settings",
+            "base": "set_misc_editor_settings",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_misc_editor_settings",
+                    "base": "set_misc_editor_settings",
                     "context": "Global",
                     "entry": {
                         "name": "In",

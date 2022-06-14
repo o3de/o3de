@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Cylinder",
+            "base": "ShapeType_Cylinder",
             "context": "Constant",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "ShapeType_Cylinder",
+                    "base": "ShapeType_Cylinder",
                     "details": {
                         "name": "Get Shape Type: Cylinder",
                         "subtitle": "Shape Type"

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "g_ProfilerSystem",
+            "base": "g_ProfilerSystem",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "g_ Profiler System"
+                "name": "Profiler System",
+                "category": "Constants/Profiler"
             },
             "methods": [
                 {
-                    "key": "Getg_ProfilerSystem",
+                    "base": "Getg_ProfilerSystem",
                     "details": {
-                        "name": "Getg_ Profiler System"
+                        "name": "Profiler System"
                     },
                     "results": [
                         {

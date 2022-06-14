@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "add_node",
+            "base": "add_node",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "add_node",
+                    "base": "add_node",
                     "context": "Global",
                     "entry": {
                         "name": "In",

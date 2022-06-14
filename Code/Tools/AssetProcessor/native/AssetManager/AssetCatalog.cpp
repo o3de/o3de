@@ -480,12 +480,12 @@ namespace AssetProcessor
                     AZ::Data::AssetId assetId(combined.m_sourceGuid, combined.m_subID);
 
                     // relative file path is gotten by removing the platform and game from the product name
-                    QString relativeProductPath = AssetUtilities::StripAssetPlatform(combined.m_productName);
+                    AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(combined.m_productName);
                     QString fullProductPath = m_cacheRoot.absoluteFilePath(combined.m_productName.c_str());
 
                     AZ::Data::AssetInfo info;
                     info.m_assetType = combined.m_assetType;
-                    info.m_relativePath = relativeProductPath.toUtf8().data();
+                    info.m_relativePath = relativeProductPath;
                     info.m_assetId = assetId;
                     info.m_sizeBytes = AZ::IO::SystemFile::Length(fullProductPath.toUtf8().constData());
 

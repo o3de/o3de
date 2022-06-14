@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TickBus",
+            "base": "TickBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnTick",
+                    "base": "OnTick",
                     "details": {
                         "name": "On Tick",
                         "tooltip": "Signals that the application has issued a tick"
@@ -33,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "GetTickOrder",
+                    "base": "GetTickOrder",
                     "details": {
                         "name": "Get Tick Order",
                         "tooltip": "Specifies the order in which a handler receives tick events relative to other handlers"

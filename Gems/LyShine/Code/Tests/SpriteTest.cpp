@@ -50,7 +50,7 @@ namespace UnitTest
 
     };
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     TEST_F(LyShineSpriteTest, Sprite_CanAcquireRenderTarget)
     {
         // initialize to create the static sprite cache

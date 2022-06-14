@@ -19,16 +19,14 @@ namespace O3DE::ProjectManager
     {
         AZ::Outcome<QString, QString> QueryInstalledCmakeFullPath()
         {
-            auto environmentRequest = ProjectUtils::GetCommandLineProcessEnvironment();
+            auto environmentRequest = ProjectUtils::SetupCommandLineProcessEnvironment();
             if (!environmentRequest.IsSuccess())
             {
                 return AZ::Failure(environmentRequest.GetError());
             }
-            auto currentEnvironment = environmentRequest.GetValue();
 
             auto queryCmakeInstalled = ProjectUtils::ExecuteCommandResult("which",
-                                                                          QStringList{ProjectCMakeCommand}, 
-                                                                          currentEnvironment);
+                                                                          QStringList{ProjectCMakeCommand});
             if (!queryCmakeInstalled.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));

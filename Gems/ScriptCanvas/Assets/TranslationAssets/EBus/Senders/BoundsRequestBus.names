@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "BoundsRequestBus",
+            "base": "BoundsRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Bounds Request Bus"
+                "name": "Bounds",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetWorldBounds",
+                    "base": "GetWorldBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get World Bounds"
@@ -31,7 +32,7 @@
                     ]
                 },
                 {
-                    "key": "GetLocalBounds",
+                    "base": "GetLocalBounds",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Local Bounds"

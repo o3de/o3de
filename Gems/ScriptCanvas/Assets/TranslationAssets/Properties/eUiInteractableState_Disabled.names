@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiInteractableState_Disabled",
+            "base": "eUiInteractableState_Disabled",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Interactable State_ Disabled"
+                "name": "Disabled",
+                "category": "Constants/UI/Interactable State"
             },
             "methods": [
                 {
-                    "key": "GeteUiInteractableState_Disabled",
+                    "base": "GeteUiInteractableState_Disabled",
                     "details": {
-                        "name": "Gete Ui Interactable State_ Disabled"
+                        "name": "Disabled"
                     },
                     "results": [
                         {

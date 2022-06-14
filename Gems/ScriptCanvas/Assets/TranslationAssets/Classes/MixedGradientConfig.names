@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MixedGradientConfig",
+            "base": "MixedGradientConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetNumLayers",
+                    "base": "GetNumLayers",
                     "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "AddLayer",
+                    "base": "AddLayer",
                     "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
@@ -65,7 +65,7 @@
                     ]
                 },
                 {
-                    "key": "RemoveLayer",
+                    "base": "RemoveLayer",
                     "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",
@@ -95,7 +95,7 @@
                     ]
                 },
                 {
-                    "key": "GetLayer",
+                    "base": "GetLayer",
                     "context": "MixedGradientConfig",
                     "entry": {
                         "name": "In",

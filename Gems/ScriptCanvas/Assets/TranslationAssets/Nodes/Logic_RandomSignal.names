@@ -1,30 +1,29 @@
 {
     "entries": [
         {
-            "key": "{DFB13C5E-5FB3-4650-BD3A-E1AD79CD42AC}",
+            "base": "{DFB13C5E-5FB3-4650-BD3A-E1AD79CD42AC}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Random Signal",
                 "category": "Logic",
-                "tooltip": "Triggers one of the selected outputs at Random depending on the weights provided.",
-                "subtitle": "Logic"
+                "tooltip": "Triggers one of the selected outputs at Random depending on the weights provided."
             },
             "slots": [
                 {
-                    "key": "DataInput_Weight 1",
+                    "base": "DataInput_Weight 1_0",
                     "details": {
                         "name": "Weight 1"
                     }
                 },
                 {
-                    "key": "Output_Out 1",
+                    "base": "Output_Out 1_0",
                     "details": {
                         "name": "Out 1"
                     }
                 },
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"

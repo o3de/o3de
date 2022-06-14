@@ -1,38 +1,37 @@
 {
     "entries": [
         {
-            "key": "{6C71D076-0427-56B4-8A95-1DCB1835D1BF}",
+            "base": "{6C71D076-0427-56B4-8A95-1DCB1835D1BF}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Get Max",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the Vector3 that is the max value on each axis of Source",
-                "subtitle": "Axis Aligned Bounding Box"
+                "category": "Math/AABB",
+                "tooltip": "returns the Vector3 that is the max value on each axis of Source"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Max"
+                        "name": "Result"
                     }
                 }
             ]

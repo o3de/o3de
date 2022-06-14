@@ -8,8 +8,6 @@
 
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -86,9 +84,23 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
+                if (!request.m_buffer)
+                {
+                    AZ_Error("BufferPool", false, "Trying to map a null buffer.");
+                    return false;
+                }
+
                 if (request.m_byteCount == 0)
                 {
-                    AZ_Warning("BufferPool", false, "Trying to map zero bytes from buffer.");
+                    AZ_Warning("BufferPool", false, "Trying to map zero bytes from buffer '%s'.", request.m_buffer->GetName().GetCStr());
+                    return false;
+                }
+
+                if (request.m_byteOffset + request.m_byteCount > request.m_buffer->GetDescriptor().m_byteCount)
+                {
+                    AZ_Error(
+                        "BufferPool", false, "Unable to map buffer '%s', overrunning the size of the buffer.",
+                        request.m_buffer->GetName().GetCStr());
                     return false;
                 }
             }
@@ -119,7 +131,7 @@ namespace AZ
 
         ResultCode BufferPool::InitBuffer(const BufferInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateInitRequest(initRequest))
             {
@@ -168,7 +180,7 @@ namespace AZ
 
         ResultCode BufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
             {

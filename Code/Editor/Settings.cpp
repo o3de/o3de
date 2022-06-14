@@ -121,15 +121,11 @@ SEditorSettings::SEditorSettings()
     autoBackupMaxCount = 3;
     autoRemindTime = 0;
 
-    bAutoSaveTagPoints = false;
-
     bNavigationContinuousUpdate = false;
     bNavigationShowAreas = true;
     bNavigationDebugDisplay = false;
     bVisualizeNavigationAccessibility = false;
     navigationDebugAgentType = 0;
-
-    editorConfigSpec = CONFIG_VERYHIGH_SPEC;  //arbitrary choice, but lets assume that we want things to initially look as good as possible in the editor.
 
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
@@ -142,9 +138,6 @@ SEditorSettings::SEditorSettings()
     viewports.bShowMeshStatsOnMouseOver = false;
     viewports.bDrawEntityLabels = false;
     viewports.bShowTriggerBounds = false;
-    viewports.bShowIcons = true;
-    viewports.bDistanceScaleIcons = true;
-    viewports.bShowSizeBasedIcons = false;
     viewports.nShowFrozenHelpers = true;
     viewports.bFillSelectedShapes = false;
     viewports.nTopMapTextureResolution = 512;
@@ -169,7 +162,6 @@ SEditorSettings::SEditorSettings()
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
-    bApplyConfigSpecInEditor = true;
     showErrorDialogOnLoad = 1;
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
@@ -181,7 +173,7 @@ SEditorSettings::SEditorSettings()
     strStandardTempDirectory = "Temp";
 
     // Init source safe params.
-    enableSourceControl = true;
+    enableSourceControl = false;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     textEditorForScript = "TextEdit";
@@ -437,40 +429,6 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, QString&
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value)
-{
-    if (bSettingsManagerMode)
-    {
-        int valueCheck = 0;
-
-        if (GetIEditor()->GetSettingsManager())
-        {
-            GetIEditor()->GetSettingsManager()->LoadSetting(sSection, sKey, valueCheck);
-        }
-
-        if (valueCheck >= CONFIG_AUTO_SPEC && valueCheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = (ESystemConfigSpec)valueCheck;
-            SaveValue(sSection, sKey, value);
-        }
-    }
-    else
-    {
-        const SettingsGroup sg(sSection);
-        auto valuecheck = static_cast<ESystemConfigSpec>(s_editorSettings()->value(sKey, QVariant::fromValue<int>(value)).toInt());
-        if (valuecheck >= CONFIG_AUTO_SPEC && valuecheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = valuecheck;
-
-            if (GetIEditor()->GetSettingsManager())
-            {
-                GetIEditor()->GetSettingsManager()->SaveSetting(sSection, sKey, value);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
@@ -496,7 +454,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    SaveValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     SaveValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     SaveValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -506,9 +463,6 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     SaveValue("Settings", "BackupOnSave", bBackupOnSave);
     SaveValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    SaveValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-
-    SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -534,8 +488,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     SaveValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     SaveValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    SaveValue("Settings", "ShowIcons", viewports.bShowIcons);
-    SaveValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     SaveValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     SaveValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     SaveValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -692,7 +644,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    LoadValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     LoadValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     LoadValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -702,9 +653,6 @@ void SEditorSettings::Load()
 
     LoadValue("Settings", "BackupOnSave", bBackupOnSave);
     LoadValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    LoadValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-    LoadValue("Settings", "editorConfigSpec", editorConfigSpec);
-
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -736,8 +684,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     LoadValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     LoadValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    LoadValue("Settings", "ShowIcons", viewports.bShowIcons);
-    LoadValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     LoadValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     LoadValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     LoadValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -901,8 +847,7 @@ void SEditorSettings::PostInitApply()
 
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
 
-    GetIEditor()->SetEditorConfigSpec(editorConfigSpec, GetISystem()->GetConfigPlatform());
-    REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update");
+    REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update. -1 = update with no delay.");
     REGISTER_CVAR2("ed_showErrorDialogOnLoad", &showErrorDialogOnLoad, showErrorDialogOnLoad, 0, "Show error dialog on level load");
     REGISTER_CVAR2_CB("ed_keepEditorActive", &keepEditorActive, 0, VF_NULL, "Keep the editor active, even if no focus is set", KeepEditorActiveChanged);
     REGISTER_CVAR2("g_TemporaryLevelName", &g_TemporaryLevelName, "temp_level", VF_NULL, "Temporary level named used for experimental levels.");
@@ -1135,7 +1080,7 @@ void SEditorSettings::SaveSettingsRegistryFile()
         return;
     }
 
-    bool saved{};
+    [[maybe_unused]] bool saved = false;
     constexpr auto configurationMode = AZ::IO::SystemFile::SF_OPEN_CREATE
         | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
         | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;

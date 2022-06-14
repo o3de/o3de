@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathVector2_VM",
+            "base": "MathVector2_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "DirectionTo",
+                    "base": "DirectionTo",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "Subtract",
+                    "base": "Subtract",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "Project",
+                    "base": "Project",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -129,7 +129,7 @@
                     ]
                 },
                 {
-                    "key": "Distance",
+                    "base": "Distance",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -167,7 +167,7 @@
                     ]
                 },
                 {
-                    "key": "FromValues",
+                    "base": "FromValues",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -205,7 +205,7 @@
                     ]
                 },
                 {
-                    "key": "Dot",
+                    "base": "Dot",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -243,7 +243,7 @@
                     ]
                 },
                 {
-                    "key": "Angle",
+                    "base": "Angle",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -275,7 +275,7 @@
                     ]
                 },
                 {
-                    "key": "Negate",
+                    "base": "Negate",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -307,7 +307,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByVector",
+                    "base": "MultiplyByVector",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -345,7 +345,7 @@
                     ]
                 },
                 {
-                    "key": "Add",
+                    "base": "Add",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -383,7 +383,7 @@
                     ]
                 },
                 {
-                    "key": "Clamp",
+                    "base": "Clamp",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByNumber",
+                    "base": "MultiplyByNumber",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -465,7 +465,7 @@
                     ]
                 },
                 {
-                    "key": "Slerp",
+                    "base": "Slerp",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -509,7 +509,7 @@
                     ]
                 },
                 {
-                    "key": "IsZero",
+                    "base": "IsZero",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -547,7 +547,7 @@
                     ]
                 },
                 {
-                    "key": "SetY",
+                    "base": "SetY",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -585,7 +585,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -629,7 +629,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByNumber",
+                    "base": "DivideByNumber",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -667,7 +667,7 @@
                     ]
                 },
                 {
-                    "key": "IsNormalized",
+                    "base": "IsNormalized",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -705,7 +705,7 @@
                     ]
                 },
                 {
-                    "key": "LengthSquared",
+                    "base": "LengthSquared",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -737,7 +737,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -769,7 +769,7 @@
                     ]
                 },
                 {
-                    "key": "ToPerpendicular",
+                    "base": "ToPerpendicular",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -801,7 +801,7 @@
                     ]
                 },
                 {
-                    "key": "Normalize",
+                    "base": "Normalize",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -833,7 +833,7 @@
                     ]
                 },
                 {
-                    "key": "Max",
+                    "base": "Max",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -871,7 +871,7 @@
                     ]
                 },
                 {
-                    "key": "GetElement",
+                    "base": "GetElement",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -909,7 +909,7 @@
                     ]
                 },
                 {
-                    "key": "Absolute",
+                    "base": "Absolute",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -941,7 +941,7 @@
                     ]
                 },
                 {
-                    "key": "SetX",
+                    "base": "SetX",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -979,7 +979,7 @@
                     ]
                 },
                 {
-                    "key": "Min",
+                    "base": "Min",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -1017,7 +1017,7 @@
                     ]
                 },
                 {
-                    "key": "DivideByVector",
+                    "base": "DivideByVector",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -1055,7 +1055,7 @@
                     ]
                 },
                 {
-                    "key": "DistanceSquared",
+                    "base": "DistanceSquared",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -1093,7 +1093,7 @@
                     ]
                 },
                 {
-                    "key": "Length",
+                    "base": "Length",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",
@@ -1125,7 +1125,7 @@
                     ]
                 },
                 {
-                    "key": "Lerp",
+                    "base": "Lerp",
                     "context": "MathVector2_VM",
                     "entry": {
                         "name": "In",

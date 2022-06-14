@@ -1,0 +1,51 @@
+{
+    "entries": [
+        {
+            "base": "NetworkCharacterRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Network Character",
+                "category": "Multiplayer"
+            },
+            "methods": [
+                {
+                    "base": "TryMoveWithVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Try Move With Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Try Move With Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Try Move With Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Velocity"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delta Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

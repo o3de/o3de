@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/Device.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 
@@ -56,16 +55,6 @@ namespace AZ
                 m_commandQueues[hardwareQueueIdx]->SetName(Name{ EventTrace::GpuQueueNames[hardwareQueueIdx] });
                 m_commandQueues[hardwareQueueIdx]->Init(device, commandQueueDesc);
             }
-
-            Debug::EventTraceDrillerSetupBus::Broadcast(
-                &Debug::EventTraceDrillerSetupBus::Events::SetThreadName,
-                EventTrace::GpuQueueIds[static_cast<size_t>(RHI::HardwareQueueClass::Graphics)],
-                EventTrace::GpuQueueNames[static_cast<size_t>(RHI::HardwareQueueClass::Graphics)]);
-
-            Debug::EventTraceDrillerSetupBus::Broadcast(
-                &Debug::EventTraceDrillerSetupBus::Events::SetThreadName,
-                EventTrace::GpuQueueIds[static_cast<size_t>(RHI::HardwareQueueClass::Compute)],
-                EventTrace::GpuQueueNames[static_cast<size_t>(RHI::HardwareQueueClass::Compute)]);
 
             CalibrateClocks();
         }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSMetricsRequestBus",
+            "base": "AWSMetricsRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "SubmitMetrics",
+                    "base": "SubmitMetrics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SubmitMetrics"
@@ -62,7 +62,7 @@
                     ]
                 },
                 {
-                    "key": "FlushMetrics",
+                    "base": "FlushMetrics",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FlushMetrics"

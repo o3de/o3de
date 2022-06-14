@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiCanvasAssetRefBus",
+            "base": "UiCanvasAssetRefBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiCanvasAssetRefBus",
+                "name": "UI Canvas Asset Ref",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "LoadCanvas",
+                    "base": "LoadCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Load Canvas"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "UnloadCanvas",
+                    "base": "UnloadCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Unload Canvas"

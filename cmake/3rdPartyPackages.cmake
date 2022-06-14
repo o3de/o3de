@@ -614,7 +614,7 @@ endfunction()
 # and ensure the path to the package root is added to the find_package search paths.
 # For example
 # ly_associate_package(TARGETS zlib PACKAGE_NAME zlib-1.2.8-multiplatform PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
-# - this waill cause it to automatically download and activate this package if it finds a target that
+# - this will cause it to automatically download and activate this package if it finds a target that
 # depends on '3rdParty::zlib' in its runtime or its build time dependency list.
 # - note that '3rdParty' is implied, do not specify it in the TARGETS list.
 function(ly_associate_package)
@@ -684,6 +684,7 @@ endmacro()
 # is associated with a package, as above.  If it is, it makes sure that the package
 # is brought into scope (and if necessary, downloaded.)
 macro(ly_download_associated_package find_library_name)
+    unset(package_name)
     ly_get_package_association(${find_library_name} package_name)
     if (package_name)
         # it is an associated package.

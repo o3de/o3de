@@ -86,12 +86,11 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
@@ -325,6 +324,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Lighting Data -------
 
@@ -334,8 +334,6 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // Directional light shadow coordinates
-    lightingData.shadowCoords = IN.m_shadowCoords;
 
     // Diffuse and Specular response (used in IBL calculations)
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
@@ -356,7 +354,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
@@ -372,6 +370,12 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
     lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
     lightingOutput.m_scatterDistance = MaterialSrg::m_scatterDistance;
+
+    // Debug output
+    const float metallic = 0.0; // No metallic on skin/subsurface materials
+    DebugModifyOutput(lightingOutput.m_diffuseColor, lightingOutput.m_specularColor, lightingOutput.m_albedo, lightingOutput.m_specularF0,
+                      surface.normal, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex],
+                      surface.albedo, surface.albedo, surface.roughnessLinear, metallic);
 
     return lightingOutput;
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{91B3D89A-4A4B-49FF-AD91-CAAC49E141A8}",
+            "base": "{91B3D89A-4A4B-49FF-AD91-CAAC49E141A8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {

@@ -167,7 +167,8 @@ namespace UnitTest
         const auto ray = m_viewportInteractionImpl->ViewportScreenToWorldRay(ScreenPoint(832, 226));
 
         float unused;
-        auto intersection = AZ::Intersect::IntersectRaySphere(ray.origin, ray.direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
+        auto intersection =
+            AZ::Intersect::IntersectRaySphere(ray.m_origin, ray.m_direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
 
         EXPECT_EQ(intersection, AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_ISECT);
     }
@@ -198,9 +199,7 @@ namespace UnitTest
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             cameraState, TestViewportId, &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
-        const auto cameraMatrix = AzFramework::CameraTransform(cameraState);
-        const auto cameraTransform = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateFromMatrix4x4(cameraMatrix), cameraMatrix.GetTranslation());
+        const auto cameraTransform = AzFramework::CameraTransform(cameraState);
 
         // Then
         // camera transform matches that of the secondary view

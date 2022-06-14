@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "MathMatrix4x4_VM",
+            "base": "MathMatrix4x4_VM",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetRow",
+                    "base": "GetRow",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "FromRotationXDegrees",
+                    "base": "FromRotationXDegrees",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -79,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "FromRotationZDegrees",
+                    "base": "FromRotationZDegrees",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -111,7 +111,7 @@
                     ]
                 },
                 {
-                    "key": "FromRows",
+                    "base": "FromRows",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -161,7 +161,7 @@
                     ]
                 },
                 {
-                    "key": "ToScale",
+                    "base": "ToScale",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -193,7 +193,7 @@
                     ]
                 },
                 {
-                    "key": "FromQuaternion",
+                    "base": "FromQuaternion",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -225,7 +225,7 @@
                     ]
                 },
                 {
-                    "key": "FromScale",
+                    "base": "FromScale",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -257,7 +257,7 @@
                     ]
                 },
                 {
-                    "key": "FromTransform",
+                    "base": "FromTransform",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -289,7 +289,7 @@
                     ]
                 },
                 {
-                    "key": "GetTranslation",
+                    "base": "GetTranslation",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -321,7 +321,7 @@
                     ]
                 },
                 {
-                    "key": "FromQuaternionAndTranslation",
+                    "base": "FromQuaternionAndTranslation",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -359,7 +359,7 @@
                     ]
                 },
                 {
-                    "key": "GetColumn",
+                    "base": "GetColumn",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -397,7 +397,7 @@
                     ]
                 },
                 {
-                    "key": "GetDiagonal",
+                    "base": "GetDiagonal",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -429,7 +429,7 @@
                     ]
                 },
                 {
-                    "key": "Invert",
+                    "base": "Invert",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -461,7 +461,7 @@
                     ]
                 },
                 {
-                    "key": "IsClose",
+                    "base": "IsClose",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -505,7 +505,7 @@
                     ]
                 },
                 {
-                    "key": "FromMatrix3x3",
+                    "base": "FromMatrix3x3",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -537,7 +537,7 @@
                     ]
                 },
                 {
-                    "key": "GetColumns",
+                    "base": "GetColumns",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -569,7 +569,7 @@
                     ]
                 },
                 {
-                    "key": "GetRows",
+                    "base": "GetRows",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -601,7 +601,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByMatrix",
+                    "base": "MultiplyByMatrix",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -639,7 +639,7 @@
                     ]
                 },
                 {
-                    "key": "FromDiagonal",
+                    "base": "FromDiagonal",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -671,7 +671,7 @@
                     ]
                 },
                 {
-                    "key": "FromRotationYDegrees",
+                    "base": "FromRotationYDegrees",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -703,7 +703,7 @@
                     ]
                 },
                 {
-                    "key": "GetElement",
+                    "base": "GetElement",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -747,7 +747,7 @@
                     ]
                 },
                 {
-                    "key": "Transpose",
+                    "base": "Transpose",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -779,7 +779,7 @@
                     ]
                 },
                 {
-                    "key": "FromColumns",
+                    "base": "FromColumns",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -829,7 +829,7 @@
                     ]
                 },
                 {
-                    "key": "FromTranslation",
+                    "base": "FromTranslation",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -861,7 +861,7 @@
                     ]
                 },
                 {
-                    "key": "IsFinite",
+                    "base": "IsFinite",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -893,7 +893,7 @@
                     ]
                 },
                 {
-                    "key": "MultiplyByVector",
+                    "base": "MultiplyByVector",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
@@ -931,7 +931,7 @@
                     ]
                 },
                 {
-                    "key": "Zero",
+                    "base": "Zero",
                     "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",

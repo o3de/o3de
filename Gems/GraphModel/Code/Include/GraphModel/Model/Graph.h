@@ -76,7 +76,7 @@ namespace GraphModel
 
         //! Constructor
         //! \param  graphContext  interface to client system specific data and functionality
-        explicit Graph(IGraphContextPtr graphContext);
+        explicit Graph(GraphContextPtr graphContext);
 
         virtual ~Graph() = default;
 
@@ -86,7 +86,7 @@ namespace GraphModel
         //! and perform any other precedural setup that isn't stored in the 
         //! serialized data.
         //! \param  graphContext  interface to client system specific data and functionality
-        void PostLoadSetup(IGraphContextPtr graphContext);
+        void PostLoadSetup(GraphContextPtr graphContext);
 
         //! Add a node that has been deserialized to the graph
         //! This should only be necessary for cases like copy/paste where we
@@ -94,7 +94,7 @@ namespace GraphModel
         NodeId PostLoadSetup(NodePtr node);
 
         //! Returns the interface to client system specific data and functionality
-        IGraphContextPtr GetContext() const;
+        GraphContextPtr GetContext() const;
 
         //! This name is used for debug messages in GraphModel classes, to provide appropriate context for the user.
         //! It's a convenience function for GetContext()->GetSystemName()
@@ -158,7 +158,7 @@ namespace GraphModel
         //! Used to store all of our node <-> wrapper node mappings
         NodeWrappingMap m_nodeWrappings;
 
-        IGraphContextPtr m_graphContext; //!< interface to client system specific data and functionality
+        GraphContextPtr m_graphContext; //!< interface to client system specific data and functionality
     };
 
 } // namespace GraphModel

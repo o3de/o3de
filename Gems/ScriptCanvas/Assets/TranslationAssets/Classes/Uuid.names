@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "Uuid",
+            "base": "Uuid",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Uuid"
+                "name": "Uuid",
+                "category": "Utilities"
             },
             "methods": [
                 {
-                    "key": "CreateRandom",
+                    "base": "CreateRandom",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -32,7 +33,7 @@
                     ]
                 },
                 {
-                    "key": "CreateNull",
+                    "base": "CreateNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -55,7 +56,7 @@
                     ]
                 },
                 {
-                    "key": "Create",
+                    "base": "Create",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -78,7 +79,7 @@
                     ]
                 },
                 {
-                    "key": "CreateName",
+                    "base": "CreateName",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -109,7 +110,7 @@
                     ]
                 },
                 {
-                    "key": "Clone",
+                    "base": "Clone",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -140,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "LessThan",
+                    "base": "LessThan",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -177,7 +178,7 @@
                     ]
                 },
                 {
-                    "key": "IsNull",
+                    "base": "IsNull",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -208,7 +209,7 @@
                     ]
                 },
                 {
-                    "key": "CreateString",
+                    "base": "CreateString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -245,7 +246,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",
@@ -276,7 +277,7 @@
                     ]
                 },
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "Uuid",
                     "entry": {
                         "name": "In",

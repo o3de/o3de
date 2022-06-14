@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ScaleModifierComponentTypeId",
+            "base": "ScaleModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Scale Modifier Component Type Id"
+                "name": "Scale Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetScaleModifierComponentTypeId",
+                    "base": "GetScaleModifierComponentTypeId",
                     "details": {
                         "name": "Get Scale Modifier Component Type Id"
                     },

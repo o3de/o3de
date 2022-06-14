@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "InvalidComponentId",
+            "base": "InvalidComponentId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Invalid Component Id"
+                "name": "Invalid Component Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetInvalidComponentId",
+                    "base": "GetInvalidComponentId",
                     "details": {
                         "name": "Get Invalid Component Id"
                     },

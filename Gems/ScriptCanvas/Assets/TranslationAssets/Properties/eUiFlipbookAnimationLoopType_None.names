@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiFlipbookAnimationLoopType_None",
+            "base": "eUiFlipbookAnimationLoopType_None",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Flipbook Animation Loop Type_ None"
+                "name": "None",
+                "category": "Constants/UI/Flipbook Animation/Loop Type"
             },
             "methods": [
                 {
-                    "key": "GeteUiFlipbookAnimationLoopType_None",
+                    "base": "GeteUiFlipbookAnimationLoopType_None",
                     "details": {
-                        "name": "Gete Ui Flipbook Animation Loop Type_ None"
+                        "name": "None"
                     },
                     "results": [
                         {

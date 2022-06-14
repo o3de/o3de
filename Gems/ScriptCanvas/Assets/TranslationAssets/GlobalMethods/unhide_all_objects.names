@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "unhide_all_objects",
+            "base": "unhide_all_objects",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "unhide_all_objects",
+                    "base": "unhide_all_objects",
                     "context": "Global",
                     "entry": {
                         "name": "In",

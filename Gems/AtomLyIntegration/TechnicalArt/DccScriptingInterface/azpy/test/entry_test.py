@@ -7,11 +7,14 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-from __future__ import unicode_literals
-
 # -------------------------------------------------------------------------
+"""To Do: doc strings"""
+# TO DO: this whole file needs a refactor!!!
+# -------------------------------------------------------------------------
+# standard imports
+from __future__ import unicode_literals
 import os
+import sys
 import site
 import logging as _logging
 
@@ -19,27 +22,42 @@ import logging as _logging
 # See example:
 #"dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Lumberyard\Scripts\set_menu.py"
 from pathlib import Path
+# -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'azpy.test.entry_test'
 _BOOT_CHECK = False  # set true to test breakpoint in this module directly
 
-import azpy.env_bool as env_bool
+from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'azpy.test.entry_test'
-
+# default loglevel to info unless set
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+if _DCCSI_GDEBUG:
+    # override loglevel if runnign debug
+    _DCCSI_LOGLEVEL = _logging.DEBUG
+    
 # set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
+    
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                    format=FRMT_LOG_LONG,
+                    datefmt='%m-%d %H:%M')
+
 _LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
@@ -75,12 +93,14 @@ def connect_wing():
         pass
 
     _TRY_PY27 = None
+    
+    _WINGHOME = Path(_WINGHOME)
+    _WING_STUB = Path.joinpath(_WINGHOME, 'wingdbstub.py')
+    
     try:
         # this is py3
         import importlib
-        spec = importlib.util.spec_from_file_location("wDBstub",
-                                                      Path(_WINGHOME,
-                                                           'wingdbstub.py'))
+        spec = importlib.util.spec_from_file_location("wDBstub", _WING_STUB.as_posix())
         wDBstub = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(wDBstub)
         _LOGGER.info('~   Success: imported wDBstub (py3)')
@@ -93,8 +113,8 @@ def connect_wing():
     if _TRY_PY27:
         # this is a little bit hacky but can cleanup later
         try:
-            os.path.exists(_WINGHOME)
-            site.addsitedir(_WINGHOME)
+            _WINGHOME.exists()
+            site.addsitedir(_WINGHOME.as_posix())
             import wingdbstub as wDBstub
             _LOGGER.info('~   Success: imported wDBstub (py2)')
         except Exception as e:
@@ -134,5 +154,43 @@ def connect_wing():
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    _DCCSI_GDEBUG = True
-    main(verbose=_DCCSI_GDEBUG, connect_debugger=_DCCSI_GDEBUG)
+    """Run in debug perform local tests from IDE or CLI"""
+
+    from azpy.env_bool import env_bool
+    from azpy.constants import ENVAR_DCCSI_GDEBUG
+    from azpy.constants import ENVAR_DCCSI_DEV_MODE
+    from azpy.constants import ENVAR_DCCSI_LOGLEVEL
+    from azpy.constants import ENVAR_DCCSI_GDEBUGGER
+    from azpy.constants import FRMT_LOG_LONG
+    
+    _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, True)
+    _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, True)
+    _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+    
+    # default loglevel to info unless set
+    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+    if _DCCSI_GDEBUG:
+        # override loglevel if runnign debug
+        _DCCSI_LOGLEVEL = _logging.DEBUG
+        
+    # set up module logging
+    #for handler in _logging.root.handlers[:]:
+        #_logging.root.removeHandler(handler)
+        
+    # configure basic logger
+    # note: not using a common logger to reduce cyclical imports
+    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+                        format=FRMT_LOG_LONG,
+                        datefmt='%m-%d %H:%M')
+    
+    _LOGGER = _logging.getLogger(_MODULENAME)   
+    
+    _LOGGER.setLevel(_logging.DEBUG)
+    
+    if _DCCSI_DEV_MODE:
+        _debugger = connect_wing()
+    
+    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
+    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
+    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+# -------------------------------------------------------------------------

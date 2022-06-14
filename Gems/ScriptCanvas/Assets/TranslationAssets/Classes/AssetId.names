@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AssetId",
+            "base": "AssetId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "CreateString",
+                    "base": "CreateString",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -41,7 +41,7 @@
                     ]
                 },
                 {
-                    "key": "IsValid",
+                    "base": "IsValid",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -72,7 +72,7 @@
                     ]
                 },
                 {
-                    "key": "ToString",
+                    "base": "ToString",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",
@@ -103,7 +103,7 @@
                     ]
                 },
                 {
-                    "key": "IsEqual",
+                    "base": "IsEqual",
                     "context": "AssetId",
                     "entry": {
                         "name": "In",

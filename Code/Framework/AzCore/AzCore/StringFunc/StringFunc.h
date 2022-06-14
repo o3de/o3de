@@ -416,27 +416,27 @@ namespace AZ
             Join(fixedOutput, example.begin(), example.end(), ",");
             // fixedOutput == "test,string,joining"
         */
-        template<typename TStringType, typename TConvertableToStringViewIterator, typename TSeparatorString>
+        template<typename StringType, typename ConvertableToStringViewIterator, typename SeparatorString>
         inline void Join(
-            TStringType& joinTarget, 
-            const TConvertableToStringViewIterator& iteratorBegin, 
-            const TConvertableToStringViewIterator& iteratorEnd, 
-            const TSeparatorString& separator)
+            StringType& joinTarget,
+            const ConvertableToStringViewIterator& iteratorBegin,
+            const ConvertableToStringViewIterator& iteratorEnd,
+            const SeparatorString& separator)
         {
             if (iteratorBegin == iteratorEnd)
             {
                 return;
             }
 
-            using CharType = typename TStringType::value_type;
-            using CharTraitsType = typename TStringType::traits_type;
+            using CharType = typename StringType::value_type;
+            using CharTraitsType = typename StringType::traits_type;
             size_t size = joinTarget.size() + AZStd::basic_string_view<CharType, CharTraitsType>(*iteratorBegin).size();
             for (auto currentIterator = AZStd::next(iteratorBegin); currentIterator != iteratorEnd; ++currentIterator)
             {
                 size += AZStd::basic_string_view<CharType, CharTraitsType>(*currentIterator).size();
 
                 // Special case for when the separator is just the character type
-                if constexpr (AZStd::is_same_v<AZStd::remove_cvref_t<TSeparatorString>, CharType>)
+                if constexpr (AZStd::is_same_v<AZStd::remove_cvref_t<SeparatorString>, CharType>)
                 {
                     size += 1;
                 }
@@ -453,6 +453,19 @@ namespace AZ
                 joinTarget += separator;
                 joinTarget += *currentIterator;
             }
+        }
+
+        template<typename StringType, typename Range, typename SeparatorString,
+            class = AZStd::enable_if_t<AZStd::ranges::input_range<Range> &&
+            AZStd::convertible_to<AZStd::ranges::range_value_t<Range>,
+                AZStd::basic_string_view<typename StringType::value_type, typename StringType::traits_type>>
+        >>
+        void Join(StringType& joinTarget, Range&& stringViewConvertibleRange, const SeparatorString& separator)
+        {
+            Join(joinTarget,
+                AZStd::ranges::begin(stringViewConvertibleRange),
+                AZStd::ranges::end(stringViewConvertibleRange),
+                separator);
         }
 
         //////////////////////////////////////////////////////////////////////////

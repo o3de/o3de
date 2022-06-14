@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiElementBus",
+            "base": "UiElementBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiElementBus",
+                "name": "UI Element",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "FindChildByName",
+                    "base": "FindChildByName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Child By Name"
@@ -43,7 +43,7 @@
                     ]
                 },
                 {
-                    "key": "GetChild",
+                    "base": "GetChild",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Child"
@@ -76,7 +76,7 @@
                     ]
                 },
                 {
-                    "key": "GetNumChildElements",
+                    "base": "GetNumChildElements",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Number Of Child Elements"
@@ -99,7 +99,7 @@
                     ]
                 },
                 {
-                    "key": "GetChildren",
+                    "base": "GetChildren",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Children"
@@ -122,7 +122,7 @@
                     ]
                 },
                 {
-                    "key": "DestroyElement",
+                    "base": "DestroyElement",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Destroy Element"
@@ -137,7 +137,7 @@
                     }
                 },
                 {
-                    "key": "IsAncestor",
+                    "base": "IsAncestor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Ancestor"
@@ -170,7 +170,7 @@
                     ]
                 },
                 {
-                    "key": "GetParent",
+                    "base": "GetParent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Parent"
@@ -194,7 +194,7 @@
                     ]
                 },
                 {
-                    "key": "FindDescendantByName",
+                    "base": "FindDescendantByName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Find Descendant By Name"
@@ -227,7 +227,7 @@
                     ]
                 },
                 {
-                    "key": "IsEnabled",
+                    "base": "IsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Enabled"
@@ -250,7 +250,7 @@
                     ]
                 },
                 {
-                    "key": "GetCanvas",
+                    "base": "GetCanvas",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Canvas"
@@ -274,7 +274,7 @@
                     ]
                 },
                 {
-                    "key": "Reparent",
+                    "base": "Reparent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reparent"
@@ -305,7 +305,7 @@
                     ]
                 },
                 {
-                    "key": "GetName",
+                    "base": "GetName",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Name"
@@ -328,7 +328,7 @@
                     ]
                 },
                 {
-                    "key": "GetIndexOfChildByEntityId",
+                    "base": "GetIndexOfChildByEntityId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Index Of Child By EntityID"
@@ -361,7 +361,7 @@
                     ]
                 },
                 {
-                    "key": "SetIsEnabled",
+                    "base": "SetIsEnabled",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Is Enabled"

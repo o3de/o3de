@@ -44,8 +44,8 @@ namespace AZ
             AZStd::string m_shaderInputName;
 
             // The indices of photometric units in the dropdown list
-            uint32_t m_ev100Index;
-            uint32_t m_nitIndex;
+            uint32_t m_ev100Index = 0;
+            uint32_t m_nitIndex = 1;
 
             // Minimum and Maximum value for different photometric units
             AZ::Vector2 m_ev100MinMax;

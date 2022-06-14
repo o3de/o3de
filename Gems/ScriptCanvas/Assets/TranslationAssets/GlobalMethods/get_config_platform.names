@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_config_platform",
+            "base": "get_config_platform",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_config_platform",
+                    "base": "get_config_platform",
                     "context": "Global",
                     "entry": {
                         "name": "In",

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_viewport_size",
+            "base": "get_viewport_size",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_viewport_size",
+                    "base": "get_viewport_size",
                     "context": "Global",
                     "entry": {
                         "name": "In",

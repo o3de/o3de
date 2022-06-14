@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiHAlign_Right",
+            "base": "eUiHAlign_Right",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e UiH Align_ Right"
+                "name": "Horizontal Align Right",
+                "category": "Constants/UI/Align"
             },
             "methods": [
                 {
-                    "key": "GeteUiHAlign_Right",
+                    "base": "GeteUiHAlign_Right",
                     "details": {
-                        "name": "Gete UiH Align_ Right"
+                        "name": "Horizontal Align: Right"
                     },
                     "results": [
                         {

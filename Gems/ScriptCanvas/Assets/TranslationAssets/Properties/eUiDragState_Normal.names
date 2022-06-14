@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiDragState_Normal",
+            "base": "eUiDragState_Normal",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Drag State_ Normal"
+                "name": "Normal",
+                "category": "Constants/UI/Drag State"
             },
             "methods": [
                 {
-                    "key": "GeteUiDragState_Normal",
+                    "base": "GeteUiDragState_Normal",
                     "details": {
-                        "name": "Gete Ui Drag State_ Normal"
+                        "name": "Normal"
                     },
                     "results": [
                         {

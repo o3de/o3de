@@ -15,6 +15,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
 
+#include <openssl/opensslv.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -31,13 +32,13 @@
 
 namespace AzNetworking
 {
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "testcert.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalPrivateKeyFile,  "testkey.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) private key file in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslExternalContextPassword,       "12345", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the EXTERNAL (server to client) private certificate (default is for debugging purposes)");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalCertificateFile, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) certificate chain in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalPrivateKeyFile,  "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the EXTERNAL (server to client) private key file in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslExternalContextPassword, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the EXTERNAL (server to client) private certificate");
 
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalCertificateFile, "servercert.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) certificate chain in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalPrivateKeyFile,   "serverkey.pem", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) private key file in PEM format (default is for debugging purposes)");
-    AZ_CVAR(AZ::CVarFixedString, net_SslInternalContextPassword,          "12345", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the INTERNAL (server to server only) private certificate (default is for debugging purposes)");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalCertificateFile, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) certificate chain in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalPrivateKeyFile,  "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The filename of the INTERNAL (server to server only) private key file in PEM format");
+    AZ_CVAR(AZ::CVarFixedString, net_SslInternalContextPassword, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::IsInvisible, "The password required for the INTERNAL (server to server only) private certificate");
 
     AZ_CVAR(AZ::CVarFixedString, net_SslCertCiphers, "ECDHE-RSA-AES256-GCM-SHA384", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The cipher suite to use when using cert based key exchange");
 
@@ -51,11 +52,16 @@ namespace AzNetworking
     {
 #if AZ_TRAIT_USE_OPENSSL
 
-        const int32_t errorCode = ERR_get_error();
-            const int32_t systemError = GetLastNetworkError();
+        #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            const char *func = nullptr;
+            const int32_t errorCode = ERR_get_error_all(nullptr, nullptr, &func, nullptr, nullptr);
+        #else
+            const int32_t errorCode = ERR_get_error();
+        #endif 
+        const int32_t systemError = GetLastNetworkError();
 
-            switch (errorCode)
-            {
+        switch (errorCode)
+        {
             case SSL_ERROR_NONE:
                 AZLOG_ERROR("%X - SSL_ERROR_NONE: last system error is (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
                 break;
@@ -75,16 +81,24 @@ namespace AzNetworking
                 AZLOG_ERROR("%X - SSL_ERROR_WANT_ACCEPT: socket is non-blocking, accept failed and should be retried", errorCode);
                 break;
             case SSL_ERROR_WANT_X509_LOOKUP:
-            AZLOG_ERROR("%X - SSL_ERROR_WANT_X509_LOOKUP: operation did not complete, SSL_CTX_set_client_cert_cb() has asked to be called again, operation should be retried", errorCode);
+                AZLOG_ERROR("%X - SSL_ERROR_WANT_X509_LOOKUP: operation did not complete, SSL_CTX_set_client_cert_cb() has asked to be called again, operation should be retried", errorCode);
                 break;
             case SSL_ERROR_SYSCALL:
-            AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
+                AZLOG_ERROR("%X - SSL_ERROR_SYSCALL: system error, check errno (%d:%s)", errorCode, systemError, GetNetworkErrorDesc(systemError));
                 break;
             case SSL_ERROR_SSL:
-            AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                    AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
+                #else
+                    AZLOG_ERROR("%X - SSL_ERROR_SSL: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #endif
                 break;
             default:
-            AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                    AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), func, ERR_reason_error_string(errorCode));
+                #else
+                    AZLOG_ERROR("%X - Unknown error code: lib %s, func %s, reason %s", errorCode, ERR_lib_error_string(errorCode), ERR_func_error_string(errorCode), ERR_reason_error_string(errorCode));
+                #endif
                 break;
         }
 #endif
@@ -100,19 +114,35 @@ namespace AzNetworking
 
     static void GetCertificatePaths(TrustZone trustZone, AZStd::string& certificatePath, AZStd::string& privateKeyPath)
     {
-        const AZ::CVarFixedString certificateFile = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalCertificateFile : net_SslInternalCertificateFile;
-        const AZ::CVarFixedString privateKeyFile = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalPrivateKeyFile : net_SslInternalPrivateKeyFile;
-
-        AZStd::string assetDir;
-        if (AZ::IO::FileIOBase::GetInstance() != nullptr)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            char buffer[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/", buffer, sizeof(buffer));
-            assetDir = AZStd::string(buffer);
-        }
+            AZ::CVarFixedString certificateFile = "";
+            AZ::CVarFixedString privateKeyFile = "";
+            if (trustZone == TrustZone::ExternalClientToServer)
+            {
+                console->GetCvarValue("net_SslExternalCertificateFile", certificateFile);
+                console->GetCvarValue("net_SslExternalPrivateKeyFile", privateKeyFile);
+            }
+            else
+            {
+                console->GetCvarValue("net_SslInternalCertificateFile", certificateFile);
+                console->GetCvarValue("net_SslInternalPrivateKeyFile", privateKeyFile);
+            }
 
-        certificatePath = assetDir + certificateFile.c_str();
-        privateKeyPath = assetDir + privateKeyFile.c_str();
+            // Check asset directory when provided file paths are not valid
+            AZStd::string assetDir = "";
+            if (!AZ::IO::SystemFile::Exists(certificateFile.c_str()) &&
+                !AZ::IO::SystemFile::Exists(privateKeyFile.c_str()) &&
+                AZ::IO::FileIOBase::GetInstance() != nullptr)
+            {
+                char buffer[AZ_MAX_PATH_LEN];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/", buffer, sizeof(buffer));
+                assetDir = AZStd::string(buffer);
+            }
+
+            certificatePath = assetDir + certificateFile.c_str();
+            privateKeyPath = assetDir + privateKeyFile.c_str();
+        }
     }
 
     static bool ValidatePinnedCertificate(X509* remoteCert, TrustZone trustZone)
@@ -350,7 +380,9 @@ namespace AzNetworking
         {
             SSL_library_init();
             SSL_load_error_strings();
-            ERR_load_BIO_strings();
+            #if !(OPENSSL_VERSION_NUMBER >= 0x30000000L)
+                ERR_load_BIO_strings();
+            #endif
             OpenSSL_add_all_algorithms();
             g_azNetworkingTrustDataIndex = SSL_get_ex_new_index(0, const_cast<void*>(reinterpret_cast<const void*>("AzNetworking TrustZone data index")), nullptr, nullptr, nullptr);
 

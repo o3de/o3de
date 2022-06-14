@@ -1,36 +1,28 @@
 {
     "entries": [
         {
-            "key": "MeshVertexColorData",
+            "base": "MeshVertexColorData",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "MeshVertexColorData"
+                "name": "Mesh Vertex Color Data",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "GetCustomName",
+                    "base": "GetCustomName",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCustomName"
+                        "tooltip": "When signaled, this will invoke Get Custom Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCustomName is invoked"
+                        "tooltip": "Signaled after Get Custom Name is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexColorData::GetCustomName",
-                        "category": "Other"
+                        "name": "Get Custom Name"
                     },
-                    "params": [
-                        {
-                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
-                            "details": {
-                                "name": "const MeshVertexColorData&"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
@@ -41,63 +33,47 @@
                     ]
                 },
                 {
-                    "key": "GetCount",
+                    "base": "GetCount",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetCount"
+                        "tooltip": "When signaled, this will invoke Get Count"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetCount is invoked"
+                        "tooltip": "Signaled after Get Count is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexColorData::GetCount",
-                        "category": "Other"
+                        "name": "Get Count"
                     },
-                    "params": [
-                        {
-                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
-                            "details": {
-                                "name": "MeshVertexColorData*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetColor",
+                    "base": "GetColor",
                     "context": "MeshVertexColorData",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetColor"
+                        "tooltip": "When signaled, this will invoke Get Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetColor is invoked"
+                        "tooltip": "Signaled after Get Color is invoked"
                     },
                     "details": {
-                        "name": "MeshVertexColorData::GetColor",
-                        "category": "Other"
+                        "name": "Get Color"
                     },
                     "params": [
                         {
-                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
-                            "details": {
-                                "name": "MeshVertexColorData*"
-                            }
-                        },
-                        {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u64"
+                                "name": "AZ::u 64"
                             }
                         }
                     ],
@@ -105,7 +81,7 @@
                         {
                             "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
                             "details": {
-                                "name": "const SceneAPI::DataTypes::Color&"
+                                "name": "const SceneAPI:: Data Types:: Color&"
                             }
                         }
                     ]

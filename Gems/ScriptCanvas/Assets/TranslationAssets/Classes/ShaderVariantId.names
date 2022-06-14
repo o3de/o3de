@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ShaderVariantId",
+            "base": "ShaderVariantId",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "Equal",
+                    "base": "Equal",
                     "context": "ShaderVariantId",
                     "entry": {
                         "name": "In",
@@ -47,7 +47,7 @@
                     ]
                 },
                 {
-                    "key": "IsEmpty",
+                    "base": "IsEmpty",
                     "context": "ShaderVariantId",
                     "entry": {
                         "name": "In",

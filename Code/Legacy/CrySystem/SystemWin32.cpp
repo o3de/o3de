@@ -383,45 +383,6 @@ void CSystem::debug_LogCallStack(int nMaxFuncs, [[maybe_unused]] int nFlags)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Support relaunching for windows media center edition.
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32)
-#if (_WIN32_WINNT < 0x0501)
-#define SM_MEDIACENTER          87
-#endif
-bool CSystem::ReLaunchMediaCenter()
-{
-    // Skip if not running on a Media Center
-    if (GetSystemMetrics(SM_MEDIACENTER) == 0)
-    {
-        return false;
-    }
-
-    // Get the path to Media Center
-    wchar_t szExpandedPath[AZ_MAX_PATH_LEN];
-    if (!ExpandEnvironmentStringsW(L"%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, AZ_MAX_PATH_LEN))
-    {
-        return false;
-    }
-
-    // Skip if ehshell.exe doesn't exist
-    if (GetFileAttributesW(szExpandedPath) == 0xFFFFFFFF)
-    {
-        return false;
-    }
-
-    // Launch ehshell.exe
-    INT_PTR result = (INT_PTR)ShellExecuteW(NULL, TEXT("open"), szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
-    return (result > 32);
-}
-#else
-bool CSystem::ReLaunchMediaCenter()
-{
-    return false;
-}
-#endif //defined(WIN32)
-
 #if (defined(WIN32) || defined(WIN64))
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)

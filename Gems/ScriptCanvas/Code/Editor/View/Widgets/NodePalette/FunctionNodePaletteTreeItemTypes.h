@@ -17,7 +17,7 @@
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
-
+#include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 
 namespace AZ

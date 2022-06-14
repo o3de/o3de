@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "eUiTextWrapTextSetting_Wrap",
+            "base": "eUiTextWrapTextSetting_Wrap",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "e Ui Text Wrap Text Setting_ Wrap"
+                "name": "Wrap",
+                "category": "Constants/UI/Text Wrap"
             },
             "methods": [
                 {
-                    "key": "GeteUiTextWrapTextSetting_Wrap",
+                    "base": "GeteUiTextWrapTextSetting_Wrap",
                     "details": {
-                        "name": "Gete Ui Text Wrap Text Setting_ Wrap"
+                        "name": "Wrap"
                     },
                     "results": [
                         {

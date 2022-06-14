@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "NavigationComponentNotificationBus",
+            "base": "NavigationComponentNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnSearchingForPath",
+                    "base": "OnSearchingForPath",
                     "details": {
                         "name": "On Searching For Path"
                     },
@@ -25,7 +25,7 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalStarted",
+                    "base": "OnTraversalStarted",
                     "details": {
                         "name": "On Traversal Started"
                     },
@@ -40,7 +40,7 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalPathUpdate",
+                    "base": "OnTraversalPathUpdate",
                     "details": {
                         "name": "On Traversal Path Update"
                     },
@@ -69,7 +69,7 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalInProgress",
+                    "base": "OnTraversalInProgress",
                     "details": {
                         "name": "On Traversal In Progress"
                     },
@@ -91,7 +91,7 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalComplete",
+                    "base": "OnTraversalComplete",
                     "details": {
                         "name": "On Traversal Complete"
                     },
@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "key": "OnTraversalCancelled",
+                    "base": "OnTraversalCancelled",
                     "details": {
                         "name": "On Traversal Cancelled"
                     },

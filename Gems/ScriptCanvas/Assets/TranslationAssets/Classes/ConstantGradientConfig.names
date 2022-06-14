@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ConstantGradientConfig",
+            "base": "ConstantGradientConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "g_SettingsRegistry",
+            "base": "g_SettingsRegistry",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "g_ Settings Registry"
+                "name": "Settings Registry",
+                "category": "Constants/Settings"
             },
             "methods": [
                 {
-                    "key": "Getg_SettingsRegistry",
+                    "base": "Getg_SettingsRegistry",
                     "details": {
-                        "name": "Getg_ Settings Registry"
+                        "name": "Settings Registry"
                     },
                     "results": [
                         {

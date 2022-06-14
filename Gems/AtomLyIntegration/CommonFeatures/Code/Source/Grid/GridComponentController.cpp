@@ -6,17 +6,15 @@
  *
  */
 
-#include <Grid/GridComponentController.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Utils/Utils.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Atom/Utils/Utils.h>
-
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Grid/GridComponentController.h>
 
 namespace AZ
 {
@@ -109,9 +107,9 @@ namespace AZ
             return m_configuration;
         }
 
-        void GridComponentController::SetSize(float gridSize)
+        void GridComponentController::SetSize(float size)
         {
-            m_configuration.m_gridSize = AZStd::clamp(gridSize, MinGridSize, MaxGridSize);
+            m_configuration.m_gridSize = AZStd::clamp(size, MinGridSize, MaxGridSize);
             m_dirty = true;
         }
 
@@ -120,9 +118,9 @@ namespace AZ
             return m_configuration.m_gridSize;
         }
 
-        void GridComponentController::SetPrimarySpacing(float gridPrimarySpacing)
+        void GridComponentController::SetPrimarySpacing(float spacing)
         {
-            m_configuration.m_primarySpacing = AZStd::max(gridPrimarySpacing, MinSpacing);
+            m_configuration.m_primarySpacing = AZStd::max(spacing, MinSpacing);
             m_dirty = true;
         }
 
@@ -131,9 +129,9 @@ namespace AZ
             return m_configuration.m_primarySpacing;
         }
 
-        void GridComponentController::SetSecondarySpacing(float gridSecondarySpacing)
+        void GridComponentController::SetSecondarySpacing(float spacing)
         {
-            m_configuration.m_secondarySpacing = AZStd::max(gridSecondarySpacing, MinSpacing);
+            m_configuration.m_secondarySpacing = AZStd::max(spacing, MinSpacing);
             m_dirty = true;
         }
 
@@ -142,9 +140,9 @@ namespace AZ
             return m_configuration.m_secondarySpacing;
         }
 
-        void GridComponentController::SetAxisColor(const AZ::Color& gridAxisColor)
+        void GridComponentController::SetAxisColor(const AZ::Color& color)
         {
-            m_configuration.m_axisColor = gridAxisColor;
+            m_configuration.m_axisColor = color;
         }
 
         AZ::Color GridComponentController::GetAxisColor() const
@@ -152,9 +150,9 @@ namespace AZ
             return m_configuration.m_axisColor;
         }
 
-        void GridComponentController::SetPrimaryColor(const AZ::Color& gridPrimaryColor)
+        void GridComponentController::SetPrimaryColor(const AZ::Color& color)
         {
-            m_configuration.m_primaryColor = gridPrimaryColor;
+            m_configuration.m_primaryColor = color;
         }
 
         AZ::Color GridComponentController::GetPrimaryColor() const
@@ -162,9 +160,9 @@ namespace AZ
             return m_configuration.m_primaryColor;
         }
 
-        void GridComponentController::SetSecondaryColor(const AZ::Color& gridSecondaryColor)
+        void GridComponentController::SetSecondaryColor(const AZ::Color& color)
         {
-            m_configuration.m_secondaryColor = gridSecondaryColor;
+            m_configuration.m_secondaryColor = color;
         }
 
         AZ::Color GridComponentController::GetSecondaryColor() const
@@ -174,29 +172,35 @@ namespace AZ
 
         void GridComponentController::OnBeginPrepareRender()
         {
+            if (m_configuration.m_gridSize <= 0.0f)
+            {
+                return;
+            }
+
             auto* auxGeomFP = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
             if (!auxGeomFP)
             {
                 return;
             }
+
             if (auto auxGeom = auxGeomFP->GetDrawQueue())
             {
                 BuildGrid();
 
                 AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
                 drawArgs.m_verts = m_secondaryGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_secondaryGridPoints.size());        
+                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_secondaryGridPoints.size());
                 drawArgs.m_colors = &m_configuration.m_secondaryColor;
-                drawArgs.m_colorCount = 1;        
+                drawArgs.m_colorCount = 1;
                 auxGeom->DrawLines(drawArgs);
 
                 drawArgs.m_verts = m_primaryGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_primaryGridPoints.size());        
+                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_primaryGridPoints.size());
                 drawArgs.m_colors = &m_configuration.m_primaryColor;
                 auxGeom->DrawLines(drawArgs);
 
                 drawArgs.m_verts = m_axisGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_axisGridPoints.size());        
+                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_axisGridPoints.size());
                 drawArgs.m_colors = &m_configuration.m_axisColor;
                 auxGeom->DrawLines(drawArgs);
             }
@@ -229,7 +233,8 @@ namespace AZ
 
                 m_primaryGridPoints.clear();
                 m_primaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_primarySpacing));
-                for (float position = m_configuration.m_primarySpacing; position <= halfLength; position += m_configuration.m_primarySpacing)
+                for (float position = m_configuration.m_primarySpacing; position <= halfLength;
+                     position += m_configuration.m_primarySpacing)
                 {
                     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
                     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
@@ -243,7 +248,8 @@ namespace AZ
 
                 m_secondaryGridPoints.clear();
                 m_secondaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_secondarySpacing));
-                for (float position = m_configuration.m_secondarySpacing; position <= halfLength; position += m_configuration.m_secondarySpacing)
+                for (float position = m_configuration.m_secondarySpacing; position <= halfLength;
+                     position += m_configuration.m_secondarySpacing)
                 {
                     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
                     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));

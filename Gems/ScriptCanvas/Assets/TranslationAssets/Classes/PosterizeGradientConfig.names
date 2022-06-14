@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "PosterizeGradientConfig",
+            "base": "PosterizeGradientConfig",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

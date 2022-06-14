@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "ImageBasedLightComponentTypeId",
+            "base": "ImageBasedLightComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Image Based Light Component Type Id"
+                "name": "Image Based Light Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetImageBasedLightComponentTypeId",
+                    "base": "GetImageBasedLightComponentTypeId",
                     "details": {
                         "name": "Get Image Based Light Component Type Id"
                     },

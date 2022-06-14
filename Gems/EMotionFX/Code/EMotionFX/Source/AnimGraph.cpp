@@ -14,7 +14,6 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/AnimGraph.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
@@ -35,7 +34,6 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraph, AnimGraphAllocator, 0)
 
     AnimGraph::AnimGraph()
-        : m_gameControllerSettings(aznew AnimGraphGameControllerSettings())
     {
         m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_dirtyFlag = false;
@@ -75,8 +73,6 @@ namespace EMotionFX
         {
             GetAnimGraphManager().RemoveAnimGraph(this, false);
         }
-
-        delete m_gameControllerSettings;
     }
 
 
@@ -871,12 +867,6 @@ namespace EMotionFX
     }
 
 
-    AnimGraphGameControllerSettings& AnimGraph::GetGameControllerSettings()
-    {
-        return *m_gameControllerSettings;
-    }
-
-
     bool AnimGraph::GetRetargetingEnabled() const
     {
         return m_retarget;
@@ -918,14 +908,12 @@ namespace EMotionFX
         }
 
         serializeContext->Class<AnimGraph>()
-            ->Version(1)
+            ->Version(2)
             ->Field("rootGroupParameter", &AnimGraph::m_rootParameter)
             ->Field("rootStateMachine", &AnimGraph::m_rootStateMachine)
             ->Field("nodeGroups", &AnimGraph::m_nodeGroups)
-            ->Field("gameControllerSettings", &AnimGraph::m_gameControllerSettings)
             ->Field("retarget", &AnimGraph::m_retarget)
         ;
-
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)

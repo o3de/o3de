@@ -1,15 +1,15 @@
 {
     "entries": [
         {
-            "key": "LevelsGradientRequestBus",
+            "base": "LevelsGradientRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "LevelsGradientRequestBus"
+                "name": "Levels Gradient"
             },
             "methods": [
                 {
-                    "key": "GetOutputMax",
+                    "base": "GetOutputMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOutputMax"
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetInputMax",
+                    "base": "SetInputMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetInputMax"
@@ -53,7 +53,7 @@
                     ]
                 },
                 {
-                    "key": "SetOutputMax",
+                    "base": "SetOutputMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOutputMax"
@@ -75,7 +75,7 @@
                     ]
                 },
                 {
-                    "key": "SetInputMid",
+                    "base": "SetInputMid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetInputMid"
@@ -97,7 +97,7 @@
                     ]
                 },
                 {
-                    "key": "SetOutputMin",
+                    "base": "SetOutputMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetOutputMin"
@@ -119,7 +119,7 @@
                     ]
                 },
                 {
-                    "key": "GetGradientSampler",
+                    "base": "GetGradientSampler",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetGradientSampler"
@@ -141,7 +141,7 @@
                     ]
                 },
                 {
-                    "key": "SetInputMin",
+                    "base": "SetInputMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetInputMin"
@@ -163,7 +163,7 @@
                     ]
                 },
                 {
-                    "key": "GetInputMid",
+                    "base": "GetInputMid",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetInputMid"
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "key": "GetInputMax",
+                    "base": "GetInputMax",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetInputMax"
@@ -207,7 +207,7 @@
                     ]
                 },
                 {
-                    "key": "GetOutputMin",
+                    "base": "GetOutputMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetOutputMin"
@@ -229,7 +229,7 @@
                     ]
                 },
                 {
-                    "key": "GetInputMin",
+                    "base": "GetInputMin",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetInputMin"

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "key": "{B779B815-EC1B-5075-A167-0F213445BB53}",
+            "base": "{B779B815-EC1B-5075-A167-0F213445BB53}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Multiply By Number",
                 "category": "Math/Color",
-                "tooltip": "Returns Source with every elemented multiplied by Multiplier",
-                "subtitle": "Color"
+                "tooltip": "returns Source with every elemented multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Color: Source",
+                    "base": "DataInput_Source_0",
                     "details": {
-                        "name": "Color: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
-                        "name": "Number: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

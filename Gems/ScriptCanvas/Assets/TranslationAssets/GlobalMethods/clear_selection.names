@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "clear_selection",
+            "base": "clear_selection",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "clear_selection",
+                    "base": "clear_selection",
                     "context": "Global",
                     "entry": {
                         "name": "In",

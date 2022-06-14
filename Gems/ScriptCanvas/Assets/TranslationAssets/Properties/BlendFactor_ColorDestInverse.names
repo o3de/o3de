@@ -1,17 +1,18 @@
 {
     "entries": [
         {
-            "key": "BlendFactor_ColorDestInverse",
+            "base": "BlendFactor_ColorDestInverse",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Blend Factor_ Color Dest Inverse"
+                "name": "Color Dest Inverse",
+                "category": "Constants/Blend Factor"
             },
             "methods": [
                 {
-                    "key": "GetBlendFactor_ColorDestInverse",
+                    "base": "GetBlendFactor_ColorDestInverse",
                     "details": {
-                        "name": "Get Blend Factor_ Color Dest Inverse"
+                        "name": "Get Color Dest Inverse"
                     },
                     "results": [
                         {

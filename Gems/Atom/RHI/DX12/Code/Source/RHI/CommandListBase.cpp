@@ -22,7 +22,7 @@ namespace AZ
             Base::Init(device);
             m_hardwareQueueClass = hardwareQueueClass;
 
-            AssertSuccess(device.GetDevice()->CreateCommandList(1, ConvertHardwareQueueClass(hardwareQueueClass), commandAllocator, nullptr, IID_GRAPHICS_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
+            device.AssertSuccess(device.GetDevice()->CreateCommandList(1, ConvertHardwareQueueClass(hardwareQueueClass), commandAllocator, nullptr, IID_GRAPHICS_PPV_ARGS(m_commandList.ReleaseAndGetAddressOf())));
             m_isRecording = true;
 
             if (device.IsAftermathInitialized())
@@ -85,7 +85,7 @@ namespace AZ
             return m_hardwareQueueClass;
         }
 
-        void CommandListBase::SetAftermathEventMarker(const AZStd::string& markerData)
+        void CommandListBase::SetAftermathEventMarker(const char* markerData)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Aftermath::SetAftermathEventMarker(m_aftermathCommandListContext, markerData, device.IsAftermathInitialized());

@@ -1,107 +1,97 @@
 {
     "entries": [
         {
-            "key": "ExportProductList",
+            "base": "ExportProductList",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "ExportProductList"
+                "name": "Export Product List",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "AddProduct",
+                    "base": "AddProduct",
                     "context": "ExportProductList",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddProduct"
+                        "tooltip": "When signaled, this will invoke Add Product"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddProduct is invoked"
+                        "tooltip": "Signaled after Add Product is invoked"
                     },
                     "details": {
-                        "name": "ExportProductList::AddProduct",
-                        "category": "Other"
+                        "name": "Add Product"
                     },
                     "params": [
                         {
                             "typeid": "{1C76A51F-431B-4987-B653-CFCC940D0D0F}",
                             "details": {
-                                "name": "SceneAPI::Events::ExportProductList&"
+                                "name": ""
                             }
                         },
                         {
                             "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
                             "details": {
-                                "name": "SceneAPI::Events::ExportProduct&"
+                                "name": ""
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetProducts",
+                    "base": "GetProducts",
                     "context": "ExportProductList",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetProducts"
+                        "tooltip": "When signaled, this will invoke Get Products"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetProducts is invoked"
+                        "tooltip": "Signaled after Get Products is invoked"
                     },
                     "details": {
-                        "name": "ExportProductList::GetProducts",
-                        "category": "Other"
+                        "name": "Get Products"
                     },
-                    "params": [
-                        {
-                            "typeid": "{1C76A51F-431B-4987-B653-CFCC940D0D0F}",
-                            "details": {
-                                "name": "SceneAPI::Events::ExportProductList*"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{BFBA17B6-CDE2-5239-AEE0-58DF7FA14E3C}",
                             "details": {
-                                "name": "const AZStd::vector<SceneAPI::Events::ExportProduct, allocator>"
+                                "name": "const AZ Std::vector< SceneAPI:: Events:: Export Product, allocator>"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "AddDependencyToProduct",
+                    "base": "AddDependencyToProduct",
                     "context": "ExportProductList",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddDependencyToProduct"
+                        "tooltip": "When signaled, this will invoke Add Dependency To Product"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddDependencyToProduct is invoked"
+                        "tooltip": "Signaled after Add Dependency To Product is invoked"
                     },
                     "details": {
-                        "name": "ExportProductList::AddDependencyToProduct",
-                        "category": "Other"
+                        "name": "Add Dependency To Product"
                     },
                     "params": [
                         {
                             "typeid": "{1C76A51F-431B-4987-B653-CFCC940D0D0F}",
                             "details": {
-                                "name": "SceneAPI::Events::ExportProductList*"
+                                "name": ""
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                                "name": "AZ Std::string"
                             }
                         },
                         {
                             "typeid": "{6054EDCB-4C04-4D96-BF26-704999FFB725}",
                             "details": {
-                                "name": "SceneAPI::Events::ExportProduct&"
+                                "name": ""
                             }
                         }
                     ]

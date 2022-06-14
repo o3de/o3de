@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "execute_command",
+            "base": "execute_command",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "execute_command",
+                    "base": "execute_command",
                     "context": "Global",
                     "entry": {
                         "name": "In",

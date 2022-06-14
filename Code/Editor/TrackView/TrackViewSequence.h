@@ -11,6 +11,7 @@
 #define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWSEQUENCE_H
 #pragma once
 
+#include <IEditor.h>
 #include "IMovieSystem.h"
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>

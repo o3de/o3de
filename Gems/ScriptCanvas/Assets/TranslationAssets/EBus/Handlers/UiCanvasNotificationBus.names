@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiCanvasNotificationBus",
+            "base": "UiCanvasNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnAction",
+                    "base": "OnAction",
                     "details": {
                         "name": "On Action",
                         "tooltip": "Executes when the canvas sends an action"

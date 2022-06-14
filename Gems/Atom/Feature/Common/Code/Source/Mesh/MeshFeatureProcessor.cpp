@@ -11,11 +11,12 @@
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/Utils/StableDynamicArray.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
@@ -24,11 +25,11 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/ShapeIntersection.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -74,11 +75,21 @@ namespace AZ
             m_forceRebuildDrawPackets = false;
         }
 
+        TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_objectId;
+            }
+
+            return TransformServiceFeatureProcessorInterface::ObjectId::Null;
+        }
+
         void MeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Simulate");
-            AZ_UNUSED(packet);
 
+            AZ::Job* parentJob = packet.m_parentJob;
             AZStd::concurrency_check_scope scopeCheck(m_meshDataChecker);
 
             const auto iteratorRanges = m_modelData.GetParallelRanges();
@@ -87,6 +98,8 @@ namespace AZ
             {
                 const auto jobLambda = [&]() -> void
                 {
+                    AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Job");
+
                     for (auto meshDataIter = iteratorRange.first; meshDataIter != iteratorRange.second; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
@@ -114,24 +127,37 @@ namespace AZ
                         {
                             meshDataIter->BuildCullable();
                         }
+
+                        if (meshDataIter->m_cullBoundsNeedsUpdate)
+                        {
+                            meshDataIter->UpdateCullBounds(m_transformService);
+                        }
                     }
                 };
                 Job* executeGroupJob = aznew JobFunction<decltype(jobLambda)>(jobLambda, true, nullptr); // Auto-deletes
-                executeGroupJob->SetDependent(&jobCompletion);
-                executeGroupJob->Start();
-            }
-            jobCompletion.StartAndWaitForCompletion();
-
-            m_forceRebuildDrawPackets = false;
-
-            // CullingSystem::RegisterOrUpdateCullable() is not threadsafe, so need to do those updates in a single thread
-            for (ModelDataInstance& modelDataInstance : m_modelData)
-            {
-                if (modelDataInstance.m_model && modelDataInstance.m_cullBoundsNeedsUpdate)
+                if (parentJob)
                 {
-                    modelDataInstance.UpdateCullBounds(m_transformService);
+                    parentJob->StartAsChild(executeGroupJob);
+                }
+                else
+                {
+                    executeGroupJob->SetDependent(&jobCompletion);
+                    executeGroupJob->Start();
                 }
             }
+            {
+                AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: WaitForChildren");
+                if (parentJob)
+                {
+                    parentJob->WaitForChildren();
+                }
+                else
+                {
+                    jobCompletion.StartAndWaitForCompletion();
+                }
+            }
+
+            m_forceRebuildDrawPackets = false;
         }
 
         void MeshFeatureProcessor::OnBeginPrepareRender()
@@ -213,6 +239,11 @@ namespace AZ
             }
 
             return {};
+        }
+        
+        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        {
+            return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
@@ -421,12 +452,36 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetRayTracingEnabled(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_isRayTracingEnabled;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return false;
+            }
+        }
+
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
         {
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
-                SetRayTracingEnabled(meshHandle, visible);
+
+                if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                {
+                    // always remove from ray tracing first
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+
+                    // now add if it's visible
+                    if (visible)
+                    {
+                        meshHandle->SetRayTracingData();
+                    }
+                }
             }
         }
 
@@ -548,7 +603,7 @@ namespace AZ
             {
                 //when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
                 AZ_Error(
-                    "ModelDataInstance::OnAssetReady", RHI::IsNullRenderer(), "Failed to create model instance for '%s'",
+                    "ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'",
                     asset.GetHint().c_str());
             }
         }
@@ -648,8 +703,8 @@ namespace AZ
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
-
-            ModelDataInstance::DrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            
+            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
@@ -745,7 +800,7 @@ namespace AZ
                 return;
             }
 
-            const AZStd::array_view<Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
             if (modelLods.empty())
             {
                 return;
@@ -907,18 +962,7 @@ namespace AZ
                 // add material data
                 if (material)
                 {
-                    // irradiance color
-                    RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
-                    if (propertyIndex.IsValid())
-                    {
-                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
-                    }
-
-                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
-                    if (propertyIndex.IsValid())
-                    {
-                        subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
-                    }
+                    RPI::MaterialPropertyIndex propertyIndex;
 
                     // base color
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.color"));
@@ -948,6 +992,7 @@ namespace AZ
                     }
 
                     // textures
+                    Data::Instance<RPI::Image> baseColorImage; // can be used for irradiance color below
                     propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
                     if (propertyIndex.IsValid())
                     {
@@ -956,6 +1001,7 @@ namespace AZ
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
                             subMesh.m_baseColorImageView = image->GetImageView();
+                            baseColorImage = image;
                         }
                     }
 
@@ -991,12 +1037,144 @@ namespace AZ
                             subMesh.m_roughnessImageView = image->GetImageView();
                         }
                     }
+
+                    // irradiance color
+                    SetIrradianceData(subMesh, material, baseColorImage);
                 }
 
                 subMeshes.push_back(subMesh);
             }
 
             rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
+        }
+
+        void ModelDataInstance::SetIrradianceData(
+            RayTracingFeatureProcessor::SubMesh& subMesh,
+            const Data::Instance<RPI::Material> material,
+            const Data::Instance<RPI::Image> baseColorImage)
+        {
+            RPI::MaterialPropertyIndex propertyIndex;
+
+            AZ::Name irradianceColorSource;
+            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.irradianceColorSource"));
+            if (propertyIndex.IsValid())
+            {
+                uint32_t enumVal = material->GetPropertyValue<uint32_t>(propertyIndex);
+                irradianceColorSource = material->GetMaterialPropertiesLayout()
+                                                ->GetPropertyDescriptor(propertyIndex)
+                                                ->GetEnumName(enumVal);
+            }
+
+            if (irradianceColorSource.IsEmpty() || irradianceColorSource == AZ::Name("Manual"))
+            {
+                propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.manualColor"));
+                if (propertyIndex.IsValid())
+                {
+                    subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                }
+                else
+                {
+                    // Couldn't find irradiance.manualColor -> check for an irradiance.color in case the material type
+                    // doesn't have the concept of manual vs. automatic irradiance color, allow a simpler property name
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "MeshFeatureProcessor", false,
+                            "No irradiance.manualColor or irradiance.color field found. Defaulting to 1.0f.");
+                        subMesh.m_irradianceColor = AZ::Colors::White;
+                    }
+                }
+            }
+            else if (irradianceColorSource == AZ::Name("BaseColorTint"))
+            {
+                // Use only the baseColor, no texture on top of it
+                subMesh.m_irradianceColor = subMesh.m_baseColor;
+            }
+            else if (irradianceColorSource == AZ::Name("BaseColor"))
+            {
+                // Check if texturing is enabled
+                bool useTexture;
+                propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.useTexture"));
+                if (propertyIndex.IsValid())
+                {
+                    useTexture = material->GetPropertyValue<bool>(propertyIndex);
+                }
+                else
+                {
+                    // No explicit baseColor.useTexture switch found, assuming the user wants to use
+                    // a texture if a texture was found.
+                    useTexture = true;
+                }
+
+                // If texturing was requested: check if we found a texture and use it
+                if (useTexture && baseColorImage.get())
+                {
+                    // Currently GetAverageColor() is only implemented for a StreamingImage
+                    auto baseColorStreamingImg = azdynamic_cast<RPI::StreamingImage*>(baseColorImage.get());
+                    if (baseColorStreamingImg)
+                    {
+                        // Note: there are quite a few hidden assumptions in using the average
+                        // texture color. For instance, (1) it assumes that every texel in the
+                        // texture actually gets mapped to the surface (or non-mapped regions are
+                        // colored with a meaningful 'average' color, or have zero opacity); (2) it
+                        // assumes that the mapping from uv space to the mesh surface is
+                        // (approximately) area-preserving to get a properly weighted average; and
+                        // mostly, (3) it assumes that a single 'average color' is a meaningful
+                        // characterisation of the full material.
+                        Color avgColor = baseColorStreamingImg->GetAverageColor();
+
+                        // We do a simple 'multiply' blend with the base color for now. Warn
+                        // the user if something else was intended.
+                        propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureBlendMode"));
+                        if (propertyIndex.IsValid())
+                        {
+                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
+                                     ->GetPropertyDescriptor(propertyIndex)
+                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
+                            if (textureBlendMode != AZ::Name("Multiply"))
+                            {
+                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
+                                        "yet supported when requesting BaseColor irradiance source, "
+                                        "using 'Multiply' for deriving the irradiance color.",
+                                        textureBlendMode.GetCStr());
+                            }
+                        }
+                        // 'Multiply' blend mode:
+                        subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
+                    }
+                    else
+                    {
+                        AZ_Warning("MeshFeatureProcessor", false, "Using BaseColor as irradianceColorSource "
+                                "is currently only supported for textures of type StreamingImage");
+                        // Default to the flat base color
+                        subMesh.m_irradianceColor = subMesh.m_baseColor;
+                    }
+                }
+                else
+                {
+                    // No texture, simply copy the baseColor
+                    subMesh.m_irradianceColor = subMesh.m_baseColor;
+                }
+            }
+            else
+            {
+                AZ_Warning("MeshFeatureProcessor", false, "Unknown irradianceColorSource value: %s, "
+                        "defaulting to 1.0f.", irradianceColorSource.GetCStr());
+                subMesh.m_irradianceColor = AZ::Colors::White;
+            }
+
+
+            // Overall scale factor
+            propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
+            if (propertyIndex.IsValid())
+            {
+                subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+            }
         }
 
         void ModelDataInstance::RemoveRayTracingData()
@@ -1038,7 +1216,6 @@ namespace AZ
 
         void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance:: UpdateDrawPackets");
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -1053,7 +1230,6 @@ namespace AZ
 
         void ModelDataInstance::BuildCullable()
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance: BuildCullable");
             AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1130,7 +1306,6 @@ namespace AZ
 
         void ModelDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_PROFILE_SCOPE(AzRender, "ModelDataInstance: UpdateCullBounds");
             AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
@@ -1189,24 +1364,30 @@ namespace AZ
                     RHI::ShaderInputImageIndex reflectionCubeMapImageIndex = objectSrg->FindShaderInputImageIndex(reflectionCubeMapImageName);
                     AZ_Error("ModelDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
 
-                    // retrieve the list of probes that contain the centerpoint of the mesh
+                    // retrieve the list of probes that overlap the mesh bounds
                     TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
                     Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
 
-                    ReflectionProbeFeatureProcessor::ReflectionProbeVector reflectionProbes;
-                    reflectionProbeFeatureProcessor->FindReflectionProbes(transform.GetTranslation(), reflectionProbes);
+                    Aabb aabbWS = m_aabb;
+                    aabbWS.ApplyTransform(transform);
 
-                    if (!reflectionProbes.empty() && reflectionProbes[0])
+                    ReflectionProbeHandleVector reflectionProbeHandles;
+                    reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
+
+                    if (!reflectionProbeHandles.empty())
                     {
-                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbes[0]->GetTransform());
-                        objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbes[0]->GetTransform()).GetInverseFull());
-                        objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetOuterObbWs().GetHalfLengths());
-                        objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
-                        objectSrg->SetConstant(useReflectionProbeConstantIndex, true);
-                        objectSrg->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbes[0]->GetUseParallaxCorrection());
-                        objectSrg->SetConstant(exposureConstantIndex, reflectionProbes[0]->GetRenderExposure());
+                        // take the last handle from the list, which will be the smallest (most influential) probe
+                        ReflectionProbeHandle handle = reflectionProbeHandles.back();
 
-                        objectSrg->SetImage(reflectionCubeMapImageIndex, reflectionProbes[0]->GetCubeMapImage());
+                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbeFeatureProcessor->GetTransform(handle));
+                        objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)).GetInverseFull());
+                        objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths());
+                        objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths());
+                        objectSrg->SetConstant(useReflectionProbeConstantIndex, true);
+                        objectSrg->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbeFeatureProcessor->GetUseParallaxCorrection(handle));
+                        objectSrg->SetConstant(exposureConstantIndex, reflectionProbeFeatureProcessor->GetRenderExposure(handle));
+
+                        objectSrg->SetImage(reflectionCubeMapImageIndex, reflectionProbeFeatureProcessor->GetCubeMap(handle));
                     }
                     else
                     {

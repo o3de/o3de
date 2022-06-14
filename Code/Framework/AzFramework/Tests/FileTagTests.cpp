@@ -83,7 +83,6 @@ namespace UnitTest
             m_data = AZStd::make_unique<StaticData>();
             using namespace  AzFramework::FileTag;
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_enableDrilling = false;
             m_data->m_application.Start(desc);
 
             const char* testAssetRoot = m_tempDirectory.GetDirectory();

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "TagGlobalNotificationBus",
+            "base": "TagGlobalNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnEntityTagAdded",
+                    "base": "OnEntityTagAdded",
                     "details": {
                         "name": "On Entity Tag Added",
                         "tooltip": "Executes when the specified source tag is added to any entity"
@@ -26,7 +26,7 @@
                     ]
                 },
                 {
-                    "key": "OnEntityTagRemoved",
+                    "base": "OnEntityTagRemoved",
                     "details": {
                         "name": "On Entity Tag Removed",
                         "tooltip": "Executes when the specified source tag is removed from any entity"

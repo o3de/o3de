@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "DistanceBetweenFilterComponentTypeId",
+            "base": "DistanceBetweenFilterComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Distance Between Filter Component Type Id"
+                "name": "Distance Between Filter Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetDistanceBetweenFilterComponentTypeId",
+                    "base": "GetDistanceBetweenFilterComponentTypeId",
                     "details": {
                         "name": "Get Distance Between Filter Component Type Id"
                     },

@@ -48,6 +48,7 @@ namespace AZ
             //! MaterialComponentRequestBus overrides...
             MaterialAssignmentMap GetOriginalMaterialAssignments() const override;
             MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            AZ::Data::AssetId GetActiveMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const override;
             AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const override;
             void SetMaterialOverrides(const MaterialAssignmentMap& materials) override;
@@ -96,11 +97,19 @@ namespace AZ
             void ReleaseMaterials();
             //! Queue applying property overrides to material instances until tick
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);
-            //! Queue material instance recreation notifiucations until tick
+            //! Queue material instance recreation notifications until tick
             void QueueMaterialUpdateNotification();
+
+            //! Converts property overrides storing image asset references into asset IDs. This addresses a problem where image property
+            //! overrides are lost during prefab serialization and patching. This suboptimal function will be removed once the underlying
+            //! problem is resolved.
+            void ConvertAssetsForSerialization();
 
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
+            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_defaultMaterialMap;
+            AZStd::unordered_map<MaterialAssignmentId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_activeMaterialMap;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
             bool m_queuedMaterialUpdateNotification = false;
         };

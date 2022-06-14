@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "DitherGradientComponent",
+            "base": "DitherGradientComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

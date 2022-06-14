@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "UiTextInputComponent",
+            "base": "UiTextInputComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "add_track",
+            "base": "add_track",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "add_track",
+                    "base": "add_track",
                     "context": "Global",
                     "entry": {
                         "name": "In",

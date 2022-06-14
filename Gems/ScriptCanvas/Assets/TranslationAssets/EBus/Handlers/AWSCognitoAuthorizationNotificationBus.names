@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "AWSCognitoAuthorizationNotificationBus",
+            "base": "AWSCognitoAuthorizationNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "OnRequestAWSCredentialsSuccess",
+                    "base": "OnRequestAWSCredentialsSuccess",
                     "details": {
                         "name": "On Request AWS Credentials Success"
                     },
@@ -24,7 +24,7 @@
                     ]
                 },
                 {
-                    "key": "OnRequestAWSCredentialsFail",
+                    "base": "OnRequestAWSCredentialsFail",
                     "details": {
                         "name": "On Request AWS Credentials Fail"
                     },

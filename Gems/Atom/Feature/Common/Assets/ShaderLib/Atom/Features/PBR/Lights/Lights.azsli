@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/Lights/CapsuleLight.azsli>
 #include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
@@ -18,23 +19,42 @@
 #include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 #include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 
-void ApplyDirectLighting(Surface surface, inout LightingData lightingData)
+void ApplyDirectLighting(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
-    if (o_enableDirectionalLights)
+    if( IsDirectLightingEnabled() )
     {
-        ApplyDirectionalLights(surface, lightingData);
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
+        if (o_enablePunctualLights)
+        {
+            ApplySimplePointLights(surface, lightingData);
+            ApplySimpleSpotLights(surface, lightingData);
+        }
+        if (o_enableAreaLights)
+        {
+            ApplyPointLights(surface, lightingData);
+            ApplyDiskLights(surface, lightingData);
+            ApplyCapsuleLights(surface, lightingData);
+            ApplyQuadLights(surface, lightingData);
+            ApplyPolygonLights(surface, lightingData);
+        }
     }
-    if (o_enablePunctualLights)
+    else if(GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
     {
-        ApplySimplePointLights(surface, lightingData);
-        ApplySimpleSpotLights(surface, lightingData);
+        if (o_enableDirectionalLights)
+        {
+            ApplyDirectionalLights(surface, lightingData, screenUv);
+        }
     }
-    if (o_enableAreaLights)
+    else if( UseDebugLight() )
     {
-        ApplyPointLights(surface, lightingData);
-        ApplyDiskLights(surface, lightingData);
-        ApplyCapsuleLights(surface, lightingData);
-        ApplyQuadLights(surface, lightingData);
-        ApplyPolygonLights(surface, lightingData);
+        float3 lightIntensity = SceneSrg::m_debugLightingIntensity;
+        float3 lightDirection = SceneSrg::m_debugLightingDirection;
+
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, lightDirection);
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, lightDirection);
     }
+
 }

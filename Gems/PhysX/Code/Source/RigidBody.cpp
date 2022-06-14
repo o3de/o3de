@@ -6,20 +6,23 @@
  *
  */
 
+#include <Source/RigidBody.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/std/utility/as_const.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/MathConversion.h>
-#include <Source/RigidBody.h>
 #include <Source/Utils.h>
 #include <PhysX/Utils.h>
 #include <Source/Shape.h>
 #include <extensions/PxRigidBodyExt.h>
 #include <PxPhysicsAPI.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Material/PhysXMaterial.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 
 namespace PhysX
@@ -220,13 +223,13 @@ namespace PhysX
         {
             AZ_Warning("RigidBody", !computeCenterOfMass,
                 "Rigid body '%s' cannot compute COM because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
-                GetName().c_str(), AZ::ToString(DefaultCenterOfMass).c_str());
+                GetName().c_str(), AZStd::to_string(DefaultCenterOfMass).c_str());
             AZ_Warning("RigidBody", !computeMass,
                 "Rigid body '%s' cannot compute Mass because it contains triangle mesh, plane or heightfield shapes, it will default to %0.1f.",
                 GetName().c_str(), DefaultMass);
             AZ_Warning("RigidBody", !computeInertiaTensor,
                 "Rigid body '%s' cannot compute Inertia because it contains triangle mesh, plane or heightfield shapes, it will default to %s.",
-                GetName().c_str(), AZ::ToString(DefaultInertiaTensor.RetrieveScale()).c_str());
+                GetName().c_str(), AZStd::to_string(DefaultInertiaTensor.RetrieveScale()).c_str());
 
             SetCenterOfMassOffset(computeCenterOfMass ? DefaultCenterOfMass : centerOfMassOffsetOverride);
             SetMass(computeMass ? DefaultMass : massOverride);
@@ -255,7 +258,9 @@ namespace PhysX
             densities.reserve(m_shapes.size());
             for (const auto& shape : m_shapes)
             {
-                densities.emplace_back(shape->GetMaterial()->GetDensity());
+                const auto& physxMaterials = shape->GetPhysXMaterials();
+                AZ_Assert(!physxMaterials.empty(), "Shape with no materials");
+                densities.emplace_back(physxMaterials[0]->GetDensity());
             }
 
             // Compute Mass + Inertia
@@ -292,12 +297,18 @@ namespace PhysX
         }
     }
 
-    AZ::u32 RigidBody::GetShapeCount()
+    AZ::u32 RigidBody::GetShapeCount() const 
     {
         return static_cast<AZ::u32>(m_shapes.size());
     }
 
     AZStd::shared_ptr<Physics::Shape> RigidBody::GetShape(AZ::u32 index)
+    {
+        AZStd::shared_ptr<const Physics::Shape> constShape = AZStd::as_const(*this).GetShape(index);
+        return AZStd::const_pointer_cast<Physics::Shape>(constShape);
+    }
+
+    AZStd::shared_ptr<const Physics::Shape> RigidBody::GetShape(AZ::u32 index) const
     {
         if (index >= m_shapes.size())
         {

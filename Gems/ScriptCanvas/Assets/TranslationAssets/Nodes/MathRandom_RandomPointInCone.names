@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{00464520-3FAA-5725-BE01-4F13A50E430F}",
+            "base": "{00464520-3FAA-5725-BE01-4F13A50E430F}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Random Point In Cone",
                 "category": "Math/Random",
-                "tooltip": "Returns a random point in a cone"
+                "tooltip": "returns a random point in a cone"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius_0",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Angle",
+                    "base": "DataInput_Angle_1",
                     "details": {
                         "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

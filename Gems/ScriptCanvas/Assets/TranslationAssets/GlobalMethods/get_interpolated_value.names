@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "get_interpolated_value",
+            "base": "get_interpolated_value",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "get_interpolated_value",
+                    "base": "get_interpolated_value",
                     "context": "Global",
                     "entry": {
                         "name": "In",

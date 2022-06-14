@@ -79,7 +79,8 @@ namespace AZ
 
         const RHI::Size& Framebuffer::GetSize() const
         {
-            return m_attachments.front()->GetImage().GetDescriptor().m_size;
+            static const RHI::Size safeSize;
+            return m_attachments.size() ? m_attachments.front()->GetImage().GetDescriptor().m_size : safeSize;
         }
 
         void Framebuffer::SetNameInternal(const AZStd::string_view& name)

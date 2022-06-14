@@ -38,6 +38,7 @@ namespace O3DE::ProjectManager
 
         QLabel* label = new QLabel(labelText, this);
         label->setObjectName("templateLabel");
+        label->setWordWrap(true);
         vLayout->addWidget(label);
 
         connect(this, &QAbstractButton::toggled, this, &TemplateButton::onToggled);

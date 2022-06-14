@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorBloomComponentTypeId",
+            "base": "EditorBloomComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Bloom Component Type Id"
+                "name": "Editor Bloom Component Type Id",
+                "category": "Constants/Editor/Component Type Id"
             },
             "methods": [
                 {
-                    "key": "GetEditorBloomComponentTypeId",
+                    "base": "GetEditorBloomComponentTypeId",
                     "details": {
                         "name": "Get Editor Bloom Component Type Id"
                     },

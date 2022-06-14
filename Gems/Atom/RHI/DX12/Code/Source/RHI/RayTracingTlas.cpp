@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingBlas.h>
@@ -55,7 +54,7 @@ namespace AZ
                 // create instances buffer
                 buffers.m_tlasInstancesBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor tlasInstancesBufferDescriptor;
-                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead;
+                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 tlasInstancesBufferDescriptor.m_byteCount = instanceDescsSizeInBytes;
                 tlasInstancesBufferDescriptor.m_alignment = D3D12_RAYTRACING_INSTANCE_DESCS_BYTE_ALIGNMENT;
             
@@ -120,7 +119,7 @@ namespace AZ
             // create scratch buffer
             buffers.m_scratchBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
-            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;

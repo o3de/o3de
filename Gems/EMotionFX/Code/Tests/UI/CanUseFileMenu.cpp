@@ -178,19 +178,6 @@ namespace EMotionFX
             EMStudio::GetMainWindow()->LoadActor(filename, replaceScene);
         }
 
-        void CreateMotionSet()
-        {
-            if (EMotionFX::GetMotionManager().GetNumMotionSets() == 0)
-            {
-                EMStudio::MotionSetManagementWindow* managementWindow = GetMotionSetManagementWindow();
-                ASSERT_TRUE(managementWindow);
-
-                managementWindow->OnCreateMotionSet();
-
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to create motion set for reset test.";
-            }
-        }
-
         void CreateMotion()
         {
             if (EMotionFX::GetMotionManager().GetNumMotions() == 0)
@@ -329,6 +316,13 @@ namespace EMotionFX
             // If we try to save now, we'll be asked to select a save file for the anim graph, we need to provide one to avoid that.
             const QString animGraphFilename = GenerateTempAnimGraphFilename();
             SaveCurrentAnimGraph(animGraphFilename);
+
+            // Pretend editing the anim graph
+            EMotionFX::AnimGraph* animGraph = m_animGraphPlugin->GetActiveAnimGraph();
+            animGraph->SetDirtyFlag(true);
+
+            // Skip the motion set.
+            GetMotionManager().GetMotionSet(0)->SetDirtyFlag(false);
 
             // Prepare a watcher to press the ok button when the SaveDirtySettingsWindow appears.
             ModalPopupHandler saveDirtyPopupHandler;
@@ -491,7 +485,6 @@ namespace EMotionFX
         void CreateDataForResetTest()
         {
             CreateActor();
-            CreateMotionSet();
             CreateMotion();
             CreateAnimGraph();
         }
@@ -555,7 +548,7 @@ namespace EMotionFX
 
         QString GetTestMotionFileName() const
         {
-            AZStd::string resolvedAssetPath = this->ResolvePath("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+            AZStd::string resolvedAssetPath = this->ResolvePath("@gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion");
             return QString::fromUtf8(resolvedAssetPath.data(), aznumeric_cast<int>(resolvedAssetPath.size()));
         }
 
@@ -596,7 +589,7 @@ namespace EMotionFX
 
                 // Motion Sets
                 TestResetMenuItem(resetAction, "EMFX.ResetSettingsDialog.MotionSets");
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to reset MotionSets. Default motion set should be present.";
 
                 // AnimGraphs
                 TestResetMenuItem(resetAction, "EMFX.ResetSettingsDialog.AnimGraphs");
@@ -614,7 +607,7 @@ namespace EMotionFX
                 TestResetMenuItem(resetAction, "*");
                 ASSERT_EQ(EMotionFX::GetActorManager().GetNumActorInstances(), 0) << "Failed to reset Actors.";
                 ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotions(), 0) << "Failed to reset Motions.";
-                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+                ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to reset MotionSets. Default motion set should be present.";
                 ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
             }
         }
@@ -633,7 +626,6 @@ namespace EMotionFX
             animGraph->SetFileName(animGraphFilename.toUtf8().constData());
             animGraph->SetDirtyFlag(true);
 
-            CreateMotionSet();
             const QString motionsetFilename = GenerateTempMotionSetFilename();
             EMotionFX::MotionSet *motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
             motionSet->SetFilename(motionsetFilename.toUtf8().constData());

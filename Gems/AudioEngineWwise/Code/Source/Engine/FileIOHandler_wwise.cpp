@@ -12,6 +12,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>
@@ -145,11 +146,11 @@ namespace Audio
         }
 
         AZ::u64 bytesRead = 0;
-        fileIO->Read(fileHandle, buffer, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), &bytesRead);
+        fileIO->Read(fileHandle, buffer, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), false, &bytesRead);
         const bool readOk = (bytesRead == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
 
-        AZ_Assert(readOk, 
-            "Number of bytes read (%" PRIu64 ") for read request doesn't match the requested size (%u).",
+        AZ_Assert(readOk,
+            "Number of bytes read (%llu) for read request doesn't match the requested size (%u).",
             bytesRead, transferInfo.uRequestedSize);
         return readOk ? AK_Success : AK_Fail;
     }
@@ -174,7 +175,7 @@ namespace Audio
         const bool writeOk = (bytesWritten == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
 
         AZ_Error("Wwise", writeOk,
-                "Number of bytes written (%" PRIu64 ") for write request doesn't match the requested size (%u).",
+                "Number of bytes written (%llu) for write request doesn't match the requested size (%u).",
                 bytesWritten, transferInfo.uRequestedSize);
         return writeOk ? AK_Success : AK_Fail;
     }
@@ -199,7 +200,7 @@ namespace Audio
         AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IArchive", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
         deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
-    
+
     AkUInt32 CBlockingDevice_wwise::GetDeviceData()
     {
         return 1;
@@ -289,7 +290,7 @@ namespace Audio
         static_assert(AZ::IO::IStreamerTypes::s_priorityHighest == 255, "The priority range for AZ::IO::Streamer has changed, please update Wwise to match.");
         AZ::u16 wwisePriority = aznumeric_caster(heuristics.priority);
         AZ::u8 priority = aznumeric_caster(
-              (wwisePriority << 1) // 100 -> 200 
+              (wwisePriority << 1) // 100 -> 200
             + (wwisePriority >> 1) // 200 -> 250
             + (wwisePriority >> 4) // 250 -> 256
             - (wwisePriority >> 6));  // 256 -> 255

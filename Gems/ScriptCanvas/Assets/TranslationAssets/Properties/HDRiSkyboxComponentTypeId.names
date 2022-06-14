@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "HDRiSkyboxComponentTypeId",
+            "base": "HDRiSkyboxComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "HD Ri Skybox Component Type Id"
+                "name": "HD Ri Skybox Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetHDRiSkyboxComponentTypeId",
+                    "base": "GetHDRiSkyboxComponentTypeId",
                     "details": {
                         "name": "GetHD Ri Skybox Component Type Id"
                     },

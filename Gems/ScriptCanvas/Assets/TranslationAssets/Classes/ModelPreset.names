@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "ModelPreset",
+            "base": "ModelPreset",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
@@ -9,7 +9,7 @@
             },
             "methods": [
                 {
-                    "key": "GetdisplayName",
+                    "base": "GetdisplayName",
                     "details": {
                         "name": "Get Display Name"
                     },
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "key": "SetdisplayName",
+                    "base": "SetdisplayName",
                     "details": {
                         "name": "Set Display Name"
                     },
@@ -51,7 +51,7 @@
                     ]
                 },
                 {
-                    "key": "GetmodelAsset",
+                    "base": "GetmodelAsset",
                     "details": {
                         "name": "Get Model Asset"
                     },
@@ -73,7 +73,7 @@
                     ]
                 },
                 {
-                    "key": "SetmodelAsset",
+                    "base": "SetmodelAsset",
                     "details": {
                         "name": "Set Model Asset"
                     },
@@ -93,7 +93,7 @@
                     ]
                 },
                 {
-                    "key": "GetpreviewImageAsset",
+                    "base": "GetpreviewImageAsset",
                     "details": {
                         "name": "Get Preview Image Asset"
                     },
@@ -115,7 +115,7 @@
                     ]
                 },
                 {
-                    "key": "SetpreviewImageAsset",
+                    "base": "SetpreviewImageAsset",
                     "details": {
                         "name": "Set Preview Image Asset"
                     },

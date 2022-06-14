@@ -1,25 +1,26 @@
 {
     "entries": [
         {
-            "key": "ExposureControlRequestBus",
+            "base": "ExposureControlRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ExposureControlRequestBus"
+                "name": "Exposure Control",
+                "category": "Rendering"
             },
             "methods": [
                 {
-                    "key": "SetEyeAdaptationSpeedDownOverride",
+                    "base": "SetEyeAdaptationSpeedDownOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDownOverride"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Speed Down Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationSpeedDownOverride is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Speed Down Override is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationSpeedDownOverride"
+                        "name": "Set Eye Adaptation Speed Down Override"
                     },
                     "params": [
                         {
@@ -31,17 +32,17 @@
                     ]
                 },
                 {
-                    "key": "GetEnabled",
+                    "base": "GetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabled"
+                        "tooltip": "When signaled, this will invoke Get Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabled is invoked"
+                        "tooltip": "Signaled after Get Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetEnabled"
+                        "name": "Get Enabled"
                     },
                     "results": [
                         {
@@ -53,17 +54,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnabledOverride",
+                    "base": "SetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "SetEnabledOverride"
+                        "name": "Set Enabled Override"
                     },
                     "params": [
                         {
@@ -75,17 +76,17 @@
                     ]
                 },
                 {
-                    "key": "SetManualCompensation",
+                    "base": "SetManualCompensation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetManualCompensation"
+                        "tooltip": "When signaled, this will invoke Set Manual Compensation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetManualCompensation is invoked"
+                        "tooltip": "Signaled after Set Manual Compensation is invoked"
                     },
                     "details": {
-                        "name": "SetManualCompensation"
+                        "name": "Set Manual Compensation"
                     },
                     "params": [
                         {
@@ -97,17 +98,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedDown",
+                    "base": "SetEyeAdaptationSpeedDown",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDown"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Speed Down"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationSpeedDown is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Speed Down is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationSpeedDown"
+                        "name": "Set Eye Adaptation Speed Down"
                     },
                     "params": [
                         {
@@ -119,17 +120,17 @@
                     ]
                 },
                 {
-                    "key": "GetExposureControlTypeOverride",
+                    "base": "GetExposureControlTypeOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetExposureControlTypeOverride"
+                        "tooltip": "When signaled, this will invoke Get Exposure Control Type Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetExposureControlTypeOverride is invoked"
+                        "tooltip": "Signaled after Get Exposure Control Type Override is invoked"
                     },
                     "details": {
-                        "name": "GetExposureControlTypeOverride"
+                        "name": "Get Exposure Control Type Override"
                     },
                     "results": [
                         {
@@ -141,17 +142,17 @@
                     ]
                 },
                 {
-                    "key": "GetHeatmapEnabled",
+                    "base": "GetHeatmapEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetHeatmapEnabled"
+                        "tooltip": "When signaled, this will invoke Get Heatmap Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetHeatmapEnabled is invoked"
+                        "tooltip": "Signaled after Get Heatmap Enabled is invoked"
                     },
                     "details": {
-                        "name": "GetHeatmapEnabled"
+                        "name": "Get Heatmap Enabled"
                     },
                     "results": [
                         {
@@ -163,17 +164,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedUpOverride",
+                    "base": "SetEyeAdaptationSpeedUpOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUpOverride"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Speed Up Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationSpeedUpOverride is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Speed Up Override is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationSpeedUpOverride"
+                        "name": "Set Eye Adaptation Speed Up Override"
                     },
                     "params": [
                         {
@@ -185,17 +186,17 @@
                     ]
                 },
                 {
-                    "key": "SetExposureControlType",
+                    "base": "SetExposureControlType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetExposureControlType"
+                        "tooltip": "When signaled, this will invoke Set Exposure Control Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetExposureControlType is invoked"
+                        "tooltip": "Signaled after Set Exposure Control Type is invoked"
                     },
                     "details": {
-                        "name": "SetExposureControlType"
+                        "name": "Set Exposure Control Type"
                     },
                     "params": [
                         {
@@ -207,17 +208,17 @@
                     ]
                 },
                 {
-                    "key": "SetEnabled",
+                    "base": "SetEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEnabled"
+                        "tooltip": "When signaled, this will invoke Set Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEnabled is invoked"
+                        "tooltip": "Signaled after Set Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetEnabled"
+                        "name": "Set Enabled"
                     },
                     "params": [
                         {
@@ -229,17 +230,17 @@
                     ]
                 },
                 {
-                    "key": "GetExposureControlType",
+                    "base": "GetExposureControlType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetExposureControlType"
+                        "tooltip": "When signaled, this will invoke Get Exposure Control Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetExposureControlType is invoked"
+                        "tooltip": "Signaled after Get Exposure Control Type is invoked"
                     },
                     "details": {
-                        "name": "GetExposureControlType"
+                        "name": "Get Exposure Control Type"
                     },
                     "results": [
                         {
@@ -251,17 +252,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMax",
+                    "base": "SetEyeAdaptationExposureMax",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMax"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Exposure Max"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationExposureMax is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Exposure Max is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationExposureMax"
+                        "name": "Set Eye Adaptation Exposure Max"
                     },
                     "params": [
                         {
@@ -273,17 +274,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedDownOverride",
+                    "base": "GetEyeAdaptationSpeedDownOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDownOverride"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Speed Down Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationSpeedDownOverride is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Speed Down Override is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationSpeedDownOverride"
+                        "name": "Get Eye Adaptation Speed Down Override"
                     },
                     "results": [
                         {
@@ -295,17 +296,17 @@
                     ]
                 },
                 {
-                    "key": "GetManualCompensationOverride",
+                    "base": "GetManualCompensationOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetManualCompensationOverride"
+                        "tooltip": "When signaled, this will invoke Get Manual Compensation Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetManualCompensationOverride is invoked"
+                        "tooltip": "Signaled after Get Manual Compensation Override is invoked"
                     },
                     "details": {
-                        "name": "GetManualCompensationOverride"
+                        "name": "Get Manual Compensation Override"
                     },
                     "results": [
                         {
@@ -317,17 +318,17 @@
                     ]
                 },
                 {
-                    "key": "GetHeatmapEnabledOverride",
+                    "base": "GetHeatmapEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetHeatmapEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Get Heatmap Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetHeatmapEnabledOverride is invoked"
+                        "tooltip": "Signaled after Get Heatmap Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "GetHeatmapEnabledOverride"
+                        "name": "Get Heatmap Enabled Override"
                     },
                     "results": [
                         {
@@ -339,17 +340,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationSpeedUp",
+                    "base": "SetEyeAdaptationSpeedUp",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUp"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Speed Up"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationSpeedUp is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Speed Up is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationSpeedUp"
+                        "name": "Set Eye Adaptation Speed Up"
                     },
                     "params": [
                         {
@@ -361,17 +362,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedUpOverride",
+                    "base": "GetEyeAdaptationSpeedUpOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUpOverride"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Speed Up Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationSpeedUpOverride is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Speed Up Override is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationSpeedUpOverride"
+                        "name": "Get Eye Adaptation Speed Up Override"
                     },
                     "results": [
                         {
@@ -383,17 +384,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMinOverride",
+                    "base": "GetEyeAdaptationExposureMinOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMinOverride"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Exposure Min Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationExposureMinOverride is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Exposure Min Override is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationExposureMinOverride"
+                        "name": "Get Eye Adaptation Exposure Min Override"
                     },
                     "results": [
                         {
@@ -405,17 +406,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMaxOverride",
+                    "base": "GetEyeAdaptationExposureMaxOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMaxOverride"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Exposure Max Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationExposureMaxOverride is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Exposure Max Override is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationExposureMaxOverride"
+                        "name": "Get Eye Adaptation Exposure Max Override"
                     },
                     "results": [
                         {
@@ -427,17 +428,17 @@
                     ]
                 },
                 {
-                    "key": "GetEnabledOverride",
+                    "base": "GetEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Get Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                        "tooltip": "Signaled after Get Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "GetEnabledOverride"
+                        "name": "Get Enabled Override"
                     },
                     "results": [
                         {
@@ -449,17 +450,17 @@
                     ]
                 },
                 {
-                    "key": "SetExposureControlTypeOverride",
+                    "base": "SetExposureControlTypeOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetExposureControlTypeOverride"
+                        "tooltip": "When signaled, this will invoke Set Exposure Control Type Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetExposureControlTypeOverride is invoked"
+                        "tooltip": "Signaled after Set Exposure Control Type Override is invoked"
                     },
                     "details": {
-                        "name": "SetExposureControlTypeOverride"
+                        "name": "Set Exposure Control Type Override"
                     },
                     "params": [
                         {
@@ -471,17 +472,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMin",
+                    "base": "GetEyeAdaptationExposureMin",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMin"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Exposure Min"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationExposureMin is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Exposure Min is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationExposureMin"
+                        "name": "Get Eye Adaptation Exposure Min"
                     },
                     "results": [
                         {
@@ -493,17 +494,17 @@
                     ]
                 },
                 {
-                    "key": "GetManualCompensation",
+                    "base": "GetManualCompensation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetManualCompensation"
+                        "tooltip": "When signaled, this will invoke Get Manual Compensation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetManualCompensation is invoked"
+                        "tooltip": "Signaled after Get Manual Compensation is invoked"
                     },
                     "details": {
-                        "name": "GetManualCompensation"
+                        "name": "Get Manual Compensation"
                     },
                     "results": [
                         {
@@ -515,17 +516,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMinOverride",
+                    "base": "SetEyeAdaptationExposureMinOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMinOverride"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Exposure Min Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationExposureMinOverride is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Exposure Min Override is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationExposureMinOverride"
+                        "name": "Set Eye Adaptation Exposure Min Override"
                     },
                     "params": [
                         {
@@ -537,17 +538,17 @@
                     ]
                 },
                 {
-                    "key": "SetManualCompensationOverride",
+                    "base": "SetManualCompensationOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetManualCompensationOverride"
+                        "tooltip": "When signaled, this will invoke Set Manual Compensation Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetManualCompensationOverride is invoked"
+                        "tooltip": "Signaled after Set Manual Compensation Override is invoked"
                     },
                     "details": {
-                        "name": "SetManualCompensationOverride"
+                        "name": "Set Manual Compensation Override"
                     },
                     "params": [
                         {
@@ -559,17 +560,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedDown",
+                    "base": "GetEyeAdaptationSpeedDown",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDown"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Speed Down"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationSpeedDown is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Speed Down is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationSpeedDown"
+                        "name": "Get Eye Adaptation Speed Down"
                     },
                     "results": [
                         {
@@ -581,17 +582,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationSpeedUp",
+                    "base": "GetEyeAdaptationSpeedUp",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUp"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Speed Up"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationSpeedUp is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Speed Up is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationSpeedUp"
+                        "name": "Get Eye Adaptation Speed Up"
                     },
                     "results": [
                         {
@@ -603,17 +604,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMin",
+                    "base": "SetEyeAdaptationExposureMin",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMin"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Exposure Min"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationExposureMin is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Exposure Min is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationExposureMin"
+                        "name": "Set Eye Adaptation Exposure Min"
                     },
                     "params": [
                         {
@@ -625,17 +626,17 @@
                     ]
                 },
                 {
-                    "key": "SetHeatmapEnabled",
+                    "base": "SetHeatmapEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetHeatmapEnabled"
+                        "tooltip": "When signaled, this will invoke Set Heatmap Enabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetHeatmapEnabled is invoked"
+                        "tooltip": "Signaled after Set Heatmap Enabled is invoked"
                     },
                     "details": {
-                        "name": "SetHeatmapEnabled"
+                        "name": "Set Heatmap Enabled"
                     },
                     "params": [
                         {
@@ -647,17 +648,17 @@
                     ]
                 },
                 {
-                    "key": "SetEyeAdaptationExposureMaxOverride",
+                    "base": "SetEyeAdaptationExposureMaxOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMaxOverride"
+                        "tooltip": "When signaled, this will invoke Set Eye Adaptation Exposure Max Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetEyeAdaptationExposureMaxOverride is invoked"
+                        "tooltip": "Signaled after Set Eye Adaptation Exposure Max Override is invoked"
                     },
                     "details": {
-                        "name": "SetEyeAdaptationExposureMaxOverride"
+                        "name": "Set Eye Adaptation Exposure Max Override"
                     },
                     "params": [
                         {
@@ -669,17 +670,17 @@
                     ]
                 },
                 {
-                    "key": "GetEyeAdaptationExposureMax",
+                    "base": "GetEyeAdaptationExposureMax",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMax"
+                        "tooltip": "When signaled, this will invoke Get Eye Adaptation Exposure Max"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetEyeAdaptationExposureMax is invoked"
+                        "tooltip": "Signaled after Get Eye Adaptation Exposure Max is invoked"
                     },
                     "details": {
-                        "name": "GetEyeAdaptationExposureMax"
+                        "name": "Get Eye Adaptation Exposure Max"
                     },
                     "results": [
                         {
@@ -691,17 +692,17 @@
                     ]
                 },
                 {
-                    "key": "SetHeatmapEnabledOverride",
+                    "base": "SetHeatmapEnabledOverride",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetHeatmapEnabledOverride"
+                        "tooltip": "When signaled, this will invoke Set Heatmap Enabled Override"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetHeatmapEnabledOverride is invoked"
+                        "tooltip": "Signaled after Set Heatmap Enabled Override is invoked"
                     },
                     "details": {
-                        "name": "SetHeatmapEnabledOverride"
+                        "name": "Set Heatmap Enabled Override"
                     },
                     "params": [
                         {

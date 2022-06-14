@@ -1,26 +1,24 @@
 {
     "entries": [
         {
-            "key": "UiRadioButtonNotificationBus",
+            "base": "UiRadioButtonNotificationBus",
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "UI Radio Button",
+                "name": "Ui Radio Button",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "OnRadioButtonStateChange",
+                    "base": "OnRadioButtonStateChange",
                     "details": {
-                        "name": "On RadioButton State Change",
-                        "tooltip": "Executes when the radio button state has changed"
+                        "name": "On Radio Button State Change"
                     },
                     "params": [
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Checked",
-                                "tooltip": "Indicates whether the radio button is checked"
+                                "name": "Checked"
                             }
                         }
                     ]

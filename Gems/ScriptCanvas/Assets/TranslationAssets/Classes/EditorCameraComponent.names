@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "EditorCameraComponent",
+            "base": "EditorCameraComponent",
             "context": "BehaviorClass",
             "variant": "",
             "details": {

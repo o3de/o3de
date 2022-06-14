@@ -1,16 +1,16 @@
 {
     "entries": [
         {
-            "key": "UiLayoutBus",
+            "base": "UiLayoutBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "UiLayoutBus",
+                "name": "UI Layout",
                 "category": "UI"
             },
             "methods": [
                 {
-                    "key": "SetIgnoreDefaultLayoutCells",
+                    "base": "SetIgnoreDefaultLayoutCells",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Ignore Default Layout Cells"
@@ -34,7 +34,7 @@
                     ]
                 },
                 {
-                    "key": "SetVerticalChildAlignment",
+                    "base": "SetVerticalChildAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Vertical Child Alignment"
@@ -58,7 +58,7 @@
                     ]
                 },
                 {
-                    "key": "SetHorizontalChildAlignment",
+                    "base": "SetHorizontalChildAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Horizontal Child Alignment"
@@ -82,7 +82,7 @@
                     ]
                 },
                 {
-                    "key": "GetHorizontalChildAlignment",
+                    "base": "GetHorizontalChildAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Horizontal Child Alignment"
@@ -105,7 +105,7 @@
                     ]
                 },
                 {
-                    "key": "GetVerticalChildAlignment",
+                    "base": "GetVerticalChildAlignment",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertical Child Alignment"
@@ -128,7 +128,7 @@
                     ]
                 },
                 {
-                    "key": "GetIgnoreDefaultLayoutCells",
+                    "base": "GetIgnoreDefaultLayoutCells",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Ignore Default Layout Cells"

@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "MeshBlockerComponentTypeId",
+            "base": "MeshBlockerComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Mesh Blocker Component Type Id"
+                "name": "Mesh Blocker Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetMeshBlockerComponentTypeId",
+                    "base": "GetMeshBlockerComponentTypeId",
                     "details": {
                         "name": "Get Mesh Blocker Component Type Id"
                     },

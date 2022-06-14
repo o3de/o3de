@@ -91,12 +91,12 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadRequestData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadRequestData>)
             {
                 PrepareReadRequest(request, args);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData> ||
-                AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CreateDedicatedCacheData> ||
+                AZStd::is_same_v<Command, Requests::DestroyDedicatedCacheData>)
             {
                 PrepareDedicatedCache(request, args.m_path);
             }
@@ -114,16 +114,20 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 m_pendingReads.push_back(request);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 m_pendingFileExistChecks.push_back(request);
             }
             else
             {
+                if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
+                {
+                    Report(args);
+                }
                 StreamStackEntry::QueueRequest(request);
             }
         }, request->GetCommand());
@@ -203,7 +207,7 @@ namespace AZ::IO
             {
                 FileRequest* compressedRequest = m_processingJobs[i].m_waitRequest->GetParent();
                 AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
-                auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+                auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
                 AZ_Assert(data, "Compressed request in the decompression queue in FullFileDecompressor didn't contain compression read data.");
 
                 size_t bytesToDecompress = data->m_compressionInfo.m_compressedSize;
@@ -255,7 +259,7 @@ namespace AZ::IO
 
             // Calculate the amount of time it will take to decompress the data.
             FileRequest* compressedRequest = m_readRequests[i]->GetParent();
-            auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+            auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
 
             size_t bytesToDecompress = data->m_compressionInfo.m_compressedSize;
             auto decompressionDuration = AZStd::chrono::microseconds(
@@ -290,7 +294,7 @@ namespace AZ::IO
     void FullFileDecompressor::EstimateCompressedReadRequest(FileRequest* request, AZStd::chrono::microseconds& cumulativeDelay,
         AZStd::chrono::microseconds decompressionDelay, double totalDecompressionDurationUs, double totalBytesDecompressed) const
     {
-        auto data = AZStd::get_if<FileRequest::CompressedReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::CompressedReadData>(&request->GetCommand());
         if (data)
         {
             AZStd::chrono::microseconds processingTime = decompressionDelay;
@@ -305,28 +309,57 @@ namespace AZ::IO
 
     void FullFileDecompressor::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        constexpr double bytesToMB = 1.0 / (1024.0 * 1024.0);
         constexpr double usToSec = 1.0 / (1000.0 * 1000.0);
         constexpr double usToMs = 1.0 / 1000.0;
 
         if (m_bytesDecompressed.GetNumRecorded() > 1) // There's always a default added.
         {
             //It only makes sense to add decompression statistics when reading from PAK files.
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available decompression slots", m_maxNumJobs - m_numRunningJobs));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available read slots", m_maxNumReads - m_numInFlightReads));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Pending decompression", m_numPendingDecompression));
-            statistics.push_back(Statistic::CreateFloat(m_name, "Buffer memory (MB)", m_memoryUsage * bytesToMB));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Available decompression slots", m_maxNumJobs - m_numRunningJobs,
+                "The number of available slots to decompress files with. Increasing the number of slots will require more hardware "
+                "resources and may negatively impact other cpu utilization but improves performance of Streamer."));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Available read slots", m_maxNumReads - m_numInFlightReads,
+                "The number of slots available to queue read requests into. Increasing this number will allow more read requests to be "
+                "processed but new slots will not become available until a read file can queued in a decompression slot. Increasing this "
+                "number will only be helpful if decompressing is faster than reading, otherwise the number of slots can be kept around the "
+                "same number as there are decompression slots."));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Pending decompression", m_numPendingDecompression,
+                "The number of requests that have completed reading and are waiting for a decompression slot to become available. If this "
+                "value is frequently more than zero than the number of decompression slots may need to be increased, a faster decompressor "
+                "is needed or the number of read slots can be reduced."));
+            statistics.push_back(Statistic::CreateByteSize(
+                m_name, "Buffer memory", m_memoryUsage, 
+                "The total amount of memory in megabytes used by the decompressor. This is depended on the compressed file sizes and may "
+                "improve by reducing the file sizes of the largest files in the archive."));
 
             double averageJobStartDelay = m_decompressionJobDelayMicroSec.CalculateAverage() * usToMs;
-            statistics.push_back(Statistic::CreateFloat(m_name, "Decompression job delay (avg. ms)", averageJobStartDelay));
+            statistics.push_back(Statistic::CreateFloat(
+                m_name, "Decompression job delay (avg. ms)", averageJobStartDelay,
+                "The amount of time in milliseconds between queuing a decompression job and it starting. If this is too long it may "
+                "indicate that the job system is too saturated to pick decompression jobs."));
 
-            double totalBytesDecompressedMB = m_bytesDecompressed.GetTotal() * bytesToMB;
+            u64 totalBytesDecompressed = m_bytesDecompressed.GetTotal();
             double totalDecompressionTimeSec = m_decompressionDurationMicroSec.GetTotal() * usToSec;
-            statistics.push_back(Statistic::CreateFloat(m_name, "Decompression Speed per job (avg. mbps)", totalBytesDecompressedMB / totalDecompressionTimeSec));
+            statistics.push_back(Statistic::CreateBytesPerSecond(
+                m_name, "Decompression Speed per job", totalBytesDecompressed / totalDecompressionTimeSec,
+                "The average speed that the decompressor can handle. If this is not higher than the average read "
+                "speed than decompressing can't keep up with file reads. Increasing the number of jobs can help hide this issue, but only "
+                "for parallel reads, while individual reads will still remain decompression bound."));
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            statistics.push_back(Statistic::CreatePercentage(m_name, DecompBoundName, m_decompressionBoundStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, ReadBoundName, m_readBoundStat.GetAverage()));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, DecompBoundName, m_decompressionBoundStat.GetAverage(), m_decompressionBoundStat.GetMinimum(),
+                m_decompressionBoundStat.GetMaximum(),
+                "The percentage of time that Streamer was decompression bound. High values mean that more jobs are needed, although this "
+                "may only help if there are a sufficient number of requests."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, ReadBoundName, m_readBoundStat.GetAverage(), m_readBoundStat.GetMinimum(),
+                m_readBoundStat.GetMaximum(),
+                "The percentage of time that Streamer was read bound. High values are generally good if there is a sufficient number of "
+                "requests."));
 #endif
         }
 
@@ -343,7 +376,7 @@ namespace AZ::IO
             m_numRunningJobs == 0;
     }
 
-    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, FileRequest::ReadRequestData& data)
+    void FullFileDecompressor::PrepareReadRequest(FileRequest* request, Requests::ReadRequestData& data)
     {
         CompressionInfo info;
         if (CompressionUtils::FindCompressionInfo(info, data.m_path.GetRelativePath()))
@@ -359,7 +392,7 @@ namespace AZ::IO
             {
                 FileRequest* pathStorageRequest = m_context->GetNewInternalRequest();
                 pathStorageRequest->CreateRequestPathStore(request, AZStd::move(info.m_archiveFilename));
-                auto& pathStorage = AZStd::get<FileRequest::RequestPathStoreData>(pathStorageRequest->GetCommand());
+                auto& pathStorage = AZStd::get<Requests::RequestPathStoreData>(pathStorageRequest->GetCommand());
 
                 nextRequest->CreateRead(pathStorageRequest, data.m_output, data.m_outputSize, pathStorage.m_path,
                     info.m_offset + data.m_offset, data.m_size, info.m_isSharedPak);
@@ -370,13 +403,13 @@ namespace AZ::IO
                 auto callback = [this, nextRequest](const FileRequest& checkRequest)
                 {
                     AZ_PROFILE_FUNCTION(AzCore);
-                    auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
+                    auto check = AZStd::get_if<Requests::FileExistsCheckData>(&checkRequest.GetCommand());
                     AZ_Assert(check,
                         "Callback in FullFileDecompressor::PrepareReadRequest expected FileExistsCheck but got another command.");
                     if (check->m_found)
                     {
                         FileRequest* originalRequest = m_context->RejectRequest(nextRequest);
-                        if (AZStd::holds_alternative<FileRequest::RequestPathStoreData>(originalRequest->GetCommand()))
+                        if (AZStd::holds_alternative<Requests::RequestPathStoreData>(originalRequest->GetCommand()))
                         {
                             originalRequest = m_context->RejectRequest(originalRequest);
                         }
@@ -412,12 +445,12 @@ namespace AZ::IO
             AZStd::visit([request, &info, nextRequest](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::CreateDedicatedCacheData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::CreateDedicatedCacheData>)
                 {
                     nextRequest->CreateDedicatedCacheCreation(AZStd::move(info.m_archiveFilename),
                         FileRange::CreateRange(info.m_offset, info.m_compressedSize), request);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::DestroyDedicatedCacheData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::DestroyDedicatedCacheData>)
                 {
                     nextRequest->CreateDedicatedCacheDestruction(AZStd::move(info.m_archiveFilename),
                         FileRange::CreateRange(info.m_offset, info.m_compressedSize), request);
@@ -429,7 +462,7 @@ namespace AZ::IO
                 auto callback = [this, nextRequest](const FileRequest& checkRequest)
                 {
                     AZ_PROFILE_FUNCTION(AzCore);
-                    auto check = AZStd::get_if<FileRequest::FileExistsCheckData>(&checkRequest.GetCommand());
+                    auto check = AZStd::get_if<Requests::FileExistsCheckData>(&checkRequest.GetCommand());
                     AZ_Assert(check,
                         "Callback in FullFileDecompressor::PrepareDedicatedCache expected FileExistsCheck but got another command.");
                     if (check->m_found)
@@ -461,7 +494,7 @@ namespace AZ::IO
 
     void FullFileDecompressor::FileExistsCheck(FileRequest* checkRequest)
     {
-        auto& fileCheckRequest = AZStd::get<FileRequest::FileExistsCheckData>(checkRequest->GetCommand());
+        auto& fileCheckRequest = AZStd::get<Requests::FileExistsCheckData>(checkRequest->GetCommand());
         CompressionInfo info;
         if (CompressionUtils::FindCompressionInfo(info, fileCheckRequest.m_path.GetRelativePath()))
         {
@@ -487,7 +520,7 @@ namespace AZ::IO
         {
             if (m_readBufferStatus[i] == ReadBufferStatus::Unused)
             {
-                auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedReadRequest->GetCommand());
+                auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedReadRequest->GetCommand());
                 AZ_Assert(data, "Compressed request that's starting a read in FullFileDecompressor didn't contain compression read data.");
                 AZ_Assert(data->m_compressionInfo.m_decompressor,
                     "FileRequest for FullFileDecompressor is missing a decompression callback.");
@@ -549,7 +582,7 @@ namespace AZ::IO
         }
         else
         {
-            auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+            auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
             AZ_Assert(data, "Compressed request in FullFileDecompressor that finished unsuccessfully didn't contain compression read data.");
             CompressionInfo& info = data->m_compressionInfo;
             size_t offsetAdjustment = info.m_offset - AZ_SIZE_ALIGN_DOWN(info.m_offset, aznumeric_cast<size_t>(m_alignment));
@@ -591,7 +624,7 @@ namespace AZ::IO
                 }
 
                 FileRequest* waitRequest = m_readRequests[readSlot];
-                AZ_Assert(AZStd::holds_alternative<FileRequest::WaitData>(waitRequest->GetCommand()),
+                AZ_Assert(AZStd::holds_alternative<Requests::WaitData>(waitRequest->GetCommand()),
                     "File request waiting for decompression wasn't marked as being a wait operation.");
                 FileRequest* compressedRequest = waitRequest->GetParent();
                 AZ_Assert(compressedRequest, "Read requests started by FullFileDecompressor is missing a parent request.");
@@ -610,7 +643,7 @@ namespace AZ::IO
                 m_readBuffers[readSlot] = nullptr;
 
                 AZ::Job* decompressionJob;
-                auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+                auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
                 AZ_Assert(data, "Compressed request in FullFileDecompressor that's starting decompression didn't contain compression read data.");
                 AZ_Assert(data->m_compressionInfo.m_decompressor, "FullFileDecompressor is queuing a decompression job but couldn't find a decompressor.");
 
@@ -664,7 +697,7 @@ namespace AZ::IO
 
         FileRequest* compressedRequest = jobInfo.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
-        auto data = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+        auto data = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
         AZ_Assert(data, "Compressed request in FullFileDecompressor that completed decompression didn't contain compression read data.");
         CompressionInfo& info = data->m_compressionInfo;
         size_t offsetAdjustment = info.m_offset - AZ_SIZE_ALIGN_DOWN(info.m_offset, aznumeric_cast<size_t>(m_alignment));
@@ -694,7 +727,7 @@ namespace AZ::IO
 
         FileRequest* compressedRequest = info.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
-        auto request = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+        auto request = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
         AZ_Assert(request, "Compressed request in FullFileDecompressor that's running full decompression didn't contain compression read data.");
         CompressionInfo& compressionInfo = request->m_compressionInfo;
         AZ_Assert(compressionInfo.m_decompressor, "Full decompressor job started, but there's no decompressor callback assigned.");
@@ -719,7 +752,7 @@ namespace AZ::IO
 
         FileRequest* compressedRequest = info.m_waitRequest->GetParent();
         AZ_Assert(compressedRequest, "A wait request attached to FullFileDecompressor was completed but didn't have a parent compressed request.");
-        auto request = AZStd::get_if<FileRequest::CompressedReadData>(&compressedRequest->GetCommand());
+        auto request = AZStd::get_if<Requests::CompressedReadData>(&compressedRequest->GetCommand());
         AZ_Assert(request, "Compressed request in FullFileDecompressor that's running partial decompression didn't contain compression read data.");
         CompressionInfo& compressionInfo = request->m_compressionInfo;
         AZ_Assert(compressionInfo.m_decompressor, "Partial decompressor job started, but there's no decompressor callback assigned.");
@@ -733,5 +766,31 @@ namespace AZ::IO
 
         context->MarkRequestAsCompleted(info.m_waitRequest);
         context->WakeUpSchedulingThread();
+    }
+
+    void FullFileDecompressor::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max number of reads", m_maxNumReads, "The maximum number of parallel reads this decompressor node will support."));
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max number of jobs", m_maxNumJobs,
+                "The maximum number of decompression jobs that can run in parallel. A thread per job will be used. A dedicated job system "
+                "is used as not to interfere with the regular job/task system, but this does add additional thread scheduling work to the "
+                "operating system and may impact how stable the performance on the rest of the engine is. If there are functions that "
+                "periodically take much longer, look for excessive context switches by the operating systems and if found lowering this "
+                "value may help reduce those at the cost or streaming speeds."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Alignment", m_alignment,
+                "The alignment for read buffer. This allows enough memory to be reserved in the read buffer to allow for alignment to "
+                "happen by later nodes without requiring additional temporary buffers. This does not adjust the offset or read size in "
+                "order to allow cache nodes to remain effective."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

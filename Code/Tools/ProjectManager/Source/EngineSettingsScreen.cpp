@@ -11,6 +11,7 @@
 #include <FormFolderBrowseEditWidget.h>
 #include <PythonBindingsInterface.h>
 #include <PathValidator.h>
+#include <ProjectUtils.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
@@ -114,10 +115,10 @@ namespace O3DE::ProjectManager
             engineInfo.m_defaultGemsFolder      = m_defaultGems->lineEdit()->text();
             engineInfo.m_defaultTemplatesFolder = m_defaultProjectTemplates->lineEdit()->text();
 
-            bool result = PythonBindingsInterface::Get()->SetEngineInfo(engineInfo);
+            auto result = PythonBindingsInterface::Get()->SetEngineInfo(engineInfo);
             if (!result)
             {
-                QMessageBox::critical(this, tr("Engine Settings"), tr("Failed to save engine settings."));
+                ProjectUtils::DisplayDetailedError(tr("Failed to save engine settings"), result, this);
             }
         }
         else

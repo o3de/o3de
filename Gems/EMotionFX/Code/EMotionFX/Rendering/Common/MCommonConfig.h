@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_CONFIG_H
-#define __MCOMMON_CONFIG_H
+#pragma once
 
 #include <MCore/Source/StandardHeaders.h>
 
@@ -27,5 +26,3 @@ enum
 {
     MEMCATEGORY_MCOMMON = 992,
 };
-
-#endif

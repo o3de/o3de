@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "set_axis_constraint",
+            "base": "set_axis_constraint",
             "context": "Method",
             "variant": "",
             "details": {
@@ -10,7 +10,7 @@
             },
             "methods": [
                 {
-                    "key": "set_axis_constraint",
+                    "base": "set_axis_constraint",
                     "context": "Global",
                     "entry": {
                         "name": "In",

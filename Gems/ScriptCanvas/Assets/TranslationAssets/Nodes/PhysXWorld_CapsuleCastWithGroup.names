@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "key": "{1467D2BE-D829-5A8A-976D-6D06FDCD3310}",
+            "base": "{1467D2BE-D829-5A8A-976D-6D06FDCD3310}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,91 +11,91 @@
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Distance",
+                    "base": "DataInput_Distance_0",
                     "details": {
                         "name": "Distance"
                     }
                 },
                 {
-                    "key": "DataInput_Pose",
+                    "base": "DataInput_Pose_1",
                     "details": {
                         "name": "Pose"
                     }
                 },
                 {
-                    "key": "DataInput_Direction",
+                    "base": "DataInput_Direction_2",
                     "details": {
                         "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Height",
+                    "base": "DataInput_Height_3",
                     "details": {
                         "name": "Height"
                     }
                 },
                 {
-                    "key": "DataInput_Radius",
+                    "base": "DataInput_Radius_4",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Collision group",
+                    "base": "DataInput_Collision group_5",
                     "details": {
                         "name": "Collision group"
                     }
                 },
                 {
-                    "key": "DataInput_Ignore",
+                    "base": "DataInput_Ignore_6",
                     "details": {
                         "name": "Ignore"
                     }
                 },
                 {
-                    "key": "DataOutput_Object Hit",
+                    "base": "DataOutput_Object Hit_0",
                     "details": {
                         "name": "Object Hit"
                     }
                 },
                 {
-                    "key": "DataOutput_Position",
+                    "base": "DataOutput_Position_1",
                     "details": {
                         "name": "Position"
                     }
                 },
                 {
-                    "key": "DataOutput_Normal",
+                    "base": "DataOutput_Normal_2",
                     "details": {
                         "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataOutput_Distance",
+                    "base": "DataOutput_Distance_3",
                     "details": {
                         "name": "Distance"
                     }
                 },
                 {
-                    "key": "DataOutput_EntityId",
+                    "base": "DataOutput_EntityId_4",
                     "details": {
                         "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataOutput_Surface",
+                    "base": "DataOutput_Surface_5",
                     "details": {
                         "name": "Surface"
                     }

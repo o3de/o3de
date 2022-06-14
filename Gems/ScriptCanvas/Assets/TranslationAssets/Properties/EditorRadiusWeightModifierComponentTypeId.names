@@ -1,15 +1,16 @@
 {
     "entries": [
         {
-            "key": "EditorRadiusWeightModifierComponentTypeId",
+            "base": "EditorRadiusWeightModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Editor Radius Weight Modifier Component Type Id"
+                "name": "Editor Radius Weight Modifier Component Type Id",
+                "category": "Constants/Editor"
             },
             "methods": [
                 {
-                    "key": "GetEditorRadiusWeightModifierComponentTypeId",
+                    "base": "GetEditorRadiusWeightModifierComponentTypeId",
                     "details": {
                         "name": "Get Editor Radius Weight Modifier Component Type Id"
                     },

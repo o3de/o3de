@@ -1,41 +1,41 @@
 {
     "entries": [
         {
-            "key": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
+            "base": "{2B0CF330-B397-519C-867F-800AECBB84A8}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
                 "name": "Multiply By Number",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns matrix created from multiply the source matrix by Multiplier"
+                "tooltip": "returns matrix created from multiply the source matrix by Multiplier"
             },
             "slots": [
                 {
-                    "key": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "key": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
                         "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

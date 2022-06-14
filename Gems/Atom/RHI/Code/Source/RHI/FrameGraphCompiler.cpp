@@ -17,7 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
@@ -288,7 +287,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             /**
              * Each attachment declares which queue classes it can be used on. We require that the first scope be on the most
@@ -627,7 +626,7 @@ namespace AZ
 
                     case Action::DeactivateBuffer:
                     {
-                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRenderer(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                         transientBuffers[attachmentIndex] = nullptr;
@@ -636,7 +635,7 @@ namespace AZ
 
                     case Action::DeactivateImage:
                     {
-                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRenderer(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                         transientImages[attachmentIndex] = nullptr;
