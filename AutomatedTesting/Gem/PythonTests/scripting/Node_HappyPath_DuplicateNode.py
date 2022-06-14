@@ -47,15 +47,15 @@ class Node_HappyPath_DuplicateNode:
     :return: None
     """
 
-
+    # Function for entering and executing a string command in the Command Line Tool (SC > Tools > Command Line)
     def run_command_line_input(self, sc_editor, sc_editor_main_window, command_str):
         command_line_action = pyside_utils.find_child_by_pattern(
             sc_editor_main_window, {"objectName": "action_ViewCommandLine", "type": QtWidgets.QAction}
         )
         command_line_action.trigger()
-        textbox = sc_editor.findChild(QtWidgets.QLineEdit, "commandText")
-        QtTest.QTest.keyClicks(textbox, command_str)
-        QtTest.QTest.keyClick(textbox, Qt.Key_Enter, Qt.NoModifier)
+        command_line_textbox = sc_editor.findChild(QtWidgets.QLineEdit, "commandText")
+        QtTest.QTest.keyClicks(command_line_textbox, command_str)
+        QtTest.QTest.keyClick(command_line_textbox, Qt.Key_Enter, Qt.NoModifier)
 
     def grab_title_text(self, sc_graph_node_inspector, sc_graph):
         scroll_area = sc_graph_node_inspector.findChild(QtWidgets.QScrollArea, "")
@@ -88,7 +88,7 @@ class Node_HappyPath_DuplicateNode:
         sc_graph_node_inspector = sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT)
         create_new_graph.trigger()
 
-        # 3) Add node
+        # 3) Add a node to the graph by emulating the Command Line tool's workflow
         self.run_command_line_input(sc_editor, sc_editor_main_window, COMMAND_LINE_ARGS)
 
         # 4) Duplicate nodes on graph w/ ctrl+a and ctrl+d keystroke
