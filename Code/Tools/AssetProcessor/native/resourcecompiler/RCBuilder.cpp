@@ -512,7 +512,7 @@ namespace AssetProcessor
             AZ_TracePrintf(AssetProcessor::ConsoleChannel,
                 "Job request for %s in builder %s missing job parameters.",
                 request.m_sourceFile.c_str(),
-                request.m_builderGuid.ToString<AZStd::string>().c_str());
+                request.m_builderGuid.ToFixedString().c_str());
 
             return;
         }
@@ -532,7 +532,7 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel,
                     "Job request for %s in builder %s has invalid job parameter (%ld).",
                     request.m_sourceFile.c_str(),
-                    request.m_builderGuid.ToString<AZStd::string>().c_str(),
+                    request.m_builderGuid.ToFixedString().c_str(),
                     jobParam->first);
                 continue;
             }
