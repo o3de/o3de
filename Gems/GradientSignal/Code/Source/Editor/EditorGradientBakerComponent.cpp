@@ -179,7 +179,7 @@ namespace GradientSignal
         bool result = outputImage->write_image(pixelFormat, pixels.data());
         if (!result)
         {
-            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
+            AZ_Error("GradientBaker", result, "Failed to write out gradient baked image to path: %s",
                 absolutePath.c_str());
         }
 
