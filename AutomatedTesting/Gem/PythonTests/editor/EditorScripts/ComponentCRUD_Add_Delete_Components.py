@@ -101,7 +101,7 @@ def ComponentCRUD_Add_Delete_Components():
         general.select_object("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
-        wait_for_propagation()
+        general.idle_wait_frames(3)
 
         # 4) Add/verify Box Shape Component
         editor_window = pyside_utils.get_editor_main_window()
