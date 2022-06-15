@@ -623,7 +623,9 @@ namespace ImageProcessingAtom
         if (auto it = m_presetFilterMap.find(fileMask); it != m_presetFilterMap.end())
         {
             for (const PresetName& presetName : it->second)
+            {
                 presets.push_back(presetName);
+            }
         }
 
         return presets;

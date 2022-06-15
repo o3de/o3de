@@ -231,9 +231,13 @@ namespace ImageProcessingAtom
         process.ProcessAll();
         bool result = process.IsSucceed();
         if (result)
+        {
             return process.GetOutputImage();
+        }
         else
+        {
             return nullptr;
+        }
     }
 
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
