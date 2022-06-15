@@ -207,30 +207,22 @@ namespace AZ::Dom::Utils
                     return reinterpret_cast<WrapperType>(valuePointer);
                 }
             }
-            // Check HasAZTypeInfoIntrusive to determine whether AZ RTTI is present without tripping the static assert in the AzTypeInfo struct
-            if constexpr (AZ::Internal::HasAZTypeInfoIntrusive<T>::value)
-            {
-                if (!value.IsOpaqueValue())
-                {
-                    return {};
-                }
-                const AZStd::any& opaqueValue = value.GetOpaqueValue();
-                if (!opaqueValue.is<WrapperType>())
-                {
-                    // Marshal void* into our type - CanConvertToType will not register this as correct,
-                    // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
-                    if (opaqueValue.is<void*>())
-                    {
-                        return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
-                    }
-                    return {};
-                }
-                return AZStd::any_cast<WrapperType>(opaqueValue);
-            }
-            else
+            if (!value.IsOpaqueValue())
             {
                 return {};
             }
+            const AZStd::any& opaqueValue = value.GetOpaqueValue();
+            if (!opaqueValue.is<WrapperType>())
+            {
+                // Marshal void* into our type - CanConvertToType will not register this as correct,
+                // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
+                if (opaqueValue.is<void*>())
+                {
+                    return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                }
+                return {};
+            }
+            return AZStd::any_cast<WrapperType>(opaqueValue);
         };
 
         if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
