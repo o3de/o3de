@@ -43,6 +43,7 @@ namespace AZ
         bool Overlaps(const Capsule& capsule1, const Capsule& capsule2);
         bool Overlaps(const Capsule& capsule, const Obb& obb);
         bool Overlaps(const Capsule& capsule, const Sphere& sphere);
+        bool Overlaps(const Obb& obb1, const Obb& obb2);
         //! @}
 
         //! Tests to see if Arg1 contains Arg2. Non Symmetric.

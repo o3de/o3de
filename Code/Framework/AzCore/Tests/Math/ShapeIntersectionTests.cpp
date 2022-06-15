@@ -591,4 +591,186 @@ namespace UnitTest
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
     }
+
+    TEST(MATH_ShapeIntersection, ObbObbCompletelyContained)
+    {
+        const AZ::Vector3 obb1Position(2.0f, -1.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.34f, -0.46f, -0.58f, 0.58f);
+        const AZ::Vector3 obb1HalfLengths(4.0f, 5.0f, 6.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(1.0f, 0.0f, 3.0f);
+        const AZ::Quaternion obb2Rotation(-0.16f, 0.64f, -0.68f, 0.32f);
+        const AZ::Vector3 obb2HalfLengths(2.0f, 1.0f, 1.5f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingFaceFace)
+    {
+        const AZ::Vector3 obb1Position(2.0f, 1.0f, -4.0f);
+        const AZ::Quaternion obb1Rotation(0.24f, 0.08f, -0.48f, 0.84f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 3.0f, 2.01f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(1.52f, -1.4f, 0.36f);
+        const AZ::Quaternion obb2Rotation(0.82f, 0.1f, 0.26f, 0.5f);
+        const AZ::Vector3 obb2HalfLengths(2.0f, 3.0f, 1.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateFaceFace)
+    {
+        const AZ::Vector3 obb1Position(2.0f, 1.0f, -4.0f);
+        const AZ::Quaternion obb1Rotation(0.24f, 0.08f, -0.48f, 0.84f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 3.0f, 1.99f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(1.52f, -1.4f, 0.36f);
+        const AZ::Quaternion obb2Rotation(0.82f, 0.1f, 0.26f, 0.5f);
+        const AZ::Vector3 obb2HalfLengths(2.0f, 3.0f, 1.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingFaceEdge)
+    {
+        const AZ::Vector3 obb1Position(-1.0f, 1.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.1f, 0.1f, 0.7f, 0.7f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.5f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(-4.84f, 1.0f, 4.12f);
+        const AZ::Quaternion obb2Rotation(0.14f, 0.02f, 0.98f, 0.14f);
+        const AZ::Vector3 obb2HalfLengths(2.41f, 0.7f, 3.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateFaceEdge)
+    {
+        const AZ::Vector3 obb1Position(-1.0f, 1.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.1f, 0.1f, 0.7f, 0.7f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.5f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(-4.84f, 1.0f, 4.12f);
+        const AZ::Quaternion obb2Rotation(0.14f, 0.02f, 0.98f, 0.14f);
+        const AZ::Vector3 obb2HalfLengths(2.39f, 0.7f, 3.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingFaceVertex)
+    {
+        const AZ::Vector3 obb1Position(3.0f, -1.0f, -2.0f);
+        const AZ::Quaternion obb1Rotation(0.08f, -0.44f, 0.16f, 0.88f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 2.0f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(1.436f, 1.852f, -3.8f);
+        const AZ::Quaternion obb2Rotation(0.52f, -0.56f, -0.56f, 0.32f);
+        const AZ::Vector3 obb2HalfLengths(0.31f, 1.7f, 1.4f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateFaceVertex)
+    {
+        const AZ::Vector3 obb1Position(3.0f, -1.0f, -2.0f);
+        const AZ::Quaternion obb1Rotation(0.08f, -0.44f, 0.16f, 0.88f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 2.0f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(1.436f, 1.852f, -3.8f);
+        const AZ::Quaternion obb2Rotation(0.52f, -0.56f, -0.56f, 0.32f);
+        const AZ::Vector3 obb2HalfLengths(0.29f, 1.7f, 1.4f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingEdgeEdge)
+    {
+        const AZ::Vector3 obb1Position(1.0f, 4.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.7f, 0.1f, -0.7f, 0.1f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.0f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(-2.072f, 3.104f, 0.6f);
+        const AZ::Quaternion obb2Rotation(0.14f, 0.02f, 0.98f, -0.14f);
+        const AZ::Vector3 obb2HalfLengths(2.0f, 0.5f, 1.01f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateEdgeEdge)
+    {
+        const AZ::Vector3 obb1Position(1.0f, 4.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.7f, 0.1f, -0.7f, 0.1f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.0f, 1.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(-2.072f, 3.104f, 0.6f);
+        const AZ::Quaternion obb2Rotation(0.14f, 0.02f, 0.98f, -0.14f);
+        const AZ::Vector3 obb2HalfLengths(2.0f, 0.5f, 0.99f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingEdgeVertex)
+    {
+        const AZ::Vector3 obb1Position(4.0f, 2.0f, 5.0f);
+        const AZ::Quaternion obb1Rotation(-0.58f, 0.22f, 0.26f, 0.74f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(0.696f, 5.9216f, 5.3968f);
+        const AZ::Quaternion obb2Rotation(0.68f, 0.64f, -0.32f, 0.16f);
+        const AZ::Vector3 obb2HalfLengths(1.01f, 3.0f, 1.01f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateEdgeVertex)
+    {
+        const AZ::Vector3 obb1Position(4.0f, 2.0f, 5.0f);
+        const AZ::Quaternion obb1Rotation(-0.58f, 0.22f, 0.26f, 0.74f);
+        const AZ::Vector3 obb1HalfLengths(2.0f, 1.0f, 2.0f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(0.696f, 5.9216f, 5.3968f);
+        const AZ::Quaternion obb2Rotation(0.68f, 0.64f, -0.32f, 0.16f);
+        const AZ::Vector3 obb2HalfLengths(0.99f, 3.0f, 0.99f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustIntersectingVertexVertex)
+    {
+        const AZ::Vector3 obb1Position(-1.0f, 5.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.44f, 0.40f, 0.08f, 0.80f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 1.5f, 3.01f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(3.808f, 0.9208f, 1.4688f);
+        const AZ::Quaternion obb2Rotation(0.50f, 0.10f, 0.26f, 0.82f);
+        const AZ::Vector3 obb2HalfLengths(1.0f, 2.0f, 2.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
+
+    TEST(MATH_ShapeIntersection, ObbObbJustSeparateVertexVertex)
+    {
+        const AZ::Vector3 obb1Position(-1.0f, 5.0f, 3.0f);
+        const AZ::Quaternion obb1Rotation(0.44f, 0.40f, 0.08f, 0.80f);
+        const AZ::Vector3 obb1HalfLengths(1.0f, 1.5f, 2.99f);
+        const AZ::Obb obb1 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb1Position, obb1Rotation, obb1HalfLengths);
+        const AZ::Vector3 obb2Position(3.808f, 0.9208f, 1.4688f);
+        const AZ::Quaternion obb2Rotation(0.50f, 0.10f, 0.26f, 0.82f);
+        const AZ::Vector3 obb2HalfLengths(1.0f, 2.0f, 2.0f);
+        const AZ::Obb obb2 = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obb2Position, obb2Rotation, obb2HalfLengths);
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb1, obb2));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb2, obb1));
+    }
 } // namespace UnitTest

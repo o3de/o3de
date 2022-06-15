@@ -106,4 +106,52 @@ namespace AZ::ShapeIntersection
         // none of the tested axes were separating axes, the shapes must overlap
         return true;
     }
+
+    bool Overlaps(const Obb& obb1, const Obb& obb2)
+    {
+        // the separating axis theorem
+        // there are up to 15 axes to test:
+        // - the 6 axes of the 2 OBBs
+        // - the 9 directions formed by taking cross products of the 3 axes of the first OBB with the 3 axes of the second OBB
+        // if the projections of the two shapes onto any of those axes do not overlap then the shapes do not overlap
+
+        auto overlapsAxis = [&obb1, &obb2](const Vector3& axis)
+        {
+            const Vector3 transformedAxis1 = obb1.GetRotation().GetInverseFast().TransformVector(axis);
+            const float obb1ProjectedPosition = obb1.GetPosition().Dot(axis);
+            const float obb1ProjectedHalfExtent = obb1.GetHalfLengths().Dot(transformedAxis1.GetAbs());
+            const float obb1ProjectedMin = obb1ProjectedPosition - obb1ProjectedHalfExtent;
+            const float obb1ProjectedMax = obb1ProjectedPosition + obb1ProjectedHalfExtent;
+            const Vector3 transformedAxis2 = obb2.GetRotation().GetInverseFast().TransformVector(axis);
+            const float obb2ProjectedPosition = obb2.GetPosition().Dot(axis);
+            const float obb2ProjectedHalfExtent = obb2.GetHalfLengths().Dot(transformedAxis2.GetAbs());
+            const float obb2ProjectedMin = obb2ProjectedPosition - obb2ProjectedHalfExtent;
+            const float obb2ProjectedMax = obb2ProjectedPosition + obb2ProjectedHalfExtent;
+            return obb1ProjectedMax >= obb2ProjectedMin && obb1ProjectedMin <= obb2ProjectedMax;
+        };
+
+        const Vector3 xAxis1 = obb1.GetRotation().TransformVector(AZ::Vector3::CreateAxisX());
+        const Vector3 yAxis1 = obb1.GetRotation().TransformVector(AZ::Vector3::CreateAxisY());
+        const Vector3 zAxis1 = obb1.GetRotation().TransformVector(AZ::Vector3::CreateAxisZ());
+        const Vector3 xAxis2 = obb2.GetRotation().TransformVector(AZ::Vector3::CreateAxisX());
+        const Vector3 yAxis2 = obb2.GetRotation().TransformVector(AZ::Vector3::CreateAxisY());
+        const Vector3 zAxis2 = obb2.GetRotation().TransformVector(AZ::Vector3::CreateAxisZ());
+
+        return
+            overlapsAxis(xAxis1) &&
+            overlapsAxis(yAxis1) &&
+            overlapsAxis(zAxis1) &&
+            overlapsAxis(xAxis2) &&
+            overlapsAxis(yAxis2) &&
+            overlapsAxis(zAxis2) &&
+            overlapsAxis(xAxis1.Cross(xAxis2)) &&
+            overlapsAxis(xAxis1.Cross(yAxis2)) &&
+            overlapsAxis(xAxis1.Cross(zAxis2)) &&
+            overlapsAxis(yAxis1.Cross(xAxis2)) &&
+            overlapsAxis(yAxis1.Cross(yAxis2)) &&
+            overlapsAxis(yAxis1.Cross(zAxis2)) &&
+            overlapsAxis(zAxis1.Cross(xAxis2)) &&
+            overlapsAxis(zAxis1.Cross(yAxis2)) &&
+            overlapsAxis(zAxis1.Cross(zAxis2));
+    }
 } // namespace AZ::ShapeIntersection
