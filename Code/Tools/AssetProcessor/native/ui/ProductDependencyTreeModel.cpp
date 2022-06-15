@@ -12,6 +12,7 @@
 #include <native/ui/ProductAssetTreeItemData.h>
 
 #include <QIcon>
+#include <QItemSelection>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>

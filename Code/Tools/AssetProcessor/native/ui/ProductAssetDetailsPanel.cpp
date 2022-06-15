@@ -16,6 +16,7 @@
 #include <AssetDatabase/AssetDatabase.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzCore/std/algorithm.h>
+#include <AzQtComponents/Components/StyleManager.h>
 
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_ProductAssetDetailsPanel.h>

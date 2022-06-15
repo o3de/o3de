@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <QString>
+#include <QVariant>
 
 namespace AZ
 {
