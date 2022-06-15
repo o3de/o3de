@@ -314,7 +314,7 @@ namespace AZ::Dom::Utils
     {
         Dom::Value result(Dom::Type::Object);
         result[TypeFieldName] = Dom::Value(PointerTypeName.GetStringView(), false);
-        result[PointerValueFieldName] = Dom::Value(reinterpret_cast<AZ::u64>(value));
+        result[PointerValueFieldName] = Dom::Value(reinterpret_cast<uint64_t>(value));
         Dom::Value typeName = TypeIdToDomValue(typeId);
         if (!typeName.GetString().empty())
         {
