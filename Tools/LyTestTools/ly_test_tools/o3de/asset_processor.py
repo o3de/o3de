@@ -263,7 +263,7 @@ class AssetProcessor(object):
         waiter.wait_for(_attempt_connection, timeout=timeout, exc=err)
         return True, None
 
-    def stop(self, timeout=60):
+    def stop(self, timeout=60, ap_stop_test=False):
         """
          Stops the AssetProcessor. First attempts a clean shutdown over the control channel
          if open.  Calls terminate if no control connection is open
@@ -277,28 +277,53 @@ class AssetProcessor(object):
             return
 
         if not self._control_connection:
-            logger.info("No control connection open, using terminate")
-            return self.terminate()
+            if ap_stop_test:
+                logger.info("No control connection open, using terminate")
+                self.terminate()
+                raise ValueError("NoControlConnection")
+            else:
+                logger.info("No control connection open, using terminate")
+                return self.terminate()
 
         try:
             if not self.send_quit():
-                logger.warning("Failed to send quit command, using terminate")
-                self.terminate()
+                if ap_stop_test:
+                    logger.info("Failed to send quit command, using terminate")
+                    self.terminate()
+                    raise ValueError("NoQuitCommand")
+                else:
+                    logger.warning("Failed to send quit command, using terminate")
+                    self.terminate()
         except IOError as e:
-            logger.warning(f"Failed to send quit request with error {e}, stopping")
-            self.terminate()
-        wait_timeout = timeout
+            if ap_stop_test:
+                logger.info(f"Failed to send quit request with error {e}, stopping")
+                self.terminate()
+                raise ValueError("IOError")
+            else:
+                logger.warning(f"Failed to send quit request with error {e}, stopping")
+                self.terminate()
 
+        wait_timeout = timeout
         try:
             waiter.wait_for(lambda: not self.process_exists(), exc=AssetProcessorError, timeout=wait_timeout)
         except AssetProcessorError:
-            logger.warning(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
-            self.terminate()
-            pass
+            if ap_stop_test:
+                logger.info(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
+                self.terminate()
+                raise ValueError("Timeout")
+            else:
+                logger.warning(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
+                self.terminate()
+                pass
 
         if self.process_exists():
-            logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
-            self.terminate()
+            if ap_stop_test:
+                logger.info(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
+                self.terminate()
+                raise ValueError("FailedToStop")
+            else:
+                logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
+                self.terminate()
         self._ap_proc = None
 
     def terminate(self):

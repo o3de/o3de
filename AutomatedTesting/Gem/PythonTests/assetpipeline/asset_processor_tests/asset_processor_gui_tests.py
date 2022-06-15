@@ -350,16 +350,15 @@ class TestsAssetProcessorGUI_Windows(object):
         5. Verify that Asset Processor times out and returns the expected error
         """
 
-        asset_processor.create_temp_asset_root()
         asset_processor.start()
 
         # Copy in some assets, so that the AP will be busy when the stop command is called.
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest")
-
         ap_quit_timed_out = False
         try:
-            asset_processor.stop(timeout=1)
-        except AssetProcessorError:
+            asset_processor.stop(timeout=0, ap_stop_test=True)
+        except ValueError as err:
+            assert err.args == ("Timeout",), "Expected ValueError was not encountered."
             ap_quit_timed_out = True
         assert ap_quit_timed_out, "AP did not time out as expected"
 
@@ -384,7 +383,27 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.start()
         ap_quit_timed_out = False
         try:
-            asset_processor.stop()
-        except AssetProcessorError:
+            asset_processor.stop(ap_stop_test=True)
+        except AssetProcessorError():
             ap_quit_timed_out = True
         assert not ap_quit_timed_out, "AP timed out"
+
+    def test_APStopNoControlConnection_ExceptionThrown(self, ap_setup_fixture, asset_processor):
+        """
+        Test Steps:
+        1. Create a temporary testing environment
+        2. Start Asset Processor
+        3. Disconnect the control_connection
+        4. Stop Asset Processor
+        5. Verify AP detected no control_connection and terminated
+        """
+        asset_processor.create_temp_asset_root()
+        asset_processor.start()
+        asset_processor.set_control_connection(None)
+        ap_terminated = False
+        try:
+            asset_processor.stop(ap_stop_test=True)
+        except ValueError as err:
+            assert err.args == ("NoControlConnection",), "Expected ValueError was not encountered"
+            ap_terminated = True
+        assert ap_terminated, "AP was not terminated as expected"
