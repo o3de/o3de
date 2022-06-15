@@ -354,11 +354,11 @@ namespace AzToolsFramework
         Clear();
 
         // determine whether this node should be expanded
-        auto forceExpandAttribute = domArray.FindMember(AZ::Dpe::Nodes::Row::ForceAutoExpand.GetName());
-        if (forceExpandAttribute != domArray.MemberEnd())
+        auto forceExpandAttribute = AZ::Dpe::Nodes::Row::ForceAutoExpand.ExtractFromDomNode(domArray);
+        if (forceExpandAttribute.has_value())
         {
             // forced attribute always wins, set the expansion state
-            m_columnLayout->SetExpanded(forceExpandAttribute->second.GetBool());
+            m_columnLayout->SetExpanded(forceExpandAttribute.value());
         }
         else
         {
@@ -371,10 +371,10 @@ namespace AzToolsFramework
             else
             {
                 // no prior expansion state set, use the AutoExpand attribute, if it's set
-                auto autoExpandAttribute = domArray.FindMember(AZ::Dpe::Nodes::Row::AutoExpand.GetName());
-                if (autoExpandAttribute != domArray.MemberEnd())
+                auto autoExpandAttribute = AZ::Dpe::Nodes::Row::AutoExpand.ExtractFromDomNode(domArray);
+                if (autoExpandAttribute.has_value())
                 {
-                    m_columnLayout->SetExpanded(autoExpandAttribute->second.GetBool());
+                    m_columnLayout->SetExpanded(autoExpandAttribute.value());
                 }
                 else
                 {
@@ -431,7 +431,7 @@ namespace AzToolsFramework
                 if (rowToRemove)
                 {
                     // we're removing a row, remove any associated saved expander state
-                    GetDPE()->RemoveExpanderStateForRow(this);
+                    GetDPE()->RemoveExpanderStateForRow(rowToRemove);
                 }
 
                 (*childIterator)->deleteLater(); // deleting the widget also automatically removes it from the layout
