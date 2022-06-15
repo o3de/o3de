@@ -207,6 +207,7 @@ namespace AZ::Dom::Utils
                     return reinterpret_cast<WrapperType>(valuePointer);
                 }
             }
+            // Check HasAZTypeInfoIntrusive to determine whether AZ RTTI is present without tripping the static assert in the AzTypeInfo struct
             if constexpr (AZ::Internal::HasAZTypeInfoIntrusive<T>::value)
             {
                 if (!value.IsOpaqueValue())
