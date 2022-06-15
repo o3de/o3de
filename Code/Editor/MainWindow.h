@@ -61,6 +61,7 @@ namespace AzToolsFramework
 {
     class ActionManagerInterface;
     class MenuManagerInterface;
+    class ToolBarManagerInterface;
     class Ticker;
     class QtSourceControlNotificationHandler;
 
@@ -215,10 +216,12 @@ private:
     // Editor Action Manager initialization functions
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
     void InitializeActionContext();
     void InitializeActions();
     void InitializeMenus();
+    void InitializeToolBars();
 
 private Q_SLOTS:
     void ShowKeyboardCustomization();

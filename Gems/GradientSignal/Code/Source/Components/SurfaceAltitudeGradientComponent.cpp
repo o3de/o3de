@@ -282,7 +282,8 @@ namespace GradientSignal
     void SurfaceAltitudeGradientComponent::OnSurfaceChanged(
         [[maybe_unused]] const AZ::EntityId& entityId,
         [[maybe_unused]] const AZ::Aabb& oldBounds,
-        [[maybe_unused]] const AZ::Aabb& newBounds)
+        [[maybe_unused]] const AZ::Aabb& newBounds,
+        [[maybe_unused]] const SurfaceData::SurfaceTagSet& changedSurfaceTags)
     {
         /* The following logic is currently disabled until we can find a safer way to do this.
            The intent of the logic is to make the SurfaceAltitudeGradient refresh its data if the surface(s) that it depends on changes.

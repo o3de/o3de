@@ -26,6 +26,10 @@ namespace UnitTest
         m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         ASSERT_TRUE(m_menuManagerInterface != nullptr);
 
+        m_toolBarManager = AZStd::make_unique<AzToolsFramework::ToolBarManager>();
+        m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+        ASSERT_TRUE(m_toolBarManagerInterface != nullptr);
+
         m_widget = new QWidget();
     }
 

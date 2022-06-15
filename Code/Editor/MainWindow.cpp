@@ -43,6 +43,7 @@
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -505,6 +506,12 @@ void MainWindow::Initialize()
             if (m_menuManagerInterface)
             {
                 InitializeMenus();
+            }
+
+            m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+            if (m_toolBarManagerInterface)
+            {
+                InitializeToolBars();
             }
         }
     }
@@ -2455,6 +2462,19 @@ void MainWindow::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
+}
+
+void MainWindow::InitializeToolBars()
+{
+    // Initialize ToolBars
+    {
+        ToolBarProperties toolBarProperties;
+        toolBarProperties.m_name = "Play Controls";
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.editor.playcontrols", toolBarProperties);
+    }
+
+    // Set the toolbar
+    this->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar("o3de.toolbar.editor.playcontrols"));
 }
 
 namespace AzToolsFramework
