@@ -17,6 +17,25 @@ from unittest.mock import patch
 from o3de import enable_gem
 
 
+TEST_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "o3de",
+    "restricted_name": "o3de",
+    "FileVersion": 1,
+    "O3DEVersion": "0.0.0.0",
+    "O3DECopyrightYear": 2021,
+    "O3DEBuildNumber": 0,
+    "external_subdirectories": [
+        "Gems/TestGem2"
+    ],
+    "projects": [
+    ],
+    "templates": [
+        "Templates/MinimalProject"
+    ]
+}
+'''
+
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
@@ -92,6 +111,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
 def init_enable_gem_data(request):
     class EnableGemData:
         def __init__(self):
+            self.engine_data = json.loads(TEST_ENGINE_JSON_PAYLOAD)
             self.project_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
             self.gem_data = json.loads(TEST_GEM_JSON_PAYLOAD)
     request.cls.enable_gem = EnableGemData()
@@ -161,6 +181,119 @@ class TestEnableGemCommand:
             gem_json = get_gem_json_data(gem_path, project_path)
             project_json = get_project_json_data(project_path=project_path)
             if not gem_registered_with_engine and not gem_registered_with_project:
+                assert gem_json.get('gem_name', '') in project_json.get('gem_names', [])
+            else:
+                assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
+
+    @pytest.mark.parametrize("gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,"
+                             "gem_version, gem_dependencies, gem_names_and_versions, check, "
+                             "engine_dependencies, test_engine_name, test_engine_version, expected_result", [
+        # passes when no version information is provided
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 
+                    '', [], {}, False, [], 'o3de-test', '', 0),
+        # passes when a compatible engine version is provided
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
+                    '1.2.3.4', [], {}, False, ['o3de-test>=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+        # fails when no compatible engine version is found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', [], {}, False, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+        # fails when no compatible engine is found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', [], {}, False, ['o3de-test<1.0.0.0'], 'other-engine', '0.0.0.0', 1),
+        # passes when dependent gems and engines are found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
+                    False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+        # fails when dependent gem is not found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4'}, 
+                    False, ['o3de-test<=1.0.0.0'], 'o3de-test', '0.0.0.0', 1),
+        # fails when dependent gem with wrong version found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.0.0.0', 'testgem2':'1.0.0.0'}, 
+                    False, ['o3de-test~=1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+        # does not modify project when check only 
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
+                    '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
+                    True, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+        ]
+    )
+    def test_enable_gem_checks_version_compatibility(self, gem_path, project_path, gem_registered_with_project, 
+                                                    gem_registered_with_engine, gem_version, gem_dependencies, 
+                                                    gem_names_and_versions, check, engine_dependencies, 
+                                                    test_engine_name, test_engine_version, expected_result):
+
+        def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path:
+            if project_name:
+                return project_path
+            elif gem_name:
+                return gem_path
+            return None
+
+        def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:
+            if manifest_path == project_path / 'project.json':
+                self.enable_gem.project_data = new_project_data
+            return True
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            if not manifest_path:
+                return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+            return None
+
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            engine_data = self.enable_gem.engine_data.copy()
+            engine_data['engine_name'] = test_engine_name
+            engine_data['engine_version'] = test_engine_version
+            return engine_data
+
+        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+            project_data = self.enable_gem.project_data
+            return project_data
+
+        def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
+            gem_data = self.enable_gem.gem_data.copy()
+            if gem_path.name in gem_names_and_versions:
+                gem_data['gem_name'] = gem_path.name 
+                gem_data['gem_version'] = gem_names_and_versions[gem_path.name] 
+            else:
+                gem_data['gem_version'] = gem_version
+                gem_data['dependencies'] = gem_dependencies
+                gem_data['engine_dependencies'] = engine_dependencies
+            return gem_data
+
+        def get_project_gems(project_path: pathlib.Path):
+            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
+
+        def get_engine_gems():
+            gem_paths = list(map(lambda path:pathlib.Path(path).resolve(), gem_names_and_versions.keys()))
+            if gem_registered_with_engine:
+                gem_paths.append(pathlib.Path(gem_path).resolve())
+            return gem_paths
+
+        def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
+            return 0
+
+        with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
+                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
+                patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
+                patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
+                patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
+                patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
+                patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
+                patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
+                patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
+
+            self.enable_gem.project_data.pop('gem_names', None)
+            result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, check=check)
+            assert result == expected_result
+
+            gem_json = get_gem_json_data(gem_path, project_path)
+            project_json = get_project_json_data(project_path=project_path)
+            if not gem_registered_with_engine and not gem_registered_with_project and not check:
                 assert gem_json.get('gem_name', '') in project_json.get('gem_names', [])
             else:
                 assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])

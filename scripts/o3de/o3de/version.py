@@ -8,17 +8,25 @@
 """
 This file contains version utilities
 """
-from packaging.version import Version
+from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import re
 
 
 def has_compatible_version(name_and_version_specifier_list:list, object_name:str, object_version:str) -> str or None:
-    version = Version(object_version)
+    try:
+        version = Version(object_version)
+    except InvalidVersion as e:
+        return False
+
     for name_and_version_specifier in name_and_version_specifier_list:
-        name, version_specifier = get_object_name_and_version_specifier(name_and_version_specifier)
-        if name == object_name and version in SpecifierSet(version_specifier):
-            return True
+        try:
+            name, version_specifier = get_object_name_and_version_specifier(name_and_version_specifier)
+            if name == object_name and version in SpecifierSet(version_specifier):
+                return True
+        except Exception as e:
+            # skip invalid specifiers
+            pass
 
     return False 
 
