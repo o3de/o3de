@@ -51,10 +51,10 @@ namespace Multiplayer
                 recvHistogram.m_histogram.Init(recvName.c_str(), 250, ImGui::LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 100.0f);
             }
 
-            sendHistogram.m_histogram.PushValue(static_cast<float>(metrics.m_sendBytes - sendHistogram.m_lastValue));
+            sendHistogram.m_histogram.PushValue(aznumeric_cast<float>(metrics.m_sendBytes - sendHistogram.m_lastValue));
             sendHistogram.m_lastValue = metrics.m_sendBytes;
 
-            recvHistogram.m_histogram.PushValue(static_cast<float>(metrics.m_recvBytes - recvHistogram.m_lastValue));
+            recvHistogram.m_histogram.PushValue(aznumeric_cast<float>(metrics.m_recvBytes - recvHistogram.m_lastValue));
             recvHistogram.m_lastValue = metrics.m_recvBytes;
 
             if (ImGui::CollapsingHeader(networkInterface.second->GetName().GetCStr()))
