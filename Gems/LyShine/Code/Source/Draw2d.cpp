@@ -103,8 +103,9 @@ void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
     AZ::RPI::SceneId sceneId = scene->GetId();
     LyShinePassRequestBus::EventResult(uiCanvasPass, sceneId, &LyShinePassRequestBus::Events::GetUiCanvasPass);
 
-    if (!uiCanvasPass) {
-        AZ_Warning("Draw2d", false, "No UiCanvasPass found in Render-Pipeline!");
+    if (!uiCanvasPass)
+    {
+        AZ_Error("Draw2d", false, "No UiCanvasPass found in Render-Pipeline.");
         return;
     }
 
