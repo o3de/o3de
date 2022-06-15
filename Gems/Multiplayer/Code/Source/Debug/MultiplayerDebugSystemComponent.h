@@ -53,7 +53,6 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
-#ifdef IMGUI_ENABLED
         //! IMultiplayerDebug overrides
         //! @{
         void ShowEntityBandwidthDebugOverlay() override;
@@ -66,6 +65,7 @@ namespace Multiplayer
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails) override;
         //! @}
 
+#ifdef IMGUI_ENABLED
         //! ImGui::ImGuiUpdateListenerBus overrides
         //! @{
         void OnImGuiMainMenuUpdate() override;

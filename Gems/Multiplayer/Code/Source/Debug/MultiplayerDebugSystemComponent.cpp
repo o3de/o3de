@@ -54,8 +54,8 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::Activate()
     {
-        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, m_applicationType);
 #ifdef IMGUI_ENABLED
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, m_applicationType);
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         m_networkMetrics = AZStd::make_unique<MultiplayerDebugNetworkMetrics>();
         m_multiplayerMetrics = AZStd::make_unique<MultiplayerDebugMultiplayerMetrics>();
@@ -71,21 +71,26 @@ namespace Multiplayer
 
     void MultiplayerDebugSystemComponent::ShowEntityBandwidthDebugOverlay()
     {
+#ifdef IMGUI_ENABLED
         m_reporter = AZStd::make_unique<MultiplayerDebugPerEntityReporter>();
+#endif
     }
 
     void MultiplayerDebugSystemComponent::HideEntityBandwidthDebugOverlay()
     {
+#ifdef IMGUI_ENABLED
         m_reporter.reset();
+#endif
     }
 
     void MultiplayerDebugSystemComponent::AddAuditEntry(
-        const AuditCategory category,
-        const ClientInputId inputId,
-        const HostFrameId frameId,
-        const AZStd::string& name,
-        AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
+        [[maybe_unused]] const AuditCategory category,
+        [[maybe_unused]] const ClientInputId inputId,
+        [[maybe_unused]] const HostFrameId frameId,
+        [[maybe_unused]] const AZStd::string& name,
+        [[maybe_unused]] AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+#ifdef IMGUI_ENABLED
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
             m_auditTrailElems.pop_back();
@@ -106,6 +111,7 @@ namespace Multiplayer
                 m_pendingAuditTrail.pop_back();
             }
         }
+#endif
     }
 
 #ifdef IMGUI_ENABLED
@@ -277,7 +283,6 @@ namespace Multiplayer
             m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         }
     }
-#endif
 
     void MultiplayerDebugSystemComponent::FilterAuditTrail()
     {
@@ -394,6 +399,7 @@ namespace Multiplayer
             }
         }
     }
+#endif
 }
 
 void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)
