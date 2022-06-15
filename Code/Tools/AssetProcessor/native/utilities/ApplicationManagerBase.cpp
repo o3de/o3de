@@ -1402,6 +1402,28 @@ bool ApplicationManagerBase::CheckReprocessFileList()
     return true;
 }
 
+void ApplicationManagerBase_CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName)
+{
+    if (!entityName || !entityName[0])
+    {
+        entityName = "ToolsApplication Entity";
+    }
+
+    AZ::SerializeContext* serializeContext = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+    AZ::Entity* entity = aznew AZ::Entity(entityName);
+    AZStd::unordered_set<AZ::Uuid> componentsToAddToEntity;
+    AZ::Edit::GetComponentUuidsWithSystemComponentTag(serializeContext, requiredTags, componentsToAddToEntity);
+
+    for (const AZ::Uuid& typeId : componentsToAddToEntity)
+    {
+        entity->CreateComponent(typeId);
+    }
+    entity->Init();
+    entity->Activate();
+}
+
 bool ApplicationManagerBase::Activate()
 {
     QDir projectCache;
@@ -1448,6 +1470,9 @@ bool ApplicationManagerBase::Activate()
     }
 
     InitBuilderConfiguration();
+ActivateModules();
+ApplicationManagerBase_CreateAndAddEntityFromComponentTags(AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Automation") }), "Automation Entity");
+
     PopulateApplicationDependencies();
 
     InitAssetProcessorManager();
