@@ -48,7 +48,7 @@ namespace Terrain
         //! The actual max resolution may be bigger due to rounding.
         //! Resolution in: texels per meter.
         float m_macroClipmapMaxResolution = 2.0f;
-        float m_detailClipmapMaxResolution = 1024.0f;
+        float m_detailClipmapMaxResolution = 2048.0f;
 
         //! The scale base between two adjacent clipmap layers.
         //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times

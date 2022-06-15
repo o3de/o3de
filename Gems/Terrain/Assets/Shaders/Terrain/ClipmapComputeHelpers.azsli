@@ -169,23 +169,11 @@ struct ClipmapLevel
 };
 
 // returns 1.0 for true, 0.0 for false.
-float AabbContainsPoint(float2 center, float extent, float2 point_)
+float CircleContainsPoint(float2 center, float extent, float2 point_)
 {
-    float2 aabbMin = center - float2(extent, extent);
-    float2 aabbMax = center + float2(extent, extent);
-
-    // Use (x - aabb.x1)(x - aabb.x2) < 0 for collision detection.
-    float2 minDiff = point_ - aabbMin;
-    float2 maxDiff = point_ - aabbMax;
-    float2 det = float2(minDiff.x * maxDiff.x, minDiff.y * maxDiff.y);
-    float2 contains = step(float2(0.0, 0.0), det);
-    // x axis | y axis | result we want | x - 1 | y - 1 | (x - 1)(y - 1)
-    //    0   |   0    |      1         |   -1  |   -1  |        1
-    //    0   |   1    |      0         |   -1  |    0  |        0
-    //    1   |   0    |      0         |    0  |   -1  |        0
-    //    1   |   1    |      0         |    0  |    0  |        0
-    contains = contains - float2(1.0, 1.0);
-    return contains.x * contains.y;
+    float2 diff = abs(point_ - center);
+    float contains = step(dot(diff, diff), extent * extent);
+    return contains;
 }
 
 ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
@@ -200,7 +188,7 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
         float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapIndex);
         float extent = TerrainSrg::m_clipmapData.m_validMacroClipmapRadius * clipmapToWorldScale;
 
-        float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
+        float contains = CircleContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
     }
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_macroClipmapStackSize - uint(closestLevel);
@@ -211,10 +199,9 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
     float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel.m_closestLevel);
 
     float blendBeginDistance = TerrainSrg::m_clipmapData.m_validMacroClipmapRadius - TerrainSrg::m_clipmapData.m_clipmapBlendSize;
-    // Clipmap uses Chebyshev distance
-    float2 distance = abs(worldPosition - clipmapCenterInWorldSpace);
-    float cDistance = max(distance.x, distance.y) / clipmapToWorldScale;
-    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize);
+    float2 diff = worldPosition - clipmapCenterInWorldSpace;
+    float distance = sqrt(dot(diff, diff)) / clipmapToWorldScale;
+    clipmapLevel.m_weight = clamp((distance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize, 0.0, 1.0);
 
     return clipmapLevel;
 }
@@ -234,7 +221,7 @@ ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
         float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapIndex);
         float extent = TerrainSrg::m_clipmapData.m_validDetailClipmapRadius * clipmapToWorldScale;
 
-        float contains = AabbContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
+        float contains = CircleContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
     }
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_detailClipmapStackSize - uint(closestLevel);
@@ -245,10 +232,9 @@ ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
     float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel.m_closestLevel);
 
     float blendBeginDistance = TerrainSrg::m_clipmapData.m_validDetailClipmapRadius - TerrainSrg::m_clipmapData.m_clipmapBlendSize;
-    // Clipmap uses Chebyshev distance
-    float2 distance = abs(worldPosition - clipmapCenterInWorldSpace);
-    float cDistance = max(distance.x, distance.y) / clipmapToWorldScale;
-    clipmapLevel.m_weight = max(0.0, (cDistance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize);
+    float2 diff = worldPosition - clipmapCenterInWorldSpace;
+    float distance = sqrt(dot(diff, diff)) / clipmapToWorldScale;
+    clipmapLevel.m_weight = clamp((distance - blendBeginDistance) / TerrainSrg::m_clipmapData.m_clipmapBlendSize, 0.0, 1.0);
 
     return clipmapLevel;
 }
