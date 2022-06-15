@@ -23,7 +23,7 @@ namespace AZ::Render
         : private AZ::Render::MeshHandleStateNotificationBus::Handler
     {
     public:
-        DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial);
+        DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial, Name drawList);
         ~DrawableMeshEntity();
 
         //! Returns true if this entity can be drawn, otherwise false.
@@ -60,6 +60,7 @@ namespace AZ::Render
         EntityId m_entityId;
         const MeshFeatureProcessorInterface::MeshHandle* m_meshHandle = nullptr;
         Data::Instance<RPI::Material> m_maskMaterial = nullptr;
+        Name m_drawList;
         RPI::ModelLodIndex m_modelLodIndex = RPI::ModelLodIndex::Null;
         AZStd::vector<EditorStateMeshDrawPacket> m_meshDrawPackets;
     };

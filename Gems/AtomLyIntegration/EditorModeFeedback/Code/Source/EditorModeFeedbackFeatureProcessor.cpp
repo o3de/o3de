@@ -37,7 +37,7 @@ namespace AZ
 
             EditorStateParentPassList editorStatePasses;
             editorStatePasses.push_back(AZStd::make_unique<FocusedEntityParentPass>());
-            //editorStatePasses.push_back(AZStd::make_unique<SelectedEntityParentPass>());
+            editorStatePasses.push_back(AZStd::make_unique<SelectedEntityParentPass>());
             m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStatePasses));
         }
 

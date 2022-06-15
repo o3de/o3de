@@ -34,6 +34,7 @@ namespace AZ::Render
             RPI::ModelLod& modelLod,
             size_t modelLodMeshIndex,
             Data::Instance<RPI::Material> materialOverride,
+            AZ::Name drawList,
             Data::Instance<RPI::ShaderResourceGroup> objectSrg,
             const RPI::MaterialModelUvOverrideMap& materialModelUvMap = {});
 
@@ -95,5 +96,6 @@ namespace AZ::Render
         typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
         typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
         ShaderOptionVector m_shaderOptions;
+        RHI::DrawListTag m_drawListTag;
     };
 } // namespace AZ::Render

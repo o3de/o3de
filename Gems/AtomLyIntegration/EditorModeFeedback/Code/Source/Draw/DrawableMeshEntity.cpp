@@ -66,9 +66,10 @@ namespace AZ::Render
         return m_featureProcessor;
     }
 
-    DrawableMeshEntity::DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial)
+    DrawableMeshEntity::DrawableMeshEntity(EntityId entityId, Data::Instance<RPI::Material> maskMaterial, Name drawList)
         : m_entityId(entityId)
         , m_maskMaterial(maskMaterial)
+        , m_drawList(drawList)
     {
         AZ::Render::MeshHandleStateNotificationBus::Handler::BusConnect(m_entityId);
     }
@@ -166,7 +167,7 @@ namespace AZ::Render
 
         for (size_t i = 0; i < modelLod->GetMeshes().size(); i++)
         {
-            EditorStateMeshDrawPacket drawPacket(*modelLod, i, m_maskMaterial, meshObjectSrg);
+            EditorStateMeshDrawPacket drawPacket(*modelLod, i, m_maskMaterial, m_drawList, meshObjectSrg);
             m_meshDrawPackets.emplace_back(drawPacket);
         }
     }

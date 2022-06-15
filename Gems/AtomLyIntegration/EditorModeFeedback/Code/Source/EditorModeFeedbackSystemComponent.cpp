@@ -150,7 +150,9 @@ namespace AZ
                 if (auto focusedEntity = m_focusedEntities.find(focusedEntityId);
                     focusedEntity == m_focusedEntities.end())
                 {
-                    m_focusedEntities.emplace(AZStd::piecewise_construct, AZStd::forward_as_tuple(focusedEntityId), AZStd::forward_as_tuple(focusedEntityId, m_maskMaterial));
+                    m_focusedEntities.emplace(
+                        AZStd::piecewise_construct, AZStd::forward_as_tuple(focusedEntityId),
+                        AZStd::forward_as_tuple(focusedEntityId, m_maskMaterial, Name("editormodeselectedmask")));
                 }
             }
 

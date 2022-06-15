@@ -31,6 +31,7 @@ namespace AZ::Render
         RPI::ModelLod& modelLod,
         size_t modelLodMeshIndex,
         Data::Instance<RPI::Material> materialOverride,
+        AZ::Name drawList,
         Data::Instance<RPI::ShaderResourceGroup> objectSrg,
         const RPI::MaterialModelUvOverrideMap& materialModelUvMap
     )
@@ -45,6 +46,10 @@ namespace AZ::Render
             const RPI::ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
             m_material = mesh.m_material;
         }
+
+        RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+        RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
+        m_drawListTag = drawListTagRegistry->AcquireTag(drawList);
     }
 
     Data::Instance<RPI::Material> EditorStateMeshDrawPacket::GetMaterial()
@@ -153,34 +158,7 @@ namespace AZ::Render
 
         auto appendShader = [&](const RPI::ShaderCollection::Item& shaderItem)
         {
-            // Skip the shader item without creating the shader instance
-            // if the mesh is not going to be rendered based on the draw tag
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
-
-            // Use the explicit draw list override if exists.
-            RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
-
-            if (drawListTag.IsNull())
-            {
-                Data::Asset<RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
-                if (!shaderAsset.IsReady())
-                {
-                    // The shader asset needs to be loaded before we can check the draw tag.
-                    // If it's not loaded yet, the instance database will do a blocking load
-                    // when we create the instance below, so might as well load it now.
-                    shaderAsset.QueueLoad();
-
-                    if (shaderAsset.IsLoading())
-                    {
-                        shaderAsset.BlockUntilLoadComplete();
-                    }
-                }
-
-                drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
-            }
-
-            if (!parentScene.HasOutputForPipelineState(drawListTag))
+            if (!parentScene.HasOutputForPipelineState(m_drawListTag))
             {
                 // drawListTag not found in this scene, so don't render this item
                 return false;
@@ -274,7 +252,7 @@ namespace AZ::Render
                 drawSrg->Compile();
             }
 
-            parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
+            parentScene.ConfigurePipelineState(m_drawListTag, pipelineStateDescriptor);
 
             const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
@@ -284,7 +262,7 @@ namespace AZ::Render
             }
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
-            drawRequest.m_listTag = drawListTag;
+            drawRequest.m_listTag = m_drawListTag;
             drawRequest.m_pipelineState = pipelineState;
             drawRequest.m_streamBufferViews = streamBufferViews;
             drawRequest.m_stencilRef = m_stencilRef;
