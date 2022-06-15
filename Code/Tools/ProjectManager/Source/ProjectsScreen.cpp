@@ -368,7 +368,11 @@ namespace O3DE::ProjectManager
             }
         }
 
-        m_stack->setCurrentWidget(m_projectsContent);
+        if (m_projectsContent)
+        {
+            m_stack->setCurrentWidget(m_projectsContent);
+        }
+
         m_projectsFlowLayout->update();
     }
 

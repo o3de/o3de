@@ -55,9 +55,13 @@ namespace SurfaceData
                 ;
 
             behaviorContext->EBus<SurfaceDataSystemRequestBus>("SurfaceDataSystemRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)
+                ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
+                ->Event("GetSurfaceDataProviderHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataProviderHandle)
+                ->Event("GetSurfaceDataModifierHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle)
                 ;
 
             behaviorContext->EBus<SurfaceDataSystemNotificationBus>("SurfaceDataSystemNotificationBus")
