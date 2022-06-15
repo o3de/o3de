@@ -262,9 +262,10 @@ namespace AZ
 
             RenderPipelinePtr m_defaultPipeline;
 
-            // Mapping of draw list tag and a group of pipeline states info built from scene's render pipeline passes
-            bool m_pipelineStatesLookup_needs_rebuild = false;
+            // Rebuild the m_pipelineStatesLookup after queued Pipeline changes have been applied.
+            bool m_pipelineStatesLookupNeedsRebuild = false;
 
+            // Mapping of draw list tag and a group of pipeline states info built from scene's render pipeline passes
             AZStd::map<RHI::DrawListTag, PipelineStateList> m_pipelineStatesLookup;
 
             // reference of dynamic draw system (from RPISystem)

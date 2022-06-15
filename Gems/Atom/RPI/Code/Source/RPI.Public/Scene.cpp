@@ -696,9 +696,10 @@ namespace AZ
             }
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
-            if (m_pipelineStatesLookup_needs_rebuild) {
+            if (m_pipelineStatesLookupNeedsRebuild)
+            {
                 RebuildPipelineStatesLookup();
-                m_pipelineStatesLookup_needs_rebuild = false;
+                m_pipelineStatesLookupNeedsRebuild = false;
             }
 
             // Return if there is no active render pipeline
@@ -894,9 +895,8 @@ namespace AZ
 
         void Scene::PipelineStateLookupNeedsRebuild()
         {
-            m_pipelineStatesLookup_needs_rebuild = true;
+            m_pipelineStatesLookupNeedsRebuild = true;
         }
-
 
         bool Scene::ConfigurePipelineState(RHI::DrawListTag drawListTag, RHI::PipelineStateDescriptorForDraw& outPipelineState) const
         {
