@@ -13,6 +13,11 @@
 
 namespace AZ::Dom::Utils
 {
+    const AZ::Name TypeFieldName = AZ::Name::FromStringLiteral("$type");
+    const AZ::Name PointerTypeName = AZ::Name::FromStringLiteral("pointer");
+    const AZ::Name PointerValueFieldName = AZ::Name::FromStringLiteral("value");
+    const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType");
+
     Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor)
     {
         return backend.ReadFromBuffer(string.data(), string.length(), lifetime, visitor);

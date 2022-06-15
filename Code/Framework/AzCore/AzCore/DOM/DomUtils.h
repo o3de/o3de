@@ -92,10 +92,10 @@ namespace AZ::Dom::Utils
     template<typename T>
     using DomValueWrapperType = typename DomValueWrapper<T>::Type;
 
-    static const AZ::Name TypeFieldName = AZ::Name::FromStringLiteral("$type");
-    static const AZ::Name PointerTypeName = AZ::Name::FromStringLiteral("pointer");
-    static const AZ::Name PointerValueFieldName = AZ::Name::FromStringLiteral("value");
-    static const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType");
+    extern const AZ::Name TypeFieldName;
+    extern const AZ::Name PointerTypeName;
+    extern const AZ::Name PointerValueFieldName;
+    extern const AZ::Name PointerTypeFieldName;
 
     Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId);
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
