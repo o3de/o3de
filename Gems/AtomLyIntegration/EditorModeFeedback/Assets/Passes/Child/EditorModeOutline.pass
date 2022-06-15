@@ -36,12 +36,27 @@
                     }
                 }
             ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    }
+                }
+            ],
             "Connections": [
                 {
                     "LocalSlot": "OutputColor",
                     "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "ColorInputOutput"
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
                     }
                 }
             ],
