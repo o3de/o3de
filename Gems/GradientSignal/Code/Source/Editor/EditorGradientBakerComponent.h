@@ -12,6 +12,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/mutex.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
@@ -61,7 +63,10 @@ namespace GradientSignal
             AZ::Aabb inputBounds,
             AZ::EntityId boundsEntityId);
 
+        virtual ~BakeImageJob();
+
         void Process() override;
+        void CancelAndWait();
         bool IsFinished() const;
 
     private:
@@ -70,7 +75,10 @@ namespace GradientSignal
         AZ::Aabb m_inputBounds;
         AZ::EntityId m_boundsEntityId;
 
+        AZStd::mutex m_bakeImageMutex;
+        AZStd::atomic_bool m_shouldCancel = false;
         AZStd::atomic_bool m_isFinished = false;
+        AZStd::condition_variable m_finishedNotify;
     };
 
     class EditorGradientBakerComponent

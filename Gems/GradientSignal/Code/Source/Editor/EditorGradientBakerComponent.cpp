@@ -34,6 +34,13 @@ namespace GradientSignal
     {
     }
 
+    BakeImageJob::~BakeImageJob()
+    {
+        // Make sure we don't have anything running on another thread before destroying
+        // the job instance itself.
+        CancelAndWait();
+    }
+
     void BakeImageJob::Process()
     {
         // Get the actual resolution of our image.  Note that this might be non-square, depending on how the window is sized.
@@ -107,9 +114,9 @@ namespace GradientSignal
         const AZ::Vector3 pixelToBoundsScale(
             inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
-        for (int y = 0; y < imageResolutionY; ++y)
+        for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
         {
-            for (int x = 0; x < imageResolutionX; ++x)
+            for (int x = 0; !m_shouldCancel && (x < imageResolutionX); ++x)
             {
                 // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
                 // imageBoundsY)
@@ -172,16 +179,45 @@ namespace GradientSignal
             }
         }
 
-        bool result = outputImage->write_image(pixelFormat, pixels.data());
-        if (!result)
+        // Don't try to write out the image if the job was canceled
+        if (!m_shouldCancel)
         {
-            AZ_Error("GradientBaker", result, "Failed to write out gradient baked image to path: %s",
-                absolutePath.c_str());
+            bool result = outputImage->write_image(pixelFormat, pixels.data());
+            if (!result)
+            {
+                AZ_Error("GradientBaker", result, "Failed to write out gradient baked image to path: %s",
+                    absolutePath.c_str());
+            }
+
+            outputImage->close();
         }
 
-        outputImage->close();
+        // Safely notify that the job has finished
+        // The m_finishedNotify is used to notify our blocking wait to cancel the job
+        // while it was running
+        {
+            AZStd::lock_guard<decltype(m_bakeImageMutex)> lock(m_bakeImageMutex);
+            m_shouldCancel = false;
+            m_isFinished.store(true);
+            m_finishedNotify.notify_all();
+        }
+    }
 
-        m_isFinished.store(true);
+    void BakeImageJob::CancelAndWait()
+    {
+        // Set an atomic bool that the Process() loop checks on each iteration to see
+        // if it should cancel baking the image
+        m_shouldCancel = true;
+
+        // Then we synchronously block until the job has completed
+        AZStd::unique_lock<decltype(m_bakeImageMutex)> lock(m_bakeImageMutex);
+        if (!m_isFinished)
+        {
+            m_finishedNotify.wait(lock, [this] { return m_isFinished == true; });
+        }
+
+        Reset(true);
+        m_shouldCancel = false;
     }
 
     bool BakeImageJob::IsFinished() const
@@ -355,7 +391,15 @@ namespace GradientSignal
         // If the preview shouldn't be active, use an invalid entityId
         m_gradientEntityId = AZ::EntityId();
 
+        // If we had a bake job running, delete it before deactivating
+        // This delete will cancel the job and block waiting for it to complete
         AZ::TickBus::Handler::BusDisconnect();
+        if (m_bakeImageJob)
+        {
+            delete m_bakeImageJob;
+            m_bakeImageJob = nullptr;
+        }
+
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
