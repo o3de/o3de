@@ -11,11 +11,13 @@ from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.legacy.general as general
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, TITLE_STRING, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI,  WAIT_TIME_3)
+import scripting_utils.scripting_tools as scripting_tools
+from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI,
+                                                 WAIT_TIME_3, WAIT_FRAMES)
 
-WAIT_FRAMES = 200
+
 COMMAND_LINE_ARGS = "add_node Print"
-EXPECTED_STRING = "Print - Utilities/Debug (2 Selected)"
+EXPECTED_NODE_TITLE_STRING = "Print - Utilities/Debug (2 Selected)"
 
 
 # fmt: off
@@ -35,9 +37,10 @@ class Node_HappyPath_DuplicateNode:
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
      2) Open a new graph
-     3) Add node to graph
-     4) Duplicate node
+     3) Add a node to the graph by emulating the Command Line tool's workflow
+     4) Duplicate nodes on graph w/ ctrl+a and ctrl+d keystroke
      5) Verify the node was duplicated6) Verify the node was duplicated
+     6) Close Script Canvas window or else test hangs on save confirmation modal
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -46,6 +49,17 @@ class Node_HappyPath_DuplicateNode:
 
     :return: None
     """
+
+    def __init__(self):
+        self.editor_main_window = None
+        self.sc_editor = None
+        self.sc_editor_main_window = None
+        self.sc_graph_view = None
+        self.sc_graph = None
+
+    def initialize_sc_graph_qt_objects(self):
+        self.sc_graph_view = self.sc_editor.findChild(QtWidgets.QFrame, "graphicsViewFrame")
+        self.sc_graph = self.sc_graph_view.findChild(QtWidgets.QWidget, "")
 
     # Function for entering and executing a string command in the Command Line Tool (SC > Tools > Command Line)
     def run_command_line_input(self, sc_editor, sc_editor_main_window, command_str):
@@ -57,13 +71,6 @@ class Node_HappyPath_DuplicateNode:
         QtTest.QTest.keyClicks(command_line_textbox, command_str)
         QtTest.QTest.keyClick(command_line_textbox, Qt.Key_Enter, Qt.NoModifier)
 
-    def grab_title_text(self, sc_graph_node_inspector, sc_graph):
-        scroll_area = sc_graph_node_inspector.findChild(QtWidgets.QScrollArea, "")
-        QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES)
-        background = scroll_area.findChild(QtWidgets.QFrame, "Background")
-        title = background.findChild(QtWidgets.QLabel, TITLE_STRING)
-        text = title.findChild(QtWidgets.QLabel, TITLE_STRING)
-        return text.text()
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -71,38 +78,37 @@ class Node_HappyPath_DuplicateNode:
         # Preconditions
         general.idle_enable(True)
 
-        # 1) Open Script Canvas window (Tools > Script Canvas)
+        # 1) Open Script Canvas window (Tools > Script Canvas) and initialize Qt objects
         general.open_pane(SCRIPT_CANVAS_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-
+        scripting_tools.initialize_editor_object(self)
+        scripting_tools.initialize_sc_editor_objects(self)
+        
         # 2) Open a new graph
-        editor_window = pyside_utils.get_editor_main_window()
-        sc_editor = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-        sc_editor_main_window = sc_editor.findChild(QtWidgets.QMainWindow)
-        create_new_graph = pyside_utils.find_child_by_pattern(
-            sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
-        )
-        if sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT) is None:
-            action = pyside_utils.find_child_by_pattern(sc_editor, {"text": NODE_INSPECTOR_UI, "type": QtWidgets.QAction})
-            action.trigger()
-        sc_graph_node_inspector = sc_editor.findChild(QtWidgets.QDockWidget, NODE_INSPECTOR_QT)
-        create_new_graph.trigger()
+        scripting_tools.create_new_sc_graph(self.sc_editor_main_window)
+        # Toggle the node inspector if it's not already active
+        sc_graph_node_inspector = scripting_tools.get_sc_editor_node_inspector(self.sc_editor)
 
         # 3) Add a node to the graph by emulating the Command Line tool's workflow
-        self.run_command_line_input(sc_editor, sc_editor_main_window, COMMAND_LINE_ARGS)
+        self.run_command_line_input(self.sc_editor, self.sc_editor_main_window, COMMAND_LINE_ARGS)
 
         # 4) Duplicate nodes on graph w/ ctrl+a and ctrl+d keystroke
-        sc_graph_view = sc_editor.findChild(QtWidgets.QFrame, "graphicsViewFrame")
-        sc_graph = sc_graph_view.findChild(QtWidgets.QWidget, "")
-        sc_editor_main_window.activateWindow()
-        QtTest.QTest.keyClick(sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES)
-        QtTest.QTest.keyClick(sc_graph, "d", Qt.ControlModifier, WAIT_FRAMES)
+        self.initialize_sc_graph_qt_objects()
+        self.sc_editor_main_window.activateWindow()
+        QtTest.QTest.keyClick(self.sc_graph, "a", Qt.ControlModifier, WAIT_FRAMES)
+        QtTest.QTest.keyClick(self.sc_graph, "d", Qt.ControlModifier, WAIT_FRAMES)
 
         # 5) Verify the node was duplicated
         # As direct interaction with node is not available the text on the label
         # inside the Node Inspector is validated showing two nodes exist
-        after_dup = self.grab_title_text(sc_graph_node_inspector, sc_graph)
-        Report.result(Tests.node_duplicated, after_dup == EXPECTED_STRING)
+        node_titles = scripting_tools.get_node_inspector_node_titles(self, sc_graph_node_inspector, self.sc_graph)
+        found_title = False
+        for title in node_titles:
+            if title == EXPECTED_NODE_TITLE_STRING:
+                found_title = True
+                break
+
+        Report.result(Tests.node_duplicated, found_title)
 
         # 6) Close Script Canvas window or else test hangs on save confirmation modal
         general.close_pane(SCRIPT_CANVAS_UI)

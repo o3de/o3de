@@ -28,6 +28,10 @@ NODE_STRING_TO_NUMBER = "String To Number"
 NODE_TEST_METHOD = "test_method_name"
 
 """
+Constants for Node Inspector
+"""
+NODE_INSPECTOR_TITLE_KEY = "Title"
+"""
 Constants for Asset Editor
 """
 SAVE_ASSET_AS = "SaveAssetAs"
@@ -54,9 +58,9 @@ PARAMETERS_QT = "Parameters"
 """
 General constants
 """
-TITLE_STRING = "Title"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
+WAIT_FRAMES = 200
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
