@@ -53,13 +53,13 @@ namespace AZ::Dom
         //! on the other traversal flags.
         ExcludeChildPaths = 0x04,
         //! If set, this visit operation will visit paths in a breadth-first manner.
-        //! This is the default order of operations, and operates faster than TraverseLeastToMostSpecific, but it is unsafe
+        //! This is the default order of operations, and operates faster than TraverseMostToLeastSpecific, but it is unsafe
         //! to call EraseValue on a path visited in this order when specifying removeChildren.
-        TraverseMostToLeastSpecific = 0x08,
+        TraverseLeastToMostSpecific = 0x08,
         //! If set, this visit operation will visit paths in a depth first manner.
-        //! This is slower than TraverseMostToLeastSpecific, but it is safe to call EraseValue on a path visited in this manner,
+        //! This is slower than TraverseLeastToMostSpecific, but it is safe to call EraseValue on a path visited in this manner,
         //! even when specifying removeChildren.
-        TraverseLeastToMostSpecific = 0x10,
+        TraverseMostToLeastSpecific = 0x10,
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(PrefixTreeTraversalFlags);
 
