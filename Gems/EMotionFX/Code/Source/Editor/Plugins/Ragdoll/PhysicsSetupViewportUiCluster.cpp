@@ -11,6 +11,9 @@
 #include <Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointSwingLimitManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointTwistLimitManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 
 namespace EMotionFX
@@ -20,6 +23,10 @@ namespace EMotionFX
         m_subModes[SubMode::ColliderTranslation] = AZStd::make_unique<ColliderTranslationManipulators>();
         m_subModes[SubMode::ColliderRotation] = AZStd::make_unique<ColliderRotationManipulators>();
         m_subModes[SubMode::ColliderDimensions] = AZStd::make_unique<ColliderCapsuleManipulators>();
+        m_subModes[SubMode::JointLimitParentRotation] = AZStd::make_unique<JointLimitRotationManipulators>(JointLimitFrame::Parent);
+        m_subModes[SubMode::JointLimitChildRotation] = AZStd::make_unique<JointLimitRotationManipulators>(JointLimitFrame::Child);
+        m_subModes[SubMode::JointSwingLimits] = AZStd::make_unique<JointSwingLimitManipulators>();
+        m_subModes[SubMode::JointTwistLimits] = AZStd::make_unique<JointTwistLimitManipulators>();
     }
 
     AZ::s32 PhysicsSetupViewportUiCluster::GetViewportId() const
@@ -38,8 +45,8 @@ namespace EMotionFX
         AZ_Assert(m_subModes.find(mode) != m_subModes.end(), "Submode not found:%d", static_cast<AZ::u32>(mode));
         m_subModes[m_subMode]->Teardown();
         m_subMode = mode;
-        m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
         m_subModes[m_subMode]->SetViewportId(GetViewportId());
+        m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
 
         const auto modeIndex = static_cast<size_t>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
@@ -63,15 +70,18 @@ namespace EMotionFX
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
         const bool hasCapsuleCollider = m_physicsSetupManipulatorData.HasCapsuleCollider();
+        const bool hasJointLimit = m_physicsSetupManipulatorData.HasJointLimit();
+        const bool hasChanged = (hasCapsuleCollider != m_hasCapsuleCollider) || (hasJointLimit != m_hasJointLimit);
 
-        if (hasCapsuleCollider != m_hasCapsuleCollider)
+        if (hasChanged)
         {
             DestroyClusterIfExists();
         }
 
-        if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId || hasCapsuleCollider != m_hasCapsuleCollider)
+        if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId || hasChanged)
         {
             m_hasCapsuleCollider = hasCapsuleCollider;
+            m_hasJointLimit = hasJointLimit;
             const AZ::s32 viewportId = GetViewportId();
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
                 m_clusterId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
@@ -83,6 +93,17 @@ namespace EMotionFX
             if (m_hasCapsuleCollider)
             {
                 m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)] = RegisterClusterButton(viewportId, m_clusterId, "Scale");
+            }
+            if (m_hasJointLimit)
+            {
+                m_buttonIds[static_cast<size_t>(SubMode::JointLimitParentRotation)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+                m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+                m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits");
+                m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits");
             }
 
             const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -98,6 +119,22 @@ namespace EMotionFX
                 else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)])
                 {
                     SetCurrentMode(SubMode::ColliderDimensions);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitParentRotation)])
+                {
+                    SetCurrentMode(SubMode::JointLimitParentRotation);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)])
+                {
+                    SetCurrentMode(SubMode::JointLimitChildRotation);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)])
+                {
+                    SetCurrentMode(SubMode::JointSwingLimits);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)])
+                {
+                    SetCurrentMode(SubMode::JointTwistLimits);
                 }
             };
 

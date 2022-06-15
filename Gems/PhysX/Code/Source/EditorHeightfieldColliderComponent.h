@@ -45,6 +45,7 @@ namespace PhysX
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
+        void BlockOnPendingJobs();
     protected:
 
         // AzToolsFramework::EntitySelectionEvents
@@ -61,7 +62,6 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
 
         //! Stores collision layers, whether the collider is a trigger, etc.
         AZStd::shared_ptr<Physics::ColliderConfiguration> m_colliderConfig{ aznew Physics::ColliderConfiguration()  };

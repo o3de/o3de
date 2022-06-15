@@ -46,16 +46,34 @@ namespace Terrain
 
         float m_renderDistance = 4096.0f;
         float m_firstLodDistance = 128.0f;
+        bool m_clodEnabled = true;
+        float m_clodDistance = 16.0f;
 
         bool operator==(const MeshConfiguration& other) const
         {
-            return m_renderDistance == other.m_renderDistance &&
-                m_firstLodDistance == other.m_firstLodDistance;
+            return m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                && m_clodDistance == other.m_clodDistance
+                ;
+        }
+
+        bool CheckWouldRequireRebuild(const MeshConfiguration& other) const
+        {
+            return !(m_renderDistance == other.m_renderDistance
+                && m_firstLodDistance == other.m_firstLodDistance
+                && m_clodEnabled == other.m_clodEnabled
+                );
         }
 
         bool operator!=(const MeshConfiguration& other) const
         {
             return !(other == *this);
+        }
+
+        bool IsClodDisabled() // Since the edit context attribute is "ReadOnly" instead of "Enabled", the logic needs to be reversed.
+        {
+            return !m_clodEnabled;
         }
 
     };
@@ -86,10 +104,28 @@ namespace Terrain
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
-        static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr uint32_t GridSizeExponent = 6; // 2^6 = 64
+        static constexpr uint32_t GridSize{ 1 << GridSizeExponent }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr uint32_t GridVerts1D = GridSize + 1;
+        static constexpr uint32_t GridVerts2D = GridVerts1D * GridVerts1D;
+
 
     private:
-        
+
+        using HeightDataType = uint16_t;
+        using NormalDataType = AZStd::pair<int16_t, int16_t>;
+
+        enum StreamIndex : uint32_t
+        {
+            XYPositions,
+            Heights,
+            Normals,
+            LodHeights,
+            LodNormals,
+
+            Count,
+        };
+
         struct VertexPosition
         {
             float m_posx;
@@ -111,12 +147,14 @@ namespace Terrain
             int32_t m_worldY = AZStd::numeric_limits<int32_t>::max();
 
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
-            AZ::Data::Instance<AZ::RPI::Buffer> m_heightsBuffer;
-            AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, 3> m_streamBufferViews;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
+            AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+
+            bool m_hasData = false;
         };
 
         struct StackData
@@ -133,12 +171,14 @@ namespace Terrain
             AZStd::array<float, 2> m_xyTranslation{ 0.0f, 0.0f };
             float m_xyScale{ 1.0f };
             uint32_t m_lodLevel{ 0 };
+            float m_rcpLodLevel{ 1.0f };
         };
 
         struct ShaderMeshData
         {
             AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
             float m_firstLodDistance;
+            float m_rcpClodDistance;
         };
 
         struct SectorUpdateContext
@@ -151,7 +191,11 @@ namespace Terrain
         {
             AZ::Vector2 m_worldStartPosition;
             float m_vertexSpacing;
-            int16_t m_gridSize;
+            int16_t m_samplesX;
+            int16_t m_samplesY;
+            AzFramework::Terrain::TerrainDataRequests::Sampler m_samplerType =
+                AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
+            bool m_useVertexOrderRemap = false;
         };
 
         struct CachedDrawData
@@ -164,11 +208,17 @@ namespace Terrain
             AZ::RPI::ShaderVariant m_shaderVariant;
         };
 
-        using HeightDataType = uint16_t;
-        using NormalDataType = AZStd::pair<int16_t, int16_t>;
+        struct HeightNormalVertex
+        {
+            HeightDataType m_height;
+            NormalDataType m_normal;
+        };
+
         static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
+        static constexpr uint32_t RayTracingQuads1D = 200;
+        static constexpr HeightDataType NoTerrainVertexHeight = AZStd::numeric_limits<HeightDataType>::max();
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
@@ -182,16 +232,20 @@ namespace Terrain
         void BuildDrawPacket(StackSectorData& sector);
         void RebuildSectors();
         void RebuildDrawPackets();
-        AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer);
+        AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
-        void InitializeTerrainPatch(uint16_t gridSize, PatchData& patchdata);
+        void InitializeTerrainPatch(PatchData& patchdata);
         void InitializeCommonSectorData();
-        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(AZ::RHI::Format format, uint64_t elementCount, const void* initialData = nullptr);
-        void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightDataType> heights, const AZStd::span<const NormalDataType> normals);
-        void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightDataType>& meshHeights, AZStd::vector<NormalDataType>& meshNormals, AZ::Aabb& meshAabb);
+        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(uint32_t elementSize, uint32_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
+        void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
+        void UpdateSectorLodBuffers(StackSectorData& sector,
+            const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
+            const AZStd::span<const HeightNormalVertex> lodHeightsNormals);
+        void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightNormalVertex>& meshHeightsNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere);
 
         void CheckStacksForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::span<SectorUpdateContext> sectorUpdates);
+        void UpdateRaytracingData(const AZ::Aabb& bounds);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -209,7 +263,14 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
+
+        // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
+        // combine them in the future to support terrain lods in ray tracing.
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingPositionsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<StackData> m_sectorStack;
         uint32_t m_1dSectorCount = 0;
@@ -223,6 +284,8 @@ namespace Terrain
         bool m_isInitialized{ false };
         bool m_rebuildSectors{ true };
         bool m_rebuildDrawPackets{ false };
+
+        AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
 
     };
 }

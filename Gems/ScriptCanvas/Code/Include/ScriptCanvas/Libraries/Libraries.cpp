@@ -8,13 +8,12 @@
 
 #include "Libraries.h"
 
-#include <Libraries/Core/CoreNodes.h>
-#include <Libraries/Logic/Logic.h>
-#include <Libraries/Math/Math.h>
 #include <Libraries/Comparison/Comparison.h>
+#include <Libraries/Core/CoreNodes.h>
+#include <Libraries/Deprecated/DeprecatedNodeLibrary.h>
+#include <Libraries/Logic/Logic.h>
 #include <Libraries/Spawning/Spawning.h>
 #include <Libraries/UnitTesting/UnitTestingLibrary.h>
-#include <AzCore/std/containers/vector.h>
 
 namespace ScriptCanvas
 {
@@ -27,7 +26,6 @@ namespace ScriptCanvas
         Core::InitNodeRegistry(*g_nodeRegistry);
         Math::InitNodeRegistry(*g_nodeRegistry);
         Logic::InitNodeRegistry(*g_nodeRegistry);
-        Entity::InitNodeRegistry(*g_nodeRegistry);
         Comparison::InitNodeRegistry(*g_nodeRegistry);
         Time::InitNodeRegistry(*g_nodeRegistry);
         Spawning::InitNodeRegistry(*g_nodeRegistry);
@@ -56,12 +54,13 @@ namespace ScriptCanvas
         Core::Reflect(reflectContext);
         Math::Reflect(reflectContext);
         Logic::Reflect(reflectContext);
-        Entity::Reflect(reflectContext);
         Comparison::Reflect(reflectContext);
         Time::Reflect(reflectContext);
         Spawning::Reflect(reflectContext);
         String::Reflect(reflectContext);
         Operators::Reflect(reflectContext);
+
+        DeprecatedNodeLibrary::Reflect(reflectContext);
 
 #ifndef _RELEASE
         Library::UnitTesting::Reflect(reflectContext);
@@ -79,9 +78,6 @@ namespace ScriptCanvas
         
         componentDescriptors = Logic::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-        
-        componentDescriptors = Entity::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = Comparison::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
@@ -96,6 +92,9 @@ namespace ScriptCanvas
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = Operators::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = DeprecatedNodeLibrary::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
 #ifndef _RELEASE

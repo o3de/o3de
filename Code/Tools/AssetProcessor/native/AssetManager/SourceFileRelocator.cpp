@@ -167,17 +167,25 @@ Please note that only those seed files will get updated that are active for your
         SourceFileRelocationContainer& sources) const
     {
         QHash<QString, int> sourceIndexMap;
+        QSet<QString> filesNotInAssetDatabase;
         for (auto& file : pathMatches)
         {
             QString databaseSourceName;
 
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
-            m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            filesNotInAssetDatabase.insert(databaseSourceName);
+            m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName, &filesNotInAssetDatabase](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                 {
                     sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo);
+                    filesNotInAssetDatabase.remove(databaseSourceName);
                     sourceIndexMap[databaseSourceName] = aznumeric_cast<int> (sources.size() - 1);
                     return true;
                 });
+        }
+
+        for (const QString& file : filesNotInAssetDatabase)
+        {
+            AZ_Printf("AssetProcessor", "File `%s` was found/matched but is not a source asset.  Skipping.\n", file.toUtf8().constData());
         }
 
         return sourceIndexMap;
@@ -326,6 +334,7 @@ Please note that only those seed files will get updated that are active for your
             return AZ::Failure(AZStd::string("Consecutive wildcards are not allowed.  Please remove extra wildcards from your query.\n"));
         }
 
+        bool fileExists = false;
         bool isWildcard = normalizedSource.find('*') != AZStd::string_view::npos || normalizedSource.find('?') != AZStd::string_view::npos;
 
         if (isWildcard)
@@ -364,6 +373,7 @@ Please note that only those seed files will get updated that are active for your
                         }
 
                         foundMatch = true;
+                        fileExists = true;
                         scanFolderInfoOut = scanFolderInfo;
                     }
 
@@ -387,12 +397,19 @@ Please note that only those seed files will get updated that are active for your
                     return AZ::Failure(AZStd::string::format("Path %s points to a folder outside the current project's scan folders.\n", pathOnly.c_str()));
                 }
 
-                GetFilesFromSourceControl(sources, scanFolderInfoOut, normalizedSource.c_str(), excludeMetaDataFiles);
+                fileExists = GetFilesFromSourceControl(sources, scanFolderInfoOut, normalizedSource.c_str(), excludeMetaDataFiles);
             }
 
             if(sources.empty())
             {
-                return AZ::Failure(AZStd::string("Wildcard search did not match any files.\n"));
+                if (fileExists)
+                {
+                    return AZ::Failure(AZStd::string("Wildcard search matched one or more files but none are source assets.  This utility only handles source assets.\n"));
+                }
+                else
+                {
+                    return AZ::Failure(AZStd::string("Wildcard search did not match any files.\n"));
+                }
             }
         }
         else // Non-wildcard search
@@ -413,11 +430,18 @@ Please note that only those seed files will get updated that are active for your
                 return AZ::Failure(AZStd::string("Cannot operate on directories.  Please specify a file or use a wildcard to select all files within a directory.\n"));
             }
 
-            GetFilesFromSourceControl(sources, scanFolderInfoOut, absoluteSourcePath.c_str(), excludeMetaDataFiles);
+            fileExists = GetFilesFromSourceControl(sources, scanFolderInfoOut, absoluteSourcePath.c_str(), excludeMetaDataFiles);
 
             if (sources.empty())
             {
-                return AZ::Failure(AZStd::string("File not found.\n"));
+                if (fileExists)
+                {
+                    return AZ::Failure(AZStd::string("Search matched an existing file but it is not a source asset.  This utility only handles source assets.\n"));
+                }
+                else
+                {
+                    return AZ::Failure(AZStd::string("File not found.\n"));
+                }
             }
         }
 

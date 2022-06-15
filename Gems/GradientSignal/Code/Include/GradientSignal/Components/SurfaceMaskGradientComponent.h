@@ -14,6 +14,7 @@
 #include <GradientSignal/Ebuses/SurfaceMaskGradientRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfacePointList.h>
@@ -50,6 +51,7 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private SurfaceMaskGradientRequestBus::Handler
+        , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -81,6 +83,14 @@ namespace GradientSignal
         AZ::Crc32 GetTag(int tagIndex) const override;
         void RemoveTag(int tagIndex) override;
         void AddTag(AZStd::string tag) override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // SurfaceDataSystemNotificationBus
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
 
     private:
         SurfaceMaskGradientConfig m_configuration;

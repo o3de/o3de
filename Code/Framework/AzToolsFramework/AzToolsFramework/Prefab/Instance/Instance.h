@@ -53,6 +53,12 @@ namespace AzToolsFramework
         using EntityOptionalReference = AZStd::optional<AZStd::reference_wrapper<AZ::Entity>>;
         using EntityOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const AZ::Entity>>;
 
+        enum class EntityIdInstanceRelationship : uint8_t
+        {
+            OneToOne,
+            OneToMany
+        };
+
         // A prefab instance is the container for when a Prefab Template is Instantiated.
         class Instance
         {
@@ -68,8 +74,11 @@ namespace AzToolsFramework
             Instance();
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
             explicit Instance(InstanceOptionalReference parent);
-            explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
+            Instance(InstanceOptionalReference parent, InstanceAlias alias);
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
             explicit Instance(InstanceAlias alias);
+            explicit Instance(EntityIdInstanceRelationship entityIdInstanceRelationship);
+            Instance(InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship);
             virtual ~Instance();
 
             Instance(const Instance& rhs) = delete;
@@ -284,6 +293,8 @@ namespace AzToolsFramework
 
             // Interface for registering the Instance itself for external queries.
             TemplateInstanceMapperInterface* m_templateInstanceMapper = nullptr;
+
+            EntityIdInstanceRelationship m_entityIdInstanceRelationship = EntityIdInstanceRelationship::OneToOne;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

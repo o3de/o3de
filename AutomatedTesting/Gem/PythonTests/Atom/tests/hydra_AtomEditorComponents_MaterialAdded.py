@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
@@ -138,6 +139,7 @@ def AtomEditorComponents_Material_AddedToEntity():
 
     :return: None
     """
+    import os
 
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
@@ -216,7 +218,7 @@ def AtomEditorComponents_Material_AddedToEntity():
 
         # 12. Set a model asset to Mesh component
         # Set a simple model to ensure that the more complex model will load cleanly
-        model_path = os.path.join('Objects', 'cube.azmodel')
+        model_path = os.path.join('objects', 'cube.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         general.idle_wait_frames(1)
@@ -269,7 +271,7 @@ def AtomEditorComponents_Material_AddedToEntity():
             active_asset_path.startswith('testdata/objects/modelhotreload/sphere_5lods_lambert0_'))
 
         # Setup a material for overrides in further testing
-        material_path = os.path.join('Materials', 'Presets', 'PBR', 'metal_gold.azmaterial')
+        material_path = os.path.join('materials', 'presets', 'pbr', 'metal_gold.azmaterial')
         metal_gold = Asset.find_asset_by_path(material_path)
 
         # 18. Override the slot zero LOD Material asset using EditorMaterialComponentSlot method SetAssetId
@@ -282,7 +284,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         # check override with ebus call
         Report.result(Tests.lod_material_set,
                       render.MaterialComponentRequestBus(
-                          bus.Event, "GetMaterialOverride", material_entity.id, assignment_id) == metal_gold.id)
+                          bus.Event, "GetMaterialAssetId", material_entity.id, assignment_id) == metal_gold.id)
 
         # 19. Clear the LOD Material override and confirm the active asset is the default value
         item[0].Clear()
@@ -302,16 +304,16 @@ def AtomEditorComponents_Material_AddedToEntity():
                 AtomComponentProperties.material('Material Asset')) == metal_gold.id)
 
         # 21. Clear the assignment of a default material using MaterialComponentRequestBus and confirm null asset
-        render.MaterialComponentRequestBus(bus.Event, "ClearDefaultMaterialOverride", material_entity.id)
+        render.MaterialComponentRequestBus(bus.Event, "ClearMaterialAssetIdOnDefaultSlot", material_entity.id)
         default_material_asset_id = render.MaterialComponentRequestBus(
-            bus.Event, "GetDefaultMaterialOverride", material_entity.id)
+            bus.Event, "GetMaterialAssetIdOnDefaultSlot", material_entity.id)
         Report.result(Tests.clear_default_material, default_material_asset_id == azlmbr.asset.AssetId())
 
         # 22. Set the Default Material asset using MaterialComponentRequestBus
         render.MaterialComponentRequestBus(
-            bus.Event, "SetDefaultMaterialOverride", material_entity.id, metal_gold.id)
+            bus.Event, "SetMaterialAssetIdOnDefaultSlot", material_entity.id, metal_gold.id)
         default_material_asset_id = render.MaterialComponentRequestBus(
-            bus.Event, "GetDefaultMaterialOverride", material_entity.id)
+            bus.Event, "GetMaterialAssetIdOnDefaultSlot", material_entity.id)
         Report.result(Tests.default_material, default_material_asset_id == metal_gold.id)
 
         # 23. Enter/Exit game mode.

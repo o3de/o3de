@@ -310,26 +310,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
-
-        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
-        ScriptCanvas::DataPtr GetOwnership() const;
-
-        // Finds and returns all nodes within the graph that are of the specified type
-        template <typename NodeType>
-        AZStd::vector<const NodeType*> GetNodesOfType() const
-        {
-            AZStd::vector<const NodeType*> nodes;
-            for (auto& nodeRef : m_graphData.m_nodes)
-            {
-                const NodeType* node = nodeRef->FindComponent<NodeType>();
-                if (node)
-                {
-                    nodes.push_back(node);
-                }
-            }
-            return nodes;
-        }
-
+        
     protected:
         void PostRestore(const UndoData& restoredData) override;
 
@@ -366,6 +347,8 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
 
         bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        bool SanityCheckNodeReplacementWithCustomLogic(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        bool SanityCheckNodeReplacementWithSameTopology(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
 
         // Live node replacement, that is, completely swap out a node, while the user is actively editing (rather then when opening or
         // versioning a graph). The default intention is to retain as much connection and data as is remotely appropriate.
@@ -448,8 +431,6 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        ScriptCanvasEditor::SourceHandle m_assetId;
-        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
-        ScriptCanvas::ScriptCanvasData* m_owner;
+        SourceHandle m_assetId;
     };
 }
