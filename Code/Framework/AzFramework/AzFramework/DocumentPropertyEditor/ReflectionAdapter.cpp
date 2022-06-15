@@ -337,7 +337,7 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    m_builder.Label(AZStd::string::format("%i elements", container->Size(access.Get())));
+                    m_builder.Label(AZStd::string::format("%zu elements", container->Size(access.Get())));
                 }
 
                 if (!container->IsFixedSize())
