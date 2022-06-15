@@ -22,8 +22,8 @@ namespace Multiplayer
             summedBytes += metric.m_byteHistory[index];
         }
         const float totalTimeSeconds = static_cast<float>(stats.m_totalHistoryTimeMs) / 1000.0f;
-        outCallsPerSecond += (summedCalls > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedCalls) / totalTimeSeconds : 0.0f;
-        outBytesPerSecond += (summedBytes > 0 && totalTimeSeconds > 0.0f) ? static_cast<float>(summedBytes) / totalTimeSeconds : 0.0f;
+        outCallsPerSecond += (summedCalls > 0 && totalTimeSeconds > 0.0f) ? aznumeric_cast<float>(summedCalls) / totalTimeSeconds : 0.0f;
+        outBytesPerSecond += (summedBytes > 0 && totalTimeSeconds > 0.0f) ? aznumeric_cast<float>(summedBytes) / totalTimeSeconds : 0.0f;
     }
 
     bool DrawMetricsRow(const char* name, bool expandable, uint64_t totalCalls, uint64_t totalBytes, float callsPerSecond, float bytesPerSecond)
