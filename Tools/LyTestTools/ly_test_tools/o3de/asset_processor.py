@@ -317,7 +317,7 @@ class AssetProcessor(object):
             else:
                 logger.warning(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
                 self.terminate()
-                pass
+            pass
 
         if self.process_exists():
             if ap_stop_test:
