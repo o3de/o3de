@@ -390,6 +390,8 @@ class TestsAssetProcessorGUI_Windows(object):
 
     def test_APStopNoControlConnection_ExceptionThrown(self, ap_setup_fixture, asset_processor):
         """
+        Tests AP successfully terminates if no control connection is found during an stop call.
+
         Test Steps:
         1. Create a temporary testing environment
         2. Start Asset Processor

@@ -270,6 +270,9 @@ class AssetProcessor(object):
          :param timeout: How long to wait, in seconds, for AP to shut down after receiving quit message.
             This timeout is a longer default because AP doesn't quit immediately on receiving the quit message,
             it waits until finishing its current task, which can sometimes take a while.
+         :param ap_stop_test: Informs the stop function whether or not the stop is intentional for testing purposes.
+            If set to true, any terminate call within the function will return a ValueError with a specific string
+            for the tests to compare against.
          :return: None
          """
         if not self._ap_proc:
@@ -288,7 +291,7 @@ class AssetProcessor(object):
         try:
             if not self.send_quit():
                 if ap_stop_test:
-                    logger.info("Failed to send quit command, using terminate")
+                    logger.info("Quit command was not sent, using terminate")
                     self.terminate()
                     raise ValueError("NoQuitCommand")
                 else:
@@ -296,7 +299,7 @@ class AssetProcessor(object):
                     self.terminate()
         except IOError as e:
             if ap_stop_test:
-                logger.info(f"Failed to send quit request with error {e}, stopping")
+                logger.info(f"Quit request with error {e} detected, stopping")
                 self.terminate()
                 raise ValueError("IOError")
             else:
@@ -318,7 +321,7 @@ class AssetProcessor(object):
 
         if self.process_exists():
             if ap_stop_test:
-                logger.info(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
+                logger.info(f"Process {self.get_pid()} exists after {wait_timeout} seconds, using terminate")
                 self.terminate()
                 raise ValueError("FailedToStop")
             else:
