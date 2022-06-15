@@ -35,11 +35,11 @@ class Node_HappyPath_DuplicateNode:
      Upon selecting a node and pressing Ctrl+D, the node will be duplicated
 
     Test Steps:
-     1) Open Script Canvas window (Tools > Script Canvas)
+     1) Open Script Canvas window (Tools > Script Canvas) and initialize Qt objects
      2) Open a new graph
      3) Add a node to the graph by emulating the Command Line tool's workflow
      4) Duplicate nodes on graph w/ ctrl+a and ctrl+d keystroke
-     5) Verify the node was duplicated6) Verify the node was duplicated
+     5) Verify the node was duplicated
      6) Close Script Canvas window or else test hangs on save confirmation modal
 
     Note:
@@ -83,7 +83,7 @@ class Node_HappyPath_DuplicateNode:
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
         scripting_tools.initialize_editor_object(self)
         scripting_tools.initialize_sc_editor_objects(self)
-        
+
         # 2) Open a new graph
         scripting_tools.create_new_sc_graph(self.sc_editor_main_window)
         # Toggle the node inspector if it's not already active
