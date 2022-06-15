@@ -83,10 +83,6 @@ namespace EMStudio
             uint32                      m_screenHeight;
         };
 
-        //! Deprecated: LegacyRender will call EMotionFX::DebugDraw that tied to OpenGL render.
-        //! It will be removed after OpenGLPlugin and GLWidget is gone.
-        virtual void LegacyRender(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }
-
         //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
         virtual void Render(EMotionFX::ActorRenderFlags renderFlags)
         {

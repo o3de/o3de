@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 
 namespace RecastNavigation
 {
