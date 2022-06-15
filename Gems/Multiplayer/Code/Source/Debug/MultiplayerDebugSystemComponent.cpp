@@ -57,6 +57,8 @@ namespace Multiplayer
         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, m_applicationType);
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+        m_networkMetrics = AZStd::make_unique<MultiplayerDebugNetworkMetrics>();
+        m_multiplayerMetrics = AZStd::make_unique<MultiplayerDebugMultiplayerMetrics>();
 #endif
     }
 
