@@ -187,7 +187,7 @@ namespace Multiplayer
             | ImGuiTableFlags_RowBg
             | ImGuiTableFlags_NoBordersInBody;
 
-        if (ImGui::BeginTable("", 5, flags))
+        if (ImGui::BeginTable("Multiplayer Metrics", 5, flags))
         {
             // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);

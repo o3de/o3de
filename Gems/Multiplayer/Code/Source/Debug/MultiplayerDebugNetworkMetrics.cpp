@@ -67,7 +67,7 @@ namespace Multiplayer
                 sendHistogram.m_histogram.Draw(ImGui::GetColumnWidth(), 100.0f);
                 recvHistogram.m_histogram.Draw(ImGui::GetColumnWidth(), 100.0f);
 
-                if (ImGui::BeginTable("", 2, flags))
+                if (ImGui::BeginTable("Traffic Details", 2, flags))
                 {
                     ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
@@ -131,7 +131,7 @@ namespace Multiplayer
                     ImGui::EndTable();
                 }
 
-                if (ImGui::BeginTable("", 7, flags))
+                if (ImGui::BeginTable("Interface Overview", 7, flags))
                 {
                     // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
                     ImGui::TableSetupColumn("RemoteAddr", ImGuiTableColumnFlags_WidthStretch);
