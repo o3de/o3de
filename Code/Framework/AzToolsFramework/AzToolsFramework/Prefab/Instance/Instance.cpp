@@ -905,6 +905,15 @@ namespace AzToolsFramework
             return m_cachedInstanceDom;
         }
 
+        PrefabDomReference Instance::GetCachedInstanceDom()
+        {
+            if (m_cachedInstanceDom.IsNull())
+            {
+                return AZStd::nullopt;
+            }
+            return m_cachedInstanceDom;
+        }
+
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
             m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());

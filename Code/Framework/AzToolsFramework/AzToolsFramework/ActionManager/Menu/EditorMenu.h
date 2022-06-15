@@ -36,6 +36,14 @@ namespace AzToolsFramework
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
+
+        // Returns whether the action or menu queried is contained in this menu.
+        bool ContainsAction(const AZStd::string& actionIdentifier) const;
+        bool ContainsSubMenu(const AZStd::string& menuIdentifier) const;
+
+        // Returns the sort key for the queried action or menu, or 0 if it's not found.
+        AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
+        AZStd::optional<int> GetSubMenuSortKey(const AZStd::string& menuIdentifier) const;
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();
@@ -65,6 +73,8 @@ namespace AzToolsFramework
 
         QMenu* m_menu = nullptr;
         AZStd::multimap<int, MenuItem> m_menuItems;
+        AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::map<AZStd::string, int> m_subMenuToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;

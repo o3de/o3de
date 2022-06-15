@@ -20,8 +20,25 @@ namespace AzToolsFramework
     
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
+        m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menus.insert({ sortKey, AZStd::move(menuIdentifier) });
         RefreshMenuBar();
+    }
+    
+    bool EditorMenuBar::ContainsMenu(const AZStd::string& menuIdentifier) const
+    {
+        return m_menuToSortKeyMap.contains(menuIdentifier);
+    }
+
+    AZStd::optional<int> EditorMenuBar::GetMenuSortKey(const AZStd::string& menuIdentifier) const
+    {
+        auto menuIterator = m_menuToSortKeyMap.find(menuIdentifier);
+        if (menuIterator == m_menuToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return menuIterator->second;
     }
 
     QMenuBar* EditorMenuBar::GetMenuBar()
