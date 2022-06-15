@@ -244,9 +244,6 @@ namespace Terrain
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
-        const AZStd::array<uint32_t, 4> zeroUint = { 0, 0, 0, 0 };
-        const AZStd::array<float, 4> zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
-
         m_clipmapData.m_macroClipmapMaxRenderRadius = m_config.m_macroClipmapMaxRenderRadius;
         m_clipmapData.m_detailClipmapMaxRenderRadius = m_config.m_detailClipmapMaxRenderRadius;
 
@@ -270,6 +267,7 @@ namespace Terrain
 
         m_clipmapData.m_clipmapBlendSize = aznumeric_cast<float>(m_config.m_clipmapBlendSize);
 
+        RawVector4f zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
         m_clipmapData.m_clipmapToWorldScale.fill(zeroFloat);
 
         float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
