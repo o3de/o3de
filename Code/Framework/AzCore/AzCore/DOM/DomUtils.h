@@ -65,6 +65,15 @@ namespace AZ::Dom::Utils
 
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
+    template <typename T>
+    struct is_dom_value
+    {
+        static constexpr bool value = AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>;
+    };
+
+    template <typename T>
+    constexpr bool is_dom_value_v = is_dom_value<T>::value;
+
     template<typename T, typename = void>
     struct DomValueWrapper
     {
@@ -72,22 +81,54 @@ namespace AZ::Dom::Utils
     };
 
     template<typename T>
-    struct DomValueWrapper<T, AZStd::enable_if_t<AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>>>
+    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>) && !is_dom_value_v<T>>>
     {
         using Type = AZStd::add_pointer_t<AZStd::remove_reference_t<T>>;
     };
 
     template<typename T>
+    struct DomValueWrapper<T, AZStd::enable_if_t<is_dom_value_v<T>>>
+    {
+        using Type = Dom::Value;
+    };
+
+    template<typename T>
     using DomValueWrapperType = typename DomValueWrapper<T>::Type;
+
+    static const AZ::Name TypeFieldName = AZ::Name::FromStringLiteral("$type");
+    static const AZ::Name PointerTypeName = AZ::Name::FromStringLiteral("pointer");
+    static const AZ::Name PointerValueFieldName = AZ::Name::FromStringLiteral("value");
+    static const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType");
+
+    Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId);
+    void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
+
+    template <typename T>
+    Dom::Value MarshalOpaqueValue(T value)
+    {
+        if constexpr (AZStd::is_pointer_v<T>)
+        {
+            // C-style cast to break const
+            return MarshalTypedPointerToValue((void*)(value), azrtti_typeid<T>());
+        }
+        else
+        {
+            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+        }
+    }
 
     template<typename T>
     Dom::Value ValueFromType(T value)
     {
         using WrapperType = DomValueWrapperType<T>;
-        if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        {
+            return value;
+        }
+        else if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
         {
             WrapperType wrapper = &value;
-            return Dom::Value::FromOpaqueValue(AZStd::any(wrapper));
+            return MarshalOpaqueValue(wrapper);
         }
         else if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
         {
@@ -107,7 +148,7 @@ namespace AZ::Dom::Utils
         }
         else
         {
-            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+            return MarshalOpaqueValue(value);
         }
     }
 
@@ -117,7 +158,11 @@ namespace AZ::Dom::Utils
     bool CanConvertValueToType(const Dom::Value& value)
     {
         using WrapperType = DomValueWrapperType<T>;
-        if constexpr (AZStd::is_same_v<WrapperType, bool>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        {
+            return true;
+        }
+        else if constexpr (AZStd::is_same_v<WrapperType, bool>)
         {
             return value.IsBool();
         }
@@ -135,6 +180,13 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            if constexpr (AZStd::is_pointer_v<WrapperType>)
+            {
+                if (TryMarshalValueToPointer(value) != nullptr)
+                {
+                    return true;
+                }
+            }
             if (!value.IsOpaqueValue())
             {
                 return false;
@@ -150,25 +202,44 @@ namespace AZ::Dom::Utils
         using WrapperType = DomValueWrapperType<T>;
         auto ExtractOpaqueValue = [&value]() -> AZStd::optional<WrapperType>
         {
-            if (!value.IsOpaqueValue())
+            if constexpr (AZStd::is_pointer_v<WrapperType>)
             {
-                return {};
-            }
-            const AZStd::any& opaqueValue = value.GetOpaqueValue();
-            if (!opaqueValue.is<WrapperType>())
-            {
-                // Marshal void* into our type - CanConvertToType will not register this as correct,
-                // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
-                if (opaqueValue.is<void*>())
+                void* valuePointer = TryMarshalValueToPointer(value);
+                if (valuePointer != nullptr)
                 {
-                    return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                    return reinterpret_cast<WrapperType>(valuePointer);
                 }
+            }
+            if constexpr (AZ::Internal::HasAZTypeInfoIntrusive<T>::value)
+            {
+                if (!value.IsOpaqueValue())
+                {
+                    return {};
+                }
+                const AZStd::any& opaqueValue = value.GetOpaqueValue();
+                if (!opaqueValue.is<WrapperType>())
+                {
+                    // Marshal void* into our type - CanConvertToType will not register this as correct,
+                    // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
+                    if (opaqueValue.is<void*>())
+                    {
+                        return *reinterpret_cast<WrapperType*>(AZStd::any_cast<void*>(opaqueValue));
+                    }
+                    return {};
+                }
+                return AZStd::any_cast<WrapperType>(opaqueValue);
+            }
+            else
+            {
                 return {};
             }
-            return AZStd::any_cast<WrapperType>(opaqueValue);
         };
 
-        if constexpr (AZStd::is_reference_v<T>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
+        {
+            return value;
+        }
+        else if constexpr (AZStd::is_reference_v<T>)
         {
             return ExtractOpaqueValue();
         }
@@ -235,19 +306,28 @@ namespace AZ::Dom::Utils
     template<typename T>
     T ValueToTypeUnsafe(const Dom::Value& value)
     {
-        auto convertedValue = ValueToType<T>(value);
-        if constexpr (AZStd::is_reference_v<T>)
+        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
         {
-            return *convertedValue.value_or(nullptr);
-        }
-        else if constexpr (AZStd::is_constructible_v<T>)
-        {
-            return convertedValue.value_or(T());
+            return value;
         }
         else
         {
-            // truly unsafe, this will crash if a value isn't provided
-            return convertedValue.value();
+            auto convertedValue = ValueToType<T>(value);
+            if constexpr (AZStd::is_reference_v<T>)
+            {
+                // Crash with a null deref to give a relatively sensible error messae
+                return *convertedValue.value_or(nullptr);
+            }
+            else if constexpr (AZStd::is_constructible_v<T>)
+            {
+                // Fall back on default T{} if possible
+                return convertedValue.value_or(T());
+            }
+            else
+            {
+                // Crash if value is not set
+                return convertedValue.value();
+            }
         }
     }
 } // namespace AZ::Dom::Utils
