@@ -104,4 +104,15 @@ namespace UnitTest
         AZ::Capsule capsuleB(firstHemisphereCenterB, secondHemisphereCenterB, radiusB);
         EXPECT_FALSE(capsuleA.IsClose(capsuleB));
     }
+
+    TEST(MATH_Capsule, LineSegmentConstructor)
+    {
+        const AZ::Vector3 start(1.0f, 2.0f, 3.0f);
+        const AZ::Vector3 end(2.0f, 3.0f, 4.0f);
+        const AZ::LineSegment lineSegment(start, end);
+        const float radius = 2.0f;
+        const AZ::Capsule capsuleFromLineSegment(lineSegment, radius);
+        const AZ::Capsule capsule(start, end, radius);
+        EXPECT_TRUE(capsuleFromLineSegment.IsClose(capsule));
+    }
 } // namespace UnitTest

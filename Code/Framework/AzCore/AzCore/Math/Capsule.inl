@@ -21,6 +21,14 @@ namespace AZ
         m_radius = radius;
     }
 
+    AZ_MATH_INLINE Capsule::Capsule(const LineSegment& lineSegment, float radius)
+        : m_firstHemisphereCenter(lineSegment.GetStart())
+        , m_secondHemisphereCenter(lineSegment.GetEnd())
+    {
+        AZ_MATH_ASSERT(radius >= 0, "Capsule radius must be non-negative");
+        m_radius = radius;
+    }
+
     AZ_MATH_INLINE const Vector3& Capsule::GetFirstHemisphereCenter() const
     {
         return m_firstHemisphereCenter;

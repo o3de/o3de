@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/LineSegment.h>
 
 namespace AZ
 {
@@ -24,6 +25,10 @@ namespace AZ
 
         //! Constructs a Capsule from the centers of the two hemispherical caps (the order is arbitrary), and the radius.
         Capsule(const Vector3& firstHemisphereCenter, const Vector3& secondHemisphereCenter, float radius);
+
+        //! Constructs a Capsule using the ends of the provided LineSegment as the centers of the hemispherical caps, and using the provided
+        //! radius.
+        Capsule(const LineSegment& lineSegment, float radius);
 
         //! Gets the centre of the first hemispherical cap (the order of the caps is arbitrary).
         const Vector3& GetFirstHemisphereCenter() const;
