@@ -18,7 +18,11 @@ namespace AZ
     public:
         AZ_TYPE_INFO(Capsule, "{4B7E9154-B258-40D2-81A4-A27A25030588}");
 
-        Capsule() = default;
+        //! Returns a capsule with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Capsule CreateUninitialized();
+
+        //! Constructs a Capsule from the centers of the two hemispherical caps (the order is arbitrary), and the radius.
         Capsule(const Vector3& firstHemisphereCenter, const Vector3& secondHemisphereCenter, float radius);
 
         //! Gets the centre of the first hemispherical cap (the order of the caps is arbitrary).
@@ -52,6 +56,8 @@ namespace AZ
         bool IsClose(const Capsule& rhs, float tolerance = Constants::Tolerance) const;
 
     private:
+        Capsule() = default;
+
         Vector3 m_firstHemisphereCenter; //!< The center of one of the hemispherical ends (order is interchangeable). 
         Vector3 m_secondHemisphereCenter; //!< The center of the other hemispherical end (order is interchangeable).
         float m_radius; //!< The radius of the cylindrical and hemispherical sections of the capsule.

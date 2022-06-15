@@ -8,6 +8,11 @@
 
 namespace AZ
 {
+    AZ_MATH_INLINE Capsule Capsule::CreateUninitialized()
+    {
+        return Capsule();
+    }
+
     AZ_MATH_INLINE Capsule::Capsule(const Vector3& firstHemisphereCenter, const Vector3& secondHemisphereCenter, float radius)
         : m_firstHemisphereCenter(firstHemisphereCenter)
         , m_secondHemisphereCenter(secondHemisphereCenter)
