@@ -9,7 +9,6 @@
 
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QCheckBox>
-#include <QDebug>
 #include <QLineEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -46,6 +45,7 @@ namespace AzToolsFramework
         if (m_expanderWidget)
         {
             delete m_expanderWidget;
+            m_expanderWidget = nullptr;
         }
     }
 
@@ -54,6 +54,11 @@ namespace AzToolsFramework
         if (m_showExpander != shouldShow)
         {
             m_showExpander = shouldShow;
+            if (m_expanderWidget && !shouldShow)
+            {
+                delete m_expanderWidget;
+                m_expanderWidget = nullptr;
+            }
             update();
         }
     }
@@ -146,10 +151,6 @@ namespace AzToolsFramework
                 }
                 m_expanderWidget->move(itemGeometry.topLeft());
                 m_expanderWidget->show();
-            }
-            else if (m_expanderWidget)
-            {
-                m_expanderWidget->hide();
             }
 
             // space to leave for expander, whether it's there or not
