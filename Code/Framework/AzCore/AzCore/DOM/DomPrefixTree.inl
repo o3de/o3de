@@ -116,48 +116,50 @@ namespace AZ::Dom
             stack.push(entry.first);
         };
 
+        // Returns false if processing should halt
+        auto processStackEntry = [&](auto&& value) -> bool
+        {
+            using CurrentType = AZStd::decay_t<decltype(value)>;
+            if constexpr (AZStd::is_same_v<CurrentType, Node*>)
+            {
+                if (!maybeVisitEntry(value))
+                {
+                    return false;
+                }
+
+                if (processOurChildren && currentPath.Size() >= path.Size())
+                {
+                    for (auto& entry : value->m_values)
+                    {
+                        pushNode(entry);
+                    }
+                }
+                else if (currentPath.Size() < path.Size())
+                {
+                    auto entryIt = value->m_values.find(path[currentPath.Size()]);
+                    if (entryIt != value->m_values.end())
+                    {
+                        pushNode(*entryIt);
+                    }
+                }
+            }
+            else if constexpr (AZStd::is_same_v<CurrentType, PathEntry>)
+            {
+                currentPath.Push(value);
+            }
+            else if constexpr (AZStd::is_same_v<CurrentType, PopPathEntry>)
+            {
+                currentPath.Pop();
+            }
+            return true;
+        };
+
         while (!stack.empty())
         {
             StackEntry entry = AZStd::move(stack.top());
             stack.pop();
-            if (!AZStd::visit(
-                    [&](auto&& value)
-                    {
-                        using CurrentType = AZStd::decay_t<decltype(value)>;
-                        if constexpr (AZStd::is_same_v<CurrentType, Node*>)
-                        {
-                            if (!maybeVisitEntry(value))
-                            {
-                                return false;
-                            }
 
-                            if (processOurChildren && currentPath.Size() >= path.Size())
-                            {
-                                for (auto& entry : value->m_values)
-                                {
-                                    pushNode(entry);
-                                }
-                            }
-                            else if (currentPath.Size() < path.Size())
-                            {
-                                auto entryIt = value->m_values.find(path[currentPath.Size()]);
-                                if (entryIt != value->m_values.end())
-                                {
-                                    pushNode(*entryIt);
-                                }
-                            }
-                        }
-                        else if constexpr (AZStd::is_same_v<CurrentType, PathEntry>)
-                        {
-                            currentPath.Push(value);
-                        }
-                        else if constexpr (AZStd::is_same_v<CurrentType, PopPathEntry>)
-                        {
-                            currentPath.Pop();
-                        }
-                        return true;
-                    },
-                    entry))
+            if (!AZStd::visit(processStackEntry, entry))
             {
                 return;
             }
@@ -253,8 +255,13 @@ namespace AZ::Dom
     template<class T>
     T& DomPrefixTree<T>::operator[](const Path& path)
     {
-        Node* node = GetNodeForPath(path);
-        if (AZStd::is_default_constructible_v<T>)
+        Node* node = &m_rootNode;
+        for (const PathEntry& entry : path)
+        {
+            // Get or create an entry in this node
+            node = &node->m_values[entry];
+        }
+        if constexpr (AZStd::is_default_constructible_v<T>)
         {
             if (!node->m_data.has_value())
             {
@@ -267,7 +274,7 @@ namespace AZ::Dom
     template<class T>
     const T& DomPrefixTree<T>::operator[](const Path& path) const
     {
-        return GetNodeForPath(path)->mdata.value();
+        return ValueAtPath(path, PrefixTreeMatch::ExactPath).value();
     }
 
     template<class T>

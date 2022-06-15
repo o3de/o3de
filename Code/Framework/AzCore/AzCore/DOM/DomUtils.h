@@ -66,10 +66,7 @@ namespace AZ::Dom::Utils
     Value DeepCopy(const Value& value, bool copyStrings = true);
 
     template <typename T>
-    struct is_dom_value
-    {
-        static constexpr bool value = AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>;
-    };
+    using is_dom_value = AZStd::bool_constant<AZStd::is_same_v<AZStd::remove_cvref_t<T>, Dom::Value>>;
 
     template <typename T>
     constexpr bool is_dom_value_v = is_dom_value<T>::value;

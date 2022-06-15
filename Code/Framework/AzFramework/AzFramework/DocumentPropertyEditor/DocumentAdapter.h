@@ -69,7 +69,7 @@ namespace AZ::DocumentPropertyEditor
     //! \see AdapterBuilder::AddMessageHandler
     struct BoundAdapterMessage
     {
-        DocumentAdapter* m_adapter;
+        DocumentAdapter* m_adapter = nullptr;
         AZ::Name m_messageName;
         Dom::Path m_messageOrigin;
         Dom::Value m_contextData;

@@ -21,7 +21,7 @@ namespace AzToolsFramework
 
         void SetValueFromDom(const AZ::Dom::Value& node);
 
-        static const AZStd::string_view GetHandlerName()
+        static constexpr const AZStd::string_view GetHandlerName()
         {
             return AZ::DocumentPropertyEditor::Nodes::ContainerActionButton::Name;
         }

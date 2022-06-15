@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
@@ -169,7 +170,7 @@ namespace AZ::DocumentPropertyEditor
                                                              Reflection::DescriptorAttributes::Handler,
                                                              Reflection::DescriptorAttributes::Container,
                                                              Nodes::PropertyEditor::Visibility.GetName() };
-                    if (AZStd::find(ignoredAttributes.begin(), ignoredAttributes.end(), name) != ignoredAttributes.end())
+                    if (AZStd::ranges::find(ignoredAttributes, name) != ignoredAttributes.end())
                     {
                         return;
                     }
@@ -301,7 +302,8 @@ namespace AZ::DocumentPropertyEditor
         void VisitObjectBegin(Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes) override
         {
             auto visibilityAttribute = attributes.Find(Nodes::PropertyEditor::Visibility.GetName());
-            Nodes::PropertyVisibility visibility = Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
+            Nodes::PropertyVisibility visibility =
+                Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
             if (visibility == Nodes::PropertyVisibility::Hide || visibility == Nodes::PropertyVisibility::ShowChildrenOnly)
             {
                 return;
@@ -365,7 +367,8 @@ namespace AZ::DocumentPropertyEditor
         void VisitObjectEnd([[maybe_unused]] Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes) override
         {
             auto visibilityAttribute = attributes.Find(Nodes::PropertyEditor::Visibility.GetName());
-            Nodes::PropertyVisibility visibility = Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
+            Nodes::PropertyVisibility visibility =
+                Nodes::PropertyEditor::Visibility.DomToValue(visibilityAttribute).value_or(Nodes::PropertyVisibility::Show);
             if (visibility == Nodes::PropertyVisibility::Hide || visibility == Nodes::PropertyVisibility::ShowChildrenOnly)
             {
                 return;
