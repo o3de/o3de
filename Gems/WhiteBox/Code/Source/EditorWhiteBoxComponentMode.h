@@ -30,13 +30,6 @@ namespace WhiteBox
         All
     };
 
-    enum class TransformType 
-    {
-        Translation,
-        Rotation,
-        Scale
-    };
-
     //! The Component Mode responsible for handling all interactions with the White Box Tool.
     class EditorWhiteBoxComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
@@ -51,10 +44,6 @@ namespace WhiteBox
         constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
         constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
         constexpr static const char* const WhiteboxModeClusterManipulatorTooltip = "Switch to Manipulator mode";
-
-        constexpr static const char* const ManipulatorModeClusterTranslateTooltip = "Switch to translate mode";
-        constexpr static const char* const ManipulatorModeClusterRotateTooltip = "Switch to rotate mode";
-        constexpr static const char* const ManipulatorModeClusterScaleTooltip = "Switch to scale mode";
 
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
@@ -101,8 +90,6 @@ namespace WhiteBox
         //! Remove the Viewport UI cluster for sub mode selection.
         void RemoveSubModeSelectionCluster();
 
-        void UpdateTransformCluster();
-
         //! The current set of 'sub' modes the white box component mode can be in.
         AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>> m_modes;
 
@@ -115,7 +102,6 @@ namespace WhiteBox
             m_keyboardMofifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
-        TransformType m_transformType = TransformType::Translation;
 
         bool m_restoreModifierHeld = false;
 
@@ -143,8 +129,6 @@ namespace WhiteBox
         //! Event handler for sub mode changes.
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler;
-        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
-            m_TransformSelectionHandler;
     };
 
     inline SubMode EditorWhiteBoxComponentMode::GetCurrentSubMode() const
