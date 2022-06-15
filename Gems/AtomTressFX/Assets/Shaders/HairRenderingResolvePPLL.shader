@@ -20,7 +20,7 @@
     // In our current implementation alpha blending is not required as the backbuffer is being sampled to create 
     // the proper background color. This will prevent having the slight silhuette that the original implementation 
     // sometime had.
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : false
     },

@@ -73,7 +73,11 @@ namespace AZ
             // Raster Shader
             RHI::DepthStencilState m_depthStencilState;
             RHI::RasterState m_rasterState;
-            RHI::TargetBlendState m_blendState;
+
+            // Blend States
+            RHI::BlendState m_blendState;
+            RHI::TargetBlendState m_globalTargetBlendState;
+            AZStd::unordered_map<uint32_t, RHI::TargetBlendState> m_targetBlendStates;
 
             //! List of RHI Backends (aka ShaderPlatformInterface) for which this shader should not be compiled.
             AZStd::vector<AZStd::string> m_disabledRhiBackends;

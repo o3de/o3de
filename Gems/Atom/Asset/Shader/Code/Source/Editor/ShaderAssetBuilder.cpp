@@ -619,15 +619,24 @@ namespace AZ
 
                     if (hasRasterProgram)
                     {
-                        // Set the various states to what is in the descriptor.
-                        const RHI::TargetBlendState& targetBlendState = shaderSourceData.m_blendState;
                         RHI::RenderStates renderStates;
                         renderStates.m_rasterState = shaderSourceData.m_rasterState;
                         renderStates.m_depthStencilState = shaderSourceData.m_depthStencilState;
-                        // [GFX TODO][ATOM-930] We should support unique blend states per RT
+                        renderStates.m_blendState = shaderSourceData.m_blendState;
+
+                        const RHI::TargetBlendState& globalTargetBlendState = shaderSourceData.m_globalTargetBlendState;
+                        const auto& targetBlendStates = shaderSourceData.m_targetBlendStates;
+
                         for (size_t i = 0; i < colorAttachmentCount; ++i)
                         {
-                            renderStates.m_blendState.m_targets[i] = targetBlendState;
+                            if (targetBlendStates.contains(static_cast<uint32_t>(i)))
+                            {
+                                renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
+                            }
+                            else
+                            {
+                                renderStates.m_blendState.m_targets[i] = globalTargetBlendState;
+                            }
                         }
 
                         shaderAssetCreator.SetRenderStates(renderStates);
