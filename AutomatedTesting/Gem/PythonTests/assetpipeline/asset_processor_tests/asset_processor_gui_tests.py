@@ -336,32 +336,6 @@ class TestsAssetProcessorGUI_Windows(object):
         # fmt:on
         asset_processor.stop()
 
-    @pytest.mark.test_case_id("C24256593")
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_LaunchAP_LogReportsIdle(self, asset_processor, workspace, ap_idle):
-        """
-        Asset Processor creates a log entry when it goes idle
-
-        Test Steps:
-        1. Create temporary testing environment
-        2. Run Asset Processor batch to pre-process assets
-        3. Run Asset Processor GUI
-        4. Check if Asset Processor GUI reports that it has gone idle
-        """
-
-        asset_processor.create_temp_asset_root()
-        # Run batch process to ensure project assets are processed
-        assert asset_processor.batch_process(), "AP Batch failed"
-
-        ap_idle.set_file_path(workspace.paths.ap_gui_log())
-        # Launch Asset Processor and wait for it to go idle
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
-        assert asset_processor.wait_for_idle(timeout=30)
-        asset_processor.stop()
-
-
     @pytest.mark.assetpipeline
     @pytest.mark.SUITE_sandbox
     def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):

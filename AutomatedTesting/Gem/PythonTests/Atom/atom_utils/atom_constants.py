@@ -139,11 +139,13 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Actor',
+            'Actor asset': 'Actor asset',
         }
         return properties[property]
 
@@ -513,14 +515,41 @@ class AtomComponentProperties:
         """
         Grid component properties.
           - 'Grid Size': The size of the grid, default value is 32
-          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
+          - 'Axis Color': Sets color of the grid axis using azlmbr.math.Color tuple, default value is 0,0,255 (blue)
+          - 'Primary Grid Spacing': Amount of space between grid lines, default value is 1.0
+          - 'Primary Color': Sets color of the primary grid lines using azlmbr.math.Color tuple,
+             default value is 64,64,64 (dark grey)
+          - 'Secondary Grid Spacing': Amount of space between sub-grid lines, default value is 0.25
+          - 'Secondary Color': Sets color of the secondary grid lines using azlmbr.math.Color tuple,
+             default value is 128,128,128 (light grey)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
             'Grid Size': 'Controller|Configuration|Grid Size',
+            'Axis Color': 'Controller|Configuration|Axis Color',
+            'Primary Grid Spacing': 'Controller|Configuration|Primary Grid Spacing',
+            'Primary Color': 'Controller|Configuration|Primary Color',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
+            'Secondary Color': 'Controller|Configuration|Secondary Color',
+        }
+        return properties[property]
+
+    @staticmethod
+    def hair(property: str = 'name') -> str:
+        """
+        Atom Hair component properties. Requires Actor component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Hair Asset' Asset.id of the hair TressFX asset.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Atom Hair',
+            'requires': [AtomComponentProperties.actor()],
+            'Hair Asset': 'Controller|Configuration|Hair Asset',
         }
         return properties[property]
 

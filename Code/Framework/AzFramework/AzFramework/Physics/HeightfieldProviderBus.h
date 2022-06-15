@@ -12,7 +12,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
 
 namespace Physics
@@ -42,12 +42,12 @@ namespace Physics
 
         AZ_TYPE_INFO(HeightMaterialPoint, "{DF167ED4-24E6-4F7B-8AB7-42622F7DBAD3}");
         float m_height{ 0.0f }; //!< Holds the height of this point in the heightfield relative to the heightfield entity location.
-        QuadMeshType m_quadMeshType{ QuadMeshType::SubdivideUpperLeftToBottomRight }; //!< By default, create two triangles like this |\|, where this point is in the upper left corner.
+        QuadMeshType m_quadMeshType{ QuadMeshType::Hole }; //!< By default, create an empty point.
         uint8_t m_materialIndex{ 0 }; //!< The surface material index for the upper left corner of this quad.
         uint16_t m_padding{ 0 }; //!< available for future use.
     };
 
-    using UpdateHeightfieldSampleFunction = AZStd::function<void(int32_t, int32_t, const Physics::HeightMaterialPoint&)>;
+    using UpdateHeightfieldSampleFunction = AZStd::function<void(size_t column, size_t row, const Physics::HeightMaterialPoint& point)>;
 
     //! An interface to provide heightfield values.
     //! This EBus supports multiple concurrent requests from different threads.
@@ -66,15 +66,15 @@ namespace Physics
         //! Returns the height field gridsize.
         //! @param numColumns contains the size of the grid in the x direction.
         //! @param numRows contains the size of the grid in the y direction.
-        virtual void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const = 0;
+        virtual void GetHeightfieldGridSize(size_t& numColumns, size_t& numRows) const = 0;
 
         //! Returns the height field gridsize columns.
         //! @return the size of the grid in the x direction.
-        virtual int32_t GetHeightfieldGridColumns() const = 0;
+        virtual size_t GetHeightfieldGridColumns() const = 0;
 
         //! Returns the height field gridsize rows.
         //! @return the size of the grid in the y direction.
-        virtual int32_t GetHeightfieldGridRows() const = 0;
+        virtual size_t GetHeightfieldGridRows() const = 0;
 
         //! Returns the height field min and max height bounds.
         //! @param minHeightBounds contains the minimum height that the heightfield can contain.
@@ -101,7 +101,7 @@ namespace Physics
 
         //! Returns the list of materials used by the height field.
         //! @return returns a vector of all materials.
-        virtual AZStd::vector<MaterialId> GetMaterialList() const = 0;
+        virtual AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> GetMaterialList() const = 0;
 
         //! Returns the list of heights used by the height field.
         //! @return the rows*columns vector of the heights.
@@ -111,8 +111,19 @@ namespace Physics
         //! @return the rows*columns vector of the heights and materials.
         virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
 
-        //! Updates the list of heights and materials within the region. Pass Null region to update the entire list.
-        virtual void UpdateHeightsAndMaterials(const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback, const AZ::Aabb& region) const = 0;
+        //! Return the specific heightfield row/column data that exists inside a given AABB region.
+        //! @param region The input region to get row/column data for
+        //! @param startColumn [out] The starting heightfield column index for that region
+        //! @param startRow [out] The starting heightfield row index for that region
+        //! @param numColumns [out] The number of columns that exist within the region
+        //! @param numRows [out] The number of rows that exist within the region
+        virtual void GetHeightfieldIndicesFromRegion(
+            const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows) const = 0;
+
+        //! Updates the list of heights and materials within the region.
+        virtual void UpdateHeightsAndMaterials(
+            const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;

@@ -15,6 +15,8 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -150,7 +152,8 @@ namespace EMStudio
         GetMainWindow()->Reset();
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphInstances(true);
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphs(true);
-        EMotionFX::GetMotionManager().Clear(true);
+        CommandSystem::ClearMotionSetsCommand();
+        CommandSystem::ClearMotions();
     }
 
 
