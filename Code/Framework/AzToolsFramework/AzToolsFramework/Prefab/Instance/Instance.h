@@ -75,6 +75,7 @@ namespace AzToolsFramework
             explicit Instance(AZStd::unique_ptr<AZ::Entity> containerEntity);
             explicit Instance(InstanceOptionalReference parent);
             Instance(InstanceOptionalReference parent, InstanceAlias alias);
+            Instance(InstanceOptionalReference parent, InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship);
             Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent);
             explicit Instance(InstanceAlias alias);
             explicit Instance(EntityIdInstanceRelationship entityIdInstanceRelationship);
@@ -235,8 +236,10 @@ namespace AzToolsFramework
 
         private:
             static constexpr const char s_aliasPathSeparator = '/';
+            static constexpr EntityIdInstanceRelationship DefaultEntityIdInstanceRelationship = EntityIdInstanceRelationship::OneToOne;
 
-            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias);
+            Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias,
+                EntityIdInstanceRelationship entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship);
 
             void ClearEntities();
 
@@ -294,7 +297,7 @@ namespace AzToolsFramework
             // Interface for registering the Instance itself for external queries.
             TemplateInstanceMapperInterface* m_templateInstanceMapper = nullptr;
 
-            EntityIdInstanceRelationship m_entityIdInstanceRelationship = EntityIdInstanceRelationship::OneToOne;
+            EntityIdInstanceRelationship m_entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework
