@@ -21,12 +21,14 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(6) // Introduction of "AddBuildArguments" & "RemoveBuildArguments"
+                    ->Version(7) // Rework of the blend state options
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
                     ->Field("RasterState", &ShaderSourceData::m_rasterState)
                     ->Field("BlendState", &ShaderSourceData::m_blendState)
+                    ->Field("GlobalTargetBlendState", &ShaderSourceData::m_globalTargetBlendState)
+                    ->Field("TargetBlendStates", &ShaderSourceData::m_targetBlendStates)
                     ->Field("ProgramSettings", &ShaderSourceData::m_programSettings)
                     ->Field("RemoveBuildArguments", &ShaderSourceData::m_removeBuildArguments)
                     ->Field("AddBuildArguments", &ShaderSourceData::m_addBuildArguments)
