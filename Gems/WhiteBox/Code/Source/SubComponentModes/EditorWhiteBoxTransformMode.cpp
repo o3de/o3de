@@ -40,14 +40,84 @@
 namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
+    
+    static void SetViewportUiClusterActiveButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+    }
+
+   static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
+    {
+        AzToolsFramework::ViewportUi::ButtonId buttonId;
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+            buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
+            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        return buttonId;
+    }
 
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+            m_transformClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopRight);
+        m_transformTranslateButtonId = RegisterClusterButton(m_transformClusterId, "Move");
+        m_transformRotateButtonId = RegisterClusterButton(m_transformClusterId, "Rotate");
+        m_transformScaleButtonId = RegisterClusterButton(m_transformClusterId, "Scale");
+
+        // set translation tooltips
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformTranslateButtonId, ManipulatorModeClusterTranslateTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformRotateButtonId, ManipulatorModeClusterRotateTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
+            m_transformScaleButtonId, ManipulatorModeClusterScaleTooltip);
+
+        m_TransformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            {
+                if (buttonId == m_transformTranslateButtonId)
+                {
+                    m_transformType = TransformType::Translation;
+                }
+                else if (buttonId == m_transformRotateButtonId)
+                {
+                    m_transformType = TransformType::Rotation;
+                }
+                else if (buttonId == m_transformScaleButtonId)
+                {
+                    m_transformType = TransformType::Scale;
+                }
+                
+                RefreshManipulator();
+            });
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_transformClusterId,
+            m_TransformSelectionHandler);
+        
+        RefreshManipulator();
     }
 
     TransformMode::~TransformMode()
     {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_transformClusterId);
+
         DestroyManipulators();
     }
 
@@ -137,12 +207,6 @@ namespace WhiteBox
         debugDisplay.PopMatrix();
     }
 
-    void TransformMode::SetTransformMode(WhiteBox::TransformType type)
-    {
-        m_transformType = type;
-        RefreshManipulator();
-    }
-
     bool TransformMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
         [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair,
@@ -194,14 +258,17 @@ namespace WhiteBox
         if(!AZStd::holds_alternative<AZStd::monostate>(m_selection)) {
             switch (m_transformType)
             {
-            case WhiteBox::TransformType::Translation:
+            case TransformType::Translation:
                 CreateTranslationManipulators();
+                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformTranslateButtonId);
                 break;
-            case WhiteBox::TransformType::Rotation:
+            case TransformType::Rotation:
                 CreateRotationManipulators();
+                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformRotateButtonId);
                 break;
-            case WhiteBox::TransformType::Scale:
+            case TransformType::Scale:
                 CreateScaleManipulators();
+                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformScaleButtonId);
                 break;
             default:
                 break;

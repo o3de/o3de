@@ -49,10 +49,19 @@ namespace WhiteBox
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        using SelectedTransformModifier = AZStd::variant<AZStd::monostate>;
+        constexpr static const char* const ManipulatorModeClusterTranslateTooltip = "Switch to translate mode";
+        constexpr static const char* const ManipulatorModeClusterRotateTooltip = "Switch to rotate mode";
+        constexpr static const char* const ManipulatorModeClusterScaleTooltip = "Switch to scale mode";
 
         TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~TransformMode();
+
+        enum class TransformType 
+        {
+            Translation,
+            Rotation,
+            Scale
+        };
 
         void Refresh();
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(const AZ::EntityComponentIdPair& entityComponentIdPair);
@@ -62,7 +71,6 @@ namespace WhiteBox
             const IntersectionAndRenderData& renderData,
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay);
-        void SetTransformMode(WhiteBox::TransformType type);
 
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
@@ -83,14 +91,23 @@ namespace WhiteBox
         void DestroyManipulators();
 
         AZ::EntityComponentIdPair m_entityComponentIdPair; //!< The entity and component id this modifier is associated with.
-
-        SelectedTransformModifier m_transform;
         
         AZStd::shared_ptr<AzToolsFramework::Manipulators> m_manipulator = nullptr;
         AZStd::variant<PolygonIntersection, AZStd::monostate> m_selection = AZStd::monostate{};
         AZStd::optional<PolygonIntersection> m_polygonIntersection = AZStd::nullopt;
+        
+        TransformType m_transformType = TransformType::Translation;
+        AzToolsFramework::ViewportUi::ClusterId
+            m_transformClusterId;
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformTranslateButtonId;
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformRotateButtonId;
+        AzToolsFramework::ViewportUi::ButtonId
+            m_transformScaleButtonId;
 
-        WhiteBox::TransformType m_transformType;
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
+            m_TransformSelectionHandler;
     };
 
 } // namespace WhiteBox
