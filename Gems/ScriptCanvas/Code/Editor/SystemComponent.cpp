@@ -215,6 +215,18 @@ namespace ScriptCanvasEditor
                 , scriptCanvasExtension.c_str()
                 , fullFilepath);
 
+            int fileCounter = 0;
+            while (AZ::IO::FileIOBase::GetInstance()->Exists(fullFilepath.c_str()))
+            {
+                fileCounter++;
+                AZStd::string filenameDigit = AZStd::to_string(fileCounter);
+
+                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback
+                    , (defaultFilename + filenameDigit).c_str()
+                    , scriptCanvasExtension.c_str()
+                    , fullFilepath);
+            }
+
             AZ::IO::Path fullAzFilePath = fullFilepath;
             ScriptCanvas::DataPtr graph = EditorGraph::Create();
             const AZ::Uuid assetId = AZ::Uuid::CreateRandom();
