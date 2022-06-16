@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 
 namespace AssetBuilderSDK
 {
@@ -64,11 +65,37 @@ namespace ImageProcessingAtom
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) = 0;
 
+        //! Convert an image and return its product instead ot saving it to the disk
+        virtual IImageObjectPtr ConvertImageObjectInMemory(
+            IImageObjectPtr imageObject,
+            const AZStd::string& presetName,
+            const AZStd::string& platformName,
+            const AZ::Data::AssetId& sourceAssetId,
+            const AZStd::string& sourceAssetName) = 0;
+
         //! Return whether the specified platform is supported by the image builder
         virtual bool DoesSupportPlatform(const AZStd::string& platformId) = 0;
 
         //! Return whether the specified preset requires an image to be square and a power of 2
         virtual bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) = 0;
+
+        //! Extract the file mask of a file path
+        virtual FileMask GetFileMask(AZStd::string_view imageFilePath) = 0;
+
+        //! Return all file masks associated with this preset
+        virtual AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) = 0;
+
+        //! Return all preset names associated with this file mask
+        virtual AZStd::vector<PresetName> GetPresetsForFileMask(const FileMask& fileMask) = 0;
+
+        //! Return the default opaque preset name
+        virtual PresetName GetDefaultPreset() = 0;
+
+        //! Return the default alpha preset name
+        virtual PresetName GetDefaultAlphaPreset() = 0;
+
+        //! Return true if the preset name is valid
+        virtual bool IsValidPreset(PresetName presetName) = 0;
     };
 
     using ImageBuilderRequestBus = AZ::EBus<ImageBuilderRequests>;

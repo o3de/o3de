@@ -149,7 +149,7 @@ namespace PhysX::Utils::Characters
         return aznew CharacterController(pxController, AZStd::move(callbackManager), scene->GetSceneHandle());
     }
 
-    Ragdoll* CreateRagdoll(Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle)
+    Ragdoll* CreateRagdoll(const Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle)
     {
         const size_t numNodes = configuration.m_nodes.size();
         if (numNodes != configuration.m_initialState.size())
@@ -172,10 +172,10 @@ namespace PhysX::Utils::Characters
         // Set up rigid bodies
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
-            Physics::RagdollNodeConfiguration& nodeConfig = configuration.m_nodes[nodeIndex];
+            Physics::RagdollNodeConfiguration newNodeConfig = configuration.m_nodes[nodeIndex];
             const Physics::RagdollNodeState& nodeState = configuration.m_initialState[nodeIndex];
 
-            Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = configuration.m_colliders.FindNodeConfigByName(nodeConfig.m_debugName);
+            Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = configuration.m_colliders.FindNodeConfigByName(newNodeConfig.m_debugName);
             if (colliderNodeConfig)
             {
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
@@ -183,7 +183,7 @@ namespace PhysX::Utils::Characters
                 {
                     if (colliderConfig == nullptr || shapeConfig == nullptr)
                     {
-                        AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                        AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", newNodeConfig.m_debugName.c_str());
                         return nullptr;
                     }
 
@@ -193,25 +193,25 @@ namespace PhysX::Utils::Characters
                     }
                     else
                     {
-                        AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                        AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", newNodeConfig.m_debugName.c_str());
                         return nullptr;
                     }
                 }
-                nodeConfig.m_colliderAndShapeData = shapes;
+                newNodeConfig.m_colliderAndShapeData = shapes;
             }
-            nodeConfig.m_startSimulationEnabled = false;
-            nodeConfig.m_position = nodeState.m_position;
-            nodeConfig.m_orientation = nodeState.m_orientation;
+            newNodeConfig.m_startSimulationEnabled = false;
+            newNodeConfig.m_position = nodeState.m_position;
+            newNodeConfig.m_orientation = nodeState.m_orientation;
 
-            AZStd::unique_ptr<RagdollNode> node = AZStd::make_unique<RagdollNode>(sceneHandle, nodeConfig);
-            if (node->GetRigidBodyHandle() != AzPhysics::InvalidSimulatedBodyHandle)
+            AZStd::unique_ptr<RagdollNode> newNode = AZStd::make_unique<RagdollNode>(sceneHandle, newNodeConfig);
+            if (newNode->GetRigidBodyHandle() != AzPhysics::InvalidSimulatedBodyHandle)
             {
-                ragdoll->AddNode(AZStd::move(node));
+                ragdoll->AddNode(AZStd::move(newNode));
             }
             else
             {
-                AZ_Error("PhysX Ragdoll", false, "Failed to create rigid body for ragdoll node %s", nodeConfig.m_debugName.c_str());
-                node.reset();
+                AZ_Error("PhysX Ragdoll", false, "Failed to create rigid body for ragdoll node %s", newNodeConfig.m_debugName.c_str());
+                newNode.reset();
             }
         }
 

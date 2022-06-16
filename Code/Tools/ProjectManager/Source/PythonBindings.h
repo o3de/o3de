@@ -76,6 +76,10 @@ namespace O3DE::ProjectManager
         void AddErrorString(AZStd::string errorString) override;
         void ClearErrorStrings() override;
 
+    protected:
+        static void OnStdOut(const char* msg); 
+        static void OnStdError(const char* msg); 
+
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
@@ -89,7 +93,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();
-
 
         bool m_pythonStarted = false;
 
@@ -111,4 +114,4 @@ namespace O3DE::ProjectManager
         bool m_requestCancelDownload = false;
         AZStd::vector<AZStd::string> m_pythonErrorStrings;
     };
-}
+} // namespace O3DE::ProjectManager
