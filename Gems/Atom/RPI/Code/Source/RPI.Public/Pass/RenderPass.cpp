@@ -250,7 +250,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteAfter(GetScopeId());
+                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
                 }
             }
             for (Pass* pass : m_executeBeforePasses)
@@ -258,7 +258,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteBefore(GetScopeId());
+                    frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
         }

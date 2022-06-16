@@ -618,9 +618,10 @@ namespace AZ
             return formatsList;
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             m_commandQueueContext.Begin();
+            return RHI::ResultCode::Success;
         }
     }
 }

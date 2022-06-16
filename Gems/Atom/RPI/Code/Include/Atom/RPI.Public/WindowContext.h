@@ -37,6 +37,15 @@ namespace AZ
             WindowContext() = default;
             ~WindowContext() = default;
 
+            //! Enum to describe swapchain type
+            enum class SwapChainMode : uint32_t
+            {
+                XrLeft = 0,
+                XrRight,
+                Default,
+                Count
+            };
+
             //! Initializes the WindowContext from the given AzFramework's window
             //! param[in] windowHandle The native window handle of the Window we want to construct an RPI WindowContext for
             //! param[in] masterPassName The name of the pass that supplies input to the window's swapchain pass
@@ -53,16 +62,16 @@ namespace AZ
             void Shutdown();
 
             //! Returns a unique attachment id associated with the swap chain.
-            const RHI::AttachmentId& GetSwapChainAttachmentId() const;
+            const RHI::AttachmentId& GetSwapChainAttachmentId(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the underlying SwapChain created by this WindowContext
-            const RHI::Ptr<RHI::SwapChain>& GetSwapChain() const;
+            const RHI::Ptr<RHI::SwapChain>& GetSwapChain(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the default ViewportState for the WindowContext
-            const RHI::Viewport& GetViewport() const;
+            const RHI::Viewport& GetViewport(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the default ScissorState for the WindowContext
-            const RHI::Scissor& GetScissor() const;
+            const RHI::Scissor& GetScissor(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Get the window ID for the WindowContext
             AzFramework::NativeWindowHandle GetWindowHandle() const { return m_windowHandle; }
@@ -79,8 +88,8 @@ namespace AZ
             bool GetExclusiveFullScreenState() const override;
             bool SetExclusiveFullScreenState(bool fullScreenState) override;
 
-            // Creates the underlying RHI level SwapChain for the given Window
-            void CreateSwapChain(RHI::Device& device);
+            // Creates the underlying RHI level SwapChain for the given Window plus XR swapchains.
+            void CreateSwapChains(RHI::Device& device);
 
             // Destroys the underlying SwapChain
             void DestroySwapChain();
@@ -105,6 +114,13 @@ namespace AZ
 
             // Non-owning reference to associated ViewportContexts (if any)
             AZStd::vector<AZStd::weak_ptr<ViewportContext>> m_viewportContexts;
+
+            // Xr swapchain per view
+            AZStd::vector<RHI::Ptr<RHI::SwapChain>> m_xrSwapChains;
+            // Xr viewport data per view
+            AZStd::vector<RHI::Viewport> m_xrDefaultViewports;
+            // Xr scissor data per view
+            AZStd::vector<RHI::Scissor> m_xrDefaultScissors;
         };
 
         using WindowContextSharedPtr = AZStd::shared_ptr<WindowContext>;
