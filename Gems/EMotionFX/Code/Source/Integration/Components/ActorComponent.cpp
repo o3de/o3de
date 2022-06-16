@@ -231,12 +231,7 @@ namespace EMotionFX
         void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_configuration.m_actorAsset = actorAsset;
-
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -278,6 +273,7 @@ namespace EMotionFX
             AZ::TickBus::Handler::BusConnect();
 
             const AZ::EntityId entityId = GetEntityId();
+            ActorComponentRequestBus::Handler::BusConnect(entityId);
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
@@ -414,6 +410,8 @@ namespace EMotionFX
 
         void ActorComponent::CheckActorCreation()
         {
+            DestroyActor();
+
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
@@ -422,16 +420,12 @@ namespace EMotionFX
                 return;
             }
 
-            DestroyActor();
-
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
             if (!m_actorInstance)
             {
                 AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
                 return;
             }
-
-            ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
 
             ActorComponentNotificationBus::Event(
                 GetEntityId(),
