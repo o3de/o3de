@@ -119,15 +119,17 @@ namespace O3DE::ProjectManager
     QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)
     {
         QString repoUri = GetRepoUri(modelIndex);
-
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
-        if (gemInfosResult.IsSuccess())
+        if (!repoUri.isEmpty())
         {
-            return gemInfosResult.GetValue();
-        }
-        else
-        {
-            QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(GetName(modelIndex)));
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
+            if (gemInfosResult.IsSuccess())
+            {
+                return gemInfosResult.GetValue();
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(GetName(modelIndex)));
+            }
         }
 
         return QVector<GemInfo>();

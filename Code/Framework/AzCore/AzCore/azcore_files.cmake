@@ -253,6 +253,8 @@ set(FILES
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
@@ -337,6 +339,7 @@ set(FILES
     Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h
