@@ -36,10 +36,12 @@ namespace O3DE::ProjectManager
             PythonBindings::OnStdError(msg);
         }
 
-        //! override to avoid modifying the manifest
+        //! override with an implementation that won't do anything
+        //! so we avoid modifying the manifest 
         bool RemoveInvalidProjects() override
         {
-            return true;
+            constexpr bool removalResult = true;
+            return removalResult;
         }
     };
 
@@ -118,8 +120,6 @@ namespace O3DE::ProjectManager
 
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
-        // currently, PythonBindings sends errors to AZ_TracePrintf instead of AZ_Error
-        // if this changes, we'll need to handle OnError() and check that instead
         for (const auto& message : m_gatheredMessages)
         {
             if (message.contains(testMessage))
