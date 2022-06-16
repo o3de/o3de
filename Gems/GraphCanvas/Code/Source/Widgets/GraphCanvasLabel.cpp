@@ -165,6 +165,12 @@ namespace GraphCanvas
         }
     }
 
+    void GraphCanvasLabel::SetAlignment(Qt::Alignment alignment)
+    {
+        m_alignment = alignment;
+        update();
+    }
+
     void GraphCanvasLabel::SetDefaultAlignment(Qt::Alignment defaultAlignment)
     {
         m_defaultAlignment = defaultAlignment;
@@ -390,7 +396,7 @@ namespace GraphCanvas
             painter->setBrush(QBrush());
             painter->setFont(m_styleHelper.GetFont());
 
-            Qt::Alignment textAlignment = m_styleHelper.GetTextAlignment(m_defaultAlignment);
+            Qt::Alignment textAlignment = m_alignment ? m_alignment : m_styleHelper.GetTextAlignment(m_defaultAlignment);
 
             QTextOption opt(textAlignment);
             opt.setFlags(QTextOption::IncludeTrailingSpaces);

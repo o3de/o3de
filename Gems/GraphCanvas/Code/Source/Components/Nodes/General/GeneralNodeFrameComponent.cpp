@@ -42,8 +42,16 @@ namespace GraphCanvas
     GeneralNodeFrameComponent::GeneralNodeFrameComponent()
         : m_frameWidget(nullptr)
         , m_shouldDeleteFrame(true)
+        , m_nodeType("")
     {
 
+    }
+
+    GeneralNodeFrameComponent::GeneralNodeFrameComponent(const AZStd::string& nodeType)
+        : m_frameWidget(nullptr)
+        , m_shouldDeleteFrame(true)
+        , m_nodeType(nodeType)
+    {
     }
 
     GeneralNodeFrameComponent::~GeneralNodeFrameComponent()
@@ -56,7 +64,7 @@ namespace GraphCanvas
 
     void GeneralNodeFrameComponent::Init()
     {
-        m_frameWidget = aznew GeneralNodeFrameGraphicsWidget(GetEntityId());
+        m_frameWidget = aznew GeneralNodeFrameGraphicsWidget(GetEntityId(), m_nodeType);
     }
 
     void GeneralNodeFrameComponent::Activate()
@@ -96,9 +104,15 @@ namespace GraphCanvas
     // GeneralNodeFrameGraphicsWidget
     ///////////////////////////////////
 
-    GeneralNodeFrameGraphicsWidget::GeneralNodeFrameGraphicsWidget(const AZ::EntityId& entityKey)
+    GeneralNodeFrameGraphicsWidget::GeneralNodeFrameGraphicsWidget(const AZ::EntityId& entityKey, AZStd::string nodeType)
         : NodeFrameGraphicsWidget(entityKey)
+        , m_nodeType(AZStd::move(nodeType))
     {
+    }
+
+    qreal GeneralNodeFrameGraphicsWidget::GetCornerRadius() const
+    {
+        return m_nodeType == Styling::Elements::Small ? 25.0 : m_style.GetAttribute(Styling::Attribute::BorderRadius, 5.0);
     }
 
     QPainterPath GeneralNodeFrameGraphicsWidget::GetOutline() const

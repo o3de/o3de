@@ -150,6 +150,8 @@ namespace ScriptCanvas
         // Or a value data pin.
         bool IsVariableReference() const;
 
+        bool CanHaveInputField() const;
+
         bool CanConvertTypes() const;
 
         bool CanConvertToValue() const;
@@ -235,6 +237,8 @@ namespace ScriptCanvas
         AZ::Crc32 m_displayGroup;
         AZ::Crc32 m_dynamicGroup;
 
+        bool m_canHaveInputField = false;
+
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;
 
@@ -251,5 +255,7 @@ namespace ScriptCanvas
         Node*  m_node;
 
         AZStd::vector<AZStd::unique_ptr<Contract>> m_contracts;
+
+        bool m_needsNodePropertyDisplay = true;
     };
 } 

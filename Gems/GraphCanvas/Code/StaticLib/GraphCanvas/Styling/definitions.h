@@ -65,6 +65,8 @@ namespace GraphCanvas
             // Custom Widgets
             const char* const CheckBox = "checkBox";
 
+            const char* const Small = ".small";
+
         } // namespace Elements
 
         enum class Element : AZ::u32

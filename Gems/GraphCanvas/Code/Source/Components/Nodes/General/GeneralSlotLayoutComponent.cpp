@@ -259,9 +259,19 @@ namespace GraphCanvas
         }
     }
 
+    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetInputSlotLayout()
+    {
+        return m_inputs;
+    }
+
     const AZStd::vector< SlotLayoutInfo >& GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetInputSlots() const
     {
         return m_inputSlots;
+    }
+
+    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetOutputSlotLayout()
+    {
+        return m_outputs;
     }
 
     const AZStd::vector< SlotLayoutInfo >& GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetOutputSlots() const
@@ -478,6 +488,16 @@ namespace GraphCanvas
     QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetGraphicsLayoutItem()
     {
         return this;
+    }
+
+    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetInputGraphicsLayoutItem()
+    {
+        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetInputSlotLayout();
+    }
+
+    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetOutputGraphicsLayoutItem()
+    {
+        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetOutputSlotLayout();
     }
 
     void GeneralSlotLayoutGraphicsWidget::OnSceneSet(const AZ::EntityId& /*sceneId*/)

@@ -108,7 +108,10 @@ namespace GraphCanvas
             void DisplaySlot(const AZ::EntityId& slotId);
             void RemoveSlot(const AZ::EntityId& slotId);
 
+            QGraphicsLayoutItem* GetInputSlotLayout();
             const AZStd::vector< SlotLayoutInfo >& GetInputSlots() const;
+
+            QGraphicsLayoutItem* GetOutputSlotLayout();
             const AZStd::vector< SlotLayoutInfo >& GetOutputSlots() const;
 
             bool IsEmpty() const;
@@ -155,6 +158,9 @@ namespace GraphCanvas
 
         // NodeSlotsRequestBus
         QGraphicsLayoutItem* GetGraphicsLayoutItem() override;
+
+        QGraphicsLayoutItem* GetInputGraphicsLayoutItem() override;
+        QGraphicsLayoutItem* GetOutputGraphicsLayoutItem() override;
         ////
 
         // SceneMemberNotificationBus

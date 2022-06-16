@@ -44,6 +44,10 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
 
         virtual QGraphicsLayoutItem* GetGraphicsLayoutItem() = 0;
+
+        virtual QGraphicsLayoutItem* GetInputGraphicsLayoutItem() = 0;
+        virtual QGraphicsLayoutItem* GetOutputGraphicsLayoutItem() = 0;
+
     };
 
     using NodeSlotsRequestBus = AZ::EBus<NodeSlotsRequests>;

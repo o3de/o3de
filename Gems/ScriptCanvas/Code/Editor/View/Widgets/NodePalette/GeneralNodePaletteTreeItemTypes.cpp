@@ -279,6 +279,17 @@ namespace ScriptCanvasEditor
         styleConfiguration.m_nodeSubStyle = m_styleOverride;
         styleConfiguration.m_titlePalette = m_titlePalette;
 
+        // TODO: Make created node dependant on data given rather than type id
+        if (m_typeId.IsNull())
+        {
+            Nodes::SmallOperatorNodeData nodeData;
+            nodeData.m_scriptCanvasId = scriptCanvasId;
+            nodeData.m_name = "++";
+            nodeData.m_tooltip = "Increments a node";
+            nodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+
+            return Nodes::CreateSmallOperatorNode(nodeData);
+        }
         return Nodes::CreateNode(m_typeId, scriptCanvasId, styleConfiguration);
     }
 

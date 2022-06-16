@@ -51,12 +51,18 @@ namespace GraphCanvas
     }
 
     GeneralNodeTitleComponent::GeneralNodeTitleComponent()
+        : m_nodeType("")
+    {
+    }
+
+    GeneralNodeTitleComponent::GeneralNodeTitleComponent(const AZStd::string& nodeType)
+        : m_nodeType(nodeType)
     {
     }
 
     void GeneralNodeTitleComponent::Init()
     {
-        m_generalNodeTitleWidget = aznew GeneralNodeTitleGraphicsWidget(GetEntityId());
+        m_generalNodeTitleWidget = aznew GeneralNodeTitleGraphicsWidget(GetEntityId(), m_nodeType);
     }
 
     void GeneralNodeTitleComponent::Activate()
@@ -216,8 +222,28 @@ namespace GraphCanvas
     ///////////////////////////////////
     GeneralNodeTitleGraphicsWidget::GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId)
         : m_entityId(entityId)
+        , m_nodeType("")
         , m_paletteOverride(nullptr)
         , m_colorOverride(nullptr)
+    {
+        Initialize();
+    }
+
+    GeneralNodeTitleGraphicsWidget::GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId, const AZStd::string& nodeType)
+        : m_entityId(entityId)
+        , m_nodeType(nodeType)
+        , m_paletteOverride(nullptr)
+        , m_colorOverride(nullptr)
+    {
+        Initialize();
+    }
+
+    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
+    {
+        delete m_colorOverride;
+    }
+
+    void GeneralNodeTitleGraphicsWidget::Initialize()
     {
         setCacheMode(QGraphicsItem::CacheMode::DeviceCoordinateCache);
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -230,12 +256,7 @@ namespace GraphCanvas
         m_linearLayout = new QGraphicsLinearLayout(Qt::Vertical);
         m_linearLayout->setSpacing(0);
         setLayout(m_linearLayout);
-        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(entityId), 16, 16, QChar('0')));
-    }
-
-    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
-    {
-        delete m_colorOverride;
+        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(m_entityId), 16, 16, QChar('0')));
     }
 
     void GeneralNodeTitleGraphicsWidget::Activate()
@@ -444,6 +465,12 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::OnAddedToScene(const AZ::EntityId& scene)
     {
         SceneNotificationBus::Handler::BusConnect(scene);
+
+        if (m_nodeType == Styling::Elements::Small)
+        {
+            m_titleWidget->SetAlignment(Qt::AlignCenter);
+        }
+            
         UpdateStyles();
         RefreshDisplay();
     }
@@ -467,6 +494,11 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
+
+        if (m_nodeType == Styling::Elements::Small)
+        {
+            return;
+        }
 
         // Background
         QRectF bounds = boundingRect();

@@ -13,6 +13,7 @@
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/NodelingBus.h>
@@ -237,6 +238,60 @@ namespace ScriptCanvasEditor::Nodes
 
         return nodeIdPair;
     }
+
+    NodeIdPair CreateSmallOperatorNode(const SmallOperatorNodeData& nodeData)
+    {
+        NodeIdPair nodeIdPair;
+
+        ScriptCanvas::Node* node{};
+        AZ::Entity* scriptCanvasEntity{ aznew AZ::Entity };
+        scriptCanvasEntity->Init();
+        nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
+
+        AZ::Entity* nodeEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
+
+        node = aznew ScriptCanvas::Node();
+        node->SetNodeName(nodeData.m_name);
+
+        ScriptCanvas::DynamicDataSlotConfiguration inputPin;
+
+        inputPin.m_name = " ";
+        inputPin.m_toolTip = "Input";
+        inputPin.m_canHaveInputField = false;
+        inputPin.SetConnectionType(ScriptCanvas::ConnectionType::Input);
+        inputPin.m_displayType = nodeData.m_dataType;
+
+        node->AddSlot(inputPin, true);
+
+        ScriptCanvas::DynamicDataSlotConfiguration outputPin;
+
+        outputPin.m_name = " ";
+        outputPin.m_toolTip = "Output";
+        outputPin.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+        outputPin.m_displayType = nodeData.m_dataType;
+
+        node->AddSlot(outputPin, true);
+
+        if (node && nodeEntity)
+        {
+            nodeEntity->SetName(node->GetNodeName());
+            nodeEntity->AddComponent(node);
+        }
+
+        ScriptCanvas::GraphRequestBus::Event(nodeData.m_scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
+
+        AZ::EntityId graphCanvasGraphId;
+        EditorGraphRequestBus::EventResult(graphCanvasGraphId, nodeData.m_scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
+
+        NodeReplacementConfiguration nodeConfiguration;
+        nodeConfiguration.m_nodeSubStyle = GraphCanvas::Styling::Elements::Small;
+
+        nodeIdPair.m_graphCanvasId = DisplayGeneralScriptCanvasNode(graphCanvasGraphId, node, nodeConfiguration);
+
+        return nodeIdPair;
+    }
+
 
     NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId)
     {

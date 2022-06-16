@@ -67,11 +67,13 @@ namespace ScriptCanvasEditor::Nodes
 
         if (nodeConfiguration.m_nodeType == NodeType::GeneralNode)
         {
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasEntity, &GraphCanvas::GraphCanvasRequests::CreateGeneralNode, nodeConfiguration.m_nodeSubStyle.c_str());
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                graphCanvasEntity, &GraphCanvas::GraphCanvasRequests::CreateGeneralNode, nodeConfiguration.m_nodeSubStyle.c_str());
         }
         else if (nodeConfiguration.m_nodeType == NodeType::WrapperNode)
         {
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasEntity, &GraphCanvas::GraphCanvasRequests::CreateWrapperNode, nodeConfiguration.m_nodeSubStyle.c_str());
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                graphCanvasEntity, &GraphCanvas::GraphCanvasRequests::CreateWrapperNode, nodeConfiguration.m_nodeSubStyle.c_str());
         }
 
         AZ_Assert(graphCanvasEntity, "Unable to create GraphCanvas Bus Node");
@@ -106,7 +108,8 @@ namespace ScriptCanvasEditor::Nodes
         }
 
         GraphCanvas::TranslationKey key;
-        key << ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext << azrtti_typeid(node).ToString<AZStd::string>() << "details";
+        key << ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext << azrtti_typeid(node).ToString<AZStd::string>()
+            << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -124,7 +127,8 @@ namespace ScriptCanvasEditor::Nodes
         for (const auto& slot : node->GetSlots())
         {
             GraphCanvas::TranslationKey slotKey;
-            slotKey << ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext << azrtti_typeid(node).ToString<AZStd::string>() << "slots";
+            slotKey << ScriptCanvasEditor::TranslationHelper::AssetContext::CustomNodeContext
+                    << azrtti_typeid(node).ToString<AZStd::string>() << "slots";
 
             int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
 
@@ -157,7 +161,8 @@ namespace ScriptCanvasEditor::Nodes
                 slotKey << slotKeyStr << "details";
 
                 GraphCanvas::TranslationRequests::Details slotDetails;
-                GraphCanvas::TranslationRequestBus::BroadcastResult(slotDetails, &GraphCanvas::TranslationRequests::GetDetails, slotKey, slotDetails);
+                GraphCanvas::TranslationRequestBus::BroadcastResult(
+                    slotDetails, &GraphCanvas::TranslationRequests::GetDetails, slotKey, slotDetails);
 
                 if (slotDetails.m_name.empty())
                 {
@@ -192,9 +197,9 @@ namespace ScriptCanvasEditor::Nodes
 
         graphCanvasEntity->SetName(AZStd::string::format("GC-Node(%s)", details.m_name.c_str()));
 
+        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
         GraphCanvas::NodeTitleRequestBus::Event(
-            graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
-        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetSubTitle, details.m_category);
+            graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetSubTitle, details.m_category);
 
         // Add to the tooltip the C++ class for reference
         if (!details.m_tooltip.empty())
@@ -207,10 +212,12 @@ namespace ScriptCanvasEditor::Nodes
 
         if (!nodeConfiguration.m_titlePalette.empty())
         {
-            GraphCanvas::NodeTitleRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetPaletteOverride, nodeConfiguration.m_titlePalette);
+            GraphCanvas::NodeTitleRequestBus::Event(
+                graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetPaletteOverride, nodeConfiguration.m_titlePalette);
         }
 
-        EditorNodeNotificationBus::Event(node->GetEntityId(), &EditorNodeNotifications::OnGraphCanvasNodeDisplayed, graphCanvasEntity->GetId());
+        EditorNodeNotificationBus::Event(
+            node->GetEntityId(), &EditorNodeNotifications::OnGraphCanvasNodeDisplayed, graphCanvasEntity->GetId());
 
         return graphCanvasEntity->GetId();
     }
@@ -1113,6 +1120,7 @@ namespace ScriptCanvasEditor::Nodes
 ///////////////////
 // Header Methods
 ///////////////////
+
     AZ::EntityId DisplayScriptCanvasNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node)
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);

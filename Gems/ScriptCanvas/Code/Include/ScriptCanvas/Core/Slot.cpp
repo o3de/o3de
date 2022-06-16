@@ -223,6 +223,7 @@ namespace ScriptCanvas
         , m_dynamicDataType(DynamicDataType::None)
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
+        , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -429,6 +430,11 @@ namespace ScriptCanvas
     bool Slot::IsVariableReference() const
     {
         return m_isVariableReference || m_dataType == DataType::VariableReference;
+    }
+
+    bool Slot::CanHaveInputField() const
+    {
+        return m_canHaveInputField;
     }
 
     bool Slot::CanConvertToValue() const

@@ -13,6 +13,8 @@
 #include <ScriptCanvas/Bus/NodeIdPair.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
+#include <ScriptCanvas/Data/Data.h>
+
 
 namespace ScriptCanvas
 {
@@ -26,6 +28,14 @@ namespace ScriptEvents
 
 namespace ScriptCanvasEditor::Nodes
 {
+    struct SmallOperatorNodeData
+    {
+        ScriptCanvas::ScriptCanvasId m_scriptCanvasId;
+        AZStd::string m_name;
+        AZStd::string m_tooltip;
+        ScriptCanvas::Data::Type m_dataType;
+    };
+
     // Specific create methods which will also handle displaying the node.
     AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration, AZStd::function<void(ScriptCanvas::Node*)> = nullptr);
     NodeIdPair CreateNode(const AZ::Uuid& classData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration);
@@ -33,6 +43,9 @@ namespace ScriptCanvasEditor::Nodes
     NodeIdPair CreateObjectMethodOverloadNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId);
     NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, bool isProperty, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
     NodeIdPair CreateEbusWrapperNode(AZStd::string_view busName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
+
+    // Create method for a small operator node
+    NodeIdPair CreateSmallOperatorNode(const SmallOperatorNodeData& smallOperatorNodeData);
 
     // Script Events
     NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId);
