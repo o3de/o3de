@@ -56,7 +56,7 @@ namespace ScriptCanvas
             if (!fullPathHandleOptional)
             {
                 return AZ::Failure(AZStd::string::format("Failure to determine the full, absolute path for relative path: %s"
-                    , handle.Path().Native()));
+                    , handle.Path().c_str()));
             }
 
             auto loadResult = LoadFromFile((*fullPathHandleOptional).Native());
