@@ -47,12 +47,6 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
         output.m_worldPosition, output.m_position, output.m_cullDistance, output.m_normal // output params
         );
 
-    if (isnan(output.m_position.x))
-    {
-        // Don't bother with additional processing if this vertex is out of bounds.
-        return output;
-    }
-
     return output;
 }
 
