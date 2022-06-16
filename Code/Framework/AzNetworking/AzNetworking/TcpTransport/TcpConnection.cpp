@@ -362,8 +362,8 @@ namespace AzNetworking
             // If we can't fit the packet, do not allow the copy to proceed as that would overwrite invalid memory
             return false;
         }
-        outBuffer.Resize(packetSize);
 
+        const uint16_t transmittedPacketSize = packetSize;
         const uint8_t* srcData = serializer.GetUnreadData();
         if (m_compressor && outHeader.IsPacketFlagSet(PacketFlag::Compressed))
         {
@@ -376,10 +376,12 @@ namespace AzNetworking
             packetSize = aznumeric_cast<uint16_t>(outBuffer.GetSize());
         }
 
+        outBuffer.Resize(packetSize);
+
         uint8_t* dstData = outBuffer.GetBuffer();
         memcpy(dstData, srcData, packetSize);
 
-        m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + packetSize);
+        m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + transmittedPacketSize);
         GetMetrics().LogPacketRecv(packetSize, currentTimeMs);
         m_networkInterface.GetMetrics().m_recvPackets++;
         return true;
