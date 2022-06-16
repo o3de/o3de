@@ -42,7 +42,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
+
         system->RegisterNode<Row, NodeWithVisiblityControl>();
+
+        for (const auto& rowAttribute : Row::RowAttributes)
+        {
+            system->RegisterNodeAttribute<Row>(rowAttribute);
+        }
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);

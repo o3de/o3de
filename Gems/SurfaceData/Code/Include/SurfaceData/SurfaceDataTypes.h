@@ -23,6 +23,7 @@ namespace SurfaceData
     //map of id or crc to contribution factor
     using SurfaceTagNameSet = AZStd::unordered_set<AZStd::string>;
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
+    using SurfaceTagSet = AZStd::unordered_set<SurfaceTag>;
 
     //! SurfaceTagWeights stores a collection of surface tags and weights.
     //! A surface tag can only appear once in the collection. Attempting to add it multiple times will always preserve the
