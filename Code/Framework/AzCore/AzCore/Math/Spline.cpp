@@ -104,22 +104,22 @@ namespace AZ
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::SplineAddressDefaultConstructor)->
                 Property("segmentIndex", BehaviorValueProperty(&SplineAddress::m_segmentIndex))->
                 Property("segmentFraction", BehaviorValueProperty(&SplineAddress::m_segmentFraction))->
-                Method("GetSegmentIndexAndFraction", [](SplineAddress* thisPtr)
+                Method("GetSegmentIndexAndFraction", [](SplineAddress& thisPtr)
                     {
-                        return AZStd::make_tuple(thisPtr->m_segmentIndex, thisPtr->m_segmentFraction);
+                        return AZStd::make_tuple(thisPtr.m_segmentIndex, thisPtr.m_segmentFraction);
                     })
                 ;
 
             behaviorContext->Class<PositionSplineQueryResult>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
-                Property("splineAddress", [](PositionSplineQueryResult* thisPtr) { return thisPtr->m_splineAddress; }, nullptr)->
-                Property("distanceSq", [](PositionSplineQueryResult* thisPtr) { return thisPtr->m_distanceSq; }, nullptr);
+                Property("splineAddress", [](PositionSplineQueryResult& thisPtr) { return thisPtr.m_splineAddress; }, nullptr)->
+                Property("distanceSq", [](PositionSplineQueryResult& thisPtr) { return thisPtr.m_distanceSq; }, nullptr);
 
             behaviorContext->Class<RaySplineQueryResult>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
-                Property("splineAddress", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_splineAddress; }, nullptr)->
-                Property("distanceSq", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_distanceSq; }, nullptr)->
-                Property("rayDistance", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_rayDistance; }, nullptr);
+                Property("splineAddress", [](RaySplineQueryResult& thisPtr) { return thisPtr.m_splineAddress; }, nullptr)->
+                Property("distanceSq", [](RaySplineQueryResult& thisPtr) { return thisPtr.m_distanceSq; }, nullptr)->
+                Property("rayDistance", [](RaySplineQueryResult& thisPtr) { return thisPtr.m_rayDistance; }, nullptr);
 
             behaviorContext->Class<Spline>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::RuntimeOwn)->
@@ -135,7 +135,7 @@ namespace AZ
                 Method("GetSegmentLength", &Spline::GetSegmentLength)->
                 Method("GetSegmentCount", &Spline::GetSegmentCount)->
                 Method("GetSegmentGranularity", &Spline::GetSegmentGranularity)->
-                Method("GetAabb", [](Spline* thisPtr, const Transform& transform) { Aabb aabb; thisPtr->GetAabb(aabb, transform); return aabb; })->
+                Method("GetAabb", [](Spline& thisPtr, const Transform& transform) { Aabb aabb; thisPtr.GetAabb(aabb, transform); return aabb; })->
                 Method("IsClosed", &Spline::IsClosed)->
                 Property("vertexContainer", BehaviorValueGetter(&Spline::m_vertexContainer), nullptr);
         }
