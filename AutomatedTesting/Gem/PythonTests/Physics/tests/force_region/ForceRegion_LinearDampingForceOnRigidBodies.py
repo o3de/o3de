@@ -12,6 +12,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # fmt: off
+import asyncio
+
+
 class Tests:
     enter_game_mode         = ("Entered game mode",                         "Failed to enter game mode")
     sphere_validated        = ("Sphere entity validated",                   "Sphere entity NOT validated")
@@ -71,8 +74,10 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
 
     import os
     import sys
+    import functools
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from concurrent.futures import ProcessPoolExecutor
 
 
     import azlmbr.legacy.general as general
@@ -110,8 +115,8 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
             self.initial_velocity = azmath.Vector3()
             self.initial_velocity_magnitude = 0.0
             self.current_velocity = azmath.Vector3()
-            self.slowed = False
-            self.stopped = False
+            self.slowed = None
+            self.stopped = None
 
         def check_for_stop(self):
             if not self.stopped:
@@ -142,14 +147,27 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
             self.handler = None
 
     # Initialize Classes
-
     sphere = Sphere("Sphere")
     force_region = ForceRegion("ForceRegion")
     trigger = Trigger("Trigger")
     results = Results
+    test_pool = ProcessPoolExecutor()
+    loop = asyncio.get_event_loop()
 
 
-    # Helper to get updated positions for level entities
+    async def entity_is_valid(entity):
+
+
+        def check():
+            if not isinstance(entity.id, type(None)):
+                if entity.id.IsValid():
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        return await loop.run_in_executor(test_pool, functools.partial(helper.wait_for_condition, check, TIME_OUT))
+
     # Force Region Event Handler
     def on_calc_net_force(args):
         if args[0].Equal(force_region.id):
@@ -206,20 +224,19 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
 
         return results.level_correct
 
-
     # Async Test Conditions
     async def verify_sphere_found():
-        result = await helper.wait_for_condition(lambda: sphere.id.IsValid(), TIME_OUT)
+        result = await entity_is_valid(sphere)
         Report.critical_result(Tests.sphere_validated, result)
         return result
 
     async def verify_force_region_found():
-        result = await helper.wait_for_condition(lambda: force_region.id.IsValid(), TIME_OUT)
+        result = await entity_is_valid(force_region)
         Report.critical_result(Tests.force_region_validated, result)
         return result
 
     async def verify_trigger_found():
-        result = await helper.wait_for_condition(lambda: trigger.id.IsValid(), TIME_OUT)
+        result = await entity_is_valid(trigger)
         Report.critical_result(Tests.trigger_validated, result)
         return result
 
@@ -258,16 +275,21 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
     # Preconditions
     helper.init_idle()
 
-    # 1) Register ASYNC Conditional Checks
-    verify_sphere_found()
-    verify_force_region_found()
-    verify_trigger_found()
-    verify_sphere_values()
-    verify_force_region_values()
-    verify_trigger_values()
-    verify_level_correct()
-    perform_calculations()
-    collect_results()
+    # 1) Register ASYNC Conditional Checks and run them
+    async def registered_tests():
+        await asyncio.gather(
+            verify_sphere_found(),
+            verify_force_region_found(),
+            verify_trigger_found()
+            #verify_sphere_values(),
+            #verify_force_region_values(),
+            #verify_trigger_values(),
+            #verify_level_correct(),
+            #perform_calculations(),
+            #collect_results()
+        )
+    asyncio.run(registered_tests())
+
 
     # 2) Open level & Enter game mode
     helper.open_level("Physics", "ForceRegion_LinearDampingForceOnRigidBodies")
