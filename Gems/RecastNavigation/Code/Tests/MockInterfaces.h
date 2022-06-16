@@ -89,7 +89,7 @@ namespace RecastNavigationTests
 
         int m_updatedCalls = 0;
 
-        void OnNavigationMeshRecalculating(AZ::EntityId) override
+        void OnNavigationMeshBeganRecalculating(AZ::EntityId) override
         {
             m_recalculatingCalls++;
         }

@@ -97,23 +97,23 @@ namespace RecastNavigation
 
         void TearDown() override
         {
-            m_mockSimulatedBody = {};
-            m_mockPhysicsShape = {};
-            m_hit = {};
-            m_mockSceneInterface = {};
-            m_timeSystem = {};
+            m_mockSimulatedBody.reset();
+            m_mockPhysicsShape.reset();
+            m_hit.reset();
+            m_mockSceneInterface.reset();
+            m_timeSystem.reset();
 
             for (AZ::ComponentDescriptor* descriptor : *m_descriptors)
             {
                 delete descriptor;
             }
-            m_descriptors = {};
+            m_descriptors.reset();
 
-            m_sc = {};
-            m_bc = {};
+            m_sc.reset();
+            m_bc.reset();
 
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
-            m_console = {};
+            m_console.reset();
             UnitTest::AllocatorsFixture::TearDown();
         }
 

@@ -99,7 +99,8 @@ namespace RecastNavigation
         }
 
         RecastNavigationProviderRequestBus::Handler::BusDisconnect();
-        m_taskGraphEvent = {};
+        // The event is used to detect if tasks are already in progress.
+        m_taskGraphEvent.reset();
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectGeometry(

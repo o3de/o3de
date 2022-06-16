@@ -47,7 +47,7 @@ namespace RecastNavigation
 
         //! Notifies when a navigation mesh has started to re-calculate the navigation mesh.
         //! @param navigationMeshEntity the entity the navigation mesh is on. This is helpful for Script Canvas use.
-        virtual void OnNavigationMeshRecalculating(AZ::EntityId navigationMeshEntity) = 0;
+        virtual void OnNavigationMeshBeganRecalculating(AZ::EntityId navigationMeshEntity) = 0;
     };
 
     //! Notification EBus for a navigation mesh component.
@@ -61,7 +61,7 @@ namespace RecastNavigation
     public:
         AZ_EBUS_BEHAVIOR_BINDER(RecastNavigationNotificationHandler,
             "{819FF083-C28A-4620-B59E-78EB7D2CB432}",
-            AZ::SystemAllocator, OnNavigationMeshUpdated, OnNavigationMeshRecalculating);
+            AZ::SystemAllocator, OnNavigationMeshUpdated, OnNavigationMeshBeganRecalculating);
 
         //! Notifies when a navigation mesh is updated.
         //! @param navigationMeshEntity the entity with the navigation mesh. This makes for an easier to work in Script Cavnas.
@@ -72,9 +72,9 @@ namespace RecastNavigation
 
         //! Notifies when a navigation mesh has started to re-calculated navigation tile data.
         //! @param navigationMeshEntity the entity the navigation mesh is on. This is helpful for Script Canvas use.
-        void OnNavigationMeshRecalculating(AZ::EntityId navigationMeshEntity) override
+        void OnNavigationMeshBeganRecalculating(AZ::EntityId navigationMeshEntity) override
         {
-            Call(FN_OnNavigationMeshRecalculating, navigationMeshEntity);
+            Call(FN_OnNavigationMeshBeganRecalculating, navigationMeshEntity);
         }
     };
 } // namespace RecastNavigation

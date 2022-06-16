@@ -77,7 +77,7 @@ namespace RecastNavigation
             m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize);
 
         RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
-            &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshRecalculating, m_entityComponentIdPair.GetEntityId());
+            &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshBeganRecalculating, m_entityComponentIdPair.GetEntityId());
 
         {
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
@@ -178,9 +178,9 @@ namespace RecastNavigation
             }
         }
 
-        m_context = {};
-        m_navObject = {};
-        m_taskGraphEvent = {};
+        m_context.reset();
+        m_navObject.reset();
+        m_taskGraphEvent.reset();
         m_updateInProgress = false;
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
@@ -441,7 +441,7 @@ namespace RecastNavigation
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
 
             RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
-                &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshRecalculating, m_entityComponentIdPair.GetEntityId());
+                &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshBeganRecalculating, m_entityComponentIdPair.GetEntityId());
         }
     }
 } // namespace RecastNavigation
