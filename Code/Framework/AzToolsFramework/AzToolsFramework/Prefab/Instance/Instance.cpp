@@ -42,21 +42,24 @@ namespace AzToolsFramework
         {
         }
 
+        Instance::Instance(InstanceOptionalReference parent, InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
+            : Instance(nullptr, parent, alias, entityIdInstanceRelationship)
+        {
+        }
+
         Instance::Instance(InstanceAlias alias)
             : Instance(nullptr, AZStd::nullopt, AZStd::move(alias))
         {
         }
 
         Instance::Instance(EntityIdInstanceRelationship entityIdInstanceRelationship)
-            : Instance()
+            : Instance(nullptr, AZStd::nullopt, GenerateInstanceAlias(), entityIdInstanceRelationship)
         {
-            m_entityIdInstanceRelationship = entityIdInstanceRelationship;
         }
 
         Instance::Instance(InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
-            : Instance(alias)
+            : Instance(nullptr, AZStd::nullopt, AZStd::move(alias), entityIdInstanceRelationship)
         {
-            m_entityIdInstanceRelationship = entityIdInstanceRelationship;
         }
 
         Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent)
@@ -64,10 +67,11 @@ namespace AzToolsFramework
         {
         }
 
-        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias)
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
             : m_parent(parent.has_value() ? &parent->get() : nullptr)
             , m_alias(AZStd::move(alias))
             , m_containerEntity(containerEntity ? AZStd::move(containerEntity) : AZStd::make_unique<AZ::Entity>())
+            , m_entityIdInstanceRelationship(entityIdInstanceRelationship)
             , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
             , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
         {
@@ -893,6 +897,15 @@ namespace AzToolsFramework
         }
 
         PrefabDomValueConstReference Instance::GetCachedInstanceDom() const
+        {
+            if (m_cachedInstanceDom.IsNull())
+            {
+                return AZStd::nullopt;
+            }
+            return m_cachedInstanceDom;
+        }
+
+        PrefabDomReference Instance::GetCachedInstanceDom()
         {
             if (m_cachedInstanceDom.IsNull())
             {
