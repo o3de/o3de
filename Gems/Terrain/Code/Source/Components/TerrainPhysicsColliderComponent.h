@@ -89,9 +89,9 @@ namespace Terrain
 
         // HeightfieldProviderRequestsBus
         AZ::Vector2 GetHeightfieldGridSpacing() const override;
-        void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override;
-        int32_t GetHeightfieldGridColumns() const override;
-        int32_t GetHeightfieldGridRows() const override;
+        void GetHeightfieldGridSize(size_t& numColumns, size_t& numRows) const override;
+        size_t GetHeightfieldGridColumns() const override;
+        size_t GetHeightfieldGridRows() const override;
         void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const override;
         float GetHeightfieldMinHeight() const override;
         float GetHeightfieldMaxHeight() const override;
@@ -100,8 +100,14 @@ namespace Terrain
         AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> GetMaterialList() const override;
         AZStd::vector<float> GetHeights() const override;
         AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
-        void UpdateHeightsAndMaterials(const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
-            const AZ::Aabb& region = AZ::Aabb::CreateNull()) const override;
+
+        void GetHeightfieldIndicesFromRegion(
+            const AZ::Aabb& region, size_t& startColumn, size_t& startRow, size_t& numColumns, size_t& numRows) const override;
+
+        //! Updates the list of heights and materials within the region.
+        void UpdateHeightsAndMaterials(
+            const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) const override;
 
         void UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration);
 

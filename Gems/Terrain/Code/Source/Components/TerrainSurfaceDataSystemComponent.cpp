@@ -221,7 +221,7 @@ namespace Terrain
             // that the entire terrain provider needs to be updated, since it either has new bounds or the entire set of data is dirty.
             if (dirtyRegion.IsValid() && m_terrainBounds.IsClose(terrainBoundsBeforeUpdate))
             {
-                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RefreshSurfaceData(dirtyRegion);
+                AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RefreshSurfaceData(m_providerHandle, dirtyRegion);
             }
             else
             {
