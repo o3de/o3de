@@ -175,6 +175,14 @@ namespace AZ::DocumentPropertyEditor
                         return;
                     }
 
+                    for (const auto& rowAttribute : Nodes::Row::RowAttributes)
+                    {
+                        if (name == rowAttribute.GetName())
+                        {
+                            return;
+                        }
+                    }
+
                     m_builder.Attribute(name, value);
                 });
         }
@@ -310,6 +318,16 @@ namespace AZ::DocumentPropertyEditor
             }
 
             m_builder.BeginRow();
+
+            for (const auto& attribute : Nodes::Row::RowAttributes)
+            {
+                auto attributeValue = attributes.Find(attribute.GetName());
+                if (!attributeValue.IsNull())
+                {
+                    m_builder.Attribute(attribute, attributeValue);
+                }
+            }
+
             ExtractLabel(attributes);
             if (access.GetType() == azrtti_typeid<AZStd::string>())
             {

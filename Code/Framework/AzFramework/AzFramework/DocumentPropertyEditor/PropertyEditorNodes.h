@@ -52,6 +52,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "Row";
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
+
+        static constexpr auto AutoExpand = AttributeDefinition<bool>("AutoExpand");
+        static constexpr auto ForceAutoExpand = AttributeDefinition<bool>("ForceAutoExpand");
+
+        static constexpr auto RowAttributes = { AutoExpand, ForceAutoExpand };
     };
 
     //! PropertyRefreshLevel: Determines the amount of a property tree that needs to be rebuilt
