@@ -7,6 +7,7 @@
  */
 
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <AzNetworking/AzNetworking_Traits_Platform.h>
 #include <AzNetworking/Utilities/Endian.h>
 #include <AzNetworking/Utilities/NetworkIncludes.h>
@@ -192,4 +193,6 @@ namespace AzNetworking
     {
         return NetworkInputSerializer::SerializeBytes(data, dataSize);
     }
+
+    template class TypeValidatingSerializer<NetworkInputSerializer>;
 }

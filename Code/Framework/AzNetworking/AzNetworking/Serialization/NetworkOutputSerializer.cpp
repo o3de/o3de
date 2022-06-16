@@ -7,6 +7,8 @@
  */
 
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzNetworking/AzNetworking_Traits_Platform.h>
 #include <AzNetworking/Utilities/Endian.h>
 #include <AzNetworking/Utilities/NetworkIncludes.h>
@@ -197,4 +199,7 @@ namespace AzNetworking
         m_bufferPosition += count;
         return true;
     }
+
+    template class TypeValidatingSerializer<NetworkOutputSerializer>;
+    template class TypeValidatingSerializer<TrackChangedSerializer<NetworkOutputSerializer>>;
 }
