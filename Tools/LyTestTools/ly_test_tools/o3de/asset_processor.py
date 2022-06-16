@@ -320,7 +320,6 @@ class AssetProcessor(object):
             logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
             self.terminate()
             return StopReason.NO_STOP
-        self._ap_proc = None
 
     def terminate(self):
         """

@@ -23,6 +23,7 @@ import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de.asset_processor import StopReason
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -352,7 +353,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
         # Copy in some assets, so that the AP will be busy when the stop command is called.
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest", use_current_root=True)
-        assert asset_processor.stop(timeout=0) == 4, "AP did not time out as expected"
+        assert asset_processor.stop(timeout=0) == StopReason.TIMEOUT, "AP did not time out as expected"
 
     @pytest.mark.assetpipeline
     def test_APStopDefaultTimeout_DoesNotTimeOut(self, asset_processor):
@@ -375,7 +376,7 @@ class TestsAssetProcessorGUI_Windows(object):
         assert asset_processor.stop() is None, "AP timed out"
 
     @pytest.mark.assetpipeline
-    def test_APStopNoControlConnection_ExceptionThrown(self, ap_setup_fixture, asset_processor):
+    def test_APStopNoControlConnection_Terminates(self, ap_setup_fixture, asset_processor):
         """
         Tests AP successfully terminates if no control connection is found during an stop call.
 
@@ -389,4 +390,4 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.create_temp_asset_root()
         asset_processor.start()
         asset_processor.set_control_connection(None)
-        assert asset_processor.stop() == 1, "AP was not terminated as expected"
+        assert asset_processor.stop() == StopReason.NO_CONTROL, "AP was not terminated as expected"
