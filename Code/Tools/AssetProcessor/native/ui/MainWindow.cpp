@@ -12,6 +12,7 @@
 #include "ConnectionEditDialog.h"
 #include "ProductAssetTreeItemData.h"
 #include "ProductAssetTreeModel.h"
+#include "ProductDependencyTreeItemData.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
 
@@ -413,6 +414,8 @@ void MainWindow::Activate()
         m_productAssetTreeFilterModel,
         ui->assetsTabWidget);
     ui->productAssetDetailsPanel->SetScannerInformation(ui->missingDependencyScanResults, m_guiApplicationManager->GetAssetProcessorManager()->GetDatabaseConnection());
+    ui->productAssetDetailsPanel->SetupDependencyGraph(
+        ui->ProductAssetsTreeView, m_guiApplicationManager->GetAssetProcessorManager()->GetDatabaseConnection());
     ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
 
     connect(ui->SourceAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->sourceAssetDetailsPanel, &SourceAssetDetailsPanel::AssetDataSelectionChanged);
@@ -424,6 +427,15 @@ void MainWindow::Activate()
 
     ui->SourceAssetsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->SourceAssetsTreeView, &QWidget::customContextMenuRequested, this, &MainWindow::ShowSourceAssetContextMenu);
+
+    ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(
+        ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView(), &QWidget::customContextMenuRequested, this,
+        &MainWindow::ShowOutgoingProductDependenciesContextMenu);
+    ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(
+        ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView(), &QWidget::customContextMenuRequested, this,
+        &MainWindow::ShowIncomingProductDependenciesContextMenu);
 
     SetupAssetSelectionCaching();
 
@@ -867,6 +879,81 @@ void MainWindow::SaveLogPanelState()
         m_loggingPanel->SaveState();
     }
 }
+
+AssetProcessor::ProductDependencyTreeItem* MainWindow::GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos)
+{
+    const QModelIndex assetIndex =
+        (isOutgoing ? ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->indexAt(pos)
+                    : ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->indexAt(pos));
+    if (!assetIndex.isValid())
+    {
+        return static_cast<AssetProcessor::ProductDependencyTreeItem*>(nullptr);
+    }
+    return static_cast<AssetProcessor::ProductDependencyTreeItem*>(assetIndex.internalPointer());
+}
+
+void MainWindow::ShowOutgoingProductDependenciesContextMenu(const QPoint& pos)
+{
+    using namespace AssetProcessor;
+    const ProductDependencyTreeItem* cachedAsset = GetProductAssetFromDependencyTreeView(true, pos);
+
+    if (!cachedAsset || !cachedAsset->GetData())
+    {
+        return;
+    }
+    AZStd::string productName = cachedAsset->GetData()->m_productName;
+
+    QMenu menu(this);
+    menu.setToolTipsVisible(true);
+    QAction* productAction = menu.addAction(
+        tr("Go to product asset"), this,
+        [&, productName]()
+        {
+            ui->sourceAssetDetailsPanel->GoToProduct(productName);
+        });
+    if (productName.empty())
+    {
+        productAction->setDisabled(true);
+        productAction->setToolTip(tr("This asset is currently selected."));
+    }
+    else
+    {
+        productAction->setToolTip(tr("Selects this asset."));
+    }
+    menu.exec(ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::ShowIncomingProductDependenciesContextMenu(const QPoint& pos)
+{
+    using namespace AssetProcessor;
+    const ProductDependencyTreeItem* cachedAsset = GetProductAssetFromDependencyTreeView(false, pos);
+
+    if (!cachedAsset || !cachedAsset->GetData())
+    {
+        return;
+    }
+
+    AZStd::string productName = cachedAsset->GetData()->m_productName;
+    QMenu menu(this);
+    menu.setToolTipsVisible(true);
+    QAction* productAction = menu.addAction(
+        tr("Go to product asset"), this,
+        [&, productName]()
+        {
+            ui->sourceAssetDetailsPanel->GoToProduct(productName);
+        });
+    if (productName.empty())
+    {
+        productAction->setDisabled(true);
+        productAction->setToolTip(tr("This asset is currently selected."));
+    }
+    else
+    {
+        productAction->setToolTip(tr("Selects this asset."));
+    }
+    menu.exec(ui->productAssetDetailsPanel->GetIncomingProductDependenciesTreeView()->viewport()->mapToGlobal(pos));
+}
+
 
 void MainWindow::ResetTimers()
 {
