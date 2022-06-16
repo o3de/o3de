@@ -372,14 +372,14 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RegisterActionUpdater)
     {
-        auto outcome = m_actionManagerInterface->RegisterActionUpdater("OnTestChange");
+        auto outcome = m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, AddUnregisteredActionToUpdater)
     {
-        m_actionManagerInterface->RegisterActionUpdater("OnTestChange");
-        auto outcome = m_actionManagerInterface->AddActionToUpdater("OnTestChange", "o3de.action.test");
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -387,7 +387,7 @@ namespace UnitTest
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        auto outcome = m_actionManagerInterface->AddActionToUpdater("OnTestChange", "o3de.action.test");
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
@@ -395,9 +395,9 @@ namespace UnitTest
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        m_actionManagerInterface->RegisterActionUpdater("OnTestChange");
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
 
-        auto outcome = m_actionManagerInterface->AddActionToUpdater("OnTestChange", "o3de.action.test");
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
@@ -412,8 +412,8 @@ namespace UnitTest
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
-        m_actionManagerInterface->RegisterActionUpdater("OnTestChange");
-        m_actionManagerInterface->AddActionToUpdater("OnTestChange", "o3de.action.test");
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+        m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
 
         bool enabledState = false;
 
@@ -435,7 +435,7 @@ namespace UnitTest
             EXPECT_FALSE(enabledOutcome.GetValue());
         }
 
-        auto outcome = m_actionManagerInterface->TriggerActionUpdater("OnTestChange");
+        auto outcome = m_actionManagerInterface->TriggerActionUpdater("o3de.updater.onTestChange");
         
         {
             auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
