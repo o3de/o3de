@@ -327,7 +327,6 @@ namespace ScriptCanvas
     void SourceHandle::SanitizePath()
     {
         m_relativePath.MakePreferred();
-        m_relativePath = m_relativePath.RelativePath();
     }
 
     bool SourceHandle::PathEquals(const SourceHandle& other) const

@@ -1679,7 +1679,10 @@ namespace ScriptCanvasEditor
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
         bool isValidFileName = false;
-            
+
+        AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
+        projectSourcePath /= "ScriptCanvas";
+
         if (save == Save::InPlace)
         {
             isValidFileName = true;
@@ -1692,7 +1695,7 @@ namespace ScriptCanvasEditor
 
             if (sourceHandle.Path().empty())
             {
-                suggestedFilename = SourceDescription::GetSuggestedSavePath();
+                suggestedFilename = projectSourcePath.Native();
             }
             else
             {
