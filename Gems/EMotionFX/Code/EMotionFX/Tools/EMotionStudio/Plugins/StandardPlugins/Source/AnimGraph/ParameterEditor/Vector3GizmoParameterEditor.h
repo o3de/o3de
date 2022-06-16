@@ -10,14 +10,9 @@
 
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <QPointer>
 
-#include <QPushButton>
-
-namespace MCommon
-{
-    class TranslateManipulator;
-}
-
+class QPushButton;
 namespace EMStudio
 {
     class Vector3GizmoParameterEditor
@@ -56,9 +51,6 @@ namespace EMStudio
     private:
         AZ::Vector3 m_currentValue = AZ::Vector3::CreateZero();
         QPushButton* m_gizmoButton = nullptr;
-
-        // TODO: Remove this when we remove the opengl widget
-        MCommon::TranslateManipulator* m_transformationGizmo = nullptr;
 
         AzToolsFramework::TranslationManipulators m_translationManipulators;
         AZStd::function<void()> m_manipulatorCallback;
