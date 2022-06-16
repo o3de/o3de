@@ -74,25 +74,42 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
+
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.math as azmath
+
+    # Constants
+    CLOSE_ENOUGH = 0.001
+    TIME_OUT = 10.0
+    INITIAL_VELOCITY = azmath.Vector3(0.0, 0.0, -10.0)
+
+
+    class Results():
+        def __init__(self):
+            self.sphere_acceleration_y_valid = None
+            self.sphere_damping_y_valid = None
+            self.sphere_acceleration_x_valid = None
+            self.sphere_damping_x_valid = None
+            self.setup_entity_priority_valid = None
+            self.sphere_is_close = None
+            self.level_correct = None
 
     # Entity base class: Handles basic entity data
     class EntityBase:
         def __init__(self, name):
             self.name = name
             self.id = None
-            self.initial_pos = None
-            self.current_pos = None
+            self.initial_pos = azmath.Vector3()
+            self.current_pos = azmath.Vector3()
 
     # Specific Sphere class
     class Sphere(EntityBase):
         def __init__(self, name):
             EntityBase.__init__(self, name)
-            self.initial_velocity = None
-            self.initial_velocity_magnitude = None
-            self.current_velocity = None
+            self.initial_velocity = azmath.Vector3()
+            self.initial_velocity_magnitude = 0.0
+            self.current_velocity = azmath.Vector3()
             self.slowed = False
             self.stopped = False
 
@@ -110,10 +127,10 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
         def __init__(self, name):
             EntityBase.__init__(self, name)
             self.entered = False
-            self.object_entered = None
-            self.expected_force_direction = None
-            self.actual_force_vector = None
-            self.actual_force_magnitude = None
+            self.object_entered = Sphere(None)
+            self.expected_force_direction = azmath.Vector3()
+            self.actual_force_vector = azmath.Vector3()
+            self.actual_force_magnitude = 0.0
             self.handler = None
 
     # Specific Trigger class
@@ -124,101 +141,15 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
             self.triggering_obj = None
             self.handler = None
 
-    # Constants
-    CLOSE_ENOUGH = 0.001
-    TIME_OUT = 10.0
-    INITIAL_VELOCITY = azmath.Vector3(0.0, 0.0, -10.0)
+    # Initialize Classes
 
-    # 1) Open level / Enter game mode
-    helper.init_idle()
-    helper.open_level("Physics", "ForceRegion_LinearDampingForceOnRigidBodies")
-    helper.enter_game_mode(Tests.enter_game_mode)
-
-    # 2) Retrieve and validate entities
     sphere = Sphere("Sphere")
-    sphere.id = general.find_game_entity(sphere.name)
     force_region = ForceRegion("ForceRegion")
-    force_region.id = general.find_game_entity(force_region.name)
     trigger = Trigger("Trigger")
-    trigger.id = general.find_game_entity(trigger.name)
+    results = Results
 
-    Report.critical_result(Tests.sphere_validated, sphere.id.IsValid())
-    Report.critical_result(Tests.force_region_validated, force_region.id.IsValid())
-    Report.critical_result(Tests.trigger_validated, trigger.id.IsValid())
 
-    # 3) Log Entities' positions and initial data
-    sphere.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", sphere.id)
-    force_region.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", force_region.id)
-    trigger.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", trigger.id)
-
-    Report.critical_result(Tests.sphere_pos_found, sphere.initial_pos is not None and not sphere.initial_pos.IsZero())
-    Report.critical_result(
-        Tests.force_region_pos_found, force_region.initial_pos is not None and not force_region.initial_pos.IsZero()
-    )
-    Report.critical_result(
-        Tests.trigger_pos_found, trigger.initial_pos is not None and not trigger.initial_pos.IsZero()
-    )
-
-    sphere.initial_velocity = azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "GetLinearVelocity", sphere.id)
-
-    # Perform Calculations
-    sphere_acceleration_y = abs(sphere.initial_pos.y - force_region.initial_pos.y)
-    sphere_damping_y = abs(sphere.initial_pos.y - trigger.initial_pos.y)
-    sphere_acceleration_x = abs(sphere.initial_pos.x - force_region.initial_pos.x)
-    sphere_damping_x = abs(sphere.initial_pos.x - trigger.initial_pos.x)
-
-    # Perform Checks
-    sphere_acceleration_y_valid = sphere_acceleration_y < CLOSE_ENOUGH
-    sphere_damping_y_valid = sphere_damping_y < CLOSE_ENOUGH
-    sphere_acceleration_x_valid = sphere_acceleration_x < CLOSE_ENOUGH
-    sphere_damping_x_valid = sphere_damping_x < CLOSE_ENOUGH
-    setup_entity_priority_valid = sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z
-    sphere_is_close = sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
-    level_correct = (sphere_acceleration_y_valid and sphere_damping_y_valid and sphere_acceleration_x_valid
-                     and sphere_damping_x_valid and setup_entity_priority_valid and sphere_is_close)
-
-    # Report
-    if not sphere_acceleration_y_valid:
-        Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
-                    f"is not close enough to force region initial Y position {force_region.initial_pos.y}.")
-    if not sphere_damping_y_valid:
-        Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
-                    f"is not close enough to trigger initial Y position {trigger.initial_pos.y}.")
-    if not sphere_acceleration_x_valid:
-        Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
-                    f"is not close enough to force region initial X position {force_region.initial_pos.x}.")
-    if not sphere_damping_x_valid:
-        Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
-                    f"is not close enough to trigger initial X position {trigger.initial_pos.x}.")
-    if not setup_entity_priority_valid:
-        Report.info(f"Initial level entity expects "
-                    f"Initial Sphere Z Pos:{sphere.initial_pos.z} "
-                    f"> Force Region Initial Z Pos: {force_region.initial_pos.z} "
-                    f"> Trigger Initial Z Pos: {trigger.initial_pos.z} ")
-    if not sphere_is_close:
-        Report.info(f"Sphere initial velocity of {sphere.initial_velocity} was not close enough to {INITIAL_VELOCITY}")
-
-    Report.critical_result(Tests.level_setup, level_correct)
-
-    sphere.current_pos = sphere.initial_pos
-    force_region.current_pos = force_region.initial_pos
-    trigger.current_pos = trigger.initial_pos
-    force_region.expected_force_direction = sphere.initial_velocity.MultiplyFloat(-1.0)
-    force_region.expected_force_direction.Normalize()
-    sphere.current_velocity = sphere.initial_velocity
-    sphere.initial_velocity_magnitude = sphere.initial_velocity.GetLength()
-
-    # 3.5) Set up variables and handler for observing force region interaction
-
-    def done_collecting_results():
-
-        # Update current positions
-        sphere.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", sphere.id)
-        force_region.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", force_region.id)
-        trigger.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", trigger.id)
-
-        return force_region.entered and sphere.check_for_stop()
-
+    # Helper to get updated positions for level entities
     # Force Region Event Handler
     def on_calc_net_force(args):
         if args[0].Equal(force_region.id):
@@ -235,7 +166,119 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
             trigger.triggered = True
             trigger.triggering_obj = sphere
 
-    # Assign event handlers
+    def perform_calculations():
+        sphere_acceleration_y = abs(sphere.initial_pos.y - force_region.initial_pos.y)
+        sphere_damping_y = abs(sphere.initial_pos.y - trigger.initial_pos.y)
+        sphere_acceleration_x = abs(sphere.initial_pos.x - force_region.initial_pos.x)
+        sphere_damping_x = abs(sphere.initial_pos.x - trigger.initial_pos.x)
+
+        # Perform Checks
+        results.sphere_acceleration_y_valid = sphere_acceleration_y < CLOSE_ENOUGH
+        results.sphere_damping_y_valid = sphere_damping_y < CLOSE_ENOUGH
+        results.sphere_acceleration_x_valid = sphere_acceleration_x < CLOSE_ENOUGH
+        results.sphere_damping_x_valid = sphere_damping_x < CLOSE_ENOUGH
+        results.setup_entity_priority_valid = sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z
+        results.sphere_is_close = sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
+        results.level_correct = (results.sphere_acceleration_y_valid and results.sphere_damping_y_valid
+                                 and results.sphere_acceleration_x_valid and results.sphere_damping_x_valid
+                                 and results.setup_entity_priority_valid and results.sphere_is_close)
+
+        # Report
+        # if not sphere_acceleration_y_valid:
+        #     Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
+        #                 f"is not close enough to force region initial Y position {force_region.initial_pos.y}.")
+        # if not sphere_damping_y_valid:
+        #     Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
+        #                 f"is not close enough to trigger initial Y position {trigger.initial_pos.y}.")
+        # if not sphere_acceleration_x_valid:
+        #     Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
+        #                 f"is not close enough to force region initial X position {force_region.initial_pos.x}.")
+        # if not sphere_damping_x_valid:
+        #     Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
+        #                 f"is not close enough to trigger initial X position {trigger.initial_pos.x}.")
+        # if not setup_entity_priority_valid:
+        #     Report.info(f"Initial level entity expects "
+        #                 f"Initial Sphere Z Pos:{sphere.initial_pos.z} "
+        #                 f"> Force Region Initial Z Pos: {force_region.initial_pos.z} "
+        #                 f"> Trigger Initial Z Pos: {trigger.initial_pos.z} ")
+        # if not sphere_is_close:
+        #     Report.info(f"Sphere initial velocity of {sphere.initial_velocity} was not close enough to {INITIAL_VELOCITY}")
+
+        return results.level_correct
+
+
+    # Async Test Conditions
+    async def verify_sphere_found():
+        result = await helper.wait_for_condition(lambda: sphere.id.IsValid(), TIME_OUT)
+        Report.critical_result(Tests.sphere_validated, result)
+        return result
+
+    async def verify_force_region_found():
+        result = await helper.wait_for_condition(lambda: force_region.id.IsValid(), TIME_OUT)
+        Report.critical_result(Tests.force_region_validated, result)
+        return result
+
+    async def verify_trigger_found():
+        result = await helper.wait_for_condition(lambda: trigger.id.IsValid(), TIME_OUT)
+        Report.critical_result(Tests.trigger_validated, result)
+        return result
+
+    async def verify_sphere_values():
+        result = await helper.wait_for_condition(lambda: sphere.initial_pos is not None and not sphere.initial_pos.IsZero(), TIME_OUT)
+        Report.critical_result(Tests.sphere_pos_found, result)
+        return result
+
+    async def verify_force_region_values():
+        result = await helper.wait_for_condition(lambda: force_region.initial_pos is not None and not force_region.initial_pos.IsZero(), TIME_OUT)
+        Report.critical_result(Tests.force_region_pos_found, result)
+        return result
+
+    async def verify_trigger_values():
+        result = await helper.wait_for_condition(lambda: trigger.initial_pos is not None and not trigger.initial_pos.IsZero(), TIME_OUT)
+        Report.critical_result(Tests.trigger_pos_found, result)
+        return result
+
+    async def verify_level_correct():
+        result = await helper.wait_for_condition(perform_calculations(), TIME_OUT)
+        Report.critical_result(Tests.level_setup, result)
+        return result
+
+    async def collect_results():
+        sphere.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", sphere.id)
+        force_region.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", force_region.id)
+        trigger.current_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", trigger.id)
+
+        result = await helper.wait_for_condition(lambda: force_region.entered and sphere.check_for_stop(), TIME_OUT)
+        Report.critical_result(Tests.timed_out, result, TIME_OUT)
+
+        return result
+
+# --------------------------------------------- Test Steps ----------------------------------------------------------- #
+
+    # Preconditions
+    helper.init_idle()
+
+    # 1) Register ASYNC Conditional Checks
+    verify_sphere_found()
+    verify_force_region_found()
+    verify_trigger_found()
+    verify_sphere_values()
+    verify_force_region_values()
+    verify_trigger_values()
+    verify_level_correct()
+    perform_calculations()
+    collect_results()
+
+    # 2) Open level & Enter game mode
+    helper.open_level("Physics", "ForceRegion_LinearDampingForceOnRigidBodies")
+    helper.enter_game_mode(Tests.enter_game_mode)
+
+    # 3) Find Game Entities
+    sphere.id = general.find_game_entity(sphere.name)
+    force_region.id = general.find_game_entity(force_region.name)
+    trigger.id = general.find_game_entity(trigger.name)
+
+    # 4) Register Event Handlers
     force_region.handler = azlmbr.physics.ForceRegionNotificationBusHandler()
     force_region.handler.connect(None)
     force_region.handler.add_callback("OnCalculateNetForce", on_calc_net_force)
@@ -244,8 +287,21 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
     trigger.handler.connect(trigger.id)
     trigger.handler.add_callback("OnTriggerEnter", on_trigger_entered)
 
-    # 4) Execute test until exit condition is met
-    Report.critical_result(Tests.timed_out, helper.wait_for_condition(done_collecting_results, TIME_OUT))
+    # 5) Log Entities' positions and initial data
+    sphere.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", sphere.id)
+    force_region.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", force_region.id)
+    trigger.initial_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", trigger.id)
+    sphere.initial_velocity = azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "GetLinearVelocity", sphere.id)
+
+    # 6) Perform Calculations
+    sphere.current_pos = sphere.initial_pos
+    force_region.current_pos = force_region.initial_pos
+    trigger.current_pos = trigger.initial_pos
+    force_region.expected_force_direction = sphere.initial_velocity.MultiplyFloat(-1.0)
+    force_region.expected_force_direction.Normalize()
+    sphere.current_velocity = sphere.initial_velocity
+    sphere.initial_velocity_magnitude = sphere.initial_velocity.GetLength()
+
 
     # 5) Log results
     Report.result(Tests.damping_force_entered, force_region.entered)
