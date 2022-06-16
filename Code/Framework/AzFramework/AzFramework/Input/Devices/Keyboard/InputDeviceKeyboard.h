@@ -550,4 +550,6 @@ namespace AzFramework
         //! Helper class that handles requests to create a custom implementation for this device
         InputDeviceImplementationRequestHandler<InputDeviceKeyboard> m_implementationRequestHandler;
     };
+
+    ModifierKeyMask GetCorrespondingModifierKeyMask(const InputChannelId& channelId);
 } // namespace AzFramework

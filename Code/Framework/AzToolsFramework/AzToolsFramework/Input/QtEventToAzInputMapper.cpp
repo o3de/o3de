@@ -310,12 +310,8 @@ namespace AzToolsFramework
             ClearInputChannels(event);
         }
 
-        if (object == m_sourceWidget)
-        {
-            int i;
-            i = 0;
-        }
-
+        // If a key event comes in from an outside widget, update the internal state of the keys (e.g. to update the modifiers), but do not
+        // notify the channel (as the source widget does not have focus)
         if (object != m_sourceWidget && !m_sourceWidget->hasFocus() && IsKeyEvent(eventType))
         {
             auto keyEvent = static_cast<QKeyEvent*>(event);
@@ -358,6 +354,7 @@ namespace AzToolsFramework
                 keyEvent,
                 [this](const AzFramework::InputChannel* channel, QEvent* event)
                 {
+                    // Notify channel of key event when the source widget is in focus
                     NotifyUpdateChannelIfNotIdle(channel, event);
                 });
         }

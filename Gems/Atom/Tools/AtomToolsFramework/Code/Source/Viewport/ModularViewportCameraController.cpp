@@ -203,14 +203,13 @@ namespace AtomToolsFramework
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
         auto modifierKeyStates = AzFramework::ModifierKeyStates{};
-
-        auto inputDevice =
+        const auto* inputDevice =
             AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
+
         if (auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::ModifierAltL);
             it != inputDevice->GetInputChannelsById().end())
         {
-            const AzFramework::ModifierKeyStates* customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>();
-            modifierKeyStates = [customData]
+            modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
             {
                 if (customData)
                 {
@@ -221,13 +220,7 @@ namespace AtomToolsFramework
             }();
         }
 
-        auto priority = m_priorityFn(m_cameraSystem);
-        if (modifierKeyStates.IsActive(AzFramework::ModifierKeyMask::AltL))
-        {
-            priority = AzFramework::ViewportControllerPriority::Highest;
-        }
-
-        if (event.m_priority == priority)
+        if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(

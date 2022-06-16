@@ -135,7 +135,7 @@ namespace AzFramework
     using InputEvent =
         AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, CursorEvent, ScrollEvent, DiscreteInputEvent>;
 
-    //!
+    //! Encapsulates an InputEvent in addition to the current key state of the modifiers.
     struct InputState
     {
         InputEvent m_inputEvent;
@@ -677,7 +677,7 @@ namespace AzFramework
         void SetPivotFn(PivotFn pivotFn);
 
     private:
-        InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input.
+        InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input (note: A modifier key is preferred).
         PivotFn m_pivotFn; //!< The pivot position to use for this orbit camera (how is the pivot point calculated/retrieved).
     };
 

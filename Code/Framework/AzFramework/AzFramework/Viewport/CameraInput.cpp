@@ -647,6 +647,7 @@ namespace AzFramework
 
     bool OrbitCameraInput::HandleEvents(const InputState& state, const ScreenVector& cursorDelta, const float scrollDelta)
     {
+        // event action outcome
         enum class Action
         {
             Nothing,
@@ -657,6 +658,7 @@ namespace AzFramework
         Action action = Action::Nothing;
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&state.m_inputEvent))
         {
+            // check for explicit channel event
             if (input->m_channelId == m_orbitChannelId)
             {
                 if (input->m_state == InputChannel::State::Began)
@@ -669,9 +671,11 @@ namespace AzFramework
                 }
             }
         }
+
+        // poll modifiers during a cursor event (cursor movement)
         if (const auto* input = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
-            if (state.m_modifiers.IsActive(ModifierKeyMask::AltL))
+            if (state.m_modifiers.IsActive(GetCorrespondingModifierKeyMask(m_orbitChannelId)))
             {
                 action = Action::Begin;
             }
