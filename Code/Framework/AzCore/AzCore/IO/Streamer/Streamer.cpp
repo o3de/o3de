@@ -9,6 +9,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/CompressionBus.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -17,7 +18,7 @@
 namespace AZ::IO
 {
     FileRequestPtr Streamer::Read(AZStd::string_view relativePath, void* outputBuffer, size_t outputBufferSize, size_t readSize,
-        AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
+        IStreamerTypes::Deadline deadline, IStreamerTypes::Priority priority, size_t offset)
     {
         FileRequestPtr result = CreateRequest();
         Read(result, relativePath, outputBuffer, outputBufferSize, readSize, deadline, priority, offset);
@@ -25,19 +26,18 @@ namespace AZ::IO
     }
 
     FileRequestPtr& Streamer::Read(FileRequestPtr& request, AZStd::string_view relativePath, void* outputBuffer,
-        size_t outputBufferSize, size_t readSize, AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
+        size_t outputBufferSize, size_t readSize, IStreamerTypes::Deadline deadline, IStreamerTypes::Priority priority, size_t offset)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
         AZStd::chrono::system_clock::time_point deadlineTimePoint = (deadline == IStreamerTypes::s_noDeadline)
             ? FileRequest::s_noDeadlineTime
             : AZStd::chrono::system_clock::now() + deadline;
-        request->m_request.CreateReadRequest(AZStd::move(path), outputBuffer, outputBufferSize, offset, readSize, deadlineTimePoint, priority);
+        request->m_request.CreateReadRequest(
+            RequestPath(relativePath), outputBuffer, outputBufferSize, offset, readSize, deadlineTimePoint, priority);
         return request;
     }
 
     FileRequestPtr Streamer::Read(AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator,
-        size_t size, AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
+        size_t size, IStreamerTypes::Deadline deadline, IStreamerTypes::Priority priority, size_t offset)
     {
         FileRequestPtr result = CreateRequest();
         Read(result, relativePath, allocator, size, deadline, priority, offset);
@@ -45,14 +45,12 @@ namespace AZ::IO
     }
 
     FileRequestPtr& Streamer::Read(FileRequestPtr& request, AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator,
-        size_t size, AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, size_t offset)
+        size_t size, IStreamerTypes::Deadline deadline, IStreamerTypes::Priority priority, size_t offset)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
         AZStd::chrono::system_clock::time_point deadlineTimePoint = (deadline == IStreamerTypes::s_noDeadline)
             ? FileRequest::s_noDeadlineTime
             : AZStd::chrono::system_clock::now() + deadline;
-        request->m_request.CreateReadRequest(AZStd::move(path), &allocator, offset, size, deadlineTimePoint, priority);
+        request->m_request.CreateReadRequest(RequestPath(relativePath), &allocator, offset, size, deadlineTimePoint, priority);
         return request;
     }
 
@@ -69,7 +67,7 @@ namespace AZ::IO
         return request;
     }
 
-    FileRequestPtr Streamer::RescheduleRequest(FileRequestPtr target, AZStd::chrono::microseconds newDeadline,
+    FileRequestPtr Streamer::RescheduleRequest(FileRequestPtr target, IStreamerTypes::Deadline newDeadline,
         IStreamerTypes::Priority newPriority)
     {
         FileRequestPtr result = CreateRequest();
@@ -77,7 +75,7 @@ namespace AZ::IO
         return result;
     }
 
-    FileRequestPtr& Streamer::RescheduleRequest(FileRequestPtr& request, FileRequestPtr target, AZStd::chrono::microseconds newDeadline,
+    FileRequestPtr& Streamer::RescheduleRequest(FileRequestPtr& request, FileRequestPtr target, IStreamerTypes::Deadline newDeadline,
         IStreamerTypes::Priority newPriority)
     {
         AZStd::chrono::system_clock::time_point deadlineTimePoint = (newDeadline == IStreamerTypes::s_noDeadline)
@@ -96,8 +94,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::CreateDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
+        RequestPath path(relativePath);
         request->m_request.CreateDedicatedCacheCreation(AZStd::move(path));
         return request;
     }
@@ -111,9 +108,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::DestroyDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
-        request->m_request.CreateDedicatedCacheDestruction(AZStd::move(path));
+        request->m_request.CreateDedicatedCacheDestruction(RequestPath(relativePath));
         return request;
     }
 
@@ -126,9 +121,7 @@ namespace AZ::IO
 
     FileRequestPtr& Streamer::FlushCache(FileRequestPtr& request, AZStd::string_view relativePath)
     {
-        RequestPath path;
-        path.InitFromRelativePath(relativePath);
-        request->m_request.CreateFlush(AZStd::move(path));
+        request->m_request.CreateFlush(RequestPath(relativePath));
         return request;
     }
 
@@ -210,7 +203,7 @@ namespace AZ::IO
         IStreamerTypes::ClaimMemory claimMemory) const
     {
         AZ_Assert(request.m_request, "The request handle provided to Streamer::GetReadRequestResult is invalid.");
-        auto readRequest = AZStd::get_if<FileRequest::ReadRequestData>(&request.m_request->GetCommand());
+        auto readRequest = AZStd::get_if<Requests::ReadRequestData>(&request.m_request->GetCommand());
         if (readRequest != nullptr)
         {
             buffer = readRequest->m_output;
@@ -254,43 +247,76 @@ namespace AZ::IO
         m_streamStack->ResumeProcessing();
     }
 
+    bool Streamer::IsSuspended() const
+    {
+        return m_streamStack->IsSuspended();
+    }
+
     void Streamer::RecordStatistics()
     {
         AZStd::vector<Statistic> statistics;
         m_streamStack->CollectStatistics(statistics);
         for (Statistic& stat : statistics)
         {
-            switch (stat.GetType())
+            auto visitor = [&stat](auto&& value)
             {
-            case Statistic::Type::FloatingPoint:
-                AZ_PROFILE_DATAPOINT(AzCore, stat.GetFloatValue(), "Streamer/%.*s/%.*s",
-                    aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
-                break;
-            case Statistic::Type::Integer:
-                AZ_PROFILE_DATAPOINT(AzCore, stat.GetIntegerValue(), "Streamer/%.*s/%.*s",
-                    aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
-                break;
-            case Statistic::Type::Percentage:
-                AZ_PROFILE_DATAPOINT_PERCENT(AzCore, stat.GetPercentage(), "Streamer/%.*s/%.*s (percent)",
-                    aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
-                break;
-            default:
-                AZ_Assert(false, "Unsupported statistic type: %i", stat.GetType());
-                break;
-            }
+                AZ_UNUSED(stat);
+                using Type = AZStd::decay_t<decltype(value)>;
+                if constexpr (AZStd::is_same_v<Type, bool>)
+                {
+                    AZ_PROFILE_DATAPOINT(
+                        AzCore, value ? 1 : 0, "Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
+                        aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
+                }
+                else if constexpr (AZStd::is_same_v<Type, double> || AZStd::is_same_v<Type, s64>)
+                {
+                    AZ_PROFILE_DATAPOINT(
+                        AzCore, value, "Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()),
+                        stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
+                }
+                else if constexpr (
+                    AZStd::is_same_v<Type, Statistic::FloatRange> || AZStd::is_same_v<Type, Statistic::IntegerRange> ||
+                    AZStd::is_same_v<Type, Statistic::ByteSize> || AZStd::is_same_v<Type, Statistic::ByteSizeRange>)
+                {
+                    AZ_PROFILE_DATAPOINT(
+                        AzCore, value.m_value, "Streamer/%.*s/%.*s", aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(),
+                        aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
+                }
+                else if constexpr (AZStd::is_same_v<Type, Statistic::Time> || AZStd::is_same_v<Type, Statistic::TimeRange>)
+                {
+                    AZ_PROFILE_DATAPOINT_PERCENT(
+                        AzCore, value.m_value, "Streamer/%.*s/%.*s (us)", aznumeric_cast<int>(stat.GetOwner().length()),
+                        stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
+                }
+                else if constexpr (AZStd::is_same_v<Type, Statistic::Percentage> || AZStd::is_same_v<Type, Statistic::PercentageRange>)
+                {
+                    AZ_PROFILE_DATAPOINT_PERCENT(
+                        AzCore, value.m_value, "Streamer/%.*s/%.*s (percent)", aznumeric_cast<int>(stat.GetOwner().length()),
+                        stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()), stat.GetName().data());
+                }
+                else if constexpr (AZStd::is_same_v<Type, Statistic::BytesPerSecond>)
+                {
+                    AZ_PROFILE_DATAPOINT_PERCENT(
+                        AzCore, value.m_value * (1.0f / (1024.0f * 1024.0f)), "Streamer/%.*s/%.*s (mbps)",
+                        aznumeric_cast<int>(stat.GetOwner().length()), stat.GetOwner().data(), aznumeric_cast<int>(stat.GetName().length()),
+                        stat.GetName().data());
+                }
+                // Strings are not supported.
+            };
+            AZStd::visit(visitor, stat.GetValue());
         }
     }
 
-    FileRequestPtr Streamer::Report(FileRequest::ReportData::ReportType reportType)
+    FileRequestPtr Streamer::Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType)
     {
         FileRequestPtr result = CreateRequest();
-        Report(result, reportType);
+        Report(result, output, reportType);
         return result;
     }
 
-    FileRequestPtr& Streamer::Report(FileRequestPtr& request, FileRequest::ReportData::ReportType reportType)
+    FileRequestPtr& Streamer::Report(FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType)
     {
-        request->m_request.CreateReport(reportType);
+        request->m_request.CreateReport(output, reportType);
         return request;
     }
 

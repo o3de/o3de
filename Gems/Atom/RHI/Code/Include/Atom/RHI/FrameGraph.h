@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <Atom/RHI.Reflect/BufferScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -105,11 +105,11 @@ namespace AZ
             // See RHI::FrameGraphInterface for detailed comments
             ResultCode UseAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
             ResultCode UseAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
-            ResultCode UseAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
+            ResultCode UseAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage);
             ResultCode UseResolveAttachment(const ResolveScopeAttachmentDescriptor& descriptor);
-            ResultCode UseColorAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors);
+            ResultCode UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors);
             ResultCode UseDepthStencilAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-            ResultCode UseSubpassInputAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors);
+            ResultCode UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors);
             ResultCode UseShaderAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
             ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
             ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);

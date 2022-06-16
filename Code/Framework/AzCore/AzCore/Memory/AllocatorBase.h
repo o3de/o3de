@@ -22,7 +22,7 @@ namespace AZ
     class AllocatorBase : public IAllocator
     {
     protected:
-        AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc);
+        AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc);
         ~AllocatorBase();
 
     public:
@@ -32,11 +32,9 @@ namespace AZ
         //---------------------------------------------------------------------
         const char* GetName() const override;
         const char* GetDescription() const override;
-        IAllocatorAllocate* GetSchema() override;
         Debug::AllocationRecords* GetRecords() final;
         void SetRecords(Debug::AllocationRecords* records) final;
         bool IsReady() const final;
-        bool CanBeOverridden() const final;
         void PostCreate() override;
         void PreDestroy() final;
         void SetLazilyCreated(bool lazy) final;
@@ -67,10 +65,6 @@ namespace AZ
 
             return byteSize;
         }
-
-        /// Call to disallow this allocator from being overridden.
-        /// Only kernel-level allocators where it would be especially problematic for them to be overridden should do this.
-        void DisableOverriding();
 
         /// Call to disallow this allocator from being registered with the AllocatorManager.
         /// Only kernel-level allocators where it would be especially problematic for them to be registered with the AllocatorManager should do this.
@@ -107,7 +101,6 @@ namespace AZ
         bool m_isLazilyCreated = false;
         bool m_isProfilingActive = false;
         bool m_isReady = false;
-        bool m_canBeOverridden = true;
         bool m_registrationEnabled = true;
     };
 

@@ -496,7 +496,7 @@ namespace AZ
             }
 
             AZStd::string RemoveArgumentsFromCommandLineString(
-                AZStd::array_view<AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
+                AZStd::span<const AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
             {
                 AZStd::string customizedArguments = commandLineString;
                 for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)

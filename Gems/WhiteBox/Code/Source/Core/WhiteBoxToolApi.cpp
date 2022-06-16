@@ -14,7 +14,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x4.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -1433,8 +1433,7 @@ namespace WhiteBox
         void TranslateEdge(WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
             WHITEBOX_LOG(
-                "White Box", "TranslateEdge eh(%s) %s", ToString(edgeHandle).c_str(),
-                AZ::ToString(displacement).c_str());
+                "White Box", "TranslateEdge eh(%s) %s", ToString(edgeHandle).c_str(), AZStd::to_string(displacement).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexHandles = EdgeVertexHandles(whiteBox, edgeHandle);
@@ -1674,8 +1673,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
             WHITEBOX_LOG(
-                "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(),
-                AZ::ToString(displacement).c_str());
+                "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(), AZStd::to_string(displacement).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // the new and existing handles required for an edge append
@@ -2605,8 +2603,7 @@ namespace WhiteBox
         void SetVertexPosition(WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG(
-                "White Box", "SetVertexPosition vh(%s) %s", ToString(vertexHandle).c_str(),
-                AZ::ToString(position).c_str());
+                "White Box", "SetVertexPosition vh(%s) %s", ToString(vertexHandle).c_str(), AZStd::to_string(position).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             whiteBox.mesh.set_point(om_vh(vertexHandle), position);
@@ -2616,8 +2613,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG(
-                "White Box", "SetVertexPositionAndUpdateUVs vh(%s) %s", ToString(vertexHandle).c_str(),
-                AZ::ToString(position).c_str());
+                "White Box", "SetVertexPositionAndUpdateUVs vh(%s) %s", ToString(vertexHandle).c_str(), AZStd::to_string(position).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             SetVertexPosition(whiteBox, vertexHandle, position);
@@ -2626,7 +2622,7 @@ namespace WhiteBox
 
         VertexHandle AddVertex(WhiteBoxMesh& whiteBox, const AZ::Vector3& vertex)
         {
-            WHITEBOX_LOG("White Box", "AddVertex %s", AZ::ToString(vertex).c_str());
+            WHITEBOX_LOG("White Box", "AddVertex %s", AZStd::to_string(vertex).c_str());
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return wb_vh(whiteBox.mesh.add_vertex(vertex));
@@ -3362,7 +3358,7 @@ namespace WhiteBox
         {
             WHITEBOX_LOG(
                 "White Box", "ScalePolygonRelative ph(%s) pivot %s scale: %f", ToString(polygonHandle).c_str(),
-                AZ::ToString(pivot).c_str(), scaleDelta);
+                AZStd::to_string(pivot).c_str(), scaleDelta);
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZ::Transform polygonSpace = PolygonSpace(whiteBox, polygonHandle, pivot);

@@ -1,7 +1,7 @@
-Atom test projects should include Gems\Atom\TestData in their Asset Processor "ScanFolder" list, like this:
+Atom test projects should include <Atom GemRoot>\TestData in their Asset Processor "ScanFolder" list, like this:
 
 [ScanFolder AtomTestData]
-watch=@ENGINEROOT@/Gems/Atom/TestData
+watch=@GEMROOT:Atom@/TestData
 recursive=1
 order=1000
 

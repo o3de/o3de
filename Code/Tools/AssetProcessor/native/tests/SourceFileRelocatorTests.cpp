@@ -119,8 +119,8 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
 
-            SourceFileDependencyEntry dependency1 = { AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false };
-            SourceFileDependencyEntry dependency2 = { AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false };
+            SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false, "" };
+            SourceFileDependencyEntry dependency2{ AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false, "" };
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency1));
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency2));
 
@@ -191,7 +191,7 @@ namespace UnitTests
 
             m_data->m_perforceComponent = AZStd::make_unique<MockPerforceComponent>();
             m_data->m_perforceComponent->Activate();
-            m_data->m_perforceComponent->SetConnection(new UnitTest::MockPerforceConnection(m_command));
+            m_data->m_perforceComponent->SetConnection(new ::UnitTest::MockPerforceConnection(m_command));
         }
 
         void TearDown() override
@@ -793,9 +793,9 @@ namespace UnitTests
 
     TEST_F(SourceFileRelocatorTest, TestInterface)
     {
-        auto* interface = AZ::Interface<ISourceFileRelocation>::Get();
+        auto* sourceFileRelocator = AZ::Interface<ISourceFileRelocation>::Get();
 
-        ASSERT_NE(interface, nullptr);
+        ASSERT_NE(sourceFileRelocator, nullptr);
     }
 
     TEST_F(SourceFileRelocatorTest, Move_Real_Succeeds)
@@ -876,7 +876,7 @@ namespace UnitTests
         QDir tempPath(m_tempDir.path());
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("duplicate/file1.tif");
-        
+
         ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
 
         auto result = m_data->m_reporter->Delete(filePath.toUtf8().constData(), false);

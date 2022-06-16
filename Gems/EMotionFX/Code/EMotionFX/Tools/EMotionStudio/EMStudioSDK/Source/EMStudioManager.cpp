@@ -14,6 +14,9 @@
 #include "MotionEventPresetManager.h"
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -149,7 +152,8 @@ namespace EMStudio
         GetMainWindow()->Reset();
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphInstances(true);
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphs(true);
-        EMotionFX::GetMotionManager().Clear(true);
+        CommandSystem::ClearMotionSetsCommand();
+        CommandSystem::ClearMotions();
     }
 
 
@@ -176,24 +180,26 @@ namespace EMStudio
         m_pluginManager->LoadPluginsFromDirectory(pluginDir.c_str());
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
-        // Give a chance to every plugin to reflect data
-        const size_t numPlugins = m_pluginManager->GetNumPlugins();
-        if (numPlugins)
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
+        if (serializeContext)
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!serializeContext)
+            // Reflect plugin related data.
+            const PluginManager::PluginVector& registeredPlugins = m_pluginManager->GetRegisteredPlugins();
+            for (EMStudioPlugin* plugin : registeredPlugins)
             {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+                plugin->Reflect(serializeContext);
             }
-            else
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = m_pluginManager->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
             {
-                for (size_t i = 0; i < numPlugins; ++i)
-                {
-                    EMStudioPlugin* plugin = m_pluginManager->GetPlugin(i);
-                    plugin->Reflect(serializeContext);
-                }
+                plugin->Reflect(serializeContext);
             }
+
+            // Reflect shared data that might be used by multiple plugins.
+            RenderOptions::Reflect(serializeContext);
         }
         
         // Register the command event processing callback.
@@ -499,6 +505,9 @@ namespace EMStudio
         path.addText(textPos, font, text);
         painter.drawPath(path);
     }
+
+    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
+        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
 
     // shortcuts
     QApplication* GetApp()

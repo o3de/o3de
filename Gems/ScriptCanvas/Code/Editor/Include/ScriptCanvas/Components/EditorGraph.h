@@ -38,14 +38,14 @@
 
 namespace ScriptCanvas
 {
-    struct NodeConfiguration;
+    struct NodeReplacementConfiguration;
     struct NodeUpdateSlotReport;
 }
 
 namespace ScriptCanvasEditor
 {
     //! EditorGraph is the editor version of the ScriptCanvas::Graph component that is activated when executing the script canvas engine
-    class Graph
+    class EditorGraph
         : public ScriptCanvas::Graph
         , private NodeCreationNotificationBus::Handler
         , private SceneCounterRequestBus::Handler
@@ -77,8 +77,6 @@ namespace ScriptCanvasEditor
 
         typedef AZStd::unordered_map< AZ::EntityId, AZ::EntityId > WrappedNodeGroupingMap;
 
-        static void ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
-
         struct CRCCache
         {
             AZ_TYPE_INFO(CRCCache, "{59798D92-94AD-4A08-8F38-D5975B0DC33B}");
@@ -100,13 +98,13 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_COMPONENT(Graph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
+        AZ_COMPONENT(EditorGraph, "{4D755CA9-AB92-462C-B24F-0B3376F19967}", ScriptCanvas::Graph);
 
         static ScriptCanvas::DataPtr Create();
 
         static void Reflect(AZ::ReflectContext* context);
 
-        Graph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
+        EditorGraph(const ScriptCanvas::ScriptCanvasId& scriptCanvasId = AZ::Entity::MakeId())
             : ScriptCanvas::Graph(scriptCanvasId)
             , m_variableCounter(0)
             , m_graphCanvasSceneEntity(nullptr)
@@ -115,10 +113,20 @@ namespace ScriptCanvasEditor
             , m_upgradeSM(this)
         {}
 
-        ~Graph() override;
+        ~EditorGraph() override;
 
         void Activate() override;
         void Deactivate() override;
+
+        static const char* GetMimeType()
+        {
+            return "application/x-o3de-scriptcanvas";
+        }
+
+        static const char* GetWrappedNodeGroupingMimeType()
+        {
+            return "application/x-03de-scriptcanvas-wrappednodegrouping";
+        }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
@@ -175,12 +183,12 @@ namespace ScriptCanvasEditor
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
 
-        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
-        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint) override;
+        bool ConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
+        bool CanConvertSlotToReference(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         GraphCanvas::CanHandleMimeEventOutcome CanHandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
         bool HandleReferenceMimeEvent(const GraphCanvas::Endpoint& endpoint, const QMimeData* mimeData) override;
-        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint) const override;
-        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint) override;
+        bool CanPromoteToVariable(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) const override;
+        bool PromoteToVariableAction(const GraphCanvas::Endpoint& endpoint, bool isNewSlot = false) override;
         bool SynchronizeReferences(const GraphCanvas::Endpoint& sourceEndpoint, const GraphCanvas::Endpoint& targetEndpoint) override;
 
         bool ConvertSlotToValue(const GraphCanvas::Endpoint& endpoint) override;
@@ -226,12 +234,13 @@ namespace ScriptCanvasEditor
 
         /////
         EditorGraphUpgradeMachine m_upgradeSM;
+
         enum UpgradeRequest
         {
             IfOutOfDate,
             Forced
         };
-        bool UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose = true);
+bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const UpgradeGraphConfig& upgradeConfig);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////
@@ -301,32 +310,13 @@ namespace ScriptCanvasEditor
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
-
-        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
-        ScriptCanvas::DataPtr GetOwnership() const;
-
-        // Finds and returns all nodes within the graph that are of the specified type
-        template <typename NodeType>
-        AZStd::vector<const NodeType*> GetNodesOfType() const
-        {
-            AZStd::vector<const NodeType*> nodes;
-            for (auto& nodeRef : m_graphData.m_nodes)
-            {
-                const NodeType* node = nodeRef->FindComponent<NodeType>();
-                if (node)
-                {
-                    nodes.push_back(node);
-                }
-            }
-            return nodes;
-        }
-
+        
     protected:
         void PostRestore(const UndoData& restoredData) override;
 
         void UnregisterToast(const AzToolsFramework::ToastId& toastId);
 
-        Graph(const Graph&) = delete;
+        EditorGraph(const EditorGraph&) = delete;
 
         void DisplayUpdateToast();
 
@@ -353,8 +343,61 @@ namespace ScriptCanvasEditor
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
         //// Version Update code
-        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+
+        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeReplacementConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+
         bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        bool SanityCheckNodeReplacementWithCustomLogic(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        bool SanityCheckNodeReplacementWithSameTopology(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+
+        // Live node replacement, that is, completely swap out a node, while the user is actively editing (rather then when opening or
+        // versioning a graph). The default intention is to retain as much connection and data as is remotely appropriate.
+        struct LiveSlotInfo
+        {
+            ScriptCanvas::SlotState state;
+            AZStd::vector<ScriptCanvas::Endpoint> connections;
+            AZStd::vector<AZStd::string> connectionNames;
+            bool isGetSetVariableDataSlot = false;
+            ScriptCanvas::Endpoint oldEndpoint;
+            ScriptCanvas::Endpoint newEndpoint;
+        };
+
+        using LiveSlotStates = AZStd::vector<LiveSlotInfo>;
+        struct ReplacementInfo
+        {
+            ScriptCanvas::NodeReplacementConfiguration config;
+            LiveSlotStates slotStates;
+            AZ::EntityId oldNodeId;
+        };
+
+        using ReplacementInfoByNode = AZStd::unordered_map<AZ::EntityId, ReplacementInfo>;
+        using NodesById = AZStd::unordered_map<AZ::EntityId, ScriptCanvas::Node*>;
+
+        AZ::Outcome<LiveSlotInfo, AZStd::string> ConvertToLiveStateInfo(const ScriptCanvas::Node& node, const ScriptCanvas::Slot& slot) const;
+        static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeReplacementConfiguration& config);
+        AZ::Outcome<ScriptCanvas::Node*, AZStd::string> ReplaceLiveNode(ScriptCanvas::Node&, ScriptCanvas::NodeReplacementConfiguration&);
+        AZ::Outcome<LiveSlotStates, AZStd::string> GetSlotState(const ScriptCanvas::Node& node) const;
+        LiveSlotInfo* FindMatchingSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotStates& slotState) const;
+        AZ::Outcome<void, AZStd::string> UpdateSlotConnections(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotInfo& slotInfo, const ReplacementInfoByNode& ainfoByOldNode);
+        AZ::Outcome<void, AZStd::string> UpdateSlotDatum(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot, LiveSlotInfo& slotInfo);
+
+        enum class FixConnections
+        {
+            No,
+            Yes
+        };
+        AZ::Outcome<void, AZStd::string> UpdateSlotState(ScriptCanvas::Node& node, ScriptCanvas::Slot& slot
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig, LiveSlotStates& slotState
+            , const ReplacementInfoByNode& infoByOldNode, FixConnections fixConnections);
+
+        AZ::Outcome<void, AZStd::string> UpdateSlotState
+            ( ScriptCanvas::Node& node
+            , const ScriptCanvas::NodeReplacementConfiguration& nodeConfig
+            , LiveSlotStates& slotState
+            , const ReplacementInfoByNode& infoByOldNode, FixConnections fixConnections);
+
+        void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;
 
         bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;
@@ -388,8 +431,6 @@ namespace ScriptCanvasEditor
         //! Defaults to true to signal that this graph does not have the GraphCanvas stuff intermingled
         bool m_saveFormatConverted = true;
 
-        ScriptCanvasEditor::SourceHandle m_assetId;
-        // temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
-        ScriptCanvas::ScriptCanvasData* m_owner;
+        SourceHandle m_assetId;
     };
 }

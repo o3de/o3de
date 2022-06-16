@@ -54,11 +54,11 @@ namespace AZ
         //! Sets components using a Vector3 for the imaginary part and a float for the real part.
         static Quaternion CreateFromVector3AndValue(const Vector3& v, float w);
 
-        //! Sets the quaternion to be a rotation around a specified axis.
+        //! Sets the quaternion to be a rotation around a specified axis in radians.
         //! @{
-        static Quaternion CreateRotationX(float angle);
-        static Quaternion CreateRotationY(float angle);
-        static Quaternion CreateRotationZ(float angle);
+        static Quaternion CreateRotationX(float angleInRadians);
+        static Quaternion CreateRotationY(float angleInRadians);
+        static Quaternion CreateRotationZ(float angleInRadians);
         //! @}
 
         //! Creates a quaternion from a Matrix3x3
@@ -76,6 +76,9 @@ namespace AZ
         static Quaternion CreateFromBasis(const Vector3& basisX, const Vector3& basisY, const Vector3& basisZ);
 
         static Quaternion CreateFromAxisAngle(const Vector3& axis, float angle);
+
+        //! Create a quaternion from a scaled axis-angle representation.
+        static Quaternion CreateFromScaledAxisAngle(const Vector3& scaledAxisAngle);
 
         static Quaternion CreateShortestArc(const Vector3& v1, const Vector3& v2);
 
@@ -165,6 +168,14 @@ namespace AZ
         float NormalizeWithLengthEstimate();
         //! @}
 
+        //! Get the shortest equivalent of the rotation.
+        //! In case the w component of the quaternion is negative the rotation is > 180° and taking the longer path.
+        //! The quaternion will be inverted in that case to take the shortest path of rotation.
+        //! @{
+        Quaternion GetShortestEquivalent() const;
+        void ShortestEquivalent();
+        //! @}
+
         //! Linearly interpolate towards a destination quaternion.
         //! @param[in] dest The quaternion to interpolate towards.
         //! @param[in] t Normalized interpolation value where 0.0 represents the current and 1.0 the destination value.
@@ -230,6 +241,9 @@ namespace AZ
         //! @param[out] outAxis A Vector3 defining the rotation axis.
         //! @param[out] outAngle A float rotation angle around the axis in radians.
         void ConvertToAxisAngle(Vector3& outAxis, float& outAngle) const;
+
+        //! Convert the quaternion into scaled axis-angle representation.
+        Vector3 ConvertToScaledAxisAngle() const;
 
         //! Returns the imaginary (X/Y/Z) portion of the quaternion.
         Vector3 GetImaginary() const;

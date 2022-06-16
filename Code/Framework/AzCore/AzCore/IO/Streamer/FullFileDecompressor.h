@@ -21,6 +21,12 @@
 
 namespace AZ::IO
 {
+    namespace Requests
+    {
+        struct ReadRequestData;
+        struct ReportData;
+    }
+
     struct FullFileDecompressorConfig final :
         public IStreamerStackConfig
     {
@@ -87,7 +93,7 @@ namespace AZ::IO
 
         bool IsIdle() const;
 
-        void PrepareReadRequest(FileRequest* request, FileRequest::ReadRequestData& data);
+        void PrepareReadRequest(FileRequest* request, Requests::ReadRequestData& data);
         void PrepareDedicatedCache(FileRequest* request, const RequestPath& path);
         void FileExistsCheck(FileRequest* checkRequest);
 
@@ -101,6 +107,8 @@ namespace AZ::IO
 
         static void FullDecompression(StreamerContext* context, DecompressionInformation& info);
         static void PartialDecompression(StreamerContext* context, DecompressionInformation& info);
+
+        void Report(const Requests::ReportData& data) const;
 
         AZStd::deque<FileRequest*> m_pendingReads;
         AZStd::deque<FileRequest*> m_pendingFileExistChecks;

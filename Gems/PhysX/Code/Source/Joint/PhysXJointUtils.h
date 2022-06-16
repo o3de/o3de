@@ -14,8 +14,15 @@
 
 #include <PxPhysicsAPI.h>
 
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+
 namespace PhysX
 {
+    struct D6JointLimitConfiguration;
+    struct FixedJointConfiguration;
+    struct BallJointConfiguration;
+    struct HingeJointConfiguration;
+
     namespace JointConstants
     {
         // Setting joint limits to very small values can cause extreme stability problems, so clamp above a small

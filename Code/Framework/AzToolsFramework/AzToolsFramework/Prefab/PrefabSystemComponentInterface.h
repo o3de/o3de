@@ -27,6 +27,9 @@ namespace AzToolsFramework
         class PrefabSystemComponentInterface
         {
         public:
+
+            using InstantiatedEntitiesCallback = AZStd::function<void(AZStd::vector<AZ::Entity*>&)>;
+
             AZ_RTTI(PrefabSystemComponentInterface, "{8E95A029-67F9-4F74-895F-DDBFE29516A0}");
 
             virtual TemplateReference FindTemplate(TemplateId id) = 0;
@@ -70,9 +73,13 @@ namespace AzToolsFramework
             virtual void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) = 0;
 
             virtual AZStd::unique_ptr<Instance> InstantiatePrefab(
-                AZ::IO::PathView filePath, InstanceOptionalReference parent = AZStd::nullopt) = 0;
+                AZ::IO::PathView filePath,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) = 0;
             virtual AZStd::unique_ptr<Instance> InstantiatePrefab(
-                TemplateId templateId, InstanceOptionalReference parent = AZStd::nullopt) = 0;
+                TemplateId templateId,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,

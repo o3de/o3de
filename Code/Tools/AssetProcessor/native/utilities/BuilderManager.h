@@ -39,7 +39,11 @@ namespace AssetProcessor
         virtual ~BuilderManagerBusTraits() = default;
 
         //! Returns a builder for doing work
-        virtual BuilderRef GetBuilder() = 0;
+        virtual BuilderRef GetBuilder(bool doRegistration) = 0;
+
+        virtual void AddAssetToBuilderProcessedList(const AZ::Uuid& /*builderId*/, const AZStd::string& /*sourceAsset*/)
+        {
+        }
     };
 
     using BuilderManagerBus = AZ::EBus<BuilderManagerBusTraits>;
@@ -98,12 +102,12 @@ namespace AssetProcessor
     private:
 
         //! Starts the builder process and waits for it to connect
-        bool Start();
+        bool Start(bool doRegistration);
 
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
 
-        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const;
+        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const;
         AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
@@ -130,6 +134,9 @@ namespace AssetProcessor
         AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_tracePrinter = nullptr;
 
         const AssetUtilities::QuitListener& m_quitListener;
+
+        //! Time to wait in seconds for a builder to startup before timing out.
+        AZ::s64 m_startupWaitTimeS = 0;
     };
 
     //! Scoped reference to a builder. Destructor returns the builder to the free builders pool
@@ -151,8 +158,16 @@ namespace AssetProcessor
 
         explicit operator bool() const;
 
+        void release();
+
     private:
         AZStd::shared_ptr<Builder> m_builder = nullptr;
+    };
+
+    class BuilderDebugOutput
+    {
+    public:
+        AZStd::list<AZStd::string> m_assetsProcessed;
     };
 
     //! Manages the builder pool
@@ -169,7 +184,8 @@ namespace AssetProcessor
         void ConnectionLost(AZ::u32 connId);
 
         //BuilderManagerBus
-        BuilderRef GetBuilder() override;
+        BuilderRef GetBuilder(bool doRegistration) override;
+        void AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset) override;
 
     private:
 
@@ -181,10 +197,16 @@ namespace AssetProcessor
 
         void PumpIdleBuilders();
 
+        void PrintDebugOutput();
+
         AZStd::mutex m_buildersMutex;
 
         //! Map of builders, keyed by the builder's unique ID.  Must be locked before accessing
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Builder>> m_builders;
+
+        // Track debug output generated per builder.
+        // This is done this way so that it can be output in order, to track down race conditions with asset builders.
+        AZStd::unordered_map<AZ::Uuid, BuilderDebugOutput> m_builderDebugOutput;
 
         //! Indicates if we allow builders to connect that we haven't started up ourselves.  Useful for debugging
         bool m_allowUnmanagedBuilderConnections = false;

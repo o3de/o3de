@@ -18,7 +18,7 @@
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
-                "PixelFormat": "ASTC_6x6",
+                "PixelFormat": "ASTC_4x4",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

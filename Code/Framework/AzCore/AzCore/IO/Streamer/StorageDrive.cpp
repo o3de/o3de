@@ -60,13 +60,13 @@ namespace AZ::IO
         AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
-        if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
+        if (AZStd::holds_alternative<Requests::ReadRequestData>(request->GetCommand()))
         {
-            auto& readRequest = AZStd::get<FileRequest::ReadRequestData>(request->GetCommand());
+            auto& readRequest = AZStd::get<Requests::ReadRequestData>(request->GetCommand());
 
             FileRequest* read = m_context->GetNewInternalRequest();
-            read->CreateRead(request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path,
-                readRequest.m_offset, readRequest.m_size);
+            read->CreateRead(
+                request, readRequest.m_output, readRequest.m_outputSize, readRequest.m_path, readRequest.m_offset, readRequest.m_size);
             m_context->PushPreparedRequest(read);
             return;
         }
@@ -79,29 +79,29 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData> ||
-                AZStd::is_same_v<Command, FileRequest::FileExistsCheckData> ||
-                AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData> ||
+                AZStd::is_same_v<Command, Requests::FileExistsCheckData> ||
+                AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 m_pendingRequests.push_back(request);
                 return;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CancelData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CancelData>)
             {
                 CancelRequest(request, args.m_target);
                 return;
             }
             else
             {
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
                 {
                     FlushCache(args.m_path);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
                 {
                     FlushEntireCache();
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::ReportData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::ReportData>)
                 {
                     Report(args);
                 }
@@ -118,15 +118,15 @@ namespace AZ::IO
             AZStd::visit([this, request](auto&& args)
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                 {
                     ReadFile(request);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
                 {
                     FileExistsRequest(request);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
                 {
                     FileMetaDataRetrievalRequest(request);
                 }
@@ -199,25 +199,25 @@ namespace AZ::IO
         AZStd::visit([&](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 targetFile = &args.m_path;
                 readSize = args.m_size;
                 offset = args.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 targetFile = &args.m_compressionInfo.m_archiveFilename;
                 readSize = args.m_compressionInfo.m_compressedSize;
                 offset = args.m_compressionInfo.m_offset;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileExistsCheckData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileExistsCheckData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds averageTime = m_getFileExistsTimeAverage.CalculateAverage();
                 startTime += averageTime;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FileMetaDataRetrievalData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FileMetaDataRetrievalData>)
             {
                 readSize = 0;
                 AZStd::chrono::microseconds averageTime = m_getFileMetaDataTimeAverage.CalculateAverage();
@@ -243,8 +243,8 @@ namespace AZ::IO
             }
 
             u64 totalBytesRead = m_readSizeAverage.GetTotal();
-            double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
-            startTime += AZStd::chrono::microseconds(aznumeric_cast<u64>((readSize * totalReadTimeUSec) / totalBytesRead));
+            double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
+            startTime += Statistic::TimeValue(aznumeric_cast<u64>((readSize * totalReadTime) / totalBytesRead));
             activeOffset = offset + readSize;
         }
         request->SetEstimatedCompletion(startTime);
@@ -254,7 +254,7 @@ namespace AZ::IO
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data, "FileRequest queued on StorageDrive to be read didn't contain read data.");
 
         SystemFile* file = nullptr;
@@ -285,7 +285,7 @@ namespace AZ::IO
 
             TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
             AZStd::unique_ptr<SystemFile> newFile = AZStd::make_unique<SystemFile>();
-            bool isOpen = newFile->Open(data->m_path.GetAbsolutePath(), SystemFile::OpenMode::SF_OPEN_READ_ONLY);
+            bool isOpen = newFile->Open(data->m_path.GetAbsolutePathCStr(), SystemFile::OpenMode::SF_OPEN_READ_ONLY);
             if (!isOpen)
             {
                 request->SetStatus(IStreamerTypes::RequestStatus::Failed);
@@ -342,7 +342,7 @@ namespace AZ::IO
         AZ_PROFILE_FUNCTION(AzCore);
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
-        auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
+        auto& fileExists = AZStd::get<Requests::FileExistsCheckData>(request->GetCommand());
         size_t cacheIndex = FindFileInCache(fileExists.m_path);
         if (cacheIndex != s_fileNotFound)
         {
@@ -350,7 +350,7 @@ namespace AZ::IO
         }
         else
         {
-            fileExists.m_found = SystemFile::Exists(fileExists.m_path.GetAbsolutePath());
+            fileExists.m_found = SystemFile::Exists(fileExists.m_path.GetAbsolutePathCStr());
         }
         m_context->MarkRequestAsCompleted(request);
     }
@@ -360,13 +360,13 @@ namespace AZ::IO
         AZ_PROFILE_FUNCTION(AzCore);
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataTimeAverage);
 
-        auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+        auto& command = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
         // If the file is already open, use the file handle which usually is cheaper than asking for the file by name.
         size_t cacheIndex = FindFileInCache(command.m_path);
         if (cacheIndex != s_fileNotFound)
         {
             AZ_Assert(m_fileHandles[cacheIndex],
-                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePath());
+                "File path '%s' doesn't have an associated file handle.", m_filePaths[cacheIndex].GetRelativePathCStr());
             command.m_fileSize = m_fileHandles[cacheIndex]->Length();
             command.m_found = true;
             request->SetStatus(IStreamerTypes::RequestStatus::Completed);
@@ -374,7 +374,7 @@ namespace AZ::IO
         else
         {
             // The file is not open yet, so try to get the file size by name.
-            u64 size = SystemFile::Length(command.m_path.GetAbsolutePath());
+            u64 size = SystemFile::Length(command.m_path.GetAbsolutePathCStr());
             if (size != 0) // SystemFile::Length doesn't allow telling a zero-sized file apart from a invalid path.
             {
                 command.m_fileSize = size;
@@ -427,35 +427,65 @@ namespace AZ::IO
 
     void StorageDrive::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        constexpr double bytesToMB = (1024.0 * 1024.0);
         using DoubleSeconds = AZStd::chrono::duration<double>;
 
-        double totalBytesReadMB = m_readSizeAverage.GetTotal() / bytesToMB;
-        double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
         if (m_readSizeAverage.GetTotal() > 1) // A default value is always added.
         {
-            statistics.push_back(Statistic::CreateFloat(m_name, "Read Speed (avg. mbps)", totalBytesReadMB / totalReadTimeSec));
+            u64 totalBytesRead = m_readSizeAverage.GetTotal();
+            double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
+            statistics.push_back(Statistic::CreateBytesPerSecond(
+                m_name, "Read Speed", totalBytesRead / totalReadTimeSec,
+                "The average read speed this drive achieved. This is the maximum achievable speed for reading from "
+                "disk. If this is lower than expected it may indicate that there's an overhead from the operating system, the drive has "
+                "seen a lot of use, other applications are using the same drive and/or anti-virus scans are slowing down reads."));
         }
 
         if (m_fileOpenCloseTimeAverage.GetNumRecorded() > 0)
         {
-            statistics.push_back(Statistic::CreateInteger(m_name, "File Open & Close (avg. us)", m_fileOpenCloseTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file exists (avg. us)", m_getFileExistsTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file meta data (avg. us)", m_getFileMetaDataTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", s64{ s_maxRequests } - m_pendingRequests.size()));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "File Open & Close", m_fileOpenCloseTimeAverage.CalculateAverage(), m_fileOpenCloseTimeAverage.GetMinimum(),
+                m_fileOpenCloseTimeAverage.GetMaximum(),
+                "The average amount of time needed to open and close file handles. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file exists", m_getFileExistsTimeAverage.CalculateAverage(), m_getFileExistsTimeAverage.GetMinimum(),
+                m_getFileExistsTimeAverage.GetMaximum(),
+                "The average amount of time in microseconds needed to check if a file exists. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file meta data", m_getFileMetaDataTimeAverage.CalculateAverage(), m_getFileMetaDataTimeAverage.GetMinimum(),
+                m_getFileMetaDataTimeAverage.GetMaximum(),
+                "The average amount of time in microseconds needed to retrieve file information. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateInteger(
+                m_name, "Available slots", s64{ s_maxRequests } - m_pendingRequests.size(),
+                "The total number of available slots to queue requests on. The lower this number, the more active this node is. A small "
+                "negative number is ideal as it means there are a few requests available for immediate processing next once a request "
+                "completes."));
         }
     }
 
-    void StorageDrive::Report(const FileRequest::ReportData& data) const
+    void StorageDrive::Report(const Requests::ReportData& data) const
     {
         switch (data.m_reportType)
         {
-        case FileRequest::ReportData::ReportType::FileLocks:
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateInteger(
+                m_name, "Max file handles", m_fileHandles.size(),
+                "The maximum number of file handles this drive node will cache. Increasing this will allow files that are read "
+                "multiple times to be processed faster. It's recommended to have this set to at least the largest number of archives "
+                "that can be in use at the same time."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        case IStreamerTypes::ReportType::FileLocks:
             for (u32 i = 0; i < m_fileHandles.size(); ++i)
             {
                 if (m_fileHandles[i] != nullptr)
                 {
-                    AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_filePaths[i].GetRelativePath());
+                    data.m_output.push_back(
+                        Statistic::CreatePersistentString(m_name, "File lock", m_filePaths[i].GetRelativePath().Native()));
                 }
             }
             break;

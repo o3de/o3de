@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_TransformFunctions_FromMatrix3x3AndTranslation",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Matrix3x3 And Translation",
+                "category": "Math/Transform"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_TransformFunctions_FromMatrix3x3AndTranslation",
+                    "details": {
+                        "name": "From Matrix3x3 And Translation",
+                        "tooltip": "Returns a transform from the 3x3 matrix and the translation."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

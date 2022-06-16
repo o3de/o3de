@@ -97,19 +97,38 @@ namespace AzFramework
             AZStd::vector<AZStd::string> registeredAssetPaths;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(registeredAssetPaths, &AZ::Data::AssetCatalogRequests::GetRegisteredAssetPaths);
 
-            const char* dependencyXmlPattern = "*_dependencies.xml";
+            constexpr const char* dependencyXmlPattern = "_dependencies.xml";
             for (const AZStd::string& assetPath : registeredAssetPaths)
             {
-                if (!AZStd::wildcard_match(dependencyXmlPattern, assetPath.c_str()))
+                if (assetPath.ends_with(dependencyXmlPattern))
                 {
-                    continue;
-                }
-
-                if (!m_excludeFileQueryManager.get()->LoadEngineDependencies(assetPath))
-                {
-                    AZ_Error("ExcludeFileComponent", false, "Failed to add assets referenced from %s to the blocked list", assetPath.c_str());
+                    AZ_VerifyError("ExcludeFileComponent", m_excludeFileQueryManager.get()->LoadEngineDependencies(assetPath),
+                        "Failed to add assets referenced from %s to the blocked list", assetPath.c_str());
                 }
             }
+        }
+
+        void ExcludeFileComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+        {
+            // Reload any modified "<name>_dependencies.xml" files
+            AZ::IO::Path assetPath;
+            auto GetAssetPath = [&assetId, &assetPath](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+            {
+                assetPath = assetCatalogRequests->GetAssetPathById(assetId);
+            };
+
+            AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(GetAssetPath));
+            constexpr const char* dependencyXmlPattern = "_dependencies.xml";
+            if (assetPath.Native().ends_with(dependencyXmlPattern))
+            {
+                AZ_VerifyError("ExcludeFileComponent", m_excludeFileQueryManager.get()->LoadEngineDependencies(assetPath.Native()),
+                    "Failed to add assets referenced from %s to the blocked list", assetPath.c_str());
+            }
+        }
+
+        void ExcludeFileComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+        {
+            OnCatalogAssetChanged(assetId);
         }
     }
 }

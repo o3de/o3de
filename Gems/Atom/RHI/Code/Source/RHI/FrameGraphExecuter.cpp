@@ -19,7 +19,7 @@ namespace AZ
             m_jobPolicy = jobPolicy;
         }
 
-        AZStd::array_view<AZStd::unique_ptr<FrameGraphExecuteGroup>> FrameGraphExecuter::GetGroups() const
+        AZStd::span<const AZStd::unique_ptr<FrameGraphExecuteGroup>> FrameGraphExecuter::GetGroups() const
         {
             return m_groups;
         }

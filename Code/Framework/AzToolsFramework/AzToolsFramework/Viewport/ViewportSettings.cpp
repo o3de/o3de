@@ -10,16 +10,20 @@
 
 namespace AzToolsFramework
 {
-    constexpr AZStd::string_view FlipManipulatorAxesTowardsViewSetting = "/Amazon/Preferences/Editor/Manipulator/FlipManipulatorAxesTowardsView";
+    constexpr AZStd::string_view FlipManipulatorAxesTowardsViewSetting =
+        "/Amazon/Preferences/Editor/Manipulator/FlipManipulatorAxesTowardsView";
     constexpr AZStd::string_view LinearManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorAxisLength";
     constexpr AZStd::string_view PlanarManipulatorAxisLengthSetting = "/Amazon/Preferences/Editor/Manipulator/PlanarManipulatorAxisLength";
     constexpr AZStd::string_view SurfaceManipulatorRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/SurfaceManipulatorRadius";
     constexpr AZStd::string_view SurfaceManipulatorOpacitySetting = "/Amazon/Preferences/Editor/Manipulator/SurfaceManipulatorOpacity";
     constexpr AZStd::string_view LinearManipulatorConeLengthSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorConeLength";
     constexpr AZStd::string_view LinearManipulatorConeRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/LinearManipulatorConeRadius";
-    constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting = "/Amazon/Preferences/Editor/Manipulator/ScaleManipulatorBoxHalfExtent";
+    constexpr AZStd::string_view ScaleManipulatorBoxHalfExtentSetting =
+        "/Amazon/Preferences/Editor/Manipulator/ScaleManipulatorBoxHalfExtent";
     constexpr AZStd::string_view RotationManipulatorRadiusSetting = "/Amazon/Preferences/Editor/Manipulator/RotationManipulatorRadius";
     constexpr AZStd::string_view ManipulatorViewBaseScaleSetting = "/Amazon/Preferences/Editor/Manipulator/ViewBaseScale";
+    constexpr AZStd::string_view IconsVisibleSetting = "/Amazon/Preferences/Editor/IconsVisible";
+    constexpr AZStd::string_view HelpersVisibleSetting = "/Amazon/Preferences/Editor/HelpersVisible";
 
     bool FlipManipulatorAxesTowardsView()
     {
@@ -113,11 +117,31 @@ namespace AzToolsFramework
 
     float ManipulatorViewBaseScale()
     {
-        return aznumeric_cast<float>(GetRegistry(ManipulatorViewBaseScaleSetting, 1.0));
+        return aznumeric_cast<float>(GetRegistry(ManipulatorViewBaseScaleSetting, aznumeric_cast<double>(DefaultManipulatorViewBaseScale)));
     }
 
     void SetManipulatorViewBaseScale(const float scale)
     {
         SetRegistry(ManipulatorViewBaseScaleSetting, scale);
+    }
+
+    bool IconsVisible()
+    {
+        return GetRegistry(IconsVisibleSetting, true);
+    }
+
+    void SetIconsVisible(const bool visible)
+    {
+        SetRegistry(IconsVisibleSetting, visible);
+    }
+
+    bool HelpersVisible()
+    {
+        return GetRegistry(HelpersVisibleSetting, true);
+    }
+
+    void SetHelpersVisible(const bool visible)
+    {
+        SetRegistry(HelpersVisibleSetting, visible);
     }
 } // namespace AzToolsFramework

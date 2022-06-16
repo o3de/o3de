@@ -9,6 +9,7 @@
 set(FILES
     Include/Atom/RPI.Public/AssetInitBus.h
     Include/Atom/RPI.Public/Base.h
+    Include/Atom/RPI.Public/BlockCompression.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h
     Include/Atom/RPI.Public/FeatureProcessorFactory.h
@@ -63,6 +64,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/ParentPass.h
     Include/Atom/RPI.Public/Pass/Pass.h
     Include/Atom/RPI.Public/Pass/PassAttachment.h
+    Include/Atom/RPI.Public/Pass/PassTree.h
     Include/Atom/RPI.Public/Pass/PassDefines.h
     Include/Atom/RPI.Public/Pass/PassFactory.h
     Include/Atom/RPI.Public/Pass/PassFilter.h
@@ -73,6 +75,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/RasterPass.h
     Include/Atom/RPI.Public/Pass/RenderPass.h
     Include/Atom/RPI.Public/Pass/MSAAResolvePass.h
+    Include/Atom/RPI.Public/Pass/SlowClearPass.h
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
@@ -98,6 +101,7 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
@@ -141,6 +145,7 @@ set(FILES
     Source/RPI.Public/Pass/ParentPass.cpp
     Source/RPI.Public/Pass/Pass.cpp
     Source/RPI.Public/Pass/PassAttachment.cpp
+    Source/RPI.Public/Pass/PassTree.cpp
     Source/RPI.Public/Pass/PassFactory.cpp
     Source/RPI.Public/Pass/PassFilter.cpp
     Source/RPI.Public/Pass/PassLibrary.cpp
@@ -149,6 +154,7 @@ set(FILES
     Source/RPI.Public/Pass/RasterPass.cpp
     Source/RPI.Public/Pass/RenderPass.cpp
     Source/RPI.Public/Pass/MSAAResolvePass.cpp
+    Source/RPI.Public/Pass/SlowClearPass.cpp
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp

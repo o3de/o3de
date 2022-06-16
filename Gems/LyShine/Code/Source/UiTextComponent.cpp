@@ -23,7 +23,7 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/IRenderGraph.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <ILocalizationManager.h>
 
@@ -1105,7 +1105,7 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
     else
     {
         // Load the texture
-        m_texture = CDraw2d::LoadTexture(m_filepath);
+        m_texture = Draw2dHelper::LoadTexture(m_filepath);
         if (m_texture)
         {
             AZ::RHI::Size size = m_texture->GetDescriptor().m_size;
@@ -1157,7 +1157,7 @@ bool UiTextComponent::InlineImage::OnAtlasUnloaded(const TextureAtlasNamespace::
         else
         {
             // Load the texture
-            m_texture = CDraw2d::LoadTexture(m_filepath);
+            m_texture = Draw2dHelper::LoadTexture(m_filepath);
         }
         return true;
     }
@@ -2675,7 +2675,7 @@ void UiTextComponent::GetClickableTextRects(UiClickableTextInterface::ClickableT
         }
         else
         {
-            alignedPosition = CDraw2d::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
+            alignedPosition = Draw2dHelper::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
         }
 
         alignedPosition.SetY(alignedPosition.GetY() + newlinePosYIncrement);
@@ -4043,7 +4043,7 @@ void UiTextComponent::RenderDrawBatchLines(
         }
         else
         {
-            alignedPosition = CDraw2d::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
+            alignedPosition = Draw2dHelper::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
         }
 
         alignedPosition.SetY(alignedPosition.GetY() + newlinePosYIncrement);

@@ -18,6 +18,7 @@
 
 #include <CryCommon/TimeValue.h>
 #include <CryCommon/StaticInstance.h>
+#include <CryCommon/StlUtils.h>
 
 #include "IMovieSystem.h"
 #include "IShader.h"
@@ -192,7 +193,7 @@ public:
     void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) override;
     void SerializeParamType(CAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version) override;
 
-    static const char* GetParamTypeName(const CAnimParamType& animParamType);
+    const char* GetParamTypeName(const CAnimParamType& animParamType);
 
     void OnCameraCut();
 
@@ -289,6 +290,23 @@ private:
     uint32 m_nextSequenceId;
 
     void ShowPlayedSequencesDebug();
+
+
+    using AnimParamSystemString = AZStd::string;
+
+    template <typename KeyType, typename MappedType, typename Compare = stl::less_stricmp<KeyType>>
+    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<>>
+    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey>;
+
+    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> m_animNodeEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType> m_animNodeStringToEnumMap;
+
+    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> m_animParamEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType> m_animParamStringToEnumMap;
+
+    void RegisterNodeTypes();
+    void RegisterParamTypes();
 
 public:
     static float m_mov_cameraPrecacheTime;

@@ -122,14 +122,10 @@ namespace LyShine
         uint32_t isClampTextureMode = 0;
         for (int i = 0; i < m_numTextures; ++i)
         {
-            const AZ::RHI::ImageView* imageView = m_textures[i].m_texture ? m_textures[i].m_texture->GetImageView() : nullptr;
-
-            if (!imageView)
-            {
-                // Default to white texture
-                auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-                imageView = image->GetImageView();
-            }
+            // Default to white texture
+            const AZ::Data::Instance<AZ::RPI::Image>& image = m_textures[i].m_texture ? m_textures[i].m_texture
+                : AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+            const AZ::RHI::ImageView* imageView = image->GetImageView();
 
             if (imageView)
             {
@@ -138,6 +134,9 @@ namespace LyShine
                 {
                     isClampTextureMode |= (1 << i);
                 }
+#ifndef _RELEASE
+                uiRenderer->DebugUseTexture(image);
+#endif
             }
         }
 
@@ -510,6 +509,10 @@ namespace LyShine
             if (!m_dynamicDraw)
             {
                 m_dynamicDraw = uiRenderer->CreateDynamicDrawContextForRTT(GetRenderTargetName());
+                if (m_dynamicDraw)
+                {
+                    m_dynamicDraw->SetViewport(AZ::RHI::Viewport(0.0f, m_viewportWidth, 0.0f, m_viewportHeight));
+                }
             }
 
             if (m_dynamicDraw)
@@ -530,7 +533,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     const char* RenderTargetRenderNode::GetRenderTargetName() const
     {
-        return m_attachmentImage->GetRHIImage()->GetName().GetCStr();
+        return m_attachmentImage ? m_attachmentImage->GetRHIImage()->GetName().GetCStr() : "";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1009,7 +1012,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     bool RenderGraph::IsEmpty()
     {
-        return m_renderNodes.empty();
+        return m_renderNodes.empty() && m_renderTargetRenderNodes.empty();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

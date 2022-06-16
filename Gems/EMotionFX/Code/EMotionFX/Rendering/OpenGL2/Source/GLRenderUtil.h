@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __OPENGLRENDERUTIL_H
-#define __OPENGLRENDERUTIL_H
+#pragma once
 
 #include "RenderGLConfig.h"
 #include "../../Common/RenderUtil.h"
@@ -114,6 +113,3 @@ namespace RenderGL
         uint32                      m_maxNumTextures;
     };
 } // namespace RenderGL
-
-
-#endif

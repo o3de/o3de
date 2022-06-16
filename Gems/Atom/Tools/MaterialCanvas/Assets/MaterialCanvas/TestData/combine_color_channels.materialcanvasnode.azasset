@@ -1,0 +1,69 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Color Operations",
+        "title": "Combine Color Channels",
+        "inputSlots": [
+            {
+                "name": "inR",
+                "displayName": "R",
+                "description": "Red color channel",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
+            },
+            {
+                "name": "inG",
+                "displayName": "G",
+                "description": "Green color channel",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
+            },
+            {
+                "name": "inB",
+                "displayName": "B",
+                "description": "Blue color channel",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
+            },
+            {
+                "name": "inA",
+                "displayName": "A",
+                "description": "Alpha color channel",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "defaultValue": {
+                    "$type": "float",
+                    "Value": 1.0
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outColor",
+                "displayName": "Color",
+                "description": "Color",
+                "supportedDataTypes": [
+                    "Color"
+                ]
+            }
+        ]
+    }
+}

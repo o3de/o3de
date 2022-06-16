@@ -61,7 +61,7 @@ DEFAULT_CONFIG_CHANGES = [
 ]
 
 TEST_RUNNER_PROJECT = 'AzTestRunner'
-TEST_RUNNER_PACKAGE_NAME = 'com.lumberyard.tests'
+TEST_RUNNER_PACKAGE_NAME = 'org.o3de.tests'
 
 # Android Orientation Constants
 ORIENTATION_LANDSCAPE = 1 << 0
@@ -353,10 +353,15 @@ NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR = """
 
 CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
     task copyNativeLibs{config}(type: Copy) {{
+
+        logger.info('Deleting outputs/native-lib/{abi}')
         delete 'outputs/native-lib/{abi}'
 
         from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
         into  'outputs/native-lib/{abi}'
+        eachFile {{ 
+            logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
+        }}
     }}
 
     merge{config}JniLibFolders.dependsOn copyNativeLibs{config}
@@ -471,7 +476,8 @@ class AndroidProjectGenerator(object):
 
     def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
-                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, vulkan_validation_path, is_test_project=False,
+                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, vulkan_validation_path,
+                 extra_cmake_configure_args, is_test_project=False,
                  overwrite_existing=True, unity_build_enabled=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
@@ -497,6 +503,7 @@ class AndroidProjectGenerator(object):
         :param signing_config:          Optional signing configuration arguments
         :param native_build_path:       Override the native build staging path in gradle
         :param vulkan_validation_path:  Override the path to where the Vulkan Validation Layers libraries are (required when using NDK r23+)
+        :param extra_cmake_configure_args Additional arguments to supply cmake when configuring a project
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
         """
@@ -538,6 +545,8 @@ class AndroidProjectGenerator(object):
         self.native_build_path = native_build_path
 
         self.vulkan_validation_path = vulkan_validation_path
+
+        self.extra_cmake_configure_args = extra_cmake_configure_args
 
         self.asset_mode = asset_mode
 
@@ -843,6 +852,9 @@ class AndroidProjectGenerator(object):
 
             if self.override_ninja_path:
                 cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={common.normalize_path_for_settings(self.override_ninja_path)}"')
+
+            if self.extra_cmake_configure_args:
+                cmake_argument_list.extend(map(json.dumps, self.extra_cmake_configure_args))
 
             # Query the project_path from the project.json file
             project_name = common.read_project_name_from_project_json(self.project_path)

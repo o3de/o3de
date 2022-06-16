@@ -47,7 +47,7 @@ namespace LyShineExamples
         // Remove the existing example canvas if it exists
         DestroyCanvas();
 
-        AZ::EntityId canvasEntityId = gEnv->pLyShine->CreateCanvas();
+        AZ::EntityId canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvas();
         if (!canvasEntityId.IsValid())
         {
             return;
@@ -90,7 +90,7 @@ namespace LyShineExamples
 
             m_healthBar.SetInvalid();
 
-            gEnv->pLyShine->ReleaseCanvas(m_canvasId, false);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_canvasId, false);
             m_canvasId.SetInvalid();
         }
     }

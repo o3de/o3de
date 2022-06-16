@@ -141,6 +141,7 @@ namespace AZ
         void DynamicDrawContext::InitVertexFormat(const AZStd::vector<VertexChannel>& vertexChannels)
         {
             AZ_Assert(!m_initialized, "Can't call InitVertexFormat after context was initialized (EndInit was called)");
+            AZ_Assert(m_pipelineState, "Can't call InitVertexFormat before InitShader is called with a valid shader");
 
             m_perVertexDataSize = 0;
             RHI::InputStreamLayoutBuilder layoutBuilder;
@@ -150,7 +151,10 @@ namespace AZ
                 bufferBuilder->Channel(channel.m_channel, channel.m_format);
                 m_perVertexDataSize += RHI::GetFormatSize(channel.m_format);
             }
-            m_pipelineState->InputStreamLayout() = layoutBuilder.End();
+            if (m_pipelineState)
+            {
+                m_pipelineState->InputStreamLayout() = layoutBuilder.End();
+            }
         }
 
         void DynamicDrawContext::InitDrawListTag(RHI::DrawListTag drawListTag)

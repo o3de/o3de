@@ -9,8 +9,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <smartptr.h>
-
 namespace LmbrCentral
 {
     class MeshAsset

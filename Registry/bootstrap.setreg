@@ -12,6 +12,7 @@
                 "android_assets": "android",
                 "ios_assets": "ios",
                 "mac_assets": "mac",
+                "salem_assets": "salem",
                 "allowed_list": "",
                 "remote_ip": "127.0.0.1",
                 "remote_port": 45643,

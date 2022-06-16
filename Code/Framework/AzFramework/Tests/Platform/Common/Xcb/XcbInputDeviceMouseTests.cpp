@@ -186,9 +186,9 @@ namespace AzFramework
                 case XCB_BUTTON_INDEX_1:
                     return InputDeviceMouse::Button::Left;
                 case XCB_BUTTON_INDEX_2:
-                    return InputDeviceMouse::Button::Right;
-                case XCB_BUTTON_INDEX_3:
                     return InputDeviceMouse::Button::Middle;
+                case XCB_BUTTON_INDEX_3:
+                    return InputDeviceMouse::Button::Right;
             }
             return InputChannelId{};
         }
@@ -200,9 +200,9 @@ namespace AzFramework
             case XCB_BUTTON_INDEX_1:
                 return { InputDeviceMouse::Button::Right, InputDeviceMouse::Button::Middle, InputDeviceMouse::Button::Other1, InputDeviceMouse::Button::Other2 };
             case XCB_BUTTON_INDEX_2:
-                return { InputDeviceMouse::Button::Left, InputDeviceMouse::Button::Middle, InputDeviceMouse::Button::Other1, InputDeviceMouse::Button::Other2 };
-            case XCB_BUTTON_INDEX_3:
                 return { InputDeviceMouse::Button::Left, InputDeviceMouse::Button::Right, InputDeviceMouse::Button::Other1, InputDeviceMouse::Button::Other2 };
+            case XCB_BUTTON_INDEX_3:
+                return { InputDeviceMouse::Button::Left, InputDeviceMouse::Button::Middle, InputDeviceMouse::Button::Other1, InputDeviceMouse::Button::Other2 };
             case XCB_BUTTON_INDEX_4:
                 return { InputDeviceMouse::Button::Left, InputDeviceMouse::Button::Right, InputDeviceMouse::Button::Middle, InputDeviceMouse::Button::Other2 };
             case XCB_BUTTON_INDEX_5:

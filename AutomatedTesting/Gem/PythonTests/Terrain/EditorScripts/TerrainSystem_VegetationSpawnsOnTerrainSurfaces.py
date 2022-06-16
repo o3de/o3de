@@ -54,7 +54,6 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     """
 
     import os
-    import sys
     import math as sys_math
 
     import azlmbr.legacy.general as general
@@ -62,10 +61,8 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     import azlmbr.math as math
 
     import azlmbr.areasystem as areasystem
-    import azlmbr.editor as editor
     import azlmbr.vegetation as vegetation
     import azlmbr.terrain as terrain
-    import azlmbr.entity as EntityId
     import azlmbr.surface_data as surface_data
 
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -86,11 +83,8 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
 
         return highest_z, lowest_z
 
-    helper.init_idle()
-
     # Open an empty level.
-    helper.open_level("Physics", "Base")
-    helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+    hydra.open_base_level()
     
     general.idle_wait_frames(1)
 
@@ -207,6 +201,7 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     highest_z, lowest_z = FindHighestAndLowestZValuesInArea(test_aabb)
 
     Report.result(VegetationTests.testTag3_excluded_vegetation_z_correct, highest_z < box_height * gradient_value_2)
+
 
 if __name__ == "__main__":
 

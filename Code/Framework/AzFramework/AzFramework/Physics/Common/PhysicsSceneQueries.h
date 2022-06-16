@@ -17,6 +17,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 
 namespace AZ
 {
@@ -84,15 +85,7 @@ namespace AzPhysics
         };
 
         //! Bitwise operators for HitFlags
-        inline HitFlags operator|(HitFlags lhs, HitFlags rhs)
-        {
-            return static_cast<HitFlags>(static_cast<AZ::u16>(lhs) | static_cast<AZ::u16>(rhs));
-        }
-
-        inline HitFlags operator&(HitFlags lhs, HitFlags rhs)
-        {
-            return static_cast<HitFlags>(static_cast<AZ::u16>(lhs) & static_cast<AZ::u16>(rhs));
-        }
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(HitFlags)
 
         //! Flag used to mark which members are valid in a SceneQueryHit object.
         //! Example: if SceneQueryHit::m_resultFlags & ResultFlags::Distance is true,
@@ -109,21 +102,9 @@ namespace AzPhysics
             Position = (1 << 5),
             Normal = (1 << 6)
         };
+
         //! Bitwise operators for ResultFlags
-        inline ResultFlags operator|(ResultFlags lhs, ResultFlags rhs)
-        {
-            return static_cast<ResultFlags>(static_cast<AZ::u8>(lhs) | static_cast<AZ::u8>(rhs));
-        }
-
-        inline ResultFlags operator|=(ResultFlags& lhs, ResultFlags rhs)
-        {
-            return (lhs = (lhs | rhs));
-        }
-
-        inline ResultFlags operator&(ResultFlags lhs, ResultFlags rhs)
-        {
-            return static_cast<ResultFlags>(static_cast<AZ::u8>(lhs) & static_cast<AZ::u8>(rhs));
-        }
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(ResultFlags)
 
         //! Callback used for directed scene queries: RayCasts and ShapeCasts
         using FilterCallback = AZStd::function<QueryHitType(const SimulatedBody* body, const Physics::Shape* shape)>;
@@ -278,9 +259,9 @@ namespace AzPhysics
         //! The shape on the body that was hit.
         //! Valid if SceneQuery::ResultFlags::Shape is set.
         Physics::Shape* m_shape = nullptr;
-        //! The material on the shape (or face) that was hit.
+        //! The physics material id on the shape (or face) that was hit.
         //! Valid if SceneQuery::ResultFlags::Material is set.
-        Physics::Material* m_material = nullptr;
+        Physics::MaterialId m_physicsMaterialId;
         //! The position of the hit in world space.
         //! Valid if SceneQuery::ResultFlags::Position is set.
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();

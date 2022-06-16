@@ -9,10 +9,18 @@
             "Slots": [
                 {
                     "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "SlotType": "InputOutput"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "SwapChainOutput",
+                        "Slot": "SwapChainOutput"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -95,7 +103,14 @@
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
-                        }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA" 
+                            }
+                        }                           
                     ]
                 },
                 {
@@ -329,7 +344,7 @@
                                 "Pass": "DepthPrePass",
                                 "Attachment": "Depth"
                             }
-                        }                    
+                        }
                     ]
                 },
                 {

@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceDataShapeComponent.h"
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>
@@ -89,6 +89,7 @@ namespace SurfaceData
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached shape data and bounds, then register the surface data provider / modifier
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateShapeData();
     }
 
@@ -96,12 +97,12 @@ namespace SurfaceData
     {
         if (m_providerHandle != InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
         }
         if (m_modifierHandle != InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
             m_modifierHandle = InvalidSurfaceDataRegistryHandle;
 
         }
@@ -115,7 +116,7 @@ namespace SurfaceData
 
         // Clear the cached shape data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_shapeBounds = AZ::Aabb::CreateNull();
             m_shapeBoundsIsValid = false;
         }
@@ -143,50 +144,84 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-
-        if (m_shapeBoundsIsValid)
-        {
-            const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
-            const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-            float intersectionDistance = 0.0f;
-            bool hitShape = false;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
-            if (hitShape)
-            {
-                SurfacePoint point;
-                point.m_entityId = GetEntityId();
-                point.m_position = rayOrigin + intersectionDistance * rayDirection;
-                point.m_normal = AZ::Vector3::CreateAxisZ();
-                AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
-                surfacePointList.push_back(point);
-            }
-        }
+        GetSurfacePointsFromList(AZStd::span<const AZ::Vector3>(&inPosition, 1), surfacePointList);
     }
 
-    void SurfaceDataShapeComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
+    void SurfaceDataShapeComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
+
+        if (!m_shapeBoundsIsValid)
+        {
+            return;
+        }
+
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            GetEntityId(),
+            [this, inPositions, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
+            {
+                const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
+
+                // Shapes don't currently have a way to query normals at a point intersection, so we'll just return a Z-up normal
+                // until they get support for it.
+                const AZ::Vector3 surfacePointNormal = AZ::Vector3::CreateAxisZ();
+
+                for (auto& inPosition : inPositions)
+                {
+                    if (SurfaceData::AabbContains2D(m_shapeBounds, inPosition))
+                    {
+                        const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_shapeBounds.GetMax().GetZ());
+                        float intersectionDistance = 0.0f;
+                        bool hitShape = shape->IntersectRay(rayOrigin, rayDirection, intersectionDistance);
+                        if (hitShape)
+                        {
+                            AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
+                            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, surfacePointNormal, m_newPointWeights);
+                        }
+                    }
+                }
+            });
+    }
+
+
+    void SurfaceDataShapeComponent::ModifySurfacePoints(
+        AZStd::span<const AZ::Vector3> positions,
+        AZStd::span<const AZ::EntityId> creatorEntityIds,
+        AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid && !m_configuration.m_modifierTags.empty())
         {
             const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
+            LmbrCentral::ShapeComponentRequestsBus::Event(
+                entityId,
+                [entityId, this, positions, creatorEntityIds, &weights](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    bool inside = false;
-                    LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
-                    if (inside)
+                    for (size_t index = 0; index < positions.size(); index++)
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        // Don't bother modifying points that this component created.
+                        if (creatorEntityIds[index] == entityId)
+                        {
+                            continue;
+                        }
+
+                        if (m_shapeBounds.Contains(positions[index]) && shape->IsPointInside(positions[index]))
+                        {
+                            // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
+                            weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                        }
                     }
-                }
-            }
+                });
         }
     }
 
@@ -227,7 +262,7 @@ namespace SurfaceData
         bool shapeValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             shapeValidBeforeUpdate = m_shapeBoundsIsValid;
 
@@ -242,25 +277,27 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_shapeBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (shapeValidBeforeUpdate && shapeValidAfterUpdate)
         {
             // Our shape was valid before and after, it just changed in some way, so update our registry entries
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             AZ_Assert((m_modifierHandle != InvalidSurfaceDataRegistryHandle), "Invalid modifier data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataProvider, m_providerHandle, providerRegistryEntry);
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataModifier, m_modifierHandle, modifierRegistryEntry);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataProvider(m_providerHandle, providerRegistryEntry);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataModifier(m_modifierHandle, modifierRegistryEntry);
         }
         else if (!shapeValidBeforeUpdate && shapeValidAfterUpdate)
         {
             // Our shape has become valid, so register as a provider and save off the registry handles
             AZ_Assert((m_providerHandle == InvalidSurfaceDataRegistryHandle), "Surface Provider data handle is initialized before our shape became valid");
             AZ_Assert((m_modifierHandle == InvalidSurfaceDataRegistryHandle), "Surface Modifier data handle is initialized before our shape became valid");
-            SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
-            SurfaceDataSystemRequestBus::BroadcastResult(m_modifierHandle, &SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataModifier, modifierRegistryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(providerRegistryEntry);
+            m_modifierHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataModifier(modifierRegistryEntry);
 
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
@@ -273,8 +310,8 @@ namespace SurfaceData
             // Our shape has stopped being valid, so unregister and stop listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
             AZ_Assert((m_modifierHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
             m_modifierHandle = InvalidSurfaceDataRegistryHandle;
 

@@ -8,18 +8,19 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/function/function_fwd.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Math/Uuid.h>
-#include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ
 {
@@ -81,6 +82,10 @@ namespace AZ
 
             static AssetId CreateString(AZStd::string_view input);
             static void Reflect(ReflectContext* context);
+
+            static constexpr size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid size (includes terminal) + ":" + hex, subId
+            using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+            FixedString ToFixedString() const;
 
             Uuid m_guid;
             u32  m_subId;   ///< To allow easier and more consistent asset guid, we can provide asset sub ID. (i.e. Guid is a cubemap texture, subId is the index of the side)
@@ -144,19 +149,20 @@ namespace AZ
             /// Asset is loaded and ready for use.
             /// Note that the asset may be ready for use before the OnAssetReady
             /// event has been dispatched by the AssetBus on the main thread.
-            AZ_FORCE_INLINE bool IsReady() const
+            bool IsReady() const
             {
                 AssetStatus status = GetStatus();
                 return (status == AssetStatus::Ready || status == AssetStatus::ReadyPreNotify);
             }
 
             /// @return True if the asset status is Error or Canceled
-            AZ_FORCE_INLINE bool IsError() const { return GetStatus() == AssetStatus::Error; }
+            bool IsError() const { return GetStatus() == AssetStatus::Error; }
             bool IsLoading(bool includeQueued = true) const;
-            AZ_FORCE_INLINE AssetStatus GetStatus() const { return m_status.load(); }
-            AZ_FORCE_INLINE const AssetId& GetId() const { return m_assetId; }
-            AZ_FORCE_INLINE const AssetType& GetType() const { return RTTI_GetType(); }
-            AZ_FORCE_INLINE int GetUseCount() const { return m_useCount.load(); }
+            AssetStatus GetStatus() const { return m_status.load(); }
+            const AssetId& GetId() const { return m_assetId; }
+            const AssetType& GetType() const { return RTTI_GetType(); }
+            int GetUseCount() const { return m_useCount.load(); }
+            int GetCreationToken() const { return m_creationToken; }
 
         protected:
             /**
@@ -257,11 +263,11 @@ namespace AZ
             {
             }
             AssetFilterCB m_assetLoadFilterCB{ nullptr };
-            AZStd::optional<AZStd::chrono::milliseconds> m_deadline{ };
+            AZStd::optional<AZ::IO::IStreamerTypes::Deadline> m_deadline{};
             AZStd::optional<IO::IStreamerTypes::Priority> m_priority{ };
             AssetDependencyLoadRules m_dependencyRules{ AssetDependencyLoadRules::Default };
             // If the asset we're requesting is already loaded and we don't want to check for any
-            // depenencies that need loading, leave this as true.  If you wish to force a clean evaluation
+            // dependencies that need loading, leave this as true.  If you wish to force a clean evaluation
             // for dependent assets set to false
             bool m_reloadMissingDependencies{ false };
             bool operator==(const AssetLoadParameters& rhs) const
@@ -1036,13 +1042,11 @@ namespace AZ
             if (assetData && !assetData->RTTI_IsTypeOf(AzTypeInfo<T>::Uuid()))
             {
 #ifdef AZ_ENABLE_TRACING
-                char assetDataIdGUIDStr[Uuid::MaxStringBuffer];
-                char assetTypeIdGUIDStr[Uuid::MaxStringBuffer];
-                assetData->GetId().m_guid.ToString(assetDataIdGUIDStr, AZ_ARRAY_SIZE(assetDataIdGUIDStr));
-                AzTypeInfo<T>::Uuid().ToString(assetTypeIdGUIDStr, AZ_ARRAY_SIZE(assetTypeIdGUIDStr));
-                AZ_Error("AssetDatabase", false, "Asset of type %s:%x (%s) is not related to %s (%s)!",
-                    assetData->GetType().ToString<AZStd::string>().c_str(), assetData->GetId().m_subId, assetDataIdGUIDStr,
-                    AzTypeInfo<T>::Name(), assetTypeIdGUIDStr);
+                AZ_Error("AssetDatabase", false, "Asset: %s TypeId: %s, is not related to Type: %s (%s)!"
+                    , assetData->GetId().ToFixedString().c_str()
+                    , assetData->GetType().ToFixedString().c_str()
+                    , AzTypeInfo<T>::Name()
+                    , AzTypeInfo<T>::Uuid().ToFixedString().c_str());
 #endif // AZ_ENABLE_TRACING
                 m_assetId = AssetId();
                 m_assetType = azrtti_typeid<T>();
@@ -1250,7 +1254,7 @@ namespace AZStd
     {
         typedef AZ::Uuid    argument_type;
         typedef size_t      result_type;
-        AZ_FORCE_INLINE size_t operator()(const AZ::Data::AssetId& id) const
+        size_t operator()(const AZ::Data::AssetId& id) const
         {
             // use the subId here because otherwise you suffer performance problems if one source has a lot of products (same guid, varying subid)
             return id.m_guid.GetHash() ^ static_cast<size_t>(id.m_subId);

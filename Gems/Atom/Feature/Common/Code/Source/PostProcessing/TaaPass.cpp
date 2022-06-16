@@ -55,7 +55,7 @@ namespace AZ::Render
         };
 
         TaaConstants cb;
-        RHI::Size inputSize = m_lastFrameAccumulationBinding->m_attachment->m_descriptor.m_image.m_size;
+        RHI::Size inputSize = m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
         cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
@@ -75,7 +75,7 @@ namespace AZ::Render
     
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
-        RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
+        RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
         Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
@@ -133,7 +133,7 @@ namespace AZ::Render
 
         // Set up the attachment for last frame accumulation and output color if it's never been done to
         // ensure SRG indices are set up correctly by the pass system.
-        if (m_lastFrameAccumulationBinding->m_attachment == nullptr)
+        if (m_lastFrameAccumulationBinding->GetAttachment() == nullptr)
         {
             m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[0]);
             m_outputColorBinding->SetAttachment(m_accumulationAttachments[1]);

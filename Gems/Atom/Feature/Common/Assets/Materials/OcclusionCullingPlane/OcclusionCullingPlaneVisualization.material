@@ -1,22 +1,20 @@
 {
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "general": {
-            "enableShadows": false,
-            "enableDirectionalLights": false,
-            "enablePunctualLights": false,
-            "enableAreaLights": false,
-            "enableIBL":  true
-        },
-        "baseColor": {
-           "color": [ 0.0, 1.0, 0.0 ]
-        },
-        "opacity": {
-            "alphaSource": "None",
-            "doubleSided": true,
-            "factor": 1.0,
-            "mode": "TintedTransparent"
-        }
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.color": [
+            0.0,
+            1.0,
+            0.0,
+            1.0
+        ],
+        "general.doubleSided": true,
+        "general.enableAreaLights": false,
+        "general.enableDirectionalLights": false,
+        "general.enablePunctualLights": false,
+        "general.enableShadows": false,
+        "opacity.alphaSource": "None",
+        "opacity.factor": 1.0,
+        "opacity.mode": "TintedTransparent"
     }
 }

@@ -1,0 +1,31 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MeshletsComputePassTemplate",
+            "PassClass": "MultiDispatchComputePass",
+            "Slots": [
+                {
+                    "Name": "MeshletsSharedBuffer",
+                    "ShaderInputName": "m_meshletsSharedBuffer",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/MeshletsCompute.shader"
+                }
+            },
+            "Connections": [
+            ]
+        }
+    }
+}

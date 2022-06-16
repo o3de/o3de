@@ -43,15 +43,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maxmum Exposure", "Maximum exposure value for the auto exposure.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maximum Exposure", "Maximum exposure value for the auto exposure.")
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapates to bright scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapts to bright scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapates to dark scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapts to dark scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
@@ -72,7 +72,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightConfig::m_direction, "Direction", "")
                         ->DataElement(Edit::UIHandlers::Color, &LightConfig::m_color, "Color", "Color of the light")
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
@@ -107,7 +107,6 @@ namespace AZ
                         "LightingPreset", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_displayName, "Display Name", "Identifier used for display and selection")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblDiffuseImageAsset, "IBL Diffuse Image Asset", "IBL diffuse image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_iblSpecularImageAsset, "IBL Specular Image Asset", "IBL specular image asset reference")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &LightingPreset::m_iblExposure, "IBL exposure", "IBL exposure")

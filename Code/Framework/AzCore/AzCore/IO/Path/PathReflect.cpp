@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/Json/PathSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/functional.h>
 
@@ -35,10 +37,8 @@ namespace AZ::IO
         size_t Save(const void* classPtr, IO::GenericStream& stream, bool) override
         {
             /// Save paths out using the PosixPathSeparator
-            PathType path(reinterpret_cast<const PathType*>(classPtr)->Native(), AZ::IO::PosixPathSeparator);
-            path.MakePreferred();
-
-            return static_cast<size_t>(stream.Write(path.Native().size(), path.c_str()));
+            auto posixPathString{ reinterpret_cast<const PathType*>(classPtr)->AsPosix() };
+            return static_cast<size_t>(stream.Write(posixPathString.size(), posixPathString.c_str()));
         }
 
         bool Load(void* classPtr, IO::GenericStream& stream, unsigned int, bool) override
@@ -72,6 +72,12 @@ namespace AZ::IO
                 ->Serializer(AZ::SerializeContext::IDataSerializerPtr{ new PathSerializer<FixedMaxPath>{},
                 AZ::SerializeContext::IDataSerializer::CreateDefaultDeleteDeleter() })
                 ;
+        }
+        else if (auto jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<JsonPathSerializer>()
+                ->HandlesType<Path>()
+                ->HandlesType<FixedMaxPath>();
         }
     }
 }

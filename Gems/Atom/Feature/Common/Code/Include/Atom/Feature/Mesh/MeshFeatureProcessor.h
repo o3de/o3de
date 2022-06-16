@@ -76,6 +76,8 @@ namespace AZ
             void BuildDrawPacketList(size_t modelLodIndex);
             void SetRayTracingData();
             void RemoveRayTracingData();
+            void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
+                    const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
@@ -86,10 +88,9 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
+            
+            MeshDrawPacketLods m_drawPacketListsByLod;
 
-            using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-
-            AZStd::fixed_vector<DrawPacketList, RPI::ModelLodAsset::LodCountMax> m_drawPacketListsByLod;
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
 
@@ -142,6 +143,7 @@ namespace AZ
             void OnBeginPrepareRender() override;
             void OnEndPrepareRender() override;
 
+            TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override;
             MeshHandle AcquireMesh(
                 const MeshHandleDescriptor& descriptor,
                 const MaterialAssignmentMap& materials = {}) override;
@@ -153,6 +155,7 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
+            const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
@@ -176,6 +179,7 @@ namespace AZ
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
+            bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
@@ -200,6 +204,7 @@ namespace AZ
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
+            MeshDrawPacketLods m_emptyDrawPacketLods;
             bool m_forceRebuildDrawPackets = false;
         };
     } // namespace Render

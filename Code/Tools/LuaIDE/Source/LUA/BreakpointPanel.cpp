@@ -140,7 +140,7 @@ void DHBreakpointsWidget::CreateBreakpoint(const AZStd::string& debugName, int l
     QTableWidgetItem* newItem = new QTableWidgetItem(debugName.c_str());
     newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     setItem(newRow, 1, newItem);
-    newItem = new QTableWidgetItem(QString().setNum(lineNumber + 1));  // +1 offset to match editor numbering
+    newItem = new QTableWidgetItem(QString().setNum(lineNumber));
     newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     setItem(newRow, 0, newItem);
 }
@@ -185,5 +185,5 @@ void DHBreakpointsWidget::RemoveRow(int which)
     QByteArray fileName = file->data(Qt::DisplayRole).toString().toUtf8().data();
     int lineNumber = line->data(Qt::DisplayRole).toInt();
 
-    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestDeleteBreakpoint, AZStd::string(fileName), lineNumber);
+    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestDeleteBreakpoint, AZStd::string(fileName.constData()), lineNumber);
 }

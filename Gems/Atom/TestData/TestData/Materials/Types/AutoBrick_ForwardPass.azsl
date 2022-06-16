@@ -28,12 +28,11 @@ struct VSInput
 
 struct VSOutput
 {
-    float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
     float2 m_uv : UV1;
 };
 
@@ -179,9 +178,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
-    // Clear Coat, Transmission
+    // Clear Coat
     surface.clearCoat.InitializeToZero();
-    surface.transmission.InitializeToZero();
 
     // ------- LightingData -------
 
@@ -192,7 +190,6 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow
-    lightingData.shadowCoords = IN.m_shadowCoords;
     lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;
 
     // Diffuse and Specular response
@@ -207,13 +204,13 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
+    lightingData.FinalizeLighting();
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

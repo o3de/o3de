@@ -10,7 +10,6 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 #include <SceneAPI/SceneCore/Components/Utilities/EntityConstructor.h>
@@ -159,8 +158,10 @@ namespace AZ
                 }
 
                 ManifestAction action = ManifestAction::Update;
-                // If the result for manifest is ignored it means no manifest was found.
-                if (filesLoaded.GetManifestResult() == ProcessingResult::Failure || filesLoaded.GetManifestResult() == ProcessingResult::Ignored)
+                // If the result for manifest is ignored it means no manifest was found or it was empty.
+                if (filesLoaded.GetManifestResult() == ProcessingResult::Failure ||
+                    filesLoaded.GetManifestResult() == ProcessingResult::Ignored ||
+                    scene->GetManifest().IsEmpty())
                 {
                     scene->GetManifest().Clear();
                     action = ManifestAction::ConstructDefault;

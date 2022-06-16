@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED
 
@@ -18,78 +18,11 @@ if(NOT PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED)
     return()
 endif()
 
-
-ly_add_target(
-    NAME MaterialEditor.Document STATIC
-    NAMESPACE Gem
-    AUTOMOC
-    FILES_CMAKE
-        materialeditordocument_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
-)
-
-ly_add_target(
-    NAME MaterialEditor.Window STATIC
-    NAMESPACE Gem
-    AUTOMOC
-    AUTOUIC
-    AUTORCC
-    FILES_CMAKE
-        materialeditorwindow_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Public
-)
-
-ly_add_target(
-    NAME MaterialEditor.Viewport STATIC
-    NAMESPACE Gem
-    AUTOMOC
-    AUTOUIC
-   FILES_CMAKE
-        materialeditorviewport_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-        Public
-            Include
-    BUILD_DEPENDENCIES
-        PUBLIC
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RHI.Public
-            Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Static
-            Gem::Atom_Component_DebugCamera.Static
-            Gem::AtomLyIntegration_CommonFeatures.Static
-)
-
 ly_add_target(
     NAME MaterialEditor EXECUTABLE
     NAMESPACE Gem
     AUTOMOC
+    AUTORCC
     FILES_CMAKE
         materialeditor_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -104,14 +37,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AtomToolsFramework.Static
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::AtomToolsFramework.Editor
-            Gem::MaterialEditor.Window
-            Gem::MaterialEditor.Viewport
-            Gem::MaterialEditor.Document
+            Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)

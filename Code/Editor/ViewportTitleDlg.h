@@ -52,7 +52,7 @@ public:
     void SetViewPane(CLayoutViewPane* pViewPane);
     void SetTitle(const QString& title);
     void OnViewportSizeChanged(int width, int height);
-    void OnViewportFOVChanged(float fov);
+    void OnViewportFOVChanged(float fovRadians);
 
     static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
     static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
@@ -70,6 +70,8 @@ public:
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
 
+    void InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
+
 Q_SIGNALS:
     void ActionTriggered(int command);
 
@@ -80,7 +82,6 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
-    void OnToggleHelpers();
     void UpdateDisplayInfo();
 
     void SetupCameraDropdownMenu();
@@ -111,7 +112,6 @@ protected:
 
     double m_fieldWidthMultiplier = 1.8;
 
-
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();
@@ -141,8 +141,8 @@ protected:
 
     void CheckForCameraSpeedUpdate();
 
-    void OnGridSnappingToggled();
-    void OnAngleSnappingToggled();
+    void OnGridSnappingToggled(int state);
+    void OnAngleSnappingToggled(int state);
 
     void OnGridSpinBoxChanged(double value);
     void OnAngleSpinBoxChanged(double value);
@@ -153,13 +153,17 @@ protected:
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
+    QMenu* m_helpersMenu = nullptr;
+    QAction* m_helpersAction = nullptr;
+    QAction* m_iconsAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
-    QAction* m_enableGridSnappingAction = nullptr;
-    QAction* m_enableAngleSnappingAction = nullptr;
+    QCheckBox* m_enableGridSnappingCheckBox = nullptr;
+    QCheckBox* m_enableGridVisualizationCheckBox = nullptr;
+    QCheckBox* m_enableAngleSnappingCheckBox = nullptr;
     QComboBox* m_cameraSpeed = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
@@ -173,7 +177,7 @@ protected:
 
 namespace AzToolsFramework
 {
-    //! A component to reflect scriptable commands for the Editor
+    //! A component to reflect scriptable commands for the Editor.
     class ViewportTitleDlgPythonFuncsHandler
         : public AZ::Component
     {

@@ -24,7 +24,6 @@ namespace AZ
      */
     class OSAllocator
         : public AllocatorBase
-        , public IAllocatorAllocate
     {
     public:
         AZ_TYPE_INFO(OSAllocator, "{9F835EE3-F23C-454E-B4E3-011E2F3C8118}")
@@ -39,7 +38,7 @@ namespace AZ
         {
             Descriptor()
                 : m_custom(0) {}
-            IAllocatorAllocate*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HeapScheme will be used with the provided Descriptor.
+            IAllocatorSchema*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HeapScheme will be used with the provided Descriptor.
         };
 
         bool Create(const Descriptor& desc);
@@ -51,7 +50,7 @@ namespace AZ
         AllocatorDebugConfig GetDebugConfig() override;
 
         //////////////////////////////////////////////////////////////////////////
-        // IAllocatorAllocate
+        // IAllocatorSchema
         pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
         void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
         size_type       Resize(pointer_type ptr, size_type newSize) override { return m_custom ? m_custom->Resize(ptr, newSize) : 0; }
@@ -62,13 +61,12 @@ namespace AZ
         size_type       Capacity() const override                { return m_custom ? m_custom->Capacity() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
         size_type       GetMaxAllocationSize() const override    { return m_custom ? m_custom->GetMaxAllocationSize() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
         size_type       GetMaxContiguousAllocationSize() const override { return m_custom ? m_custom->GetMaxContiguousAllocationSize() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited
-        IAllocatorAllocate*  GetSubAllocator() override          { return m_custom ? m_custom : NULL; }
          
     protected:
         OSAllocator(const OSAllocator&);
         OSAllocator& operator=(const OSAllocator&);
 
-        IAllocatorAllocate*     m_custom;
+        IAllocatorSchema*     m_custom;
         size_type               m_numAllocatedBytes;
     };
 

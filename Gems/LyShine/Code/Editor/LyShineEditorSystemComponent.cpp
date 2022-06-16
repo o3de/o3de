@@ -211,9 +211,9 @@ namespace LyShineEditor
     void LyShineEditorSystemComponent::OnStopPlayInEditor()
     {
         // reset UI system
-        if (gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            gEnv->pLyShine->Reset();
+            AZ::Interface<ILyShine>::Get()->Reset();
         }
     }
 }

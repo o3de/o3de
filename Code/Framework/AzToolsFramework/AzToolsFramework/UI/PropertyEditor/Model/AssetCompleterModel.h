@@ -10,12 +10,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #endif
 
 namespace AzToolsFramework
 {
     using namespace AzToolsFramework::AssetBrowser;
-    
+
     //! Model storing all the files that can be suggested in the Asset Autocompleter for PropertyAssetCtrl
     class AssetCompleterModel
         : public QAbstractTableModel
@@ -31,7 +32,8 @@ namespace AzToolsFramework
         int columnCount(const QModelIndex &parent = QModelIndex()) const override;
         QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-        void SetFilter(AZ::Data::AssetType filterType);
+        void SetFilter(const AZ::Data::AssetType& assetType);
+        void SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
         void SetFilter(FilterConstType filter);
         void RefreshAssetList();
         void SearchStringHighlight(QString searchString);
@@ -45,7 +47,7 @@ namespace AzToolsFramework
         void SetFetchEntryType(AssetBrowserEntry::AssetEntryType entryType);
 
     private:
-        struct AssetItem 
+        struct AssetItem
         {
             AZStd::string m_displayName;
             AZStd::string m_path;

@@ -6,10 +6,6 @@
  *
  */
 
-#include <Material/EditorMaterialModelUvNameMapInspector.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
@@ -19,11 +15,13 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <Material/EditorMaterialModelUvNameMapInspector.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -47,15 +45,16 @@ namespace AZ
                 const RPI::MaterialModelUvOverrideMap& matModUvOverrides,
                 const AZStd::unordered_set<AZ::Name>& modelUvNames,
                 MaterialModelUvOverrideMapChangedCallBack matModUvOverrideMapChangedCallBack,
-                QWidget* parent
-            )
+                QWidget* parent)
                 : AtomToolsFramework::InspectorWidget(parent)
                 , m_matModUvOverrideMapChangedCallBack(matModUvOverrideMapChangedCallBack)
                 , m_matModUvOverrides(matModUvOverrides)
             {
                 // Load the originating product asset from which the new source has set will be generated
                 auto materialAssetOutcome = AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::MaterialAsset>(assetId);
-                AZ_Error("AZ::Render::EditorMaterialComponentInspector", materialAssetOutcome, "Failed to load material asset: %s", assetId.ToString<AZStd::string>().c_str());
+                AZ_Error(
+                    "AZ::Render::EditorMaterialComponentInspector", materialAssetOutcome, "Failed to load material asset: %s",
+                    assetId.ToString<AZStd::string>().c_str());
 
                 auto materialAsset = materialAssetOutcome.GetValue();
 
@@ -68,12 +67,13 @@ namespace AZ
 
             MaterialModelUvNameMapInspector::~MaterialModelUvNameMapInspector()
             {
-                AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
             }
 
             void MaterialModelUvNameMapInspector::Reset()
             {
-                AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
+                m_activeProperty = {};
+                m_group = {};
+
                 AtomToolsFramework::InspectorWidget::Reset();
             }
 
@@ -96,7 +96,7 @@ namespace AZ
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput).GetFullName();
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput);
                     propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
                     propertyConfig.m_description = shaderInput;
@@ -119,7 +119,7 @@ namespace AZ
                 // For some reason the reflected property editor notifications are not symmetrical
                 // This function is called continuously anytime a property changes until the edit has completed
                 // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property && m_activeProperty != property)
                 {
                     m_activeProperty = property;
@@ -128,7 +128,7 @@ namespace AZ
 
             void MaterialModelUvNameMapInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
             {
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property && m_activeProperty == property)
                 {
                     uint32_t index = 0;
@@ -159,7 +159,7 @@ namespace AZ
             {
                 // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
                 // when this function executes the changes to the property are ready to be committed or reverted
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
+                const auto property = AtomToolsFramework::FindAncestorInstanceDataNodeByType<AtomToolsFramework::DynamicProperty>(pNode);
                 if (property && m_activeProperty == property)
                 {
                     uint32_t index = 0;
@@ -248,7 +248,7 @@ namespace AZ
                     const AZStd::string materialUvName = m_materialUvNames[i].m_uvName.GetStringView();
 
                     propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Enum;
-                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput).GetFullName();
+                    propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInput);
                     propertyConfig.m_name = shaderInput;
                     propertyConfig.m_displayName = materialUvName;
                     propertyConfig.m_description = shaderInput;

@@ -25,6 +25,11 @@ public:
         m_credentialHandler = AZStd::make_unique<AWSCVarCredentialHandler>();
     }
 
+    void TearDown() override
+    {
+        m_credentialHandler.reset();
+    }
+
     AZStd::unique_ptr<AWSCVarCredentialHandler> m_credentialHandler;
 };
 

@@ -106,7 +106,7 @@ namespace AZ
             return m_inputs[inputIndex.GetIndex()];
         }
 
-        AZStd::array_view<ShaderInputConstantDescriptor> ConstantsLayout::GetShaderInputList() const
+        AZStd::span<const ShaderInputConstantDescriptor> ConstantsLayout::GetShaderInputList() const
         {
             return m_inputs;
         }
@@ -145,7 +145,7 @@ namespace AZ
             return true;
         }
 
-        void ConstantsLayout::DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const
+        void ConstantsLayout::DebugPrintNames(AZStd::span<const ShaderInputConstantIndex> constantList) const
         {
             AZStd::string output;
             for (const ShaderInputConstantIndex& constantIdx : constantList)

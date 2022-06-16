@@ -20,9 +20,11 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
+#include <TestAutoGenFunctionRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
 #include <Nodes/Nodeables/SharedDataSlotExample.h>
 #include <Nodes/Nodeables/ValuePointerReferenceExample.h>
+#include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
@@ -89,6 +91,16 @@ namespace ScriptCanvasTests
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
+            // Set the @gemroot:<gem-name> alias for active gems
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                AZ::Test::AddActiveGem("ScriptCanvasTesting", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("GraphCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
+            }
             
             AZ::TickBus::AllowFunctionQueuing(true);
 
@@ -118,6 +130,8 @@ namespace ScriptCanvasTests
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
             ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+            REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+            REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, m_behaviorContext);
         }
 
         static void TearDownTestCase()

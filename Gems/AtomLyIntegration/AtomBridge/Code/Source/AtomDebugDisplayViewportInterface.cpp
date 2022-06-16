@@ -330,32 +330,15 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(float r, float g, float b, float a)
-    {
-        m_rendState.m_color = AZ::Color(r, g, b, a);
-    }
-
     void AtomDebugDisplayViewportInterface::SetColor(const AZ::Color& color)
     {
         m_rendState.m_color = color;
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(const AZ::Vector4& color)
-    {
-        m_rendState.m_color = AZ::Color(color);
-    }
-
     void AtomDebugDisplayViewportInterface::SetAlpha(float a)
     {
         m_rendState.m_color.SetA(a);
-        if (a < 1.0f)
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
-        }
-        else
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
-        }
+        m_rendState.m_opacityType = a < 1.0f ? AZ::RPI::AuxGeomDraw::OpacityType::Translucent : AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuad(

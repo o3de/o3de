@@ -373,8 +373,8 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     public:
-        using Handler = Handler<Bus>;
-        using MultiHandlerById = MultiHandlerById<Bus>;
+        using BusHandler = Handler<Bus>;
+        using BusMultiHandlerById = MultiHandlerById<Bus>;
 
         EBusTestAll()
         {
@@ -402,7 +402,7 @@ namespace UnitTest
             {
                 for (int handler = 0; handler < numHandlersPerAddress; ++handler)
                 {
-                    m_handlers[address].emplace_back(aznew Handler(address, connectOnConstruct));
+                    m_handlers[address].emplace_back(aznew BusHandler(address, connectOnConstruct));
                     ++m_numHandlers;
                 }
             }
@@ -429,7 +429,7 @@ namespace UnitTest
         {
             for (const auto& handlerPair : m_handlers)
             {
-                for (Handler* handler : handlerPair.second)
+                for (BusHandler* handler : handlerPair.second)
                 {
                     delete handler;
                 }
@@ -452,7 +452,7 @@ namespace UnitTest
             if (AddressesAreOrdered())
             {
                 // Collect the first handler from each address
-                using PairType = AZStd::pair<int, Handler*>;
+                using PairType = AZStd::pair<int, BusHandler*>;
                 AZStd::vector<PairType> sortedHandlers;
                 for (const auto& handlerPair : m_handlers)
                 {
@@ -495,7 +495,7 @@ namespace UnitTest
         {
             auto& handlers = m_handlers[id];
 
-            for (Handler* handler : handlers)
+            for (BusHandler* handler : handlers)
             {
                 EXPECT_EQ(expected, handler->m_eventCalls);
             }
@@ -505,11 +505,11 @@ namespace UnitTest
             {
                 // Sort the handlers the same way we expect the bus to sort them
                 auto sortedHandlers = handlers;
-                AZStd::sort(sortedHandlers.begin(), sortedHandlers.end(), AZStd::bind(&Handler::Compare, AZStd::placeholders::_1, AZStd::placeholders::_2));
+                AZStd::sort(sortedHandlers.begin(), sortedHandlers.end(), AZStd::bind(&BusHandler::Compare, AZStd::placeholders::_1, AZStd::placeholders::_2));
 
                 // Iterate over the list, and validate that they were called in the correct order
                 unsigned int lastExecuted = 0;
-                for (const Handler* handler : sortedHandlers)
+                for (const BusHandler* handler : sortedHandlers)
                 {
                     if (lastExecuted > 0)
                     {
@@ -550,7 +550,7 @@ namespace UnitTest
         }
 
     protected:
-        AZStd::unordered_map<int, AZStd::vector<Handler*>> m_handlers;
+        AZStd::unordered_map<int, AZStd::vector<BusHandler*>> m_handlers;
         int m_numHandlers = 0;
     };
     TYPED_TEST_CASE(EBusTestAll, BusTypesAll);
@@ -578,7 +578,7 @@ namespace UnitTest
     TYPED_TEST(EBusTestAll, ConnectDisconnect)
     {
         using Bus = TypeParam;
-        using Handler = typename EBusTestAll<Bus>::Handler;
+        using Handler = typename EBusTestAll<Bus>::BusHandler;
 
         constexpr bool connectOnConstruct{ true };
         Handler meh(0, connectOnConstruct);
@@ -602,13 +602,13 @@ namespace UnitTest
     TYPED_TEST(EBusTestIdMultiHandlers, EnumerateHandlers_MultiHandler)
     {
         using Bus = TypeParam;
-        using MultiHandlerById = typename EBusTestAll<Bus>::MultiHandlerById;
+        using BusMultiHandlerById = typename EBusTestAll<Bus>::BusMultiHandlerById;
 
-        MultiHandlerById sourceMultiHandler{ 0, 1, 2 };
-        MultiHandlerById multiHandlerWithOverlappingIds{ 1, 3, 5 };
+        BusMultiHandlerById sourceMultiHandler{ 0, 1, 2 };
+        BusMultiHandlerById multiHandlerWithOverlappingIds{ 1, 3, 5 };
 
         // Test handlers' enumeration functionality
-        Bus::EnumerateHandlers([](typename MultiHandlerById::Interface* interfaceInst) -> bool
+        Bus::EnumerateHandlers([](typename BusMultiHandlerById::Interface* interfaceInst) -> bool
         {
             interfaceInst->OnEvent();
             return true;
@@ -618,7 +618,7 @@ namespace UnitTest
     TYPED_TEST(EBusTestId, FindFirstHandler)
     {
         using Bus = TypeParam;
-        using Handler = typename EBusTestAll<Bus>::Handler;
+        using Handler = typename EBusTestAll<Bus>::BusHandler;
         constexpr bool connectOnConstruct{ true };
         Handler meh0(0, connectOnConstruct);  /// <-- Bind to bus 0
         Handler meh1(1, connectOnConstruct);  /// <-- Bind to bus 1
@@ -2676,7 +2676,7 @@ namespace UnitTest
             m_val = x + (y * z);
             if (m_maxSleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(m_val % m_maxSleep));
             }
         }
     };
@@ -2696,10 +2696,11 @@ namespace UnitTest
             char* end = sentinel + AZ_ARRAY_SIZE(sentinel);
             for (int i = 1; i < cycleCount; ++i)
             {
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // Calculate() already includes a modulo-cycled sleep, add more random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
                 LocklessBus::Broadcast(&LocklessBus::Events::Calculate, i, i * 2, i << 4);
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
@@ -2804,7 +2805,7 @@ namespace UnitTest
                 m_val = x + (y * z);
                 if (m_maxSleep)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(m_val % m_maxSleep));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(m_val % m_maxSleep));
                 }
             }
 
@@ -2847,10 +2848,11 @@ namespace UnitTest
 
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoConnect);
 
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // Calculate() already includes a modulo-cycled sleep, add more random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
 
                 MyEventGroupBus::Event(id, &MyEventGroupBus::Events::Calculate, i, i * 2, i << 4);
@@ -2858,7 +2860,7 @@ namespace UnitTest
                 LocklessConnectorBus::Event(id, &LocklessConnectorBus::Events::DoDisconnect);
 
                 bool failed = (AZStd::find_if(&sentinel[0], end, [](char s) { return s != 0; }) != end);
-                EXPECT_FALSE(failed);
+                EXPECT_FALSE(failed) << "sentinel memory unexpectedly tampered with while handling EBus events";
             }
         };
 
@@ -2929,10 +2931,11 @@ namespace UnitTest
             {
                 handler.DoConnect();
 
-                uint32_t ms = maxSleep ? rand() % maxSleep : 0;
-                if (ms % 3)
+                // add random jitter
+                uint32_t extraSleep_us = maxSleep ? rand() % maxSleep : 0;
+                if (extraSleep_us % 3)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
 
                 handler.DoDisconnect();
@@ -2995,11 +2998,12 @@ namespace UnitTest
         {
             for (int i = 0; i < cycleCount; ++i)
             {
+                // add random jitter
                 constexpr int maxSleep = 3;
-                uint32_t ms = rand() % maxSleep;
-                if (ms != 0)
+                uint32_t extraSleep_us = rand() % maxSleep;
+                if (extraSleep_us != 0)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(ms));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(extraSleep_us));
                 }
                 LocklessNullMutexBus::Broadcast(&LocklessNullMutexBus::Events::AtomicIncrement);
             }
@@ -3507,14 +3511,14 @@ namespace UnitTest
         {
             static void Connect(typename Bus::BusPtr&, typename Bus::Context&, typename Bus::HandlerNode& handler, typename Bus::Context::ConnectLockGuard& connectLock, const typename Bus::BusIdType&)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(handler->GetPreUnlockDelay()));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(handler->GetPreUnlockDelay()));
 
                 if (handler->ShouldUnlock())
                 {
                     connectLock.unlock();
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(handler->GetPostUnlockDelay()));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(handler->GetPostUnlockDelay()));
                 handler->MessageWhichOccursDuringConnect();
             }
         };
@@ -4180,6 +4184,124 @@ namespace UnitTest
         EXPECT_EQ(totalThreadDispatchCalls, ThreadDispatchTestBusTraits::s_threadPostDispatchCalls);
         ThreadDispatchTestBusTraits::s_threadPostDispatchCalls = 0;
     }
+
+
+    struct ReentrantEBusUseTestRequests : public AZ::EBusTraits
+    {
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        using BusIdType = int32_t;
+
+        // This event will directly call itself recursively via EBus.
+        virtual void EventDirectlyCallsItself(bool expectedReentrantResult) = 0;
+
+        // The first event will call the second event via EBus.
+        virtual void EventCallsOtherEventOnSameEBus() = 0;
+        virtual bool EventCalledByOtherEventOnSameEBus() = 0;
+
+        // The first event will call the second event via EBus, but on different bus IDs.
+        virtual void EventCallsOtherEventOnDifferentEBusId(BusIdType busId) = 0;
+        virtual bool EventCalledByOtherEventOnDifferentEBusId() = 0;
+    };
+
+    using ReentrantEBusUseTestRequestBus = AZ::EBus<ReentrantEBusUseTestRequests>;
+
+    struct ReentrantEBusUseTestImpl : public ReentrantEBusUseTestRequestBus::Handler
+    {
+        ReentrantEBusUseTestImpl(ReentrantEBusUseTestRequestBus::BusIdType busId)
+        {
+            m_busId = busId;
+            ReentrantEBusUseTestRequestBus::Handler::BusConnect(busId);
+        }
+
+        ~ReentrantEBusUseTestImpl()
+        {
+            ReentrantEBusUseTestRequestBus::Handler::BusDisconnect();
+        }
+
+        void EventDirectlyCallsItself(bool expectedReentrantResult) override
+        {
+            // Verify that we get the expected API result. (We use ASSERT_EQ because a test failure here might cause infinite recursion)
+            ASSERT_EQ(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread(), expectedReentrantResult);
+
+            // Avoid infinite recursion. :)
+            if (ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread())
+            {
+                return;
+            }
+
+            // This event calls itself via a nested EBus call. We expect the nested call to detect the reentrancy.
+            ReentrantEBusUseTestRequestBus::Event(m_busId, &ReentrantEBusUseTestRequestBus::Events::EventDirectlyCallsItself, true);
+        }
+
+        void EventCallsOtherEventOnSameEBus() override
+        {
+            // Call a second event on the same EBus and verify that it was called.
+            bool otherEventCalled = false;
+            ReentrantEBusUseTestRequestBus::EventResult(otherEventCalled, m_busId, 
+                &ReentrantEBusUseTestRequestBus::Events::EventCalledByOtherEventOnSameEBus);
+            EXPECT_TRUE(otherEventCalled);
+        }
+
+        bool EventCalledByOtherEventOnSameEBus() override
+        {
+            // Verify that even though two different events have been called on the same EBus,
+            // it is still considered reentrant use of the ebus itself.
+            EXPECT_TRUE(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread());
+            return true;
+        }
+
+        void EventCallsOtherEventOnDifferentEBusId(BusIdType busId) override
+        {
+            // Call a second event on a different EBus and verify that it was called.
+            bool otherEventCalled = false;
+            ReentrantEBusUseTestRequestBus::EventResult(otherEventCalled, busId,
+                &ReentrantEBusUseTestRequestBus::Events::EventCalledByOtherEventOnDifferentEBusId);
+            EXPECT_TRUE(otherEventCalled);
+        }
+
+        bool EventCalledByOtherEventOnDifferentEBusId() override
+        {
+            // Verify that two different nested events on the same EBus but with different EBus IDs will not be detected as reentrant.
+            EXPECT_FALSE(ReentrantEBusUseTestRequestBus::HasReentrantEBusUseThisThread());
+            return true;
+        }
+
+
+    protected:
+        ReentrantEBusUseTestRequestBus::BusIdType m_busId;
+    };
+
+    TEST_F(EBus, ReentrantEBusUsageDetectedFromNestedDirectCalls)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        constexpr bool expectedReentrantResult = false;
+        ReentrantEBusUseTestRequestBus::Event(
+            busId, &ReentrantEBusUseTestRequestBus::Events::EventDirectlyCallsItself, expectedReentrantResult);
+    }
+
+    TEST_F(EBus, ReentrantEBusUsageDetectedFromTwoSeparateCallsOnSameBus)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        ReentrantEBusUseTestRequestBus::Event(busId, &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnSameEBus);
+    }
+
+    TEST_F(EBus, ReentrantEBusUsageNotDetectedFromTwoSeparateCallsOnSameBusWithDifferentIds)
+    {
+        constexpr int32_t busId = 4;
+        ReentrantEBusUseTestImpl reentrantEBusUseTestRequest(busId);
+
+        constexpr int32_t secondBusId = 8;
+        ReentrantEBusUseTestImpl secondReentrantEBusUseTestRequest(secondBusId);
+
+        ReentrantEBusUseTestRequestBus::Event(busId,
+            &ReentrantEBusUseTestRequestBus::Events::EventCallsOtherEventOnDifferentEBusId, secondBusId);
+    }
+
 } // namespace UnitTest
 
 #if defined(HAVE_BENCHMARK)

@@ -18,8 +18,6 @@
 
 #include <QCoreApplication>
 
-AZ_UNIT_TEST_HOOK(new BaseAssetProcessorTestEnvironment)
-
 namespace AssetProcessor
 {
     class UnitTestAppManager : public BatchApplicationManager
@@ -35,7 +33,7 @@ namespace AssetProcessor
             {
                 return false;
             }
-            
+
             // tests which use the builder bus plug in their own mock version, so disconnect ours.
             AssetProcessor::AssetBuilderInfoBus::Handler::BusDisconnect();
 
@@ -59,7 +57,7 @@ namespace AssetProcessor
         void SetUp() override
         {
             AssetProcessorTest::SetUp();
-            
+
             static int numParams = 1;
             static char processName[] = {"AssetProcessorBatch"};
             static char* namePtr = &processName[0];
@@ -147,7 +145,7 @@ namespace AssetProcessor
                 time.start();
 
                 actualTest->StartTest();
-                
+
                 while (!testIsComplete)
                 {
                     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);

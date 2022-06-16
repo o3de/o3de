@@ -8,12 +8,15 @@
 #pragma once
 
 #include <QSettings>
+#include <QMouseEvent>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
 #include <Integration/Rendering/RenderFlag.h>
+
 
 namespace EMStudio
 {
@@ -31,7 +34,6 @@ namespace EMStudio
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
         void Reinit(bool resetCamera = true);
-        EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -43,26 +45,53 @@ namespace EMStudio
         void SetupCameras();
         void SetupCameraController();
 
-        void LoadRenderFlags();
-        void SaveRenderFlags();
+        void OnContextMenuEvent(QMouseEvent* event);
 
         // AnimViewportRequestBus::Handler overrides
-        void ResetCamera();
-        void SetCameraViewMode(CameraViewMode mode);
-        void SetFollowCharacter(bool follow);
-        void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
+        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
+        void UpdateCameraFollowUp(bool follow);
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
+
+        // MouseEvent
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
+
+        void resizeEvent(QResizeEvent* event) override;
 
         static constexpr float CameraDistance = 2.0f;
 
         AtomRenderPlugin* m_plugin;
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
-        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
-        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
-        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
-        EMotionFX::ActorRenderFlagBitset m_renderFlags;
-        bool m_followCharacter = false;
+
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_lookRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_lookTranslateCamera;
+        AZStd::shared_ptr<AzFramework::LookScrollTranslationCameraInput> m_lookScrollTranslationCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_lookPanCamera;
+
+        AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
+        AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_orbitScrollDollyCamera;
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
+        AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_orbitMotionDollyCamera;
+        AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
+
+        AZStd::shared_ptr<AzFramework::RotateCameraInput> m_followRotateCamera;
+        AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_followScrollDollyCamera;
+        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_followScrollMotionCamera;
+
+        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero();
+
+        // Properties related to the mouse event.
+        // Used to prevent right click option showing up when mouse moved between press and release.
+        QPoint m_prevMousePoint;
+        int m_pixelsSinceClick = 0;
+        const int MinMouseMovePixes = 5;
+
+        AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUiManager;
+        QWidget m_renderOverlay;
     };
 }

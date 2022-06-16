@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ContrastAdaptiveSharpeningPass",
-                        "Attachment": "OutputColor"
+                        "Pass": "ChromaticAberrationPass",
+                        "Attachment": "Output"
                     }
                 },
                 {
@@ -202,7 +202,20 @@
                             }
                         }
                     ]
-                }
+                },
+                {
+                    "Name": "ChromaticAberrationPass",
+                    "TemplateName": "ChromaticAberrationTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+			                "AttachmentRef": {
+                                "Pass": "ContrastAdaptiveSharpeningPass",
+                                "Attachment": "OutputColor"
+			                }
+			            }
+		            ]
+		        }
             ]
         }
     }

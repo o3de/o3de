@@ -34,12 +34,15 @@ namespace AZ
             RPISystemInterface() = default;
             virtual ~RPISystemInterface() = default;
 
-            //! Pre-load some system assets. This should be called once the asset catalog is ready and before create any RPI instances.
-            //! Note: can't rely on the AzFramework::AssetCatalogEventBus's OnCatalogLoaded since the order of calling handlers is undefined.
+            //! Pre-load some system assets. This should be called once Critical Asset have compiled ready and before create any RPI instances.
             virtual void InitializeSystemAssets() = 0;
 
             //! Was the RPI system initialized properly
             virtual bool IsInitialized() const = 0;
+
+            //! If the renderer is null.
+            //! It's controlled by renderer=null command line option
+            virtual bool IsNullRenderer() const = 0;
 
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;
@@ -91,6 +94,10 @@ namespace AZ
 
             //! Get the index of current render tick
             virtual uint64_t GetCurrentTick() const = 0;
+
+            //! Application multisample state
+            virtual void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) = 0;
+            virtual const RHI::MultisampleState& GetApplicationMultisampleState() const = 0;
         };
 
     } // namespace RPI

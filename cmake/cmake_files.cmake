@@ -35,6 +35,7 @@ set(FILES
     Projects.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
+    Subdirectories.cmake
     UnitTest.cmake
     Version.cmake
 )

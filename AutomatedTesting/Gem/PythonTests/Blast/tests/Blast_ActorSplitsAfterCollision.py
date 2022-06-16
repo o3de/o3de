@@ -41,7 +41,6 @@ def Blast_ActorSplitsAfterCollision():
      5) Check root actor is destroyed
      6) Check child actors of root actor are created
      7) Exit game mode
-     8) Close the editor
 
     :return: None
     """
@@ -93,9 +92,6 @@ def Blast_ActorSplitsAfterCollision():
 
     # 7) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
-
-    # 8) Close the editor
-    helper.close_editor()
 
 
 if __name__ == "__main__":

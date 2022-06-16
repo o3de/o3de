@@ -9,6 +9,9 @@
 set(FILES
     UnitTest/AzToolsFrameworkTestHelpers.cpp
     UnitTest/AzToolsFrameworkTestHelpers.h
+    UnitTest/Mocks/MockFocusModeInterface.h
+    UnitTest/Mocks/MockEditorVisibleEntityDataCacheInterface.h
+    UnitTest/Mocks/MockEditorViewportIconDisplayInterface.h
     UnitTest/ToolsTestApplication.cpp
     UnitTest/ToolsTestApplication.h
 )

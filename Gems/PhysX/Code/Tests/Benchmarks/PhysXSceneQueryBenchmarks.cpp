@@ -141,7 +141,7 @@ namespace PhysX::Benchmarks
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
@@ -175,7 +175,7 @@ namespace PhysX::Benchmarks
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             request.m_direction = m_boxes[next].GetNormalized();
 
@@ -206,7 +206,7 @@ namespace PhysX::Benchmarks
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         auto next = 0;
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             request.m_pose = AZ::Transform::CreateTranslation(m_boxes[next]);
 

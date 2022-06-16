@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_CONTEXT_DEBUG_H
-#define AZCORE_SCRIPT_CONTEXT_DEBUG_H
+#pragma once
 
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/std/functional.h>
@@ -213,6 +212,3 @@ namespace AZ
         ScriptContext&       m_context;
     };
 }
-
-#endif // AZCORE_SCRIPT_CONTEXT_DEBUG_H
-#pragma once

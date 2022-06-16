@@ -57,7 +57,7 @@ namespace AZ
             return m_lods.size();
         }
 
-        AZStd::array_view<Data::Instance<ModelLod>> Model::GetLods() const
+        AZStd::span<const Data::Instance<ModelLod>> Model::GetLods() const
         {
             return m_lods;
         }

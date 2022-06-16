@@ -33,12 +33,11 @@ struct VSInput
 
 struct VSOutput
 {
-    float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -68,12 +67,13 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    const float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(MinimalPBRSrg::m_baseColor, specularF0Factor, MinimalPBRSrg::m_metallic);
+    float3 baseColor = MinimalPBRSrg::m_baseColor;
+    float metallic = MinimalPBRSrg::m_metallic;
+    float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
-    // Clear Coat, Transmission
+    // Clear Coat
     surface.clearCoat.InitializeToZero();
-    surface.transmission.InitializeToZero();
 
     // ------- LightingData -------
 
@@ -83,8 +83,6 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
-    // Shadow, Occlusion
-    lightingData.shadowCoords = IN.m_shadowCoords;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
@@ -98,13 +96,13 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
+    lightingData.FinalizeLighting();
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 

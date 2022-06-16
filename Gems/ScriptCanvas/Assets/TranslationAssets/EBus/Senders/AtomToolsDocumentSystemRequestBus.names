@@ -106,7 +106,7 @@
                     ]
                 },
                 {
-                    "base": "CreateDocumentFromFile",
+                    "base": "CreateDocumentFromFilePath",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Create Document From File"

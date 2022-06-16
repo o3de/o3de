@@ -29,7 +29,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
 
 // s should point to a buffer at least 65 chars long
@@ -749,8 +748,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
 
     if (show && !m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
             AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
@@ -760,8 +757,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
     }
     else if (!show && m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
             m_previousSystemCursorState);
@@ -1686,15 +1681,11 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
     }
     else
     {
-        char* start, * pos;
-        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
+        auto PrintHelpLine = [this](AZStd::string_view line)
         {
-            AZStd::string s = start;
-            s.resize(pos - start);
-            ConsoleLogInputResponse("    $3%s", s.c_str());
-            pos = strstr(pos, "\n");
-        }
-        ConsoleLogInputResponse("    $3%s", start);
+            ConsoleLogInputResponse("    $3%.*s", AZ_STRING_ARG(line));
+        };
+        AZ::StringFunc::TokenizeVisitor(help, PrintHelpLine, '\n');
     }
 }
 

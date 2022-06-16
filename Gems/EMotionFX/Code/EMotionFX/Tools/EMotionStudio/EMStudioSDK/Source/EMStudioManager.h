@@ -31,6 +31,8 @@
 #include "MainWindow.h"
 #include <Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 
+#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+
 // include Qt
 #include <QString>
 #include <QPainter>
@@ -168,6 +170,9 @@ namespace EMStudio
         };
         EventProcessingCallback*    m_eventProcessingCallback = nullptr;
     };
+
+    // Define the manipulator id for atom viewport in animation editor.
+    extern const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId;
 
     // Shortcuts
     QApplication* GetApp();

@@ -22,6 +22,10 @@
 #include "MaterialInputs/UvSetCount.azsli"
 #include "MaterialInputs/DetailMapsInput.azsli"
 
+// Use human skin profile for thin object transmission (if enabled)
+// Remove this line to use a custom profile based on the scatter color
+#define USE_HUMAN_SKIN_PROFILE
+
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // Auto-generate material SRG fields for common inputs
@@ -64,7 +68,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     
     // Elements of m_transmissionParams:
     // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
+    // Thin  object mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
     float4 m_transmissionParams;
     
     // (float3 TintColor, thickness)

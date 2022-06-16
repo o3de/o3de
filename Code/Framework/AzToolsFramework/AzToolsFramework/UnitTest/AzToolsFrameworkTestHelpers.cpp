@@ -30,8 +30,7 @@ namespace UnitTest
     void MousePressAndMove(
         QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        QPoint position = widget->mapToGlobal(initialPositionWidget);
-        QTest::mousePress(widget, mouseButton, Qt::NoModifier, position);
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, initialPositionWidget);
 
         MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
     }
@@ -45,14 +44,15 @@ namespace UnitTest
     // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
     void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
     {
-        QPoint nextPosition = widget->mapToGlobal(initialPositionWidget + mouseDelta);
+        const QPoint nextLocalPosition = initialPositionWidget + mouseDelta;
+        const QPoint nextGlobalPosition = widget->mapToGlobal(nextLocalPosition);
 
         // ^1 To ensure a mouse move event is fired we must call the test mouse move function
         // and also send a mouse move event that matches. Each on their own do not appear to
         // work - please see the links above for more context.
-        QTest::mouseMove(widget, nextPosition);
+        QTest::mouseMove(widget, nextLocalPosition);
         QMouseEvent mouseMoveEvent(
-            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+            QEvent::MouseMove, QPointF(nextLocalPosition), QPointF(nextGlobalPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
@@ -88,6 +88,66 @@ namespace UnitTest
         }
 
         return AZStd::string(keyText.toUtf8().data());
+    }
+
+    bool ViewportSettingsTestImpl::GridSnappingEnabled() const
+    {
+        return m_gridSnapping;
+    }
+
+    float ViewportSettingsTestImpl::GridSize() const
+    {
+        return m_gridSize;
+    }
+
+    bool ViewportSettingsTestImpl::ShowGrid() const
+    {
+        return false;
+    }
+
+    bool ViewportSettingsTestImpl::AngleSnappingEnabled() const
+    {
+        return m_angularSnapping;
+    }
+
+    float ViewportSettingsTestImpl::AngleStep() const
+    {
+        return m_angularStep;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportSettingsTestImpl::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    bool ViewportSettingsTestImpl::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportSettingsTestImpl::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+
+    AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
     }
 
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
@@ -155,6 +215,23 @@ namespace UnitTest
         }
 
         return QWidget::event(event);
+    }
+
+    MouseMoveDetector::MouseMoveDetector(QWidget* parent)
+        : QObject(parent)
+    {
+    }
+
+    bool MouseMoveDetector::eventFilter(QObject* watched, QEvent* event)
+    {
+        if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+            m_mouseGlobalPosition = mouseEvent->globalPos();
+            m_mouseLocalPosition = mouseEvent->pos();
+        }
+
+        return QObject::eventFilter(watched, event);
     }
 
     void TestEditorActions::Connect()
@@ -295,7 +372,6 @@ namespace UnitTest
 
     ToolsApplicationMessageHandler::ToolsApplicationMessageHandler()
     {
-        m_gridMateMessageHandler = AZStd::make_unique<ErrorHandler>("GridMate");
         m_enginePathMessageHandler = AZStd::make_unique<ErrorHandler>("Engine Path");
         m_skippingDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Skipping drive");
         m_storageDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Storage drive");
@@ -571,3 +647,5 @@ namespace UnitTest
         sliceAssets.clear();
     }
 } // namespace UnitTest
+
+#include <moc_AzToolsFrameworkTestHelpers.cpp>

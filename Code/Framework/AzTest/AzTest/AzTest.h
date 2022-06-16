@@ -164,6 +164,16 @@ namespace AZ
                 m_envs.push_back(std::move(env));
             }
 
+            // Remove a registered benchmark from the registry
+            void RemoveBenchmarkEnvironment(BenchmarkEnvironmentBase* env)
+            {
+                auto RemoveBenchmarkFunc = [env](const std::unique_ptr<BenchmarkEnvironmentBase>& envElement)
+                {
+                    return envElement.get() == env;
+                };
+                m_envs.erase(std::remove_if(m_envs.begin(), m_envs.end(), std::move(RemoveBenchmarkFunc)));
+            }
+
             std::vector<std::unique_ptr<BenchmarkEnvironmentBase>>& GetBenchmarkEnvironments()
             {
                 return m_envs;
@@ -194,21 +204,26 @@ namespace AZ
             return *benchmarkEnv;
         }
 
-        template<typename... Ts>
-        std::array<BenchmarkEnvironmentBase*, sizeof...(Ts)> RegisterBenchmarkEnvironments()
+        /*
+         * An RAII wrapper about registering a BenchmarkEnvironment with the BenchmarkRegistry
+         * It will unregister the BenchmarkEnvironment with the BenchmarkRegistry on destruction
+         */
+        struct ScopedRegisterBenchmarkEnvironment
         {
-            constexpr size_t EnvironmentCount{ sizeof...(Ts) };
-            if constexpr (EnvironmentCount)
+            template<typename T>
+            ScopedRegisterBenchmarkEnvironment(T& benchmarkEnv)
+                : m_benchmarkEnv(benchmarkEnv)
+            {}
+            ~ScopedRegisterBenchmarkEnvironment()
             {
-                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{ { &RegisterBenchmarkEnvironment<Ts>()... } };
-                return benchmarkEnvs;
+                if (auto benchmarkRegistry = AZ::Environment::FindVariable<BenchmarkEnvironmentRegistry>(s_benchmarkEnvironmentName);
+                    benchmarkRegistry != nullptr)
+                {
+                    benchmarkRegistry->RemoveBenchmarkEnvironment(&m_benchmarkEnv);
+                }
             }
-            else
-            {
-                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{};
-                return benchmarkEnvs;
-            }
-        }
+            BenchmarkEnvironmentBase& m_benchmarkEnv;
+        };
 #endif
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //! listener class to capture and print test output for embedded platforms
@@ -276,7 +291,7 @@ namespace AZ
 #define AZ_BENCHMARK_HOOK_ENV(TEST_ENV) \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
-    AZ::Test::RegisterBenchmarkEnvironments<TEST_ENV>(); \
+    AZ::Test::ScopedRegisterBenchmarkEnvironment scopedBenchmarkEnv(AZ::Test::RegisterBenchmarkEnvironment<TEST_ENV>()); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \
@@ -307,7 +322,6 @@ AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 #define AZ_BENCHMARK_HOOK() \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
-    AZ::Test::RegisterBenchmarkEnvironments<>(); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \
@@ -445,7 +459,6 @@ int main(int argc, char** argv)                                                 
     IMPLEMENT_TEST_EXECUTABLE_MAIN()
 
 #define AZ_UNIT_TEST_HOOK(...)           AZ_MACRO_SPECIALIZE(AZ_UNIT_TEST_HOOK_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
-
 
 // Declares a visible external symbol which identifies an executable as containing tests
 #define DECLARE_AZ_UNIT_TEST_MAIN() AZTEST_EXPORT int ContainsAzUnitTestMain() { return 1; }

@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceSlopeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -171,14 +171,18 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::Activate()
     {
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceSlopeGradientRequestBus::Handler::BusConnect(GetEntityId());
         SmoothStepRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SurfaceSlopeGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         SurfaceSlopeGradientRequestBus::Handler::BusDisconnect();
         SmoothStepRequestBus::Handler::BusDisconnect();
     }
@@ -205,39 +209,73 @@ namespace GradientSignal
 
     float SurfaceSlopeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
+        float result = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&result, 1));
+        return result;
+    }
 
-        if (points.empty())
+    void SurfaceSlopeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            return 0.0f;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        // Assuming our surface normal vector is actually normalized, we can get the slope
-        // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
-        AZ_Assert(points.front().m_normal.GetNormalized().IsClose(points.front().m_normal), "Surface normals are expected to be normalized");
-        const float slope = points.front().m_normal.GetZ();
-        // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
-        // (We want our 0-1 range to be linear across the range of angles)
-        const float slopeAngle = acosf(slope);
+        if (GradientRequestBus::HasReentrantEBusUseThisThread())
+        {
+            AZ_ErrorOnce("GradientSignal", false, "Detected cyclic dependencies with surface tag references on entity '%s' (%s)",
+                GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
+            return;
+        }
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        SurfaceData::SurfacePointList points;
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+            positions, m_configuration.m_surfaceTagsToSample, points);
 
         const float angleMin = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMin, 0.0f, 90.0f));
         const float angleMax = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMax, 0.0f, 90.0f));
 
-        switch (m_configuration.m_rampType)
+        for (size_t index = 0; index < positions.size(); index++)
         {
-            case SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP:
-                return m_configuration.m_smoothStep.GetSmoothedValue(GetRatio(angleMin, angleMax, slopeAngle));
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP:
-                // For ramp up, linearly interpolate from min to max.
-                return GetRatio(angleMin, angleMax, slopeAngle);
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN:
-            default:
-                // For ramp down, linearly interpolate from max to min.
-                return GetRatio(angleMax, angleMin, slopeAngle);
+            if (points.IsEmpty(index))
+            {
+                outValues[index] = 0.0f;
+            }
+            else
+            {
+                // Assuming our surface normal vector is actually normalized, we can get the slope
+                // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
+                auto highestSurfacePoint = points.GetHighestSurfacePoint(index);
+                AZ_Assert(
+                    highestSurfacePoint.m_normal.GetNormalized().IsClose(highestSurfacePoint.m_normal),
+                    "Surface normals are expected to be normalized");
+                const float slope = highestSurfacePoint.m_normal.GetZ();
+                // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
+                // (We want our 0-1 range to be linear across the range of angles)
+                const float slopeAngle = acosf(slope);
+
+                switch (m_configuration.m_rampType)
+                {
+                case SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP:
+                    outValues[index] = m_configuration.m_smoothStep.GetSmoothedValue(GetRatio(angleMin, angleMax, slopeAngle));
+                    break;
+                case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP:
+                    // For ramp up, linearly interpolate from min to max.
+                    outValues[index] = GetRatio(angleMin, angleMax, slopeAngle);
+                    break;
+                case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN:
+                default:
+                    // For ramp down, linearly interpolate from max to min.
+                    outValues[index] = GetRatio(angleMax, angleMin, slopeAngle);
+                    break;
+                }
+            }
         }
     }
+
 
     float SurfaceSlopeGradientComponent::GetSlopeMin() const
     {
@@ -246,7 +284,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetSlopeMin(float slopeMin)
     {
-        m_configuration.m_slopeMin = slopeMin;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_slopeMin = slopeMin;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -257,7 +301,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetSlopeMax(float slopeMax)
     {
-        m_configuration.m_slopeMax = slopeMax;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_slopeMax = slopeMax;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -273,13 +323,25 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::RemoveTag(int tagIndex)
     {
-        m_configuration.RemoveTag(tagIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveTag(tagIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void SurfaceSlopeGradientComponent::AddTag(AZStd::string tag)
     {
-        m_configuration.AddTag(tag);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddTag(tag);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -290,7 +352,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetRampType(AZ::u8 type)
     {
-        m_configuration.m_rampType = static_cast<SurfaceSlopeGradientConfig::RampType>(type);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_rampType = static_cast<SurfaceSlopeGradientConfig::RampType>(type);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -301,7 +369,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffRange(float range)
     {
-        m_configuration.m_smoothStep.m_falloffRange = range;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffRange = range;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -312,7 +386,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffStrength(float strength)
     {
-        m_configuration.m_smoothStep.m_falloffStrength = strength;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffStrength = strength;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -323,7 +403,13 @@ namespace GradientSignal
 
     void SurfaceSlopeGradientComponent::SetFallOffMidpoint(float midpoint)
     {
-        m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

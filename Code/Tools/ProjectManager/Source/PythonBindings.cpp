@@ -202,29 +202,14 @@ namespace RedirectOutput
 
     PyObject* s_RedirectModule = nullptr;
 
-    void Intialize(PyObject* module)
+    void Intialize(PyObject* module, RedirectOutputFunc stdoutFunction, RedirectOutputFunc stderrFunction)
     {
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, []([[maybe_unused]] const char* msg) {
-            AZ_TracePrintf("Python", msg);
-        });
+        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, stdoutFunction);
+        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, stderrFunction);
 
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
-            AZStd::string lastPythonError = msg;
-            constexpr const char* pythonErrorPrefix = "ERROR:root:";
-            constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
-            auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
-            if (errorPrefix != AZStd::string::npos)
-            {
-                lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
-            }
-            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
-
-            AZ_TracePrintf("Python", msg);
-        });
-
-        PySys_WriteStdout("RedirectOutput installed");
+        PySys_WriteStdout("RedirectOutput installed\n");
     }
 
     void Shutdown()
@@ -239,6 +224,7 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
+
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {
@@ -248,6 +234,29 @@ namespace O3DE::ProjectManager
     PythonBindings::~PythonBindings()
     {
         StopPython();
+    }
+
+    void PythonBindings::OnStdOut(const char* msg)
+    {
+        AZStd::string message{ msg };
+        // escape % characters by using %% in the format string to avoid crashing
+        AZ::StringFunc::Replace(message, "%", "%%", true /* case sensitive since it is faster */);
+        AZ_TracePrintf("Python", message.c_str());
+    }
+
+    void PythonBindings::OnStdError(const char* msg)
+    {
+        AZStd::string lastPythonError = msg;
+        constexpr const char* pythonErrorPrefix = "ERROR:root:";
+        constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
+        auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
+        if (errorPrefix != AZStd::string::npos)
+        {
+            lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
+        }
+        O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+
+        OnStdOut(msg);
     }
 
     bool PythonBindings::PythonStarted()
@@ -294,7 +303,7 @@ namespace O3DE::ProjectManager
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
 
-            RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
+            RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"), &PythonBindings::OnStdOut, &PythonBindings::OnStdError);
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -408,7 +417,7 @@ namespace O3DE::ProjectManager
             }
 
             // check if engine path is registered
-            auto allEngines = m_manifest.attr("get_engines")();
+            auto allEngines = m_manifest.attr("get_manifest_engines")();
             if (pybind11::isinstance<pybind11::list>(allEngines))
             {
                 const AZ::IO::FixedMaxPath enginePathFixed(Py_To_String(enginePath));
@@ -459,6 +468,9 @@ namespace O3DE::ProjectManager
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
             {
                 engineInfo = EngineInfoFromPath(enginePathResult);
+
+                // it is possible an engine is registered in o3de_manifest.json but the engine.json is
+                // missing or corrupt in which case we do not consider it a registered engine
             }
         });
 
@@ -891,7 +903,7 @@ namespace O3DE::ProjectManager
 
         bool result = ExecuteWithLock([&] {
             // external projects
-            for (auto path : m_manifest.attr("get_projects")())
+            for (auto path : m_manifest.attr("get_manifest_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
@@ -1221,7 +1233,7 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                for (auto repoUri : m_manifest.attr("get_repos")())
+                for (auto repoUri : m_manifest.attr("get_manifest_repos")())
                 {
                     gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
@@ -1353,11 +1365,18 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
     {
-        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
-            ? ""
-            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        if (const size_t errorSize = m_pythonErrorStrings.size())
+        {
+            AZStd::string detailedString =
+                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+            return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        }
+        // If no error was found
+        else
+        {
+            return IPythonBindings::ErrorPair(AZStd::string("Unknown Python Bindings Error"), AZStd::string(""));
+        }
     }
 
     void PythonBindings::AddErrorString(AZStd::string errorString)
@@ -1369,4 +1388,4 @@ namespace O3DE::ProjectManager
     {
         m_pythonErrorStrings.clear();
     }
-}
+} // namespace O3DE::ProjectManager

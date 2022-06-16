@@ -12,7 +12,6 @@ set(FILES
     Include/Atom/Utils/ImGuiCullingDebug.h
     Include/Atom/Utils/ImGuiCullingDebug.inl
     Include/Atom/Utils/ImGuiGpuProfiler.h
-    Include/Atom/Utils/ImGuiGpuProfiler.inl
     Include/Atom/Utils/ImGuiPassTree.h
     Include/Atom/Utils/ImGuiPassTree.inl
     Include/Atom/Utils/ImGuiFrameVisualizer.h
@@ -21,6 +20,7 @@ set(FILES
     Include/Atom/Utils/ImGuiShaderMetrics.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
+    Include/Atom/Utils/MaterialUtils.h
     Include/Atom/Utils/PngFile.h
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
@@ -28,8 +28,10 @@ set(FILES
     Include/Atom/Utils/Utils.h
     Include/Atom/Utils/Utils.inl
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
+    Source/ImGuiGpuProfiler.cpp
     Source/DdsFile.cpp
     Source/ImageComparison.cpp
+    Source/MaterialUtils.cpp
     Source/PngFile.cpp
     Source/PpmFile.cpp
     Source/Utils.cpp

@@ -16,6 +16,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -68,6 +69,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaHeightRequestBus
         void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
+        void GetHeights(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -87,16 +89,14 @@ namespace Terrain
     private:
         TerrainHeightGradientListConfig m_configuration;
 
-        void RefreshMinMaxHeights();
-
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };
-        AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 
-        // prevent recursion in case user attaches cyclic dependences
-        mutable bool m_isRequestInProgress{ false }; 
-
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+
+        // The TerrainAreaHeightRequestBus allows parallel dispatches, so make sure that queries don't happen at the same
+        // time as cached data updates.
+        AZStd::shared_mutex m_queryMutex;
     };
 }

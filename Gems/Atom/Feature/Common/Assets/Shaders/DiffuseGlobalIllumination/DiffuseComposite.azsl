@@ -9,6 +9,8 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
+#include <Atom/Features/Debug.azsli>
+
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
@@ -140,6 +142,13 @@ float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
+    if(!IsDiffuseLightingEnabled() || !IsIndirectLightingEnabled())
+    {
+        PSOutput OUT;
+        OUT.m_color = float4(0, 0, 0, 0);
+        return OUT;
+    }
+
     uint2 screenCoords = IN.m_position.xy;
     float imageScaleInverse = 1.0f / PassSrg::m_imageScale;
 
@@ -149,8 +158,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
     float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+    bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
     float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
-    float probeIrradianceBlendWeight = PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a;
+    float probeIrradianceBlendWeight = saturate(PassSrg::m_downsampledProbeIrradiance.Load(probeIrradianceCoords, sampleIndex).a);
   
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
     if (probeIrradianceBlendWeight > 0.0f)
@@ -159,7 +169,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         diffuse = (albedo.rgb / PI) * probeIrradiance * probeIrradianceBlendWeight;
     }
 
-    if (probeIrradianceBlendWeight < 1.0f)
+    if (probeIrradianceBlendWeight < 1.0f && enableIBL)
     {
         float3 globalIrradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
 

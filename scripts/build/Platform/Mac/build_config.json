@@ -9,12 +9,13 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "steps": [
       "profile",
-      "asset_profile"
+      "asset_profile",
+      "test_profile"
     ]
   },
   "metrics": {
@@ -29,8 +30,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -58,8 +59,8 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -74,8 +75,8 @@
   "asset_profile": {
     "TAGS": [
       "weekly-build-metrics",
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "COMMAND": "build_asset_mac.sh",
     "PARAMETERS": {
@@ -89,10 +90,26 @@
       "ASSET_PROCESSOR_PLATFORMS": "mac"
     }
   },
+  "test_profile": {
+    "TAGS": [
+        "daily-pipeline-metrics",
+        "weekly-build-metrics"
+    ],
+    "COMMAND": "build_test_mac.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CTEST_OPTIONS": "-L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "TEST_RESULTS": "False"
+    }
+  },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -102,14 +119,14 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
+      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu)",
       "TEST_RESULTS": "False"
     }
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -119,14 +136,14 @@
       "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) -LE (REQUIRES_gpu)",
       "TEST_RESULTS": "False"
     }
   },
   "release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -140,8 +157,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -151,16 +168,6 @@
       "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
-    }
-  },
-  "mac_packaging_all": {
-    "TAGS": [
-      "packaging"
-    ],
-    "COMMAND": "python_mac.sh",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/package/package.py",
-      "SCRIPT_PARAMETERS": "--platform Mac --type all"
     }
   },
   "install_profile": {
@@ -176,8 +183,8 @@
   },
   "install_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV": {
       "PROJECT_REPOSITORY_NAME": "TestProject"

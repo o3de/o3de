@@ -16,12 +16,12 @@ namespace AWSGameLift
 {
     void AWSGameLiftStartMatchmakingRequest::Reflect(AZ::ReflectContext* context)
     {
-        AzFramework::StartMatchmakingRequest::Reflect(context);
+        Multiplayer::StartMatchmakingRequest::Reflect(context);
         AWSGameLiftPlayer::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftStartMatchmakingRequest, AzFramework::StartMatchmakingRequest>()
+            serializeContext->Class<AWSGameLiftStartMatchmakingRequest, Multiplayer::StartMatchmakingRequest>()
                 ->Version(0)
                 ->Field("configurationName", &AWSGameLiftStartMatchmakingRequest::m_configurationName)
                 ->Field("players", &AWSGameLiftStartMatchmakingRequest::m_players);
@@ -40,7 +40,7 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<AzFramework::StartMatchmakingRequest>("StartMatchmakingRequest")
+            behaviorContext->Class<Multiplayer::StartMatchmakingRequest>("StartMatchmakingRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);

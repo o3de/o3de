@@ -100,8 +100,6 @@ namespace LmbrCentral
         AZ::EntityBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
 
         if (m_configuration.m_shapeEntityId.IsValid() && m_configuration.m_shapeEntityId != GetEntityId())
         {
@@ -109,29 +107,34 @@ namespace LmbrCentral
             AZ::TransformNotificationBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
         }
-
-        // Broadcast out a "ShapeChanged" event.  In some cases, this might be excessive, but in the specific
-        // case that the entity ID gets cleared out of this component in the Editor, there are no other events
-        // that fire to notify upstream shape consumers that something has changed about the shape.
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void ReferenceShapeComponent::Activate()
     {
         SetupDependencies();
+
+        // Only connect to these after we've finished initializing everything else.
         ReferenceShapeRequestBus::Handler::BusConnect(GetEntityId());
+        LmbrCentral::ShapeComponentRequestsBus::Handler::BusConnect(GetEntityId());
+
+        // Finally, after everything is set up, broadcast out a "ShapeChanged" event. This is needed because the Editor version
+        // of ReferenceShapeComponent will internally deactivate/activate a runtime version of this component on ShapeEntityId
+        // changes instead of going through SetShapeEntityId. Other components may rely on knowing about shape changes, so the
+        // activation needs to send out this event.
+        LmbrCentral::ShapeComponentNotificationsBus::Event(
+            GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void ReferenceShapeComponent::Deactivate()
     {
+        // Disconnect from these first so that the component stops accepting new requests.
+        LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
+        ReferenceShapeRequestBus::Handler::BusDisconnect();
+
         AZ::EntityBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
-        ReferenceShapeRequestBus::Handler::BusDisconnect();
     }
 
     bool ReferenceShapeComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -156,46 +159,52 @@ namespace LmbrCentral
 
     void ReferenceShapeComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
+        }
     }
 
     void ReferenceShapeComponent::OnShapeChanged([[maybe_unused]] LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons)
     {
-        LmbrCentral::ShapeComponentNotificationsBus::Event(
-            GetEntityId(),
-            &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
-            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        if (AllowNotification())
+        {
+            LmbrCentral::ShapeComponentNotificationsBus::Event(
+                GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
     }
 
     AZ::Crc32 ReferenceShapeComponent::GetShapeType()
     {
         AZ::Crc32 result = {};
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetShapeType);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -205,12 +214,10 @@ namespace LmbrCentral
     {
         AZ::Aabb result = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -221,12 +228,10 @@ namespace LmbrCentral
         transform = AZ::Transform::CreateIdentity();
         bounds = AZ::Aabb::CreateNull();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::Event(m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, transform, bounds);
-            m_isRequestInProgress = false;
         }
     }
 
@@ -234,12 +239,10 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -249,12 +252,10 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -264,12 +265,10 @@ namespace LmbrCentral
     {
         float result = FLT_MAX;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceSquaredFromPoint, point);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -279,12 +278,10 @@ namespace LmbrCentral
     {
         AZ::Vector3 result = AZ::Vector3::CreateZero();
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GenerateRandomPointInside, randomDistribution);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -294,12 +291,10 @@ namespace LmbrCentral
     {
         bool result = false;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZStd::shared_lock lock(m_mutex);
         if (AllowRequest())
         {
-            m_isRequestInProgress = true;
             LmbrCentral::ShapeComponentRequestsBus::EventResult(result, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, src, dir, distance);
-            m_isRequestInProgress = false;
         }
 
         return result;
@@ -307,20 +302,57 @@ namespace LmbrCentral
 
     bool ReferenceShapeComponent::AllowRequest() const
     {
-        return !m_isRequestInProgress && m_configuration.m_shapeEntityId.IsValid() && m_configuration.m_shapeEntityId != GetEntityId();
+        AZ_ErrorOnce(
+            "Shape", !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        return !LmbrCentral::ShapeComponentRequestsBus::HasReentrantEBusUseThisThread() && m_configuration.m_shapeEntityId.IsValid() &&
+            m_configuration.m_shapeEntityId != GetEntityId();
+    }
+
+    bool ReferenceShapeComponent::AllowNotification() const
+    {
+        AZ_ErrorOnce(
+            "Shape", !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with shape entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        return !LmbrCentral::ShapeComponentNotificationsBus::HasReentrantEBusUseThisThread() &&
+            m_allowNotifications &&
+            m_configuration.m_shapeEntityId.IsValid() &&
+            m_configuration.m_shapeEntityId != GetEntityId();
     }
 
     AZ::EntityId ReferenceShapeComponent::GetShapeEntityId() const
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_configuration.m_shapeEntityId;
     }
 
     void ReferenceShapeComponent::SetShapeEntityId(AZ::EntityId entityId)
     {
-        if(m_configuration.m_shapeEntityId != entityId)
         {
-            m_configuration.m_shapeEntityId = entityId;
+            AZStd::unique_lock lock(m_mutex);
+            if (m_configuration.m_shapeEntityId != entityId)
+            {
+                m_configuration.m_shapeEntityId = entityId;
+            }
+
+            // Temporarily disable notifications so that we don't get an "Entity Activated" notification when setting up
+            // the dependencies. The notification would both cause a redundant OnShapeChanged call and would be potentially
+            // problematic because it would occur while still holding the unique_lock above. Instead we can just skip that
+            // notification and send a single OnShapeChanged notification below.
+            m_allowNotifications = false;
             SetupDependencies();
+            m_allowNotifications = true;
         }
+
+        // Broadcast out a "ShapeChanged" event.  In some cases, this might be excessive, but in the specific
+        // case that the entity ID gets cleared out of this component in the Editor, there are no other events
+        // that fire to notify upstream shape consumers that something has changed about the shape.
+        LmbrCentral::ShapeComponentNotificationsBus::Event(
+            GetEntityId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+            LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 }

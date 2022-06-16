@@ -55,7 +55,6 @@ public:
     bool SetRotation(const Quat& rotate, int flags) override;
     bool SetScale(const Vec3& scale, int flags) override;
     void InvalidateTM(int nWhyFlags) override;
-    void Display(DisplayContext& disp) override;
     bool HitTest(HitContext& hc) override;
     void GetLocalBounds(AABB& box) override;
     void GetBoundBox(AABB& box) override;
@@ -69,7 +68,6 @@ public:
     void DetachThis(bool bKeepPos = true) override;
     XmlNodeRef Export(const QString& levelPath, XmlNodeRef& xmlNode) override;
     void DeleteEntity() override;
-    void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255)) override;
 
     bool IsIsolated() const override;
     bool IsSelected() const override;

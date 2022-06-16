@@ -66,6 +66,7 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerTreeView.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // EntityOutlinerListModel
@@ -79,7 +80,6 @@ namespace AzToolsFramework
     EntityOutlinerListModel::EntityOutlinerListModel(QObject* parent)
         : QAbstractItemModel(parent)
         , m_entitySelectQueue()
-        , m_entityExpandQueue()
         , m_entityChangeQueue()
         , m_entityChangeQueued(false)
         , m_entityLayoutQueued(false)
@@ -92,6 +92,7 @@ namespace AzToolsFramework
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -115,6 +116,7 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
@@ -259,17 +261,7 @@ namespace AzToolsFramework
                 if (s_paintingName && !m_filterString.empty())
                 {
                     // highlight characters in filter
-                    int highlightTextIndex = 0;
-                    do
-                    {
-                        highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                        if (highlightTextIndex >= 0)
-                        {
-                            const QString BACKGROUND_COLOR{ "#707070" };
-                            label.insert(highlightTextIndex + static_cast<int>(m_filterString.length()), "</span>");
-                            label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                        }
-                    } while(highlightTextIndex > 0);
+                    label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 return label;
             }
@@ -1284,7 +1276,6 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::QueueEntityToExpand(AZ::EntityId entityId, bool expand)
     {
         m_entityExpansionState[entityId] = expand;
-        m_entityExpandQueue.insert(entityId);
         QueueEntityUpdate(entityId);
     }
 
@@ -1309,16 +1300,7 @@ namespace AzToolsFramework
         {
             return;
         }
-
-        {
-            AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:ExpandQueue");
-            for (auto entityId : m_entityExpandQueue)
-            {
-                emit ExpandEntity(entityId, IsExpanded(entityId));
-            };
-            m_entityExpandQueue.clear();
-        }
-
+        
         {
             AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:SelectQueue");
             for (auto entityId : m_entitySelectQueue)
@@ -2027,6 +2009,12 @@ namespace AzToolsFramework
         m_beginStartPlayInEditor = false;
     }
 
+    void EntityOutlinerListModel::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
+    {
+        // Ensure all descendants of the current focus root are expanded, so it is visible.
+        ExpandAncestors(newFocusEntityId);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // OutlinerItemDelegate
     ////////////////////////////////////////////////////////////////////////////
@@ -2111,8 +2099,14 @@ namespace AzToolsFramework
             customOption.state ^= QStyle::State_HasFocus;
         }
 
+        // Don't allow to paint on the spacing column
+        if (index.column() == EntityOutlinerListModel::ColumnSpacing)
+        {
+            return;
+        }
+
         // Retrieve the Entity UI Handler
-        auto firstColumnIndex = index.siblingAtColumn(0);
+        auto firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
@@ -2375,23 +2369,10 @@ namespace AzToolsFramework
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        if (option.state & QStyle::State_Enabled)
-        {
-            textDoc.setDefaultStyleSheet("body {color: white}");
-        }
-        else
-        {
-            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
-        }
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
-        painter->translate(textRect.topLeft());
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
 
         painter->restore();
+
         EntityOutlinerListModel::s_paintingName = false;
     }
 
@@ -2472,7 +2453,6 @@ namespace AzToolsFramework
         opt.rect.setWidth(m_toggleColumnWidth);
         style()->drawControl(QStyle::CE_CheckBox, &opt, painter, this);
     }
-
 }
 
 #include <UI/Outliner/moc_EntityOutlinerListModel.cpp>

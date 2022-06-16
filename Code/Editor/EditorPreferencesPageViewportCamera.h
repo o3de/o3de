@@ -10,6 +10,7 @@
 
 #include "Include/IPreferencesPage.h"
 
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -47,6 +48,7 @@ private:
         AZ_TYPE_INFO(CameraMovementSettings, "{60B8C07E-5F48-4171-A50B-F45558B5CCA1}")
 
         AZ::Vector3 m_defaultPosition;
+        AZ::Vector2 m_defaultPitchYaw;
         float m_translateSpeed;
         float m_rotateSpeed;
         float m_scrollSpeed;

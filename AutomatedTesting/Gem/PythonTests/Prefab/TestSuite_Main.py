@@ -38,12 +38,20 @@ class TestAutomation(TestAutomationBase):
         from Prefab.tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
+    def test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
     def test_DeletePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_ReparentPrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
-        from Prefab.tests.reparent_prefab import ReparentPrefab_UnderAnotherPrefab as test_module
+    def test_DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs(self, request, workspace, editor, launcher_platform):
+        from .tests.delete_prefab import DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_ReparentPrefab_UnderPrefabAndEntityHierarchies(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.reparent_prefab import ReparentPrefab_UnderPrefabAndEntityHierarchies as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
     def test_DetachPrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
@@ -62,6 +70,18 @@ class TestAutomation(TestAutomationBase):
         from Prefab.tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
 
+    def test_CreatePrefab_UnderChildEntityOfAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_UnderChildEntityOfAnotherPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_CreatePrefab_WithNestedEntities(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_WithNestedEntities as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
     def test_DeleteEntity_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
@@ -69,3 +89,11 @@ class TestAutomation(TestAutomationBase):
     def test_DeleteEntity_UnderLevelPrefab(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_PrefabNotifications_PropagationNotificationsReceived(self, request, workspace, editor, launcher_platform):
+        from .tests.prefab_notifications import PrefabNotifications_PropagationNotificationsReceived as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabNotifications_RootPrefabLoadedNotificationsReceived(self, request, workspace, editor, launcher_platform):
+        from .tests.prefab_notifications import PrefabNotifications_RootPrefabLoadedNotificationsReceived as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)

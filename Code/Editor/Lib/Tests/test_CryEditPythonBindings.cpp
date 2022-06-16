@@ -36,7 +36,7 @@ namespace CryEditPythonBindingsUnitTests
 
             m_app.Start(appDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
             m_app.RegisterComponentDescriptor(AzToolsFramework::CryEditPythonHandler::CreateDescriptor());
@@ -66,9 +66,7 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("set_current_view_position") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_current_view_rotation") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("export_to_engine") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("set_config_spec") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("get_config_platform") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_config_spec") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_result_to_success") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_result_to_failure") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_enable") != behaviorContext->m_methods.end());
@@ -76,7 +74,6 @@ namespace CryEditPythonBindingsUnitTests
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_is_enabled") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_wait") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("idle_wait_frames") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("start_process_detached") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("launch_lua_editor") != behaviorContext->m_methods.end());
     }
 
@@ -105,7 +102,7 @@ namespace CryEditPythonBindingsUnitTests
         timer.start(100);
 
         const unsigned int framesToWait = 5;
-        AZStd::array<AZ::BehaviorValueParameter, 1> args;
+        AZStd::array<AZ::BehaviorArgument, 1> args;
         args[0].Set(&framesToWait);
         behaviorContext->m_methods.find("idle_wait_frames")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));
         loop.disconnect(&timer);

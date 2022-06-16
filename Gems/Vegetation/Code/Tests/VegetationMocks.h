@@ -10,7 +10,6 @@
 #include <Vegetation/Ebuses/AreaNotificationBus.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
-#include <Vegetation/Ebuses/DependencyRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorProviderRequestBus.h>
 #include <Vegetation/Ebuses/DescriptorSelectorRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
@@ -320,29 +319,35 @@ namespace UnitTest
 
         MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusConnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Register(this);
         }
 
         ~MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Unregister(this);
         }
 
         AZ::Vector3 m_outPosition = {};
         AZ::Vector3 m_outNormal = {};
-        SurfaceData::SurfaceTagWeightMap m_outMasks;
+        SurfaceData::SurfaceTagWeights m_outMasks;
         void GetSurfacePoints([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
             ++m_count;
-            SurfaceData::SurfacePoint outPoint;
-            outPoint.m_position = m_outPosition;
-            outPoint.m_normal = m_outNormal;
-            SurfaceData::AddMaxValueForMasks(outPoint.m_masks, m_outMasks);
-            surfacePointList.push_back(outPoint);
+            surfacePointList.Clear();
+            surfacePointList.StartListConstruction(AZStd::span<const AZ::Vector3>(&inPosition, 1), 1, {});
+            surfacePointList.AddSurfacePoint(AZ::EntityId(), inPosition, m_outPosition, m_outNormal, m_outMasks);
+            surfacePointList.EndListConstruction();
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointListPerPosition& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointListPerPosition) const override
+        {
+        }
+
+        void GetSurfacePointsFromList(
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
+            [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
+            [[maybe_unused]] SurfaceData::SurfacePointList& surfacePointLists) const override
         {
         }
 
@@ -378,9 +383,20 @@ namespace UnitTest
             ++m_count;
         }
 
-        void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
+        void RefreshSurfaceData(
+            [[maybe_unused]] const SurfaceData::SurfaceDataRegistryHandle& handle, [[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
             ++m_count;
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle([[maybe_unused]] const AZ::EntityId& providerEntityId) override
+        {
+            return {};
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle([[maybe_unused]] const AZ::EntityId& modifierEntityId) override
+        {
+            return {};
         }
     };
 
@@ -442,6 +458,15 @@ namespace UnitTest
         void SetVisibility(bool visibility) override
         {
             m_GetVisibilityOutput = visibility;
+        }
+
+        void SetRayTracingEnabled([[maybe_unused]] bool enabled) override
+        {
+        }
+
+        bool GetRayTracingEnabled() const override
+        {
+            return false;
         }
 
         AZ::Data::AssetId m_assetIdOutput;

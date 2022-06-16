@@ -11,8 +11,8 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Session/SessionConfig.h>
-#include <AzFramework/Session/SessionNotifications.h>
+#include <Multiplayer/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionNotifications.h>
 
 namespace UnitTest
 {
@@ -154,25 +154,25 @@ R"({
     }
 
     class SessionNotificationsHandlerMock
-        : public AzFramework::SessionNotificationBus::Handler
+        : public Multiplayer::SessionNotificationBus::Handler
     {
     public:
         SessionNotificationsHandlerMock()
         {
-            AzFramework::SessionNotificationBus::Handler::BusConnect();
+            Multiplayer::SessionNotificationBus::Handler::BusConnect();
         }
 
         ~SessionNotificationsHandlerMock()
         {
-            AzFramework::SessionNotificationBus::Handler::BusDisconnect();
+            Multiplayer::SessionNotificationBus::Handler::BusDisconnect();
         }
 
         MOCK_METHOD0(OnSessionHealthCheck, bool());
-        MOCK_METHOD1(OnCreateSessionBegin, bool(const AzFramework::SessionConfig&));
+        MOCK_METHOD1(OnCreateSessionBegin, bool(const Multiplayer::SessionConfig&));
         MOCK_METHOD0(OnCreateSessionEnd, void());
         MOCK_METHOD0(OnDestroySessionBegin, bool());
         MOCK_METHOD0(OnDestroySessionEnd, void());
-        MOCK_METHOD2(OnUpdateSessionBegin, void(const AzFramework::SessionConfig&, const AZStd::string&));
+        MOCK_METHOD2(OnUpdateSessionBegin, void(const Multiplayer::SessionConfig&, const AZStd::string&));
         MOCK_METHOD0(OnUpdateSessionEnd, void());
     };
 
@@ -255,9 +255,9 @@ R"({
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
-        if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+        if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
         {
-            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
+            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
         }
 
         SessionNotificationsHandlerMock handlerMock;
@@ -270,16 +270,16 @@ R"({
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
-        EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnProcessTerminate_OnDestroySessionBeginReturnsTrue_TerminationNotificationSent)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
-        if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+        if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
         {
-            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
+            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
         }
 
         SessionNotificationsHandlerMock handlerMock;
@@ -292,16 +292,16 @@ R"({
 
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
 
-        EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnProcessTerminate_OnDestroySessionBeginReturnsTrue_TerminationNotificationSentButFail)
     {
         m_serverManager->InitializeGameLiftServerSDK();
         m_serverManager->NotifyGameLiftProcessReady();
-        if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get())
+        if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
         {
-            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
+            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(m_serverManager.get());
         }
 
         SessionNotificationsHandlerMock handlerMock;
@@ -316,7 +316,7 @@ R"({
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onProcessTerminateFunc();
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
-        EXPECT_FALSE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnHealthCheck_OnSessionHealthCheckReturnsTrue_CallbackFunctionReturnsTrue)
@@ -356,10 +356,12 @@ R"({
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(false));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(Aws::GameLift::Server::Model::GameSession());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnStartGameSession_ActivateGameSessionSucceeds_RegisterAsHandler)
@@ -369,7 +371,6 @@ R"({
         SessionNotificationsHandlerMock handlerMock;
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(1);
-        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
             .WillOnce(testing::Return(Aws::GameLift::GenericOutcome(nullptr)));
@@ -379,8 +380,14 @@ R"({
         testProperty.SetValue("testValue");
         testSession.AddGameProperties(testProperty);
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(testSession);
-        EXPECT_TRUE(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get());
+        EXPECT_TRUE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
+
+        // clean up
+        EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ProcessEnding()).Times(1);
         m_serverManager->HandleDestroySession();
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnStartGameSession_ActivateGameSessionFails_TerminationNotificationSent)
@@ -391,6 +398,7 @@ R"({
         EXPECT_CALL(handlerMock, OnCreateSessionBegin(testing::_)).Times(1).WillOnce(testing::Return(true));
         EXPECT_CALL(handlerMock, OnCreateSessionEnd()).Times(0);
         EXPECT_CALL(handlerMock, OnDestroySessionBegin()).Times(1).WillOnce(testing::Return(true));
+        EXPECT_CALL(handlerMock, OnDestroySessionEnd()).Times(1);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), ActivateGameSession())
             .Times(1)
             .WillOnce(testing::Return(Aws::GameLift::GenericOutcome()));
@@ -398,6 +406,7 @@ R"({
         AZ_TEST_START_TRACE_SUPPRESSION;
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(Aws::GameLift::Server::Model::GameSession());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_FALSE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
     }
 
     TEST_F(GameLiftServerManagerTest, OnUpdateGameSession_TriggerWithUnknownReason_OnUpdateSessionGetCalledOnce)
@@ -465,14 +474,14 @@ R"({
     TEST_F(GameLiftServerManagerTest, ValidatePlayerJoinSession_CallWithInvalidConnectionConfig_GetFalseResultAndExpectedErrorLog)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        auto result = m_serverManager->ValidatePlayerJoinSession(AzFramework::PlayerConnectionConfig());
+        auto result = m_serverManager->ValidatePlayerJoinSession(Multiplayer::PlayerConnectionConfig());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
     }
 
     TEST_F(GameLiftServerManagerTest, ValidatePlayerJoinSession_CallWithDuplicatedConnectionId_GetFalseResultAndExpectedErrorLog)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig1;
+        Multiplayer::PlayerConnectionConfig connectionConfig1;
         connectionConfig1.m_playerConnectionId = 123;
         connectionConfig1.m_playerSessionId = "dummyPlayerSessionId1";
         GenericOutcome successOutcome(nullptr);
@@ -480,7 +489,7 @@ R"({
             .Times(1)
             .WillOnce(Return(successOutcome));
         m_serverManager->ValidatePlayerJoinSession(connectionConfig1);
-        AzFramework::PlayerConnectionConfig connectionConfig2;
+        Multiplayer::PlayerConnectionConfig connectionConfig2;
         connectionConfig2.m_playerConnectionId = 123;
         connectionConfig2.m_playerSessionId = "dummyPlayerSessionId2";
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -491,7 +500,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, ValidatePlayerJoinSession_CallWithValidConnectionConfigButErrorOutcome_GetFalseResultAndExpectedErrorLog)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId1";
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), AcceptPlayerSession(testing::_)).Times(1);
@@ -503,7 +512,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, ValidatePlayerJoinSession_CallWithValidConnectionConfigAndSuccessOutcome_GetTrueResult)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId1";
         GenericOutcome successOutcome(nullptr);
@@ -516,7 +525,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, ValidatePlayerJoinSession_CallWithFirstErrorSecondSuccess_GetFirstFalseSecondTrueResult)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig1;
+        Multiplayer::PlayerConnectionConfig connectionConfig1;
         connectionConfig1.m_playerConnectionId = 123;
         connectionConfig1.m_playerSessionId = "dummyPlayerSessionId1";
         GenericOutcome successOutcome(nullptr);
@@ -530,7 +539,7 @@ R"({
         auto result = m_serverManager->ValidatePlayerJoinSession(connectionConfig1);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
-        AzFramework::PlayerConnectionConfig connectionConfig2;
+        Multiplayer::PlayerConnectionConfig connectionConfig2;
         connectionConfig2.m_playerConnectionId = 123;
         connectionConfig2.m_playerSessionId = "dummyPlayerSessionId2";
         result = m_serverManager->ValidatePlayerJoinSession(connectionConfig2);
@@ -549,7 +558,7 @@ R"({
         for (int index = 0; index < testThreadNumber; index++)
         {
             testThreadPool.emplace_back(AZStd::thread([&]() {
-                AzFramework::PlayerConnectionConfig connectionConfig;
+                Multiplayer::PlayerConnectionConfig connectionConfig;
                 connectionConfig.m_playerConnectionId = 123;
                 connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
                 auto result = m_serverManager->ValidatePlayerJoinSession(connectionConfig);
@@ -571,19 +580,19 @@ R"({
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_)).Times(0);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        m_serverManager->HandlePlayerLeaveSession(AzFramework::PlayerConnectionConfig());
+        m_serverManager->HandlePlayerLeaveSession(Multiplayer::PlayerConnectionConfig());
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithNonExistentPlayerConnectionId_GetExpectedErrorLog)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
         auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
         EXPECT_TRUE(result);
 
-        AzFramework::PlayerConnectionConfig connectionConfig1;
+        Multiplayer::PlayerConnectionConfig connectionConfig1;
         connectionConfig1.m_playerConnectionId = 456;
         connectionConfig1.m_playerSessionId = "dummyPlayerSessionId";
 
@@ -596,7 +605,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithValidConnectionConfigButErrorOutcome_GetExpectedErrorLog)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
         auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
@@ -615,7 +624,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithValidConnectionConfigAndSuccessOutcome_RemovePlayerSessionNotificationSent)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
         auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
@@ -631,7 +640,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithMultithread_OnlyOneNotificationIsSent)
     {
-        AzFramework::PlayerConnectionConfig connectionConfig;
+        Multiplayer::PlayerConnectionConfig connectionConfig;
         connectionConfig.m_playerConnectionId = 123;
         connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
         auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
@@ -733,6 +742,72 @@ R"({
         EXPECT_TRUE(actualResult[0].m_team == "testteam");
         EXPECT_TRUE(actualResult[0].m_playerId == "testplayer");
         EXPECT_TRUE(actualResult[0].m_playerAttributes.size() == 4);
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSEnabled_GetExpectedResult)
+    {
+        AZStd::string expectedResult = "gameliftunittestcertificate.pem";
+        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
+        certificateResult.SetCertificatePath(expectedResult.c_str());
+        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(certificateOutcome));
+
+        auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSDisabled_GetEmptyResult)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSEnabled_GetExpectedResult)
+    {
+        AZStd::string expectedResult = "gameliftunittestprivatekey.pem";
+        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
+        certificateResult.SetPrivateKeyPath(expectedResult.c_str());
+        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(certificateOutcome));
+
+        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
+        EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSDisabled_GetEmptyResult)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetInternalSessionCertificate_Call_GetEmptyResult)
+    {
+        auto actualResult = m_serverManager->GetInternalSessionCertificate();
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
+    TEST_F(GameLiftServerManagerTest, GetInternalSessionPrivateKey_Call_GetEmptyResult)
+    {
+        auto actualResult = m_serverManager->GetInternalSessionPrivateKey();
+        EXPECT_STREQ(actualResult.c_str(), "");
     }
 
     TEST_F(GameLiftServerManagerTest, GetActiveServerMatchBackfillPlayers_CallWithMultiDescribePlayerButError_GetEmptyResult)

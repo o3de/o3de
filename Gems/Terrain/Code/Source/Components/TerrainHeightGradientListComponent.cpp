@@ -20,6 +20,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
+AZ_DECLARE_BUDGET(Terrain);
 
 namespace Terrain
 {
@@ -99,7 +100,6 @@ namespace Terrain
     void TerrainHeightGradientListComponent::Activate()
     {
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(GetEntityId());
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
@@ -116,15 +116,19 @@ namespace Terrain
             }
         }
 
+        Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(GetEntityId());
+
         // Cache any height data needed and notify that the area has changed.
         OnCompositionChanged();
     }
 
     void TerrainHeightGradientListComponent::Deactivate()
     {
+        // Disconnect before doing any other teardown. This will guarantee that any active queries have finished before we proceed.
+        Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
+
         m_dependencyMonitor.Reset();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-        Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this height data will no longer exist, notify the terrain system to refresh the area.
@@ -158,13 +162,20 @@ namespace Terrain
         AZ::Vector3& outPosition,
         bool& terrainExists)
     {
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
+        AZStd::shared_lock lock(m_queryMutex);
+
         float maxSample = 0.0f;
         terrainExists = false;
-        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependences with terrain height entity references");
-        if (!m_isRequestInProgress)
+
+        AZ_ErrorOnce(
+            "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
-            GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
+            GradientSignal::GradientSampleParams params(inPosition);
 
             // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
             // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a value
@@ -185,38 +196,110 @@ namespace Terrain
                     maxSample = AZ::GetMax(maxSample, sample);
                 }
             }
-            m_isRequestInProgress = false;
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
-        outPosition.SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+        outPosition.Set(inPosition.GetX(), inPosition.GetY(), AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
     }
+
+    void TerrainHeightGradientListComponent::GetHeights(
+        AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
+    {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        // Make sure we don't run queries simultaneously with changing any of the cached data.
+        AZStd::shared_lock lock(m_queryMutex);
+
+        AZ_Assert(
+            inOutPositionList.size() == terrainExistsList.size(), "The position list size doesn't match the terrainExists list size.");
+
+        AZ_ErrorOnce(
+            "Terrain", !Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with terrain height entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        if (!Terrain::TerrainAreaHeightRequestBus::HasReentrantEBusUseThisThread())
+        {
+            // Start by initializing all our terrainExists flags to false.
+            AZStd::fill(terrainExistsList.begin(), terrainExistsList.end(), false);
+
+            // Create a temporary buffer for storing all the gradient values for the currently-queried gradient.
+            AZStd::vector<float> curGradientSamples(inOutPositionList.size());
+
+            // Create a temporary buffer for storing all the max gradient values.
+            AZStd::vector<float> maxValueSamples(inOutPositionList.size());
+
+            // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
+            // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a
+            // value of 0 outside their data bounds if they're using bounded data.  We should examine the possibility of extending the
+            // gradient API to provide actual bounds so that it's possible to detect if the gradient even 'exists' in an area, at which
+            // point we could just make this list a prioritized list from top to bottom for any points that overlap.
+            for (auto& gradientId : m_configuration.m_gradientEntities)
+            {
+                if (gradientId.IsValid())
+                {
+                    GradientSignal::GradientRequestBus::Event(
+                        gradientId, &GradientSignal::GradientRequestBus::Events::GetValues, inOutPositionList, curGradientSamples);
+
+                    for (size_t index = 0; index < maxValueSamples.size(); index++)
+                    {
+                        maxValueSamples[index] = AZ::GetMax(maxValueSamples[index], curGradientSamples[index]);
+
+                        // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for
+                        // terrain to *not* exist at a specific point.
+                        terrainExistsList[index] = true;
+                    }
+                }
+            }
+
+            for (size_t index = 0; index < inOutPositionList.size(); index++)
+            {
+                if (terrainExistsList[index])
+                {
+                    const float height =
+                        AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxValueSamples[index]);
+                    inOutPositionList[index].SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+                }
+            }
+        }
+    }
+
+
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
-        RefreshMinMaxHeights();
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::HeightData);
-    }
+        // We query the shape and world bounds prior to locking the queryMutex to help reduce the chances of deadlocks between
+        // threads due to the EBus call mutexes.
 
-    void TerrainHeightGradientListComponent::RefreshMinMaxHeights()
-    {
         // Get the height range of our height provider based on the shape component.
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+        AZ::Aabb shapeBounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            shapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         // Get the height range of the entire world
-        m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution);
-
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
 
-        // Save off the min/max heights so that we don't have to re-query them on every single height query.
-        m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
-        m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
+        // Ensure that we only change our cached data and terrain registration status when no queries are actively running.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+
+            m_cachedShapeBounds = shapeBounds;
+
+            // Save off the min/max heights so that we don't have to re-query them on every single height query.
+            m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
+            m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
+        }
+
+        // We specifically refresh this outside of the queryMutex lock to avoid lock inversion deadlocks. These can occur if one thread
+        // is calling TerrainHeightGradientListComponent::OnCompositionChanged -> TerrainSystem::RefreshArea, and another thread
+        // is running a query like TerrainSystem::GetHeights -> TerrainHeightGradientListComponent::GetHeights.
+        // It's ok if a query is able to run in-between the cache change and the RefreshArea call, because the RefreshArea should cause
+        // the querying system to refresh and achieve eventual consistency.
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     void TerrainHeightGradientListComponent::OnTerrainDataChanged(

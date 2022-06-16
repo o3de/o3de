@@ -14,7 +14,6 @@ namespace AZ
         namespace Platform
         {
             MTLPixelFormat ConvertPixelFormat(RHI::Format format);
-            MTLBlitOption GetBlitOption(RHI::Format format);
             MTLSamplerAddressMode ConvertAddressMode(RHI::AddressMode addressMode);
             MTLResourceOptions CovertStorageMode(MTLStorageMode storageMode);
             MTLStorageMode GetCPUGPUMemoryMode();

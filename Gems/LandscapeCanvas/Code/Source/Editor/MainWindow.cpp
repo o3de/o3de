@@ -19,13 +19,16 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <IEditor.h>
 
@@ -37,6 +40,7 @@
 
 // Qt
 #include <QApplication>
+#include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -80,6 +84,7 @@
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
+#include <Editor/Nodes/Gradients/GradientBakerNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -114,6 +119,7 @@ namespace LandscapeCanvasEditor
     static const char* PreviewEntityElementName = "PreviewEntity";
     static const char* GradientIdElementName = "GradientId";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
+    static const char* InputBoundsEntityIdElementName = "InputBounds";
     static const char* VegetationAreaEntityIdElementName = "element";
 
     static IEditor* GetLegacyEditor()
@@ -338,6 +344,7 @@ namespace LandscapeCanvasEditor
         gradientCategory->SetTitlePalette("GradientNodeTitlePalette");
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, AltitudeGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ConstantGradientNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(gradientCategory, GradientBakerNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ImageGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, PerlinNoiseGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, RandomNoiseGradientNode, editorId);
@@ -448,6 +455,8 @@ namespace LandscapeCanvasEditor
         return config;
     }
 
+    AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+    
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
@@ -470,8 +479,14 @@ namespace LandscapeCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            s_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
         m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
         AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(m_readOnlyEntityPublicInterface, "LandscapeCanvas - could not get ReadOnlyEntityPublicInterface on construction.");
 
         const GraphCanvas::EditorId& editorId = GetEditorId();
 
@@ -519,7 +534,7 @@ namespace LandscapeCanvasEditor
         LandscapeCanvas::LandscapeCanvasRequestBus::Handler::BusDisconnect();
     }
 
-    GraphModel::IGraphContextPtr MainWindow::GetGraphContext() const
+    GraphModel::GraphContextPtr MainWindow::GetGraphContext() const
     {
         return LandscapeCanvas::GraphContext::GetInstance();
     }
@@ -836,6 +851,26 @@ namespace LandscapeCanvasEditor
     void MainWindow::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
     {
         using namespace AzFramework::Terrain;
+
+        // Detect if it's possible to create a new entity in the current context
+        AZ::EntityId focusRootEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(focusRootEntityId))
+        {
+            // Abort
+            CloseEditor(dockWidget->GetDockWidgetId());
+
+            QWidget* activeWindow = AzToolsFramework::GetActiveWindow();
+
+            QMessageBox::warning(
+                activeWindow,
+                QString("Landscape Canvas Asset Creation Error"),
+                QString("Could not create new Landscape Canvas asset under read-only entity."),
+                QMessageBox::Ok,
+                QMessageBox::Ok
+            );
+
+            return;
+        }
 
         // Invoke the GraphCanvas base instead of the GraphModelIntegration::EditorMainWindow so that we
         // can do our own custom handling when opening an existing graph
@@ -1195,6 +1230,7 @@ namespace LandscapeCanvasEditor
         static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
+        static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
         static const char* PinToShapeEntityIdPropertyPath = "Pin To Shape Entity Id";
         static const char* VegetationAreasPropertyPath = "Vegetation Areas";
 
@@ -1218,6 +1254,10 @@ namespace LandscapeCanvasEditor
             else if (slotName == LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID)
             {
                 propertyPath = PinToShapeEntityIdPropertyPath;
+            }
+            else if (slotName == LandscapeCanvas::INPUT_BOUNDS_SLOT_ID)
+            {
+                propertyPath = InputBoundsEntityIdPropertyPath;
             }
         } break;
         case LandscapeCanvas::LandscapeCanvasDataTypeEnum::Gradient:
@@ -3065,6 +3105,11 @@ namespace LandscapeCanvasEditor
                     inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
                     return false;
                 }
+                else if (strcmp(classElement->m_name, InputBoundsEntityIdElementName) == 0)
+                {
+                    inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
+                    return false;
+                }
             }
 
             return true;
@@ -3083,12 +3128,16 @@ namespace LandscapeCanvasEditor
         // Connect any inbound shape slots to the corresponding shape bounds
         if (inboundShapeEntityId.IsValid())
         {
-            // We have two different inbound shape slots that share the same underlying property,
+            // We have multiple inbound shape slots that share the same underlying property,
             // so we need to figure out which kind of inbound shape slot this node has
             GraphModel::SlotId shapeSlotId(LandscapeCanvas::INBOUND_SHAPE_SLOT_ID);
             if (!node->GetSlot(shapeSlotId))
             {
                 shapeSlotId = GraphModel::SlotId(LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID);
+                if (!node->GetSlot(shapeSlotId))
+                {
+                    shapeSlotId = GraphModel::SlotId(LandscapeCanvas::INPUT_BOUNDS_SLOT_ID);
+                }
             }
 
             shapeSlotEntityPairs.push_back(AZStd::make_pair(shapeSlotId, inboundShapeEntityId));

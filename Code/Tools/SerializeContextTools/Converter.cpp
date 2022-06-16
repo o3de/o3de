@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Utils/Utils.h>
 #include <Application.h>
@@ -463,56 +464,17 @@ namespace AZ
             }
             modulesDoc.AddMember(rapidjson::StringRef("Modules"), AZStd::move(moduleList), modulesDoc.GetAllocator());
 
-            struct GemVisitor
-                : public AZ::SettingsRegistryInterface::Visitor
+            rapidjson::Value gemPathList(rapidjson::kArrayType);
+            // Visit each gem target "SourcePaths" entry within the settings registry
+            auto AppendGemPaths = [&gemPathList, &modulesDoc]
+            (AZStd::string_view, AZStd::string_view gemPath)
             {
-                GemVisitor(rapidjson::Value& gemSourcePaths, rapidjson::Document& modulesDoc)
-                    : m_gemSourcePaths{ gemSourcePaths }
-                    , m_modulesDoc{ modulesDoc }
-                {}
-
-                AZ::SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
-                    AZ::SettingsRegistryInterface::VisitAction action, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type) override
-                {
-                    if (valueName == "SourcePaths")
-                    {
-                        if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
-                        {
-                            // Allows merging of the registry folders within the gem source path array
-                            // via the Visit function
-                            m_processingSourcePathKey = true;
-                        }
-                        else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
-                        {
-                            // The end of the gem source path array has been reached
-                            m_processingSourcePathKey = false;
-                        }
-                    }
-
-                    return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                }
-
-                using AZ::SettingsRegistryInterface::Visitor::Visit;
-                void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
-                {
-                    if (m_processingSourcePathKey)
-                    {
-                        m_gemSourcePaths.PushBack(rapidjson::StringRef(value.data(), value.size()), m_modulesDoc.GetAllocator());
-                    }
-                }
-
-                rapidjson::Value& m_gemSourcePaths;
-                rapidjson::Document& m_modulesDoc;
-                bool m_processingSourcePathKey{};
+                gemPathList.PushBack(rapidjson::StringRef(gemPath.data(), gemPath.size()), modulesDoc.GetAllocator());
             };
 
-            // Visit each gem target "SourcePaths" entry within the settings registry
-            rapidjson::Value gemPathList(rapidjson::kArrayType);
-            GemVisitor visitor{ gemPathList, modulesDoc };
-            const auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems",
-                AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+            
             AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
-            registry.Visit(visitor, gemListKey);
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(registry, AppendGemPaths);
 
             modulesDoc.AddMember(rapidjson::StringRef("GemFolders"), AZStd::move(gemPathList), modulesDoc.GetAllocator());
             documents.emplace_back(AZStd::move(modulesFilePath.Native()), AZStd::move(modulesDoc));
@@ -608,85 +570,59 @@ namespace AZ
             const AZStd::string& configurationName, const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings)
         {
             using namespace AZ::JsonSerializationResult;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            using Type = AZ::SettingsRegistryInterface::Type;
 
             AZStd::fixed_string<128> gemName;
-            AZStd::vector<AZ::IO::FixedMaxPath> gemModuleSourcePaths;
-            AZ::ModuleManagerRequestBus::Broadcast([&gemModuleSourcePaths, &gemName, gemModuleClassId = entity.m_moduleClassId](AZ::ModuleManagerRequests* request)
+            AZ::IO::FixedMaxPath gemModuleSourcePath;
+            AZ::ModuleManagerRequestBus::Broadcast([&gemModuleSourcePath, &gemName, gemModuleClassId = entity.m_moduleClassId](AZ::ModuleManagerRequests* request)
             {
-                request->EnumerateModules([&gemModuleSourcePaths, &gemName, &gemModuleClassId](const AZ::ModuleData& moduleData) -> bool
+                AZ_UNUSED(gemModuleClassId);
+                auto EnumerateGemModules = [&gemModuleSourcePath, &gemName, &gemModuleClassId](const AZ::ModuleData& moduleData) -> bool
                 {
                     AZ::Module* moduleInst = moduleData.GetModule();
                     if (moduleInst && AZ::RttiTypeId(*moduleInst) == gemModuleClassId)
                     {
-                        struct GemBuildSystemVisitor
-                            : AZ::SettingsRegistryInterface::Visitor
+                        auto settingsRegistry = AZ::SettingsRegistry::Get();
+                        auto VisitGemObject = [&gemName, &gemModuleSourcePath, settingsRegistry,
+                            moduleFilename = AZStd::string_view(moduleData.GetDynamicModuleHandle()->GetFilename())]
+                            (AZStd::string_view gemNameEntry, AZ::IO::PathView gemSourcePath)
                         {
-                            GemBuildSystemVisitor(AZStd::string_view moduleFilename, AZStd::vector<AZ::IO::FixedMaxPath>& gemSourcePaths)
-                                : m_gemModuleFilename(moduleFilename)
-                                , m_gemSourcePaths(gemSourcePaths)
-                            {}
-
-                            AZ::SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
-                                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override
+                            auto VisitGemObjectFields = [&gemName, &gemModuleSourcePath, &settingsRegistry, &moduleFilename,
+                                &gemNameEntry, &gemSourcePath]
+                                (AZStd::string_view jsonPath, AZStd::string_view, Type)
                             {
-                                if (m_gemSourcePathStored)
+                                auto FindModuleFilename = [&gemName, &gemModuleSourcePath, &settingsRegistry, &moduleFilename,
+                                    &gemNameEntry, &gemSourcePath]
+                                    (AZStd::string_view gemModulesElementJsonPath, AZStd::string_view, Type)
                                 {
-                                    return AZ::SettingsRegistryInterface::VisitResponse::Done;
-                                }
+                                    AZ::IO::Path modulePath;
+                                    if (settingsRegistry->Get(modulePath.Native(), gemModulesElementJsonPath)
+                                        && modulePath.Native().ends_with(moduleFilename))
+                                    {
+                                        gemName = gemNameEntry;
+                                        gemModuleSourcePath = gemSourcePath;
+                                    }
+                                };
+                                auto gemModulesJsonPath = FixedValueString::format("%.*s/Modules",
+                                    AZ_STRING_ARG(jsonPath));
+                                AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, FindModuleFilename, gemModulesJsonPath);
+                            };
 
-                                // Store off the name of the Gem target when it is parsed underneath the /Amazon/Gems JSON pointer path
-                                // The names of gems are keys on the /Amazon/Gems JSON object which is at a depth of 1
-                                if (m_keyDepthIndex == 1)
-                                {
-                                    m_gemName = valueName;
-                                }
-
-                                if (action == SettingsRegistryInterface::VisitAction::Begin)
-                                {
-                                    ++m_keyDepthIndex;
-                                }
-                                else if (action == SettingsRegistryInterface::VisitAction::End)
-                                {
-                                    --m_keyDepthIndex;
-                                }
-
-                                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                            }
-
-                            using AZ::SettingsRegistryInterface::Visitor::Visit;
-                            void Visit(AZStd::string_view path, AZStd::string_view valueName, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type,
-                                AZStd::string_view value) override
-                            {
-                                if (valueName == "Module" && m_gemModuleFilename.find(value) != AZStd::string_view::npos)
-                                {
-                                    m_moduleFilenameMatches = true;
-                                }
-                                else if (m_moduleFilenameMatches && path.find("SourcePaths") != AZStd::string_view::npos)
-                                {
-                                    m_gemSourcePaths.emplace_back(value);
-                                    m_gemSourcePathStored = true;
-                                    m_moduleFilenameMatches = false;
-                                }
-                            }
-                            AZStd::string_view m_gemModuleFilename;
-                            AZStd::vector<AZ::IO::FixedMaxPath>& m_gemSourcePaths;
-                            AZStd::fixed_string<128> m_gemName;
-                            bool m_moduleFilenameMatches{};
-                            bool m_gemSourcePathStored{};
-                            int32_t m_keyDepthIndex{};
+                            auto gemObjectJsonPath = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%.*s/Targets",
+                                AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey, AZ_STRING_ARG(gemNameEntry));
+                            AZ::SettingsRegistryVisitorUtils::VisitField(*settingsRegistry, VisitGemObjectFields, gemObjectJsonPath);
                         };
 
-                        GemBuildSystemVisitor visitor{ AZStd::string_view{moduleData.GetDynamicModuleHandle()->GetFilename()}, gemModuleSourcePaths };
-                        const auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems",
-                            AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-                        AZ::SettingsRegistry::Get()->Visit(visitor, gemListKey);
-                        gemName = visitor.m_gemName;
+                        AZ::SettingsRegistryMergeUtils::VisitActiveGems(*settingsRegistry, VisitGemObject);
                     }
                     return true;
-                });
+                };
+
+                request->EnumerateModules(EnumerateGemModules);
             });
 
-            if (gemModuleSourcePaths.empty())
+            if (gemModuleSourcePath.empty())
             {
                 AZ_Warning("Convert", false, "Unable to find a gem folder to write output registry for module entity '%s'.", entity.GetName().c_str());
                 return false;
@@ -700,7 +636,7 @@ namespace AZ
                 AZ_Warning("Convert", false, "Unable To find Engine Root Path at key '%s' in the Settings Registry",
                     AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
             }
-            registryPath /= gemModuleSourcePaths.front();
+            registryPath /= gemModuleSourcePath;
             registryPath /= "Registry";
             AZStd::string configurationNameLower = configurationName;
             AZStd::to_lower(configurationNameLower.begin(), configurationNameLower.end());

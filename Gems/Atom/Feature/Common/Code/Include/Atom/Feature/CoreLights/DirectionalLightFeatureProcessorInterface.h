@@ -163,6 +163,25 @@ namespace AZ
 
             //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
             virtual void SetNormalShadowBias(LightHandle handle, float normalShadowBias) = 0;
+
+            //! Sets whether or not blending between shadow map cascades is enabled.
+            virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets whether or not to apply fullscreen blur after fullscreen shadow pass
+            virtual void SetFullscreenBlurEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets the amount of constant falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) = 0;
+
+            //! Sets the strength of the depth falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) = 0;
+
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+
         };
     } // namespace Render
 } // namespace AZ

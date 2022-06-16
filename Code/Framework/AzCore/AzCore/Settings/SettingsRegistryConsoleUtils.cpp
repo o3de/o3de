@@ -116,7 +116,7 @@ namespace AZ::SettingsRegistryConsoleUtils
         if (settingsRegistry.MergeSettingsFile(filePath, mergeFormat, jsonAnchorPath))
         {
             const auto mergeFileOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
-                R"(Merged json file "%*.s" anchored to json path "%s" into the global settings registry)" "\n",
+                R"(Merged json file "%.*s" anchored to json path "%s" into the global settings registry)" "\n",
                 AZ_STRING_ARG(filePath), jsonAnchorPath.c_str());
             AZ::Debug::Trace::Output("SettingsRegistry", mergeFileOutput.c_str());
         }

@@ -47,7 +47,7 @@ namespace
     const QRegularExpression invalidStart(R"_(^\s*>\s*)_");
     const QRegularExpression invalidEnd(R"_(\s*>\s*$)_");
     const QRegularExpression splitNesting(R"_(\s*>\s*)_");
-    const QRegularExpression selector(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
+    const QRegularExpression s_selectorRegex(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
 
     AZStd::string QtToAz(const QString& source)
     {
@@ -1013,7 +1013,7 @@ namespace GraphCanvas
                 nestedSelectors.reserve(parts.size());
                 for (const QString& part : parts)
                 {
-                    auto matches = selector.match(part);
+                    auto matches = s_selectorRegex.match(part);
                     if (!matches.hasMatch())
                     {
                         qWarning() << "Invalid selector:" << part << "in" << candidate;

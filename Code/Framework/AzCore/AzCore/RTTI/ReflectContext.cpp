@@ -13,6 +13,10 @@
 
 namespace AZ
 {
+    const AZ::Name Attribute::s_typeField = AZ::Name::FromStringLiteral("$type");
+    const AZ::Name Attribute::s_instanceField = AZ::Name::FromStringLiteral("instance");
+    const AZ::Name Attribute::s_attributeField = AZ::Name::FromStringLiteral("attribute");
+
     //=========================================================================
     // OnDemandReflectionOwner
     //=========================================================================

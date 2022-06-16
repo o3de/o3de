@@ -99,7 +99,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
@@ -174,7 +174,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
         const QModelIndex& descendantIndex) const
     {
         if (!painter)
@@ -183,20 +183,51 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
+        // If the owning prefab is focused, the border will be painted in the foreground.
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            return;
+        }
+        
+        QColor borderColor = m_prefabCapsuleDisabledColor;
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        {
+            borderColor = m_prefabCapsuleColor;
+        }
+
+        PaintDescendantBorder(painter, option, index, descendantIndex, borderColor);
+    }
+
+    void PrefabUiHandler::PaintDescendantForeground(
+        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex) const
+    {
+        if (!painter)
+        {
+            AZ_Warning("PrefabUiHandler", false, "PrefabUiHandler - painter is nullptr, can't draw Prefab outliner background.");
+            return;
+        }
+
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
+        // If the owning prefab is not focused, the border will be painted in the background.
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            return;
+        }
+
+        PaintDescendantBorder(painter, option, index, descendantIndex, m_prefabCapsuleEditColor);
+    }
+
+    void PrefabUiHandler::PaintDescendantBorder(
+        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex, const QColor borderColor) const
+    {
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
-
-        // There is no legal way of opening prefabs in their default state, so default to disabled.
-        QColor borderColor = m_prefabCapsuleDisabledColor;
-        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
-        {
-            borderColor = m_prefabCapsuleEditColor;
-        }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
 
@@ -283,7 +314,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
@@ -306,41 +337,37 @@ namespace AzToolsFramework
         {
             // Only show the close icon if the prefab is expanded.
             // This allows the prefab container to be opened if it was collapsed during propagation.
-            if (!isExpanded)
+            if (isExpanded)
             {
-                return;
-            }
+                // Use the same color as the background.
+                QColor backgroundColor = m_backgroundColor;
+                if (isSelected)
+                {
+                    backgroundColor = m_backgroundSelectedColor;
+                }
+                else if (isHovered)
+                {
+                    backgroundColor = m_backgroundHoverColor;
+                }
 
-            // Use the same color as the background.
-            QColor backgroundColor = m_backgroundColor;
-            if (isSelected)
-            {
-                backgroundColor = m_backgroundSelectedColor;
-            }
-            else if (isHovered)
-            {
-                backgroundColor = m_backgroundHoverColor;
-            }
+                // Paint a rect to cover up the expander.
+                QRect rect = QRect(0, 0, 16, 16);
+                rect.translate(option.rect.topLeft() + offset);
+                painter->fillRect(rect, backgroundColor);
 
-            // Paint a rect to cover up the expander.
-            QRect rect = QRect(0, 0, 16, 16);
-            rect.translate(option.rect.topLeft() + offset);
-            painter->fillRect(rect, backgroundColor);
-
-            // Paint the icon.
-            QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                // Paint the icon.
+                QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+            }
         }
         else
         {
             // Only show the edit icon on hover.
-            if (!isHovered)
+            if (isHovered)
             {
-                return;
+                QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
             }
-
-            QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
         }
 
         painter->restore();
@@ -389,7 +416,7 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
@@ -415,7 +442,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::OnOutlinerItemCollapse(const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
@@ -424,8 +451,10 @@ namespace AzToolsFramework
         }
     }
 
-    bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    bool PrefabUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const
     {
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+
         if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             // Focus on this prefab

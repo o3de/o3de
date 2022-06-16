@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 
 #include "EditorComponentBase.h"
 #include "TransformComponentBus.h"
@@ -160,6 +161,8 @@ namespace AzToolsFramework
             void UpdateCachedWorldTransform();
             void ClearCachedWorldTransform();
 
+            bool ShowClearButtonHandler();
+
             // SliceEntityHierarchyRequestBus
             AZ::EntityId GetSliceEntityParentId() override;
             AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
@@ -238,12 +241,10 @@ namespace AzToolsFramework
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
 
-            // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
-            // element is used rather than a data element.
-            bool m_addNonUniformScaleButton = false;
-
             // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
             bool m_initialized = false;
+
+            FocusModeInterface* m_focusModeInterface = nullptr;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

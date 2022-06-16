@@ -9,9 +9,9 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -45,9 +45,46 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    AZStd::string AtomToolsApplication::GetBuildTargetName() const
+    AtomToolsApplication* AtomToolsApplication::m_instance = {};
+
+    AtomToolsApplication::AtomToolsApplication(const char* targetName, int* argc, char*** argv)
+        : Application(argc, argv)
+        , AzQtApplication(*argc, *argv)
+        , m_targetName(targetName)
+        , m_toolId(targetName)
     {
-        return AZStd::string("AtomTools");
+        m_instance = this;
+
+        // The settings registry has been created at this point, so add the CMake target
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
+            *AZ::SettingsRegistry::Get(), m_targetName);
+
+        // Suppress spam from the Source Control system
+        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
+
+        installEventFilter(new AzQtComponents::GlobalEventFilter(this));
+
+        const AZ::IO::FixedMaxPath engineRootPath(
+            GetSettingsValue(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZStd::string()));
+        m_styleManager.reset(new AzQtComponents::StyleManager(this));
+        m_styleManager->initialize(this, engineRootPath);
+
+        AtomToolsMainWindowNotificationBus::Handler::BusConnect(m_toolId);
+    }
+
+    AtomToolsApplication ::~AtomToolsApplication()
+    {
+        m_instance = {};
+        m_styleManager.reset();
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
+    }
+
+    void AtomToolsApplication::CreateReflectionManager()
+    {
+        Base::CreateReflectionManager();
+        GetSerializeContext()->CreateEditContext();
     }
 
     const char* AtomToolsApplication::GetCurrentConfigurationName() const
@@ -59,52 +96,6 @@ namespace AtomToolsFramework
 #else
         return "ProfileAtomTools";
 #endif
-    }
-
-    AtomToolsApplication::AtomToolsApplication(int* argc, char*** argv)
-        : Application(argc, argv)
-        , AzQtApplication(*argc, *argv)
-    {
-        // Suppress spam from the Source Control system
-        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
-
-        installEventFilter(new AzQtComponents::GlobalEventFilter(this));
-
-        AZ::IO::FixedMaxPath engineRootPath;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-        {
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        }
-
-        m_styleManager.reset(new AzQtComponents::StyleManager(this));
-        m_styleManager->initialize(this, engineRootPath);
-
-        m_timer.setInterval(1);
-        connect(&m_timer, &QTimer::timeout, this, [this]()
-        {
-            this->PumpSystemEventLoopUntilEmpty();
-            this->Tick();
-        });
-
-        connect(this, &QGuiApplication::applicationStateChanged, this, [this]()
-        {
-            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
-            this->m_timer.setInterval((applicationState() & Qt::ApplicationActive) ? 1 : 32);
-        });
-    }
-
-    AtomToolsApplication ::~AtomToolsApplication()
-    {
-        m_styleManager.reset();
-        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
-    }
-
-    void AtomToolsApplication::CreateReflectionManager()
-    {
-        Base::CreateReflectionManager();
-        GetSerializeContext()->CreateEditContext();
     }
 
     void AtomToolsApplication::Reflect(AZ::ReflectContext* context)
@@ -129,10 +120,16 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "atomtools.general");
             };
-            // The reflection here is based on patterns in CryEditPythonHandler::Reflect
+
             addGeneral(behaviorContext->Method(
                 "idle_wait_frames", &AtomToolsApplication::PyIdleWaitFrames, nullptr,
                 "Waits idling for a frames. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "exit", &AtomToolsApplication::PyExit, nullptr,
+                "Exit application. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "test_output", &AtomToolsApplication::PyTestOutput, nullptr,
+                "Report test information."));
         }
     }
 
@@ -153,7 +150,9 @@ namespace AtomToolsFramework
         components.insert(
             components.end(),
             {
+                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
+                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
@@ -170,17 +169,34 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        AzFramework::AssetSystemStatusBus::Handler::BusConnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
 
         Base::StartCommon(systemEntity);
 
-        const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
-        m_traceLogger.OpenLogFile(GetBuildTargetName() + ".log", clearLogFile);
+        // Before serializing data to the log file, determine if it should be cleared first.
+        const bool clearLogFile = GetSettingsValue("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
+
+        // Now that the base application is initialized, open the file to record any log messages and dump any pending content into it.
+        if (m_commandLine.HasSwitch("logfile"))
+        {
+            // If a custom log file name was supplied via command line, redirect output to it.
+            m_traceLogger.OpenLogFile(m_commandLine.GetSwitchValue("logfile", 0), clearLogFile);
+        }
+        else
+        {
+            m_traceLogger.OpenLogFile(m_targetName + ".log", clearLogFile);
+        }
+
+        ConnectToAssetProcessor();
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
+
+        // Disabling source control integration by default to disable messages and menus if no supported source control system is active
+        const bool enableSourceControl = GetSettingsValue("/O3DE/AtomToolsFramework/Application/EnableSourceControl", false);
+        AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
+            &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {
@@ -189,8 +205,7 @@ namespace AtomToolsFramework
 
         LoadSettings();
 
-        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
 
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
@@ -201,22 +216,48 @@ namespace AtomToolsFramework
             editorPythonEventsInterface->StartPython();
         }
 
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
+        // Handle command line options for setting up a test environment that should not be affected forwarding commands from other
+        // instances of an application
+        if (m_commandLine.HasSwitch("autotest_mode") || m_commandLine.HasSwitch("runpythontest"))
+        {
+            // Nullroute all stdout to null for automated tests, this way we make sure
+            // that the test result output is not polluted with unrelated output data.
+            RedirectStdoutToNull();
+        }
+        else
+        {
+            // Enable native UI for some low level system popup message when it's not in automated test mode
+            if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+            {
+                nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+            }
+        }
 
-        m_timer.start();
-    }
-
-    void AtomToolsApplication::OnMainWindowClosing()
-    {
-        ExitMainLoop();
+        // Per Qt documentation, forcing Stop to be called when the application is about to quit in case exit bypasses Stop or destructor
+        connect(this, &QApplication::aboutToQuit, this, [this] { Stop(); });
     }
 
     void AtomToolsApplication::Destroy()
     {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+        m_assetBrowserInteractions.reset();
         m_styleManager.reset();
+
+        // Save application registry settings to a target specific settings file. The file must be named so that it is only loaded for an
+        // application with the corresponding target name.
+        AZStd::string settingsFileName(AZStd::string::format("usersettings.%s.setreg", m_targetName.c_str()));
+        AZStd::to_lower(settingsFileName.begin(), settingsFileName.end());
+
+        const AZ::IO::FixedMaxPath settingsFilePath(
+            AZStd::string::format("%s/user/Registry/%s", AZ::Utils::GetProjectPath().c_str(), settingsFileName.c_str()));
+
+        // This will only save modified registry settings that match the following filters
+        const AZStd::vector<AZStd::string> filters = {
+            "/O3DE/AtomToolsFramework", AZStd::string::format("/O3DE/Atom/%s", m_targetName.c_str()) }; 
+
+        SaveSettingsToFile(settingsFilePath, filters);
+
+        // Handler for serializing legacy user settings
+        UnloadSettings();
 
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
@@ -230,12 +271,45 @@ namespace AtomToolsFramework
 #endif
     }
 
+    void AtomToolsApplication::RunMainLoop()
+    {
+        // Start initial command line processing and application update as part of the Qt event loop 
+        QTimer::singleShot(0, this, [this]() { OnIdle(); ProcessCommandLine(m_commandLine); });
+        exec();
+    }
+
+    void AtomToolsApplication::OnIdle()
+    {
+        // Process a single application tick unless exit was requested
+        if (!WasExitMainLoopRequested())
+        {
+            PumpSystemEventLoopUntilEmpty();
+            TickSystem();
+            Tick();
+
+            // Rescheduling the update every frame with an interval based on the state of the application.
+            // This allows the tool to free up resources for other processes when it's not in focus.
+            const int updateInterval = (applicationState() & Qt::ApplicationActive)
+                ? aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive", 1))
+                : aznumeric_cast<int>(GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive", 250));
+            QTimer::singleShot(updateInterval, this, &AtomToolsApplication::OnIdle);
+            return;
+        }
+
+        quit();
+    }
+
+    void AtomToolsApplication::OnMainWindowClosing()
+    {
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+    }
+
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
     {
         return AZStd::vector<AZStd::string>({});
     }
 
-    void AtomToolsApplication::AssetSystemAvailable()
+    void AtomToolsApplication::ConnectToAssetProcessor()
     {
         bool connectedToAssetProcessor = false;
 
@@ -244,18 +318,17 @@ namespace AtomToolsFramework
         // and able to negotiate a connection when running a debug build
         // and to negotiate a connection
 
-        auto targetName = GetBuildTargetName();
-
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection =
             AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-        connectionSettings.m_connectionIdentifier = GetBuildTargetName();
-        connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
+        connectionSettings.m_connectionIdentifier = m_targetName;
+        connectionSettings.m_loggingCallback = [targetName = m_targetName]([[maybe_unused]] AZStd::string_view logData)
         {
             AZ_UNUSED(targetName);  // Prevent unused warning in release builds
             AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
+
         AzFramework::AssetSystemRequestBus::BroadcastResult(
             connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
 
@@ -263,13 +336,11 @@ namespace AtomToolsFramework
         {
             CompileCriticalAssets();
         }
-
-        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CompileCriticalAssets()
     {
-        AZ_TracePrintf(GetBuildTargetName().c_str(), "Compiling critical assets.\n");
+        AZ_TracePrintf(m_targetName.c_str(), "Compiling critical assets.\n");
 
         QStringList failedAssets;
 
@@ -278,7 +349,7 @@ namespace AtomToolsFramework
         // So the asset id won't be found right after CompileAssetSync call.
         for (const AZStd::string& assetFilters : GetCriticalAssetFilters())
         {
-            AZ_TracePrintf(GetBuildTargetName().c_str(), "Compiling critical asset matching: %s.\n", assetFilters.c_str());
+            AZ_TracePrintf(m_targetName.c_str(), "Compiling critical asset matching: %s.\n", assetFilters.c_str());
 
             // Wait for the asset be compiled
             AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
@@ -293,12 +364,28 @@ namespace AtomToolsFramework
         if (!failedAssets.empty())
         {
             QMessageBox::critical(
-                activeWindow(), QString("Failed to compile critical assets"),
+                GetToolMainWindow(),
+                QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
-                    .arg(failedAssets.join(",\n"))
-                    .arg("Make sure this is an Atom project."));
-            ExitMainLoop();
+                .arg(failedAssets.join(",\n"))
+                .arg("Make sure this is an Atom project."));
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
+
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
     }
 
     void AtomToolsApplication::SaveSettings()
@@ -310,7 +397,7 @@ namespace AtomToolsFramework
             AZ_Assert(context, "No serialize context");
 
             char resolvedPath[AZ_MAX_PATH_LEN] = "";
-            AZStd::string fileName = "@user@/" + GetBuildTargetName() + "UserSettings.xml";
+            AZStd::string fileName = "@user@/" + m_targetName + "UserSettings.xml";
 
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(
                 fileName.c_str(), resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
@@ -325,7 +412,7 @@ namespace AtomToolsFramework
         AZ_Assert(context, "No serialize context");
 
         char resolvedPath[AZ_MAX_PATH_LEN] = "";
-        AZStd::string fileName = "@user@/" + GetBuildTargetName() + "UserSettings.xml";
+        AZStd::string fileName = "@user@/" + m_targetName + "UserSettings.xml";
 
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(fileName.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
 
@@ -348,11 +435,9 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
-        const AZStd::string activateWindowSwitchName = "activatewindow";
-        if (commandLine.HasSwitch(activateWindowSwitchName))
+        if (commandLine.HasSwitch("activatewindow"))
         {
-            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
-                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
+            AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
         }
 
         const AZStd::string timeoputSwitchName = "timeout";
@@ -360,38 +445,116 @@ namespace AtomToolsFramework
         {
             const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
             const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
-            AZ_Printf(GetBuildTargetName().c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
-            QTimer::singleShot(
-                timeoutInMs,
-                [this]
-                {
-                    AZ_Printf(GetBuildTargetName().c_str(), "Timeout reached, shutting down");
-                    ExitMainLoop();
-                });
+            AZ_Printf(m_targetName.c_str(), "Timeout scheduled, shutting down in %u ms", timeoutInMs);
+            QTimer::singleShot(timeoutInMs, this, [this]{
+                AZ_Printf(m_targetName.c_str(), "Timeout reached, shutting down");
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+            });
         }
 
         // Process command line options for running one or more python scripts on startup
-        const AZStd::string runPythonScriptSwitchName = "runpython";
-        size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
-        for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
+        const size_t pythonScriptCount = commandLine.GetNumSwitchValues("runpython");
+        AZStd::vector<AZStd::string_view> pythonScripts;
+        pythonScripts.reserve(pythonScriptCount);
+        for (size_t pythonScriptIndex = 0; pythonScriptIndex < pythonScriptCount; ++pythonScriptIndex)
         {
-            const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
-            AZStd::vector<AZStd::string_view> runPythonArgs;
+            pythonScripts.push_back(commandLine.GetSwitchValue("runpython", pythonScriptIndex));
+        }
 
-            AZ_Printf(GetBuildTargetName().c_str(), "Launching script: %s", runPythonScriptPath.c_str());
+        const size_t pythonTestScriptCount = commandLine.GetNumSwitchValues("runpythontest");
+        AZStd::vector<AZStd::string_view> pythonTestScripts;
+        pythonTestScripts.reserve(pythonTestScriptCount);
+        for (size_t pythonTestScriptIndex = 0; pythonTestScriptIndex < pythonTestScriptCount; ++pythonTestScriptIndex)
+        {
+            pythonTestScripts.push_back(commandLine.GetSwitchValue("runpythontest", pythonTestScriptIndex));
+        }
+
+        const char* pythonArgSwitchName = "runpythonargs";
+        const size_t pythonArgCount = commandLine.GetNumSwitchValues(pythonArgSwitchName);
+        AZStd::vector<AZStd::string_view> pythonArgs;
+        pythonArgs.reserve(pythonArgCount);
+        for (size_t pythonArgIndex = 0; pythonArgIndex < pythonArgCount; ++pythonArgIndex)
+        {
+            pythonArgs.push_back(commandLine.GetSwitchValue(pythonArgSwitchName, pythonArgIndex));
+        }
+
+        const char* pythonTestCaseSwitchName = "runpythontestcase";
+        const size_t pythonTestCaseCount = commandLine.GetNumSwitchValues(pythonTestCaseSwitchName);
+        AZStd::vector<AZStd::string_view> pythonTestCases;
+        pythonTestCases.reserve(pythonTestCaseCount);
+        for (size_t pythonTestCaseIndex = 0; pythonTestCaseIndex < pythonTestCaseCount; ++pythonTestCaseIndex)
+        {
+            pythonTestCases.push_back(commandLine.GetSwitchValue(pythonTestCaseSwitchName, pythonTestCaseIndex));
+        }
+
+        // The number of test case strings must be identical to the number of test scripts even if they are empty
+        pythonTestCases.resize(pythonTestScripts.size());
+
+        if (!pythonTestScripts.empty())
+        {
+            bool success = true;
             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, runPythonScriptPath, runPythonArgs);
+                [&](AzToolsFramework::EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (int i = 0; i < pythonTestScripts.size(); ++i)
+                    {
+                        bool cur_success =
+                            pythonRunnerRequests->ExecuteByFilenameAsTest(pythonTestScripts[i], pythonTestCases[i], pythonArgs);
+                        success = success && cur_success;
+                    }
+                });
+
+            if (success)
+            {
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+            }
+            else
+            {
+                // Close down the application with 0xF exit code indicating failure of the test
+                AZ::Debug::Trace::Terminate(0xF);
+            }
         }
 
-        const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
-        if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
+        if (!pythonScripts.empty())
         {
-            ExitMainLoop();
+            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                [&](AzToolsFramework::EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (const auto& filename : pythonScripts)
+                    {
+                        pythonRunnerRequests->ExecuteByFilenameWithArgs(filename, pythonArgs);
+                    }
+                });
         }
+
+        if (commandLine.HasSwitch("autotest_mode") ||
+            commandLine.HasSwitch("runpythontest") ||
+            commandLine.HasSwitch("exitaftercommands"))
+        {
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+        }
+    }
+
+    void AtomToolsApplication::PrintAlways(const AZStd::string& output)
+    {
+        m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), static_cast<unsigned int>(output.size()));
+    }
+
+    void AtomToolsApplication::RedirectStdoutToNull()
+    {
+        m_stdoutRedirection.RedirectTo(AZ::IO::SystemFile::GetNullFilename());
     }
 
     bool AtomToolsApplication::LaunchLocalServer()
     {
+        // The socket and server are currently used to forward all requests to an existing application process if one is already running.
+        // These additional settings will allow multiple instances to be launched in automated testing batch mode and other scenarios.
+        const bool allowMultipleInstances = GetSettingsValue("/O3DE/AtomToolsFramework/Application/AllowMultipleInstances", false);
+        if (allowMultipleInstances || m_commandLine.HasSwitch("allowMultipleInstances") || m_commandLine.HasSwitch("batchmode"))
+        {
+            return true;
+        }
+
         // Determine if this is the first launch of the tool by attempting to connect to a running server
         if (m_socket.Connect(QApplication::applicationName()))
         {
@@ -432,7 +595,7 @@ namespace AtomToolsFramework
                     {
                         AZ::CommandLine commandLine;
                         commandLine.Parse(tokens);
-                        QTimer::singleShot(0, [this, commandLine]() { ProcessCommandLine(commandLine); });
+                        QTimer::singleShot(0, this, [this, commandLine]() { ProcessCommandLine(commandLine); });
                     }
                 }
             });
@@ -461,27 +624,6 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick()
-    {
-        TickSystem();
-        Base::Tick();
-
-        if (WasExitMainLoopRequested())
-        {
-            m_timer.disconnect();
-            quit();
-        }
-    }
-
-    void AtomToolsApplication::Stop()
-    {
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
-        m_styleManager.reset();
-
-        UnloadSettings();
-        Base::Stop();
-    }
-
     void AtomToolsApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
@@ -499,7 +641,7 @@ namespace AtomToolsFramework
 
         for (auto& line : lines)
         {
-            AZ_TracePrintf(GetBuildTargetName().c_str(), "Python: %s\n", line.c_str());
+            AZ_TracePrintf(m_targetName.c_str(), "Python: %s\n", line.c_str());
         }
 #endif
     }
@@ -512,41 +654,49 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::OnExceptionMessage([[maybe_unused]] AZStd::string_view message)
     {
-        AZ_Error(GetBuildTargetName().c_str(), false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
+        AZ_Error(m_targetName.c_str(), false, "Python: " AZ_STRING_FORMAT, AZ_STRING_ARG(message));
     }
 
-    // Copied from PyIdleWaitFrames in CryEdit.cpp
     void AtomToolsApplication::PyIdleWaitFrames(uint32_t frames)
     {
-        struct Ticker : public AZ::TickBus::Handler
-        {
-            Ticker(QEventLoop* loop, uint32_t targetFrames)
-                : m_loop(loop)
-                , m_targetFrames(targetFrames)
-            {
-                AZ::TickBus::Handler::BusConnect();
-            }
-            ~Ticker()
-            {
-                AZ::TickBus::Handler::BusDisconnect();
-            }
-
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override
-            {
-                AZ_UNUSED(deltaTime);
-                AZ_UNUSED(time);
-                if (++m_elapsedFrames == m_targetFrames)
-                {
-                    m_loop->quit();
-                }
-            }
-            QEventLoop* m_loop = nullptr;
-            uint32_t m_elapsedFrames = 0;
-            uint32_t m_targetFrames = 0;
-        };
-
+        // Create a child event loop that takes control of updating the application for a set number of frames.
+        // When executed from a script, this continues to update the application but allows the script to pause until the number of frames
+        // have passed.
         QEventLoop loop;
-        Ticker ticker(&loop, frames);
+        QTimer timer;
+
+        uint32_t frame = 0;
+        QObject::connect(&timer, &QTimer::timeout, &loop, [&]() {
+            auto app = AtomToolsApplication::GetInstance();
+            if (app && !app->WasExitMainLoopRequested() && frame++ < frames)
+            {
+                app->PumpSystemEventLoopUntilEmpty();
+                app->TickSystem();
+                app->Tick();
+                return;
+            }
+
+            timer.stop();
+            loop.quit();
+        });
+
+        timer.setInterval(0);
+        timer.start();
         loop.exec();
+    }
+
+    void AtomToolsApplication::PyExit()
+    {
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+    }
+
+    void AtomToolsApplication::PyTestOutput(const AZStd::string& output)
+    {
+        AtomToolsApplication::GetInstance()->PrintAlways(output);
+    }
+
+    AtomToolsApplication* AtomToolsApplication::GetInstance()
+    {
+        return m_instance;
     }
 } // namespace AtomToolsFramework

@@ -69,8 +69,8 @@ namespace AZ
             }
 
             // load pass templates
-            const AZStd::shared_ptr<RPI::PassTemplate> blurVerticalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurVerticalPassTemplate"));
-            const AZStd::shared_ptr<RPI::PassTemplate> blurHorizontalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurHorizontalPassTemplate"));
+            const AZStd::shared_ptr<const RPI::PassTemplate> blurVerticalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurVerticalPassTemplate"));
+            const AZStd::shared_ptr<const RPI::PassTemplate> blurHorizontalPassTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(Name("ReflectionScreenSpaceBlurHorizontalPassTemplate"));
 
             // create pass descriptors
             RPI::PassDescriptor verticalBlurChildDesc;
@@ -116,10 +116,10 @@ namespace AZ
             m_flags.m_createChildren = true;
 
             // retrieve the reflection, downsampled normal, and downsampled depth attachments
-            RPI::PassAttachment* reflectionImageAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* reflectionImageAttachment = GetInputOutputBinding(0).GetAttachment().get();
             RHI::Size imageSize = reflectionImageAttachment->m_descriptor.m_image.m_size;
 
-            RPI::PassAttachment* downsampledDepthImageAttachment = GetInputOutputBinding(1).m_attachment.get();
+            RPI::PassAttachment* downsampledDepthImageAttachment = GetInputOutputBinding(1).GetAttachment().get();
 
             // create transient attachments, one for each blur mip level
             AZStd::vector<RPI::PassAttachment*> transientPassAttachments;

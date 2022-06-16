@@ -21,7 +21,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DirectionalLightComponentConfig, ComponentConfig>()
-                    ->Version(8)
+                    ->Version(9) // Added AffectsGI
                     ->Field("Color", &DirectionalLightComponentConfig::m_color)
                     ->Field("IntensityMode", &DirectionalLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
@@ -40,7 +40,14 @@ namespace AZ
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
                     ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled)
                     ->Field("Shadow Bias", &DirectionalLightComponentConfig::m_shadowBias)
-                    ->Field("Normal Shadow Bias", &DirectionalLightComponentConfig::m_normalShadowBias);
+                    ->Field("Normal Shadow Bias", &DirectionalLightComponentConfig::m_normalShadowBias)
+                    ->Field("CascadeBlendingEnabled", &DirectionalLightComponentConfig::m_cascadeBlendingEnabled)
+                    ->Field("FullscreenBlurEnabled", &DirectionalLightComponentConfig::m_fullscreenBlurEnabled)
+                    ->Field("FullscreenBlurConstFalloff", &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff)
+                    ->Field("FullscreenBlurDepthFalloffStrength", &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength)
+                    ->Field("Affects GI", &DirectionalLightComponentConfig::m_affectsGI)
+                    ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor)
+                    ;
             }
         }
 
@@ -113,8 +120,7 @@ namespace AZ
 
         bool DirectionalLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
-                m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf);
         }
 
         bool DirectionalLightComponentConfig::IsEsmDisabled() const

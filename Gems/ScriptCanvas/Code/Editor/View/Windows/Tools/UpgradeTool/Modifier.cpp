@@ -10,7 +10,7 @@
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Modifier.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/Graph.h>
 
@@ -73,14 +73,20 @@ namespace ScriptCanvasEditor
 
         void Modifier::AssetCompilationSuccess([[maybe_unused]] const AZStd::string& assetPath)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            m_successNotifications.insert(assetPath);
+            const AZStd::string assetPathValue(assetPath);
+            AZ::SystemTickBus::QueueFunction([this, assetPathValue]()
+            {
+                m_successNotifications.insert(assetPathValue);
+            });
         }
 
         void Modifier::AssetCompilationFailed(const AZStd::string& assetPath)
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-            m_failureNotifications.insert(assetPath);
+            const AZStd::string assetPathValue(assetPath);
+            AZ::SystemTickBus::QueueFunction([this, assetPathValue]()
+            {
+                m_failureNotifications.insert(assetPathValue);
+            });
         }
 
         AZStd::sys_time_t Modifier::CalculateRemainingWaitTime(const AZStd::unordered_set<size_t>& dependencies) const
@@ -219,10 +225,10 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto outcome = LoadFromFile(handle.Path().c_str());
-                if (outcome.IsSuccess())
+                auto result = ScriptCanvas::LoadFromFile(handle.Path().c_str());
+                if (result)
                 {
-                    handle = outcome.TakeValue();
+                    handle = result.m_handle;
                 }
             }
         }
@@ -279,7 +285,7 @@ namespace ScriptCanvasEditor
             if (!result.tempFileRemovalError.empty())
             {
                 VE_LOG
-                ("Temporary file not removed for %s: %s"
+                    ( "Temporary file not removed for %s: %s"
                     , m_result.asset.Path().c_str()
                     , result.tempFileRemovalError.c_str());
             }
@@ -369,7 +375,7 @@ namespace ScriptCanvasEditor
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             m_fileSaver.reset();
 
-            if (m_fileSaveResult.fileSaveError.empty())
+            if (m_fileSaveResult.IsSuccess())
             {
                 ReportModificationSuccess();
             }

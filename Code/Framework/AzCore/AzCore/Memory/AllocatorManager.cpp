@@ -12,16 +12,11 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/AllocatorOverrideShim.h>
 #include <AzCore/Memory/MallocSchema.h>
 
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/array.h>
-
-#if !defined(RELEASE) && !defined(AZCORE_MEMORY_ENABLE_OVERRIDES)
-#   define AZCORE_MEMORY_ENABLE_OVERRIDES
-#endif
 
 namespace AZ::Internal
 {
@@ -54,18 +49,6 @@ namespace AZ::Internal
 namespace AZ
 {
 
-struct AllocatorManager::InternalData
-{
-    explicit InternalData(const AZStdIAllocator& alloc)
-        : m_allocatorMap(alloc)
-        , m_remappings(alloc)
-        , m_remappingsReverse(alloc)
-    {}
-    Internal::AllocatorNameMap m_allocatorMap;
-    Internal::AllocatorRemappings m_remappings;
-    Internal::AllocatorRemappings m_remappingsReverse;
-};
-
 static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
 static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
 
@@ -81,16 +64,6 @@ static Internal::PreEnvironmentAttachData& GetPreEnvironmentAttachData()
 void AllocatorManager::PreRegisterAllocator(IAllocator* allocator)
 {
     auto& data = GetPreEnvironmentAttachData();
-
-#ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
-    // All allocators must switch to an OverrideEnabledAllocationSource proxy if they are to support allocator overriding.
-    if (allocator->CanBeOverridden())
-    {
-        auto shim = Internal::AllocatorOverrideShim::Create(allocator, &data.m_mallocSchema);
-        allocator->SetAllocationSource(shim);
-    }
-#endif
-
     {
         AZStd::lock_guard<AZStd::mutex> lock(data.m_mutex);
         AZ_Assert(data.m_unregisteredAllocatorCount < Internal::PreEnvironmentAttachData::MAX_UNREGISTERED_ALLOCATORS, "Too many allocators trying to register before environment attached!");
@@ -175,12 +148,9 @@ AllocatorManager::AllocatorManager()
     }
 )
 {
-    m_overrideSource = nullptr;
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
-    m_configurationFinalized = false;
     m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
-    m_data = new (m_mallocSchema->Allocate(sizeof(InternalData), AZStd::alignment_of<InternalData>::value, 0)) InternalData(AZStdIAllocator(m_mallocSchema.get()));
 }
 
 //=========================================================================
@@ -210,10 +180,6 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
     alloc->SetProfilingActive(m_profilingRefcount.load() > 0);
 
     m_allocators[m_numAllocators++] = alloc;
-
-#ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
-    ConfigureAllocatorOverrides(alloc);
-#endif
 }
 
 //=========================================================================
@@ -232,78 +198,9 @@ AllocatorManager::InternalDestroy()
         // Do not actually destroy the lazy allocator as it may have work to do during non-deterministic shutdown
     }
 
-    if (m_data)
-    {
-        m_data->~InternalData();
-        m_mallocSchema->DeAllocate(m_data);
-        m_data = nullptr;
-    }
-
     if (!m_isAllocatorLeaking)
     {
         AZ_Assert(m_numAllocators == 0, "There are still %d registered allocators!", m_numAllocators);
-    }
-}
-
-//=========================================================================
-// ConfigureAllocatorOverrides
-// [10/14/2018]
-//=========================================================================
-void 
-AllocatorManager::ConfigureAllocatorOverrides(IAllocator* alloc)
-{
-    auto record = m_data->m_allocatorMap.emplace(AZStd::piecewise_construct, AZStd::forward_as_tuple(alloc->GetName(), AZStdIAllocator(m_mallocSchema.get())), AZStd::forward_as_tuple(alloc));
-
-    // We only need to keep going if the allocator supports overrides.
-    if (!alloc->CanBeOverridden())
-    {
-        return;
-    }
-
-    if (!alloc->IsAllocationSourceChanged())
-    {
-        // All allocators must switch to an OverrideEnabledAllocationSource proxy if they are to support allocator overriding.
-        auto overrideEnabled = Internal::AllocatorOverrideShim::Create(alloc, m_mallocSchema.get());
-        alloc->SetAllocationSource(overrideEnabled);
-    }
-
-    auto itr = m_data->m_remappings.find(record.first->first);
-
-    if (itr != m_data->m_remappings.end())
-    {
-        auto remapTo = m_data->m_allocatorMap.find(itr->second);
-
-        if (remapTo != m_data->m_allocatorMap.end())
-        {
-            static_cast<Internal::AllocatorOverrideShim*>(alloc->GetAllocationSource())->SetOverride(remapTo->second->GetOriginalAllocationSource());
-        }
-    }
-
-    itr = m_data->m_remappingsReverse.find(record.first->first);
-
-    if (itr != m_data->m_remappingsReverse.end())
-    {
-        auto remapFrom = m_data->m_allocatorMap.find(itr->second);
-
-        if (remapFrom != m_data->m_allocatorMap.end())
-        {
-            AZ_Assert(!m_configurationFinalized, "Allocators may only remap to allocators that have been created before configuration finalization");
-            static_cast<Internal::AllocatorOverrideShim*>(remapFrom->second->GetAllocationSource())->SetOverride(alloc->GetOriginalAllocationSource());
-        }
-    }
-
-    if (m_overrideSource)
-    {
-        static_cast<Internal::AllocatorOverrideShim*>(alloc->GetAllocationSource())->SetOverride(m_overrideSource);
-    }
-
-    if (m_configurationFinalized)
-    {
-        // We can get rid of the intermediary if configuration won't be changing any further.
-        // (The creation of it at the top of this function was superflous, but it made it easier to set things up going through a single code path.)
-        auto shim = static_cast<Internal::AllocatorOverrideShim*>(alloc->GetAllocationSource());
-        alloc->SetAllocationSource(shim->GetOverride());
-        Internal::AllocatorOverrideShim::Destroy(shim);
     }
 }
 
@@ -365,7 +262,7 @@ AllocatorManager::GarbageCollect()
 
     for (int i = 0; i < m_numAllocators; ++i)
     {
-        m_allocators[i]->GetAllocationSource()->GarbageCollect();
+        m_allocators[i]->GetSchema()->GarbageCollect();
     }
 }
 
@@ -414,94 +311,6 @@ AllocatorManager::SetTrackingMode(Debug::AllocationRecords::Mode mode)
     }
 }
 
-//=========================================================================
-// SetOverrideSchema
-// [8/17/2018]
-//=========================================================================
-void
-AllocatorManager::SetOverrideAllocatorSource(IAllocatorAllocate* source, bool overrideExistingAllocators)
-{
-    (void)source;
-    (void)overrideExistingAllocators;
-
-#ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
-    AZ_Assert(!m_configurationFinalized, "You cannot set an allocator source after FinalizeConfiguration() has been called.");
-    m_overrideSource = source;
-
-    if (overrideExistingAllocators)
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            if (m_allocators[i]->CanBeOverridden())
-            {
-                auto shim = static_cast<Internal::AllocatorOverrideShim*>(m_allocators[i]->GetAllocationSource());
-                shim->SetOverride(source);
-            }
-        }
-    }
-#endif
-}
-
-//=========================================================================
-// AddAllocatorRemapping
-// [8/27/2018]
-//=========================================================================
-void
-AllocatorManager::AddAllocatorRemapping(const char* fromName, const char* toName)
-{
-    (void)fromName;
-    (void)toName;
-
-#ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
-    AZ_Assert(!m_configurationFinalized, "You cannot set an allocator remapping after FinalizeConfiguration() has been called.");
-    m_data->m_remappings.emplace(AZStd::piecewise_construct, AZStd::forward_as_tuple(fromName, m_mallocSchema.get()), AZStd::forward_as_tuple(toName, m_mallocSchema.get()));
-    m_data->m_remappingsReverse.emplace(AZStd::piecewise_construct, AZStd::forward_as_tuple(toName, m_mallocSchema.get()), AZStd::forward_as_tuple(fromName, m_mallocSchema.get()));
-#endif
-}
-
-void 
-AllocatorManager::FinalizeConfiguration()
-{
-    if (m_configurationFinalized)
-    {
-        return;
-    }
-
-#ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-        for (int i = 0; i < m_numAllocators; ++i)
-        {
-            if (!m_allocators[i]->CanBeOverridden())
-            {
-                continue;
-            }
-
-            auto shim = static_cast<Internal::AllocatorOverrideShim*>(m_allocators[i]->GetAllocationSource());
-
-            if (!shim->IsOverridden())
-            {
-                m_allocators[i]->ResetAllocationSource();
-                Internal::AllocatorOverrideShim::Destroy(shim);
-            }
-            else if (!shim->HasOrphanedAllocations())
-            {
-                m_allocators[i]->SetAllocationSource(shim->GetOverride());
-                Internal::AllocatorOverrideShim::Destroy(shim);
-            }
-            else
-            {
-                shim->SetFinalizedConfiguration();
-            }
-        }
-    }
-#endif
-
-    m_configurationFinalized = true;
-}
-
 void
 AllocatorManager::EnterProfilingMode()
 {
@@ -545,26 +354,17 @@ AllocatorManager::DumpAllocators()
     size_t totalConsumedBytes = 0;
 
     memset(m_dumpInfo, 0, sizeof(m_dumpInfo));
-    void* sourceList[m_maxNumAllocators];
 
     AZ_Printf(TAG, "%d allocators active\n", m_numAllocators);
     AZ_Printf(TAG, "Index,Name,Used kb,Reserved kb,Consumed kb\n");
 
     for (int i = 0; i < m_numAllocators; i++)
     {
-        auto allocator = m_allocators[i];
-        auto source = allocator->GetAllocationSource();
+        IAllocator* allocator = GetAllocator(i);
         const char* name = allocator->GetName();
-        size_t usedBytes = source->NumAllocatedBytes();
-        size_t reservedBytes = source->Capacity();
+        size_t usedBytes = allocator->NumAllocatedBytes();
+        size_t reservedBytes = allocator->Capacity();
         size_t consumedBytes = reservedBytes;
-
-        // Very hacky and inefficient check to see if this allocator obtains its memory from another allocator
-        sourceList[i] = source;
-        if (AZStd::find(sourceList, sourceList + i, allocator->GetSchema()) != sourceList + i)
-        {
-            consumedBytes = 0;
-        }
 
         totalUsedBytes += usedBytes;
         totalReservedBytes += reservedBytes;
@@ -585,61 +385,21 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
 
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
     const int allocatorCount = GetNumAllocators();
-    AZStd::unordered_map<IAllocatorAllocate*, IAllocator*> existingAllocators;
-    AZStd::unordered_map<IAllocatorAllocate*, IAllocator*> sourcesToAllocators;
 
     // Build a mapping of original allocator sources to their allocators
     for (int i = 0; i < allocatorCount; ++i)
     {
         IAllocator* allocator = GetAllocator(i);
-        sourcesToAllocators.emplace(allocator->GetOriginalAllocationSource(), allocator);
-    }
-
-    for (int i = 0; i < allocatorCount; ++i)
-    {
-        IAllocator* allocator = GetAllocator(i);
-        IAllocatorAllocate* source = allocator->GetAllocationSource();
-        IAllocatorAllocate* originalSource = allocator->GetOriginalAllocationSource();
-        IAllocatorAllocate* schema = allocator->GetSchema();
-        IAllocator* alias = (source != originalSource) ? sourcesToAllocators[source] : nullptr;
-
-        if (schema && !alias)
-        {
-            // Check to see if this allocator's source maps to another allocator
-            // Need to check both the schema and the allocator itself, as either one might be used as the alias depending on how it's implemented
-            AZStd::array<IAllocatorAllocate*, 2> checkAllocators = { { schema, allocator->GetAllocationSource() } };
-
-            for (IAllocatorAllocate* check : checkAllocators)
-            {
-                auto existing = existingAllocators.emplace(check, allocator);
-
-                if (!existing.second)
-                {
-                    alias = existing.first->second;
-                    // Do not break out of the loop as we need to add to the map for all entries
-                }
-            }
-        }
-
-        static const IAllocator* OS_ALLOCATOR = &AllocatorInstance<OSAllocator>::GetAllocator();
-        size_t sourceAllocatedBytes = source->NumAllocatedBytes();
-        size_t sourceCapacityBytes = source->Capacity();
-
-        if (allocator == OS_ALLOCATOR)
-        {
-            // Need to special case the OS allocator because its capacity is a made-up number. Better to just use the allocated amount, it will hopefully be small anyway.
-            sourceCapacityBytes = sourceAllocatedBytes;
-        }
-
+        allocatedBytes += allocator->NumAllocatedBytes();
+        capacityBytes += allocator->Capacity();   
+           
         if (outStats)
         {
-            outStats->emplace(outStats->end(), allocator->GetName(), alias ? alias->GetName() : allocator->GetDescription(), sourceAllocatedBytes, sourceCapacityBytes, alias != nullptr);
-        }
-
-        if (!alias)
-        {
-            allocatedBytes += sourceAllocatedBytes;
-            capacityBytes += sourceCapacityBytes;
+            outStats->emplace(outStats->end(), 
+                allocator->GetName(), 
+                allocator->GetDescription(), 
+                allocator->NumAllocatedBytes(), 
+                allocator->Capacity());
         }
     }
 }

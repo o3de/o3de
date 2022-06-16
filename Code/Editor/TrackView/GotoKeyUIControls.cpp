@@ -13,48 +13,8 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class CGotoKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariable<float> mv_command;
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_command, "Goto Time");
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        if (paramType == AnimParamType::Goto)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {3E9D2C57-BFB1-42f9-82AC-A393C1062634}
-        static const GUID guid =
-        {
-            0x9b79c8b6, 0xe332, 0x4b9b, { 0xb2, 0x63, 0xef, 0x7e, 0x82, 0x7, 0xa4, 0x47 }
-        };
-        return guid;
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CGotoKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -121,5 +81,3 @@ void CGotoKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& select
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CGotoKeyUIControls, "TrackView.KeyUI.Goto", "TrackViewKeyUI");

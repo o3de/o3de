@@ -6,15 +6,16 @@
  *
  */
 
+#include <Source/Pipeline/HeightFieldAssetHandler.h>
 
 #include <Pipeline/HeightFieldAssetHandler.h>
 #include <Pipeline/StreamWrapper.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>
 #include <PhysX/HeightFieldAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/ComponentTypeIds.h>
-#include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <PxPhysicsAPI.h>
 
 #include <extensions/PxSerialization.h>

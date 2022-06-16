@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     class GemListHeaderWidget
         : public QFrame
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemListHeaderWidget(GemSortFilterProxyModel* proxyModel, QWidget* parent = nullptr);

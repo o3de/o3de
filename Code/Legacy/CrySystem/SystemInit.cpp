@@ -51,7 +51,7 @@
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/Interface/Interface.h>
@@ -75,7 +75,6 @@
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <ICmdLine.h>
-#include <IProcess.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -114,43 +113,6 @@ extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExce
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_14
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
-
-#if AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
-
-#include <execinfo.h>
-#include <signal.h>
-void CryEngineSignalHandler(int signal)
-{
-    char resolvedPath[_MAX_PATH];
-
-    // it is assumed that @log@ points at the appropriate place (so for apple, to the user profile dir)
-    if (AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath("@log@/crash.log", resolvedPath, _MAX_PATH))
-    {
-        fprintf(stderr, "Crash Signal Handler - logged to %s\n", resolvedPath);
-        FILE* file = fopen(resolvedPath, "a");
-        if (file)
-        {
-            char sTime[128];
-            time_t ltime;
-            time(&ltime);
-            struct tm* today = localtime(&ltime);
-            strftime(sTime, 40, "<%Y-%m-%d %H:%M:%S> ", today);
-            fprintf(file, "%s: Error: signal %s:\n", sTime, strsignal(signal));
-            fflush(file);
-            void* array[100];
-            int s = backtrace(array, 100);
-            backtrace_symbols_fd(array, s, fileno(file));
-            fclose(file);
-            CryLogAlways("Successfully recorded crash file:  '%s'", resolvedPath);
-            abort();
-        }
-    }
-
-    CryLogAlways("Could not record crash file...");
-    abort();
-}
-
-#endif // AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
 
 //////////////////////////////////////////////////////////////////////////
 #define DEFAULT_LOG_FILENAME "@log@/Log.txt"
@@ -417,8 +379,8 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 
     if (result)
     {
-        AZ_Assert(Audio::AudioSystemRequestBus::HasHandlers(),
-            "Initialization of the Audio System succeeded, but the Audio System EBus is not connected!\n");
+        AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr,
+            "Initialization of the Audio System succeeded, but the IAudioSystem interface is not registered!\n");
     }
     else
     {
@@ -697,11 +659,6 @@ public:
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::Init(const SSystemInitParams& startupParams)
 {
-#if AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
-    signal(SIGSEGV, CryEngineSignalHandler);
-    signal(SIGTRAP, CryEngineSignalHandler);
-    signal(SIGILL, CryEngineSignalHandler);
-#endif // AZ_TRAIT_USE_CRY_SIGNAL_HANDLER
 
     // Temporary Fix for an issue accessing gEnv from this object instance. The gEnv is not resolving to the
     // global gEnv, instead its resolving an some uninitialized gEnv elsewhere (NULL). Since gEnv is
@@ -1089,7 +1046,7 @@ AZ_POP_DISABLE_WARNING
         // LEVEL SYSTEM
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (usePrefabSystemForLevels)
         {

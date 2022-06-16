@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
     class GemInspector
         : public QScrollArea
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemInspector(GemModel* model, QWidget* parent = nullptr);
@@ -75,8 +75,9 @@ namespace O3DE::ProjectManager
         QLabel* m_requirementsTextLabel = nullptr;
         QSpacerItem* m_requirementsMainSpacer = nullptr;
 
-        // Depending and conflicting gems
+        // Depending gems
         GemsSubWidget* m_dependingGems = nullptr;
+        QSpacerItem* m_dependingGemsSpacer = nullptr;
 
         // Additional information
         QLabel* m_versionLabel = nullptr;

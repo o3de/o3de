@@ -13,7 +13,7 @@
 
 #include "Settings.h"
 
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Data/Data.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
@@ -530,6 +530,8 @@ namespace ScriptCanvasEditor
             , m_showValidationWarnings(true)
             , m_showValidationErrors(true)
             , m_alignmentTimeMS(250)
+            , m_saveRawTranslationOuputToFile(ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile)
+            , m_printAbstractCodeModel(ScriptCanvas::Grammar::g_printAbstractCodeModel)
         {
             GraphCanvas::AssetEditorPresetNotificationBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
         }

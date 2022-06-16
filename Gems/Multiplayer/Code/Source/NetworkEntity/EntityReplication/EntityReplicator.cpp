@@ -33,6 +33,29 @@
 
 namespace Multiplayer
 {
+    void SyncActivatingEntityTransform(AZ::Entity* entity)
+    {
+        NetworkTransformComponent* netTransform = entity->FindComponent<NetworkTransformComponent>();
+        AzFramework::TransformComponent* transformComponent = entity->FindComponent<AzFramework::TransformComponent>();
+
+        if (netTransform && transformComponent)
+        {
+            AZ::Transform transform;
+            transform.SetRotation(netTransform->GetRotation());
+            transform.SetTranslation(netTransform->GetTranslation());
+            transform.SetUniformScale(netTransform->GetScale());
+
+            if (netTransform->GetParentEntityId() == InvalidNetEntityId)
+            {
+                transformComponent->SetWorldTM(transform);
+            }
+            else
+            {
+                transformComponent->SetLocalTM(transform);
+            }
+        }
+    }
+
     EntityReplicator::EntityReplicator
     (
         EntityReplicationManager& replicationManager,
@@ -249,6 +272,8 @@ namespace Multiplayer
         {
             AZLOG_WARN("Trying to activate an entity that is not in the Init state (%llu)", static_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()));
         }
+
+        SyncActivatingEntityTransform(entity);
 
         entity->Activate();
 

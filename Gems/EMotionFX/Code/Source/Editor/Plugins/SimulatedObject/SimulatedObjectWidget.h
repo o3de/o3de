@@ -55,13 +55,11 @@ namespace EMotionFX
         bool GetIsClosable() const override { return true; }
         bool GetIsFloatable() const override { return true; }
         bool GetIsVertical() const override { return false; }
-        EMStudioPlugin* Clone() override { return new SimulatedObjectWidget(); }
+        EMStudioPlugin* Clone() const override { return new SimulatedObjectWidget(); }
         bool Init() override;
         void Reinit();
 
-        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void LegacyRenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color);
 
         SimulatedObjectModel* GetSimulatedObjectModel() const;

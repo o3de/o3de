@@ -131,7 +131,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -237,6 +237,7 @@ namespace AssetUtilities
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
+    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
@@ -551,37 +552,75 @@ namespace AssetUtilities
 
     bool InServerMode()
     {
-        static bool s_serverMode = CheckServerMode();
-        return s_serverMode;
+        if (s_serverMode.has_value())
+        {
+            return s_serverMode.value();
+        }
+        s_serverMode = AZStd::make_optional<bool>(CheckServerMode());
+        return s_serverMode.value();
+    }
+
+    void ResetServerMode()
+    {
+        if (s_serverMode.has_value())
+        {
+            s_serverMode.reset();
+        }
     }
 
     bool CheckServerMode()
     {
-        QStringList args = QCoreApplication::arguments();
-        for (const QString& arg : args)
+        bool inServerMode = false;
+        if (QCoreApplication::instance())
         {
-            if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
+            QStringList args = QCoreApplication::arguments();
+            for (const QString& arg : args)
             {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
+                if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
+                    inServerMode = true;
+                    break;
                 }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
-                break;
             }
         }
 
+        if (!inServerMode)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                bool enableAssetCacheServerMode = false;
+                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+                {
+                    inServerMode = enableAssetCacheServerMode;
+                }
+            }
+        }
+
+        if (inServerMode)
+        {
+            bool isServerAddressValid = false;
+            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
+            if (isServerAddressValid)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
+                return true;
+            }
+            else
+            {
+                AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
+            }
+        }
         return false;
     }
 
+    void ResetServerAddress()
+    {
+        s_assetServerAddress.clear();
+    }
 
     QString ServerAddress()
     {
@@ -617,10 +656,9 @@ namespace AssetUtilities
                 + "/Server/cacheServerAddress"))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+                s_assetServerAddress = address;
+                return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
             }
-            s_assetServerAddress = address;
-
-            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
         }
 
         return QString();
@@ -660,8 +698,7 @@ namespace AssetUtilities
 
     QString ReadAllowedlistFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/allowed_list");
-        AZStd::fixed_string<BufferSize> allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         allowedListKey += "/allowed_list";
 
         AZ::SettingsRegistryInterface::FixedValueString allowedListIp;
@@ -675,8 +712,7 @@ namespace AssetUtilities
 
     QString ReadRemoteIpFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_ip");
-        AZStd::fixed_string<BufferSize> remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remoteIpKey += "/remote_ip";
 
         AZ::SettingsRegistryInterface::FixedValueString remoteIp;
@@ -741,8 +777,7 @@ namespace AssetUtilities
             initialFolder = engineRoot.absolutePath();
         }
 
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_port");
-        AZStd::fixed_string<BufferSize> remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remotePortKey += "/remote_port";
 
         AZ::s64 portNumber;
@@ -870,23 +905,27 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
+
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
         {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
-            {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
-            }
+            return relativeProductPath;
         }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        return originalPath;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)
@@ -1582,8 +1621,12 @@ namespace AssetUtilities
             {
                 std::string dummy;
                 std::istringstream stream(message);
+                AZ::s64 errorCount, warningCount;
 
-                stream >> dummy >> m_errorCount >> dummy >> m_warningCount;
+                stream >> dummy >> errorCount >> dummy >> warningCount;
+
+                m_errorCount += errorCount;
+                m_warningCount += warningCount;
             }
 
             if (azstrnicmp(window, "debug", 5) == 0)

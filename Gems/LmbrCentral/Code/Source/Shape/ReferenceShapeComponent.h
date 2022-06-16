@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 
@@ -94,8 +95,11 @@ namespace LmbrCentral
 
     private:
         ReferenceShapeConfig m_configuration;
-        bool m_isRequestInProgress = false; //prevent recursion in case user attaches cyclic dependences
+        mutable AZStd::shared_mutex m_mutex; //!< Mutex to allow multiple readers but single writer for efficient thread safety
+        bool m_allowNotifications = true; //!< temporarily disable sending notifications to avoid redundancies
+
         bool AllowRequest() const;
+        bool AllowNotification() const;
         void SetupDependencies();
     };
 }

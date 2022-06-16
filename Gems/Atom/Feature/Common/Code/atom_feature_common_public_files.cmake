@@ -18,6 +18,11 @@ set(FILES
     Include/Atom/Feature/CoreLights/SimplePointLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/ShadowConstants.h
+    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
+    Include/Atom/Feature/Debug/RenderDebugConstants.h
+    Include/Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h
+    Include/Atom/Feature/Debug/RenderDebugParams.inl
+    Include/Atom/Feature/Debug/RenderDebugSettingsInterface.h
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
     Include/Atom/Feature/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessorInterface.h
     Include/Atom/Feature/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessorInterface.h
@@ -51,6 +56,9 @@ set(FILES
     Include/Atom/Feature/PostProcess/Bloom/BloomConstants.h
     Include/Atom/Feature/PostProcess/Bloom/BloomParams.inl
     Include/Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl
+    Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h
@@ -73,7 +81,6 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshInstance.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h
-    Include/Atom/Feature/SkinnedMesh/SkinnedMeshRenderProxyInterface.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h

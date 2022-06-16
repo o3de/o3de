@@ -114,7 +114,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483544 -0.3849890 0.9218784 -0.0438619 0.0277800 0.0590787 0.9978667 -0.0995240 0.0035963 0.9837443" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483544 -0.3849890 0.9218784 -0.0438619 0.0277800 0.0590787 0.9978667 -0.0995240 0.0035963 0.9837442" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -191,7 +191,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483544 -0.3849890 0.9218784 -0.0438619 0.0277800 0.0590787 0.9978667 -0.1057190 -0.0095780 0.7612199" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483544 -0.3849890 0.9218784 -0.0438619 0.0277800 0.0590787 0.9978667 -0.1057190 -0.0095780 0.7612200" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -204,7 +204,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483545 -0.3857441 0.9101822 -0.1508971 -0.0137745 0.1578555 0.9873661 -0.1119141 -0.0227522 0.5386958" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9225030 0.3829492 -0.0483545 -0.3857441 0.9101822 -0.1508971 -0.0137745 0.1578555 0.9873661 -0.1119141 -0.0227522 0.5386957" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -268,7 +268,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9918931 -0.1127676 0.0585800 0.1181807 0.9880368 -0.0990792 -0.0467063 0.1051989 0.9933537 0.1314755 0.0908038 0.5390974" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9918931 -0.1127676 0.0585800 0.1181807 0.9880368 -0.0990792 -0.0467063 0.1051989 0.9933537 0.1314754 0.0908038 0.5390974" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -319,7 +319,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.9846771 -0.1743657 -0.0027636 -0.0040787 0.0071844 0.9999658 -0.1743399 0.9846547 -0.0077855 -0.0024987 0.0198645 1.2316585" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.9846771 -0.1743657 -0.0027636 -0.0040787 0.0071844 0.9999658 -0.1743399 0.9846547 -0.0077855 -0.0024987 0.0198645 1.2316583" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -408,7 +408,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9636059 0.2673270 0.0000002 -0.2673270 0.9636059 0.0000004 -0.0000001 -0.0000005 0.9999999 -0.1057001 -0.0939669 0.0932542" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9636059 0.2673270 0.0000002 -0.2673270 0.9636059 0.0000004 -0.0000001 -0.0000005 0.9999999 -0.1057001 -0.0939668 0.0932542" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -497,7 +497,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="1.0000000 -0.0000001 0.0000001 0.0000001 1.0000000 0.0000005 -0.0000001 -0.0000005 1.0000000 0.1525467 0.0433452 0.0909544" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 -0.0000001 0.0000001 0.0000001 1.0000000 0.0000005 -0.0000001 -0.0000005 1.0000000 0.1525467 0.0433452 0.0909545" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -548,7 +548,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.9795371 -0.2012138 -0.0044671 0.0088889 -0.0654249 0.9978178 -0.2010670 0.9773599 0.0658747 -0.0031105 0.0209422 1.3816533" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.9795371 -0.2012138 -0.0044671 0.0088889 -0.0654249 0.9978178 -0.2010670 0.9773599 0.0658747 -0.0031105 0.0209422 1.3816534" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -650,7 +650,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="1.0000000 -0.0000001 0.0000001 0.0000001 1.0000000 0.0000005 -0.0000001 -0.0000005 1.0000000 0.1525467 0.1935186 0.0237662" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 -0.0000001 0.0000001 0.0000001 1.0000000 0.0000005 -0.0000001 -0.0000005 1.0000000 0.1525467 0.1935186 0.0237663" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -701,7 +701,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.9948647 -0.0988443 0.0217715 0.0113319 0.1049736 0.9944103 -0.1005772 0.9895505 -0.1033145 -0.0014216 0.0085115 1.5712386" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.9948647 -0.0988443 0.0217715 0.0113319 0.1049736 0.9944103 -0.1005772 0.9895505 -0.1033145 -0.0014216 0.0085115 1.5712385" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -727,7 +727,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3913002 -0.9108952 0.1309726 -0.9019646 -0.4078557 -0.1418229 0.1826037 -0.0626373 -0.9811893 0.0803188 0.0196155 1.4967986" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3913002 -0.9108952 0.1309726 -0.9019646 -0.4078557 -0.1418229 0.1826037 -0.0626373 -0.9811893 0.0803188 0.0196155 1.4967985" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -854,7 +854,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.9994818 -0.0310398 -0.0085214 -0.0078972 -0.0201766 0.9997651 -0.0312043 0.9993144 0.0199210 -0.0020550 0.0351172 1.6630899" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.9994818 -0.0310398 -0.0085214 -0.0078972 -0.0201766 0.9997651 -0.0312043 0.9993144 0.0199210 -0.0020550 0.0351172 1.6630900" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -905,7 +905,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.1350640 0.9784527 -0.1561655 0.9639030 0.0932519 -0.2493893 -0.2294530 -0.1842118 -0.9557285 -0.1881499 -0.0555908 1.4517218" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.1350640 0.9784527 -0.1561655 0.9639030 0.0932519 -0.2493893 -0.2294530 -0.1842118 -0.9557285 -0.1881499 -0.0555909 1.4517218" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1109,7 +1109,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0534004 -0.3009000 -0.9521595 -0.9985610 0.0208024 0.0494289 0.0049341 0.9534288 -0.3015778 0.1978613 0.1747155 1.4348212" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0534004 -0.3009000 -0.9521595 -0.9985610 0.0208024 0.0494289 0.0049341 0.9534288 -0.3015778 0.1978613 0.1747155 1.4348211" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1141,7 +1141,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="KeyFrames - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="8781707605519483934" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="15529789169672670472" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -1415,7 +1415,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2565261 0.2200654 -0.9411510 0.0032468 0.9735332 0.2285221 -0.2390312 -0.0175187 0.9024240" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2565261 0.2200654 -0.9411510 0.0032468 0.9735332 0.2285221 -0.2390311 -0.0175187 0.9024240" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1441,7 +1441,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.1345730 -0.0673964 -0.9886089 -0.9346014 0.3228769 -0.1492327 -0.2613609 -0.0465721 0.8402831" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.1345730 -0.0673964 -0.9886089 -0.9346014 0.3228769 -0.1492327 -0.2613609 -0.0465721 0.8402832" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1454,7 +1454,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.5215136 0.8398412 -0.1506330 -0.0192358 -0.1649243 -0.9861184 -0.8530262 0.5171716 -0.0698552 -0.2693057 -0.0706829 0.8937123" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.5215136 0.8398412 -0.1506330 -0.0192358 -0.1649243 -0.9861184 -0.8530262 0.5171716 -0.0698552 -0.2693058 -0.0706829 0.8937123" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1467,7 +1467,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.5143689 0.8558125 0.0548569 0.0881534 0.0108630 -0.9960474 -0.8530262 0.5171716 -0.0698552 -0.2473062 -0.0623250 0.8783725" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.5143689 0.8558125 0.0548569 0.0881534 0.0108630 -0.9960474 -0.8530262 0.5171716 -0.0698552 -0.2473062 -0.0623250 0.8783726" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1569,7 +1569,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0802934 -0.4308499 -0.8988443 0.5990614 -0.7415851 0.3019556 -0.7966672 -0.5142179 0.3176499 0.2168119 0.6618763 1.4820503" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0802934 -0.4308499 -0.8988443 0.5990614 -0.7415851 0.3019556 -0.7966672 -0.5142179 0.3176499 0.2168119 0.6618764 1.4820503" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1582,7 +1582,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0260422 -0.4643564 -0.8852653 0.9706670 -0.2234796 0.0886692 -0.2390129 -0.8569889 0.4565554 0.2131762 0.6597862 1.4626874" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0260422 -0.4643564 -0.8852653 0.9706670 -0.2234796 0.0886692 -0.2390129 -0.8569889 0.4565554 0.2131762 0.6597863 1.4626874" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1608,7 +1608,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.0557957 -0.0005854 -0.9984418 -0.9981855 -0.0227144 -0.0557681 -0.0226463 0.9997417 -0.0018517 0.1809568 0.7018137 1.4945196" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.0557957 -0.0005854 -0.9984418 -0.9981855 -0.0227144 -0.0557681 -0.0226463 0.9997417 -0.0018517 0.1809568 0.7018138 1.4945196" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1659,7 +1659,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2373489 -0.1534441 -0.9592289 0.0973740 0.9862305 -0.1336694 -0.2288372 -0.0087736 0.8650238" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2373489 -0.1534441 -0.9592289 0.0973740 0.9862305 -0.1336694 -0.2288371 -0.0087736 0.8650237" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1710,7 +1710,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3615634 0.9298344 0.0684081 0.4901183 -0.1271389 -0.8623338 -0.7931304 0.3453165 -0.5016975 -0.2471175 -0.0273644 0.7929417" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3615634 0.9298344 0.0684081 0.4901183 -0.1271389 -0.8623338 -0.7931304 0.3453165 -0.5016975 -0.2471175 -0.0273644 0.7929418" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1761,7 +1761,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.4655626 -0.1803091 -0.8664525 -0.8214875 0.2761891 -0.4988768 -0.2551242 -0.0496955 0.7944664" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.4655626 -0.1803091 -0.8664525 -0.8214875 0.2761891 -0.4988768 -0.2551242 -0.0496955 0.7944666" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1812,7 +1812,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.1359657 -0.1081222 -0.9847956 -0.9245527 0.3433140 -0.1653412 -0.2679712 -0.0667890 0.8432873" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.1359657 -0.1081222 -0.9847956 -0.9245527 0.3433140 -0.1653412 -0.2679712 -0.0667891 0.8432874" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1825,7 +1825,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.2697999 -0.2777221 -0.9219966 -0.9092504 0.2417132 -0.3388780 -0.2744931 -0.0856099 0.8500432" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.2697999 -0.2777221 -0.9219966 -0.9092504 0.2417132 -0.3388780 -0.2744932 -0.0856099 0.8500431" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1914,7 +1914,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.0052020 0.3264090 0.9452143 0.5280435 -0.8035957 0.2745980 0.8492015 0.4976858 -0.1765385 0.1653490 0.6116705 1.5069345" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.0052020 0.3264090 0.9452143 0.5280435 -0.8035957 0.2745980 0.8492015 0.4976858 -0.1765385 0.1653489 0.6116704 1.5069345" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1965,7 +1965,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.1023873 -0.4180822 -0.9026206 0.9281499 0.2862708 -0.2378801 0.3578474 -0.8621231 0.3587325 0.1873666 0.6983235 1.4672089" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.1023873 -0.4180822 -0.9026206 0.9281499 0.2862708 -0.2378801 0.3578474 -0.8621231 0.3587325 0.1873666 0.6983237 1.4672090" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2067,7 +2067,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0656088 -0.4626088 -0.8841316 0.9937954 -0.1100428 -0.0161683 -0.0898128 -0.8797066 0.4669581 0.1996420 0.6531383 1.4435714" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0656088 -0.4626088 -0.8841316 0.9937954 -0.1100428 -0.0161683 -0.0898128 -0.8797066 0.4669581 0.1996421 0.6531384 1.4435714" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2169,7 +2169,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2373489 -0.1534441 -0.9592289 0.0973740 0.9862305 -0.1336694 -0.2218228 -0.0133082 0.8366759" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.9665319 -0.0616776 0.2490221 0.2373489 -0.1534441 -0.9592289 0.0973740 0.9862305 -0.1336694 -0.2218228 -0.0133083 0.8366759" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2220,7 +2220,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3615634 0.9298344 0.0684081 0.7452133 -0.2441212 -0.6205335 -0.5602937 0.2753409 -0.7811900 -0.2311346 -0.0315104 0.7648208" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3615634 0.9298344 0.0684081 0.7452133 -0.2441212 -0.6205335 -0.5602937 0.2753409 -0.7811900 -0.2311346 -0.0315104 0.7648209" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2271,7 +2271,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.7326652 -0.2684788 -0.6253964 -0.5956439 0.1916010 -0.7800621 -0.2399473 -0.0555735 0.7662210" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3292569 0.9440380 -0.0195383 0.7326652 -0.2684788 -0.6253964 -0.5956439 0.1916010 -0.7800621 -0.2399472 -0.0555734 0.7662212" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2322,7 +2322,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.5122607 -0.2425047 -0.8238812 -0.7815840 0.2659818 -0.5642518 -0.2625020 -0.0711384 0.8036732" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.5122607 -0.2425047 -0.8238812 -0.7815840 0.2659818 -0.5642518 -0.2625019 -0.0711384 0.8036732" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2373,7 +2373,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.6083978 -0.3508277 -0.7118790 -0.7275853 0.1116905 -0.6768638 -0.2653106 -0.0950621 0.8186633" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.6083978 -0.3508277 -0.7118790 -0.7275853 0.1116905 -0.6768638 -0.2653105 -0.0950620 0.8186634" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2475,7 +2475,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.1023873 -0.4180822 -0.9026206 0.0986766 0.8986452 -0.4274341 0.9898382 -0.1328314 -0.0507549 0.1570989 0.6889878 1.4749659" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.1023873 -0.4180822 -0.9026206 0.0986766 0.8986452 -0.4274341 0.9898382 -0.1328314 -0.0507549 0.1570989 0.6889879 1.4749659" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2526,7 +2526,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0260422 -0.4643564 -0.8852653 -0.5639869 0.7379948 -0.3705161 0.8253731 0.4896291 -0.2811100 0.1495006 0.6467174 1.4714146" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0260422 -0.4643564 -0.8852653 -0.5639869 0.7379948 -0.3705161 0.8253731 0.4896291 -0.2811100 0.1495006 0.6467175 1.4714146" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2628,7 +2628,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.1100348 -0.4672045 -0.8772753 0.2567038 0.8393306 -0.4791943 0.9602060 -0.2779281 0.0275776 0.1585392 0.6416523 1.4316828" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.1100348 -0.4672045 -0.8772753 0.2567038 0.8393306 -0.4791943 0.9602060 -0.2779281 0.0275776 0.1585393 0.6416522 1.4316828" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2793,7 +2793,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.7935058 -0.3318905 -0.5100955 -0.4935922 0.1392968 -0.8584654 -0.2455191 -0.0791781 0.7763593" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3559713 0.9329765 -0.0532857 0.7935058 -0.3318905 -0.5100955 -0.4935922 0.1392968 -0.8584654 -0.2455190 -0.0791781 0.7763594" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2844,7 +2844,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.8471319 -0.3663475 -0.3849116 -0.4264922 -0.0366653 -0.9037473 -0.2508485 -0.1034015 0.8017413" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="0.3169729 0.9297552 -0.1873048 0.8471319 -0.3663475 -0.3849116 -0.4264922 -0.0366653 -0.9037473 -0.2508485 -0.1034015 0.8017412" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -3009,7 +3009,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="Matrix3x4" field="m_data" value="-0.0656088 -0.4626088 -0.8841316 -0.8307251 0.5161862 -0.2084411 0.5528033 0.7207946 -0.4181670 0.1489982 0.6300828 1.4593928" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+							<Class name="Matrix3x4" field="m_data" value="-0.0656088 -0.4626088 -0.8841316 -0.8307251 0.5161862 -0.2084411 0.5528033 0.7207946 -0.4181670 0.1489982 0.6300829 1.4593928" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>

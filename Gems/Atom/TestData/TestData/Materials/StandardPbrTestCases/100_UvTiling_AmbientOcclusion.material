@@ -1,11 +1,8 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "TestData/Objects/cube/cube_diff.tif"
-        }
+    "propertyValues": {
+        "occlusion.diffuseTextureMap": "TestData/Objects/cube/cube_diff.tif"
     }
 }

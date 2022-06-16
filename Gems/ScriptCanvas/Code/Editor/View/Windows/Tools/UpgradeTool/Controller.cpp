@@ -29,11 +29,9 @@
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
-
-#include <Editor/View/Windows/Tools/UpgradeTool/ui_View.h>
 
 namespace ScriptCanvasEditor
 {
@@ -125,9 +123,9 @@ namespace ScriptCanvasEditor
                     , "InspectAsset: %s, failed to load valid graph"
                     , asset.Path().c_str());
 
-                return graphComponent
-                    && (!graphComponent->GetVersion().IsLatest() || m_view->forceUpgrade->isChecked())
-                        ? ScanConfiguration::Filter::Include
+                return graphComponent &&
+                        (!graphComponent->GetVersion().IsLatest() || graphComponent->HasDeprecatedNode() || m_view->forceUpgrade->isChecked())
+                    ? ScanConfiguration::Filter::Include
                         : ScanConfiguration::Filter::Exclude;
             };
 
@@ -153,10 +151,14 @@ namespace ScriptCanvasEditor
 
                 if (asset.Get())
                 {
+                    UpgradeGraphConfig config;
+                    config.isVerbose = m_view->verbose->isChecked();
+                    config.saveParseErrors = m_view->saveParserFailures->isChecked();
+
                     asset.Mod()->UpgradeGraph
                         ( asset
-                        , m_view->forceUpgrade->isChecked() ? Graph::UpgradeRequest::Forced : Graph::UpgradeRequest::IfOutOfDate
-                        , m_view->verbose->isChecked());
+                        , m_view->forceUpgrade->isChecked() ? EditorGraph::UpgradeRequest::Forced : EditorGraph::UpgradeRequest::IfOutOfDate
+                        , config);
                 }
             };
 
@@ -244,7 +246,7 @@ namespace ScriptCanvasEditor
             AddLogEntries();
         }
 
-        void Controller::OnGraphUpgradeComplete(ScriptCanvasEditor::SourceHandle& asset, bool skipped)
+        void Controller::OnGraphUpgradeComplete(SourceHandle& asset, bool skipped)
         {
             ModificationResult result;
             result.asset = asset;
@@ -543,7 +545,7 @@ namespace ScriptCanvasEditor
             }
 
             QToolButton* doneButton = new QToolButton(this);
-            doneButton->setIcon(QIcon(":/stylesheet/img/UI20/titlebar-close.svg"));
+            doneButton->setIcon(QIcon(":/Application/titlebar-close.svg"));
             doneButton->setToolTip(message.data());
             m_view->tableWidget->setCellWidget(index, ColumnStatus, doneButton);
         }

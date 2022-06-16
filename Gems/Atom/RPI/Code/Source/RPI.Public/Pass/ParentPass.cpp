@@ -9,11 +9,15 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/std/containers/vector_set.h>
 
+#include <Atom/RPI.Public/Pass/SlowClearPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
+#include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
 namespace AZ
@@ -49,9 +53,55 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child)
         {
-            AZ_Assert(child->m_parent == nullptr, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return;
+            }
 
+            child->m_parentChildIndex = static_cast<uint32_t>(m_children.size());
             m_children.push_back(child);
+            OnChildAdded(child);
+        }
+
+        bool ParentPass::InsertChild(const Ptr<Pass>& child, ChildPassIndex position)
+        {
+            if (!position.IsValid())
+            {
+                AZ_Assert(false, "Can't insert a child pass with invalid position");
+                return false;
+            }
+            return InsertChild(child, position.GetIndex());
+        }
+        
+        bool ParentPass::InsertChild(const Ptr<Pass>& child, uint32_t index)
+        {
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return false;
+            }
+
+            if (index > m_children.size())
+            {
+                AZ_Assert(false, "Can't insert a child pass with invalid position");
+                return false;
+            }
+
+            auto insertPos = m_children.cbegin() + index;
+            m_children.insert(insertPos, child);
+            OnChildAdded(child);
+
+            for (; index < m_children.size(); ++index)
+            {
+                m_children[index]->m_parentChildIndex = index;
+            }
+
+            return true;
+        }
+
+        void ParentPass::OnChildAdded(const Ptr<Pass>& child)
+        {
             child->m_parent = this;
             child->OnHierarchyChange();
 
@@ -96,6 +146,12 @@ namespace AZ
 
             // Signal child that it was orphaned
             pass->OnOrphan();
+
+            // Update child indices
+            for (u32 index = 0; index < m_children.size(); ++index)
+            {
+                m_children[index]->m_parentChildIndex = index;
+            }
 
             // Notify pipeline
             if (m_pipeline)
@@ -196,7 +252,7 @@ namespace AZ
             }
         }
 
-        // --- PassTemplate related functions ---
+        // --- Child creation ---
 
         void ParentPass::CreatePassesFromTemplate()
         {
@@ -217,6 +273,49 @@ namespace AZ
             }
         }
 
+        void ParentPass::CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest)
+        {
+            if (binding.m_unifiedScopeDesc.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear ||
+                binding.m_unifiedScopeDesc.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear)
+            {
+                // Set the name of the child clear pass as well as the binding it's connected to
+                clearRequest.m_passName = ConcatPassName(Name("Clear"), binding.m_name);
+                clearRequest.m_connections[0].m_attachmentRef.m_attachment = binding.m_name;
+
+                // Set the pass clear value to the clear value of the attachment binding
+                SlowClearPassData* clearData = static_cast<SlowClearPassData*>(clearRequest.m_passData.get());
+                clearData->m_clearValue = binding.m_unifiedScopeDesc.m_loadStoreAction.m_clearValue;
+
+                // Create and add the pass
+                Ptr<Pass> clearPass = PassSystemInterface::Get()->CreatePassFromRequest(&clearRequest);
+                if (clearPass)
+                {
+                    AddChild(clearPass);
+                }
+            }
+
+        }
+
+        void ParentPass::CreateClearPassesFromBindings()
+        {
+            PassRequest clearRequest;
+            clearRequest.m_templateName = Name("SlowClearPassTemplate");
+            clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
+            clearRequest.m_connections.push_back();
+            clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
+            clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");
+
+            for (uint32_t idx = 0; idx < GetInputCount(); ++idx)
+            {
+                CreateClearPassFromBinding(GetInputBinding(idx), clearRequest);
+            }
+
+            for (uint32_t idx = 0; idx < GetInputOutputCount(); ++idx)
+            {
+                CreateClearPassFromBinding(GetInputOutputBinding(idx), clearRequest);
+            }
+        }
+
         // --- Pass behavior functions ---
 
         void ParentPass::CreateChildPasses()
@@ -229,6 +328,7 @@ namespace AZ
             m_flags.m_alreadyCreatedChildren = true;
 
             RemoveChildren();
+            CreateClearPassesFromBindings();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
 
@@ -350,7 +450,7 @@ namespace AZ
 
         // --- Debug functions ---
 
-        AZStd::array_view<Ptr<Pass>> ParentPass::GetChildren() const
+        AZStd::span<const Ptr<Pass>> ParentPass::GetChildren() const
         {
             return m_children;
         }

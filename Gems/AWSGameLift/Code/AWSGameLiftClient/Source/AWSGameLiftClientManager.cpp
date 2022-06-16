@@ -10,7 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
 #include <AWSCoreBus.h>
 #include <Credential/AWSCredentialBus.h>
@@ -42,32 +42,32 @@ namespace AWSGameLift
         AZ::Interface<IAWSGameLiftRequests>::Register(this);
         AWSGameLiftRequestBus::Handler::BusConnect();
 
-        AZ::Interface<AzFramework::ISessionAsyncRequests>::Register(this);
+        AZ::Interface<Multiplayer::ISessionAsyncRequests>::Register(this);
         AWSGameLiftSessionAsyncRequestBus::Handler::BusConnect();
 
-        AZ::Interface<AzFramework::ISessionRequests>::Register(this);
+        AZ::Interface<Multiplayer::ISessionRequests>::Register(this);
         AWSGameLiftSessionRequestBus::Handler::BusConnect();
 
-        AZ::Interface<AzFramework::IMatchmakingAsyncRequests>::Register(this);
+        AZ::Interface<Multiplayer::IMatchmakingAsyncRequests>::Register(this);
         AWSGameLiftMatchmakingAsyncRequestBus::Handler::BusConnect();
 
-        AZ::Interface<AzFramework::IMatchmakingRequests>::Register(this);
+        AZ::Interface<Multiplayer::IMatchmakingRequests>::Register(this);
         AWSGameLiftMatchmakingRequestBus::Handler::BusConnect();
     }
 
     void AWSGameLiftClientManager::DeactivateManager()
     {
         AWSGameLiftMatchmakingRequestBus::Handler::BusDisconnect();
-        AZ::Interface<AzFramework::IMatchmakingRequests>::Unregister(this);
+        AZ::Interface<Multiplayer::IMatchmakingRequests>::Unregister(this);
 
         AWSGameLiftMatchmakingAsyncRequestBus::Handler::BusDisconnect();
-        AZ::Interface<AzFramework::IMatchmakingAsyncRequests>::Unregister(this);
+        AZ::Interface<Multiplayer::IMatchmakingAsyncRequests>::Unregister(this);
 
         AWSGameLiftSessionRequestBus::Handler::BusDisconnect();
-        AZ::Interface<AzFramework::ISessionRequests>::Unregister(this);
+        AZ::Interface<Multiplayer::ISessionRequests>::Unregister(this);
 
         AWSGameLiftSessionAsyncRequestBus::Handler::BusDisconnect();
-        AZ::Interface<AzFramework::ISessionAsyncRequests>::Unregister(this);
+        AZ::Interface<Multiplayer::ISessionAsyncRequests>::Unregister(this);
 
         AWSGameLiftRequestBus::Handler::BusDisconnect();
         AZ::Interface<IAWSGameLiftRequests>::Unregister(this);
@@ -133,7 +133,7 @@ namespace AWSGameLift
         return AZ::Uuid::CreateRandom().ToString<AZStd::string>(includeBrackets, includeDashes);
     }
 
-    void AWSGameLiftClientManager::AcceptMatch(const AzFramework::AcceptMatchRequest& acceptMatchRequest)
+    void AWSGameLiftClientManager::AcceptMatch(const Multiplayer::AcceptMatchRequest& acceptMatchRequest)
     {
         if (AcceptMatchActivity::ValidateAcceptMatchRequest(acceptMatchRequest))
         {
@@ -143,12 +143,12 @@ namespace AWSGameLift
         }
     }
 
-    void AWSGameLiftClientManager::AcceptMatchAsync(const AzFramework::AcceptMatchRequest& acceptMatchRequest)
+    void AWSGameLiftClientManager::AcceptMatchAsync(const Multiplayer::AcceptMatchRequest& acceptMatchRequest)
     {
         if (!AcceptMatchActivity::ValidateAcceptMatchRequest(acceptMatchRequest))
         {
-            AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::MatchmakingAsyncRequestNotifications::OnAcceptMatchAsyncComplete);
+            Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::MatchmakingAsyncRequestNotifications::OnAcceptMatchAsyncComplete);
             return;
         }
 
@@ -161,15 +161,15 @@ namespace AWSGameLift
             {
                 AcceptMatchActivity::AcceptMatch(gameliftStartMatchmakingRequest);
 
-                AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::MatchmakingAsyncRequestNotifications::OnAcceptMatchAsyncComplete);
+                Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::MatchmakingAsyncRequestNotifications::OnAcceptMatchAsyncComplete);
             },
             true, jobContext);
 
         acceptMatchJob->Start(); 
     }
 
-    AZStd::string AWSGameLiftClientManager::CreateSession(const AzFramework::CreateSessionRequest& createSessionRequest)
+    AZStd::string AWSGameLiftClientManager::CreateSession(const Multiplayer::CreateSessionRequest& createSessionRequest)
     {
         AZStd::string result = "";
         if (CreateSessionActivity::ValidateCreateSessionRequest(createSessionRequest))
@@ -192,7 +192,7 @@ namespace AWSGameLift
         return result;
     }
 
-    void AWSGameLiftClientManager::CreateSessionAsync(const AzFramework::CreateSessionRequest& createSessionRequest)
+    void AWSGameLiftClientManager::CreateSessionAsync(const Multiplayer::CreateSessionRequest& createSessionRequest)
     {
         if (CreateSessionActivity::ValidateCreateSessionRequest(createSessionRequest))
         {
@@ -206,8 +206,8 @@ namespace AWSGameLift
                 {
                     AZStd::string result = CreateSessionActivity::CreateSession(gameliftCreateSessionRequest);
 
-                    AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                        &AzFramework::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, result);
+                    Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                        &Multiplayer::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, result);
                 },
                 true, jobContext);
             createSessionJob->Start();
@@ -224,8 +224,8 @@ namespace AWSGameLift
                 {
                     AZStd::string result = CreateSessionOnQueueActivity::CreateSessionOnQueue(gameliftCreateSessionOnQueueRequest);
 
-                    AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                        &AzFramework::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, result);
+                    Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                        &Multiplayer::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, result);
                 },
                 true, jobContext);
             createSessionOnQueueJob->Start();
@@ -233,12 +233,12 @@ namespace AWSGameLift
         else
         {
             AZ_Error(AWSGameLiftClientManagerName, false, AWSGameLiftCreateSessionRequestInvalidErrorMessage);
-            AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, "");
+            Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::SessionAsyncRequestNotifications::OnCreateSessionAsyncComplete, "");
         }
     }
 
-    bool AWSGameLiftClientManager::JoinSession(const AzFramework::JoinSessionRequest& joinSessionRequest)
+    bool AWSGameLiftClientManager::JoinSession(const Multiplayer::JoinSessionRequest& joinSessionRequest)
     {
         bool result = false;
         if (JoinSessionActivity::ValidateJoinSessionRequest(joinSessionRequest))
@@ -252,12 +252,12 @@ namespace AWSGameLift
         return result;
     }
 
-    void AWSGameLiftClientManager::JoinSessionAsync(const AzFramework::JoinSessionRequest& joinSessionRequest)
+    void AWSGameLiftClientManager::JoinSessionAsync(const Multiplayer::JoinSessionRequest& joinSessionRequest)
     {
         if (!JoinSessionActivity::ValidateJoinSessionRequest(joinSessionRequest))
         {
-            AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::SessionAsyncRequestNotifications::OnJoinSessionAsyncComplete, false);
+            Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::SessionAsyncRequestNotifications::OnJoinSessionAsyncComplete, false);
             return;
         }
 
@@ -272,8 +272,8 @@ namespace AWSGameLift
                 auto createPlayerSessionOutcome = JoinSessionActivity::CreatePlayerSession(gameliftJoinSessionRequest);
                 bool result = JoinSessionActivity::RequestPlayerJoinSession(createPlayerSessionOutcome);
 
-                AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::SessionAsyncRequestNotifications::OnJoinSessionAsyncComplete, result);
+                Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::SessionAsyncRequestNotifications::OnJoinSessionAsyncComplete, result);
             },
             true, jobContext);
 
@@ -293,18 +293,18 @@ namespace AWSGameLift
             [this]()
             {
                 LeaveSession();
-                AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::SessionAsyncRequestNotifications::OnLeaveSessionAsyncComplete);
+                Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::SessionAsyncRequestNotifications::OnLeaveSessionAsyncComplete);
             },
             true, jobContext);
 
         leaveSessionJob->Start();
     }
 
-    AzFramework::SearchSessionsResponse AWSGameLiftClientManager::SearchSessions(
-        const AzFramework::SearchSessionsRequest& searchSessionsRequest) const
+    Multiplayer::SearchSessionsResponse AWSGameLiftClientManager::SearchSessions(
+        const Multiplayer::SearchSessionsRequest& searchSessionsRequest) const
     {
-        AzFramework::SearchSessionsResponse response;
+        Multiplayer::SearchSessionsResponse response;
         if (SearchSessionsActivity::ValidateSearchSessionsRequest(searchSessionsRequest))
         {
             const AWSGameLiftSearchSessionsRequest& gameliftSearchSessionsRequest =
@@ -315,12 +315,12 @@ namespace AWSGameLift
         return response;
     }
 
-    void AWSGameLiftClientManager::SearchSessionsAsync(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const
+    void AWSGameLiftClientManager::SearchSessionsAsync(const Multiplayer::SearchSessionsRequest& searchSessionsRequest) const
     {
         if (!SearchSessionsActivity::ValidateSearchSessionsRequest(searchSessionsRequest))
         {
-            AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::SessionAsyncRequestNotifications::OnSearchSessionsAsyncComplete, AzFramework::SearchSessionsResponse());
+            Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::SessionAsyncRequestNotifications::OnSearchSessionsAsyncComplete, Multiplayer::SearchSessionsResponse());
             return;
         }
 
@@ -332,17 +332,17 @@ namespace AWSGameLift
         AZ::Job* searchSessionsJob = AZ::CreateJobFunction(
             [gameliftSearchSessionsRequest]()
             {
-                AzFramework::SearchSessionsResponse response = SearchSessionsActivity::SearchSessions(gameliftSearchSessionsRequest);
+                Multiplayer::SearchSessionsResponse response = SearchSessionsActivity::SearchSessions(gameliftSearchSessionsRequest);
 
-                AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::SessionAsyncRequestNotifications::OnSearchSessionsAsyncComplete, response);
+                Multiplayer::SessionAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::SessionAsyncRequestNotifications::OnSearchSessionsAsyncComplete, response);
             },
             true, jobContext);
 
         searchSessionsJob->Start(); 
     }
 
-    AZStd::string AWSGameLiftClientManager::StartMatchmaking(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)
+    AZStd::string AWSGameLiftClientManager::StartMatchmaking(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest)
     {
         AZStd::string response;
         if (StartMatchmakingActivity::ValidateStartMatchmakingRequest(startMatchmakingRequest))
@@ -355,12 +355,12 @@ namespace AWSGameLift
         return response;
     }
 
-    void AWSGameLiftClientManager::StartMatchmakingAsync(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest)
+    void AWSGameLiftClientManager::StartMatchmakingAsync(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest)
     {
         if (!StartMatchmakingActivity::ValidateStartMatchmakingRequest(startMatchmakingRequest))
         {
-            AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::MatchmakingAsyncRequestNotifications::OnStartMatchmakingAsyncComplete, AZStd::string{});
+            Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::MatchmakingAsyncRequestNotifications::OnStartMatchmakingAsyncComplete, AZStd::string{});
             return;
         }
 
@@ -374,15 +374,15 @@ namespace AWSGameLift
             {
                 AZStd::string response = StartMatchmakingActivity::StartMatchmaking(gameliftStartMatchmakingRequest);
 
-                AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::MatchmakingAsyncRequestNotifications::OnStartMatchmakingAsyncComplete, response);
+                Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::MatchmakingAsyncRequestNotifications::OnStartMatchmakingAsyncComplete, response);
             },
             true, jobContext);
 
         startMatchmakingJob->Start(); 
     }
 
-    void AWSGameLiftClientManager::StopMatchmaking(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest)
+    void AWSGameLiftClientManager::StopMatchmaking(const Multiplayer::StopMatchmakingRequest& stopMatchmakingRequest)
     {
         if (StopMatchmakingActivity::ValidateStopMatchmakingRequest(stopMatchmakingRequest))
         {
@@ -393,12 +393,12 @@ namespace AWSGameLift
         }
     }
 
-    void AWSGameLiftClientManager::StopMatchmakingAsync(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest)
+    void AWSGameLiftClientManager::StopMatchmakingAsync(const Multiplayer::StopMatchmakingRequest& stopMatchmakingRequest)
     {
         if (!StopMatchmakingActivity::ValidateStopMatchmakingRequest(stopMatchmakingRequest))
         {
-            AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                &AzFramework::MatchmakingAsyncRequestNotifications::OnStopMatchmakingAsyncComplete);
+            Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                &Multiplayer::MatchmakingAsyncRequestNotifications::OnStopMatchmakingAsyncComplete);
             return;
         }
 
@@ -412,8 +412,8 @@ namespace AWSGameLift
             {
                 StopMatchmakingActivity::StopMatchmaking(gameliftStopMatchmakingRequest);
 
-                AzFramework::MatchmakingAsyncRequestNotificationBus::Broadcast(
-                    &AzFramework::MatchmakingAsyncRequestNotifications::OnStopMatchmakingAsyncComplete);
+                Multiplayer::MatchmakingAsyncRequestNotificationBus::Broadcast(
+                    &Multiplayer::MatchmakingAsyncRequestNotifications::OnStopMatchmakingAsyncComplete);
             },
             true, jobContext);
 

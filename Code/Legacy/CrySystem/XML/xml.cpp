@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 
-#define XML_STATIC // Alternative to defining this here would be setting it project-wide
 #include <expat.h>
 #include "xml.h"
 #include <algorithm>
@@ -1133,7 +1132,10 @@ bool CXmlNode::saveToFile(const char* fileName)
 
 bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSize, AZ::IO::HandleType fileHandle)
 {
-    CrySetFileAttributes(fileName, FILE_ATTRIBUTE_NORMAL);
+    if (AZ::IO::SystemFile::Exists(fileName) && !AZ::IO::SystemFile::IsWritable(fileName))
+    {
+        AZ::IO::SystemFile::SetWritable(fileName, true);
+    }
 
     if (chunkSize < 256 * 1024)   // make at least 256k
     {

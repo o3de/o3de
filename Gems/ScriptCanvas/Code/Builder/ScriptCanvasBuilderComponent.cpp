@@ -14,8 +14,7 @@
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
 namespace ScriptCanvasBuilder
@@ -97,8 +96,6 @@ namespace ScriptCanvasBuilder
             builderDescriptor.m_productsToKeepOnFailure[s_scriptCanvasProcessJobKey] = { AZ_CRC("SubgraphInterface", 0xdfe6dc72) };
             m_scriptCanvasBuilder.BusConnect(builderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, builderDescriptor);
-
-            AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::RegisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>(), ScriptCanvasEditor::ScriptCanvasAsset::Description::GetFileFilter<ScriptCanvasEditor::ScriptCanvasAsset>());
         }
 
         m_sharedHandlers = HandleAssetTypes();
@@ -110,7 +107,6 @@ namespace ScriptCanvasBuilder
     {
         // Finish all queued work
         AZ::Data::AssetBus::ExecuteQueuedEvents();
-        AzToolsFramework::ToolsAssetSystemBus::Broadcast(&AzToolsFramework::ToolsAssetSystemRequests::UnregisterSourceAssetType, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>());
         m_scriptCanvasBuilder.BusDisconnect();
         m_sharedHandlers.DeleteOwnedHandlers();
     }

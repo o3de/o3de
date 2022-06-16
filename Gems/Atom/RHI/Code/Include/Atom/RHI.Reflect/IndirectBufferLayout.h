@@ -12,7 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/TypeHash.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -137,7 +137,7 @@ namespace AZ
             bool AddIndirectCommand(const IndirectCommandDescriptor& command);
 
             /// Returns the list of indirect commands of the layout. Must be called after the layout is finalized.
-            AZStd::array_view<IndirectCommandDescriptor> GetCommands() const;
+            AZStd::span<const IndirectCommandDescriptor> GetCommands() const;
 
             //! Returns the position of a command.
             //! Must be called after the layout is finalized.

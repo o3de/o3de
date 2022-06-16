@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Prefab/PrefabTestDomUtils.h>
 #include <Prefab/PrefabTestUndoFixture.h>
 
@@ -144,7 +143,6 @@ namespace UnitTest
         nestedInstance->ActivateContainerEntity();
 
         AZ::EntityId nestedContainerEntityId = nestedInstance->GetContainerEntityId();
-        AZ::EntityId rootContainerEntityId = rootInstance->GetContainerEntityId();
 
         AZ::Entity* nestedContainerEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(nestedContainerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, nestedContainerEntityId);
@@ -170,7 +168,14 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //instantiate a new nested instance
-        nestedInstance = m_prefabSystemComponent->InstantiatePrefab(nestedTemplateId);
+        nestedInstance = m_prefabSystemComponent->InstantiatePrefab(
+            nestedTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
+
         nestedContainerEntityId = nestedInstance->GetContainerEntityId();
         AZ::ComponentApplicationBus::BroadcastResult(nestedContainerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, nestedContainerEntityId);
         ASSERT_TRUE(nestedContainerEntity);
@@ -179,7 +184,6 @@ namespace UnitTest
         m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
 
         rootInstance->AddInstance(AZStd::move(nestedInstance));
-        nestedTestComponent->m_entityIdProperty = rootContainerEntityId;
 
         m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
 
@@ -198,7 +202,13 @@ namespace UnitTest
 
         LinkId linkId = undoInstanceLinkNode.GetLinkId();
 
-        rootInstance = m_prefabSystemComponent->InstantiatePrefab(rootTemplateId);
+        rootInstance = m_prefabSystemComponent->InstantiatePrefab(
+            rootTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
         aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
 
         //verify the link was created
@@ -228,7 +238,13 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //verify the update worked
-        rootInstance = m_prefabSystemComponent->InstantiatePrefab(rootTemplateId);
+        rootInstance = m_prefabSystemComponent->InstantiatePrefab(
+            rootTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
         aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
         nestedInstanceRef = rootInstance->FindNestedInstance(aliases[0]);
         nestedContainerEntityId = nestedInstanceRef->get().GetContainerEntityId();
@@ -244,7 +260,13 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //verify the undo update worked
-        rootInstance = m_prefabSystemComponent->InstantiatePrefab(rootTemplateId);
+        rootInstance = m_prefabSystemComponent->InstantiatePrefab(
+            rootTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
         aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
         nestedInstanceRef = rootInstance->FindNestedInstance(aliases[0]);
         nestedContainerEntityId = nestedInstanceRef->get().GetContainerEntityId();
@@ -259,7 +281,13 @@ namespace UnitTest
         undoLinkUpdateNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        rootInstance = m_prefabSystemComponent->InstantiatePrefab(rootTemplateId);
+        rootInstance = m_prefabSystemComponent->InstantiatePrefab(
+            rootTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
         aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
         nestedInstanceRef = rootInstance->FindNestedInstance(aliases[0]);
         nestedContainerEntityId = nestedInstanceRef->get().GetContainerEntityId();
@@ -287,7 +315,13 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         //verify the update worked
-        rootInstance = m_prefabSystemComponent->InstantiatePrefab(rootTemplateId);
+        rootInstance = m_prefabSystemComponent->InstantiatePrefab(
+            rootTemplateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
         aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
         nestedInstanceRef = rootInstance->FindNestedInstance(aliases[0]);
         nestedContainerEntityId = nestedInstanceRef->get().GetContainerEntityId();

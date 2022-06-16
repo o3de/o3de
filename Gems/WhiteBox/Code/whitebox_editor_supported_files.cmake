@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Include/WhiteBox/EditorWhiteBoxBus.h
     Include/WhiteBox/EditorWhiteBoxComponentBus.h
     Include/WhiteBox/WhiteBoxToolApi.h
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
@@ -63,6 +62,8 @@ set(FILES
     Source/SubComponentModes/EditorWhiteBoxDefaultModeBus.h
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.cpp
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.h
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.cpp
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.h
     Source/EditorWhiteBoxSystemComponent.cpp
     Source/EditorWhiteBoxSystemComponent.h
 )

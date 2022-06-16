@@ -16,7 +16,7 @@ logging.getLogger('nose').setLevel(logging.WARNING)
 class AwsUtils:
 
     def __init__(self, arn: str, session_name: str, region_name: str):
-        local_session = boto3.Session(profile_name='default')
+        local_session = boto3.Session()
         local_sts_client = local_session.client('sts')
         self._local_account_id = local_sts_client.get_caller_identity()["Account"]
         logger.info(f'Local Account Id: {self._local_account_id}')

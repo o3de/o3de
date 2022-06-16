@@ -54,7 +54,7 @@ namespace AZ
 
         // --- PipelineStatisticsResult ---
 
-        PipelineStatisticsResult::PipelineStatisticsResult(AZStd::array_view<PipelineStatisticsResult>&& statisticsResultArray)
+        PipelineStatisticsResult::PipelineStatisticsResult(AZStd::span<const PipelineStatisticsResult>&& statisticsResultArray)
         {
             for (const PipelineStatisticsResult& result : statisticsResultArray)
             {

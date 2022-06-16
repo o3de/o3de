@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -52,6 +53,7 @@ namespace AzToolsFramework
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
+        , private FocusModeNotificationBus::Handler
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
@@ -69,6 +71,7 @@ namespace AzToolsFramework
             ColumnName,                 //!< Entity name
             ColumnVisibilityToggle,     //!< Visibility Icons
             ColumnLockToggle,           //!< Lock Icons
+            ColumnSpacing,              //!< Spacing to allow for drag select
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
         };
@@ -123,6 +126,9 @@ namespace AzToolsFramework
 
         void Initialize();
 
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
+
         // Qt overrides.
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         int columnCount(const QModelIndex&) const override;
@@ -156,7 +162,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();
@@ -190,7 +195,6 @@ namespace AzToolsFramework
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
-        AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityChangeQueue;
         bool m_entityChangeQueued;
         bool m_entityLayoutQueued;

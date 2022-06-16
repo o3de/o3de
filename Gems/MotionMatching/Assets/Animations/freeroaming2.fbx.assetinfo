@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "freeroaming2",
+            "selectedRootBone": "RootNode.root",
+            "id": "{96DC1ABD-1F72-5546-8B7F-7092C3AC0E5D}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 119.26667022705078,
+                                                "endTime": 123.4000015258789
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

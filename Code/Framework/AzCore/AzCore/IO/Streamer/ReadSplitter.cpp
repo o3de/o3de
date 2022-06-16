@@ -118,9 +118,13 @@ namespace AZ::IO
             return;
         }
 
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         if (data == nullptr)
         {
+            if (auto report = AZStd::get_if<Requests::ReportData>(&request->GetCommand()); report != nullptr)
+            {
+                Report(*report);
+            }
             StreamStackEntry::QueueRequest(request);
             return;
         }
@@ -156,7 +160,7 @@ namespace AZ::IO
 
     void ReadSplitter::QueueAlignedRead(FileRequest* request)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         if (data->m_size <= m_maxReadSize)
@@ -187,7 +191,7 @@ namespace AZ::IO
 
     bool ReadSplitter::QueueAlignedRead(PendingRead& pending)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&pending.m_request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&pending.m_request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         while (pending.m_readSize > 0)
@@ -237,7 +241,7 @@ namespace AZ::IO
 
     void ReadSplitter::QueueBufferedRead(FileRequest* request)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         PendingRead pendingRead;
@@ -262,7 +266,7 @@ namespace AZ::IO
 
     bool ReadSplitter::QueueBufferedRead(PendingRead& pending)
     {
-        auto data = AZStd::get_if<FileRequest::ReadData>(&pending.m_request->GetCommand());
+        auto data = AZStd::get_if<Requests::ReadData>(&pending.m_request->GetCommand());
         AZ_Assert(data != nullptr, "Provided request to queue by the Read Splitter did not contain a read command.");
 
         while (pending.m_readSize > 0)
@@ -361,10 +365,27 @@ namespace AZ::IO
 
     void ReadSplitter::CollectStatistics(AZStd::vector<Statistic>& statistics) const
     {
-        statistics.push_back(Statistic::CreateFloat(m_name, AvgNumSubReadsName, m_averageNumSubReadsStat.GetAverage()));
-        statistics.push_back(Statistic::CreatePercentage(m_name, AlignedReadsName, m_alignedReadsStat.GetAverage()));
-        statistics.push_back(Statistic::CreateInteger(m_name, NumAvailableBufferSlotsName, aznumeric_caster(m_availableBufferSlots.size())));
-        statistics.push_back(Statistic::CreateInteger(m_name, NumPendingReadsName, aznumeric_caster(m_pendingReads.size())));
+        statistics.push_back(Statistic::CreateFloatRange(
+            m_name, AvgNumSubReadsName, m_averageNumSubReadsStat.GetAverage(), m_averageNumSubReadsStat.GetMinimum(),
+            m_averageNumSubReadsStat.GetMaximum(),
+            "The average number of splits. A value of 3 would for instance indicate that on average files are split into 3 smaller "
+            "reads."));
+        statistics.push_back(Statistic::CreatePercentageRange(
+            m_name, AlignedReadsName, m_alignedReadsStat.GetAverage(), m_alignedReadsStat.GetMinimum(),
+            m_alignedReadsStat.GetMaximum(),
+            "The percentage or reads that meet the alignment requirements and therefore don't need to use a buffer slot. Higher values are "
+            "better as it means more requests that require fewer overhead."));
+        statistics.push_back(Statistic::CreateInteger(
+            m_name, NumAvailableBufferSlotsName, aznumeric_caster(m_availableBufferSlots.size()),
+            "The total number or available slots to buffer unaligned reads to. If this is frequently low it means there are too many "
+            "requests that need to be aligned at the same time. Making sure more requests are aligned correctly will help improve "
+            "performance as intermediate storage is avoided. If aligning isn't possible the allocated memory for this node can be "
+            "increased so more slots are available."));
+        statistics.push_back(Statistic::CreateInteger(
+            m_name, NumPendingReadsName, aznumeric_caster(m_pendingReads.size()),
+            "The number of read requests that are waiting for an opportunity to read. Having a small number is good as it means more "
+            "requests are ready for processing. If the number is large then it may mean that later nodes in the stack are saturated or "
+            "that there are not enough blocks available."));
         StreamStackEntry::CollectStatistics(statistics);
     }
 
@@ -382,5 +403,38 @@ namespace AZ::IO
     {
         AZ_Assert(m_buffer != nullptr, "A buffer slot was requested by the Read Splitter before the buffer was initialized.");
         return m_buffer + (index * m_maxReadSize);
+    }
+
+    void ReadSplitter::Report(const Requests::ReportData& data) const
+    {
+        switch (data.m_reportType)
+        {
+        case IStreamerTypes::ReportType::Config:
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Max read size", m_maxReadSize,
+                "The maximum size in kilobytes of an individual read. A larger size means less splitting, but may impact the performance "
+                "of nodes that can't cancel."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Memory alignment", m_memoryAlignment,
+                "The alignment for memory allocations in kilobytes. This is used to reduce the number of temporary buffers later nodes "
+                "need to have in order to meet memory alignment requirements."));
+            data.m_output.push_back(Statistic::CreateByteSize(
+                m_name, "Size alignment", m_sizeAlignment,
+                "The size reads are aligned to in bytes. This is used to reduce the number of temporary buffers later nodes need to "
+                "have in order to meet size alignment requirements."));
+            data.m_output.push_back(Statistic::CreateBoolean(
+                m_name, "Adjust offset", m_adjustOffset,
+                "Whether or not offsets are adjusted to meet alignment requirements. If this isn't enabled this node will have to do less "
+                "work, but depending on the types of nodes that follow, more overall work may need to be done."));
+            data.m_output.push_back(Statistic::CreateBoolean(
+                m_name, "Split aligned requests", m_splitAlignedRequests,
+                "Whether or not to split requests that meet alignment requirements. If set to true the entire read will be split in "
+                "smaller blocks, if set to false then only requests that don't meet the alignment will be split where needed. It's "
+                "recommended to enable this if later nodes don't have support for canceling, otherwise it's better to disable it."));
+            data.m_output.push_back(Statistic::CreateReferenceString(
+                m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                "The name of the node that follows this node or none."));
+            break;
+        };
     }
 } // namespace AZ::IO

@@ -88,6 +88,12 @@ namespace AZ
                     ->Event("SetShadowBias", &DirectionalLightRequestBus::Events::SetShadowBias)
                     ->Event("GetNormalShadowBias", &DirectionalLightRequestBus::Events::GetNormalShadowBias)
                     ->Event("SetNormalShadowBias", &DirectionalLightRequestBus::Events::SetNormalShadowBias)
+                    ->Event("GetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::GetCascadeBlendingEnabled)
+                    ->Event("SetCascadeBlendingEnabled", &DirectionalLightRequestBus::Events::SetCascadeBlendingEnabled)
+                    ->Event("GetAffectsGI", &DirectionalLightRequestBus::Events::GetAffectsGI)
+                    ->Event("SetAffectsGI", &DirectionalLightRequestBus::Events::SetAffectsGI)
+                    ->Event("GetAffectsGIFactor", &DirectionalLightRequestBus::Events::GetAffectsGIFactor)
+                    ->Event("SetAffectsGIFactor", &DirectionalLightRequestBus::Events::SetAffectsGIFactor)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -104,7 +110,10 @@ namespace AZ
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled")
                     ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
-                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias");
+                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
+                    ->VirtualProperty("BlendBetweenCascadesEnabled", "GetCascadeBlendingEnabled", "SetCascadeBlendingEnabled")
+                    ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
+                    ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
                 ;
             }
         }
@@ -450,6 +459,60 @@ namespace AZ
             }
         }
 
+        void DirectionalLightComponentController::SetFullscreenBlurEnabled(bool enable)
+        {
+            m_configuration.m_fullscreenBlurEnabled = enable;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurEnabled(m_lightHandle, enable);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurConstFalloff(float blurConstFalloff)
+        {
+            m_configuration.m_fullscreenBlurConstFalloff = blurConstFalloff;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurConstFalloff(m_lightHandle, blurConstFalloff);
+            }
+        }
+
+        void DirectionalLightComponentController::SetFullscreenBlurDepthFalloffStrength(float blurDepthFalloffStrength)
+        {
+            m_configuration.m_fullscreenBlurDepthFalloffStrength = blurDepthFalloffStrength;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetFullscreenBlurDepthFalloffStrength(m_lightHandle, blurDepthFalloffStrength);
+            }
+        }
+
+        bool DirectionalLightComponentController::GetAffectsGI() const
+        {
+            return m_configuration.m_affectsGI;
+        }
+
+        void DirectionalLightComponentController::SetAffectsGI(bool affectsGI)
+        {
+            m_configuration.m_affectsGI = affectsGI;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetAffectsGI(m_lightHandle, m_configuration.m_affectsGI);
+            }
+        }
+
+        float DirectionalLightComponentController::GetAffectsGIFactor() const
+        {
+            return m_configuration.m_affectsGIFactor;
+        }
+
+        void DirectionalLightComponentController::SetAffectsGIFactor(float affectsGIFactor)
+        {
+            m_configuration.m_affectsGIFactor = affectsGIFactor;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetAffectsGIFactor(m_lightHandle, m_configuration.m_affectsGIFactor);
+            }
+        }
 
         const DirectionalLightComponentConfig& DirectionalLightComponentController::GetConfiguration() const
         {
@@ -537,6 +600,12 @@ namespace AZ
             SetNormalShadowBias(m_configuration.m_normalShadowBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
+            SetCascadeBlendingEnabled(m_configuration.m_cascadeBlendingEnabled);
+            SetFullscreenBlurEnabled(m_configuration.m_fullscreenBlurEnabled);
+            SetFullscreenBlurConstFalloff(m_configuration.m_fullscreenBlurConstFalloff);
+            SetFullscreenBlurDepthFalloffStrength(m_configuration.m_fullscreenBlurDepthFalloffStrength);
+            SetAffectsGI(m_configuration.m_affectsGI);
+            SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
 
             // [GFX TODO][ATOM-1726] share config for multiple light (e.g., light ID).
             // [GFX TODO][ATOM-2416] adapt to multiple viewports.
@@ -634,6 +703,17 @@ namespace AZ
         {
             m_configuration.m_receiverPlaneBiasEnabled = enable;
             m_featureProcessor->SetShadowReceiverPlaneBiasEnabled(m_lightHandle, enable);
+        }
+
+        bool DirectionalLightComponentController::GetCascadeBlendingEnabled() const
+        {
+            return m_configuration.m_cascadeBlendingEnabled;
+        }
+
+        void DirectionalLightComponentController::SetCascadeBlendingEnabled(bool enable)
+        {
+            m_configuration.m_cascadeBlendingEnabled = enable;
+            m_featureProcessor->SetCascadeBlendingEnabled(m_lightHandle, enable);
         }
 
     } // namespace Render

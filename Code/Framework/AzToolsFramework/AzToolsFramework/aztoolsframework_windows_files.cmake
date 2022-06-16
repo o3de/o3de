@@ -12,7 +12,6 @@ set(FILES
     UI/LegacyFramework/UIFramework.hxx
     UI/LegacyFramework/UIFramework.cpp
     UI/LegacyFramework/UIFrameworkAPI.h
-    UI/LegacyFramework/UIFrameworkAPI.cpp
     UI/LegacyFramework/UIFrameworkPreferences.cpp
     UI/LegacyFramework/Resources/sharedResources.qrc
     UI/LegacyFramework/Core/EditorContextBus.h

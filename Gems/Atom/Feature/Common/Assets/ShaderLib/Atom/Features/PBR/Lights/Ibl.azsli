@@ -11,6 +11,7 @@
 // --- Static Options Available ---
 // FORCE_IBL_IN_FORWARD_PASS - forces IBL lighting to be run in the forward pass, used in pipelines that don't have a reflection pass
 
+#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include <Atom/RPI/Math.azsli>
@@ -72,15 +73,16 @@ float3 GetIblSpecular(
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
 {
+    bool useIbl = o_enableIBL && IsIndirectLightingEnabled();
+
 #ifdef FORCE_IBL_IN_FORWARD_PASS
     bool useDiffuseIbl = true;
     bool useSpecularIbl = true;
-    bool useIbl = o_enableIBL;
 #else
     bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
     bool useDiffuseIbl = isTransparent;
     bool useSpecularIbl = (isTransparent || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
-    bool useIbl = o_enableIBL && (useDiffuseIbl || useSpecularIbl);
+    useIbl = useIbl && (useDiffuseIbl || useSpecularIbl);
 #endif
 
     if(useIbl)
@@ -98,6 +100,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
             float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf);
             iblSpecular *= lightingData.multiScatterCompensation;
 
+#if ENABLE_CLEAR_COAT
             if (o_clearCoat_feature_enabled && surface.clearCoat.factor > 0.0f)
             {
                 float clearCoatNdotV = saturate(dot(surface.clearCoat.normal, lightingData.dirToCamera));
@@ -115,6 +118,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 float3 clearCoatResponse = FresnelSchlickWithRoughness(clearCoatNdotV, clearCoatSpecularF0, surface.clearCoat.roughness) * surface.clearCoat.factor;
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
             }
+#endif
 
             float exposure = ObjectSrg::m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure) : globalIblExposure;
             lightingData.specularLighting += (iblSpecular * exposure);

@@ -1,14 +1,11 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "opacity": {
-            "alphaSource": "Split",
-            "factor": 0.9,
-            "mode": "Cutout",
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
-        }
+    "propertyValues": {
+        "opacity.alphaSource": "Split",
+        "opacity.factor": 0.8999999761581421,
+        "opacity.mode": "Cutout",
+        "opacity.textureMap": "TestData/Objects/cube/cube_diff.tif"
     }
 }

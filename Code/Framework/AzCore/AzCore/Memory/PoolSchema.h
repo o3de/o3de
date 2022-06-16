@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_POOL_ALLOCATION_SCHEME_H
-#define AZ_POOL_ALLOCATION_SCHEME_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -22,7 +21,7 @@ namespace AZ
      * use ThreadPool Schema or do the sync yourself.
      */
     class PoolSchema 
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         /**
@@ -52,7 +51,7 @@ namespace AZ
              * this is the minimum number of pages we will have allocated at all times, otherwise the total number of pages supported.
              */
             unsigned int        m_numStaticPages;
-            IAllocatorAllocate* m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
+            IAllocatorSchema*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
         };
 
         PoolSchema(const Descriptor& desc = Descriptor());
@@ -73,7 +72,6 @@ namespace AZ
         size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
-        IAllocatorAllocate* GetSubAllocator() override;
 
     protected:
         PoolSchema(const PoolSchema&);
@@ -90,7 +88,7 @@ namespace AZ
         * for each thread. So there will be some memory overhead, especially if you use fixed pool sizes.
         */
     class ThreadPoolSchema
-        : public IAllocatorAllocate
+        : public IAllocatorSchema
     {
     public:
         // Functions for getting an instance of a ThreadPoolData when using thread local storage
@@ -119,7 +117,6 @@ namespace AZ
         size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
-        IAllocatorAllocate* GetSubAllocator() override;
 
     protected:
         ThreadPoolSchema(const ThreadPoolSchema&);
@@ -164,8 +161,3 @@ namespace AZ
     template<class Allocator>
     AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
 }
-
-#endif // AZ_POOL_ALLOCATION_SCHEME_H
-#pragma once
-
-

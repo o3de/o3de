@@ -167,7 +167,8 @@ namespace UnitTest
         const auto ray = m_viewportInteractionImpl->ViewportScreenToWorldRay(ScreenPoint(832, 226));
 
         float unused;
-        auto intersection = AZ::Intersect::IntersectRaySphere(ray.origin, ray.direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
+        auto intersection =
+            AZ::Intersect::IntersectRaySphere(ray.m_origin, ray.m_direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
 
         EXPECT_EQ(intersection, AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_ISECT);
     }

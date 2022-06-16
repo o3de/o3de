@@ -9,31 +9,38 @@
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
     namespace RPI
     {
         //! Use a MaterialAssetCreator to create and configure a new MaterialAsset.
-        //! The MaterialAsset will be based on a MaterialTypeAsset or another MaterialAsset.
-        //! Either way, the base provides the necessary data to define the layout 
-        //! and behavior of the material. The MaterialAsset only provides property value overrides.
-        class MaterialAssetCreator
+        //!
+        //! There are two options for how to create the MaterialAsset, whether it should be finalized now or deferred.
+        //!  - Finalized now: This requires the MaterialTypeAsset to be fully populated so it can read the property layout.
+        //!  - Deferred finalize: This only requires the MaterialTypeAsset to have a valid AssetId; the data inside will not be used. MaterialAsset::Finalize()
+        //!                       will need to be called later when the final MaterialTypeAsset is available, presumably after loading the MaterialAsset at runtime.
+        class MaterialAssetCreator  
             : public AssetCreator<MaterialAsset>
-            , public MaterialAssetCreatorCommon
         {
         public:
             friend class MaterialSourceData;
 
-            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames = true);
-            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames = true);
+            void Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType, bool shouldFinalize);
             bool End(Data::Asset<MaterialAsset>& result);
 
-        private:
-            void PopulatePropertyNameList();
+            void SetMaterialTypeVersion(uint32_t version);
+            
+            void SetPropertyValue(const Name& name, const MaterialPropertyValue& value);
+            
+            void SetPropertyValue(const Name& name, const Data::Asset<ImageAsset>& imageAsset);
+            void SetPropertyValue(const Name& name, const Data::Asset<StreamingImageAsset>& imageAsset);
+            void SetPropertyValue(const Name& name, const Data::Asset<AttachmentImageAsset>& imageAsset);
 
-            const MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr;
+        private:
+            bool m_shouldFinalize = false;
         };
     } // namespace RPI
 } // namespace AZ

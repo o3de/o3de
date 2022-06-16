@@ -6,13 +6,13 @@
  *
  */
 
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Scanner.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScannerCpp
@@ -22,6 +22,8 @@ namespace ScannerCpp
         , AzToolsFramework::AssetBrowser::AssetBrowserFilterModel& model
         , ScriptCanvasEditor::VersionExplorer::ScanResult& result)
     {
+        using namespace ScriptCanvas;
+
         QModelIndex sourceIndex = model.mapToSource(index);
         AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry =
             reinterpret_cast<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>(sourceIndex.internalPointer());
@@ -37,7 +39,7 @@ namespace ScannerCpp
             AzFramework::StringFunc::Path::Normalize(fullPath);
 
             result.m_catalogAssets.push_back(
-                ScriptCanvasEditor::SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
+                SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
         }
 
         const int rowCount = model.rowCount(index);
@@ -102,10 +104,10 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
-            if (fileOutcome.IsSuccess())
+            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().Path().c_str());
+            if (result)
             {
-                return fileOutcome.GetValue();
+                return result.m_handle;
             }
             else
             {

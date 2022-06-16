@@ -31,7 +31,7 @@ namespace PhysX::Benchmarks
 
     void BM_PhysXBenchmarkFixture(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             auto fixture = std::make_unique<BenchmarkablePhysXBenchmarkFixture>();
             fixture->SetUp();

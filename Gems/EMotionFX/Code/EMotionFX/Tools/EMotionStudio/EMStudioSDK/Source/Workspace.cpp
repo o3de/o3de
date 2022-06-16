@@ -18,8 +18,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <EMotionFX/Source/AttachmentNode.h>
-#include <EMotionFX/Source/AttachmentSkin.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
@@ -185,43 +183,6 @@ namespace EMStudio
             }
         }
 
-        // attachments
-        for (size_t i = 0; i < numActorInstances; ++i)
-        {
-            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
-
-            if (actorInstance->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
-
-            if (actorInstance->GetIsAttachment())
-            {
-                EMotionFX::Attachment*      attachment                  = actorInstance->GetSelfAttachment();
-                EMotionFX::ActorInstance*   attachedToActorInstance     = attachment->GetAttachToActorInstance();
-                const size_t                attachedToInstanceIndex     = EMotionFX::GetActorManager().FindActorInstanceIndex(attachedToActorInstance);
-                const size_t                attachtmentInstanceIndex    = EMotionFX::GetActorManager().FindActorInstanceIndex(actorInstance);
-
-                if (actorInstance->GetIsSkinAttachment())
-                {
-                    commandString = AZStd::string::format("AddDeformableAttachment -attachmentIndex %zu -attachToIndex %zu\n", attachtmentInstanceIndex, attachedToInstanceIndex);
-                    commands += commandString;
-                    ++commandIndex;
-                }
-                else
-                {
-                    EMotionFX::AttachmentNode*  attachmentSingleNode    = static_cast<EMotionFX::AttachmentNode*>(attachment);
-                    const size_t                attachedToNodeIndex     = attachmentSingleNode->GetAttachToNodeIndex();
-                    EMotionFX::Actor*           attachedToActor         = attachedToActorInstance->GetActor();
-                    EMotionFX::Node*            attachedToNode          = attachedToActor->GetSkeleton()->GetNode(attachedToNodeIndex);
-
-                    commandString = AZStd::string::format("AddAttachment -attachmentIndex %zu -attachToIndex %zu -attachToNode \"%s\"\n", attachtmentInstanceIndex, attachedToInstanceIndex, attachedToNode->GetName());
-                    commands += commandString;
-                    ++commandIndex;
-                }
-            }
-        }
-
         // motion sets
         const size_t numRootMotionSets = EMotionFX::GetMotionManager().CalcNumRootMotionSets();
         AZStd::unordered_set<EMotionFX::Motion*> motionsInMotionSets;
@@ -343,8 +304,9 @@ namespace EMStudio
             if (itActivationIndices->second.m_animGraphCommandIndex != -1
                 && itActivationIndices->second.m_motionSetCommandIndex != -1)
             {
-                commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %%LASTRESULT%d%% -animGraphID %%LASTRESULT%d%% -motionSetID %%LASTRESULT%d%% -visualizeScale %f\n",
-                        (commandIndex - itActivationIndices->second.m_actorInstanceCommandIndex),
+                // Since the actor instance will be created by the component, we pass in -1 as the actor instance id so the activate anim graph command
+                // will pick up the first available actor instance.
+                commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID -1 -animGraphID %%LASTRESULT%d%% -motionSetID %%LASTRESULT%d%% -visualizeScale %f\n",
                         (commandIndex - itActivationIndices->second.m_animGraphCommandIndex),
                         (commandIndex - itActivationIndices->second.m_motionSetCommandIndex),
                         animGraphInstance->GetVisualizeScale());

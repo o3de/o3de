@@ -15,7 +15,7 @@
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Time/ITime.h>
@@ -41,7 +41,7 @@ bool CLevelInfo::OpenLevelPak()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // The prefab system doesn't use level.pak
     if (usePrefabSystemForLevels)
@@ -62,7 +62,7 @@ void CLevelInfo::CloseLevelPak()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // The prefab system doesn't use level.pak
     if (usePrefabSystemForLevels)
@@ -82,7 +82,7 @@ bool CLevelInfo::ReadInfo()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";
@@ -152,28 +152,6 @@ struct SLevelNameAutoComplete
 static StaticInstance<SLevelNameAutoComplete, AZStd::no_destruct<SLevelNameAutoComplete>> g_LevelNameAutoComplete;
 
 //------------------------------------------------------------------------
-static void LoadMap(IConsoleCmdArgs* args)
-{
-    if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
-    {
-        if (args->GetArgCount() > 1)
-        {
-            gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-            gEnv->pSystem->GetILevelSystem()->LoadLevel(args->GetArg(1));
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-static void UnloadMap([[maybe_unused]] IConsoleCmdArgs* args)
-{
-    if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
-    {
-        gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-    }
-}
-
-//------------------------------------------------------------------------
 CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     : m_pSystem(pSystem)
     , m_pCurrentLevel(0)
@@ -192,9 +170,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 
     m_nLoadedLevelsCount = 0;
 
-    REGISTER_COMMAND("map", LoadMap, VF_BLOCKFRAME, "Load a map");
-    REGISTER_COMMAND("unload", UnloadMap, 0, "Unload current map");
-    gEnv->pConsole->RegisterAutoComplete("map", &(*g_LevelNameAutoComplete));
+    gEnv->pConsole->RegisterAutoComplete("LoadLevel", &(*g_LevelNameAutoComplete));
 
     AZ_Assert(gEnv && gEnv->pCryPak, "gEnv and CryPak must be initialized for loading levels.");
     if (!gEnv || !gEnv->pCryPak)

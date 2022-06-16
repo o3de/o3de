@@ -145,7 +145,7 @@ namespace AZ::IO
 
         void PrepareReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             ASSERT_NE(nullptr, data);
 
             u64 size = data->m_size >> 2;
@@ -175,7 +175,7 @@ namespace AZ::IO
             AZ_Assert(compressedSize == uncompressedBufferSize, "Fake decompression algorithm only supports copying data.");
             if (sleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(80));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
             }
             memcpy(uncompressed, compressed, compressedSize);
             return true;

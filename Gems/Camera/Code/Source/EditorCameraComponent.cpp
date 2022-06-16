@@ -156,13 +156,12 @@ namespace Camera
 
         {
             const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-            cameraState.m_viewportSize =
-                AZ::Vector2{aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)};
+            cameraState.m_viewportSize = AzFramework::ScreenSize(viewportSize.m_width, viewportSize.m_height);
         }
 
         if (config.m_orthographic)
         {
-            cameraState.m_fovOrZoom = cameraState.m_viewportSize.GetX() / (config.m_orthographicHalfWidth * 2.0f);
+            cameraState.m_fovOrZoom = aznumeric_cast<float>(cameraState.m_viewportSize.m_width) / (config.m_orthographicHalfWidth * 2.0f);
             cameraState.m_orthographic = true;
         }
         else

@@ -54,7 +54,7 @@ namespace AZ
                 // create instances buffer
                 buffers.m_tlasInstancesBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor tlasInstancesBufferDescriptor;
-                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead;
+                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 tlasInstancesBufferDescriptor.m_byteCount = instanceDescsSizeInBytes;
                 tlasInstancesBufferDescriptor.m_alignment = D3D12_RAYTRACING_INSTANCE_DESCS_BYTE_ALIGNMENT;
             

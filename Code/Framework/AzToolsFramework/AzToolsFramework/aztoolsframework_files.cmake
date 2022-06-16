@@ -7,6 +7,27 @@
 #
 
 set(FILES
+    ActionManager/ActionManagerSystemComponent.cpp
+    ActionManager/ActionManagerSystemComponent.h
+    ActionManager/Action/ActionManager.cpp
+    ActionManager/Action/ActionManager.h
+    ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/EditorAction.cpp
+    ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionContext.cpp
+    ActionManager/Action/EditorActionContext.h
+    ActionManager/Menu/EditorMenu.cpp
+    ActionManager/Menu/EditorMenu.h
+    ActionManager/Menu/EditorMenuBar.cpp
+    ActionManager/Menu/EditorMenuBar.h
+    ActionManager/Menu/MenuManager.cpp
+    ActionManager/Menu/MenuManager.h
+    ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/ToolBar/EditorToolBar.cpp
+    ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/ToolBarManager.cpp
+    ActionManager/ToolBar/ToolBarManager.h
+    ActionManager/ToolBar/ToolBarManagerInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
@@ -38,7 +59,6 @@ set(FILES
     API/EditorLevelNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.cpp
-    API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.h
@@ -87,8 +107,6 @@ set(FILES
     Thumbnails/Thumbnail.cpp
     Thumbnails/Thumbnail.h
     Thumbnails/Thumbnail.inl
-    Thumbnails/ThumbnailContext.cpp
-    Thumbnails/ThumbnailContext.h
     Thumbnails/ThumbnailerBus.h
     Thumbnails/ThumbnailWidget.cpp
     Thumbnails/ThumbnailWidget.h
@@ -106,9 +124,6 @@ set(FILES
     Debug/TraceContextSingleStackHandler.cpp
     Debug/TraceContextMultiStackHandler.h
     Debug/TraceContextMultiStackHandler.cpp
-    Debug/TraceContextBufferedFormatter.cpp
-    Debug/TraceContextBufferedFormatter.inl
-    Debug/TraceContextBufferedFormatter.h
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Component/EditorComponentAPIBus.h
@@ -121,8 +136,12 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerUtils.cpp
+    Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
+    Editor/RichTextHighlighter.h
+    Editor/RichTextHighlighter.cpp
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
     Entity/EditorEntityContextComponent.cpp
@@ -157,6 +176,7 @@ set(FILES
     Entity/SliceEditorEntityOwnershipService.h
     Entity/SliceEditorEntityOwnershipService.cpp
     Entity/SliceEditorEntityOwnershipServiceBus.h
+    Entity/EntityTypes.h
     Entity/EntityUtilityComponent.h
     Entity/EntityUtilityComponent.cpp
     Entity/ReadOnly/ReadOnlyEntityInterface.h
@@ -329,6 +349,17 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
+    UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
+    UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
+    UI/DocumentPropertyEditor/PropertyHandlerWidget.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DPEDebugViewer/DPEDebugModel.cpp
+    UI/DPEDebugViewer/DPEDebugModel.h
+    UI/DPEDebugViewer/DPEDebugTextView.cpp
+    UI/DPEDebugViewer/DPEDebugTextView.h
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
@@ -358,8 +389,6 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteWidget.cpp
     UI/ComponentPalette/ComponentPaletteModel.hxx
     UI/ComponentPalette/ComponentPaletteModel.cpp
-    UI/ComponentPalette/ComponentPaletteModelFilter.hxx
-    UI/ComponentPalette/ComponentPaletteModelFilter.cpp
     UI/ComponentPalette/ComponentPaletteUtil.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
     UI/Layer/NameConflictWarning.hxx
@@ -372,8 +401,6 @@ set(FILES
     UI/PropertyEditor/QtWidgetLimits.h
     UI/PropertyEditor/DHQComboBox.hxx
     UI/PropertyEditor/DHQComboBox.cpp
-    UI/PropertyEditor/DHQSlider.hxx
-    UI/PropertyEditor/DHQSlider.cpp
     UI/PropertyEditor/EntityIdQLabel.hxx
     UI/PropertyEditor/EntityIdQLabel.cpp
     UI/PropertyEditor/EntityIdQLineEdit.h
@@ -404,7 +431,6 @@ set(FILES
     UI/PropertyEditor/PropertyDoubleSliderCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
     UI/PropertyEditor/PropertyDoubleSpinCtrl.cpp
-    UI/PropertyEditor/PropertyEditor_UITypes.h
     UI/PropertyEditor/PropertyEditorAPI.h
     UI/PropertyEditor/PropertyEditorApi.cpp
     UI/PropertyEditor/PropertyEditorAPI_Internals.h
@@ -413,6 +439,8 @@ set(FILES
     UI/PropertyEditor/PropertyEntityIdCtrl.cpp
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx
     UI/PropertyEditor/PropertyEnumComboBoxCtrl.cpp
+    UI/PropertyEditor/PropertyFilePathCtrl.h
+    UI/PropertyEditor/PropertyFilePathCtrl.cpp
     UI/PropertyEditor/PropertyIntCtrlCommon.h
     UI/PropertyEditor/PropertyIntSliderCtrl.hxx
     UI/PropertyEditor/PropertyIntSliderCtrl.cpp
@@ -451,10 +479,6 @@ set(FILES
     UI/Slice/SliceRelationshipWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.cpp
-    UI/UICore/AZAutoSizingScrollArea.hxx
-    UI/UICore/AZAutoSizingScrollArea.cpp
-    UI/UICore/ColorPickerDelegate.hxx
-    UI/UICore/ColorPickerDelegate.cpp
     UI/UICore/ClickableLabel.hxx
     UI/UICore/ClickableLabel.cpp
     UI/UICore/IconButton.hxx
@@ -482,11 +506,8 @@ set(FILES
     Commands/EntityStateCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-    Commands/EntityTransformCommand.cpp
-    Commands/EntityTransformCommand.h
     Commands/PreemptiveUndoCache.cpp
     Commands/PreemptiveUndoCache.h
-    Commands/LegacyCommand.h
     Commands/BaseSliceCommand.cpp
     Commands/BaseSliceCommand.h
     Commands/SliceDetachEntityCommand.cpp
@@ -502,6 +523,17 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/LocalViewBookmarkComponent.h
+    Viewport/LocalViewBookmarkComponent.cpp
+    Viewport/SharedViewBookmarkComponent.h
+    Viewport/SharedViewBookmarkComponent.cpp
+    Viewport/LocalViewBookmarkLoader.h
+    Viewport/LocalViewBookmarkLoader.cpp
+    Viewport/ViewBookmarkLoaderInterface.h
+    Viewport/ViewBookmarkSystemComponent.h
+    Viewport/ViewBookmarkSystemComponent.cpp
+    Viewport/ViewportInteractionHelpers.h
+    Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
@@ -543,6 +575,8 @@ set(FILES
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/CapsuleViewportEdit.h
+    ComponentModes/CapsuleViewportEdit.cpp
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h
@@ -641,8 +675,6 @@ set(FILES
     AssetBrowser/Previewer/PreviewerFrame.h
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
-    Archive/NullArchiveComponent.h
-    Archive/NullArchiveComponent.cpp
     Archive/ArchiveAPI.h
     UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
@@ -704,6 +736,8 @@ set(FILES
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
     Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicNotificationHandler.h
+    Prefab/PrefabPublicNotificationHandler.cpp
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
@@ -723,13 +757,21 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
-    Prefab/Spawnable/InMemorySpawnableAssetContainer.h
-    Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
+    Prefab/Spawnable/EntityAliasTypes.h
+    Prefab/Spawnable/EntityIdPathMapperInterface.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
+    Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
+    Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
     Prefab/Spawnable/PrefabCatchmentProcessor.cpp
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
     Prefab/Spawnable/PrefabConverterStackProfileNames.h
+    Prefab/Spawnable/PrefabDocument.h
+    Prefab/Spawnable/PrefabDocument.inl
+    Prefab/Spawnable/PrefabDocument.cpp
+    Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h
@@ -770,6 +812,8 @@ set(FILES
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
     UI/Prefab/PrefabIntegrationInterface.h
+    UI/Prefab/PrefabSaveLoadHandler.h
+    UI/Prefab/PrefabSaveLoadHandler.cpp
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
@@ -792,6 +836,10 @@ set(FILES
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.cpp
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

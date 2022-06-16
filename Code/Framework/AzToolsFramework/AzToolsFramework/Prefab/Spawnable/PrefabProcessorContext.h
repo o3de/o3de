@@ -21,67 +21,22 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityIdPathMapperInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    enum class EntityAliasType : uint8_t
-    {
-        Disable,         //!< No alias is added.
-        OptionalReplace, //!< At runtime the entity might be replaced. If the alias is disabled the original entity will be spawned.
-                         //!<   The original entity will be left in the spawnable and a copy is returned.
-        Replace,         //!< At runtime the entity will be replaced. If the alias is disabled nothing will be spawned. The original
-                         //!<   entity is returned and a blank entity is left.
-        Additional,      //!< At runtime the alias entity will be added as an additional but unrelated entity with a new entity id.
-                         //!<   An empty entity will be returned.
-        Merge            //!< At runtime the components in both entities will be merged. An empty entity will be returned. The added
-                         //!<   components may no conflict with the entities already in the root entity.
-    };
-
-    enum class EntityAliasSpawnableLoadBehavior : uint8_t
-    {
-        NoLoad,         //!< Don't load the spawnable referenced in the entity alias. Loading will be up to the caller.
-        QueueLoad,      //!< Queue the spawnable referenced in the entity alias for loading. This will be an async load because asset
-                        //!<    handlers aren't allowed to start a blocking load as this can lead to deadlocks. This option will allow
-                        //!<    to disable loading the referenced spawnable through the event fired from the spawnables asset handler.
-        DependentLoad   //!< The spawnable referenced in the entity alias is made a dependency of the spawnable that holds the entity
-                        //!<    alias. This will cause the spawnable to be automatically loaded along with the owning spawnable.
-    };
-
-    struct EntityAliasSpawnableLink
-    {
-        EntityAliasSpawnableLink(AzFramework::Spawnable& spawnable, AZ::EntityId index);
-
-        AzFramework::Spawnable& m_spawnable;
-        AZ::EntityId m_index;
-    };
-
-    struct EntityAliasPrefabLink
-    {
-        EntityAliasPrefabLink(AZStd::string prefabName, AzToolsFramework::Prefab::AliasPath alias);
-
-        AZStd::string m_prefabName;
-        AzToolsFramework::Prefab::AliasPath m_alias;
-    };
-
-    struct EntityAliasStore
-    {
-        using LinkStore = AZStd::variant<AZStd::monostate, EntityAliasSpawnableLink, EntityAliasPrefabLink>;
-
-        LinkStore m_source;
-        LinkStore m_target;
-        uint32_t m_tag;
-        AzFramework::Spawnable::EntityAliasType m_aliasType;
-        EntityAliasSpawnableLoadBehavior m_loadBehavior;
-    };
-
     struct AssetDependencyInfo
     {
         AZ::Data::AssetId m_assetId;
         AZ::Data::AssetLoadBehavior m_loadBehavior;
     };
 
-    class PrefabProcessorContext
+    using PrefabSpawnablePostProcessEvent = AZ::Event<const AZStd::string&, AzFramework::Spawnable&>;
+
+    class PrefabProcessorContext : private EntityIdPathMapperInterface
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
@@ -91,11 +46,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
 
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);
-        virtual ~PrefabProcessorContext() = default;
+        virtual ~PrefabProcessorContext();
 
-        virtual bool AddPrefab(AZStd::string prefabName, PrefabDom prefab);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback);
-        virtual void ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const;
+        virtual bool AddPrefab(PrefabDocument&& document);
+        virtual void ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback);
+        virtual void ListPrefabs(const AZStd::function<void(const PrefabDocument&)>& callback) const;
         virtual bool HasPrefabs() const;
 
         virtual bool RegisterSpawnableProductAssetDependency(
@@ -127,16 +82,28 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual bool HasCompletedSuccessfully() const;
         virtual void ErrorEncountered();
 
+        //! EntityIdPathMapperInterface overrides
+        AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) override;
+        void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) override;
+
+        void AddPrefabSpawnablePostProcessEventHandler(PrefabSpawnablePostProcessEvent::Handler& handler);
+        void SendSpawnablePostProcessEvent(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable);
+
     protected:
-        using NamedPrefabContainer = AZStd::unordered_map<AZStd::string, PrefabDom>;
+        using PrefabNames = AZStd::unordered_set<AZStd::string>;
+        using PrefabContainer = AZStd::vector<PrefabDocument>;
         using SpawnableEntityAliasStore = AZStd::vector<EntityAliasStore>;
 
         AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
 
-        NamedPrefabContainer m_prefabs;
+        AZStd::unordered_map<AZ::EntityId, AZ::IO::Path> m_entityIdToHashedPathMap;
+        PrefabContainer m_prefabs;
+        PrefabContainer m_pendingPrefabAdditions;
+        PrefabNames m_prefabNames;
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
+        PrefabSpawnablePostProcessEvent m_prefabPostProcessEvent;
 
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;

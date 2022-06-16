@@ -41,17 +41,17 @@ void CRemoteConsole::Stop()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogMessage(const char* log)
+void CRemoteConsole::AddLogMessage(const char*)
 {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogWarning(const char* log)
+void CRemoteConsole::AddLogWarning(const char*)
 {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::AddLogError(const char* log)
+void CRemoteConsole::AddLogError(const char*)
 {
 }
 
@@ -61,11 +61,11 @@ void CRemoteConsole::Update()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::RegisterListener(IRemoteConsoleListener* pListener, const char* name)
+void CRemoteConsole::RegisterListener(IRemoteConsoleListener*, const char*)
 {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-void CRemoteConsole::UnregisterListener(IRemoteConsoleListener* pListener)
+void CRemoteConsole::UnregisterListener(IRemoteConsoleListener*)
 {
 }

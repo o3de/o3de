@@ -8,12 +8,15 @@
 #include "UiImageComponent.h"
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <LyShine/Draw2d.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+
+#include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -353,7 +356,6 @@ void UiImageComponent::SetOverrideSprite(ISprite* sprite, AZ::u32 cellIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
     float desiredAlpha = m_overrideAlpha * fade;
@@ -376,9 +378,8 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         ImageType imageType = m_imageType;
 
-#ifdef LYSHINE_ATOM_TODO // support default white texture
         // if there is no texture we will just use a white texture and want to stretch it
-        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetTexture() == nullptr;
+        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetImage() == nullptr;
 
         // Zero texture size may occur even if the UiImageComponent has a valid non-zero-sized texture,
         // because a canvas can be requested to Render() before the texture asset is done loading.
@@ -399,12 +400,6 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             imageType = ImageType::Stretched;
         }
-#else
-        if (sprite == nullptr)
-        {
-            imageType = ImageType::Stretched;
-        }
-#endif
 
         switch (imageType)
         {
@@ -465,21 +460,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
-        ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
-        bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
-        bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
-        bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
-
-        renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-#else
         AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(sprite);
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
         renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-#endif
     }
 }
 
@@ -596,7 +582,7 @@ void UiImageComponent::SetSpritePathname(AZStd::string spritePath)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 {
-    if (gEnv->pLyShine->DoesSpriteTextureAssetExist(spritePath))
+    if (AZ::Interface<ILyShine>::Get()->DoesSpriteTextureAssetExist(spritePath))
     {
         SetSpritePathname(spritePath);
         return true;
@@ -606,19 +592,19 @@ bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::string UiImageComponent::GetRenderTargetName()
+AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> UiImageComponent::GetAttachmentImageAsset()
 {
-    return m_renderTargetName;
+    return m_attachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::SetRenderTargetName(AZStd::string renderTargetName)
+void UiImageComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    m_renderTargetName = renderTargetName;
+    m_attachmentImageAsset = attachmentImageAsset;
 
     if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
 }
 
@@ -987,11 +973,11 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiImageComponent, AZ::Component>()
-            ->Version(7, &VersionConverter)
+            ->Version(8, &VersionConverter)
             ->Field("SpriteType", &UiImageComponent::m_spriteType)
             ->Field("SpritePath", &UiImageComponent::m_spritePathname)
             ->Field("Index", &UiImageComponent::m_spriteSheetCellIndex)
-            ->Field("RenderTargetName", &UiImageComponent::m_renderTargetName)
+            ->Field("AttachmentImageAsset", &UiImageComponent::m_attachmentImageAsset)
             ->Field("IsRenderTargetSRGB", &UiImageComponent::m_isRenderTargetSRGB)
             ->Field("Color", &UiImageComponent::m_color)
             ->Field("Alpha", &UiImageComponent::m_alpha)
@@ -1030,9 +1016,9 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
                 ->Attribute("EnumValues", &UiImageComponent::PopulateIndexStringList);
-            editInfo->DataElement(0, &UiImageComponent::m_renderTargetName, "Render target name", "The name of the render target associated with the sprite.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, "Attachment Image Asset", "The render target associated with the sprite.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteRenderTargetNameChange);
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteAttachmentImageAssetChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, "Render Target sRGB", "Check this box if the render target is in sRGB space instead of linear RGB space.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
@@ -1138,8 +1124,8 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
             ->Event("GetSpritePathname", &UiImageBus::Events::GetSpritePathname)
             ->Event("SetSpritePathname", &UiImageBus::Events::SetSpritePathname)
             ->Event("SetSpritePathnameIfExists", &UiImageBus::Events::SetSpritePathnameIfExists)
-            ->Event("GetRenderTargetName", &UiImageBus::Events::GetRenderTargetName)
-            ->Event("SetRenderTargetName", &UiImageBus::Events::SetRenderTargetName)
+            ->Event("GetAttachmentImageAsset", &UiImageBus::Events::GetAttachmentImageAsset)
+            ->Event("SetAttachmentImageAsset", &UiImageBus::Events::SetAttachmentImageAsset)
             ->Event("GetIsRenderTargetSRGB", &UiImageBus::Events::GetIsRenderTargetSRGB)
             ->Event("SetIsRenderTargetSRGB", &UiImageBus::Events::SetIsRenderTargetSRGB)
             ->Event("GetSpriteType", &UiImageBus::Events::GetSpriteType)
@@ -1187,7 +1173,7 @@ void UiImageComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -1200,14 +1186,14 @@ void UiImageComponent::Init()
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
         else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
         {
-            if (!m_renderTargetName.empty())
+            if (m_attachmentImageAsset)
             {
-                m_sprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
             }
         }
         else
@@ -2535,7 +2521,7 @@ void UiImageComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     // if listening for notifications from a current sprite then disconnect
@@ -2559,13 +2545,13 @@ void UiImageComponent::OnSpritePathnameChange()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::OnSpriteRenderTargetNameChange()
+void UiImageComponent::OnSpriteAttachmentImageAssetChange()
 {
     ISprite* newSprite = nullptr;
 
-    if (!m_renderTargetName.empty())
+    if (m_attachmentImageAsset)
     {
-        newSprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
     }
 
     SAFE_RELEASE(m_sprite);
@@ -2583,7 +2569,7 @@ void UiImageComponent::OnSpriteTypeChange()
     }
     else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
     else
     {
@@ -2678,6 +2664,16 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() <= 4)
     {
         if (!LyShine::ConvertSubElementFromVector3ToAzColor(context, classElement, "Color"))
+        {
+            return false;
+        }
+    }
+
+    // conversion to version 8:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() <= 7)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }

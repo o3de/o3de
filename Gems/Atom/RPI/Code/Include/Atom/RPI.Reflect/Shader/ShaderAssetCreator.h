@@ -75,11 +75,20 @@ namespace AZ
 
             bool End(Data::Asset<ShaderAsset>& shaderAsset);
 
-            //! Clones an existing ShaderAsset nd replaces the referenced Srg and Variant assets
-            using ShaderRootVariantAssets = AZStd::vector<AZStd::pair<AZ::Crc32, Data::Asset<RPI::ShaderVariantAsset>>>;
+            //! Clones an existing ShaderAsset and replaces the ShaderVariant assets
+            using ShaderRootVariantAssetPair = AZStd::pair<AZ::Crc32, Data::Asset<RPI::ShaderVariantAsset>>;
+            using ShaderRootVariantAssets = AZStd::vector<ShaderRootVariantAssetPair>;
+
+            struct ShaderSupervariant
+            {
+                AZ::Name m_name;
+                ShaderRootVariantAssets m_rootVariantAssets;
+            };
+            using ShaderSupervariants = AZStd::vector<ShaderSupervariant>;
+
             void Clone(const Data::AssetId& assetId,
                        const ShaderAsset& sourceShaderAsset,
-                       const ShaderRootVariantAssets& rootVariantAssets);
+                       const ShaderSupervariants& supervariants);
 
         private:
 

@@ -12,8 +12,11 @@
 #include "AzAssetBrowserRequestHandler.h"
 
 // Qt
-#include <QMenu>
 #include <QDesktopServices>
+#include <QMenu>
+#include <QObject>
+#include <QString>
+#include <QtWidgets/QMessageBox>
 
 // AzCore
 #include <AzCore/std/string/wildcard.h>
@@ -25,11 +28,13 @@
 #include <AzFramework/Asset/GenericAssetHandler.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -95,109 +100,150 @@ namespace AzAssetBrowserRequestHandlerPrivate
         return true;
     }
 
-    void SpawnEntityAtPoint(const ProductAssetBrowserEntry* product, AzQtComponents::ViewportDragContext* viewportDragContext, EntityIdList& spawnList, AzFramework::SliceInstantiationTicket& spawnTicket)
+    void SpawnEntityAtPoint(
+        AZStd::vector<const ProductAssetBrowserEntry*> products,
+        AzQtComponents::ViewportDragContext* viewportDragContext,
+        EntityIdList& spawnList,
+        AzFramework::SliceInstantiationTicket& spawnTicket)
     {
-        // Calculate the drop location.
-        if ((!viewportDragContext) || (!product))
+        if ((!viewportDragContext) || products.empty())
         {
             return;
         }
 
+        QWidget* mainWindow = nullptr;
+        EditorRequests::Bus::BroadcastResult(mainWindow, &EditorRequests::GetMainWindow);
+
         const AZ::Transform worldTransform = AZ::Transform::CreateTranslation(viewportDragContext->m_hitLocation);
 
-        // Handle instantiation of slices.
-        if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+        struct AssetIdAndComponentTypeId
         {
-            // Instantiate the slice at the specified location.
-            AZ::Data::Asset<AZ::SliceAsset> asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::SliceAsset>(product->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
-            if (asset)
+            AssetIdAndComponentTypeId(AZ::Uuid componentTypeId, AZ::Data::AssetId assetId)
+                : m_componentTypeId(componentTypeId)
+                , m_assetId(assetId)
             {
-                SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(spawnTicket,
-                    &SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
+            }
+            AZ::Uuid m_componentTypeId = AZ::Uuid::CreateNull();
+            AZ::Data::AssetId m_assetId;
+        };
+        AZStd::vector<AssetIdAndComponentTypeId> assetIdAndComponentTypeId;
+        AZ::ComponentTypeList componentsToAdd;
+
+        for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* product : products)
+        {
+            // Handle instantiation of slices.
+            if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+            {
+                // Instantiate the slice at the specified location.
+                AZ::Data::Asset<AZ::SliceAsset> asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::SliceAsset>(
+                    product->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
+                if (asset)
+                {
+                    SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
+                        spawnTicket, &SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
+                }
+            }
+            else
+            {
+                AZ::Uuid componentTypeId = AZ::Uuid::CreateNull();
+                AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
+                if (!componentTypeId.IsNull())
+                {
+                    assetIdAndComponentTypeId.push_back(AssetIdAndComponentTypeId(componentTypeId,product->GetAssetId()));
+
+                    componentsToAdd.push_back(componentTypeId);
+                }
             }
         }
-        else
+
+        if (assetIdAndComponentTypeId.empty())
         {
-            ScopedUndoBatch undo("Create entities from asset");
+            return;
+        }
 
-            //  Add the component(s).
-            AZ::Uuid componentTypeId = AZ::Uuid::CreateNull();
-            AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
-            if (!componentTypeId.IsNull())
+        ScopedUndoBatch undo("Create entities from asset");
+
+
+        AZStd::string entityName;
+
+        // If the entity is being created from an asset, name it after said asset.
+        // If there is more than one product, use the first to generate the name.
+        AZStd::string assetPath;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetIdAndComponentTypeId[0].m_assetId);
+        if (!assetPath.empty())
+        {
+            AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), entityName);
+        }
+
+        // If not sourced from an asset, generate a generic name.
+        if (entityName.empty())
+        {
+            entityName = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount());
+        }
+
+        AZ::EntityId targetEntityId;
+        EditorRequests::Bus::BroadcastResult(targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), AZ::EntityId());
+
+        AZ::Entity* newEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(newEntity, &AZ::ComponentApplicationRequests::FindEntity, targetEntityId);
+
+        if (newEntity == nullptr)
+        {
+            QMessageBox::warning(mainWindow, QObject::tr("Asset Drop Failed"), QStringLiteral("Could not create entity from selected asset(s)."));
+            return;
+        }
+
+        // Deactivate the entity so the properties on the components can be set.
+        newEntity->Deactivate();
+
+        newEntity->SetName(entityName);
+
+
+        // Add all dropped products as components to this entity.
+        AZStd::vector<AZ::EntityId> entityIds = { targetEntityId };
+        EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome = AZ::Failure(AZStd::string());
+        EntityCompositionRequestBus::BroadcastResult(
+            addComponentsOutcome, &EntityCompositionRequests::AddComponentsToEntities, entityIds, componentsToAdd);
+
+        if (!addComponentsOutcome.IsSuccess())
+        {
+            QMessageBox::warning(mainWindow, QObject::tr("Asset Drop Failed"), QStringLiteral("Could not create components for entity from selected asset(s)."));
+
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::DestroyEditorEntity, targetEntityId);
+            return;
+        }
+
+        
+        for (const AssetIdAndComponentTypeId& assetAndComponent : assetIdAndComponentTypeId)
+        {
+            AZ::Component* componentAdded = newEntity->FindComponent(assetAndComponent.m_componentTypeId);
+            if (componentAdded)
             {
-                AZStd::string entityName;
-
-                // If the entity is being created from an asset, name it after said asset.
-                const AZ::Data::AssetId assetId = product->GetAssetId();
-                AZStd::string assetPath;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetId);
-                if (!assetPath.empty())
+                Components::EditorComponentBase* editorComponent = GetEditorComponent(componentAdded);
+                if (editorComponent)
                 {
-                    AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), entityName);
+                    editorComponent->SetPrimaryAsset(assetAndComponent.m_assetId);
                 }
-
-                // If not sourced from an asset, generate a generic name.
-                if (entityName.empty())
-                {
-                    entityName = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount());
-                }
-
-                AZ::EntityId targetEntityId;
-                EditorRequests::Bus::BroadcastResult(targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), AZ::EntityId());
-
-                AZ::Entity* newEntity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(newEntity, &AZ::ComponentApplicationRequests::FindEntity, targetEntityId);
-
-                if (newEntity == nullptr)
-                {
-                    return;
-                }
-
-                newEntity->SetName(entityName);
-
-                newEntity->Deactivate();
-
-                // Create component.
-                AZ::Component* newComponent = newEntity->CreateComponent(componentTypeId);
-                // If it's not an "editor component" then wrap it in a GenericComponentWrapper.
-                bool needsGenericWrapper = azrtti_cast<AzToolsFramework::Components::EditorComponentBase*>(newComponent) == nullptr;
-                if (needsGenericWrapper)
-                {
-                    newEntity->RemoveComponent(newComponent);
-                    newComponent = aznew AzToolsFramework::Components::GenericComponentWrapper(newComponent);
-                    newEntity->AddComponent(newComponent);
-                }
-
-                newEntity->Activate();
-
-                // set asset after components have been activated in AddEditorEntity method
-                if (newComponent)
-                {
-                    Components::EditorComponentBase* asEditorComponent =
-                        azrtti_cast<Components::EditorComponentBase*>(newComponent);
-
-                    if (asEditorComponent)
-                    {
-                        asEditorComponent->SetPrimaryAsset(assetId);
-                    }
-                }
-
-                bool isPrefabSystemEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-                if (!isPrefabSystemEnabled)
-                {
-                    // Prepare undo command last so it captures the final state of the entity.
-                    EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
-                    command->Capture(newEntity);
-                    command->SetParent(undo.GetUndoBatch());
-                }
-
-                ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
-                spawnList.push_back(newEntity->GetId());
             }
         }
+
+        newEntity->Activate();
+
+        bool isPrefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        if (!isPrefabSystemEnabled)
+        {
+            // Prepare undo command last so it captures the final state of the entity.
+            EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
+            command->Capture(newEntity);
+            command->SetParent(undo.GetUndoBatch());
+        }
+
+        ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
+        spawnList.push_back(newEntity->GetId());
     }
 }
 
@@ -434,6 +480,8 @@ void AzAssetBrowserRequestHandler::DragLeave(QDragLeaveEvent* /*event*/)
     // opportunities to show ghosted entities or previews here.
 }
 
+// There are two paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the viewport. Dropping them in the outliner is handled by OutlinerListModel::DropMimeDataAssets.
 void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
 {
     using namespace AzToolsFramework;
@@ -477,20 +525,7 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     }
 
     // Handle products
-    AZStd::vector<AZ::Data::AssetType> productAssetTypes;
-    productAssetTypes.reserve(products.size());
-    for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* entry : products)
-    {
-        productAssetTypes.emplace_back(entry->GetAssetType());
-    }
-
-    for (const ProductAssetBrowserEntry* product : products)
-    {
-        if (CanSpawnEntityForProduct(product, productAssetTypes))
-        {
-            SpawnEntityAtPoint(product, viewportDragContext, spawnedEntities, spawnTicket);
-        }
-    }
+    SpawnEntityAtPoint(products, viewportDragContext, spawnedEntities, spawnTicket);
 
     // Select the new entity (and deselect others).
     if (!spawnedEntities.empty())

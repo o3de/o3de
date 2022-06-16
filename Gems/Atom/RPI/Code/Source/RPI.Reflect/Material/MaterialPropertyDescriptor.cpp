@@ -97,6 +97,57 @@ namespace AZ
                 return AZStd::string::format("<Unkonwn type %s>", typeId.ToString<AZStd::string>().c_str());
             }
         }
+        
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
+        {
+            auto toMaterialPropertyDataType = [](TypeId typeId)
+            {
+                if (typeId == azrtti_typeid<bool>()) { return MaterialPropertyDataType::Bool; }
+                if (typeId == azrtti_typeid<int32_t>()) { return MaterialPropertyDataType::Int; }
+                if (typeId == azrtti_typeid<uint32_t>()) { return MaterialPropertyDataType::UInt; }
+                if (typeId == azrtti_typeid<float>()) { return MaterialPropertyDataType::Float; }
+                if (typeId == azrtti_typeid<Vector2>()) { return MaterialPropertyDataType::Vector2; }
+                if (typeId == azrtti_typeid<Vector3>()) { return MaterialPropertyDataType::Vector3; }
+                if (typeId == azrtti_typeid<Vector4>()) { return MaterialPropertyDataType::Vector4; }
+                if (typeId == azrtti_typeid<Color>()) { return MaterialPropertyDataType::Color; }
+                if (typeId == azrtti_typeid<Data::Asset<ImageAsset>>()) { return MaterialPropertyDataType::Image; }
+                else
+                {
+                    return MaterialPropertyDataType::Invalid;
+                }
+            };
+
+            auto expectedDataType = materialPropertyDescriptor->GetDataType();
+            auto actualDataType = toMaterialPropertyDataType(typeId);
+
+            if (expectedDataType == MaterialPropertyDataType::Enum)
+            {
+                if (actualDataType != MaterialPropertyDataType::UInt)
+                {
+                    onError(
+                        AZStd::string::format("Material property '%s' is a Enum type, can only accept UInt value, input value is %s",
+                            propertyName.GetCStr(),
+                            ToString(actualDataType)
+                        ).data());
+                    return false;
+                }
+            }
+            else
+            {
+                if (expectedDataType != actualDataType)
+                {
+                    onError(
+                        AZStd::string::format("Material property '%s': Type mismatch. Expected %s but was %s",
+                            propertyName.GetCStr(),
+                            ToString(expectedDataType),
+                            ToString(actualDataType)
+                        ).data());
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         void MaterialPropertyOutputId::Reflect(ReflectContext* context)
         {
@@ -145,11 +196,6 @@ namespace AZ
 
             MaterialPropertyIndex::Reflect(context);
         }
-        
-        MaterialPropertyDataType MaterialPropertyDescriptor::GetDataType() const
-        {
-            return m_dataType;
-        }
 
         const Name& MaterialPropertyDescriptor::GetName() const
         {
@@ -159,6 +205,41 @@ namespace AZ
         const MaterialPropertyDescriptor::OutputList& MaterialPropertyDescriptor::GetOutputConnections() const
         {
             return m_outputConnections;
+        }
+
+        MaterialPropertyDataType MaterialPropertyDescriptor::GetDataType() const
+        {
+            return m_dataType;
+        }
+
+        AZ::TypeId MaterialPropertyDescriptor::GetAssetDataTypeId() const
+        {
+            switch (m_dataType)
+            {
+            case MaterialPropertyDataType::Bool:
+                return azrtti_typeid<bool>();
+            case MaterialPropertyDataType::Int:
+                return azrtti_typeid<int32_t>();
+            case MaterialPropertyDataType::UInt:
+                return azrtti_typeid<uint32_t>();
+            case MaterialPropertyDataType::Float:
+                return azrtti_typeid<float>();
+            case MaterialPropertyDataType::Vector2:
+                return azrtti_typeid<Vector2>();
+            case MaterialPropertyDataType::Vector3:
+                return azrtti_typeid<Vector3>();
+            case MaterialPropertyDataType::Vector4:
+                return azrtti_typeid<Vector4>();
+            case MaterialPropertyDataType::Color:
+                return azrtti_typeid<Color>();
+            case MaterialPropertyDataType::Enum:
+                return azrtti_typeid<uint32_t>();
+            case MaterialPropertyDataType::Image:
+                return azrtti_typeid<Data::Asset<ImageAsset>>();
+            default:
+                AZ_Error("MaterialPropertyDescriptor", false, "Unhandle material property type %s.", ToString(m_dataType));
+                return Uuid::CreateNull();
+            }
         }
 
         AZ::TypeId MaterialPropertyDescriptor::GetStorageDataTypeId() const
@@ -185,7 +266,7 @@ namespace AZ
             case MaterialPropertyDataType::Image:
                 return azrtti_typeid<AZStd::string>();
             default:
-                AZ_Error("MaterialPropertyValueSourceData", false, "Unhandle material property type %s.", ToString(m_dataType));
+                AZ_Error("MaterialPropertyDescriptor", false, "Unhandle material property type %s.", ToString(m_dataType));
                 return Uuid::CreateNull();
             }
         }

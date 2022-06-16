@@ -9,6 +9,7 @@
 #include <Mesh/MeshComponentController.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
@@ -76,12 +77,12 @@ namespace AZ
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
                     ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
+                    ->Field("IsRayTracingEnabled", &MeshComponentConfig::m_isRayTracingEnabled)
                     ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
                     ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
             }
-
         }
 
         bool MeshComponentConfig::IsAssetSet()
@@ -126,11 +127,11 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default LOD 0 (Highest Detail)" });
 
             for (uint32_t i = 1; i < lodCount; ++i)
             {
-                AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
+                AZStd::string enumDescription = AZStd::string::format("LOD %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
             }
 
@@ -181,6 +182,10 @@ namespace AZ
                     ->Event("GetMinimumScreenCoverage", &MeshComponentRequestBus::Events::GetMinimumScreenCoverage)
                     ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
                     ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
+                    ->Event("SetRayTracingEnabled", &MeshComponentRequestBus::Events::SetRayTracingEnabled)
+                    ->Event("GetRayTracingEnabled", &MeshComponentRequestBus::Events::GetRayTracingEnabled)
+                    ->Event("SetVisibility", &MeshComponentRequestBus::Events::SetVisibility)
+                    ->Event("GetVisibility", &MeshComponentRequestBus::Events::GetVisibility)
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
@@ -188,6 +193,8 @@ namespace AZ
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
+                    ->VirtualProperty("RayTracingEnabled", "GetRayTracingEnabled", "SetRayTracingEnabled")
+                    ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
                 
                 behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
@@ -221,33 +228,43 @@ namespace AZ
         {
         }
 
+        static AzFramework::EntityContextId FindOwningContextId(const AZ::EntityId entityId)
+        {
+            AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            return contextId;
+        }
+
         void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
             m_transformInterface = TransformBus::FindFirstHandler(entityId);
-            AZ_Warning("MeshComponentController", m_transformInterface, "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
+            AZ_Warning(
+                "MeshComponentController", m_transformInterface,
+                "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
 
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
             m_cachedNonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
-            AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
-                m_nonUniformScaleChangedHandler);
+            AZ::NonUniformScaleRequestBus::Event(
+                entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
 
+            const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
+            MeshHandleStateRequestBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
-            AzFramework::EntityContextId contextId;
-            AzFramework::EntityIdContextQueryBus::EventResult(
-                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({entityId, contextId});
+            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
+            AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, entityContextId);
 
-            //Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
+            // Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
         }
 
@@ -258,10 +275,11 @@ namespace AZ
 
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
-            MeshComponentRequestBus::Handler::BusDisconnect();
-            TransformNotificationBus::Handler::BusDisconnect();
-            MaterialReceiverRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
+            MaterialReceiverRequestBus::Handler::BusDisconnect();
+            TransformNotificationBus::Handler::BusDisconnect();
+            MeshComponentRequestBus::Handler::BusDisconnect();
+            MeshHandleStateRequestBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -287,6 +305,11 @@ namespace AZ
             {
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, world, m_cachedNonUniformScale);
             }
+
+            // ensure the render geometry is kept in sync with any changes to the entity the mesh is on
+            AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
+                m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
+                m_entityComponentIdPair.GetEntityId());
         }
 
         void MeshComponentController::HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale)
@@ -297,29 +320,21 @@ namespace AZ
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, m_transformInterface->GetWorldTM(), m_cachedNonUniformScale);
             }
         }
-        
-        RPI::ModelMaterialSlotMap MeshComponentController::GetModelMaterialSlots() const
+
+        MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
         {
-            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-            if (modelAsset.IsReady())
-            {
-                return modelAsset->GetMaterialSlots();
-            }
-            else
-            {
-                return {};
-            }
+            return GetMaterialSlotLabelsFromModelAsset(GetModelAsset());
         }
 
         MaterialAssignmentId MeshComponentController::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
         {
-            return FindMaterialAssignmentIdInModel(GetModel(), lod, label);
+            return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
         }
 
-        MaterialAssignmentMap MeshComponentController::GetMaterialAssignments() const
+        MaterialAssignmentMap MeshComponentController::GetDefautMaterialMap() const
         {
-            return GetMaterialAssignmentsFromModel(GetModel());
+            return GetDefautMaterialMapFromModelAsset(GetModelAsset());
         }
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const
@@ -339,10 +354,10 @@ namespace AZ
         bool MeshComponentController::RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset)
         {
             // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.
-            const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
+            const AZStd::span<const AZ::Data::Asset<AZ::RPI::ModelLodAsset>> lodAssets = modelAsset->GetLodAssets();
             for (const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset : lodAssets)
             {
-                const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
+                const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh> meshes = lodAsset->GetMeshes();
                 for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
                 {
                     if (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr)
@@ -363,8 +378,13 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
                 MeshComponentNotificationBus::Event(entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
-                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
+                AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
+                    m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
+                    m_entityComponentIdPair.GetEntityId());
+
+                MeshHandleStateNotificationBus::Event(entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
             }
         }
 
@@ -375,27 +395,35 @@ namespace AZ
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
 
                 MaterialAssignmentMap materials;
-                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
+                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialMap);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
+                meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
-                const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
+                const AZ::Transform& transform =
+                    m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
-
+                m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
                 HandleModelChange(m_meshFeatureProcessor->GetModel(m_meshHandle));
+            }
+            else
+            {
+                // If there is no model asset to be loaded then we need to invalidate the material slot configuration
+                MaterialReceiverNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
@@ -406,6 +434,13 @@ namespace AZ
                 MeshComponentNotificationBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+
+                MeshHandleStateNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &m_meshHandle);
+
+                // Model has been released which invalidates the material slot configuration
+                MaterialReceiverNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
             }
         }
 
@@ -559,6 +594,25 @@ namespace AZ
             return m_isVisible;
         }
 
+        void MeshComponentController::SetRayTracingEnabled(bool enabled)
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, enabled);
+                m_configuration.m_isRayTracingEnabled = enabled;
+            }
+        }
+
+        bool MeshComponentController::GetRayTracingEnabled() const
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                return m_meshFeatureProcessor->GetRayTracingEnabled(m_meshHandle);
+            }
+
+            return false;
+        }
+
         Aabb MeshComponentController::GetWorldBounds()
         {
             if (const AZ::Aabb localBounds = GetLocalBounds(); localBounds.IsValid())
@@ -606,6 +660,11 @@ namespace AZ
             }
 
             return result;
+        }
+
+        const MeshFeatureProcessorInterface::MeshHandle* MeshComponentController::GetMeshHandle() const
+        {
+            return &m_meshHandle;
         }
     } // namespace Render
 } // namespace AZ

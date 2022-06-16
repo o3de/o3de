@@ -199,8 +199,8 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
                         "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "") // end previous group by starting new unnamed expanded group
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->EndGroup()
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
                         "Maximum angular velocity", "Clamp angular velocities to this maximum value. "
                         "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")
@@ -346,7 +346,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body-physics/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)

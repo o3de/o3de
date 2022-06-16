@@ -40,7 +40,8 @@ namespace Multiplayer
 
             // Create an entity replicator for the root entity
             const NetworkEntityHandle rootHandle(m_root->m_entity.get(), m_networkEntityTracker.get());
-            m_root->m_replicator = AZStd::make_unique<EntityReplicator>(*m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, rootHandle);
+            m_root->m_replicator = AZStd::make_unique<EntityReplicator>(
+                *m_entityReplicationManager, m_mockConnection.get(), NetEntityRole::Client, rootHandle);
             m_root->m_replicator->Initialize(rootHandle);
 
             m_root->m_entity->Activate();
@@ -127,7 +128,7 @@ namespace Multiplayer
         {
             EXPECT_EQ(inArray[i].GetClientInputId(), outArray[i].GetClientInputId());
             EXPECT_EQ(inArray[i].GetHostFrameId(), outArray[i].GetHostFrameId());
-            EXPECT_NEAR(inArray[i].GetHostBlendFactor(), outArray[i].GetHostBlendFactor(),0.001f);
+            EXPECT_NEAR(inArray[i].GetHostBlendFactor(), outArray[i].GetHostBlendFactor(), 0.001f);
             EXPECT_EQ(inArray[i].GetHostTimeMs(), outArray[i].GetHostTimeMs());
         }
     }
@@ -197,9 +198,16 @@ namespace Multiplayer
         {
             EXPECT_EQ(inVector[i].GetClientInputId(), outVector[i].GetClientInputId());
             EXPECT_EQ(inVector[i].GetHostFrameId(), outVector[i].GetHostFrameId());
-            EXPECT_NEAR(inVector[i].GetHostBlendFactor(), outVector[i].GetHostBlendFactor(),0.001f);
+            EXPECT_NEAR(inVector[i].GetHostBlendFactor(), outVector[i].GetHostBlendFactor(), 0.001f);
             EXPECT_EQ(inVector[i].GetHostTimeMs(), outVector[i].GetHostTimeMs());
         }
         EXPECT_EQ(inVector.GetSize(), outVector.GetSize());
     }
-}
+
+    TEST_F(NetworkInputTests, NetworkInputEntityName)
+    {
+        const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
+        NetworkInputArray inArray = NetworkInputArray(handle);
+        EXPECT_EQ("root", inArray[0].GetOwnerName());
+    }
+} // namespace Multiplayer

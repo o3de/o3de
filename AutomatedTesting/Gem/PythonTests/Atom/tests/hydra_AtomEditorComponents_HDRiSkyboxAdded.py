@@ -87,7 +87,7 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create an HDRi Skybox with no components.
@@ -127,9 +127,8 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, hdri_skybox_entity.exists())
 
-
         # 5. Set Cubemap Texture on HDRi Skybox component.
-        skybox_cubemap_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        skybox_cubemap_asset_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         skybox_cubemap_material_asset = Asset.find_asset_by_path(skybox_cubemap_asset_path, False)
         hdri_skybox_component.set_component_property_value(
             AtomComponentProperties.hdri_skybox('Cubemap Texture'), skybox_cubemap_material_asset.id)
@@ -158,10 +157,12 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
 
         # 10. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, hdri_skybox_entity.exists())
 
         # 11. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not hdri_skybox_entity.exists())
 
         # 12. Look for errors or asserts.

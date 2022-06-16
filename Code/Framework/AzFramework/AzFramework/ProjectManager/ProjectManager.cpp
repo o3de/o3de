@@ -64,7 +64,7 @@ namespace AzFramework::ProjectManager
         // If we were able to locate a path to a project, we're done
         if (!projectRootPath.empty())
         {
-            AZ::IO::FixedMaxPath projectJsonPath = engineRootPath / projectRootPath / "project.json";
+            AZ::IO::FixedMaxPath projectJsonPath = projectRootPath / "project.json";
             if (AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
             {
                 return ProjectPathCheckResult::ProjectPathFound;

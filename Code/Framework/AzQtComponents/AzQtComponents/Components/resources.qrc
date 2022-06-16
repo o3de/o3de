@@ -538,14 +538,6 @@
     <file>img/UI20/shadows/menu-shadow@2x.png</file>
     <file>img/UI20/tear.svg</file>
     <file>img/UI20/tear-vertical.svg</file>
-    <file>img/UI20/titlebar-close.svg</file>
-    <file>img/UI20/titlebar-maximize.svg</file>
-    <file>img/UI20/titlebar-minimize.svg</file>
-    <file>img/UI20/titlebar-popout-hover.svg</file>
-    <file>img/UI20/titlebar-popout.svg</file>
-    <file>img/UI20/titlebar-popout-small.svg</file>
-    <file>img/UI20/titlebar-restore-hover.svg</file>
-    <file>img/UI20/titlebar-restore.svg</file>
     <file>img/UI20/toggleswitch/checked.svg</file>
     <file>img/UI20/toggleswitch/checked-disabled.svg</file>
     <file>img/UI20/toggleswitch/checked-focus.svg</file>

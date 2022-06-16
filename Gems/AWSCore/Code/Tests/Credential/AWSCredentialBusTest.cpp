@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <aws/core/auth/AWSCredentialsProvider.h>
 
 #include <Credential/AWSCredentialBus.h>
@@ -19,14 +17,10 @@ class TestCredentialHandlerOne
     : AWSCredentialRequestBus::Handler
 {
 public:
-    TestCredentialHandlerOne()
+    void ActivateHandler()
     {
         m_handlerCounter = 0;
         m_credentialsProvider = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-    }
-
-    void ActivateHandler()
-    {
         AWSCredentialRequestBus::Handler::BusConnect();
     }
 
@@ -55,14 +49,10 @@ class TestCredentialHandlerTwo
     : AWSCredentialRequestBus::Handler
 {
 public:
-    TestCredentialHandlerTwo()
+    void ActivateHandler()
     {
         m_handlerCounter = 0;
         m_credentialsProvider = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-    }
-
-    void ActivateHandler()
-    {
         AWSCredentialRequestBus::Handler::BusConnect();
     }
 
@@ -88,7 +78,7 @@ public:
 };
 
 class AWSCredentialBusTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
 {
 public:
     AWSCredentialBusTest()
@@ -99,6 +89,8 @@ public:
 
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
+
         m_handlerOne->ActivateHandler();
         m_handlerTwo->ActivateHandler();
     }
@@ -107,6 +99,8 @@ public:
     {
         m_handlerOne->DeactivateHandler();
         m_handlerTwo->DeactivateHandler();
+
+        AWSCoreFixture::TearDownFixture();
     }
 
     AZStd::unique_ptr<TestCredentialHandlerOne> m_handlerOne;

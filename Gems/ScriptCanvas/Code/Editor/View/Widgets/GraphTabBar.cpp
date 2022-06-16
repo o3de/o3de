@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
             connect(this, &QTabBar::customContextMenuRequested, this, &GraphTabBar::OnContextMenu);
         }
 
-        void GraphTabBar::AddGraphTab(ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
+        void GraphTabBar::AddGraphTab(SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
         {
             InsertGraphTab(count(), assetId, fileState);
         }
@@ -78,7 +78,7 @@ namespace ScriptCanvasEditor
                     if (!tabDataVariant.value<GraphTabMetadata>().m_canvasWidget)
                     {
                         CanvasWidget* canvasWidget = new CanvasWidget(tabDataVariant.value<GraphTabMetadata>().m_assetId, this);
-                        canvasWidget->SetDefaultBorderColor(ScriptCanvasAssetDescription().GetDisplayColorImpl());
+                        canvasWidget->SetDefaultBorderColor(ScriptCanvasEditor::SourceDescription::GetDisplayColor());
                         GraphTabMetadata replacement = tabDataVariant.value<GraphTabMetadata>();
                         replacement.m_canvasWidget = canvasWidget;
                         tabDataVariant.setValue(replacement);
@@ -118,7 +118,7 @@ namespace ScriptCanvasEditor
             return AZStd::nullopt;
         }
 
-        AZStd::optional<GraphTabMetadata> GraphTabBar::GetTabData(ScriptCanvasEditor::SourceHandle assetId) const
+        AZStd::optional<GraphTabMetadata> GraphTabBar::GetTabData(SourceHandle assetId) const
         {
             return GetTabData(FindTab(assetId));
         }
@@ -131,7 +131,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void GraphTabBar::SetTabData(const GraphTabMetadata& metadata, ScriptCanvasEditor::SourceHandle assetId)
+        void GraphTabBar::SetTabData(const GraphTabMetadata& metadata, SourceHandle assetId)
         {
             auto index = FindTab(assetId);
             auto replacement = GetTabData(assetId);
@@ -143,15 +143,15 @@ namespace ScriptCanvasEditor
             }
         }
 
-        int GraphTabBar::InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
+        int GraphTabBar::InsertGraphTab(int tabIndex, SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
         {
             if (!SelectTab(assetId))
             {
-                QIcon tabIcon = QIcon(ScriptCanvasAssetDescription().GetIconPathImpl());
+                QIcon tabIcon = QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath());
                 tabIndex = qobject_cast<AzQtComponents::TabWidget*>(parent())->insertTab(tabIndex, new QWidget(), tabIcon, "");
                 GraphTabMetadata metaData;
                 CanvasWidget* canvasWidget = new CanvasWidget(assetId, this);
-                canvasWidget->SetDefaultBorderColor(ScriptCanvasAssetDescription().GetDisplayColorImpl());
+                canvasWidget->SetDefaultBorderColor(SourceDescription::GetDisplayColor());
                 metaData.m_canvasWidget = canvasWidget;
                 metaData.m_assetId = assetId;
                 metaData.m_fileState = fileState;
@@ -167,7 +167,7 @@ namespace ScriptCanvasEditor
             return -1;
         }
 
-        bool GraphTabBar::SelectTab(ScriptCanvasEditor::SourceHandle assetId)
+        bool GraphTabBar::SelectTab(SourceHandle assetId)
         {
             int tabIndex = FindTab(assetId);
             if (-1 != tabIndex)
@@ -179,7 +179,7 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        int GraphTabBar::FindTab(ScriptCanvasEditor::SourceHandle assetId) const
+        int GraphTabBar::FindTab(SourceHandle assetId) const
         {
             for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
             {
@@ -215,7 +215,7 @@ namespace ScriptCanvasEditor
             return -1;
         }
 
-        int GraphTabBar::FindSaveOverMatch(ScriptCanvasEditor::SourceHandle assetId) const
+        int GraphTabBar::FindSaveOverMatch(SourceHandle assetId) const
         {
             for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
             {
@@ -233,9 +233,9 @@ namespace ScriptCanvasEditor
             return -1;
         }
 
-        ScriptCanvasEditor::SourceHandle GraphTabBar::FindTabByPath(AZStd::string_view path) const
+        SourceHandle GraphTabBar::FindTabByPath(AZStd::string_view path) const
         {
-            ScriptCanvasEditor::SourceHandle candidate(nullptr, {}, path);
+            SourceHandle candidate(nullptr, {}, path);
 
             for (int index = 0; index < count(); ++index)
             {
@@ -253,7 +253,7 @@ namespace ScriptCanvasEditor
             return {};
         }
 
-        ScriptCanvasEditor::SourceHandle GraphTabBar::FindAssetId(int tabIndex)
+        SourceHandle GraphTabBar::FindAssetId(int tabIndex)
         {
             QVariant dataVariant = tabData(tabIndex);
             if (dataVariant.isValid())
@@ -262,7 +262,7 @@ namespace ScriptCanvasEditor
                 return tabAssetId.m_assetId;
             }
 
-            return ScriptCanvasEditor::SourceHandle();
+            return SourceHandle();
         }
 
         ScriptCanvas::ScriptCanvasId GraphTabBar::FindScriptCanvasIdFromGraphCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const
@@ -427,10 +427,10 @@ namespace ScriptCanvasEditor
             Q_EMIT TabRemoved(index);
         }
 
-        void GraphTabBar::UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
+        void GraphTabBar::UpdateFileState(const SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
         {
             auto tabData = GetTabData(assetId);
-            if (tabData && tabData->m_fileState != fileState)
+            if (tabData && tabData->m_fileState != Tracker::ScriptCanvasFileState::NEW && tabData->m_fileState != fileState)
             {
                 int index = FindTab(assetId);
                 tabData->m_fileState = fileState;

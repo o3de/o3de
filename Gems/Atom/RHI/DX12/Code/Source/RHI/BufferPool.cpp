@@ -356,5 +356,13 @@ namespace AZ
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;
         }
+
+        void BufferPool::ComputeFragmentation() const
+        {
+            float fragmentation = m_allocator.ComputeFragmentation();
+
+            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
+            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
+        }
     }
 }

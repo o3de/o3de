@@ -153,11 +153,10 @@ TEST_F(ScriptCanvasBuilderTests, ScriptCanvasWithAssetReference_GatherProductDep
     graphEntity->AddComponent(assetComponent);
 
     ScriptCanvas::RuntimeData runtimeData;
-    //runtimeData.m_graphData.m_nodes.emplace(graphEntity);
-
+    
     AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
     runtimeAsset.Create(AZ::Uuid::CreateRandom());
-    runtimeAsset.Get()->SetData(runtimeData);
+    runtimeAsset.Get()->m_runtimeData = runtimeData;
 
     AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
     AssetBuilderSDK::ProductPathDependencySet productPathDependencySet;

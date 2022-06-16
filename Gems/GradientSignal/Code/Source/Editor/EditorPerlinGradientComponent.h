@@ -10,7 +10,7 @@
 
 #include <AzCore/Module/Module.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 
 namespace GradientSignal
 {
@@ -27,7 +27,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient by sampling a perlin noise generator";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "";
 
     private:
         AZ::Crc32 OnGenerateRandomSeed();

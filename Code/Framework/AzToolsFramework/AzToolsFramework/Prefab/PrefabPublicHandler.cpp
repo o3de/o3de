@@ -11,6 +11,7 @@
 #include <AzCore/JSON/writer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/std/sort.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -83,6 +84,20 @@ namespace AzToolsFramework
                 return AZ::Failure(findCommonRootOutcome.TakeError());
             }
 
+            // order entities by their respective position within Entity Outliner
+            EditorEntitySortRequestBus::Event(
+                commonRootEntityId,
+                [&topLevelEntities](EditorEntitySortRequestBus::Events* sortRequests)
+                {
+                    AZStd::sort(
+                        topLevelEntities.begin(), topLevelEntities.end(),
+                        [&sortRequests](AZ::Entity* entity1, AZ::Entity* entity2)
+                        {
+                            return sortRequests->GetChildEntityIndex(entity1->GetId()) <
+                                sortRequests->GetChildEntityIndex(entity2->GetId());
+                        });
+                });
+
             AZ::EntityId containerEntityId;
 
             InstanceOptionalReference instanceToCreate;
@@ -117,6 +132,10 @@ namespace AzToolsFramework
                     commonRootEntityOwningInstance->get().DetachEntity(entity->GetId()).release();
                 }
 
+                PrefabUndoHelpers::UpdatePrefabInstance(
+                    commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate,
+                    undoBatch.GetUndoBatch());
+
                 // When we create a prefab with other prefab instances, we have to remove the existing links between the source and 
                 // target templates of the other instances.
                 for (auto& nestedInstance : instances)
@@ -141,10 +160,6 @@ namespace AzToolsFramework
                     instancePtrs.emplace_back(AZStd::move(outInstance));
                 }
 
-                PrefabUndoHelpers::UpdatePrefabInstance(
-                    commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate,
-                    undoBatch.GetUndoBatch());
-
                 auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
                 if (!prefabEditorEntityOwnershipInterface)
                 {
@@ -153,8 +168,6 @@ namespace AzToolsFramework
                 }
 
                 // Create the Prefab
-                AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInMemory requires an absolute file path.");
-
                 instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
                     entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
                     commonRootEntityOwningInstance);
@@ -172,6 +185,7 @@ namespace AzToolsFramework
 
                 // Parent the non-container top level entities to the container entity.
                 // Parenting the top level container entities will be done during the creation of links.
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, true);
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
@@ -179,10 +193,11 @@ namespace AzToolsFramework
                         AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
                     }
                 }
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
                 // Update the template of the instance since the entities are modified since the template creation.
                 Prefab::PrefabDom serializedInstance;
-                if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceToCreate->get(), serializedInstance))
+                if (m_instanceToTemplateInterface->GenerateDomForInstance(serializedInstance, instanceToCreate->get()))
                 {
                     m_prefabSystemComponentInterface->UpdatePrefabTemplate(instanceToCreate->get().GetTemplateId(), serializedInstance);
                 }
@@ -279,6 +294,8 @@ namespace AzToolsFramework
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInDisk requires an absolute file path.");
+
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
             {
@@ -356,7 +373,8 @@ namespace AzToolsFramework
 
             if (!instanceToParentUnder.has_value())
             {
-                instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+                instanceToParentUnder = m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId);
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
 
@@ -398,9 +416,6 @@ namespace AzToolsFramework
                     return AZ::Failure(AZStd::string("Could not instantiate the prefab provided - internal error "
                                                      "(A null instance is returned)."));
                 }
-
-                PrefabUndoHelpers::UpdatePrefabInstance(
-                    instanceToParentUnder->get(), "Update prefab instance", instanceToParentUnderDomBeforeCreate, undoBatch.GetUndoBatch());
 
                 // Create Link with correct container patches
                 containerEntityId = instanceToCreate->get().GetContainerEntityId();
@@ -644,6 +659,7 @@ namespace AzToolsFramework
             entityOwningInstance.AddEntity(*entity, entityAlias);
 
             EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::HandleEntitiesAdded, EntityList{entity});
+            EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::FinalizeEditorEntity, entity);
 
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             transform.SetTranslation(position);
@@ -675,6 +691,9 @@ namespace AzToolsFramework
 
             PrefabUndoHelpers::UpdatePrefabInstance(
                 entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 
             return AZ::Success(entityId);
         }
@@ -714,9 +733,6 @@ namespace AzToolsFramework
             {
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
-
-                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
-                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
 
                 if (beforeParentId != afterParentId)
                 {
@@ -771,7 +787,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
+                if (isInstanceContainerEntity)
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -793,12 +809,12 @@ namespace AzToolsFramework
                     else
                     {
                         Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId(), owningInstance->get().GetParentInstance());
+                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
                     }
                 }
                 else
                 {
-                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
+                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState);
 
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -813,26 +829,24 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
-            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-            const LinkId linkId, InstanceOptionalReference parentInstance)
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId)
         {
             // Save these changes as patches to the link
             PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
-
-            linkUpdate->Redo(parentInstance->get());
+            linkUpdate->Redo();
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-            PrefabDom& afterState, InstanceOptionalReference instance)
+            PrefabDom& afterState)
         {
             // Update the state of the entity
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-            state->Redo(instance->get());
+            state->Redo();
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
@@ -1031,12 +1045,14 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesInInstance(const EntityIdList& entityIds)
         {
-            return DeleteFromInstance(entityIds, false);
+            AZ_Warning(
+                "Prefab", false, "This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.");
+            return DeleteFromInstance(entityIds);
         }
 
         PrefabOperationResult PrefabPublicHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
         {
-            return DeleteFromInstance(entityIds, true);
+            return DeleteFromInstance(entityIds);
         }
 
         DuplicatePrefabResult PrefabPublicHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
@@ -1046,7 +1062,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
             if (entityIdsNoFocusContainer.empty())
             {
                 return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the container entity of the focused instance."));
@@ -1182,10 +1198,10 @@ namespace AzToolsFramework
             return AZ::Success(AZStd::move(duplicatedEntityAndInstanceIds));
         }
 
-        PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
+        PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds)
         {
             // Remove the container entity of the focused prefab from the list, if it is included.
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
 
             if (entityIdsNoFocusContainer.empty())
             {
@@ -1219,27 +1235,6 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
             }
 
-            // None of the specified entities can be marked as read only, otherwise this operation is invalid.
-            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-            {
-                AZ::EntityId readOnlyEntityId;
-                for (const auto& entityId : entityIdsNoFocusContainer)
-                {
-                    if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
-                    {
-                        readOnlyEntityId = entityId;
-                        break;
-                    }
-                }
-
-                if (readOnlyEntityId.IsValid())
-                {
-                    return AZ::Failure(AZStd::string::format(
-                        "Cannot delete entities because entity (id '%llu') is marked as read only.",
-                        static_cast<AZ::u64>(readOnlyEntityId)));
-                }
-            }
-
             // Retrieve entityList from entityIds
             EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoFocusContainer);
 
@@ -1250,52 +1245,32 @@ namespace AzToolsFramework
             AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
             Prefab::PrefabDom instanceDomBefore;
+
+            AZStd::vector<AZ::Entity*> entities;
+            AZStd::vector<Instance*> instances;
+
+            PrefabOperationResult retrieveEntitiesAndInstancesOutcome =
+                RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
+
+            if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
+            {
+                return AZStd::move(retrieveEntitiesAndInstancesOutcome);
+            }
+
+            for (auto& nestedInstance : instances)
+            {
+                AZStd::unique_ptr<Instance> outInstance =
+                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
+                RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                outInstance.reset();
+            }
+
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
 
-            if (deleteDescendants)
+            for (AZ::Entity* entity : entities)
             {
-                AZStd::vector<AZ::Entity*> entities;
-                AZStd::vector<Instance*> instances;
-
-                PrefabOperationResult retrieveEntitiesAndInstancesOutcome =
-                    RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
-
-                if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
-                {
-                    return AZStd::move(retrieveEntitiesAndInstancesOutcome);
-                }
-
-                for (AZ::Entity* entity : entities)
-                {
-                    commonOwningInstance->get().DetachEntity(entity->GetId()).release();
-                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
-                }
-
-                for (auto& nestedInstance : instances)
-                {
-                    AZStd::unique_ptr<Instance> outInstance =
-                        commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
-                    RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
-                    outInstance.reset();
-                }
-            }
-            else
-            {
-                for (AZ::EntityId entityId : entityIdsNoFocusContainer)
-                {
-                    InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-                    // If this is the container entity, it actually represents the instance so get its owner
-                    if (owningInstance->get().GetContainerEntityId() == entityId)
-                    {
-                        auto instancePtr = commonOwningInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
-                        RemoveLink(instancePtr, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
-                    }
-                    else
-                    {
-                        commonOwningInstance->get().DetachEntity(entityId);
-                        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
-                    }
-                }
+                commonOwningInstance->get().DetachEntity(entity->GetId()).release();
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
             }
 
             Prefab::PrefabDom instanceDomAfter;
@@ -1322,7 +1297,10 @@ namespace AzToolsFramework
             PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
-            command->Redo(commonOwningInstance->get());
+            command->Redo();
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             
             return AZ::Success();
         }
@@ -1413,7 +1391,7 @@ namespace AzToolsFramework
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
                         AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:RunRedo");
-                        command->Redo(parentInstance);
+                        command->Redo();
                     }
 
                     instancePtr->DetachNestedInstances(
@@ -1663,10 +1641,24 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutFocusedInstanceContainer(
-            const EntityIdList& entityIds) const
+        EntityIdList PrefabPublicHandler::SanitizeEntityIdList(const EntityIdList& entityIds) const
         {
-            EntityIdList outEntityIds(entityIds);
+            EntityIdList outEntityIds;
+
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+            {
+                std::copy_if(
+                    entityIds.begin(), entityIds.end(), AZStd::back_inserter(outEntityIds),
+                    [readOnlyEntityPublicInterface](const AZ::EntityId& entityId)
+                    {
+                        return !readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                    }
+                );
+            }
+            else
+            {
+                outEntityIds = entityIds;
+            }
 
             AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
             AZ::EntityId focusedInstanceContainerEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);

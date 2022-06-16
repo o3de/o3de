@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
@@ -22,9 +23,12 @@ namespace AZ
     namespace RPI
     {
         class MaterialTypeAsset;
+        class MaterialTypeAssetCreator;
         class MaterialFunctorSourceDataHolder;
+        class JsonMaterialPropertySerializer;
 
         //! This is a simple data structure for serializing in/out material type source files.
+        //! Note that there may be a mixture of public and private members, as we are gradually introducing a proper API.
         class MaterialTypeSourceData final
         {
         public:
@@ -69,13 +73,22 @@ namespace AZ
 
             struct PropertyDefinition
             {
-                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyDefinition, "{E0DB3C0D-75DB-4ADB-9E79-30DA63FA18B7}");
+                friend class JsonMaterialPropertySerializer;
 
+                AZ_CLASS_ALLOCATOR(PropertyDefinition, SystemAllocator, 0);
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyDefinition, "{E0DB3C0D-75DB-4ADB-9E79-30DA63FA18B7}");
+                
                 static const float DefaultMin;
                 static const float DefaultMax;
                 static const float DefaultStep;
+                
+                PropertyDefinition() = default;
 
-                AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
+                explicit PropertyDefinition(AZStd::string_view name) : m_name(name)
+                {
+                }
+
+                const AZStd::string& GetName() const { return m_name; }
 
                 MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
 
@@ -97,6 +110,62 @@ namespace AZ
                 MaterialPropertyValue m_softMin;
                 MaterialPropertyValue m_softMax;
                 MaterialPropertyValue m_step;
+
+            private:
+
+                // We are gradually moving toward having a more proper API for MaterialTypeSourceData code, but we still some public members
+                // like above. However, it's important for m_name to be private because it is used as the key for lookups, collision validation, etc.
+                AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
+            };
+            
+            using PropertyList = AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>;
+
+            struct PropertyGroup
+            {
+                friend class MaterialTypeSourceData;
+                
+                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator, 0);
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyGroup, "{BA3AA0E4-C74D-4FD0-ADB2-00B060F06314}");
+
+            public:
+
+                PropertyGroup() = default;
+                AZ_DISABLE_COPY(PropertyGroup)
+
+                const AZStd::string& GetName() const;
+                const AZStd::string& GetDisplayName() const;
+                const AZStd::string& GetDescription() const;
+                const PropertyList& GetProperties() const;
+                const AZStd::string& GetShaderInputsPrefix() const;
+                const AZStd::string& GetShaderOptionsPrefix() const;
+                const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& GetPropertyGroups() const;
+                const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& GetFunctors() const;
+                
+                void SetDisplayName(AZStd::string_view displayName);
+                void SetDescription(AZStd::string_view description);
+
+                //! Add a new property to this PropertyGroup.
+                //! @param name a unique for the property. Must be a C-style identifier.
+                //! @return the new PropertyDefinition, or null if the name was not valid.
+                PropertyDefinition* AddProperty(AZStd::string_view name);
+                
+                //! Add a new nested PropertyGroup to this PropertyGroup.
+                //! @param name a unique for the property group. Must be a C-style identifier.
+                //! @return the new PropertyGroup, or null if the name was not valid.
+                PropertyGroup* AddPropertyGroup(AZStd::string_view name);
+                
+            private:
+
+                static PropertyGroup* AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList);
+
+                AZStd::string m_name;
+                AZStd::string m_displayName;
+                AZStd::string m_description;
+                AZStd::string m_shaderInputsPrefix;  //!< The name of all SRG inputs under this group will get this prefix.
+                AZStd::string m_shaderOptionsPrefix; //!< The name of all shader options under this group will get this prefix.
+                PropertyList m_properties;
+                AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
+                AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             };
 
             struct ShaderVariantReferenceData
@@ -118,21 +187,7 @@ namespace AZ
                 AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
             };
 
-            using PropertyList = AZStd::vector<PropertyDefinition>;
-
-            struct VersionUpdatesRenameOperationDefinition
-            {
-                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition, "{F2295489-E15A-46CC-929F-8D42DEDBCF14}");
-
-                AZStd::string m_operation;
-                
-                AZStd::string m_renameFrom;
-                AZStd::string m_renameTo;
-            };
-
-            // TODO: Support script operations--At that point, we'll likely need to replace VersionUpdatesRenameOperationDefinition with a more generic
-            // data structure that has a custom JSON serialize. We will only be supporting rename for now.
-            using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
+            using VersionUpdateActions = AZStd::vector<MaterialVersionUpdate::Action::ActionDefinition>;
 
             struct VersionUpdateDefinition
             {
@@ -147,25 +202,30 @@ namespace AZ
             struct PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
-                
+
+                PropertyLayout() = default;
+                AZ_DISABLE_COPY(PropertyLayout)
+
                 //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
                 uint32_t m_versionOld = 0;
 
+                //! @deprecated: Use m_propertyGroups instead
                 //! List of groups that will contain the available properties
-                AZStd::vector<GroupDefinition> m_groups;
+                AZStd::vector<GroupDefinition> m_groupsOld;
 
+                //! @deprecated: Use m_propertyGroups instead
+                AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
+                
                 //! Collection of all available user-facing properties
-                AZStd::map<AZStd::string /*group name*/, PropertyList> m_properties;
+                AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
             };
-
+            
             AZStd::string m_description;
 
             //! Version 1 is the default and should not contain any version update.
             uint32_t m_version = 1;
-
+            
             VersionUpdates m_versionUpdates;
-
-            PropertyLayout m_propertyLayout;
 
             //! A list of shader variants that are always used at runtime; they cannot be turned off
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection;
@@ -181,42 +241,112 @@ namespace AZ
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 
-            const GroupDefinition* FindGroup(AZStd::string_view groupName) const;
+            //! Add a new PropertyGroup for containing properties or other PropertyGroups.
+            //! @param propertyGroupId The ID of the new property group. To add as a nested PropertyGroup, use a full path ID like "levelA.levelB.levelC"; in this case a property group "levelA.levelB" must already exist.
+            //! @return a pointer to the new PropertyGroup or null if there was a problem (an AZ_Error will be reported).
+            PropertyGroup* AddPropertyGroup(AZStd::string_view propertyGroupId);
 
-            //! Searches for a specific property. 
-            //! Note this function can find properties using old versions of the property name; in that case,
-            //! the name in the returned PropertyDefinition* will not match the @propertyName that was searched for.
-            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
-            //! @return the requested property, or null if it could not be found
-            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion = 0) const;
+            //! Add a new property to a PropertyGroup.
+            //! @param propertyId The ID of the new property, like "layerBlend.factor" or "layer2.roughness.texture". The indicated property group must already exist.
+            //! @return a pointer to the new PropertyDefinition or null if there was a problem (an AZ_Error will be reported).
+            PropertyDefinition* AddProperty(AZStd::string_view propertyId);
 
-            //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data
-            //! Groups with the same name will be consolidated into a single entry
-            AZStd::vector<GroupDefinition> GetGroupDefinitionsInDisplayOrder() const;
+            //! Return the PropertyLayout containing the tree of property groups and property definitions.
+            const PropertyLayout& GetPropertyLayout() const { return m_propertyLayout; }
 
-            //! Call back function type used with the numeration functions
+            //! Find the PropertyGroup with the given ID.
+            //! @param propertyGroupId The full ID of a property group to find, like "levelA.levelB.levelC".
+            //! @return the found PropertyGroup or null if it doesn't exist.
+            const PropertyGroup* FindPropertyGroup(AZStd::string_view propertyGroupId) const;
+            PropertyGroup* FindPropertyGroup(AZStd::string_view propertyGroupId);
+            
+            //! Find the definition for a property with the given ID.
+            //! @param propertyId The full ID of a property to find, like "baseColor.texture".
+            //! @return the found PropertyDefinition or null if it doesn't exist.
+            const PropertyDefinition* FindProperty(AZStd::string_view propertyId) const;
+            PropertyDefinition* FindProperty(AZStd::string_view propertyId);
+
+            //! Tokenizes an ID string like "itemA.itemB.itemC" into a vector like ["itemA", "itemB", "itemC"].
+            static AZStd::vector<AZStd::string_view> TokenizeId(AZStd::string_view id);
+            
+            //! Splits an ID string like "itemA.itemB.itemC" into a vector like ["itemA.itemB", "itemC"].
+            static AZStd::vector<AZStd::string_view> SplitId(AZStd::string_view id);
+
+            //! Describes a path in the hierarchy of property groups, with the top level group at the beginning and a leaf-most group at the end.
+            using PropertyGroupStack = AZStd::vector<const PropertyGroup*>;
+
+            //! Call back function type used with the enumeration functions.
+            //! The PropertyGroupStack contains the stack of property groups at the current point in the traversal.
+            //! Return false to terminate the traversal.
+            using EnumeratePropertyGroupsCallback = AZStd::function<bool(const PropertyGroupStack&)>;
+
+            //! Recursively traverses all of the property groups contained in the material type, executing a callback function for each.
+            //! @return false if the enumeration was terminated early by the callback returning false.
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback) const;
+
+            //! Call back function type used with the numeration functions.
+            //! Return false to terminate the traversal.
             using EnumeratePropertiesCallback = AZStd::function<bool(
-                const AZStd::string&, // The name of the group containing the property
-                const AZStd::string&, // The name of the property
-                const PropertyDefinition& // the property definition object that corresponds to the group and property names
+                const PropertyDefinition*, // the property definition object 
+                const MaterialNameContext& // The name context that the property is in, used to scope properties and shader connections (i.e. "levelA.levelB.")
                 )>;
+            
+            //! Recursively traverses all of the properties contained in the material type, executing a callback function for each.
+            //! @return false if the enumeration was terminated early by the callback returning false.
+            bool EnumerateProperties(const EnumeratePropertiesCallback& callback) const;
 
-            //! Traverse all of the properties contained in the source data executing a callback function
-            //! Traversal will occur in group alphabetical order and stop once all properties have been enumerated or the callback function returns false
-            void EnumerateProperties(const EnumeratePropertiesCallback& callback) const;
-
-            //! Traverse all of the properties in the source data in display/storage order executing a callback function
-            //! Traversal will stop once all properties have been enumerated or the callback function returns false
-            void EnumeratePropertiesInDisplayOrder(const EnumeratePropertiesCallback& callback) const;
+            //! Returns a MaterialNameContext for a specific path through the property group hierarchy.
+            static MaterialNameContext MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack);
 
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
-            
-            //! Possibly renames @propertyId based on the material version update steps.
-            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
-            //! @return true if the property was renamed
-            bool ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion = 0) const;
-        };
 
+            //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
+            //! this converts to the new format where properties are listed inside property groups.
+            bool ConvertToNewDataFormat();
+
+        private:
+                
+            const PropertyGroup* FindPropertyGroup(AZStd::span<const AZStd::string_view> parsedPropertyGroupId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const;
+            PropertyGroup* FindPropertyGroup(AZStd::span<AZStd::string_view> parsedPropertyGroupId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
+            
+            const PropertyDefinition* FindProperty(AZStd::span<const AZStd::string_view> parsedPropertyId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const;
+            PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
+            
+            // Function overloads for recursion, returns false to indicate that recursion should end.
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, PropertyGroupStack& propertyGroupStack, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            
+            static void ExtendNameContext(MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
+
+            //! Resolve source values (e.g. image filename, Enum string) to their asset version
+            //! (ImageAsset, uint32_t).
+            static MaterialPropertyValue ResolveSourceValue(
+                const Name& propertyId,
+                const MaterialPropertyValue& sourceValue,
+                const AZStd::string& materialTypeSourceFilePath,
+                const MaterialPropertiesLayout* materialPropertiesLayout,
+                AZStd::function<void(const char*)> onError);
+
+            //! Recursively populates a material type asset with properties from the tree of material property groups.
+            //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
+            //! @param materialTypeAssetCreator properties will be added to this creator
+            //! @param materialNameContext the accumulated name context that should be applied to any property names or connection names encountered in the current @propertyGroup
+            //! @param propertyGroup the current PropertyGroup that is being processed
+            //! @return false if errors are detected and processing should abort
+            bool BuildPropertyList(
+                const AZStd::string& materialTypeSourceFilePath,
+                MaterialTypeAssetCreator& materialTypeAssetCreator,
+                MaterialNameContext materialNameContext,
+                const MaterialTypeSourceData::PropertyGroup* propertyGroup) const;
+                            
+            //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.
+            //! Groups with the same name will be consolidated into a single entry.
+            //! Operates on the old format PropertyLayout::m_groups, used for conversion to the new format.
+            AZStd::vector<GroupDefinition> GetOldFormatGroupDefinitionsInDisplayOrder() const;
+            
+            PropertyLayout m_propertyLayout;
+        };
+        
         //! The wrapper class for derived material functors.
         //! It is used in deserialization so that derived material functors can be deserialized by name.
         class MaterialFunctorSourceDataHolder final
@@ -243,7 +373,7 @@ namespace AZ
                 return m_actualSourceData ? m_actualSourceData->CreateFunctor(editorContext) : Failure();
             }
 
-            const Ptr<MaterialFunctorSourceData> GetActualSourceData() const { return m_actualSourceData; }
+            Ptr<MaterialFunctorSourceData> GetActualSourceData() const { return m_actualSourceData; }
         private:
             Ptr<MaterialFunctorSourceData> m_actualSourceData = nullptr; // The derived material functor instance.
         };

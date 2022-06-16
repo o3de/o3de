@@ -15,7 +15,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, utils
+from o3de import cmake, manifest, project_properties, utils
 
 logger = logging.getLogger('o3de.disable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -68,8 +68,8 @@ def disable_gem_in_project(gem_name: str = None,
                      f' {project_path / "project.json"}, engine.json')
         return 1
     gem_path = pathlib.Path(gem_path).resolve()
-    # make sure this gem already exists if we're adding.  We can always remove a gem.
-    if not gem_path.exists():
+    # make sure the gem path is a directory
+    if not gem_path.is_dir():
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
@@ -79,9 +79,6 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
-    # when removing we will try to do as much as possible even with failures so ret_val will be the last error code
-    ret_val = 0
-
     if not enabled_gem_file:
         enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
 
@@ -89,23 +86,78 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file.is_file():
         logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
         return 1
+
     # remove the gem
     error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
-    if error_code:
-        ret_val = error_code
+
+    # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
+    # registered with the project.json nor engine.json
+    ret_val = project_properties.edit_project_props(project_path,
+                                                    delete_gem_names=gem_json_data['gem_name']) or error_code
+
+    return ret_val
+
+
+def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
+                                 project_name: str = None,
+                                 project_path: pathlib.Path = None,
+                                 enabled_gem_file: pathlib.Path = None) -> int:
+    """
+    walks each gem root folder directory structure and removes explicit
+    activation of the gems to the project
+    :param gem_root_folders: name of the gem to add
+    :param project_name: name of to the project to add the gem to
+    :param project_path: path to the project to add the gem to
+    :param enabled_gem_file: if this dependency goes/is in a specific file
+    :return: 0 for success or non 0 failure code
+    """
+    if not gem_root_folders:
+        logger.error('gem_root_folders list cannot be empty')
+        return 1
+
+    # Skip removing of explicit activation of gems within template directories
+    # They shouldn't be activated anyway
+    def stop_on_template_folders(directories: list, filenames: list) -> bool:
+        return 'template.json' in filenames
+
+    gem_dirs_set = set()
+    ret_val = 0
+    for gem_root_folder in gem_root_folders:
+        gem_root_folder = pathlib.Path(gem_root_folder).resolve()
+        if not gem_root_folder.is_dir():
+            logger.error(f'gem root folder of {gem_root_folder} is not a directory')
+            ret_val = 1
+        for root, dirs, files in os.walk(gem_root_folder):
+            # Skip template directories
+            if stop_on_template_folders(dirs, files):
+                dirs[:] = []
+            elif 'gem.json' in files:
+                gem_dirs_set.add(pathlib.Path(root))
+
+    for gem_dir in sorted(gem_dirs_set):
+        # Run the command to remove explicit activation even if previous calls failed
+        ret_val = disable_gem_in_project(gem_path=gem_dir,
+                                        project_name=project_name,
+                                        project_path=project_path,
+                                        enabled_gem_file=enabled_gem_file) or ret_val
 
     return ret_val
 
 
 def _run_disable_gem_in_project(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
-    return disable_gem_in_project(args.gem_name,
-                                   args.gem_path,
-                                   args.project_name,
-                                   args.project_path,
-                                   args.enabled_gem_file)
+    if args.all_gem_paths:
+        return remove_explicit_gem_activation_for_all_paths(
+            args.all_gem_paths,
+            args.project_name,
+            args.project_path,
+            args.enabled_gem_file
+        )
+    else:
+        return disable_gem_in_project(args.gem_name,
+                                      args.gem_path,
+                                      args.project_name,
+                                      args.project_path,
+                                      args.enabled_gem_file)
 
 
 def add_parser_args(parser):
@@ -129,12 +181,11 @@ def add_parser_args(parser):
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
+    group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
+                       help='Removes explicit activation of all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
                                       help='The cmake enabled gem file in which gem names are to be removed from.'
                                            'If not specified it will assume ')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                                      help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_disable_gem_in_project)
 

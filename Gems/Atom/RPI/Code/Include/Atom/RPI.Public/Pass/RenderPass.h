@@ -113,6 +113,9 @@ namespace AZ
             // The shader resource group for this pass
             Data::Instance<ShaderResourceGroup> m_shaderResourceGroup = nullptr;
 
+            // Determines which hardware queue the pass will run on
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+
         private:
             // Helper function that binds a single attachment to the pass shader resource group
             void BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);

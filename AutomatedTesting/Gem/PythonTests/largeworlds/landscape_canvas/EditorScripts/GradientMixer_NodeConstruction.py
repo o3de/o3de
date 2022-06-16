@@ -75,8 +75,8 @@ def GradientMixer_NodeConstruction():
     import azlmbr.paths
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    import editor_python_test_tools.prefab_utils as PrefabUtils
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -85,8 +85,7 @@ def GradientMixer_NodeConstruction():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -143,6 +142,7 @@ def GradientMixer_NodeConstruction():
     gradientMixerNode = landscapecanvas.LandscapeCanvasNodeFactoryRequestBus(bus.Broadcast, 'CreateNodeForTypeName', newGraph,
                                                                              'GradientMixerNode')
     graph.GraphControllerRequestBus(bus.Event, 'AddNode', newGraphId, gradientMixerNode, math.Vector2(positionX, positionY))
+    PrefabUtils.wait_for_propagation()
     gradientMixerEntityId = newEntityId
 
     boundsSlotId = graph.GraphModelSlotId('Bounds')

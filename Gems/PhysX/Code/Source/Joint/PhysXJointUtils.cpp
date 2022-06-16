@@ -6,17 +6,19 @@
  *
  */
 
-#include <AzFramework/Physics/PhysicsScene.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzCore/EBus/EBus.h>
+#include <Source/Joint/PhysXJointUtils.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/MathConversion.h>
-#include <Source/Joint/PhysXJointUtils.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
+
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace PhysX::Utils
 {
@@ -194,6 +196,8 @@ namespace PhysX::Utils
                 AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be a PxRigidActor.");
                 return nullptr;
             }
+
+            PHYSX_SCENE_WRITE_LOCK(actorData.parentActor->getScene());
 
             const physx::PxTransform parentWorldTransform =
                 actorData.parentActor ? actorData.parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);

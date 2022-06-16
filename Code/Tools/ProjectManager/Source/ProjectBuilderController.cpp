@@ -21,7 +21,6 @@ namespace O3DE::ProjectManager
         : QObject()
         , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
-        , m_lastProgress(0)
         , m_parent(parent)
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
@@ -55,12 +54,13 @@ namespace O3DE::ProjectManager
 
         if (projectButton)
         {
-            projectButton->SetProjectBuilding();
-            projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
+            projectButton->SetProjectButtonAction(tr("Cancel"), [this] { HandleCancel(); });
+            projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+            projectButton->SetState(ProjectButtonState::Building);
 
-            if (m_lastProgress != 0)
+            if (!m_lastLine.isEmpty())
             {
-                UpdateUIProgress(m_lastProgress);
+                UpdateUIProgress(m_lastLine);
             }
         }
     }
@@ -70,14 +70,13 @@ namespace O3DE::ProjectManager
         return m_projectInfo;
     }
 
-    void ProjectBuilderController::UpdateUIProgress(int progress)
+    void ProjectBuilderController::UpdateUIProgress(const QString& lastLine)
     {
-        m_lastProgress = progress;
+        m_lastLine = lastLine.left(s_maxDisplayedBuiltOutputChars);
+
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)<br>%3<br>").arg(tr("Building Project..."), QString::number(progress), tr("Click to <a href=\"logs\">view logs</a>.")));
-            m_projectButton->SetProgressBarValue(progress);
-            m_projectButton->SetBuildLogsLink(m_worker->GetLogFilePath());
+            m_projectButton->SetContextualText(m_lastLine);
         }
     }
 

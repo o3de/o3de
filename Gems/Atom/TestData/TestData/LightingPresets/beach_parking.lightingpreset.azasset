@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Beach Parking",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{4CF4C63C-B317-5E0B-B523-44167A02F81E}",

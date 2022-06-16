@@ -26,6 +26,7 @@ namespace AZ
                     ->Version(2)
                     ->Field("Attenuation Angle", &DecalComponentConfig::m_attenuationAngle)
                     ->Field("Opacity", &DecalComponentConfig::m_opacity)
+                    ->Field("Normal Map Opacity", &DecalComponentConfig::m_normalMapOpacity)
                     ->Field("SortKey", &DecalComponentConfig::m_sortKey)
                     ->Field("Material", &DecalComponentConfig::m_materialAsset)
                 ;
@@ -50,10 +51,13 @@ namespace AZ
                     ->Event("SetAttenuationAngle", &DecalRequestBus::Events::SetAttenuationAngle)
                     ->Event("GetOpacity", &DecalRequestBus::Events::GetOpacity)
                     ->Event("SetOpacity", &DecalRequestBus::Events::SetOpacity)
+                    ->Event("GetNormalMapOpacity", &DecalRequestBus::Events::GetNormalMapOpacity)
+                    ->Event("SetNormalMapOpacity", &DecalRequestBus::Events::SetNormalMapOpacity)
                     ->Event("SetSortKey", &DecalRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &DecalRequestBus::Events::GetSortKey)
                     ->VirtualProperty("AttenuationAngle", "GetAttenuationAngle", "SetAttenuationAngle")
                     ->VirtualProperty("Opacity", "GetOpacity", "SetOpacity")
+                    ->VirtualProperty("NormalMapOpacity", "GetNormalMapOpacity", "SetNormalMapOpacity")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
                     ->Event("SetMaterial", &DecalRequestBus::Events::SetMaterialAssetId)
                     ->Event("GetMaterial", &DecalRequestBus::Events::GetMaterialAssetId)
@@ -87,7 +91,7 @@ namespace AZ
         {
             m_entityId = entityId;
             m_featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<DecalFeatureProcessorInterface>(entityId);
-            AZ_Assert(m_featureProcessor, "DecalRenderProxy was unable to find a DecalFeatureProcessor on the entityId provided.");
+            AZ_Assert(m_featureProcessor, "DecalRenderProxy was unable to find a decal FeatureProcessor on the entityId provided.");
             if (m_featureProcessor)
             {
                 m_handle = m_featureProcessor->AcquireDecal();
@@ -153,6 +157,7 @@ namespace AZ
         {
             AttenuationAngleChanged();
             OpacityChanged();
+            NormalMapOpacityChanged();
             SortKeyChanged();
             MaterialChanged();
         }
@@ -177,6 +182,17 @@ namespace AZ
         {
             m_configuration.m_opacity = opacity;
             OpacityChanged();
+        }
+
+        float DecalComponentController::GetNormalMapOpacity() const
+        {
+            return m_configuration.m_normalMapOpacity;
+        }
+
+        void DecalComponentController::SetNormalMapOpacity(float opacity)
+        {
+            m_configuration.m_normalMapOpacity = opacity;
+            NormalMapOpacityChanged();
         }
 
         uint8_t DecalComponentController::GetSortKey() const
@@ -205,6 +221,15 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetDecalOpacity(m_handle, m_configuration.m_opacity);
+            }
+        }
+
+        void DecalComponentController::NormalMapOpacityChanged()
+        {
+            DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnNormalMapOpacityChanged, m_configuration.m_normalMapOpacity);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetDecalNormalMapOpacity(m_handle, m_configuration.m_normalMapOpacity);
             }
         }
 

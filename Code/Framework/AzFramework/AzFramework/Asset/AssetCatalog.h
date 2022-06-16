@@ -134,7 +134,6 @@ namespace AzFramework
 
         AZStd::atomic_bool m_shutdownThreadSignal;                  ///< Signals the monitoring thread to stop.
         AZStd::thread m_thread;                                     ///< Monitoring thread
-        AZStd::string m_assetRoot;                                  ///< Asset root the catalog is bound to.
         AZStd::unordered_set<AZStd::string> m_extensions;           ///< Valid asset extensions.
         mutable AZStd::recursive_mutex m_registryMutex;
         AZStd::unique_ptr<AssetRegistry> m_registry;
