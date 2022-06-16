@@ -24,6 +24,7 @@ import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
 from ly_test_tools.o3de.asset_processor import AssetProcessorError
+from ly_test_tools.o3de.asset_processor import StopReason
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -298,7 +299,7 @@ class TestsAssetProcessorGUI_Windows(object):
         # Expected test asset sources and products
         exp_project_level_assets = ["TestDependenciesLevel.prefab"]
         exp_project_test_assets = [new_asset]
-        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower()]
+        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower(),"TestDependenciesLevel.network.spawnable".lower()]
         exp_cache_test_assets = [f"{new_asset_lower}_compiled", f"{new_asset_lower}_fn_compiled", "c1564064_vm.luac"]
 
         result, _ = asset_processor.gui_process(quitonidle=False)
@@ -337,8 +338,7 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.stop()
 
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
-    def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):
+    def test_APStop_TimesOut(self, ap_setup_fixture, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out
 
@@ -349,22 +349,15 @@ class TestsAssetProcessorGUI_Windows(object):
         4. Try to stop the Asset Processor with a timeout of 1 second (This cannot be done manually).
         5. Verify that Asset Processor times out and returns the expected error
         """
-
+        asset_processor.create_temp_asset_root()
         asset_processor.start()
 
         # Copy in some assets, so that the AP will be busy when the stop command is called.
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest")
-        ap_quit_timed_out = False
-        try:
-            asset_processor.stop(timeout=0, ap_stop_test=True)
-        except ValueError as err:
-            assert err.args == ("Timeout",), "Expected ValueError was not encountered."
-            ap_quit_timed_out = True
-        assert ap_quit_timed_out, "AP did not time out as expected"
-
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest", use_current_root=True)
+        assert asset_processor.stop(timeout=0) == 4, "AP did not time out as expected"
 
     @pytest.mark.assetpipeline
-    def test_APStopDefaultTimeout_NoException(self, asset_processor):
+    def test_APStopDefaultTimeout_DoesNotTimeOut(self, asset_processor):
         """
         Tests the default timeout of the Asset Processor
 
@@ -381,12 +374,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
         asset_processor.create_temp_asset_root()
         asset_processor.start()
-        ap_quit_timed_out = False
-        try:
-            asset_processor.stop(ap_stop_test=True)
-        except AssetProcessorError():
-            ap_quit_timed_out = True
-        assert not ap_quit_timed_out, "AP timed out"
+        assert asset_processor.stop() is None, "AP timed out"
 
     def test_APStopNoControlConnection_ExceptionThrown(self, ap_setup_fixture, asset_processor):
         """
@@ -402,10 +390,4 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.create_temp_asset_root()
         asset_processor.start()
         asset_processor.set_control_connection(None)
-        ap_terminated = False
-        try:
-            asset_processor.stop(ap_stop_test=True)
-        except ValueError as err:
-            assert err.args == ("NoControlConnection",), "Expected ValueError was not encountered"
-            ap_terminated = True
-        assert ap_terminated, "AP was not terminated as expected"
+        assert asset_processor.stop() == 1, "AP was not terminated as expected"
