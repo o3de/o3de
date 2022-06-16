@@ -50,7 +50,7 @@ class AssetProcessorError(Exception):
 class StopReason(IntEnum):
     """
     Indicates what stop reason was used during the stop() function.
-        NOT_RUNNING = None
+        NOT_RUNNING = 0
         NO_CONTROL = 1
         NO_QUIT = 2
         IO_ERROR = 3
