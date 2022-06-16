@@ -98,13 +98,17 @@ namespace AZ
         if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
             behaviorContext->Class<SplineAddress>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Constructor<u64, float>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::ConstructorOverride, &Internal::SplineAddressScriptConstructor)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::SplineAddressDefaultConstructor)->
                 Property("segmentIndex", BehaviorValueProperty(&SplineAddress::m_segmentIndex))->
-                Property("segmentFraction", BehaviorValueProperty(&SplineAddress::m_segmentFraction));
+                Property("segmentFraction", BehaviorValueProperty(&SplineAddress::m_segmentFraction))->
+                Method("GetSegmentIndexAndFraction", [](SplineAddress* thisPtr)
+                    {
+                        return AZStd::make_tuple(thisPtr->m_segmentIndex, thisPtr->m_segmentFraction);
+                    })
+                ;
 
             behaviorContext->Class<PositionSplineQueryResult>()->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
@@ -118,7 +122,6 @@ namespace AZ
                 Property("rayDistance", [](RaySplineQueryResult* thisPtr) { return thisPtr->m_rayDistance; }, nullptr);
 
             behaviorContext->Class<Spline>()->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::RuntimeOwn)->
                 Method("GetNearestAddressRay", &Spline::GetNearestAddressRay)->
                 Method("GetNearestAddressPosition", &Spline::GetNearestAddressPosition)->
