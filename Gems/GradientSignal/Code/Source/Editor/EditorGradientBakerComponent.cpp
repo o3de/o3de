@@ -338,6 +338,16 @@ namespace GradientSignal
         }
     }
 
+    void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
+    void EditorGradientBakerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
     void EditorGradientBakerComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
