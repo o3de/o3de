@@ -106,10 +106,11 @@ namespace AZ::DocumentPropertyEditor
 
             if (entry.m_node->m_parent != nullptr)
             {
-                builder.BeginPropertyEditor<Nodes::Button>();
-                builder.Attribute(Nodes::Button::ButtonText, "-");
+                builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                 builder.CallbackAttribute(
-                    Nodes::PropertyEditor::ChangeNotify,
+                    Nodes::ContainerActionButton::OnActivate,
                     [=]()
                     {
                         for (auto it = entry.m_node->m_parent->m_children.begin(); it != entry.m_node->m_parent->m_children.end(); ++it)
@@ -121,22 +122,21 @@ namespace AZ::DocumentPropertyEditor
                             }
                         }
                         NotifyResetDocument();
-                        return Nodes::PropertyRefreshLevel::None;
                     });
                 builder.EndPropertyEditor();
             }
 
-            builder.BeginPropertyEditor<Nodes::Button>();
-            builder.Attribute(Nodes::Button::ButtonText, "+");
+            builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+            builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+            builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
             builder.CallbackAttribute(
-                Nodes::PropertyEditor::ChangeNotify,
+                Nodes::ContainerActionButton::OnActivate,
                 [=]()
                 {
                     ColorTreeNode child;
                     child.m_parent = entry.m_node;
                     entry.m_node->m_children.push_back(child);
                     NotifyResetDocument();
-                    return Nodes::PropertyRefreshLevel::None;
                 });
             builder.EndPropertyEditor();
 
