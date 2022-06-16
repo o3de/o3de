@@ -14,9 +14,6 @@
 
 namespace O3DE::ProjectManager
 {
-    using ::testing::NiceMock;
-    using ::testing::Return;
-
     class ProjectManagerApplicationTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
     {
@@ -40,6 +37,9 @@ namespace O3DE::ProjectManager
     TEST_F(ProjectManagerApplicationTests, Application_Init_Succeeds)
 #endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
     {
+        using ::testing::NiceMock;
+        using ::testing::Return;
+
         // mock python bindings because those have separate tests and we want
         // to avoid modifying the manifest that other tests may be trying to read
         auto pythonBindings = AZStd::make_unique<NiceMock<MockPythonBindings>>();
