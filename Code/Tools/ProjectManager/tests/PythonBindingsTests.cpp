@@ -35,6 +35,12 @@ namespace O3DE::ProjectManager
         {
             PythonBindings::OnStdError(msg);
         }
+
+        //! override to avoid modifying the manifest
+        bool RemoveInvalidProjects() override
+        {
+            return true;
+        }
     };
 
     class PythonBindingsTests 
@@ -89,7 +95,8 @@ namespace O3DE::ProjectManager
         projectInfo.m_path = QDir::toNativeSeparators(QString(tempDir.GetDirectory()) + "/" + "TestProject");
         projectInfo.m_projectName = "TestProjectName";
 
-        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo);
+        constexpr bool registerProject = false;
+        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo, registerProject);
         EXPECT_TRUE(result.IsSuccess());
 
         ProjectInfo resultProjectInfo = result.GetValue();

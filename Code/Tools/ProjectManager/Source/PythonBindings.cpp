@@ -224,6 +224,7 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
+    using namespace pybind11::literals;
 
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
@@ -733,16 +734,17 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
     {
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
             auto projectPath = QString_To_Py_Path(projectInfo.m_path);
 
             auto createProjectResult = m_engineTemplate.attr("create_project")(
-                projectPath,
-                QString_To_Py_String(projectInfo.m_projectName), // project_path
-                QString_To_Py_Path(projectTemplatePath)          // template_path
+                "project_path"_a = projectPath,
+                "project_name"_a = QString_To_Py_String(projectInfo.m_projectName),
+                "template_path"_a = QString_To_Py_Path(projectTemplatePath),
+                "no_register"_a = !registerProject
             );
             if (createProjectResult.cast<int>() == 0)
             {
