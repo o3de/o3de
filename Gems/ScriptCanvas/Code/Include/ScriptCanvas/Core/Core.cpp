@@ -173,10 +173,7 @@ namespace ScriptCanvas
         runtimeVersion = RuntimeVersion::Current;
         fileVersion = FileVersion::Current;
     }
-}
 
-namespace ScriptCanvasEditor
-{
     SourceHandle::SourceHandle()
         : m_id(AZ::Uuid::CreateNull())
     {}
@@ -230,13 +227,18 @@ namespace ScriptCanvasEditor
         m_relativePath.clear();
     }
 
+    DataPtr SourceHandle::Data() const
+    {
+        return m_data;
+    }
+
     // return a SourceHandle with only the Id and Path, but without a pointer to the data
     SourceHandle SourceHandle::Describe() const
     {
         return SourceHandle(nullptr, m_id, m_absolutePath);
     }
 
-    GraphPtrConst SourceHandle::Get() const
+    ScriptCanvasEditor::GraphPtrConst SourceHandle::Get() const
     {
         return m_data ? m_data->GetEditorGraph() : nullptr;
     }
@@ -256,7 +258,7 @@ namespace ScriptCanvasEditor
         return m_data != nullptr;
     }
 
-    GraphPtr SourceHandle::Mod() const
+    ScriptCanvasEditor::GraphPtr SourceHandle::Mod() const
     {
         return m_data ? m_data->ModEditorGraph() : nullptr;
     }
@@ -319,10 +321,7 @@ namespace ScriptCanvasEditor
             , !m_relativePath.empty() ? m_relativePath.c_str() : "<no name>"
             );
     }
-}
 
-namespace ScriptCanvas
-{
     const Graph* ScriptCanvasData::GetGraph() const
     {
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());

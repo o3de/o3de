@@ -72,6 +72,14 @@ namespace AZ::DocumentPropertyEditor
                         return;
                     }
 
+                    for (const auto& rowAttribute : Nodes::Row::RowAttributes)
+                    {
+                        if (name == rowAttribute.GetName())
+                        {
+                            return;
+                        }
+                    }
+
                     m_builder.Attribute(name, value);
                 });
         }
@@ -179,7 +187,30 @@ namespace AZ::DocumentPropertyEditor
         void VisitObjectBegin([[maybe_unused]] Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes) override
         {
             m_builder.BeginRow();
+
+            for (const auto& attribute : Nodes::Row::RowAttributes)
+            {
+                auto attributeValue = attributes.Find(attribute.GetName());
+                if (!attributeValue.IsNull())
+                {
+                    m_builder.Attribute(attribute, attributeValue);
+                }
+            }
+
             ExtractLabel(attributes);
+            if (access.GetType() == azrtti_typeid<AZStd::string>())
+            {
+                AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
+                VisitValue(
+                    Dom::Utils::ValueFromType(value), attributes,
+                    [&value](const Dom::Value& newValue)
+                    {
+                        value = newValue.GetString();
+                        return newValue;
+                    }, false);
+                return;
+            }
+
             AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::ValueFromType<void*>(access.Get());
             VisitValue(AZ::Dom::Utils::ValueFromType<void*>(access.Get()), attributes, [](const Dom::Value& newValue)
                 {
@@ -258,7 +289,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ReflectionAdapter::GenerateContents() const
+    Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();
         if (m_instance != nullptr)

@@ -347,11 +347,12 @@ namespace EMotionFX
                         // For additive motion, we stores the relative transform.
                         boneTransform = sampleFrameTransformInverse * boneTransform;
                     }
-                    
+
                     SceneAPIMatrixType boneTransformNoScale(boneTransform);
-                    const AZ::Vector3 position = coordSysConverter.ConvertVector3(boneTransform.GetTranslation());
-                    const AZ::Quaternion rotation = coordSysConverter.ConvertQuaternion(AZ::Quaternion::CreateFromMatrix3x4(boneTransformNoScale));
-                    const AZ::Vector3 scale = coordSysConverter.ConvertScale(boneTransformNoScale.ExtractScale());
+                    const AZ::Vector3 scale = boneTransformNoScale.ExtractScale();
+                    const AZ::Transform convertedTransform = AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(boneTransformNoScale));
+                    const AZ::Vector3 position = convertedTransform.GetTranslation();
+                    const AZ::Quaternion rotation = convertedTransform.GetRotation();
                     
                     // Set the pose when this is the first frame.
                     // This is used as optimization so that poses or non-animated submotions do not need any key tracks.
@@ -375,12 +376,13 @@ namespace EMotionFX
 
                 // Set the bind pose transform.
                 SceneAPIMatrixType bindBoneTransformNoScale(bindSpaceLocalTransform);
-                const AZ::Vector3    bindPos   = coordSysConverter.ConvertVector3(bindSpaceLocalTransform.GetTranslation());
                 const AZ::Vector3    bindScale = coordSysConverter.ConvertScale(bindBoneTransformNoScale.ExtractScale());
-                const AZ::Quaternion bindRot   = coordSysConverter.ConvertQuaternion(AZ::Quaternion::CreateFromMatrix3x4(bindBoneTransformNoScale)).GetNormalized();
+                const AZ::Transform convertedbindTransform = AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(bindBoneTransformNoScale));
+                const AZ::Vector3    bindPosition   = convertedbindTransform.GetTranslation();
+                const AZ::Quaternion bindRotation = convertedbindTransform.GetRotation();
 
-                motionData->SetJointBindPosePosition(jointDataIndex, bindPos);
-                motionData->SetJointBindPoseRotation(jointDataIndex, bindRot);
+                motionData->SetJointBindPosePosition(jointDataIndex, bindPosition);
+                motionData->SetJointBindPoseRotation(jointDataIndex, bindRotation);
                 EMFX_SCALECODE
                 (
                     motionData->SetJointBindPoseScale(jointDataIndex, bindScale);

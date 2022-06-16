@@ -30,6 +30,11 @@ namespace Ui
     class View;
 }
 
+namespace ScriptCanvas
+{
+    class SourceHandle;
+}
+
 namespace AzQtComponents
 {
     class StyledBusyLabel;

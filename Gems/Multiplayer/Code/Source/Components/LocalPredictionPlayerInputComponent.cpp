@@ -220,6 +220,7 @@ namespace Multiplayer
                 }
                 else
                 {
+#ifndef AZ_RELEASE_BUILD
                     if (cl_EnableDesyncDebugging && cl_DesyncDebugging_AuditInputs)
                     {
                         // Add to Audit Trail here (server)
@@ -231,6 +232,7 @@ namespace Multiplayer
                                 AZStd::move(inputLogs));
                         }
                     }
+#endif
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
             }
@@ -377,6 +379,7 @@ namespace Multiplayer
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
+#ifndef AZ_RELEASE_BUILD
         if (cl_EnableDesyncDebugging)
         {
             int32_t inputFrameId = 0;
@@ -387,7 +390,6 @@ namespace Multiplayer
 
             AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId), inputFrameId);
 
-#ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
             if (iter != m_predictiveStateHistory.end())
             {
@@ -408,8 +410,8 @@ namespace Multiplayer
             {
                 AZLOG_INFO("Received correction that is too old to diff, increase cl_PredictiveStateHistorySize");
             }
-#endif
         }
+#endif
 
         const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)

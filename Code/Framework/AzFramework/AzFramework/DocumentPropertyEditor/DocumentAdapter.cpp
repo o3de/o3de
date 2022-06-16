@@ -26,7 +26,7 @@ namespace AZ::DocumentPropertyEditor
     {
         if (m_cachedContents.IsNull())
         {
-            m_cachedContents = GenerateContents();
+            m_cachedContents = const_cast<DocumentAdapter*>(this)->GenerateContents();
         }
         return m_cachedContents;
     }
@@ -68,7 +68,12 @@ namespace AZ::DocumentPropertyEditor
         {
             // Otherwise, compare the new contents to the old contents and send the difference as patches.
             Dom::Value newContents = GenerateContents();
-            Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents);
+
+            Dom::DeltaPatchGenerationParameters patchGenerationParams;
+            // Prefer more expensive patch generation that produces fewer replace patches, we want as minimal a GUI
+            // update as possible, as that's the really expensive side of this
+            patchGenerationParams.m_replaceThreshold = Dom::DeltaPatchGenerationParameters::NoReplace;
+            Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);
             m_cachedContents = newContents;
             m_changedEvent.Signal(patches.m_forwardPatches);
         }
@@ -90,7 +95,7 @@ namespace AZ::DocumentPropertyEditor
                 Dom::Utils::ComparisonParameters comparisonParameters;
                 // Because callbacks are often dynamically generated as opaque attributes, only do type-level comparison when validating patches
                 comparisonParameters.m_treatOpaqueValuesOfSameTypeAsEqual = true;
-                const bool valuesMatch = Dom::Utils::DeepCompareIsEqual(actualContents, m_cachedContents, comparisonParameters);
+                [[maybe_unused]] const bool valuesMatch = Dom::Utils::DeepCompareIsEqual(actualContents, m_cachedContents, comparisonParameters);
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }

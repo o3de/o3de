@@ -13,6 +13,7 @@
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <TerrainRenderer/ClipmapBounds.h>
 
@@ -107,7 +108,7 @@ namespace Terrain
         void Reset();
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
-        void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+        void Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         //! Import the clipmap to the frame graph and set scope attachment access,
         //! so that the compute pass can build dependencies accordingly.
@@ -121,12 +122,15 @@ namespace Terrain
         void GetMacroDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
         void GetDetailDispatchThreadNum(uint32_t& outThreadX, uint32_t& outThreadY, uint32_t& outThreadZ) const;
 
+        //! Get the size of the clipmap from config.
+        uint32_t GetClipmapSize() const;
+
         //! Returns if there are clipmap regions requiring update.
         bool HasMacroClipmapUpdate() const;
         bool HasDetailClipmapUpdate() const;
     private:
         //! Update the C++ copy of the clipmap data. And will later be bound to the terrain SRG.
-        void UpdateClipmapData(const AZ::Vector3& cameraPosition);
+        void UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene);
 
         //! Initialzation functions.
         void InitializeClipmapBounds(const AZ::Vector2& center);
@@ -186,6 +190,34 @@ namespace Terrain
             uint32_t m_macroDispatchGroupCountY = 1;
             uint32_t m_detailDispatchGroupCountX = 1;
             uint32_t m_detailDispatchGroupCountY = 1;
+
+            //! Debug data
+            //! Enables debug overlay to indicate clipmap levels.
+            float m_macroClipmapOverlayFactor = 0.0f;
+            float m_detailClipmapOverlayFactor = 0.0f;
+
+            // 0: macro color clipmap
+            // 1: macro normal clipmap
+            // 2: detail color clipmap
+            // 3: detail normal clipmap
+            // 4: detail height clipmap
+            // 5: detail roughness clipmap
+            // 6: detail specularF0 clipmap
+            // 7: detail metalness clipmap
+            // 8: detail occlusion clipmap
+            uint32_t m_debugClipmapId;
+
+            // Which clipmap level to sample from, or texture array index.
+            float m_debugClipmapLevel; // cast to float in CPU
+
+            // Current viewport size.
+            AZStd::array<float, 2> m_viewportSize;
+
+            // How big the clipmap should appear on the screen.
+            float m_debugScale;
+
+            // Multiplier adjustment for final color output.
+            float m_debugBrightness;
         };
 
         ClipmapData m_clipmapData;

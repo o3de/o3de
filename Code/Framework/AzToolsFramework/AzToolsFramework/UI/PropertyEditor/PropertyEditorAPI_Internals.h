@@ -21,6 +21,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 class QWidget;
 class QColor;
@@ -84,6 +85,7 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) = 0;
+        virtual void OnRequestPropertyNotify() = 0;
     };
 
     class PropertyHandlerWidgetInterface;
@@ -191,6 +193,7 @@ namespace AzToolsFramework
             {
                 delete m_widget;
             }
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
 
         QWidget* GetWidget() override
@@ -246,8 +249,11 @@ namespace AzToolsFramework
                 }
             }
 
-            AZ::Dom::Value value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node).value();
-            m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
+            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
+            if (value.has_value())
+            {
+                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+            }
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
 
@@ -301,6 +307,25 @@ namespace AzToolsFramework
             m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
             const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
             PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
+            OnRequestPropertyNotify();
+        }
+
+        void OnRequestPropertyNotify() override
+        {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyRefreshLevel;
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
+            // Trigger ChangeNotify
+            auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(m_domNode);
+            if (changeNotify.IsSuccess())
+            {
+                // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
+                PropertyRefreshLevel value = changeNotify.GetValue();
+                if (value != PropertyRefreshLevel::Undefined && value != PropertyRefreshLevel::None)
+                {
+                    PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(m_domNode, value);
+                }
+            }
         }
 
     private:
@@ -470,6 +495,11 @@ namespace AzToolsFramework
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
         }
 
+        virtual PropertyType* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const
+        {
+            return static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instance, fromId, toId));
+        }
+
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             WidgetType* wid = static_cast<WidgetType*>(widget);
@@ -481,7 +511,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 WriteGUIValuesIntoProperty(idx, wid, *actualCast, node);
             }
@@ -511,7 +541,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {

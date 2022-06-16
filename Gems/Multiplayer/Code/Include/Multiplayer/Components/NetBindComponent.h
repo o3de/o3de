@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Aabb.h>
@@ -89,6 +90,9 @@ namespace Multiplayer
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
+        void SetPrefabEntityId(const PrefabEntityId& prefabEntityId);
+        const AZ::Data::AssetId& GetPrefabAssetId() const;
+        void SetPrefabAssetId(const AZ::Data::AssetId& val);
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
 
@@ -166,10 +170,9 @@ namespace Multiplayer
         ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
-
+        AZ::Data::AssetId m_prefabAssetId;
         // It is important that this component map be ordered, as we walk it to generate serialization ordering
         AZStd::map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
-
         AZStd::vector<MultiplayerComponent*> m_multiplayerSerializationComponentVector;
         AZStd::vector<MultiplayerComponent*> m_multiplayerInputComponentVector;
 

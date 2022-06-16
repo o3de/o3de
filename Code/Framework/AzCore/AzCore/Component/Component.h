@@ -238,7 +238,6 @@ namespace AZ
 
         Entity*     m_entity;       ///< Reference to the entity that owns the component. The value is null if the component is not attached to an entity.
         ComponentId m_id;           ///< A component ID that is unique for an entity. This component ID is not unique across all entities.
-        bool        m_isDeleting;   ///< Flag to prevent access to any member variables to the instance (possibly from other threads) while an instance is being deleted
     };
 
     /**

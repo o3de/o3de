@@ -76,7 +76,7 @@ namespace AZ::DocumentPropertyEditor
         //! These contents will be cached - to notify clients of changes to the structure,
         //! NotifyResetDocument or NotifyContentsChanged must be used.
         //! \see AdapterBuilder for building out this DOM structure.
-        virtual Dom::Value GenerateContents() const = 0;
+        virtual Dom::Value GenerateContents() = 0;
 
         //! Specifies the type of reset operation triggered in NotifyResetDocument.
         enum class DocumentResetType

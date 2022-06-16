@@ -216,10 +216,14 @@
                 "Name": "NewDepthOfFieldCompositeTemplate",
                 "Path": "Passes/NewDepthOfFieldComposite.pass"
             },
-			{
+            {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },
+	    {
+                "Name": "FullscreenShadowTemplate",
+                "Path": "Passes/FullscreenShadow.pass"
+            },            
             {
                 "Name": "LightCullingHeatmapTemplate",
                 "Path": "Passes/LightCullingHeatmap.pass"
