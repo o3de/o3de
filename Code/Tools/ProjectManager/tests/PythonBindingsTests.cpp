@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
         }
 
         //! AZ::Debug::TraceMessageBus
-        bool OnPrintf(const char*, const char* message) override
+        bool OnOutput(const char*, const char* message) override
         {
             m_gatheredMessages.emplace_back(message);
             return true;
@@ -109,7 +109,7 @@ namespace O3DE::ProjectManager
         bool testMessageFound = false;
         bool testErrorFound = false;
         const char* testMessage = "PythonTestMessage%";
-        const char* testError = "PythonTestError%";
+        const char* testError = "ERROR:root:PythonTestError%";
 
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 

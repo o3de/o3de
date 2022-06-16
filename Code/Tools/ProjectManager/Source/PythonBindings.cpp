@@ -239,25 +239,23 @@ namespace O3DE::ProjectManager
 
     void PythonBindings::OnStdOut(const char* msg)
     {
-        AZStd::string message{ msg };
-        // escape % characters by using %% in the format string to avoid crashing
-        AZ::StringFunc::Replace(message, "%", "%%", true /* case sensitive since it is faster */);
-        AZ_TracePrintf("Python", message.c_str());
+        AZ::Debug::Trace::Output("Python", msg);
     }
 
     void PythonBindings::OnStdError(const char* msg)
     {
-        AZStd::string lastPythonError = msg;
+        AZStd::string_view lastPythonError{ msg };
         constexpr const char* pythonErrorPrefix = "ERROR:root:";
         constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
         auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
         if (errorPrefix != AZStd::string::npos)
         {
-            lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
+            lastPythonError = lastPythonError.substr(lengthOfErrorPrefix, lastPythonError.length() - lengthOfErrorPrefix);
         }
-        O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
-        OnStdOut(msg);
+        PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+
+        AZ::Debug::Trace::Output("Python", msg);
     }
 
     bool PythonBindings::PythonStarted()
@@ -347,10 +345,7 @@ namespace O3DE::ProjectManager
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
-        else
-        {
-            AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
-        }
+
         return !PyErr_Occurred();
     }
 
