@@ -52,7 +52,14 @@ namespace ScriptCanvas
 
         if (!handle.Get())
         {
-            auto loadResult = LoadFromFile(handle.Path().c_str());
+            auto fullPathHandleOptional = ScriptCanvasEditor::GetFullPath(handle);
+            if (!fullPathHandleOptional)
+            {
+                return AZ::Failure(AZStd::string::format("Failure to determine the full, absolute path for relative path: %s"
+                    , handle.Path().Native()));
+            }
+
+            auto loadResult = LoadFromFile((*fullPathHandleOptional).Native());
             if (!loadResult)
             {
                 return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
