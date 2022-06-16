@@ -34,13 +34,15 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
 
+        //! Enables or disables in-Editor preview of navigation mesh without entering game mode.
+        //! @param enable if true, the preview will be enabled
+        void SetEditorPreview(bool enable);
+
         void OnAutoUpdateChanged();
 
         void OnEditorUpdateTick();
 
     private:
         AZ::ScheduledEvent m_inEditorUpdateTick{ [this]() {OnEditorUpdateTick(); }, AZ::Name("EditorRecastNavigationMeshTick") };
-
-        friend class EditorNavigationTest;
     };
 } // namespace RecastNavigation

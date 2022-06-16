@@ -205,4 +205,9 @@ namespace RecastNavigation
     {
         m_controller.UpdateNavigationMeshAsync();
     }
+
+    void EditorRecastNavigationMeshComponent::SetEditorPreview(bool enable)
+    {
+        m_controller.m_configuration.m_enableEditorPreview = enable;
+    }
 } // namespace RecastNavigation

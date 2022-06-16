@@ -13,7 +13,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
-#include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/Mocks/MockITime.h>
@@ -139,7 +138,7 @@ namespace RecastNavigation
             e.CreateComponent<EditorDetourNavigationComponent>();
 
             m_editorRecastNavigationMeshComponent = e.CreateComponent<EditorRecastNavigationMeshComponent>(RecastNavigationMeshConfig{});
-            m_editorRecastNavigationMeshComponent->m_controller.m_configuration.m_enableEditorPreview = true;
+            m_editorRecastNavigationMeshComponent->SetEditorPreview(true);
         }
 
         void SetupNavigationMesh()
@@ -222,7 +221,7 @@ namespace RecastNavigation
 
         void SetEditorMeshConfig(EditorRecastNavigationMeshComponent* component, bool autoUpdate)
         {
-            component->m_controller.m_configuration.m_enableEditorPreview = autoUpdate;
+            component->SetEditorPreview(autoUpdate);
 
             component->OnAutoUpdateChanged();
         }
