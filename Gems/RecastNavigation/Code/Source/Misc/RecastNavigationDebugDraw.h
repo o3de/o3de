@@ -9,9 +9,10 @@
 #pragma once
 
 #include <DebugDraw.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
-#include <Misc/RecastHelpers.h>
-#include <Misc/RecastSmartPointer.h>
+#include <RecastNavigation/RecastHelpers.h>
+#include <RecastNavigation/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {
@@ -36,7 +37,10 @@ namespace RecastNavigation
         void end() override;
         //! @}
 
-    protected:        
+        //! Limit debug draw to a specified volume.
+        void SetViewableAabb(const AZ::Aabb& viewAabb);
+
+    protected:
         duDebugDrawPrimitives m_currentPrim = DU_DRAW_POINTS;
 
         //! Vertices with color information.
@@ -46,5 +50,10 @@ namespace RecastNavigation
 
         //! Recast debug draw is quite noisy with lines, disabling them by default.
         bool m_drawLines = false;
+
+        //! Only draw debug view within this volume.
+        AZ::Aabb m_viewAabb = AZ::Aabb::CreateFromMinMax(
+            -AZ::Vector3(AZ::Constants::FloatMax),
+            AZ::Vector3(AZ::Constants::FloatMax));
     };
 } // namespace RecastNavigation

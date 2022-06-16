@@ -26,12 +26,9 @@
 #include <EMotionFX/Pipeline/SceneAPIExt/Groups/ActorGroup.h>
 #include <Integration/System/SystemCommon.h>
 
-#include <GFxFramework/MaterialIO/Material.h>
-
 #include <Tests/Matchers.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <AzTest/Utils.h>
-
 
 namespace EMotionFX
 {

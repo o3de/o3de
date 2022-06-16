@@ -741,6 +741,8 @@ namespace AZ
         class IDataContainer
         {
         public:
+            AZ_TYPE_INFO(IDataContainer, "{8565CBEA-C077-4A49-927B-314533A6EDB1}");
+
             typedef AZStd::function< bool (void* /* instance pointer */, const Uuid& /*elementClassId*/, const ClassData* /* elementGenericClassData */, const ClassElement* /* genericClassElement */) > ElementCB;
             typedef AZStd::function< bool(const Uuid& /*elementClassId*/, const ClassElement* /* genericClassElement */) > ElementTypeCB;
             virtual ~IDataContainer() {}
@@ -755,6 +757,7 @@ namespace AZ
                 virtual void    FreeKey(void* key) = 0;
 
             public:
+                AZ_TYPE_INFO(IAssociativeDataContainer, "{58CF6250-6B0F-4A25-9864-25A64EB55DB1}");
                 virtual ~IAssociativeDataContainer() {}
 
                 struct KeyPtrDeleter
@@ -1067,8 +1070,8 @@ namespace AZ
             ErrorHandler*                   m_errorHandler;         ///< Optional user error handler.
             const SerializeContext*         m_context;              ///< Serialize context containing class reflection required for data traversal.
 
-            IDataContainer::ElementCB       m_elementCallback;      // Pre-bound functor computed internally to avoid allocating closures during traversal.
-            ErrorHandler                    m_defaultErrorHandler;  // If no custom error handler is provided, the context provides one.
+            IDataContainer::ElementCB       m_elementCallback;      ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            ErrorHandler                    m_defaultErrorHandler;  ///< If no custom error handler is provided, the context provides one.
         };
 
         /// Find a class data (stored information) based on a class ID and possible parent class data.

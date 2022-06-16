@@ -32,6 +32,9 @@ namespace AZ
             static bool ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
             static void Reflect(ReflectContext* context);
 
+            EditorMaterialComponentSlot() = default;
+            EditorMaterialComponentSlot(const AZ::EntityId& entityId, const MaterialAssignmentId& materialAssignmentId);
+
             //! Get cached preview image as a buffer to use as an RPE attribute
             //! If a cached image isn't avalible then a request will be made to render one
             AZStd::vector<char> GetPreviewPixmapData() const;

@@ -33,6 +33,16 @@ namespace AZ::DocumentPropertyEditor
             });
     }
 
+    void AdapterBuilder::AddMessageHandler(DocumentAdapter* adapter, AZ::Name messageName, const Dom::Value& contextData)
+    {
+        BoundAdapterMessage boundMessage;
+        boundMessage.m_adapter = adapter;
+        boundMessage.m_messageName = messageName;
+        boundMessage.m_messageOrigin = GetCurrentPath();
+        boundMessage.m_contextData = contextData;
+        Attribute(messageName, boundMessage.MarshalToDom());
+    }
+
     Dom::Path AdapterBuilder::GetCurrentPath() const
     {
         return m_currentPath;

@@ -15,7 +15,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -98,16 +97,6 @@ namespace PhysX
                       &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                       AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
               })
-        , m_onMaterialLibraryChangedEventHandler(
-              [this](const AZ::Data::AssetId& defaultMaterialLibrary)
-              {
-                  m_colliderConfig->m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
-                  Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
-                  AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                      &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                      AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-              })
     {
         // By default, disable heightfield collider debug drawing. This doesn't need to be viewed in the common case.
         m_colliderDebugDraw.SetDisplayFlag(false);
@@ -159,6 +148,14 @@ namespace PhysX
         m_heightfieldCollider.reset();
     }
 
+    void EditorHeightfieldColliderComponent::BlockOnPendingJobs()
+    {
+        if (m_heightfieldCollider)
+        {
+            m_heightfieldCollider->BlockOnPendingJobs();
+        }
+    }
+
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
@@ -180,17 +177,12 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
-            {
-                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
-            }
         }
     }
 
     // AzToolsFramework::EntitySelectionEvents
     void EditorHeightfieldColliderComponent::OnDeselected()
     {
-        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 

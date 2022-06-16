@@ -171,6 +171,48 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder(WidgetType* widget) override { return widget; }
         void UpdateWidgetInternalTabbing(WidgetType* /*widget*/) override {}
 
+        void RegisterDpeHandler() override
+        {
+            AZ_Assert(m_registeredDpeHandlerId == nullptr, "RegisterDpeHandler called multiple times for the same handler");
+
+            auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            if (dpeSystemInterface == nullptr)
+            {
+                AZ_WarningOnce("dpe", false, "RegisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                return;
+            }
+
+            using HandlerType = RpePropertyHandlerWrapper<void*>;
+            PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
+            registrationInfo.m_name = HandlerType::GetHandlerName(*this);
+            registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+            {
+                return HandlerType::ShouldHandleNode(*this, node);
+            };
+            registrationInfo.m_factory = [this]()
+            {
+                return AZStd::make_unique<HandlerType>(*this);
+            };
+            registrationInfo.m_isDefaultHandler = this->IsDefaultHandler();
+            m_registeredDpeHandlerId = dpeSystemInterface->RegisterHandler(AZStd::move(registrationInfo));
+        }
+
+        // unregisters this handler from the DocumentPropertyEditor
+        void UnregisterDpeHandler() override
+        {
+            AZ_Assert(m_registeredDpeHandlerId != nullptr, "UnregisterDpeHandler called for a handler that's not registered");
+
+            auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            if (dpeSystemInterface == nullptr)
+            {
+                AZ_WarningOnce("dpe", false, "UnregisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                return;
+            }
+
+            dpeSystemInterface->UnregisterHandler(m_registeredDpeHandlerId);
+            m_registeredDpeHandlerId = nullptr;
+        }
+
         QWidget* CreateGUI(QWidget *pParent) override = 0;
     protected:
         bool HandlesType(const AZ::Uuid& id) const override
@@ -213,6 +255,7 @@ namespace AzToolsFramework
 
         // Needed since GetHandledType returns a reference
         AZ::Uuid nullUuid = AZ::Uuid::CreateNull();
+        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 
     // your components talk to the property manager in this way:

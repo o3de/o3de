@@ -321,16 +321,17 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{E6D6DBB9-38FA-560E-B328-B40DE06FBE95}"
-                                                                },
-                                                                "assetHint": "levels/physics/c15096735_materials_defaultlibraryconsistency/c15096735_materials_defaultlibraryconsistency.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{7D4BE734-81B5-4271-B41B-340F4D77F3D0}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{7EA5B740-C52F-5D74-B762-11265A8A96DF}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_defaultlibraryconsistentonallfeatures/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -360,16 +361,17 @@
                                                     [
                                                         {
                                                             "Visible": true,
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{E6D6DBB9-38FA-560E-B328-B40DE06FBE95}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c15096735_materials_defaultlibraryconsistency/c15096735_materials_defaultlibraryconsistency.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{7D4BE734-81B5-4271-B41B-340F4D77F3D0}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{7EA5B740-C52F-5D74-B762-11265A8A96DF}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_defaultlibraryconsistentonallfeatures/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -391,10 +393,17 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.022891199216246606,
+                                                            0.022891199216246605,
                                                             0.03267350047826767,
-                                                            0.0029446000698953869
+                                                            0.0029446000698953867
                                                         ],
+                                                        "MaterialSlots": {
+                                                            "Slots": [
+                                                                {
+                                                                    "Name": "Entire object"
+                                                                }
+                                                            ]
+                                                        },
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
