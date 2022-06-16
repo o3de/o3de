@@ -224,8 +224,6 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
-    using namespace pybind11::literals;
-
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {
@@ -245,12 +243,10 @@ namespace O3DE::ProjectManager
     void PythonBindings::OnStdError(const char* msg)
     {
         AZStd::string_view lastPythonError{ msg };
-        constexpr const char* pythonErrorPrefix = "ERROR:root:";
-        constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
-        auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
-        if (errorPrefix != AZStd::string::npos)
+        if (constexpr AZStd::string_view pythonErrorPrefix = "ERROR:root:";
+            lastPythonError.starts_with(pythonErrorPrefix))
         {
-            lastPythonError = lastPythonError.substr(lengthOfErrorPrefix, lastPythonError.length() - lengthOfErrorPrefix);
+            lastPythonError = lastPythonError.substr(pythonErrorPrefix.size());
         }
 
         PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
@@ -731,6 +727,8 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
     {
+        using namespace pybind11::literals;
+
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
             auto projectPath = QString_To_Py_Path(projectInfo.m_path);
