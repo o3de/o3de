@@ -478,12 +478,12 @@ namespace AzToolsFramework
 
     static bool WrapCursorX(const QRect& rect, QPoint& point)
     {
-        if (point.x() < rect.left())
+        if (point.x() < rect.left() + 1)
         {
-            point.setX(rect.right() - 1);
+            point.setX(rect.right() - 2);
             return true;
         }
-        else if (point.x() > rect.right())
+        else if (point.x() > rect.right() - 1)
         {
             point.setX(rect.left() + 1);
             return true;
@@ -494,12 +494,12 @@ namespace AzToolsFramework
 
     static bool WrapCursorY(const QRect& rect, QPoint& point)
     {
-        if (point.y() < rect.top())
+        if (point.y() < rect.top() + 1)
         {
-            point.setY(rect.bottom() - 1);
+            point.setY(rect.bottom() - 2);
             return true;
         }
-        else if (point.y() > rect.bottom())
+        else if (point.y() > rect.bottom() - 1)
         {
             point.setY(rect.top() + 1);
             return true;
@@ -512,7 +512,7 @@ namespace AzToolsFramework
     {
         const QPoint cursorDelta = globalCursorPosition - m_previousGlobalCursorPosition;
         const QRect widgetRect(m_sourceWidget->mapToGlobal(QPoint(0, 0)), m_sourceWidget->size());
-
+   /*     AZ_Printf("debug", "initial cursor delta: x:%d y:%d \n", cursorDelta.x(), cursorDelta.y());*/
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition =
             WidgetPositionToNormalizedPosition(m_sourceWidget->mapFromGlobal(globalCursorPosition));
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta = WidgetPositionToNormalizedPosition(cursorDelta);
@@ -548,11 +548,20 @@ namespace AzToolsFramework
 
                 if (wrapped)
                 {
+                    //m_previousGlobalCursorPosition = screenPos;
                     AzQtComponents::SetCursorPos(screenPos);
+                    AZ_Printf("debug", "wrapped: x:%d y:%d \n", screenPos.x(), screenPos.y());
                 }
-
-                const QPoint screenDelta = globalCursorPosition - screenPos;
-                m_previousGlobalCursorPosition = globalCursorPosition - screenDelta;
+                else
+                {
+                    const QPoint screenDelta = globalCursorPosition - screenPos;
+                    m_previousGlobalCursorPosition = globalCursorPosition - screenDelta;
+                    
+                   
+                }
+                //AZ_Printf("debug", "previousGlobalCursorPosiion: x:%d y:%d \n", m_previousGlobalCursorPosition.x(), m_previousGlobalCursorPosition.y());
+                //AZ_Printf("debug", "globalCursorPosition: x:%d y:%d \n", globalCursorPosition.x(), globalCursorPosition.y());
+                AZ_Printf("debug", "screenPos: x:%d y:%d \n", screenPos.x(), screenPos.y());
             }
             break;
         case CursorInputMode::CursorModeNone:
