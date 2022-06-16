@@ -429,11 +429,6 @@ MainWindow::~MainWindow()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
-    if (m_toolbarManager)
-    {
-        delete m_toolbarManager;
-    }
-
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -442,6 +437,14 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
+    
+    if (!IsNewActionManagerEnabled())
+    {
+        delete m_levelEditorMenuHandler;
+        delete m_toolbarManager;
+        delete m_actionManager;
+        delete m_shortcutDispatcher;
+    }
 }
 
 void MainWindow::InitCentralWidget()
