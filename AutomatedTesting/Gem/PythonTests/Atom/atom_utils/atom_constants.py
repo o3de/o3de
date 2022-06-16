@@ -139,11 +139,13 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Actor',
+            'Actor asset': 'Actor asset',
         }
         return properties[property]
 
@@ -316,6 +318,31 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Camera Entity' an EditorEntity.id reference to the Camera component required for this effect.
             Must be a different entity than the one which hosts Depth of Field component.\n
+          - 'CameraEntityId Override' Override enable for CameraEntityId, (bool, default true).
+          - 'Enabled Override' Override enable for Enabled, (bool, default true).
+          - 'QualityLevel Override' Override enable for QualityLevel, (bool, default true).
+          - 'ApertureF Override' Override factor for ApertureF, (float, 0.0 to default 1.0).
+          - 'FocusDistance Override' Override factor for Focus Distance, (float, 0.0 to default 1.0).
+          - 'EnableAutoFocus Override' Override enable for EnableAutoFocus, (bool, default true).
+          - 'AutoFocusScreenPosition Override' Override enable for AutoFocusScreenPosition, (float, 0.0 to default 1.0).
+          - 'AutoFocusSensitivity Override' Override enable for AutoFocusSensitivity, (float, 0.0 to default 1.0).
+          - 'AutoFocusSpeed Override' Override enable for AutoFocusSpeed, (float, 0.0 to default 1.0).
+          - 'AutoFocusDelay Override' Override enable for AutoFocusDelay, (float, 0.0 to default 1.0).
+          - 'EnableDebugColoring Override' Override enable for EnableDebugColoring, (bool, default true).
+          - 'Enable Depth of Field' Enables or disables depth of field, (bool, default false).
+          - 'Quality Level' 0 or 1, 0 is standard Bokeh blur, 1 is high quality Bokeh blur (int, 0 or 1, default is 1).
+          - 'Aperture F' The higher the value the larger the aperture opening, (float, 0.0 to default 0.5).
+          - 'F Number' The ratio of the system's focal length to the diameter of the aperture.
+          - 'Focus Distance' The distance from the camera to the focused object (float, 0.0 to default 100.0).
+          - 'Enable Auto Focus' Enables or disables auto focus (bool, default true).
+          - 'Focus Screen Position' XY value of the focus position on screen for autofocus (math.Vector2(float x, float
+           y) where ranges are 0.0 to 1.0).\n
+          - 'Auto Focus Sensitivity' Higher value is more responsive, lower needs greater distance depth to refocus,
+             range 0.0 to 1.0.
+          - 'Auto Focus Speed' Distance that focus moves per second, normalizing the distance from view near to view far
+            at the value of 1, range 0.0 to 2.0.
+          - 'Auto Focus Delay' Specifies a delay time for focus to shift from one target to another, range 0.0 to 1.0.
+          - 'Enable Debug Color' Enables or disables debug color overlay, (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -323,6 +350,28 @@ class AtomComponentProperties:
             'name': 'DepthOfField',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
+            'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'QualityLevel Override': 'Controller|Configuration|Overrides|QualityLevel Override',
+            'ApertureF Override': 'Controller|Configuration|Aperture F',
+            'FocusDistance Override': 'Controller|Configuration|Overrides|FocusDistance Override',
+            'EnableAutoFocus Override': 'Controller|Configuration|Overrides|EnableAutoFocus Override',
+            'AutoFocusScreenPosition Override': 'Controller|Configuration|Overrides|AutoFocusScreenPosition Override',
+            'AutoFocusSensitivity Override': 'Controller|Configuration|Overrides|AutoFocusSensitivity Override',
+            'AutoFocusSpeed Override': 'Controller|Configuration|Overrides|AutoFocusSpeed Override',
+            'AutoFocusDelay Override': 'Controller|Configuration|Overrides|AutoFocusDelay Override',
+            'EnableDebugColoring Override': 'Controller|Configuration|Overrides|EnableDebugColoring Override',
+            'Enable Depth of Field': 'Controller|Configuration|Enable Depth of Field',
+            'Quality Level': 'Controller|Configuration|Quality Level',
+            'Aperture F': 'Controller|Configuration|Aperture F',
+            'F Number': 'Controller|Configuration|F Number',
+            'Focus Distance': 'Controller|Configuration|Focus Distance',
+            'Enable Auto Focus': 'Controller|Configuration|Auto Focus|Enable Auto Focus',
+            'Focus Screen Position': 'Controller|Configuration|Auto Focus|Focus Screen Position',
+            'Auto Focus Sensitivity': 'Controller|Configuration|Auto Focus|Auto Focus Sensitivity',
+            'Auto Focus Speed': 'Controller|Configuration|Auto Focus|Auto Focus Speed',
+            'Auto Focus Delay': 'Controller|Configuration|Auto Focus|Auto Focus Delay',
+            'Enable Debug Color': 'Controller|Configuration|Debugging|Enable Debug Color'
         }
         return properties[property]
 
@@ -513,14 +562,41 @@ class AtomComponentProperties:
         """
         Grid component properties.
           - 'Grid Size': The size of the grid, default value is 32
-          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
+          - 'Axis Color': Sets color of the grid axis using azlmbr.math.Color tuple, default value is 0,0,255 (blue)
+          - 'Primary Grid Spacing': Amount of space between grid lines, default value is 1.0
+          - 'Primary Color': Sets color of the primary grid lines using azlmbr.math.Color tuple,
+             default value is 64,64,64 (dark grey)
+          - 'Secondary Grid Spacing': Amount of space between sub-grid lines, default value is 0.25
+          - 'Secondary Color': Sets color of the secondary grid lines using azlmbr.math.Color tuple,
+             default value is 128,128,128 (light grey)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
             'Grid Size': 'Controller|Configuration|Grid Size',
+            'Axis Color': 'Controller|Configuration|Axis Color',
+            'Primary Grid Spacing': 'Controller|Configuration|Primary Grid Spacing',
+            'Primary Color': 'Controller|Configuration|Primary Color',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
+            'Secondary Color': 'Controller|Configuration|Secondary Color',
+        }
+        return properties[property]
+
+    @staticmethod
+    def hair(property: str = 'name') -> str:
+        """
+        Atom Hair component properties. Requires Actor component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Hair Asset' Asset.id of the hair TressFX asset.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Atom Hair',
+            'requires': [AtomComponentProperties.actor()],
+            'Hair Asset': 'Controller|Configuration|Hair Asset',
         }
         return properties[property]
 
@@ -879,11 +955,43 @@ class AtomComponentProperties:
         SSAO component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable SSAO' toggles the overall function of Screen Space Ambient Occlusion (bool)
+          - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
+          - 'Sampling Radius' (float 0.0 to 0.25, default 0.05)
+          - 'Enable Blur' toggles the blur feature of SSAO (bool)
+          - 'Blur Strength' (float 0.0 to 1.0 default 0.85)
+          - 'Blur Edge Threshold' (float default 0.0 to 1.0)
+          - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
+          - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
+          - 'Enabled Override' toggles a collection of override values (bool)
+          - 'Strength Override' (float 0.0 to default 1.0)
+          - 'SamplingRadius Override' (float 0.0 to default 1.0)
+          - 'EnableBlur Override' toggles blur overrides (bool)
+          - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffStrength Override' (float 0.0 to default 1.0)
+          - 'EnableDownsample Override' toggles override for enable downsampling (bool)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'SSAO',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable SSAO': 'Controller|Configuration|Enable SSAO',
+            'SSAO Strength': 'Controller|Configuration|SSAO Strength',
+            'Sampling Radius': 'Controller|Configuration|Sampling Radius',
+            'Enable Blur': 'Controller|Configuration|Enable Blur',
+            'Blur Strength': 'Controller|Configuration|Blur Strength',
+            'Blur Edge Threshold': 'Controller|Configuration|Blur Edge Threshold',
+            'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
+            'Enable Downsample': 'Controller|Configuration|Enable Downsample',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'SamplingRadius Override': 'Controller|Configuration|Overrides|SamplingRadius Override',
+            'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
+            'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
+            'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
+            'BlurDepthFalloffThreshold Override': 'Controller|Configuration|Overrides|BlurDepthFalloffThreshold Override',
+            'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]

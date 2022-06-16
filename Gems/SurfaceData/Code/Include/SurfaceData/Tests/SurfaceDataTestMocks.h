@@ -248,7 +248,8 @@ namespace UnitTest
             UpdateEntry(handle, entry, m_modifiers);
         }
 
-        void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
+        void RefreshSurfaceData([[maybe_unused]] const SurfaceData::SurfaceDataRegistryHandle& providerHandle,
+            [[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
         }
 

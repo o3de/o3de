@@ -41,6 +41,8 @@ set(FILES
     Source/TerrainRenderer/ClipmapBounds.h
     Source/TerrainRenderer/Passes/TerrainClipmapComputePass.cpp
     Source/TerrainRenderer/Passes/TerrainClipmapComputePass.h
+    Source/TerrainRenderer/Passes/TerrainClipmapDebugPass.cpp
+    Source/TerrainRenderer/Passes/TerrainClipmapDebugPass.h
     Source/TerrainRenderer/TerrainClipmapManager.cpp
     Source/TerrainRenderer/TerrainClipmapManager.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp

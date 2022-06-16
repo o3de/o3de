@@ -14,13 +14,13 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
+#include <AtomToolsFramework/GraphView/GraphViewConfig.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
 #include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
-#include <MaterialCanvasUtil.h>
 
 #include <QTranslator>
 #endif
@@ -38,7 +38,7 @@ namespace MaterialCanvas
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialCanvasMainWindow(
-            const AZ::Crc32& toolId, const CreateNodePaletteItemsCallback& createNodePaletteItemsCallback, QWidget* parent = 0);
+            const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
         ~MaterialCanvasMainWindow();
 
     protected:
@@ -61,6 +61,7 @@ namespace MaterialCanvas
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
+        AtomToolsFramework::GraphViewConfig m_graphViewConfig;
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;

@@ -479,8 +479,10 @@ void MainWindow::Activate()
 
     settings.beginGroup("Options");
     bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
+    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
     settings.endGroup();
 
+    // zero analysis flag
     QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
     {
@@ -494,13 +496,32 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
     ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
+
+    // output debug flag
+    QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
+        [this](int newCheckState)
+        {
+            bool newOption = newCheckState == Qt::Checked ? true : false;
+            m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(newOption);
+            QSettings settingsInCallback;
+            settingsInCallback.beginGroup("Options");
+            settingsInCallback.setValue("EnableBuilderDebugFlag", QVariant(newOption));
+            settingsInCallback.endGroup();
+        });
+
+    m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
+    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
 {
     if (selected.size() > 0)
     {
-        const auto& proxyIndex = selected.indexes().at(0);
+        const auto proxyIndex = selected.indexes().at(0);
+        if (!proxyIndex.isValid())
+        {
+            return;
+        }
         const auto& index = m_builderListSortFilterProxy->mapToSource(proxyIndex);
 
         AssetProcessor::BuilderInfoList builders;

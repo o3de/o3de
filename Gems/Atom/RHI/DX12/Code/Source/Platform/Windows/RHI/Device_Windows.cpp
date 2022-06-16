@@ -491,6 +491,9 @@ namespace AZ
             }
 
             SetDeviceRemoved();
+
+            // Assert before continuing so users have a chance to inspect the TDR before the log output gets burried under the ensuing RHI errors
+            AZ_Assert(false, "GPU device lost!");
         }
 
         void HandleDeviceRemoved(PVOID context, BOOLEAN)
