@@ -10,28 +10,15 @@
 #include <EditorModeFeedbackFeatureProcessor.h>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <Atom/Utils/Utils.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AZ
 {
     namespace Render
     {
-        // Creates the material for the mask pass shader
-        static Data::Instance<RPI::Material> CreateMaskMaterial()
-        {
-            const AZStd::string path = "shaders/editormodemask.azmaterial";
-            const auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
-            const auto maskMaterial = RPI::Material::FindOrCreate(materialAsset);
-            return maskMaterial;
-        }
-
         void EditorModeFeedbackSystemComponent::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -68,13 +55,8 @@ namespace AZ
             }
 
             AzToolsFramework::Components::EditorComponentBase::Activate();
-            AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-            AZ::TickBus::Handler::BusConnect();
-
             AZ::Interface<EditorModeFeedbackInterface>::Register(this);
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<EditorModeFeatureProcessor>();
-            auto* passSystem = RPI::PassSystemInterface::Get();
-            AZ_Assert(passSystem, "Cannot get the pass system.");
         }
 
         void EditorModeFeedbackSystemComponent::Deactivate()
@@ -84,48 +66,18 @@ namespace AZ
                 return;
             }
 
-            AZ::TickBus::Handler::BusDisconnect();
-            AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
-
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<EditorModeFeatureProcessor>();
             AZ::Interface<EditorModeFeedbackInterface>::Unregister(this);
         }
 
         bool EditorModeFeedbackSystemComponent::IsEnabled() const
         {
-            return m_enabled && m_registeryEnabled;
+            return m_registeryEnabled;
         }
 
-        void EditorModeFeedbackSystemComponent::OnEditorModeActivated(
-            [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
-            AzToolsFramework::ViewportEditorMode mode)
-        {
-            // Purge the draw packets for all registered 
-            if (mode == AzToolsFramework::ViewportEditorMode::Focus)
-            {
-                if (auto* focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
-                {
-                    m_enabled = true;
-                }
-                else
-                {
-                    m_enabled = false;
-                }
-            }
-        }
-
-        void EditorModeFeedbackSystemComponent::OnEditorModeDeactivated(
-            [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
-            AzToolsFramework::ViewportEditorMode mode)
-        {
-            if (mode == AzToolsFramework::ViewportEditorMode::Focus)
-            {
-                m_focusedEntities.clear();
-                m_enabled = false;
-            }
-        }
-
+        /*
+       
         void EditorModeFeedbackSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             if (!IsEnabled())
@@ -169,5 +121,6 @@ namespace AZ
         {
             return AZ::TICK_PRE_RENDER;
         }
+        */
     } // namespace Render
 } // namespace AZ

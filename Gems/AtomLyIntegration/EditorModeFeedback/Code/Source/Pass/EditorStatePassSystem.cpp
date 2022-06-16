@@ -297,7 +297,7 @@ namespace AZ::Render
         passSystem->LoadPassTemplateMappings("Passes/State/EditorModeFeedback_StatePassTemplates.azasset");
     }
 
-    void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline) const
+    void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline)
     {
         auto mainParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
         mainParentPassTemplate->m_name = Name("EditorModeFeedbackParentTemplate");
@@ -320,8 +320,8 @@ namespace AZ::Render
         }
 
         // Entity mask passes
-        const auto maskPassTemplates = CreateMaskPassTemplatesFromStateParentPasses(m_editorStateParentPasses);
-        for (const auto& drawList : maskPassTemplates)
+        m_masks = CreateMaskPassTemplatesFromStateParentPasses(m_editorStateParentPasses);
+        for (const auto& drawList : m_masks)
         {
             RPI::PassRequest pass;
             pass.m_passName = GetMaskPassNameForDrawList(drawList);

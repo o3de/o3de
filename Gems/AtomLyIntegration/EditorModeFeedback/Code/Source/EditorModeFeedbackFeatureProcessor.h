@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Draw/EditorStateMaskRenderer.h>
 #include <Pass/EditorStatePassSystem.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
@@ -31,13 +32,22 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
             void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
+            void Render(const RenderPacket&) override;
+
+            // RPI::SceneNotificationBus overrides ...
+            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
+            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
         private:
-            //! Cache the pass request data for creating an editor mode feedback parent pass.
-            AZ::Data::Asset<AZ::RPI::AnyAsset> m_parentPassRequestAsset;
+            void InitPasses(RPI::RenderPipeline* renderPipeline);
 
             //!
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
+
+            AZStd::unordered_map<Name, EditorStateMaskRenderer> m_maskRenderers;
+
+            //! Material for sending draw packets to the entity mask pass.
+            Data::Instance<RPI::Material> m_maskMaterial = nullptr;
         };
     } // namespace Render
 } // namespace AZ

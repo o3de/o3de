@@ -18,12 +18,14 @@ namespace AZ::Render
     class EditorStateMaskRenderer
     {
     public:
-        void RenderMaskEntities(const EntityMaskMap& entityMaskMap);
+        EditorStateMaskRenderer(Name name, Data::Instance<RPI::Material> maskMaterial);
+        void RenderMaskEntities(const AzToolsFramework::EntityIdSet& entityIds);
     private:
-        //!
-        using DrawableMeshEntityMap = AZStd::unordered_map<EntityId, DrawableMeshEntity>;
 
         //!
-        AZStd::unordered_map<Name, DrawableMeshEntityMap> m_drawableEntityMaskMap;
+        AZStd::unordered_map<EntityId, DrawableMeshEntity> m_drawableEntities;
+
+        Name m_drawTag;
+        Data::Instance<RPI::Material> m_maskMaterial = nullptr;
     };
 } // namespace AZ::Render

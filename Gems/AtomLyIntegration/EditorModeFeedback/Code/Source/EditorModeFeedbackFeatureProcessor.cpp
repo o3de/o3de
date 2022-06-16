@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/Utils/Utils.h>
 
 namespace AZ
 {
@@ -21,6 +22,15 @@ namespace AZ
         namespace
         {
             const char* const Window = "EditorModeFeedback";
+        }
+
+        // Creates the material for the mask pass shader
+        static Data::Instance<RPI::Material> CreateMaskMaterial()
+        {
+            const AZStd::string path = "shaders/editormodemask.azmaterial";
+            const auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
+            const auto maskMaterial = RPI::Material::FindOrCreate(materialAsset);
+            return maskMaterial;
         }
 
         void EditorModeFeatureProcessor::Reflect(ReflectContext* context)
@@ -35,6 +45,11 @@ namespace AZ
         {
             EnableSceneNotification();
 
+            if (!m_maskMaterial)
+            {
+                m_maskMaterial = CreateMaskMaterial();
+            }
+
             EditorStateParentPassList editorStatePasses;
             editorStatePasses.push_back(AZStd::make_unique<FocusedEntityParentPass>());
             editorStatePasses.push_back(AZStd::make_unique<SelectedEntityParentPass>());
@@ -45,12 +60,52 @@ namespace AZ
         {
             m_editorStatePassSystem.reset();
             DisableSceneNotification();
-            m_parentPassRequestAsset.Reset();
+        }
+
+        void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        {
+            InitPasses(pipeline.get());
+            
+        }
+
+        void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+        {
+            InitPasses(renderPipeline);
+        }
+
+        void EditorModeFeatureProcessor::InitPasses(RPI::RenderPipeline* renderPipeline)
+        {
+            RPI::PassFilter tintPassFilter = RPI::PassFilter::CreateWithPassName(Name("EditorModeFeedbackPassParent"), renderPipeline);
+            RPI::Ptr<RPI::Pass> tintPass = RPI::PassSystemInterface::Get()->FindFirstPass(tintPassFilter);
+            if (tintPass)
+            {
+                auto foo = azdynamic_cast<RPI::ParentPass*>(tintPass.get());
+                AZ_Printf("", "%zu", reinterpret_cast<std::uintptr_t>(foo));
+            }
         }
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
         {
             m_editorStatePassSystem->AddPassesToRenderPipeline(renderPipeline);
+
+            for (const auto& mask : m_editorStatePassSystem->GetMasks())
+            {
+                m_maskRenderers.emplace(
+                    AZStd::piecewise_construct, AZStd::forward_as_tuple(mask), AZStd::forward_as_tuple(mask, m_maskMaterial));
+            }
+        }
+
+        void EditorModeFeatureProcessor::Render(const RenderPacket&)
+        {
+            const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStatePasses();
+            for (const auto& [mask, entities] : entityMaskMap)
+            {
+                if(auto it = m_maskRenderers.find(mask);
+                    it != m_maskRenderers.end())
+                {
+                    it->second.RenderMaskEntities(entities);
+                } 
+            }
         }
     } // namespace Render
 } // namespace AZ
