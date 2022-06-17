@@ -98,11 +98,20 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
 
+        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead append
+        //! to the last column in the layout. Useful for things like the "add container entry" button.
+        static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
+
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
+
+        // Container attributes
+        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t)>("RemoveNotify");
+        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 
     struct UIElement : PropertyEditor
@@ -140,6 +149,20 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "Button";
         static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
+    };
+
+    enum class ContainerAction
+    {
+        AddElement,
+        RemoveElement,
+        Clear,
+    };
+
+    struct ContainerActionButton : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "ContainerActionButton";
+        static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
+        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
     };
 
     struct CheckBox : PropertyEditorDefinition

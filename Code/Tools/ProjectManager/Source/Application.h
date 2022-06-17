@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         using AzFramework::Application::Application;
         virtual ~Application();
 
-        bool Init(bool interactive = true);
+        bool Init(bool interactive = true, AZStd::unique_ptr<PythonBindings> pythonBindings = nullptr);
         bool Run();
         void TearDown();
 

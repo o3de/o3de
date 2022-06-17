@@ -35,6 +35,14 @@ namespace O3DE::ProjectManager
         {
             PythonBindings::OnStdError(msg);
         }
+
+        //! override with an implementation that won't do anything
+        //! so we avoid modifying the manifest 
+        bool RemoveInvalidProjects() override
+        {
+            constexpr bool removalResult = true;
+            return removalResult;
+        }
     };
 
     class PythonBindingsTests 
@@ -55,7 +63,7 @@ namespace O3DE::ProjectManager
         }
 
         //! AZ::Debug::TraceMessageBus
-        bool OnPrintf(const char*, const char* message) override
+        bool OnOutput(const char*, const char* message) override
         {
             m_gatheredMessages.emplace_back(message);
             return true;
@@ -89,7 +97,8 @@ namespace O3DE::ProjectManager
         projectInfo.m_path = QDir::toNativeSeparators(QString(tempDir.GetDirectory()) + "/" + "TestProject");
         projectInfo.m_projectName = "TestProjectName";
 
-        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo);
+        constexpr bool registerProject = false;
+        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo, registerProject);
         EXPECT_TRUE(result.IsSuccess());
 
         ProjectInfo resultProjectInfo = result.GetValue();
@@ -102,7 +111,7 @@ namespace O3DE::ProjectManager
         bool testMessageFound = false;
         bool testErrorFound = false;
         const char* testMessage = "PythonTestMessage%";
-        const char* testError = "PythonTestError%";
+        const char* testError = "ERROR:root:PythonTestError%";
 
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
@@ -111,8 +120,6 @@ namespace O3DE::ProjectManager
 
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
 
-        // currently, PythonBindings sends errors to AZ_TracePrintf instead of AZ_Error
-        // if this changes, we'll need to handle OnError() and check that instead
         for (const auto& message : m_gatheredMessages)
         {
             if (message.contains(testMessage))

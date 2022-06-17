@@ -167,6 +167,11 @@ namespace AzNetworking
         return m_readerThread->GetUpdateTimeMs();
     }
 
+    void NetworkingSystemComponent::ForceUpdate()
+    {
+        OnSystemTick();
+    }
+
     void NetworkingSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         AZLOG_INFO("Total sockets monitored by TcpListenThread: %u", GetTcpListenThreadSocketCount());
