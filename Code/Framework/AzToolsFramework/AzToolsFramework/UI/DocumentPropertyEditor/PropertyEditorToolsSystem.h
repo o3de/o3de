@@ -23,6 +23,8 @@ namespace AzToolsFramework
         PropertyEditorToolsSystem();
         ~PropertyEditorToolsSystem() override;
 
+        void RegisterDefaultHandlers();
+
         PropertyHandlerId GetPropertyHandlerForNode(const AZ::Dom::Value node) override;
         PropertyHandlerInstance CreateHandlerInstance(PropertyHandlerId handlerId) override;
         PropertyHandlerId RegisterHandler(HandlerData handlerData) override;

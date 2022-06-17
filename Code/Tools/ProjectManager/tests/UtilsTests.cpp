@@ -35,9 +35,6 @@ namespace O3DE::ProjectManager
 
             ProjectManagerUtilsTests()
             {
-                m_application = AZStd::make_unique<ProjectManager::Application>();
-                m_application->Init(false);
-
                 m_projectAPath = "ProjectA";
 
                 // Replaces first 'A' with 'B'
@@ -87,11 +84,7 @@ namespace O3DE::ProjectManager
 
                 QDir dirB(m_projectBPath);
                 dirB.removeRecursively();
-
-                m_application.reset();
             }
-
-            AZStd::unique_ptr<ProjectManager::Application> m_application;
 
             QString m_projectAPath;
             QString m_projectAOrigFilePath;
@@ -114,8 +107,8 @@ namespace O3DE::ProjectManager
         {
             EXPECT_TRUE(MoveProject(
                 QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath,
-                nullptr, true));
+                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
             EXPECT_FALSE(origFile.exists());
@@ -138,8 +131,8 @@ namespace O3DE::ProjectManager
         {
             EXPECT_TRUE(MoveProject(
                 QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath,
-                nullptr, true));
+                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
             EXPECT_FALSE(origFile.exists());
@@ -159,8 +152,8 @@ namespace O3DE::ProjectManager
         {
             EXPECT_TRUE(CopyProject(
                 QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath,
-                nullptr, true));
+                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
             EXPECT_TRUE(origFile.exists());
@@ -183,8 +176,8 @@ namespace O3DE::ProjectManager
         {
             EXPECT_TRUE(CopyProject(
                 QDir::currentPath() + QDir::separator() + m_projectAPath,
-                QDir::currentPath() + QDir::separator() + m_projectBPath,
-                nullptr, true));
+                QDir::currentPath() + QDir::separator() + m_projectBPath, nullptr,
+                true, /*displayProgress=*/ false));
 
             QFileInfo origFile(m_projectAOrigFilePath);
             EXPECT_TRUE(origFile.exists());
