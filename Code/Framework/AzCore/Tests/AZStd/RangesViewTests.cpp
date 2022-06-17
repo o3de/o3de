@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/ranges/all_view.h>
+#include <AzCore/std/ranges/common_view.h>
 #include <AzCore/std/ranges/elements_view.h>
 #include <AzCore/std/ranges/empty_view.h>
 #include <AzCore/std/ranges/join_view.h>
@@ -430,7 +431,6 @@ namespace UnitTest
         EXPECT_TRUE((*joinViewIter2).empty());
     }
 
-    // join_with_view
     TEST_F(RangesViewTestFixture, JoinView_ReverseIterationOverRangeOfRanges_Succeeds)
     {
         constexpr AZStd::string_view expectedString = "nuSnooMdlroWolleH";
@@ -439,7 +439,7 @@ namespace UnitTest
         AZStd::fixed_string<128> accumString;
 
         auto joinView = AZStd::ranges::views::join(rope);
-        // Iterate over view in reverse(can replace for normal loop with range based one once AZStd::ranges::reverse_view is available)
+        // Iterate over view in reverse(can replace normal for loop with range based one, once AZStd::ranges::reverse_view is available)
         for (auto revIter = AZStd::ranges::rbegin(joinView); revIter != AZStd::ranges::rend(joinView); ++revIter)
         {
             accumString.push_back(*revIter);
@@ -448,6 +448,7 @@ namespace UnitTest
         EXPECT_EQ(expectedString, accumString);
     }
 
+    // join_with_view
     TEST_F(RangesViewTestFixture, JoinWithView_IteratesOverRangeOfRangesWithSeparator_Succeeds)
     {
         constexpr AZStd::string_view expectedString = "Hello, World, Moon, Sun";
@@ -455,7 +456,7 @@ namespace UnitTest
         RopeWithSeparator rope{ "Hello", "World", "Moon", "Sun" };
         AZStd::fixed_string<128> accumString;
         // Protip: Do not use a string literal directly with join_with
-        // A string literal is actually an a reference to a C array that includes the null-terminator character
+        // A string literal is actually a reference to a C array that includes the null-terminator character
         // Convert it to a string_view
         using namespace AZStd::literals::string_view_literals;
         for (auto&& charElement : AZStd::ranges::views::join_with(rope, ", "_sv))
@@ -483,7 +484,7 @@ namespace UnitTest
         }
         {
             // Test range adaptor with string_view
-            // DO NOT use string literal as it is deduced as an array that incldues the NUL character
+            // DO NOT use string literal as it is deduced as an array that includes the NUL character
             // as part of the range
             AZStd::fixed_string<128> accumString;
             using namespace AZStd::literals::string_view_literals;
@@ -505,7 +506,7 @@ namespace UnitTest
 
         using namespace AZStd::literals::string_view_literals;
         auto joinWithView = AZStd::ranges::views::join_with(rope, ", "_sv);
-        // Iterate over view in reverse(can replace for normal loop with range based one once AZStd::ranges::reverse_view is available)
+        // Iterate over view in reverse(can replace normal for loop with range based one, once AZStd::ranges::reverse_view is available)
         for (auto revIter = AZStd::ranges::rbegin(joinWithView); revIter != AZStd::ranges::rend(joinWithView); ++revIter)
         {
             accumString.push_back(*revIter);
@@ -641,5 +642,15 @@ namespace UnitTest
         }
 
         EXPECT_EQ(expectedResult, accumResult);
+    }
+
+    TEST_F(RangesViewTestFixture, CommonView_CanPassDifferentIteratorAndSentinelTypes_ToInsertFunction)
+    {
+        constexpr AZStd::string_view expectedString = "Hello,World,Moon,Sun";
+        static constexpr auto arrayOfLiterals{ AZStd::to_array<AZStd::string_view>({"Hello", "World", "Moon", "Sun"}) };
+        auto commonView = AZStd::ranges::views::common(AZStd::ranges::views::join_with(arrayOfLiterals, ','));
+
+        AZStd::fixed_string<128> accumString{commonView.begin(), commonView.end()};
+        EXPECT_EQ(expectedString, accumString);
     }
 }

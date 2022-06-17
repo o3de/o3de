@@ -39,6 +39,7 @@ set(FILES
     math.h
     optional.h
     ranges/all_view.h
+    ranges/common_view.h
     ranges/elements_view.h
     ranges/empty_view.h
     ranges/iter_move.h
