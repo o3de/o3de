@@ -9,21 +9,21 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
 
 namespace AZ
 {
     class ReflectContext;
     class ComponentDescriptor;
-}
+} // namespace AZ
 
 namespace ScriptCanvas
 {
-    void InitLibraries();
+    struct NodeRegistry;
 
-    void ResetLibraries();
-
-    void ReflectLibraries(AZ::ReflectContext*);
-
-    AZStd::vector<AZ::ComponentDescriptor*> GetLibraryDescriptors();
-}
+    namespace LogicLibrary
+    {
+        void Reflect(AZ::ReflectContext* reflection);
+        void InitNodeRegistry(NodeRegistry* nodeRegistry);
+        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
+    } // namespace LogicLibrary
+} // namespace ScriptCanvas

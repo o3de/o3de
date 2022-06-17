@@ -44,12 +44,14 @@ namespace ScriptCanvas
         REFLECT_GENERIC_FUNCTION_NODE(AABB, "{AB0C2753-680E-47AD-8277-66B3AC01C659}");
         REFLECT_GENERIC_FUNCTION_NODE(Color, "{6CC7B2F9-F551-4CB8-A713-4149959AE337}");
         REFLECT_GENERIC_FUNCTION_NODE(CRC, "{D8B65A5B-38FF-4B41-9FA4-FCA080D75625}");
+        REFLECT_GENERIC_FUNCTION_NODE(Math, "{76898795-2B30-4645-B6D4-67568ECC889F}");
         REFLECT_GENERIC_FUNCTION_NODE(Matrix3x3, "{8C5F6959-C2C4-46D9-9FCD-4DC234E7732D}");
         REFLECT_GENERIC_FUNCTION_NODE(Matrix4x4, "{537AB179-E23C-492D-8EF7-53845A2DB163}");
         REFLECT_GENERIC_FUNCTION_NODE(OBB, "{8CBDA3B7-9DCD-4A04-A12C-123C322CA63A}");
         REFLECT_GENERIC_FUNCTION_NODE(Plane, "{F2C799DF-2CC1-4DD8-91DC-18C2D517BAB0}");
         REFLECT_GENERIC_FUNCTION_NODE(Quaternion, "{9BE75E2E-AA07-4767-9BF3-905C289EB38A}");
         REFLECT_GENERIC_FUNCTION_NODE(Random, "{D9DF1385-6C5C-4E41-94CA-8B10E9D8FAAF}");
+        REFLECT_GENERIC_FUNCTION_NODE(String, "{5B700838-21A2-4579-9303-F4A4822AFEF4}");
         REFLECT_GENERIC_FUNCTION_NODE(Transform, "{59E0EF87-352C-4CFB-A810-5B8752BDD1EF}");
         REFLECT_GENERIC_FUNCTION_NODE(Vector2, "{FD1BFADF-BA1F-4AFC-819B-ABA1F22AE6E6}");
         REFLECT_GENERIC_FUNCTION_NODE(Vector3, "{53EA7604-E3AE-4E88-BE0E-66CBC488A7DB}");
@@ -62,11 +64,11 @@ namespace ScriptCanvas
         {
             SCRIPT_CANVAS_GENERICS_TO_VM(EntityNodes::Registrar, DeprecatedLibrary::Entity, behaviorContext, EntityNodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(ScriptCanvasPhysics::WorldNodes::Registrar, DeprecatedLibrary::World, behaviorContext, ScriptCanvasPhysics::WorldNodes::k_categoryName);
-            SCRIPT_CANVAS_GENERICS_TO_VM(StringNodes::Registrar, Library::String, behaviorContext, StringNodes::k_categoryName);
+            SCRIPT_CANVAS_GENERICS_TO_VM(StringNodes::Registrar, DeprecatedLibrary::String, behaviorContext, StringNodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(AABBNodes::Registrar, DeprecatedLibrary::AABB, behaviorContext, AABBNodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(ColorNodes::Registrar, DeprecatedLibrary::Color, behaviorContext, ColorNodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(CRCNodes::Registrar, DeprecatedLibrary::CRC, behaviorContext, CRCNodes::k_categoryName);
-            SCRIPT_CANVAS_GENERICS_TO_VM(MathNodes::Registrar, Library::Math, behaviorContext, MathNodes::k_categoryName);
+            SCRIPT_CANVAS_GENERICS_TO_VM(MathNodes::Registrar, DeprecatedLibrary::Math, behaviorContext, MathNodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(Matrix3x3Nodes::Registrar, DeprecatedLibrary::Matrix3x3, behaviorContext, Matrix3x3Nodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(Matrix4x4Nodes::Registrar, DeprecatedLibrary::Matrix4x4, behaviorContext, Matrix4x4Nodes::k_categoryName);
             SCRIPT_CANVAS_GENERICS_TO_VM(OBBNodes::Registrar, DeprecatedLibrary::OBB, behaviorContext, OBBNodes::k_categoryName);

@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{filename}}.h"
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Component.h>
-#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistryLibrary.h>
+#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
 {% for ScriptCanvas in dataFiles %}
 #include <{{ ScriptCanvas.attrib['Include'] }}>
 {% endfor %}
@@ -54,11 +54,7 @@ namespace ScriptCanvas
 {%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
 #ifndef _RELEASE
 {%         endif %}
-            {
-                auto& nodes = nodeRegistry->m_nodeMap[AZ::AzTypeInfo<Library::CustomLibrary>::Uuid()];
-                nodes.push_back({ AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Uuid(),
-                                  AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Name() });
-            }
+            nodeRegistry->m_nodes.push_back(AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Uuid());
 {%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
 #endif
 {%         endif %}

@@ -100,7 +100,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Libraries.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Core/CoreNodes.cpp
+    Include/ScriptCanvas/Libraries/Core/CoreLibrary.cpp
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.cpp
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.cpp
@@ -157,7 +157,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/Cycle.cpp
     Include/ScriptCanvas/Libraries/Logic/Gate.cpp
     Include/ScriptCanvas/Libraries/Logic/IsNull.cpp
-    Include/ScriptCanvas/Libraries/Logic/Logic.cpp
+    Include/ScriptCanvas/Libraries/Logic/LogicLibrary.cpp
     Include/ScriptCanvas/Libraries/Logic/Once.cpp
     Include/ScriptCanvas/Libraries/Logic/OrderedSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.cpp
@@ -166,7 +166,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/AABB.cpp
     Include/ScriptCanvas/Libraries/Math/Color.cpp
     Include/ScriptCanvas/Libraries/Math/CRC.cpp
-    Include/ScriptCanvas/Libraries/Math/Math.cpp
     Include/ScriptCanvas/Libraries/Math/MathFunctions.cpp
     Include/ScriptCanvas/Libraries/Math/MathExpression.cpp
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
@@ -179,24 +178,22 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector2.cpp
     Include/ScriptCanvas/Libraries/Math/Vector3.cpp
     Include/ScriptCanvas/Libraries/Math/Vector4.cpp
-    Include/ScriptCanvas/Libraries/Comparison/Comparison.cpp
-    Include/ScriptCanvas/Libraries/Time/Time.cpp
+    Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.cpp
     Include/ScriptCanvas/Libraries/Time/DelayNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimeDelayNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/DurationNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
-    Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
+    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.cpp
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp
-    Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringFunctions.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.cpp
-    Include/ScriptCanvas/Libraries/Operators/Operators.cpp
+    Include/ScriptCanvas/Libraries/Operators/OperatorsLibrary.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorAdd.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorDiv.cpp

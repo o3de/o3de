@@ -138,7 +138,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
-    Include/ScriptCanvas/Libraries/Core/CoreNodes.h
+    Include/ScriptCanvas/Libraries/Core/CoreLibrary.h
     Include/ScriptCanvas/Libraries/Core/ContainerTypeReflection.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.ScriptCanvasGrammar.xml
@@ -279,7 +279,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/Gate.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Logic/IsNull.h
     Include/ScriptCanvas/Libraries/Logic/IsNull.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Logic/Logic.h
+    Include/ScriptCanvas/Libraries/Logic/LogicLibrary.h
     Include/ScriptCanvas/Libraries/Logic/Not.h
     Include/ScriptCanvas/Libraries/Logic/Once.h
     Include/ScriptCanvas/Libraries/Logic/Once.ScriptCanvasGrammar.xml
@@ -321,7 +321,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Vector4.h
     Include/ScriptCanvas/Libraries/Math/Vector4.ScriptCanvasFunction.xml
-    Include/ScriptCanvas/Libraries/Comparison/Comparison.h
+    Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/Less.h
@@ -340,6 +340,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
@@ -352,10 +353,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/String/Print.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/String/StringFunctions.h
     Include/ScriptCanvas/Libraries/String/StringFunctions.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBus.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusMacros.h
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.h
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.h
+    Include/ScriptCanvas/Libraries/Operators/OperatorsLibrary.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorAdd.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorAdd.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.h

@@ -7,21 +7,14 @@
  */
 
 #include "ScriptCanvasNodeRegistry.h"
-#include <AzCore/Module/Environment.h>
+
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace ScriptCanvas
 {
     static AZ::EnvironmentVariable<NodeRegistry> g_nodeRegistry;
-
-    void InitNodeRegistry()
-    {
-        g_nodeRegistry = AZ::Environment::CreateVariable<NodeRegistry>(s_nodeRegistryName);
-    }
-
-    void ResetNodeRegistry()
-    {
-        g_nodeRegistry.Reset();
-    }
 
     NodeRegistry* GetNodeRegistry()
     {
@@ -39,5 +32,10 @@ namespace ScriptCanvas
         }
 
         return &(g_nodeRegistry.Get());
+    }
+
+    void ResetNodeRegistry()
+    {
+        g_nodeRegistry.Reset();
     }
 } // namespace ScriptCanvas

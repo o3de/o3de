@@ -8,7 +8,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistryLibrary.h>
+#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
 
 #include "ScriptCanvasAutoGenRegistry.h"
 

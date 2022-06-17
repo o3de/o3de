@@ -8,10 +8,16 @@
 
 #pragma once
 
-#include <AzCore/Math/Uuid.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+
+namespace AZ
+{
+    class ReflectContext;
+    class ComponentDescriptor;
+} // namespace AZ
 
 namespace ScriptCanvas
 {
@@ -19,17 +25,13 @@ namespace ScriptCanvas
     {
         AZ_TYPE_INFO(NodeRegistry, "{C1613BD5-3104-44E4-98FE-A917A90B2014}");
 
-        using NodeList = AZStd::vector<AZStd::pair<AZ::Uuid, AZStd::string>>;
-
-        AZStd::unordered_map<AZ::Uuid, NodeList> m_nodeMap;
+        //! Collection to store ScriptCanvas derived node uuid
+        AZStd::vector<AZ::Uuid> m_nodes;
     };
 
-    //! Call once to initialize Node Registry
-    void InitNodeRegistry();
+    NodeRegistry* GetNodeRegistry();
 
-    //! Call to reset Node Registry
     void ResetNodeRegistry();
 
-    NodeRegistry* GetNodeRegistry();
     static const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
 } // namespace ScriptCanvas

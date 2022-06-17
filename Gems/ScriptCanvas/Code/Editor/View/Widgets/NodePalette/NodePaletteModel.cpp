@@ -35,6 +35,7 @@ AZ_DEFINE_BUDGET(NodePaletteModel);
 
 namespace
 {
+    static constexpr char DefaultNodeCategory[] = "Nodes";
     static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
     static constexpr char DefaultGlobalMethodCategory[] = "Global Methods";
     static constexpr char DefaultClassMethodCategory[] = "Class Methods";
@@ -242,90 +243,44 @@ namespace
         return skipBuses;
     }
 
-    //! Register all nodes populated into the ScriptCanvas NodeRegistry for each class derived
-    //! from the ScriptCanvas LibraryDefinition class
+    //! Register all nodes populated into the ScriptCanvas NodeRegistry
     void PopulateScriptCanvasDerivedNodes(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::SerializeContext& serializeContext)
     {
         AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateScriptCanvasDerivedNodes");
 
-        // Get all the types.
-        auto EnumerateLibraryDefintionNodes = [&nodePaletteModel, &serializeContext](
-            const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
+        nodePaletteModel.RegisterDefaultCateogryInformation();
+
+        ScriptCanvas::NodeRegistry* registry = ScriptCanvas::GetNodeRegistry();
+        for (auto nodeId : registry->m_nodes)
         {
-            ScriptCanvasEditor::CategoryInformation categoryInfo;
-
-            AZStd::string categoryPath = classData->m_editData ? classData->m_editData->m_name : classData->m_name;
-
-            if (classData->m_editData)
+            if (HasExcludeFromNodeListAttribute(&serializeContext, nodeId))
             {
-                auto editorElementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
-                if (editorElementData)
-                {
-                    if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Category))
-                    {
-                        if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryAttribute))
-                        {
-                            categoryPath = categoryAttributeData->Get(nullptr);
-                        }
-                    }
-
-                    if (auto categoryStyleAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::CategoryStyle))
-                    {
-                        if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryStyleAttribute))
-                        {
-                            categoryInfo.m_styleOverride = categoryAttributeData->Get(nullptr);
-                        }
-                    }
-
-                    if (auto titlePaletteAttribute = editorElementData->FindAttribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride))
-                    {
-                        if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(titlePaletteAttribute))
-                        {
-                            categoryInfo.m_paletteOverride = categoryAttributeData->Get(nullptr);
-                        }
-                    }
-                }
+                continue;
             }
 
-            nodePaletteModel.RegisterCategoryInformation(categoryPath, categoryInfo);
+            // Pass in the associated class data so we can do more intensive lookups?
+            const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(nodeId);
 
-            // Children
-            for (auto& node : ScriptCanvas::Library::LibraryDefinition::GetNodes(classData->m_typeId))
+            if (nodeClassData == nullptr)
             {
-                if (HasExcludeFromNodeListAttribute(&serializeContext, node.first))
-                {
-                    continue;
-                }
-
-                // Pass in the associated class data so we can do more intensive lookups?
-                const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
-
-                if (nodeClassData == nullptr)
-                {
-                    continue;
-                }
-
-                // Skip over some of our more dynamic nodes that we want to populate using different means
-                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
-                {
-                    continue;
-                }
-                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
-                {
-                    continue;
-                }
-                else
-                {
-                    nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, nodeClassData);
-                }
+                continue;
             }
 
-            return true;
-        };
-
-        const AZ::TypeId& libraryDefTypeId = azrtti_typeid<ScriptCanvas::Library::LibraryDefinition>();
-        serializeContext.EnumerateDerived(EnumerateLibraryDefintionNodes, libraryDefTypeId, libraryDefTypeId);
+            // Skip over some of our more dynamic nodes that we want to populate using different means
+            else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
+            {
+                continue;
+            }
+            else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
+            {
+                continue;
+            }
+            else
+            {
+                nodePaletteModel.RegisterCustomNode(nodeClassData);
+            }
+        }
     }
 
     void PopulateVariablePalette()
@@ -762,8 +717,7 @@ namespace
             return;
         }
 
-        // Populates the NodePalette with each ScriptCanvas LibraryDefinition derived class
-        // static InitNodeRegistry() function
+        // Populates the NodePalette in ScriptCanvas NodeRegistry
         PopulateScriptCanvasDerivedNodes(nodePaletteModel, *serializeContext);
 
         // Populates the VariablePalette with type registered with the ScriptCanvas DataRegistry
@@ -882,11 +836,10 @@ namespace ScriptCanvasEditor
         NodePaletteModelNotificationBus::Event(m_paletteId, &NodePaletteModelNotifications::OnAssetModelRepopulated);
     }
 
-    void NodePaletteModel::RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData)
+    void NodePaletteModel::RegisterCustomNode(const AZ::SerializeContext::ClassData* classData)
     {
-
         AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterCustomNode");
-        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier(uuid);
+        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier(classData->m_typeId);
 
         auto mapIter = m_registeredNodes.find(nodeIdentifier);
 
@@ -895,9 +848,9 @@ namespace ScriptCanvasEditor
             CustomNodeModelInformation* customNodeInformation = aznew CustomNodeModelInformation();
 
             customNodeInformation->m_nodeIdentifier = nodeIdentifier;
-            customNodeInformation->m_typeId = uuid;
-            customNodeInformation->m_displayName = name;
-            customNodeInformation->m_categoryPath = categoryPath;
+            customNodeInformation->m_typeId = classData->m_typeId;
+            customNodeInformation->m_displayName = classData->m_name;
+            customNodeInformation->m_categoryPath = DefaultNodeCategory;
 
             bool isDeprecated(false);
 
@@ -1266,6 +1219,50 @@ namespace ScriptCanvasEditor
         }
 
         return identifiers;
+    }
+
+    void NodePaletteModel::RegisterDefaultCateogryInformation()
+    {
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "ComparisonNodeTitlePalette";
+            m_categoryInformation["Math/Comparisions"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "CoreNodeTitlePalette";
+            m_categoryInformation["Core"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "LogicNodeTitlePalette";
+            m_categoryInformation["Logic"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "MathNodeTitlePalette";
+            m_categoryInformation["Math"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "OperatorsNodeTitlePalette";
+            m_categoryInformation["Operators"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "StringNodeTitlePalette";
+            m_categoryInformation["String"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "TimeNodeTitlePalette";
+            m_categoryInformation["Timing"] = categoryInformation;
+        }
+        {
+            CategoryInformation categoryInformation;
+            categoryInformation.m_paletteOverride = "TestingNodeTitlePalette";
+            m_categoryInformation["Utilities/Unit Testing"] = categoryInformation;
+        }
     }
 
     void NodePaletteModel::RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation)

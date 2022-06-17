@@ -6,7 +6,7 @@
            PreferredClassName="Time Delay"
            Base="Nodeables::Time::BaseTimer"
            Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Nodeables"
+           Category="Timing"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"
            Description="Delays all incoming execution for the specified number of ticks">

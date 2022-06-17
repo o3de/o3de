@@ -8,21 +8,23 @@
 
 #include "Libraries.h"
 
-#include <Libraries/Comparison/Comparison.h>
-#include <Libraries/Core/CoreNodes.h>
+#include <Libraries/Comparison/ComparisonLibrary.h>
+#include <Libraries/Core/CoreLibrary.h>
 #include <Libraries/Deprecated/DeprecatedNodeLibrary.h>
-#include <Libraries/Logic/Logic.h>
+#include <Libraries/Logic/LogicLibrary.h>
+#include <Libraries/Operators/OperatorsLibrary.h>
+#include <Libraries/Spawning/SpawningLibrary.h>
+#include <Libraries/UnitTesting/UnitTestingLibrary.h>
 
 namespace ScriptCanvas
 {
     void InitLibraries()
     {
         auto nodeRegistry = GetNodeRegistry();
-        using namespace Library;
-        Core::InitNodeRegistry(*nodeRegistry);
-        Logic::InitNodeRegistry(*nodeRegistry);
-        Comparison::InitNodeRegistry(*nodeRegistry);
-        Operators::InitNodeRegistry(*nodeRegistry);
+        ComparisonLibrary::InitNodeRegistry(nodeRegistry);
+        CoreLibrary::InitNodeRegistry(nodeRegistry);
+        LogicLibrary::InitNodeRegistry(nodeRegistry);
+        OperatorsLibrary::InitNodeRegistry(nodeRegistry);
     }
 
     void ResetLibraries()
@@ -32,44 +34,33 @@ namespace ScriptCanvas
 
     void ReflectLibraries(AZ::ReflectContext* reflectContext)
     {
-        using namespace Library;
-
-        Core::Reflect(reflectContext);
-        Math::Reflect(reflectContext);
-        Logic::Reflect(reflectContext);
-        Comparison::Reflect(reflectContext);
-        Time::Reflect(reflectContext);
-        Spawning::Reflect(reflectContext);
-        String::Reflect(reflectContext);
-        Operators::Reflect(reflectContext);
-        CustomLibrary::Reflect(reflectContext);
-
+        CoreLibrary::Reflect(reflectContext);
         DeprecatedNodeLibrary::Reflect(reflectContext);
+        LogicLibrary::Reflect(reflectContext);
+        OperatorsLibrary::Reflect(reflectContext);
+        SpawningLibrary::Reflect(reflectContext);
 
 #ifndef _RELEASE
-        Library::UnitTesting::Reflect(reflectContext);
+        UnitTestingLibrary::Reflect(reflectContext);
 #endif
     }
 
     AZStd::vector<AZ::ComponentDescriptor*> GetLibraryDescriptors()
     {
-        using namespace Library;
+        AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors(ComparisonLibrary::GetComponentDescriptors());
 
-        AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors(Core::GetComponentDescriptors());
-        
-        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors = Logic::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Comparison::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Operators::GetComponentDescriptors();
+        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors = CoreLibrary::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = DeprecatedNodeLibrary::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
+        componentDescriptors = LogicLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = OperatorsLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
         return libraryDescriptors;
     }
-
 }

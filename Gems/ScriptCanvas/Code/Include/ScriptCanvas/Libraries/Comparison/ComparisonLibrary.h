@@ -15,8 +15,13 @@ namespace AZ
     class ComponentDescriptor;
 } // namespace AZ
 
-namespace ScriptCanvas::Developer
+namespace ScriptCanvas
 {
-    void InitNodeRegistry();
-    AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
-} // namespace ScriptCanvas::Developer
+    struct NodeRegistry;
+
+    namespace ComparisonLibrary
+    {
+        void InitNodeRegistry(NodeRegistry* nodeRegistry);
+        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
+    } // namespace ComparisonLibrary
+} // namespace ScriptCanvas

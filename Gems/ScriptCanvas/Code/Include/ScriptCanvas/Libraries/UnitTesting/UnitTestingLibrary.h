@@ -8,10 +8,12 @@
 
 #pragma once
 
-// This header is only meant to include the nodes and should not contain
-// shared code
+namespace AZ
+{
+    class ReflectContext;
+} // namespace AZ
 
-#include "And.h"
-#include "Not.h"
-#include "Or.h"
-#include "WeightedRandomSequencer.h"
+namespace ScriptCanvas::UnitTestingLibrary
+{
+    void Reflect(AZ::ReflectContext* reflection);
+} // namespace ScriptCanvas

@@ -8,10 +8,12 @@
 
 #pragma once
 
-// This header is only meant to include the nodes and should not contain
-// shared code
+namespace AZ
+{
+    class ReflectContext;
+} // namespace AZ
 
-#include "EBusEventHandler.h"
-#include "Method.h"
-#include "MethodOverloaded.h"
-#include "ScriptEventBase.h"
+namespace ScriptCanvas::SpawningLibrary
+{
+    void Reflect(AZ::ReflectContext* reflection);
+} // namespace ScriptCanvas::SpawningLibrary

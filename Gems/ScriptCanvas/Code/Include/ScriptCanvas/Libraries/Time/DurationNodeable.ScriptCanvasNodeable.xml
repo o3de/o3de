@@ -6,7 +6,7 @@
            PreferredClassName="Duration"
            Base="ScriptCanvas::Nodeable"
            Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Nodeables"
+           Category="Timing"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"
            Description="Triggers a signal every frame during the specified duration.">
