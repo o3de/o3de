@@ -390,22 +390,7 @@ namespace AzToolsFramework
                 {
                     // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
                     AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
-                    const AZStd::string& childFullPath = AZ::IO::Path(newestChildEntry->GetFullPath()).AsPosix();
-
-                    if (m_watchedIncomingAssetPaths.contains(childFullPath))
-                    {
-                        m_watchedIncomingAssetPaths.erase(childFullPath);
-
-                        QTimer::singleShot(0, this,
-                            [&, newestChildEntry]()
-                            {
-                                QModelIndex index;
-                                if (GetEntryIndex(newestChildEntry, index))
-                                {
-                                    emit AssetCreatedFromEditor(index);
-                                }
-                            });
-                    }
+                    WatchForExpectedAssets(newestChildEntry);
                 }
 
                 // we have to also invalidate our parent all the way up the chain.
@@ -506,6 +491,27 @@ namespace AzToolsFramework
             index = createIndex(row, column, entry);
             return true;
         }
+
+        void AssetBrowserModel::WatchForExpectedAssets(AssetBrowserEntry* entry)
+        {
+            const AZStd::string& childFullPath = AZ::IO::Path(entry->GetFullPath()).AsPosix();
+            if (m_watchedIncomingAssetPaths.contains(childFullPath))
+            {
+                m_watchedIncomingAssetPaths.erase(childFullPath);
+
+                QTimer::singleShot(
+                    0, this,
+                    [&, entry]()
+                    {
+                        QModelIndex index;
+                        if (GetEntryIndex(entry, index))
+                        {
+                            emit AssetCreatedFromEditor(index);
+                        }
+                    });
+            }
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

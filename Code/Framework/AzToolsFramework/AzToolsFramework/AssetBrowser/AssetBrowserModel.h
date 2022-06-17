@@ -109,9 +109,9 @@ namespace AzToolsFramework
             bool m_addingEntry;
             bool m_removingEntry;
             bool m_isTickBusEnabled = false;
-
+			
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
-            int GetLeftmostColumnInFilter() const;
+			void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
