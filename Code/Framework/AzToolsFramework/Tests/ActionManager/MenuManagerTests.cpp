@@ -59,6 +59,17 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, AddActionToMenuTwice)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+        auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetUnregisteredMenu)
     {
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
@@ -86,24 +97,6 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
         // Verify the action is now in the menu.
-        EXPECT_EQ(menu->actions().size(), 1);
-    }
-
-    TEST_F(ActionManagerFixture, VerifyActionInMenuTwice)
-    {
-        // Register menu, get it and verify it's empty.
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
-        EXPECT_EQ(menu->actions().size(), 0);
-
-        // Register a new action and add it to the menu twice.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
-        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
-        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
-
-        // Verify the action was added to the menu just once.
-        // This is the correct behavior.
         EXPECT_EQ(menu->actions().size(), 1);
     }
 
@@ -192,6 +185,18 @@ namespace UnitTest
 
         EXPECT_EQ(actions.size(), 1);
         EXPECT_EQ(actions[0]->menu(), submenu);
+    }
+
+    TEST_F(ActionManagerFixture, AddSubMenuToMenuTwice)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+        auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, AddNullWidgetInMenu)
@@ -284,6 +289,16 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
         EXPECT_TRUE(outcome.IsSuccess());
     }
+    
+    TEST_F(ActionManagerFixture, AddMenuToMenuBarTwice)
+    {
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
+        auto outcome = m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
 
     TEST_F(ActionManagerFixture, GetMenuBar)
     {
@@ -342,6 +357,107 @@ namespace UnitTest
         EXPECT_EQ(actions[0]->menu(), testMenu1);
         EXPECT_EQ(actions[1]->menu(), testMenu2);
         EXPECT_EQ(actions[2]->menu(), testMenu3);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfActionInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        // Add the action to the menu.
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredActionInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Verify the API fails as the action is not registered.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfActionNotInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        // Verify the API fails as the action is registered but was not added to the menu.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfSubMenuInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfSubMenuInMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredSubMenuInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+
+        // Verify the API fails as the sub-menu is not registered.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfSubMenuNotInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Verify the API fails as the sub-menu is registered but was not added to the menu.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfMenuInMenuBar)
+    {
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Add the menu to the menu bar.
+        m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfMenuInMenuBar("o3de.menubar.test", "o3de.menu.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredMenuInMenuBar)
+    {
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+
+        // Verify the API fails as the menu is not registered.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menubar.test", "o3de.menu.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfMenuNotInMenuBar)
+    {
+        m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Verify the API fails as the menu is registered but was not added to the menu bar.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfActionInMenu("o3de.menubar.test", "o3de.menu.test");
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
 } // namespace UnitTest

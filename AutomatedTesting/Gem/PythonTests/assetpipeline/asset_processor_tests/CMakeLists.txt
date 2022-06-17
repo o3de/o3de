@@ -84,7 +84,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
-        PYTEST_MARKS "not SUITE_sandbox" # run only sandbox tests in this file
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
@@ -95,7 +95,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH  ${CMAKE_CURRENT_LIST_DIR}/asset_processor_gui_tests_2.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE        
         TEST_SUITE periodic
-        PYTEST_MARKS "not SUITE_sandbox" # run only sandbox tests in this file
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
@@ -106,7 +106,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
-        PYTEST_MARKS "not SUITE_sandbox" # run only sandbox tests in this file
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
     )
