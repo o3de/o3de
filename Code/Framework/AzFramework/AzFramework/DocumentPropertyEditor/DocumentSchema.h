@@ -294,6 +294,11 @@ namespace AZ::DocumentPropertyEditor
             {
                 return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(boundMessage(args)));
             }
+
+            static ResultType ValueToResult(const Dom::Value& value)
+            {
+                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(value));
+            }
         };
 
         template<typename... Args>
@@ -325,6 +330,11 @@ namespace AZ::DocumentPropertyEditor
             static ResultType InvokeOnBoundMessage(BoundAdapterMessage& boundMessage, const Dom::Value& args)
             {
                 boundMessage(args);
+                return AZ::Success();
+            }
+
+            static ResultType ValueToResult(const Dom::Value&)
+            {
                 return AZ::Success();
             }
         };
@@ -381,7 +391,9 @@ namespace AZ::DocumentPropertyEditor
 
             if (!value.IsOpaqueValue())
             {
-                return AZ::Failure<ErrorType>("This property is holding a value and not a callback");
+                // CallbackAttributes that return a value may be bound to a simple value of that type
+                // In that case, ignore our parameters and simply return the value
+                return CallbackTraits::ValueToResult(value);
             }
 
             const AZStd::any& wrapper = value.GetOpaqueValue();
