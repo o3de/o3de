@@ -826,7 +826,7 @@ namespace AssetProcessor
                     break;
                 }
 
-                // The product file path is always lower cased, we can't check that for existance.
+                // The product file path is always lower cased, we can't check that for existence.
                 // Let rebuild a fs sensitive file path by replacing the cache path.
                 // We assume any file paths normalized, ie no .. nor (back) slashes.
 

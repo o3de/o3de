@@ -123,9 +123,6 @@ namespace AssetProcessor
         // overridable so we can unit-test override it.
         virtual QFileInfoList GetFilesInDirectory(const QString& directoryPath);
 
-        // overridable so we can unit-test override it.
-        virtual bool SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request);
-
         volatile bool                           m_isShuttingDown;
         InternalRecognizerContainer             m_assetRecognizerDictionary;
 

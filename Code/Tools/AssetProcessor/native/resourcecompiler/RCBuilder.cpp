@@ -569,19 +569,6 @@ namespace AssetProcessor
         }
     }
 
-    bool InternalRecognizerBasedBuilder::SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request)
-    {
-        AZStd::string finalFullPath;
-        AzFramework::StringFunc::Path::Join(requestFileDir, requestFileName, finalFullPath);
-        if (!AZ::Utils::SaveObjectToFile(finalFullPath.c_str(), AZ::DataStream::ST_XML, &request))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to write ProcessJobRequest to file %s", finalFullPath.c_str());
-            return false;
-        }
-
-        return true;
-    }
-
     void InternalRecognizerBasedBuilder::ProcessCopyJob(
         const AssetBuilderSDK::ProcessJobRequest& request,
         AZ::Uuid productAssetType,
