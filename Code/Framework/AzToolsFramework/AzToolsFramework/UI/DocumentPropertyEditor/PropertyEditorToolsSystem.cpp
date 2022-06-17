@@ -8,17 +8,25 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/ContainerActionButtonHandler.h>
 
 namespace AzToolsFramework
 {
     PropertyEditorToolsSystem::PropertyEditorToolsSystem()
     {
         AZ::Interface<PropertyEditorToolsSystemInterface>::Register(this);
+
+        RegisterDefaultHandlers();
     }
 
     PropertyEditorToolsSystem::~PropertyEditorToolsSystem()
     {
         AZ::Interface<PropertyEditorToolsSystemInterface>::Unregister(this);
+    }
+
+    void PropertyEditorToolsSystem::RegisterDefaultHandlers()
+    {
+        PropertyEditorToolsSystemInterface::RegisterHandler<ContainerActionButtonHandler>();
     }
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForNode(const AZ::Dom::Value node)
