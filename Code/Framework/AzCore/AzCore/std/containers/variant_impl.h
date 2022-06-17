@@ -610,7 +610,7 @@ namespace AZStd
             variant_impl_destructor& operator=(variant_impl_destructor&&) = default;
             variant_impl_destructor& operator=(const variant_impl_destructor&) = default;
 
-            void destroy()
+            constexpr void destroy()
             {
                 this->m_index = variant_index_t_npos<typename base_type::index_t>;
             };
@@ -636,15 +636,13 @@ namespace AZStd
             variant_impl_destructor& operator=(variant_impl_destructor&&) = default;
             variant_impl_destructor& operator=(const variant_impl_destructor&) = default;
 
-            void destroy()
+            constexpr void destroy()
             {
                 if (!this->valueless_by_exception())
                 {
-                    auto destructVisitFunc = [](auto& variantAlt)
+                    auto destructVisitFunc = [](auto& variantAlt) constexpr
                     {
-                        (void)variantAlt;
-                        using alternative_type = AZStd::remove_cvref_t<decltype(variantAlt)>;
-                        variantAlt.~alternative_type();
+                        AZStd::destroy_at(&variantAlt);
                     };
                     visitor::impl::visit_alt(AZStd::move(destructVisitFunc), *this);
                 }
@@ -682,17 +680,17 @@ namespace AZStd
 
         protected:
             template <size_t Index, class T, class... Args>
-            static T& construct_alt(alternative_impl<Index, T>& alt, Args&&... args)
+            static constexpr T& construct_alt(alternative_impl<Index, T>& alt, Args&&... args)
             {
-                new (&alt) alternative_impl<Index, T>{in_place, AZStd::forward<Args>(args)...};
+                AZStd::construct_at(&alt, in_place, AZStd::forward<Args>(args)...);
                 return alt.m_value;
             }
 
             template <class Rhs>
-            static void generic_construct(variant_impl_constructor& lhs, Rhs&& rhs)
+            static constexpr void generic_construct(variant_impl_constructor& lhs, Rhs&& rhs)
             {
                 lhs.destroy();
-                auto constructVisitFunc = [](auto& lhs_alt, auto&& rhs_alt)
+                auto constructVisitFunc = [](auto& lhs_alt, auto&& rhs_alt) constexpr
                 {
                     construct_alt(lhs_alt, AZStd::forward<decltype(rhs_alt)>(rhs_alt).m_value);
                 };
@@ -732,7 +730,7 @@ namespace AZStd
             using base_type::base_type;
             using base_type::operator=;
 
-            variant_impl_move_constructor(variant_impl_move_constructor&& other)
+            constexpr variant_impl_move_constructor(variant_impl_move_constructor&& other)
                 : variant_impl_move_constructor(valueless_t{})
             {
                 this->generic_construct(*this, AZStd::move(other));
@@ -790,7 +788,7 @@ namespace AZStd
             using base_type::base_type;
             using base_type::operator=;
 
-            variant_impl_copy_constructor(const variant_impl_copy_constructor& other)
+            constexpr variant_impl_copy_constructor(const variant_impl_copy_constructor& other)
                 : variant_impl_copy_constructor(valueless_t{})
             {
                 this->generic_construct(*this, other);
@@ -832,7 +830,7 @@ namespace AZStd
 
 
             template <size_t Index, class... Args>
-            auto& emplace(Args&&... args)
+            constexpr auto& emplace(Args&&... args)
             {
                 this->destroy();
                 auto& result_alternative = this->construct_alt(get_alternative::impl::get_alt<Index>(*this), AZStd::forward<Args>(args)...);
@@ -842,7 +840,7 @@ namespace AZStd
 
         protected:
             template <size_t Index, class T, class Arg>
-            void assign_alt(alternative_impl<Index, T>& alt, Arg&& arg)
+            constexpr void assign_alt(alternative_impl<Index, T>& alt, Arg&& arg)
             {
                 // If the alternative being assigned is the same index,
                 // the assignment operator of the union element
@@ -856,19 +854,19 @@ namespace AZStd
                 emplace_alt<Index, T>(AZStd::forward<Arg>(arg), bool_constant<is_emplacable>{});
             }
             template <size_t Index, class T, class Arg>
-            void emplace_alt(Arg&& arg, AZStd::true_type)
+            constexpr void emplace_alt(Arg&& arg, AZStd::true_type)
             {
                 this->emplace<Index>(AZStd::forward<Arg>(arg));
             }
 
             template <size_t Index, class T, class Arg>
-            void emplace_alt(Arg&& arg, AZStd::false_type)
+            constexpr void emplace_alt(Arg&& arg, AZStd::false_type)
             {
                 this->emplace<Index>(T(AZStd::forward<Arg>(arg)));
             }
 
             template <class OtherVariant>
-            void generic_assign(OtherVariant&& other)
+            constexpr void generic_assign(OtherVariant&& other)
             {
                 // Both variants are valueless so return
                 if (this->valueless_by_exception() && other.valueless_by_exception())
@@ -921,7 +919,7 @@ namespace AZStd
             ~variant_impl_move_assignment() = default;
             variant_impl_move_assignment(variant_impl_move_assignment&&) = default;
             variant_impl_move_assignment(const variant_impl_move_assignment&) = default;
-            variant_impl_move_assignment& operator=(variant_impl_move_assignment&& rhs)
+            constexpr variant_impl_move_assignment& operator=(variant_impl_move_assignment&& rhs)
             {
                 this->generic_assign(AZStd::move(rhs));
                 return *this;
@@ -979,7 +977,7 @@ namespace AZStd
             variant_impl_copy_assignment(const variant_impl_copy_assignment&) = default;
             variant_impl_copy_assignment& operator=(variant_impl_copy_assignment&&) = default;
 
-            variant_impl_copy_assignment& operator=(const variant_impl_copy_assignment& rhs)
+            constexpr variant_impl_copy_assignment& operator=(const variant_impl_copy_assignment& rhs)
             {
                 this->generic_assign(rhs);
                 return *this;
@@ -1015,12 +1013,12 @@ namespace AZStd
             using base_type::operator=;
 
             template <size_t Index, class Arg>
-            void assign(Arg&& arg)
+            constexpr void assign(Arg&& arg)
             {
                 this->assign_alt(get_alternative::impl::get_alt<Index>(*this), AZStd::forward<Arg>(arg));
             }
 
-            void swap(impl& other)
+            constexpr void swap(impl& other)
             {
                 if (this->valueless_by_exception() && other.valueless_by_exception())
                 {
