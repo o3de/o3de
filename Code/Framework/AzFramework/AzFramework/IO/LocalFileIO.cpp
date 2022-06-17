@@ -480,6 +480,11 @@ namespace AZ
                 return false;
             }
 
+            if (AZStd::string(path).starts_with("/APK/"))
+            {
+                path += 5;
+            }
+
             if (AZ::IO::PathView(path).HasRootPath())
             {
                 size_t pathLen = strlen(path);

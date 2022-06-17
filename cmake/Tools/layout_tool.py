@@ -244,7 +244,11 @@ def copy_asset_files_to_layout(project_asset_folder, target_platform, layout_tar
                             abs_dst)
             continue
 
-        if os.path.isfile(abs_dst):
+        # If the target file doesn't exist, copy it
+        if not os.path.exists(abs_dst):
+            logging.debug("Copying %s -> %s", abs_src, abs_dst)
+            shutil.copy2(abs_src, abs_dst)
+        elif os.path.isfile(abs_dst):
             # The target is a file, do a fingerprint check
             # TODO: Evaluate if we want to just junction the files instead of doing a copy
             src_hash = common.file_fingerprint(abs_src)
