@@ -55,6 +55,9 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
+    // Define an updater - move?
+    
+
     InitializeActionContext();
     InitializeActions();
     InitializeMenus();
@@ -419,6 +422,16 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     QObject::connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
 
     return containerWidget;
+}
+
+void EditorActionsHandler::OnViewPaneOpened(const char* viewPaneName)
+{
+
+}
+
+void EditorActionsHandler::OnViewPaneClosed(const char* viewPaneName)
+{
+
 }
 
 void EditorActionsHandler::RefreshToolActions()

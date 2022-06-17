@@ -274,6 +274,8 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
                 dockWidget->hide();
             }
         }
+
+        AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, m_name);
     }
 
     return canClose;
@@ -855,6 +857,7 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
         }
     }
 
+    AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneOpened, pane->m_name);
     return pane;
 }
 

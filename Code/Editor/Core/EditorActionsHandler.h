@@ -11,6 +11,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 class CCryEditApp;
 class QMainWindow;
 class QtViewPaneManager;
@@ -24,17 +26,23 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 class EditorActionsHandler
+    : private AzToolsFramework::EditorEventsBus::Handler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
 
 private:
+
     void InitializeActionContext();
     void InitializeActions();
     void InitializeMenus();
     void InitializeToolBars();
 
     QWidget* CreateDocsSearchWidget();
+    
+    // EditorEventsBus overrides ...
+    void OnViewPaneOpened(const char* viewPaneName) override;
+    void OnViewPaneClosed(const char* viewPaneName) override;
 
     void RefreshToolActions();
 
