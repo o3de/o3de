@@ -122,6 +122,10 @@ namespace AZ::Render
 
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_fastSkyEnabled, "Fast sky", "Enable to use a less accurate but faster performing sky algorithm")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SkyAtmosphereComponentConfig::m_shadowsEnabled, "Enable shadows", "Enable sampling of shadows in atmosphere")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_nearClip, "Near Clip", "Distance at which to start drawing atmosphere")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_nearFadeDistance, "Near Fade Distance", "Distance over which to fade in the atmosphere")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_minSamples, "Min samples", "Minimum number of samples when tracing")
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
                             ->Attribute(AZ::Edit::Attributes::Max, 64)

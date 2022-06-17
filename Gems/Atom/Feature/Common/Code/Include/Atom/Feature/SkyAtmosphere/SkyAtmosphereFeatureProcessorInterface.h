@@ -36,6 +36,9 @@ namespace AZ::Render
         AZ::Color m_sunLimbColor;
         float m_sunFalloffFactor;
         float m_sunRadiusFactor;
+        float m_sunShadowsFarClip;
+        float m_nearClip;
+        float m_nearFadeDistance;
         bool m_shadowsEnabled;
         bool m_sunEnabled;
         bool m_fastSkyEnabled;

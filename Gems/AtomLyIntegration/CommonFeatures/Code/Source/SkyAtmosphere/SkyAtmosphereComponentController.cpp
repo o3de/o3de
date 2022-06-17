@@ -8,6 +8,7 @@
 
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
 #include <SkyAtmosphere/SkyAtmosphereComponentController.h>
+#include <AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightBus.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -71,6 +72,8 @@ namespace AZ::Render
         params.m_rayleighScattering = m_configuration.m_rayleighScattering * m_configuration.m_rayleighScatteringScale;
         params.m_rayleighExpDistribution = m_configuration.m_rayleighExponentialDistribution;
         params.m_shadowsEnabled = m_configuration.m_shadowsEnabled;
+        params.m_nearClip = m_configuration.m_nearClip;
+        params.m_nearFadeDistance = m_configuration.m_nearFadeDistance;
 
         // sun params
         params.m_sunEnabled = m_configuration.m_drawSun;
@@ -84,6 +87,17 @@ namespace AZ::Render
         auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
         AZ::Transform sunTransform = sunTransformInterface ? sunTransformInterface->GetWorldTM() : transform;
         params.m_sunDirection = -sunTransform.GetBasisY();
+
+        if (auto directionalLightInterface = DirectionalLightRequestBus::FindFirstHandler(m_configuration.m_sun);
+            directionalLightInterface != nullptr)
+        {
+            params.m_sunShadowsFarClip = directionalLightInterface->GetShadowFarClipDistance();
+        }
+        else
+        {
+            // use the first directional light in the scene
+            DirectionalLightRequestBus::BroadcastResult(params.m_sunShadowsFarClip, &DirectionalLightRequests::GetShadowFarClipDistance);
+        }
 
         if (m_transformInterface)
         {

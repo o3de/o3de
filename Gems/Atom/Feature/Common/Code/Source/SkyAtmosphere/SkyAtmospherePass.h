@@ -61,7 +61,7 @@ namespace AZ::Render
         struct AtmosphereGPUParams 
         {
             float m_absorption[3] = {.000650f, 0.001881f, 0.000085f};
-            float m_pad0 = 0.f; // not used
+            float m_nearClip = 0.f;
 
             float m_rayleighScattering[3] = {0.005802f, 0.013558f, 0.033100f};
             float m_miePhaseFunctionG = 0.8f;
@@ -86,7 +86,7 @@ namespace AZ::Render
             float m_absorptionDensity0LinearTerm = 1.5f / 15.f;
             float m_absorptionDensity1ConstantTerm = 8.f / 3.f;
             float m_absorptionDensity1LinearTerm = -1.f / 15.f;
-            float m_pad1; // not used
+            float m_nearFadeDistance;
 
             float m_sunColor[3];
             float m_sunRadiusFactor = 1.f;
@@ -95,7 +95,7 @@ namespace AZ::Render
             float m_sunFalloffFactor = 1.f;
 
             float m_sunLimbColor[3];
-            float m_pad2 = 0.f; // not used
+            float m_sunShadowFarClip = 0.f;
 
             float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
             float m_pad3 = 0.f; // not used

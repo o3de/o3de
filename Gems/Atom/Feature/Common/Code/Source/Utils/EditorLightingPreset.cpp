@@ -77,7 +77,7 @@ namespace AZ
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow sepcific far clip distance.")
+                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow specific far clip distance.")
                         ->DataElement(Edit::UIHandlers::ComboBox, &LightConfig::m_shadowmapSize, "Shadowmap Size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")

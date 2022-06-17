@@ -249,6 +249,10 @@ namespace AZ::Render
         params.m_sunDirection.GetNormalized().StoreToFloat3(m_constants.m_sunDirection);
         params.m_planetOrigin.StoreToFloat3(m_constants.m_planetOrigin);
 
+        m_constants.m_sunShadowFarClip = params.m_sunShadowsFarClip * 0.001f; // scale to km 
+        m_constants.m_nearClip = params.m_nearClip;
+        m_constants.m_nearFadeDistance = params.m_nearFadeDistance;
+
         // avoid oversampling (too many loops) causing device removal
         constexpr uint32_t maxSamples{ 64 };  
         if (params.m_minSamples > maxSamples)
@@ -307,6 +311,7 @@ namespace AZ::Render
         m_enableShadows = params.m_shadowsEnabled;
         m_enableFastSky = params.m_fastSkyEnabled;
         m_enableSun = params.m_sunEnabled;
+
 
         // UpdateRenderPassSRG can be called before the child passes are ready
         // so we store the constants and set them in FrameBeginInternal 

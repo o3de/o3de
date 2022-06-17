@@ -62,6 +62,8 @@ namespace AZ::Render
         float m_sunFalloffFactor = 1.0f;
 
         // advanced
+        float m_nearClip = 0.f;
+        float m_nearFadeDistance = 0.f;
         bool m_fastSkyEnabled = true;
         bool m_shadowsEnabled = false;
         uint8_t m_minSamples = 4;

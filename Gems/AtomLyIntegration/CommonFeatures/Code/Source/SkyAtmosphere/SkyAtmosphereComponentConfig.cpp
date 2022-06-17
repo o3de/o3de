@@ -43,6 +43,8 @@ namespace AZ::Render
                 ->Field("RayleighExpDistribution", &SkyAtmosphereComponentConfig::m_rayleighExponentialDistribution)
                 ->Field("ShadowsEnabled", &SkyAtmosphereComponentConfig::m_shadowsEnabled)
                 ->Field("FastSkyEnabled", &SkyAtmosphereComponentConfig::m_fastSkyEnabled)
+                ->Field("NearClip", &SkyAtmosphereComponentConfig::m_nearClip)
+                ->Field("NearFadeDistance", &SkyAtmosphereComponentConfig::m_nearFadeDistance)
                 ;
         }
     }

@@ -79,7 +79,12 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     positionWS /= positionWS.w;
 
     float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
-    const float worldDepthKm = length(viewToPosition) * worldScale;
+    const float worldDepth = length(viewToPosition);
+    if (worldDepth < PassSrg::m_constants.m_nearClip)
+    {
+        return output;
+    }
+    const float worldDepthKm = worldDepth * worldScale;
     float3 worldDir = normalize(viewToPosition);
 
     // Atmosphere.PlanetOrigin is in KM already
@@ -136,8 +141,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     float maxTraceDepth = 9000000.0f; 
     if (depth > 0.0f)
     {
-        const float3 viewToPositionKm = viewToPosition * worldScale;
-        maxTraceDepth = min(length(viewToPositionKm) - distanceToTop, maxTraceDepth);
+        maxTraceDepth = min(length(worldDepthKm) - distanceToTop, maxTraceDepth);
     }
 
     const bool ground = true; 
@@ -150,6 +154,10 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     const float Transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
 
     output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0 - Transmittance);
+    if (worldDepth < PassSrg::m_constants.m_nearClip + PassSrg::m_constants.m_nearFadeDistance)
+    {
+        output.m_luminance *= (worldDepth - PassSrg::m_constants.m_nearClip) / PassSrg::m_constants.m_nearFadeDistance;
+    }
     output.m_reflection = output.m_luminance;
     return output;
 }

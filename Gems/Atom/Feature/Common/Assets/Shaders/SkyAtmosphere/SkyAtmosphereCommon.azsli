@@ -59,7 +59,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     struct Constants 
     {
         float3   m_absorption;
-        float    m_pad0; // not used
+        float    m_nearClip;
 
         float3   m_rayleighScattering;
         float    m_miePhaseFunctionG;
@@ -84,7 +84,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         float  m_absorptionDensity0LinearTerm;
         float  m_absorptionDensity1ConstantTerm;
         float  m_absorptionDensity1LinearTerm;
-        float  m_pad1; // not used
+        float  m_nearFadeDistance;
 
         float3 m_sunColor;
         float  m_sunRadiusFactor;
@@ -93,10 +93,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         float  m_sunFalloffFactor;
 
         float3 m_sunLimbColor;
-        float  m_pad2; 
+        float  m_sunShadowFarClip; 
 
         float3 m_luminanceFactor;
-        float  m_pad3; 
+        float  m_pad3; // not used
 
         float3 m_planetOrigin;
         float  m_pad4; // not used
@@ -435,7 +435,7 @@ SingleScatteringResult IntegrateScatteredLuminance(
     if (variablesampleCount)
     {
         // tMax which indicates the maximum distance we will trace is in kilometers
-        // if min rays = 4 and max rays = 14 (14 - 4 = 10 steps)
+        // if min rays = 4 and max rays = 14 (14 - 4 = 10 steps) so 1.0/steps is 0.01
         // if tMax is < 1Km then floor(1 * 0.01) = 0, so 4 ray segments
         // if tMax is > 100Km then floor(100 * 0.01) = 1, so 14 ray segments
 
@@ -530,7 +530,7 @@ SingleScatteringResult IntegrateScatteredLuminance(
         float shadow = 1.0f;
 
 #if ENABLE_ATMOSPHERE_SHADOWS
-        if (o_enableShadows && earthShadow == 1.0f)
+        if (o_enableShadows && earthShadow == 1.0f && tMax < PassSrg::m_constants.m_sunShadowFarClip)
         {
             const float3 shadowworldPosition = (P + Atmosphere.PlanetOrigin) * 1000.f;
             shadow = DirectionalLightShadow::GetVisibility(
