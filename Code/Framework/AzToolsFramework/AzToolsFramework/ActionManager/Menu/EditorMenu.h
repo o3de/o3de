@@ -32,10 +32,14 @@ namespace AzToolsFramework
 
         static void Initialize();
 
-        void AddSeparator(int sortKey);
+        // Add Menu Items
         void AddAction(int sortKey, AZStd::string actionIdentifier);
+        void AddSeparator(int sortKey);
         void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
+
+        // Remove Menu Items
+        void RemoveAction(AZStd::string actionIdentifier);
 
         // Returns whether the action or menu queried is contained in this menu.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
@@ -49,9 +53,10 @@ namespace AzToolsFramework
         QMenu* GetMenu();
         const QMenu* GetMenu() const;
 
-    private:
+        // Clears the menu and creates a new one from the EditorMenu information.
         void RefreshMenu();
 
+    private:
         enum class MenuItemType
         {
             Action = 0,
