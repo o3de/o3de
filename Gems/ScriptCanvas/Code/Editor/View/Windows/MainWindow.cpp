@@ -61,22 +61,23 @@
 #include <Editor/Settings.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
 
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/std/containers/array.h>
-#include <AzCore/std/containers/set.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Serialization/IdUtils.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -130,6 +131,7 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 
 #include <Editor/View/Windows/ScriptCanvasContextMenus.h>
+#include <Editor/View/Windows/ScriptEventMenu.h>
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
@@ -233,7 +235,7 @@ namespace ScriptCanvasEditor
             Widget::GraphTabBar* tabBar = m_mainWindow->m_tabBar;
 
             AZStd::vector<EditorSettings::EditorWorkspace::WorkspaceAssetSaveData> activeAssets;
-            ScriptCanvasEditor::SourceHandle focusedAssetId = tabBar->FindAssetId(tabBar->currentIndex());
+            SourceHandle focusedAssetId = tabBar->FindAssetId(tabBar->currentIndex());
 
             if (m_rememberOpenCanvases)
             {
@@ -241,13 +243,13 @@ namespace ScriptCanvasEditor
 
                 for (int i = 0; i < tabBar->count(); ++i)
                 {
-                    ScriptCanvasEditor::SourceHandle assetId = tabBar->FindAssetId(i);
+                    SourceHandle assetId = tabBar->FindAssetId(i);
 
                     const Tracker::ScriptCanvasFileState& fileState = m_mainWindow->GetAssetFileState(assetId);
 
                     if (fileState == Tracker::ScriptCanvasFileState::MODIFIED || fileState == Tracker::ScriptCanvasFileState::UNMODIFIED)
                     {
-                        ScriptCanvasEditor::SourceHandle sourceId = GetSourceAssetId(assetId);
+                        SourceHandle sourceId = GetSourceAssetId(assetId);
                         if (sourceId.IsGraphValid())
                         {
                             EditorSettings::EditorWorkspace::WorkspaceAssetSaveData assetSaveData;
@@ -305,7 +307,7 @@ namespace ScriptCanvasEditor
 
                 if (m_loadingAssets.empty())
                 {
-                    m_mainWindow->OnWorkspaceRestoreEnd(ScriptCanvasEditor::SourceHandle());
+                    m_mainWindow->OnWorkspaceRestoreEnd(SourceHandle());
                 }
                 else
                 {
@@ -327,7 +329,7 @@ namespace ScriptCanvasEditor
 //                         {
 //                             if (assetSaveData.m_assetId == m_queuedAssetFocus)
 //                             {
-//                                 m_queuedAssetFocus = ScriptCanvasEditor::SourceHandle();
+//                                 m_queuedAssetFocus = SourceHandle();
 //                             }
 // 
 //                             SignalAssetComplete(asset.GetFileAssetId());
@@ -341,7 +343,7 @@ namespace ScriptCanvasEditor
 //                     {
 //                         if (assetSaveData.m_assetId == m_queuedAssetFocus)
 //                         {
-//                             m_queuedAssetFocus = ScriptCanvasEditor::SourceHandle();
+//                             m_queuedAssetFocus = SourceHandle();
 //                         }
 // 
 //                         SignalAssetComplete(assetSaveData.m_assetId);
@@ -350,12 +352,12 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                m_mainWindow->OnWorkspaceRestoreEnd(ScriptCanvasEditor::SourceHandle());
+                m_mainWindow->OnWorkspaceRestoreEnd(SourceHandle());
             }
         }
     }
 
-    void Workspace::SignalAssetComplete(const ScriptCanvasEditor::SourceHandle& /*fileAssetId*/)
+    void Workspace::SignalAssetComplete(const SourceHandle& /*fileAssetId*/)
     {
         // When we are done loading all assets we can safely set the focus to the recorded asset
 //         auto it = AZStd::find(m_loadingAssets.begin(), m_loadingAssets.end(), fileAssetId);
@@ -371,7 +373,7 @@ namespace ScriptCanvasEditor
 //         }
     }
 
-    ScriptCanvasEditor::SourceHandle Workspace::GetSourceAssetId(const ScriptCanvasEditor::SourceHandle& memoryAssetId) const
+    SourceHandle Workspace::GetSourceAssetId(const SourceHandle& memoryAssetId) const
     {
         return memoryAssetId;
     }
@@ -726,6 +728,13 @@ namespace ScriptCanvasEditor
         connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
         ui->action_Interpreter->setVisible(true);
 
+        connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
+        connect(ui->actionClear_Script_Event_Status, &QAction::triggered, this, &MainWindow::OnScriptEventClearStatus);
+        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
+        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
+        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
+        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
+
         // List of recent files.
         {
             QMenu* recentMenu = new QMenu("Open &Recent");
@@ -810,7 +819,7 @@ namespace ScriptCanvasEditor
         connect(ui->action_ViewRestoreDefaultLayout, &QAction::triggered, this, &MainWindow::OnRestoreDefaultLayout);
     }
 
-    void MainWindow::SignalActiveSceneChanged(ScriptCanvasEditor::SourceHandle assetId)
+    void MainWindow::SignalActiveSceneChanged(SourceHandle assetId)
     {
         AZ::EntityId graphId;
         if (assetId.IsGraphValid())
@@ -901,7 +910,7 @@ namespace ScriptCanvasEditor
 
         for (int tabCounter = 0; tabCounter < m_tabBar->count(); ++tabCounter)
         {
-            ScriptCanvasEditor::SourceHandle assetId = m_tabBar->FindAssetId(tabCounter);
+            SourceHandle assetId = m_tabBar->FindAssetId(tabCounter);
 
             const Tracker::ScriptCanvasFileState& fileState = GetAssetFileState(assetId);
 
@@ -1098,7 +1107,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void MainWindow::SignalSceneDirty(ScriptCanvasEditor::SourceHandle assetId)
+    void MainWindow::SignalSceneDirty(SourceHandle assetId)
     {
         UpdateFileState(assetId, Tracker::ScriptCanvasFileState::MODIFIED);
     }
@@ -1121,12 +1130,12 @@ namespace ScriptCanvasEditor
         m_preventUndoStateUpdateCount = 0;
     }
 
-    void MainWindow::UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
+    void MainWindow::UpdateFileState(const SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
     {
         m_tabBar->UpdateFileState(assetId, fileState);
     }
 
-    AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAssetId(const ScriptCanvasEditor::SourceHandle& fileAssetId, Tracker::ScriptCanvasFileState fileState)
+    AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAssetId(const SourceHandle& fileAssetId, Tracker::ScriptCanvasFileState fileState)
     {
         if (fileAssetId.Id().IsNull())
         {
@@ -1141,16 +1150,16 @@ namespace ScriptCanvasEditor
             return AZ::Success(outTabIndex);
         }
 
-        auto loadedGraphOutcome = LoadFromFile(fileAssetId.Path().c_str());
-        if (!loadedGraphOutcome.IsSuccess())
+        auto result = LoadFromFile(fileAssetId.Path().c_str());
+        if (!result)
         {
             return AZ::Failure(AZStd::string::format("Failed to load graph at %s", fileAssetId.Path().c_str()));
         }
 
-        AZ_Warning("ScriptCanvas", loadedGraphOutcome.GetValue().deserializationErrors.empty()
-            , "ScriptCanvas graph loaded with skippable errors: %s", loadedGraphOutcome.GetValue().deserializationErrors.c_str());
+        AZ_Warning("ScriptCanvas", result.m_deserializeResult.m_jsonResults.empty()
+            , "ScriptCanvas graph loaded with skippable errors: %s", result.m_deserializeResult.m_jsonResults.c_str());
 
-        auto loadedGraph = loadedGraphOutcome.GetValue().handle;
+        auto loadedGraph = result.m_handle;
         CompleteDescriptionInPlace(loadedGraph);
         outTabIndex = CreateAssetTab(loadedGraph, fileState);
 
@@ -1168,33 +1177,33 @@ namespace ScriptCanvasEditor
 
     AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAssetImplementation(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
-        const ScriptCanvasEditor::SourceHandle& fileAssetId = scriptCanvasAsset;
-        if (!fileAssetId.IsDescriptionValid())
-        {
-            return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
-        }
-
-        if (!scriptCanvasAsset.IsDescriptionValid())
-        {
-            if (!m_isRestoringWorkspace)
-            {
-                AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
-
-                if (errorPath.empty())
-                {
-                    errorPath = m_errorFilePath;
-                }
-
-                if (m_queuedFocusOverride.AnyEquals(fileAssetId))
-                {
-                    m_queuedFocusOverride = fileAssetId;
-                }
-
-                QMessageBox::warning(this, "Unable to open source file", QString("Source File(%1) is in error and cannot be opened").arg(errorPath.c_str()), QMessageBox::StandardButton::Ok);
-            }
-
-            return AZ::Failure(AZStd::string("Source File is in error"));
-        }
+        const SourceHandle& fileAssetId = scriptCanvasAsset;
+//         if (!fileAssetId.IsDescriptionValid())
+//         {
+//             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
+//         }
+// 
+//         if (!scriptCanvasAsset.IsDescriptionValid())
+//         {
+//             if (!m_isRestoringWorkspace)
+//             {
+//                 AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
+// 
+//                 if (errorPath.empty())
+//                 {
+//                     errorPath = m_errorFilePath;
+//                 }
+// 
+//                 if (m_queuedFocusOverride.AnyEquals(fileAssetId))
+//                 {
+//                     m_queuedFocusOverride = fileAssetId;
+//                 }
+// 
+//                 QMessageBox::warning(this, "Unable to open source file", QString("Source File(%1) is in error and cannot be opened").arg(errorPath.c_str()), QMessageBox::StandardButton::Ok);
+//             }
+// 
+//             return AZ::Failure(AZStd::string("Source File is in error"));
+//         }
 
         int outTabIndex = m_tabBar->FindTab(fileAssetId);
 
@@ -1228,7 +1237,7 @@ namespace ScriptCanvasEditor
         return AZ::Success(outTabIndex);
     }
 
-    AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAsset(ScriptCanvasEditor::SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex)
+    AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
         if (scriptCanvasAssetId.IsGraphValid())
         {
@@ -1240,12 +1249,12 @@ namespace ScriptCanvasEditor
         }
     }
 
-    int MainWindow::CreateAssetTab(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState, int tabIndex)
+    int MainWindow::CreateAssetTab(const SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState, int tabIndex)
     {
         return m_tabBar->InsertGraphTab(tabIndex, assetId, fileState);
     }
 
-    void MainWindow::RemoveScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId)
+    void MainWindow::RemoveScriptCanvasAsset(const SourceHandle& assetId)
     {
         AssetHelpers::PrintInfo("RemoveScriptCanvasAsset : %s", assetId.ToString().c_str());
         m_assetCreationRequests.erase(assetId);
@@ -1268,7 +1277,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    int MainWindow::CloseScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId)
+    int MainWindow::CloseScriptCanvasAsset(const SourceHandle& assetId)
     {
         int tabIndex = -1;
         if (IsTabOpen(assetId, tabIndex))
@@ -1289,7 +1298,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
+        SourceHandle previousAssetId = m_activeGraph;
 
         OnFileNew();
 
@@ -1308,7 +1317,7 @@ namespace ScriptCanvasEditor
         return createdNewAsset;
     }
 
-    bool MainWindow::IsScriptCanvasAssetOpen(const ScriptCanvasEditor::SourceHandle& assetId) const
+    bool MainWindow::IsScriptCanvasAssetOpen(const SourceHandle& assetId) const
     {
         return m_tabBar->FindTab(assetId) >= 0;
     }
@@ -1347,24 +1356,24 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        auto outcome = LoadFromFile(fullPath);
-        if (!outcome.IsSuccess())
+        auto result = LoadFromFile(fullPath);
+        if (!result)
         {
             QMessageBox::warning(this, "Invalid Source File"
-                , QString("'%1' failed to load properly.\nFailure: %2").arg(fullPath).arg(outcome.GetError().c_str()), QMessageBox::Ok);
+                , QString("'%1' failed to load properly.\nFailure: %2").arg(fullPath).arg(result.m_fileReadErrors.c_str()), QMessageBox::Ok);
             m_errorFilePath = fullPath;
             AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s. Failure: %s"
-                , fullPath, outcome.GetError().c_str());
+                , fullPath, result.m_fileReadErrors.c_str());
             return;
         }
         else
         {
-            AZ_Warning("ScriptCanvas", outcome.GetValue().deserializationErrors.empty()
-                , "File loaded succesfully with deserialiation errors: %s", outcome.GetValue().deserializationErrors.c_str());
+            AZ_Warning("ScriptCanvas", result.m_deserializeResult.m_jsonResults.empty()
+                , "File loaded succesfully with deserialiation errors: %s", result.m_deserializeResult.m_jsonResults.c_str());
         }
 
         m_errorFilePath.clear();
-        auto activeGraph = ScriptCanvasEditor::SourceHandle(outcome.GetValue().handle, assetInfo.m_assetId.m_guid, fullPath);
+        auto activeGraph = SourceHandle(result.m_handle, assetInfo.m_assetId.m_guid, fullPath);
         
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
@@ -1517,7 +1526,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, ScriptCanvasEditor::SourceHandle assetId, int tabIndex)
+    int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, SourceHandle assetId, int tabIndex)
     {
         int outTabIndex = -1;
 
@@ -1539,7 +1548,7 @@ namespace ScriptCanvasEditor
         return outTabIndex;
     }
 
-    void MainWindow::UpdateUndoCache(ScriptCanvasEditor::SourceHandle)
+    void MainWindow::UpdateUndoCache(SourceHandle)
     {
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, GetActiveScriptCanvasId(), &UndoRequests::GetSceneUndoCache);
@@ -1555,7 +1564,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::DataPtr graph = EditorGraph::Create();
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
-        ScriptCanvasEditor::SourceHandle handle = ScriptCanvasEditor::SourceHandle(graph, assetId, assetPath);
+        SourceHandle handle = SourceHandle(graph, assetId, assetPath);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
         
@@ -1623,12 +1632,36 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save save)
+    bool MainWindow::SaveAssetImpl(const SourceHandle& inMemoryAssetIdIn, Save save)
     {
+        SourceHandle inMemoryAssetId = inMemoryAssetIdIn;
+
         if (!inMemoryAssetId.IsGraphValid())
         {
             return false;
         }
+
+        if (inMemoryAssetId.Get()->IsScriptEventExtension())
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Select ScriptCanvas or ScriptEvent source type:")
+                , QObject::tr("Graph defines a ScriptEvent. Press 'Discard' and use Script Event menu to save it as .scriptevent, or 'Ok' to continue to save as .scriptcanvas")
+                , QMessageBox::Ok | QMessageBox::Discard    
+                , nullptr);
+
+            if (mb.exec() == QMessageBox::Discard)
+            {
+                return false;
+            }
+        }
+
+        if (inMemoryAssetId.Path().Extension() == ".scriptevents")
+        {
+            auto newPath = inMemoryAssetId.Path();
+            newPath.ReplaceExtension(".scriptcanvas");
+            inMemoryAssetId = SourceHandle(inMemoryAssetId, newPath);
+        }        
 
         if (!m_activeGraph.AnyEquals(inMemoryAssetId))
         {
@@ -1735,7 +1768,7 @@ namespace ScriptCanvasEditor
         const bool saveSuccess = result.IsSuccess();
 
         int saveTabIndex = -1;
-        ScriptCanvasEditor::SourceHandle memoryAsset;
+        SourceHandle memoryAsset;
         {
             int saverIndex = m_tabBar->FindTab(m_fileSaver->GetSource());
             if (saverIndex >= 0)
@@ -1760,7 +1793,7 @@ namespace ScriptCanvasEditor
 
         if (saveSuccess)
         {
-            ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
+            SourceHandle& fileAssetId = memoryAsset;
             int currentTabIndex = m_tabBar->currentIndex();
 
             AZ::Data::AssetInfo assetInfo;
@@ -1825,13 +1858,13 @@ namespace ScriptCanvasEditor
         m_fileSaver.reset();
     }
 
-    bool MainWindow::ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId)
+    bool MainWindow::ActivateAndSaveAsset(const SourceHandle& unsavedAssetId)
     {
         SetActiveAsset(unsavedAssetId);
         return OnFileSave();
     }
 
-    void MainWindow::SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle inMemoryAssetId)
+    void MainWindow::SaveAs(AZStd::string_view path, SourceHandle inMemoryAssetId)
     {
         DisableAssetView(inMemoryAssetId);
         UpdateSaveState(false);
@@ -1839,7 +1872,7 @@ namespace ScriptCanvasEditor
                 ( nullptr
                 , [this](const VersionExplorer::FileSaveResult& fileSaveResult) { OnSaveCallBack(fileSaveResult); });
 
-        ScriptCanvasEditor::SourceHandle newLocation(inMemoryAssetId, AZ::Uuid::CreateNull(), path);
+        SourceHandle newLocation(inMemoryAssetId, AZ::Uuid::CreateNull(), path);
         MarkRecentSave(newLocation);
         m_fileSaver->Save(newLocation);
 
@@ -1848,47 +1881,10 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileOpen()
     {
-        AZStd::string assetRoot;
-        {
-            AZStd::array<char, AZ::IO::MaxPathLength> assetRootChar;
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", assetRootChar.data(), assetRootChar.size());
-            assetRoot = assetRootChar.data();
-        }
+        const auto sourcePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "scriptcanvas";
+        const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
 
-        AZStd::string assetPath = AZStd::string::format("%s/scriptcanvas", assetRoot.c_str());
-        QString filter;
-
-        AZStd::set<AZStd::string> filterSet { ".scriptcanvas" };
-
-        QStringList nameFilters;
-
-        QString globalFilter;
-        for (auto fileFilter : filterSet)
-        {
-            nameFilters.push_back(fileFilter.c_str());
-
-            AZStd::size_t filterStart = fileFilter.find_last_of("(");
-            AZStd::size_t filterEnd = fileFilter.find_last_of(")");
-
-            if (filterStart != AZStd::string::npos
-                && filterEnd != AZStd::string::npos)
-            {
-                AZStd::string substring = fileFilter.substr(filterStart + 1, (filterEnd - filterStart) - 1);
-
-                if (!globalFilter.isEmpty())
-                {
-                    globalFilter.append(" ");
-                }
-
-                globalFilter.append(substring.c_str());
-            }
-        }
-
-        globalFilter = QString("All ScriptCanvas Files (%1)").arg(globalFilter);
-
-        nameFilters.push_front(globalFilter);
-
-        QFileDialog dialog(nullptr, tr("Open..."), assetPath.c_str());
+        QFileDialog dialog(nullptr, tr("Open..."), sourcePath.c_str());
         dialog.setFileMode(QFileDialog::ExistingFiles);
         dialog.setNameFilters(nameFilters);
 
@@ -2274,7 +2270,7 @@ namespace ScriptCanvasEditor
     }
 
     //! GeneralRequestBus
-    void MainWindow::OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle assetId)
+    void MainWindow::OnChangeActiveGraphTab(SourceHandle assetId)
     {
         SetActiveAsset(assetId);
     }
@@ -2304,7 +2300,7 @@ namespace ScriptCanvasEditor
         return graphId;
     }
 
-    GraphCanvas::GraphId MainWindow::FindGraphCanvasGraphIdByAssetId(const ScriptCanvasEditor::SourceHandle& assetId) const
+    GraphCanvas::GraphId MainWindow::FindGraphCanvasGraphIdByAssetId(const SourceHandle& assetId) const
     {
         AZ::EntityId graphId{};
 
@@ -2317,7 +2313,7 @@ namespace ScriptCanvasEditor
         return graphId;
     }
 
-    ScriptCanvas::ScriptCanvasId MainWindow::FindScriptCanvasIdByAssetId(const ScriptCanvasEditor::SourceHandle& assetId) const
+    ScriptCanvas::ScriptCanvasId MainWindow::FindScriptCanvasIdByAssetId(const SourceHandle& assetId) const
     {
         return assetId.IsGraphValid() ? assetId.Get()->GetScriptCanvasId() : ScriptCanvas::ScriptCanvasId{};
     }
@@ -2353,7 +2349,7 @@ namespace ScriptCanvasEditor
         return isActive;
     }
 
-    QVariant MainWindow::GetTabData(const ScriptCanvasEditor::SourceHandle& assetId)
+    QVariant MainWindow::GetTabData(const SourceHandle& assetId)
     {
         for (int tabIndex = 0; tabIndex < m_tabBar->count(); ++tabIndex)
         {
@@ -2370,7 +2366,7 @@ namespace ScriptCanvasEditor
         return QVariant();
     }
 
-    bool MainWindow::IsTabOpen(const ScriptCanvasEditor::SourceHandle& fileAssetId, int& outTabIndex) const
+    bool MainWindow::IsTabOpen(const SourceHandle& fileAssetId, int& outTabIndex) const
     {
         int tabIndex = m_tabBar->FindTab(fileAssetId);
         if (-1 != tabIndex)
@@ -2381,7 +2377,7 @@ namespace ScriptCanvasEditor
         return false;
     }
 
-    void MainWindow::ReconnectSceneBuses(ScriptCanvasEditor::SourceHandle previousAsset, ScriptCanvasEditor::SourceHandle nextAsset)
+    void MainWindow::ReconnectSceneBuses(SourceHandle previousAsset, SourceHandle nextAsset)
     {
         // Disconnect previous asset
         AZ::EntityId previousScriptCanvasSceneId;
@@ -2411,7 +2407,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphRefreshed, previousScriptCanvasSceneId, nextAssetGraphCanvasId);
     }
 
-    void MainWindow::SetActiveAsset(const ScriptCanvasEditor::SourceHandle& fileAssetId)
+    void MainWindow::SetActiveAsset(const SourceHandle& fileAssetId)
     {
         if (m_activeGraph.AnyEquals(fileAssetId))
         {
@@ -2444,18 +2440,18 @@ namespace ScriptCanvasEditor
 
         if (fileAssetId.IsGraphValid())
         {
-            ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
+            SourceHandle previousAssetId = m_activeGraph;
             m_activeGraph = fileAssetId;
             RefreshActiveAsset();
             ReconnectSceneBuses(previousAssetId, m_activeGraph);
         }
         else
         {
-            ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
+            SourceHandle previousAssetId = m_activeGraph;
             m_activeGraph.Clear();
             m_emptyCanvas->show();
             ReconnectSceneBuses(previousAssetId, m_activeGraph);
-            SignalActiveSceneChanged(ScriptCanvasEditor::SourceHandle());
+            SignalActiveSceneChanged(SourceHandle());
         }
 
         UpdateUndoCache(fileAssetId);
@@ -3218,7 +3214,7 @@ namespace ScriptCanvasEditor
         m_isRestoringWorkspace = true;
     }
 
-    void MainWindow::OnWorkspaceRestoreEnd(ScriptCanvasEditor::SourceHandle lastFocusAsset)
+    void MainWindow::OnWorkspaceRestoreEnd(SourceHandle lastFocusAsset)
     {
         if (m_isRestoringWorkspace)
         {
@@ -3489,7 +3485,7 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId
         , [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
         AZ::EntityId editorEntityId{};
@@ -3499,7 +3495,7 @@ namespace ScriptCanvasEditor
         return editorEntityId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const ScriptCanvasEditor::SourceHandle& assetId
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId
         , [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
         AZ::EntityId sceneEntityId{};
@@ -3723,13 +3719,10 @@ namespace ScriptCanvasEditor
     GraphCanvas::ContextMenuAction::SceneReaction MainWindow::ShowNodeContextMenu(const AZ::EntityId& nodeId, const QPoint& screenPoint, const QPointF& scenePoint)
     {
         GraphCanvas::NodeContextMenu contextMenu(ScriptCanvasEditor::AssetEditorId);
-
         NodeDescriptorType descriptorType = NodeDescriptorType::Unknown;
-
         NodeDescriptorRequestBus::EventResult(descriptorType, nodeId, &NodeDescriptorRequests::GetType);
 
-        if (descriptorType == NodeDescriptorType::GetVariable
-            || descriptorType == NodeDescriptorType::SetVariable)
+        if (descriptorType == NodeDescriptorType::GetVariable || descriptorType == NodeDescriptorType::SetVariable)
         {
             contextMenu.AddMenuAction(aznew ConvertVariableNodeToReferenceAction(&contextMenu));
         }
@@ -3739,6 +3732,7 @@ namespace ScriptCanvasEditor
             NodeDescriptorComponent* descriptor = nullptr;
             NodeDescriptorRequestBus::EventResult(descriptor, nodeId, &NodeDescriptorRequests::GetDescriptorComponent);
             contextMenu.AddMenuAction(aznew RenameFunctionDefinitionNodeAction(descriptor, &contextMenu));
+            contextMenu.addSeparator();
         }
 
         return HandleContextMenu(contextMenu, nodeId, screenPoint, scenePoint);
@@ -3920,7 +3914,7 @@ namespace ScriptCanvasEditor
         PrepareAssetForSave(m_activeGraph);
     }
 
-    void MainWindow::PrepareAssetForSave(const ScriptCanvasEditor::SourceHandle& /*assetId*/)
+    void MainWindow::PrepareAssetForSave(const SourceHandle& /*assetId*/)
     {
     }
 
@@ -4034,7 +4028,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    ScriptCanvasEditor::Tracker::ScriptCanvasFileState MainWindow::GetAssetFileState(ScriptCanvasEditor::SourceHandle assetId) const
+    ScriptCanvasEditor::Tracker::ScriptCanvasFileState MainWindow::GetAssetFileState(SourceHandle assetId) const
     {
         auto dataOptional = m_tabBar->GetTabData(assetId);
         return dataOptional ? dataOptional->m_fileState : Tracker::ScriptCanvasFileState::INVALID;
@@ -4404,7 +4398,7 @@ namespace ScriptCanvasEditor
         //connect(m_unitTestDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
     }
 
-    void MainWindow::DisableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId)
+    void MainWindow::DisableAssetView(const SourceHandle& memoryAssetId)
     {
         if (auto view = m_tabBar->ModTabView(m_tabBar->FindTab(memoryAssetId)))
         {
@@ -4428,7 +4422,7 @@ namespace ScriptCanvasEditor
         m_autoSaveTimer.stop();
     }
 
-    void MainWindow::EnableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId)
+    void MainWindow::EnableAssetView(const SourceHandle& memoryAssetId)
     {
         if (auto view = m_tabBar->ModTabView(m_tabBar->FindTab(memoryAssetId)))
         {
@@ -4477,6 +4471,123 @@ namespace ScriptCanvasEditor
         AZStd::string key = handle.Path().Native();
         AZStd::to_lower(key.begin(), key.end());
         m_saves[key] = AZStd::chrono::system_clock::now();
+    }
+
+    void MainWindow::OnScriptEventAddHelpers()
+    {
+        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph).first)
+        {
+            GraphCanvas::GraphModelRequestBus::Event
+                ( m_activeGraph.Mod()->GetEntityId()
+                , &GraphCanvas::GraphModelRequests::RequestUndoPoint);
+        }
+    }
+
+    void MainWindow::OnScriptEventClearStatus()
+    {
+        ScriptEvents::Editor::ClearStatusAction(m_activeGraph);
+    }
+
+    void MainWindow::OnScriptEventMenuPreShow()
+    {
+        auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
+        ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
+        ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
+        ui->actionParse_As_Script_Event->setEnabled(result.m_parse);
+        ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
+    }
+
+    void MainWindow::OnScriptEventOpen()
+    {
+        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> result = ScriptEvents::Editor::OpenAction();
+
+        if (result.first.Get())
+        {
+            OpenScriptCanvasAssetImplementation(result.first, Tracker::ScriptCanvasFileState::UNMODIFIED);
+        }
+        else
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
+                , result.second.c_str()
+                , QMessageBox::Close
+                , nullptr);
+
+            mb.exec();
+        }
+    }
+
+    void MainWindow::OnScriptEventParseAs()
+    {
+        if (!m_activeGraph.IsGraphValid())
+        {
+            return;
+        }
+
+        AZStd::pair<bool, AZStd::vector<AZStd::string>> result = ScriptEvents::Editor::ParseAsAction(m_activeGraph);
+
+        if (result.first)
+        {
+            QMessageBox mb
+                ( QMessageBox::Information
+                , QObject::tr("Success!")
+                , QObject::tr("Graph parsed as ScriptEvent, and may be saved as one.")
+                , QMessageBox::Close
+                , nullptr);
+
+            mb.exec();
+        }
+        else
+        {
+            AZStd::string parseErrorString;
+
+            if (!result.second.empty())
+            {
+                parseErrorString = "Parse Errors:\n";
+
+                for (auto& entry : result.second)
+                {
+                    parseErrorString += "* ";
+                    parseErrorString += entry;
+                    parseErrorString += "\n";
+                }
+            }
+
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Graph did not parse as ScriptEvent, please fix issues below to save as a ScriptEvent")
+                , parseErrorString.c_str()
+                , QMessageBox::Close
+                , nullptr);
+
+            mb.exec();
+        }
+    }
+
+    void MainWindow::OnScriptEventSaveAs()
+    {
+        auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
+        if (result.first)
+        {
+            OnSaveToast toast
+                ( result.second
+                , GetActiveGraphCanvasGraphId()
+                , true
+                , AZStd::string("Graph Saved .scriptevent, and this editor can open that file.\n"
+                    "No .scriptcanvas file was saved from this graph."));
+        }
+        else
+        {
+            QMessageBox mb
+                ( QMessageBox::Warning
+                , QObject::tr("Failed to Save As Script Event")
+                , result.second.c_str()
+                , QMessageBox::Close
+                , nullptr);
+
+            mb.exec();
+        }
     }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>

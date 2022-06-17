@@ -14,6 +14,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
 #include <Material/BlastMaterialAsset.h>
@@ -28,6 +29,11 @@
 namespace AzPhysics
 {
     struct CollisionEvent;
+}
+
+namespace PhysX
+{
+    class Material;
 }
 
 namespace Blast
@@ -46,7 +52,7 @@ namespace Blast
         BlastFamilyComponent(
             AZ::Data::Asset<BlastAsset> blastAsset,
             AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
-            Physics::MaterialId physicsMaterialId,
+            AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset,
             const BlastActorConfiguration& actorConfiguration);
 
         BlastFamilyComponent() = default;
@@ -114,13 +120,16 @@ namespace Blast
         // Blast material instance
         AZStd::unique_ptr<Material> m_blastMaterial;
 
+        // PhysX material instance
+        AZStd::shared_ptr<PhysX::Material> m_physxMaterial;
+
         // Dependencies
         BlastMeshData* m_meshDataComponent = nullptr;
 
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
         AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
-        Physics::MaterialId m_physicsMaterialId;
+        AZ::Data::Asset<Physics::MaterialAsset> m_physicsMaterialAsset;
         const BlastActorConfiguration m_actorConfiguration{};
 
         bool m_isSpawned = false;

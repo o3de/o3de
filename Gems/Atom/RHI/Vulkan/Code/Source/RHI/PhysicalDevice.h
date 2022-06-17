@@ -63,9 +63,11 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
             AZ_RTTI(PhysicalDevice, "AD5F2BAD-A9B3-48F4-962F-C6D0760EEE17", Base);
+            PhysicalDevice() = default;
             ~PhysicalDevice() = default;
 
             static RHI::PhysicalDeviceList Enumerate();
+            void Init(VkPhysicalDevice vkPhysicalDevice);
             const VkPhysicalDevice& GetNativePhysicalDevice() const;
             const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const;
             bool IsFeatureSupported(DeviceFeature feature) const;
@@ -95,8 +97,7 @@ namespace AZ
             void CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const;
 
         private:
-            PhysicalDevice() = default;
-            void Init(VkPhysicalDevice vkPhysicalDevice);
+            
 
             ///////////////////////////////////////////////////////////////////
             // RHI::PhysicalDevice

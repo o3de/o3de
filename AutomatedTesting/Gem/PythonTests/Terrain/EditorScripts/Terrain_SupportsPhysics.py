@@ -24,30 +24,31 @@ class Tests:
 def Terrain_SupportsPhysics():
     """
     Summary:
-    Test aspects of the TerrainHeightGradientList through the BehaviorContext and the Property Tree.
+    General validation that terrain physics heightfields work within the context of the PhysX integration.
 
-    Test Steps:
     Expected Behavior:
-    The Editor is stable there are no warnings or errors.
+    The terrain system is initialized, gets a hilly physics heightfield generated, and detects a collision between a sphere and a hill
+    in a timely fashion without errors or warnings.
 
     Test Steps:
      1) Load the base level
      2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
-     2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
+     2a) Create a ball at 600.0, 600.0, 46.0 - This position intersects the terrain when it has hills generated correctly.
      3) Start the Tracer to catch any errors and warnings
      4) Change the Axis Aligned Box Shape dimensions
-     5) Set the Vegetation Shape reference to TestEntity1
+     5) Set the Reference Shape to TestEntity1
      6) Set the FastNoise gradient frequency to 0.01
      7) Set the Gradient List to TestEntity2
      8) Set the PhysX Collider to Sphere mode
-     9) Disable and Enable the Terrain Gradient List so that it is recognised
-     10) Enter game mode and test if the ball hits the heightfield within 3 seconds
+     9) Set the Rigid Body to start with no gravity enabled, so that it sits in place, intersecting the expected terrain
+     10) Enter game mode and test if the ball detects the heightfield intersection within 3 seconds
      11) Verify there are no errors and warnings in the logs
 
 
     :return: None
     """
 
+    import editor_python_test_tools.prefab_utils as PrefabUtils
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -78,7 +79,8 @@ def Terrain_SupportsPhysics():
     height_provider_entity = hydra.Entity("TestEntity2")
     height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
     Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
-    # 2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
+    # 2a) Create a ball at 600.0, 600.0, 46.0 - The ball is created as a collider with a Rigid Body, but at rest and without gravity,
+    # so that it will stay in place. This specific location is chosen because the ball should intersect the terrain.
     ball = hydra.Entity("Ball")
     ball.create_entity(azmath.Vector3(600.0, 600.0, 46.0), ball_components_to_add)
     Report.result(Tests.create_test_ball, ball.id.IsValid())
@@ -93,7 +95,7 @@ def Terrain_SupportsPhysics():
         box_shape_dimensions = hydra.get_component_property_value(terrain_spawner_entity.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.box_dimensions_changed, box_dimensions == box_shape_dimensions)
         
-        # 5) Set the Vegetaion Shape reference to TestEntity1
+        # 5) Set the Reference Shape to TestEntity1
         height_provider_entity.get_set_test(0, "Configuration|Shape Entity Id", terrain_spawner_entity.id)
         entityId = hydra.get_component_property_value(height_provider_entity.components[0], "Configuration|Shape Entity Id")
         Report.result(Tests.shape_changed, entityId == terrain_spawner_entity.id)
@@ -110,21 +112,25 @@ def Terrain_SupportsPhysics():
         checkID = propertyTree.get_container_item("Configuration|Gradient Entities", 0)
         Report.result(Tests.entity_added, checkID.GetValue() == height_provider_entity.id)
 
+        # 7a) Disable and Enable the Terrain Height Gradient List so that the change to the container is recognized
+        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
+        PrefabUtils.wait_for_propagation()
+        
         # 8) Set the PhysX Collider to Sphere mode
         shape = 0
         hydra.get_set_test(ball, 1, "Shape Configuration|Shape", shape)
         setShape = hydra.get_component_property_value(ball.components[1], "Shape Configuration|Shape")
         Report.result(Tests.shape_set, shape == setShape)
 
-        # 9) Disable and Enable the Terrain Gradient List so that it is recognised
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
+        # 9) Set the PhysX Rigid Body to not use gravity
+        hydra.get_set_test(ball, 2, "Configuration|Gravity enabled", False)
 
         general.enter_game_mode()
 
         general.idle_wait_frames(1)
 
-        # 10) Enter game mode and test if the ball hits the heightfield within 3 seconds
-        TIMEOUT = 3.0
+        # 10) Enter game mode and test if the ball detects the heightfield collision within 5 seconds
+        TIMEOUT = 5.0
 
         class Collider:
             id = general.find_game_entity("Ball")
@@ -132,15 +138,15 @@ def Terrain_SupportsPhysics():
 
         terrain_id = general.find_game_entity("TestEntity1")
  
-        def on_collision_begin(args):
+        def on_collision_persist(args):
             other_id = args[0]
             if other_id.Equal(terrain_id):
-                Report.info("Touched ground")
+                Report.info("Ball intersected with heightfield")
                 Collider.touched_ground = True
 
         handler = azlmbr.physics.CollisionNotificationBusHandler()
         handler.connect(Collider.id)
-        handler.add_callback("OnCollisionBegin", on_collision_begin)
+        handler.add_callback("OnCollisionPersist", on_collision_persist)
 
         helper.wait_for_condition(lambda: Collider.touched_ground, TIMEOUT)
         Report.result(Tests.test_collision, Collider.touched_ground)

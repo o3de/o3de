@@ -30,6 +30,10 @@ namespace AzToolsFramework
 
             // Remove an Instance from the waiting queue.
             virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
+
+            // A notification OnRootPrefabInstanceLoaded will fire during the propagation if root
+            // prefab instance is loaded for the first time after this function is called.
+            virtual void QueueRootPrefabLoadedNotificationForNextPropagation() = 0;
         };
     }
 }

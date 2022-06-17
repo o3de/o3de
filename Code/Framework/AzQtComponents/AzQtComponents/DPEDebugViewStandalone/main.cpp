@@ -27,10 +27,13 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QTreeView>
+#include <QScrollArea>
+#include <QComboBox>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 
@@ -46,9 +49,10 @@ namespace DPEDebugView
         QMessageBox::information(nullptr, "Button", "Button1 pressed");
     }
 
-    void Button2()
+    AZ::Crc32 Button2()
     {
         QMessageBox::information(nullptr, "Button", "Button2 pressed");
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     class TestContainer
@@ -67,6 +71,7 @@ namespace DPEDebugView
 
         int m_simpleInt = 5;
         double m_doubleSlider = 3.25;
+        AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
@@ -86,6 +91,7 @@ namespace DPEDebugView
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
+                    ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
@@ -98,6 +104,11 @@ namespace DPEDebugView
                     ->Field("enumValue", &TestContainer::m_enumValue)
                     ->Field("entityId", &TestContainer::m_entityId);
 
+                serializeContext->Enum<EnumType>()
+                    ->Value("Value1", EnumType::Value1)
+                    ->Value("Value2", EnumType::Value2)
+                    ->Value("ValueZ", EnumType::ValueZ);
+
                 if (auto editContext = serializeContext->GetEditContext())
                 {
                     editContext->Enum<EnumType>("EnumType", "")
@@ -106,11 +117,20 @@ namespace DPEDebugView
                         ->Value("ValueZ", EnumType::ValueZ);
 
                     editContext->Class<TestContainer>("TestContainer", "")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 1 (should be at top)")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Simple Types")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_unorderedMap, "unordered_map<pair<int, double>, int>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleEnum, "unordered_map<enum, int>", "")
@@ -125,15 +145,13 @@ namespace DPEDebugView
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_nestedMap, "unordered_map<enum, unordered_map<int, int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button1 (no multi-edit)")
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button2 (multi-edit)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
                 }
             }
@@ -203,22 +221,19 @@ int main(int argc, char** argv)
 
     app.Start(AzFramework::Application::Descriptor());
 
-#if 0 // change this to test with a reflection adapter instead
-    // create a default cvar adapter to expose the local CVar settings to edit
-    AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>();
-#else
-    // create a reflection adapter for a TestContainer
-    AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> adapter =
-        AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+    // store a list of selectable adapters to switch between
     DPEDebugView::TestContainer testContainer;
-    adapter->SetValue(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>());
-#endif
+    testContainer.m_map["A"] = 1.f;
+    testContainer.m_map["B"] = 2.f;
+
+    AZStd::vector<AZStd::pair<QString, AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter>>> adapters;
+    adapters.emplace_back("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
+    adapters.emplace_back("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
+    adapters.emplace_back("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
 
     AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-    adapterModel.SetAdapter(adapter.get());
 
     QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
-    theWindow->m_textView->SetAdapter(adapter);
     theWindow->m_treeView->setModel(&adapterModel);
 
     for (int columnIndex = 0, maxColumns = adapterModel.GetMaxColumns(); columnIndex < maxColumns; ++columnIndex)
@@ -226,11 +241,25 @@ int main(int argc, char** argv)
         // resize the columns to accommodate the displayed data
         theWindow->m_treeView->resizeColumnToContents(columnIndex);
     }
-    theWindow->show();
 
     // create a real DPE on the same adapter as the debug adapter for testing purposes
-    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
-    dpeInstance->SetAdapter(adapter.get());
+    AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+
+    // add the adapters to a combo box and switch out the views on selection change
+    QObject::connect(theWindow->adapterSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), [&]()
+        {
+            auto adapter = adapters[theWindow->adapterSelector->currentIndex()].second;
+            adapterModel.SetAdapter(adapter.get());
+            theWindow->m_textView->SetAdapter(adapter);
+            dpeInstance->SetAdapter(adapter.get());
+        });
+    for (const auto& entry : adapters)
+    {
+        theWindow->adapterSelector->addItem(entry.first);
+    }
+    theWindow->adapterSelector->setCurrentIndex(0);
+
+    theWindow->show();
     dpeInstance->show();
 
     return qtApp.exec();

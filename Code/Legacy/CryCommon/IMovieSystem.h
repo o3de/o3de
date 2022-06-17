@@ -12,6 +12,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -675,7 +676,7 @@ public:
     virtual void SetName(const char* name) = 0;
 
     //! Get node name.
-    virtual const char* GetName() = 0;
+    virtual const char* GetName() const = 0;
 
     // Get Type of this node.
     virtual AnimNodeType GetType() const = 0;
@@ -719,6 +720,34 @@ public:
     //! Scale entity node.
     virtual void SetScale(float time, const Vec3& scale) = 0;
 
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetPos that accepts AZ::Vector3  
+     **/
+    void SetPos(float time, const AZ::Vector3& pos)
+    {
+        Vec3 vec3(pos.GetX(), pos.GetY(), pos.GetZ());
+        SetPos(time, vec3);
+    }
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetRotate that accepts AZ::Quaternion  
+     **/
+    void SetRotate(float time, const AZ::Quaternion& rot)
+    {
+        Quat quat(rot.GetX(), rot.GetY(), rot.GetZ(), rot.GetW());
+        SetRotate(time, quat);
+    }
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetScale that accepts AZ::Vector3  
+     **/
+    void SetScale(float time, const AZ::Vector3& scale)
+    {
+        Vec3 vec3(scale.GetX(), scale.GetY(), scale.GetZ());
+        SetScale(time, vec3);
+    }
+
     //! Compute and return the offset which brings the current position to the given position
     virtual Vec3 GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
 
@@ -737,11 +766,57 @@ public:
     virtual bool SetParamValue(float time, CAnimParamType param, float value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec3& value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec4& value) = 0;
+    
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetParamValue that accepts AZ::Vector3  
+     **/
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value) 
+    {
+        Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
+        return SetParamValue(time, param, vec3);
+    }
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetParamValue that accepts AZ::Vector4  
+     **/
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value) 
+    {
+        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
+        return SetParamValue(time, param, vec4);
+    }
+
+    
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
     virtual bool GetParamValue(float time, CAnimParamType param, float& value) = 0;
     virtual bool GetParamValue(float time, CAnimParamType param, Vec3& value) = 0;
     virtual bool GetParamValue(float time, CAnimParamType param, Vec4& value) = 0;
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent GetParamValue that accepts AZ::Vector4  
+     **/
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value) 
+    {
+        Vec3 vec3;
+        const bool result = GetParamValue(time, param, vec3);
+        value.Set(vec3.x, vec3.y, vec3.z);
+        return result;
+    }
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent GetParamValue that accepts AZ::Vector4  
+     **/
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value) 
+    {
+        Vec4 vec4;
+        const bool result = GetParamValue(time, param, vec4);
+        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
+        return result;
+    }
 
     //! Evaluate animation node while not playing animation.
     virtual void StillUpdate() = 0;
@@ -835,10 +910,16 @@ public:
     virtual void SetNodeOwner(IAnimNodeOwner* pOwner) = 0;
     virtual IAnimNodeOwner* GetNodeOwner() = 0;
 
-    // Serialize this animation node to XML.
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
+     **/
     virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) = 0;
 
-    // Serialize only the tracks in this animation node to/from XML
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
+     **/
     virtual void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) = 0;
 
     // Sets up internal pointers post load from Sequence Component

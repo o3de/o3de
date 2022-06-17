@@ -28,7 +28,7 @@ namespace Blast
         , m_scale(scale)
     {
         AZ::Render::MaterialComponentRequestBus::EventResult(
-            m_materialMap, entityId, &AZ::Render::MaterialComponentRequests::GetMaterialOverrides);
+            m_materialMap, entityId, &AZ::Render::MaterialComponentRequests::GetMaterialMap);
     }
 
     void ActorRenderManager::OnActorCreated(const BlastActor& actor)

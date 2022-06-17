@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/Component/TickBus.h>
+
 #include <Rendering/Atom/WhiteBoxAttributeBuffer.h>
 #include <Rendering/Atom/WhiteBoxBuffer.h>
 #include <Rendering/WhiteBoxRenderData.h>
@@ -33,7 +35,7 @@ namespace WhiteBox
     class AtomRenderMesh
         : public RenderMeshInterface
         , private AZ::Render::MeshHandleStateRequestBus::Handler
-
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_RTTI(AtomRenderMesh, "{1F48D2F5-037C-400B-977C-7C0C9A34B84C}", RenderMeshInterface);
@@ -48,6 +50,9 @@ namespace WhiteBox
         void UpdateMaterial(const WhiteBoxMaterial& material) override;
         bool IsVisible() const override;
         void SetVisiblity(bool visibility) override;
+
+        // AZ::TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:
         //! Creates an attribute buffer in the slot dictated by AttributeTypeT.
@@ -88,6 +93,7 @@ namespace WhiteBox
         AZ::Data::Instance<AZ::RPI::Model> m_model;
         AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
+        AZ::Render::MaterialAssignmentMap m_materialMap;
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<
@@ -97,6 +103,7 @@ namespace WhiteBox
                 AZStd::unique_ptr<UVAttribute>, AZStd::unique_ptr<ColorAttribute>>,
             NumAttributes>
             m_attributes;
+        bool m_visible = true;
 
         //! Default white box mesh material.
         static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";

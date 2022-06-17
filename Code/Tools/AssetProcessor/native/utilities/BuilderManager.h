@@ -134,6 +134,9 @@ namespace AssetProcessor
         AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_tracePrinter = nullptr;
 
         const AssetUtilities::QuitListener& m_quitListener;
+
+        //! Time to wait in seconds for a builder to startup before timing out.
+        AZ::s64 m_startupWaitTimeS = 0;
     };
 
     //! Scoped reference to a builder. Destructor returns the builder to the free builders pool
@@ -154,7 +157,7 @@ namespace AssetProcessor
         const Builder* operator->() const;
 
         explicit operator bool() const;
-    
+
         void release();
 
     private:

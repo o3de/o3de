@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/Math/Crc.h>
+
 namespace ScriptCanvas
 {
     namespace Attributes

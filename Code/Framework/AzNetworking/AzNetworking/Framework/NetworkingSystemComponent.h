@@ -26,7 +26,7 @@ namespace AzNetworking
     //! This class creates and manages the set of network interfaces used by the application.
     class NetworkingSystemComponent final
         : public AZ::Component
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public INetworking
     {
     public:
@@ -45,10 +45,9 @@ namespace AzNetworking
         void Deactivate() override;
         //! @}
 
-        //! AZ::TickBus::Handler overrides.
+        //! AZ::SystemTickBus::Handler overrides.
         //! @{
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
+        void OnSystemTick() override;
         //! @}
 
         //! INetworking overrides.
@@ -64,6 +63,7 @@ namespace AzNetworking
         AZ::TimeMs GetTcpListenThreadUpdateTime() const override;
         uint32_t GetUdpReaderThreadSocketCount() const override;
         AZ::TimeMs GetUdpReaderThreadUpdateTime() const override;
+        void ForceUpdate() override;
         //! @}
 
         //! Console commands.

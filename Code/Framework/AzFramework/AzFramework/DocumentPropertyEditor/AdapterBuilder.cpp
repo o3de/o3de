@@ -33,6 +33,16 @@ namespace AZ::DocumentPropertyEditor
             });
     }
 
+    void AdapterBuilder::AddMessageHandler(DocumentAdapter* adapter, AZ::Name messageName, const Dom::Value& contextData)
+    {
+        BoundAdapterMessage boundMessage;
+        boundMessage.m_adapter = adapter;
+        boundMessage.m_messageName = messageName;
+        boundMessage.m_messageOrigin = GetCurrentPath();
+        boundMessage.m_contextData = contextData;
+        Attribute(messageName, boundMessage.MarshalToDom());
+    }
+
     Dom::Path AdapterBuilder::GetCurrentPath() const
     {
         return m_currentPath;
@@ -68,13 +78,10 @@ namespace AZ::DocumentPropertyEditor
 
     void AdapterBuilder::BeginNode(Name name)
     {
+        // For everything except our root node, add the current index to the path
         if (!m_entries.empty())
         {
             m_currentPath.Push(CurrentNode().ArraySize());
-        }
-        else
-        {
-            m_currentPath.Push(0);
         }
         m_entries.push(Dom::Value::CreateNode(name));
     }
@@ -85,7 +92,10 @@ namespace AZ::DocumentPropertyEditor
         AZ_Assert(
             expectedName.IsEmpty() || CurrentNode().GetNodeName() == expectedName,
             "AdapterBuilder::EndNode called for %s when %s was expected", CurrentNode().GetNodeName().GetCStr(), expectedName.GetCStr());
-        m_currentPath.Pop();
+        if (!m_currentPath.IsEmpty())
+        {
+            m_currentPath.Pop();
+        }
         Dom::Value value = AZStd::move(m_entries.top());
         m_entries.pop();
         if (!m_entries.empty())

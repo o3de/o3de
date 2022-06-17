@@ -298,6 +298,11 @@ namespace Physics
 
     void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh)
     {
+        if (m_cachedNativeMesh == cachedNativeMesh)
+        {
+            return;
+        }
+        ReleaseCachedNativeMesh();
         m_cachedNativeMesh = cachedNativeMesh;
     }
 
@@ -370,6 +375,11 @@ namespace Physics
 
     void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield)
     {
+        if (m_cachedNativeHeightfield == cachedNativeHeightfield)
+        {
+            return;
+        }
+
         if (m_cachedNativeHeightfield)
         {
             Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
@@ -388,24 +398,52 @@ namespace Physics
         m_gridResolution = gridResolution;
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumColumns() const
+    size_t HeightfieldShapeConfiguration::GetNumColumnVertices() const
     {
         return m_numColumns;
     }
 
-    void HeightfieldShapeConfiguration::SetNumColumns(int32_t numColumns)
+    void HeightfieldShapeConfiguration::SetNumColumnVertices(size_t numColumns)
     {
-        m_numColumns = numColumns;
+        AZ_Assert(
+            (numColumns == 0) || (numColumns >= 2),
+            "A non-empty heightfield must have at least 2 column vertices to define 1 square. Num columns provided: %d", numColumns);
+        m_numColumns = aznumeric_cast<uint32_t>(numColumns);
+
+        if (m_numColumns < 2)
+        {
+            m_numColumns = 0;
+        }
     }
 
-    int32_t HeightfieldShapeConfiguration::GetNumRows() const
+    size_t HeightfieldShapeConfiguration::GetNumRowVertices() const
     {
         return m_numRows;
     }
 
-    void HeightfieldShapeConfiguration::SetNumRows(int32_t numRows)
+    void HeightfieldShapeConfiguration::SetNumRowVertices(size_t numRows)
     {
-        m_numRows = numRows;
+        AZ_Assert(
+            (numRows == 0) || (numRows >= 2),
+            "A non-empty heightfield must have at least 2 row vertices to define 1 square. Num rows provided: %d", numRows);
+        m_numRows = aznumeric_cast<uint32_t>(numRows);
+
+        if (m_numRows < 2)
+        {
+            m_numRows = 0;
+        }
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return (m_numColumns > 1) ? m_numColumns - 1 : 0;
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumRowSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return (m_numRows > 1) ? m_numRows - 1 : 0;
     }
 
     const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
@@ -413,9 +451,9 @@ namespace Physics
         return m_samples;
     }
 
-    void HeightfieldShapeConfiguration::ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point)
+    void HeightfieldShapeConfiguration::ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point)
     {
-        const int32_t index = row * m_numColumns + column;
+        const size_t index = row * m_numColumns + column;
         if (row < m_numRows && column < m_numColumns && index < m_samples.size())
         {
             m_samples[index] = point;

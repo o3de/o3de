@@ -170,15 +170,16 @@ namespace EMotionFX
             bool                                m_renderBounds;             ///< Toggles rendering of the world bounding box.
             bool                                m_entityVisible;            ///< Entity visible from the EditorVisibilityNotificationBus
             SkinningMethod                      m_skinningMethod;           ///< The skinning method for this actor
+
             AttachmentType                      m_attachmentType;           ///< Attachment type.
             AZ::EntityId                        m_attachmentTarget;         ///< Target entity to attach to, if any.
+            AZ::EntityId                        m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             AZStd::string                       m_attachmentJointName;      ///< Joint name on target to which to attach (if ActorAttachment).
             size_t                              m_attachmentJointIndex;
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
             ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
-            bool m_addMaterialComponentFlag = false;                        ///< Flag used for button placement
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.

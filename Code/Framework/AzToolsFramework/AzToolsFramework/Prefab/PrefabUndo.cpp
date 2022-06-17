@@ -88,8 +88,26 @@ namespace AzToolsFramework
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_redoPatch, entityId);
+            
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
+
+            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
+            if (!entityAliasPath.empty())
+            {
+                PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
+
+                if (cachedDom.has_value())
+                {
+                    // Create a copy of the dom of the end state so that it shares the lifecycle of the cached Dom.
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
+                    Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+
+                    // Update the cached instance dom corresponding to the entity so that the same modified entity isn't reloaded again.
+                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
+                }
+            }
         }
 
         void PrefabUndoEntityUpdate::Undo()
@@ -268,7 +286,7 @@ namespace AzToolsFramework
             //apply the patch to the template within the target
             [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
 
-            AZ_Error(
+            AZ_Warning(
                 "Prefab",
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),

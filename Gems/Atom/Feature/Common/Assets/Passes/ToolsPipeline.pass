@@ -141,7 +141,14 @@
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
-                        }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA" 
+                            }
+                        }                          
                     ]
                 },
                 {

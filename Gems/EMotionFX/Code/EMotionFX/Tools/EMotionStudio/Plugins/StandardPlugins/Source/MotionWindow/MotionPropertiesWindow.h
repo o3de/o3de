@@ -14,34 +14,37 @@
 #include <QWidget>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QPushButton)
-
 namespace EMStudio
 {
-    // forward declarations
     class MotionExtractionWindow;
-    class MotionRetargetingWindow;
-    class MotionWindowPlugin;
 
-    class MotionPropertiesWindow
-        : public QWidget
+    class MotionPropertiesWindow : public QWidget
     {
         Q_OBJECT // AUTOMOC
 
     public:
-        MotionPropertiesWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin);
+        MotionPropertiesWindow(QWidget* parent);
         ~MotionPropertiesWindow();
 
-        void UpdateMotions();
         void UpdateInterface();
 
         void AddSubProperties(QWidget* widget);
         void FinalizeSubProperties();
 
     private:
-        MotionWindowPlugin* m_motionWindowPlugin = nullptr;
+        class CommandSelectCallback : public MCore::Command::Callback
+        {
+        public:
+            CommandSelectCallback(MotionPropertiesWindow* window, bool executePreUndo, bool executePreCommand = false);
+            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine);
+            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine);
+
+        private:
+            MotionPropertiesWindow* m_window = nullptr;
+        };
+        AZStd::vector<MCore::Command::Callback*> m_callbacks;
+
         MotionExtractionWindow* m_motionExtractionWindow = nullptr;
-        MotionRetargetingWindow* m_motionRetargetingWindow = nullptr;
 
         static constexpr const char* s_headerIcon = ":/EMotionFX/ActorComponent.svg";
     };

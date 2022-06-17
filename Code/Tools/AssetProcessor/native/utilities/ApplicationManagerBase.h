@@ -58,6 +58,7 @@ class ApplicationManagerBase
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     , public AssetProcessor::DiskSpaceInfoBus::Handler
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
+    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -108,6 +109,9 @@ public:
 
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;
+
+    //! MessageInfoBus::Handler
+    void OnBuilderRegistrationFailure() override;
 
     void RemoveOldTempFolders();
 
