@@ -608,7 +608,7 @@ void CUndoTrackEventRemove::Undo(bool bUndo)
 
         keyHandle.GetKey(&eventKey);
         // re-set the eventKey with the m_eventName
-        eventKey.event = rawName.c_str();
+        eventKey.event = rawName;
         keyHandle.SetKey(&eventKey);
     }
 }
