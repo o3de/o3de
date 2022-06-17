@@ -198,7 +198,7 @@ namespace AzNetworking
             dest.sin_addr.s_addr = address.GetAddress(ByteOrder::Network);
             dest.sin_port = address.GetPort(ByteOrder::Network);
 
-            if (::connect(static_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
+            if (::connect(aznumeric_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
                 AZLOG(NET_TcpTraffic, "Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));

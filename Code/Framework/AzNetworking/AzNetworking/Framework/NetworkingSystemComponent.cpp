@@ -17,7 +17,7 @@
 
 namespace AzNetworking
 {
-    AZ_CVAR(bool, net_validateSerializedTypes, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Validate that all serialized types are correct");
+    AZ_CVAR(bool, net_validateSerializedTypes, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Validate that all serialized types are correct");
 
     void NetworkingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
