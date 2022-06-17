@@ -6,15 +6,19 @@
  *
  */
 
-#include "RotationParameterEditor.h"
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/RotationParameterEditor.h>
 
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <EMotionFX/Rendering/Common/RotateManipulator.h>
+#include <AzFramework/Viewport/ViewportColors.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <EMotionFX/Source/Parameter/RotationParameter.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <MCore/Source/AttributeQuaternion.h>
+
+#include <QPushButton>
 
 namespace EMStudio
 {
@@ -24,17 +28,15 @@ namespace EMStudio
         : ValueParameterEditor(animGraph, valueParameter, attributes)
         , m_currentValue(AZ::Quaternion::CreateIdentity())
         , m_gizmoButton(nullptr)
-        , m_transformationGizmo(nullptr)
+        , m_rotationManipulator(AZ::Transform::Identity())
     {
         UpdateValue();
     }
 
     RotationParameterEditor::~RotationParameterEditor()
     {
-        if (m_transformationGizmo)
-        {
-            GetManager()->RemoveTransformationManipulator(m_transformationGizmo);
-            delete m_transformationGizmo;
+        if(m_rotationManipulator.Registered()) {
+            m_rotationManipulator.Unregister();
         }
     }
 
@@ -102,6 +104,21 @@ namespace EMStudio
         m_gizmoButton->setCheckable(true);
         m_gizmoButton->setEnabled(!IsReadOnly());
         m_manipulatorCallback = manipulatorCallback;
+
+        m_rotationManipulator.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
+        m_rotationManipulator.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+        m_rotationManipulator.ConfigureView(
+            AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            AzFramework::ViewportColors::ZAxisColor);
+        m_rotationManipulator.InstallMouseMoveCallback([this](
+             const AzToolsFramework::AngularManipulator::Action& action
+        ) {
+            SetValue(action.LocalOrientation());
+            if(m_manipulatorCallback) {
+                m_manipulatorCallback();
+            }
+        });
+
         return m_gizmoButton;
     }
 
@@ -130,37 +147,8 @@ namespace EMStudio
             MCore::AttributeQuaternion* typedAttribute = static_cast<MCore::AttributeQuaternion*>(attribute);
             typedAttribute->SetValue(m_currentValue);
         }
+        m_rotationManipulator.SetLocalOrientation(m_currentValue);
     }
-
-    class Callback
-        : public MCommon::ManipulatorCallback
-    {
-    public:
-        Callback(const AZStd::function<void()>& manipulatorCallback, const AZ::Quaternion& oldValue, RotationParameterEditor* parentEditor = nullptr)
-            : MCommon::ManipulatorCallback(nullptr, oldValue)
-            , m_parentEditor(parentEditor)
-            , m_manipulatorCallback(manipulatorCallback)
-        {}
-
-        using MCommon::ManipulatorCallback::Update;
-        void Update(const AZ::Quaternion& value) override
-        {
-            // call the base class update function
-            MCommon::ManipulatorCallback::Update(value);
-
-            // update the value of the attribute
-            m_parentEditor->SetValue(value);
-
-            if (m_manipulatorCallback)
-            {
-                m_manipulatorCallback();
-            }
-        }
-
-    private:
-        RotationParameterEditor* m_parentEditor;
-        const AZStd::function<void()>& m_manipulatorCallback;
-    };
 
     void RotationParameterEditor::ToggleTranslationGizmo()
     {
@@ -173,18 +161,13 @@ namespace EMStudio
             EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
         }
 
-        if (!m_transformationGizmo)
+        if (m_rotationManipulator.Registered())
         {
-            m_transformationGizmo = static_cast<MCommon::RotateManipulator*>(GetManager()->AddTransformationManipulator(new MCommon::RotateManipulator(70.0f, true)));
-            m_transformationGizmo->Init(AZ::Vector3::CreateZero());
-            m_transformationGizmo->SetCallback(new Callback(m_manipulatorCallback, m_currentValue, this));
-            m_transformationGizmo->SetName(m_valueParameter->GetName());
+            m_rotationManipulator.Unregister();
         }
         else
         {
-            GetManager()->RemoveTransformationManipulator(m_transformationGizmo);
-            delete m_transformationGizmo;
-            m_transformationGizmo = nullptr;
+            m_rotationManipulator.Register(g_animManipulatorManagerId);
         }
     }
 }

@@ -8,14 +8,11 @@
 
 #pragma once
 
-#include "ValueParameterEditor.h"
 #include <AzCore/Math/Quaternion.h>
-#include <QPushButton>
+#include <AzToolsFramework/Manipulators/RotationManipulators.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 
-namespace MCommon
-{
-    class RotateManipulator;
-}
+class QPushButton;
 
 namespace EMStudio
 {
@@ -58,7 +55,7 @@ namespace EMStudio
         AZ::Quaternion m_currentValue;
 
         QPushButton* m_gizmoButton;
-        MCommon::RotateManipulator* m_transformationGizmo;
+        AzToolsFramework::RotationManipulators m_rotationManipulator;
         AZStd::function<void()> m_manipulatorCallback;
     };
 }
