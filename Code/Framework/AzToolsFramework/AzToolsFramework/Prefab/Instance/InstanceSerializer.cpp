@@ -159,7 +159,7 @@ namespace AzToolsFramework
             }
 
             PrefabDomUtils::InstanceDomMetadata* instanceDomMetadata = context.GetMetadata().Find<PrefabDomUtils::InstanceDomMetadata>();
-            PrefabDomValueConstReference cachedInstanceDom = instance->GetCachedInstanceDom();
+            PrefabDomReference cachedInstanceDom = instance->GetCachedInstanceDom();
 
             if (instanceDomMetadata == nullptr || cachedInstanceDom == AZStd::nullopt)
             {

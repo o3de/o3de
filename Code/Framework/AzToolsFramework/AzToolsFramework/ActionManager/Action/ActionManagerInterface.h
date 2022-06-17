@@ -171,6 +171,24 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to update.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Register a new Action Updater to the Action Manager.
+        //! An Action Updater stores a list of Action identifiers that will be updated when the Updater condition is met.
+        //! The system that registers the Action Updater is expected to trigger the TriggerActionUpdater function appropriately.
+        //! @param actionUpdaterIdentifier The identifier for the newly registered action updater.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
+        
+        //! Adds an action identifier to the updater's list.
+        //! @param actionUpdaterIdentifier The identifier for the updater to add the action to.
+        //! @param actionIdentifier The identifier for the action to add the updater's list.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier) = 0;
+        
+        //! Trigger an update on all actions registered to the Action Updater.
+        //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

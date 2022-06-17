@@ -62,6 +62,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
@@ -81,6 +84,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterPropertyEditor<Button>();
         system->RegisterNodeAttribute<Button>(Button::ButtonText);
+
+        system->RegisterPropertyEditor<ContainerActionButton>();
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
 
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
