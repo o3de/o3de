@@ -264,8 +264,6 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
     } \
 } \
 \
-template< typename T > struct AzEnumTraits; \
-\
 template<> \
 struct AzEnumTraits< AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName > \
 { \
@@ -273,4 +271,6 @@ struct AzEnumTraits< AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName > \
     inline static constexpr MembersArrayType& Members   = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members); \
     inline static constexpr size_t Count                = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Count); \
     inline static constexpr AZStd::string_view EnumName = AZ_STRINGIZE(EnumTypeName); \
-}; 
+};
+
+template<typename T> struct AzEnumTraits;

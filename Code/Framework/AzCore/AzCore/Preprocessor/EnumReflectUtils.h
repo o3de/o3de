@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/fixed_string.h>
+
 
 //! Call this macro in the same namespace where the AZ_ENUM was defined to generate ReflectEnumType() utility functions.
 //! @param EnumTypeName an enum that was defined using one of the AZ_ENUM macros.
@@ -47,14 +47,5 @@
     void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                                 \
     {                                                                                                                                                   \
         AZ_JOIN(EnumTypeName, ReflectValues)(context, typeName, AZStd::make_index_sequence<AzEnumTraits<EnumTypeName>::Members.size()>());              \
-    }                                                                                                                                                   \
-                                                                                                                                                        \
-    AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> AZ_JOIN(EnumTypeName, EditEnumConstants)()                                                          \
-    {                                                                                                                                                   \
-        AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> enumValues;                                                                                     \
-        for (const auto& member : AzEnumTraits<EnumTypeName>::Members)                                                                                  \
-        {                                                                                                                                               \
-            enumValues.emplace_back(aznumeric_cast<uint32_t>(member.m_value), member.m_string.data());                                                  \
-        }                                                                                                                                               \
-        return enumValues;                                                                                                                              \
-    }                                                                                                                                                   \
+    }
+
