@@ -120,6 +120,12 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE bool Overlaps(const Sphere& sphere, const Capsule& capsule)
+        {
+            return Overlaps(capsule, sphere);
+        }
+
+
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Sphere& sphere)
         {
             for (Frustum::PlaneId planeId = Frustum::PlaneId::Near; planeId < Frustum::PlaneId::MAX; ++planeId)
