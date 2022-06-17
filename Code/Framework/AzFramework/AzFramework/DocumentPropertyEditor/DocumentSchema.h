@@ -297,7 +297,12 @@ namespace AZ::DocumentPropertyEditor
 
             static ResultType ValueToResult(const Dom::Value& value)
             {
-                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(value));
+                auto result = AZ::Dom::Utils::ValueToType<Result>(value);
+                if (!result.has_value())
+                {
+                    return AZ::Failure<ErrorType>("Failed to convert return value type");
+                }
+                return AZ::Success(AZStd::move(result.value()));
             }
         };
 
