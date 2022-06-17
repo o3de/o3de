@@ -588,7 +588,7 @@ namespace O3DE::ProjectManager
         if (showMessage)
         {
             QMessageBox::information(this,
-                tr("Project Should be rebuilt."),
+                tr("Project should be rebuilt."),
                 projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }

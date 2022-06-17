@@ -71,6 +71,7 @@ namespace DPEDebugView
 
         int m_simpleInt = 5;
         double m_doubleSlider = 3.25;
+        AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
@@ -90,6 +91,7 @@ namespace DPEDebugView
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
+                    ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
@@ -117,11 +119,15 @@ namespace DPEDebugView
                     editContext->Class<TestContainer>("TestContainer", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button1 (no multi-edit)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 1 (should be at top)")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Simple Types")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -139,12 +145,13 @@ namespace DPEDebugView
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_nestedMap, "unordered_map<enum, unordered_map<int, int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button2 (multi-edit)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
                 }
             }
@@ -216,6 +223,9 @@ int main(int argc, char** argv)
 
     // store a list of selectable adapters to switch between
     DPEDebugView::TestContainer testContainer;
+    testContainer.m_map["A"] = 1.f;
+    testContainer.m_map["B"] = 2.f;
+
     AZStd::vector<AZStd::pair<QString, AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter>>> adapters;
     adapters.emplace_back("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     adapters.emplace_back("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());

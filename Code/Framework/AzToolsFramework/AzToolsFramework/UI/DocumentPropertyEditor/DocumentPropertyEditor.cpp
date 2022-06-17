@@ -225,6 +225,7 @@ namespace AzToolsFramework
             m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
             m_columnLayout->removeWidget(propertyWidget);
 
+            propertyWidgetIter->first->setParent(nullptr);
             if (dpe)
             {
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second));
@@ -598,7 +599,6 @@ namespace AzToolsFramework
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
     {
-        DestroyLayoutContents(GetVerticalLayout());
     }
 
     void DocumentPropertyEditor::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
