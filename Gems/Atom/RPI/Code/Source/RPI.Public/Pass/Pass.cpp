@@ -1395,6 +1395,11 @@ namespace AZ
             return nullptr;
         }
 
+        PassTree* Pass::GetPassTree() const
+        {
+            return m_pipeline ? &(m_pipeline->m_passTree) : nullptr;
+        }
+
         void Pass::GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const
         {
             // NOTE: we always collect the draw list mask regardless if the pass enabled or not. The reason is we want to keep the view information

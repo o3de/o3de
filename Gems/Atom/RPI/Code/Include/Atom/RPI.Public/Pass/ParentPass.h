@@ -126,7 +126,7 @@ namespace AZ
             void RemoveChild(Ptr<Pass> pass);
 
             // Orphans all children by clearing m_children.
-            void RemoveChildren();
+            void RemoveChildren(bool calledFromDestructor = false);
 
         private:
             // RPI::Pass overrides...
