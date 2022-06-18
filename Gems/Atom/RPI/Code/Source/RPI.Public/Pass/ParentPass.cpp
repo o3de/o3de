@@ -52,9 +52,9 @@ namespace AZ
 
         // --- Child Pass Addition ---
 
-        void ParentPass::AddChild(const Ptr<Pass>& child)
+        void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
-            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass(), "Do not add child passes outside of build phase");
+            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
 
             if (child->m_parent != nullptr)
             {
@@ -166,7 +166,7 @@ namespace AZ
             }
         }
 
-        void ParentPass::RemoveChildren(bool calledFromDestructor)
+        void ParentPass::RemoveChildren([[maybe_unused]] bool calledFromDestructor)
         {
             AZ_Error("PassSystem", GetPassState() == PassState::Resetting || GetPassState() == PassState::Building || calledFromDestructor ||
                 (GetPassTree() && GetPassTree()->GetPassTreeState() == PassTreeState::RemovingPasses),
