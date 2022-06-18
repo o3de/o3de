@@ -840,7 +840,7 @@ namespace AZ
         AZStd::vector<EnumConstant<UnderlyingType>> GetEnumConstantsFromTraits()
         {
             AZStd::vector<EnumConstant<UnderlyingType>> enumValues;
-            for (const auto& member : AzEnumTraits<EnumType>::Members)
+            for (const auto& member : AZ::AzEnumTraits<EnumType>::Members)
             {
                 enumValues.emplace_back(aznumeric_cast<UnderlyingType>(member.m_value), member.m_string.data());
             }
