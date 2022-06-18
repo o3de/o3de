@@ -294,9 +294,9 @@ class AssetProcessor(object):
             return StopReason.NOT_RUNNING
 
         if not self._control_connection:
-                logger.info("No control connection open, using terminate")
-                self.terminate()
-                return StopReason.NO_CONTROL
+            logger.info("No control connection open, using terminate")
+            self.terminate()
+            return StopReason.NO_CONTROL
 
         try:
             if not self.send_quit():
@@ -320,6 +320,8 @@ class AssetProcessor(object):
             logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
             self.terminate()
             return StopReason.NO_STOP
+
+        self._ap_proc = None
 
     def terminate(self):
         """
