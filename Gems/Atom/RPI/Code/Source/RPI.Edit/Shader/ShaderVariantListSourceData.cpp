@@ -20,7 +20,7 @@ namespace AZ
         {
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<ShaderVariantListSourceData::VariantInfo>()
+                serializeContext->Class<VariantInfo>()
                     ->Version(1)
                     ->Field("StableId", &VariantInfo::m_stableId)
                     ->Field("Options", &VariantInfo::m_options)
@@ -34,12 +34,12 @@ namespace AZ
 
                 if (auto editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<ShaderVariantListSourceData::VariantInfo>("ShaderVariantListSourceData::VariantInfo", "")
+                    editContext->Class<VariantInfo>("VariantInfo", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::VariantInfo::m_stableId, "Stable Id", "Unique identifier for this shader variant within the list")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_stableId, "Stable Id", "Unique identifier for this shader variant within the list")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::VariantInfo::m_options, "Options", "Table of shader options for configuring this variant")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_options, "Options", "Table of shader options for configuring this variant")
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
                         ;
