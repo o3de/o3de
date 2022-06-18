@@ -26,6 +26,8 @@
 
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
+static constexpr AZStd::string_view ViewPaneVisibilityChangeUpdaterIdentifier = "action.updater.onViewPaneVisibilityChange";
+
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
@@ -56,7 +58,7 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
     // Define an updater - move?
-    
+    m_actionManagerInterface->RegisterActionUpdater(ViewPaneVisibilityChangeUpdaterIdentifier);
 
     InitializeActionContext();
     InitializeActions();
@@ -71,6 +73,17 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
             RefreshToolActions();
         }
     );
+
+    AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+    m_initialized = true;
+}
+
+EditorActionsHandler::~EditorActionsHandler()
+{
+    if (m_initialized)
+    {
+        AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+    }
 }
 
 void EditorActionsHandler::InitializeActionContext()
@@ -424,14 +437,14 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     return containerWidget;
 }
 
-void EditorActionsHandler::OnViewPaneOpened(const char* viewPaneName)
+void EditorActionsHandler::OnViewPaneOpened([[maybe_unused]] const char* viewPaneName)
 {
-
+    m_actionManagerInterface->TriggerActionUpdater(ViewPaneVisibilityChangeUpdaterIdentifier);
 }
 
-void EditorActionsHandler::OnViewPaneClosed(const char* viewPaneName)
+void EditorActionsHandler::OnViewPaneClosed([[maybe_unused]] const char* viewPaneName)
 {
-
+    m_actionManagerInterface->TriggerActionUpdater(ViewPaneVisibilityChangeUpdaterIdentifier);
 }
 
 void EditorActionsHandler::RefreshToolActions()
@@ -480,6 +493,8 @@ void EditorActionsHandler::RefreshToolActions()
                     return viewpaneManager->IsVisible(viewpaneName);
                 }
             );
+
+            m_actionManagerInterface->AddActionToUpdater(ViewPaneVisibilityChangeUpdaterIdentifier, toolActionIdentifier);
         }
 
         m_toolActionIdentifiers.push_back(toolActionIdentifier);

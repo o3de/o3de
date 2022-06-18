@@ -30,9 +30,9 @@ class EditorActionsHandler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
+    ~EditorActionsHandler();
 
 private:
-
     void InitializeActionContext();
     void InitializeActions();
     void InitializeMenus();
@@ -45,6 +45,8 @@ private:
     void OnViewPaneClosed(const char* viewPaneName) override;
 
     void RefreshToolActions();
+
+    bool m_initialized = false;
 
     // Editor Action Manager initialization functions
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
