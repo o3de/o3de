@@ -32,6 +32,7 @@ namespace ShaderManagementConsole
         void OnDocumentModified(const AZ::Uuid& documentId) override;
 
         void RebuildTable();
+        void RebuildDocument();
 
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
