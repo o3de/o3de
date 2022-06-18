@@ -113,6 +113,13 @@ namespace Terrain
     void TerrainMeshManager::Reset()
     {
         m_sectorStack.clear();
+
+        AZ::Render::RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
+        if (rayTracingFeatureProcessor)
+        {
+            rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
+        }
+
         m_rebuildSectors = true;
     }
 
