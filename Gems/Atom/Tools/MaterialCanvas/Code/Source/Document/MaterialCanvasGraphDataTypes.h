@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <GraphModel/Model/DataType.h>
 
 namespace MaterialCanvas
@@ -25,6 +29,4 @@ namespace MaterialCanvas
         String,
         Count
     };
-
-    GraphModel::DataTypeList CreateAllDataTypes();
 } // namespace MaterialCanvas
