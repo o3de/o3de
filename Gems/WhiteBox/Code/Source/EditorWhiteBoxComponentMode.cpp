@@ -502,7 +502,7 @@ namespace WhiteBox
         // temporary setting to disable this feature
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
         {
-            bool hasTransformMode = true;
+            bool hasTransformMode = false;
             settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
             if (hasTransformMode)
             {
