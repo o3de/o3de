@@ -163,7 +163,8 @@ namespace AtomToolsFramework
         return rootItem;
     }
 
-    bool DynamicNodeManager::ValidateSlotConfig(const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const
+    bool DynamicNodeManager::ValidateSlotConfig(
+        [[maybe_unused]] const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const
     {
         if (slotConfig.m_supportedDataTypes.empty())
         {
@@ -201,7 +202,7 @@ namespace AtomToolsFramework
     }
 
     bool DynamicNodeManager::ValidateSlotConfigVec(
-        const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const
+        [[maybe_unused]] const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const
     {
         for (const auto& slotConfig : slotConfigVec)
         {
