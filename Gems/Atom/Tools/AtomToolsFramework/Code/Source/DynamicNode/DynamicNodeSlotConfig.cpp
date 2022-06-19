@@ -7,6 +7,9 @@
  */
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <DynamicNode/DynamicNodeSlotConfigSerializer.h>
@@ -30,6 +33,37 @@ namespace AtomToolsFramework
                 ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
                 ->Field("supportedDataTypes", &DynamicNodeSlotConfig::m_supportedDataTypes)
                 ->Field("settings", &DynamicNodeSlotConfig::m_settings)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DynamicNodeSlotConfig>("DynamicNodeSlotConfig", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_name, "Name", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_displayName, "Display Name", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_description, "Description", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_defaultValue, "Default Value", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_supportedDataTypes, "Supported Data Types", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeSlotConfig::m_settings, "Settings", "")
+                    ;
+            }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<DynamicNodeSlotConfig>("DynamicNodeSlotConfig")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "atomtools")
+                ->Constructor()
+                ->Constructor<const DynamicNodeSlotConfig&>()
+                ->Property("name", BehaviorValueProperty(&DynamicNodeSlotConfig::m_name))
+                ->Property("displayName", BehaviorValueProperty(&DynamicNodeSlotConfig::m_displayName))
+                ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
+                ->Property("defaultValue", BehaviorValueProperty(&DynamicNodeSlotConfig::m_defaultValue))
+                ->Property("supportedDataTypes", BehaviorValueProperty(&DynamicNodeSlotConfig::m_supportedDataTypes))
+                ->Property("settings", BehaviorValueProperty(&DynamicNodeSlotConfig::m_settings))
                 ;
         }
     }
