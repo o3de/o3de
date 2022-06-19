@@ -10,7 +10,7 @@
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
-#include <Atom/Math.azsli>
+#include <Atom/RPI/Math.azsli>
 
 struct VSInput
 {

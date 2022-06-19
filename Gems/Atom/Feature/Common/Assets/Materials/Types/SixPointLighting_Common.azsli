@@ -38,13 +38,9 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
     // Auto-generate material SRG fields for common inputs
     COMMON_SRG_INPUTS_BASE_COLOR()
-    COMMON_SRG_INPUTS_ROUGHNESS()
-    COMMON_SRG_INPUTS_METALLIC()
-    COMMON_SRG_INPUTS_SPECULAR_F0()
-    COMMON_SRG_INPUTS_NORMAL()
-    COMMON_SRG_INPUTS_CLEAR_COAT()
-    COMMON_SRG_INPUTS_OCCLUSION()     
-    COMMON_SRG_INPUTS_EMISSIVE()      
+    float m_roughnessFactor;
+    float m_metallicFactor;
+    float m_specularF0Factor;  
     COMMON_SRG_INPUTS_PARALLAX()
     
     uint m_parallaxUvIndex;
