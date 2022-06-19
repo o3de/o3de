@@ -40,22 +40,26 @@
 namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
-    
+
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+            clusterId,
+            buttonId);
     }
 
-   static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
+    static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
+            buttonId,
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
+            clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
@@ -65,8 +69,10 @@ namespace WhiteBox
         : m_entityComponentIdPair(entityComponentIdPair)
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_transformClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopRight);
+            m_transformClusterId,
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            AzToolsFramework::ViewportUi::Alignment::TopRight);
         m_transformTranslateButtonId = RegisterClusterButton(m_transformClusterId, "Move");
         m_transformRotateButtonId = RegisterClusterButton(m_transformClusterId, "Rotate");
         m_transformScaleButtonId = RegisterClusterButton(m_transformClusterId, "Scale");
@@ -74,16 +80,22 @@ namespace WhiteBox
         // set translation tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
-            m_transformTranslateButtonId, ManipulatorModeClusterTranslateTooltip);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_transformClusterId,
+            m_transformTranslateButtonId,
+            ManipulatorModeClusterTranslateTooltip);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
-            m_transformRotateButtonId, ManipulatorModeClusterRotateTooltip);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_transformClusterId,
+            m_transformRotateButtonId,
+            ManipulatorModeClusterRotateTooltip);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformClusterId,
-            m_transformScaleButtonId, ManipulatorModeClusterScaleTooltip);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_transformClusterId,
+            m_transformScaleButtonId,
+            ManipulatorModeClusterScaleTooltip);
 
         m_TransformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -100,28 +112,31 @@ namespace WhiteBox
                 {
                     m_transformType = TransformType::Scale;
                 }
-                
+
                 RefreshManipulator();
             });
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_transformClusterId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_transformClusterId,
             m_TransformSelectionHandler);
-        
+
         RefreshManipulator();
     }
 
     TransformMode::~TransformMode()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_transformClusterId);
 
         DestroyManipulators();
     }
 
-    void TransformMode::DestroyManipulators() {
+    void TransformMode::DestroyManipulators()
+    {
         if (m_manipulator)
         {
             m_manipulator->Unregister();
@@ -190,17 +205,19 @@ namespace WhiteBox
 
         debugDisplay.PushMatrix(worldFromLocal);
 
-        if(m_polygonIntersection.has_value()) {
+        if (m_polygonIntersection.has_value())
+        {
             auto& polygonIntersection = m_polygonIntersection.value();
-            DrawFace(debugDisplay, whiteBox, polygonIntersection.GetHandle(), cl_whiteBoxPolygonHoveredColor);
-            DrawOutline(debugDisplay, whiteBox, polygonIntersection.GetHandle(), cl_whiteBoxPolygonHoveredOutlineColor);
+            DrawFace(debugDisplay, whiteBox, polygonIntersection.GetHandle(), ed_whiteBoxPolygonHover);
+            DrawOutline(debugDisplay, whiteBox, polygonIntersection.GetHandle(), ed_whiteBoxOutlineHover);
         }
 
         if (auto selection = AZStd::get_if<PolygonIntersection>(&m_selection))
         {
-            if(m_polygonIntersection.value_or(PolygonIntersection{}).GetHandle() != selection->GetHandle()) {
-                DrawFace(debugDisplay, whiteBox, selection->GetHandle(), cl_whiteBoxVertexSelectedModifierColor);
-                DrawOutline(debugDisplay, whiteBox, selection->GetHandle(), cl_whiteBoxVertexSelectedModifierColor);
+            if (m_polygonIntersection.value_or(PolygonIntersection{}).GetHandle() != selection->GetHandle())
+            {
+                DrawFace(debugDisplay, whiteBox, selection->GetHandle(), ed_whiteBoxPolygonSelection);
+                DrawOutline(debugDisplay, whiteBox, selection->GetHandle(), ed_whiteBoxOutlineSelection);
             }
         }
         debugDisplay.PopMatrix();
@@ -254,7 +271,8 @@ namespace WhiteBox
     void TransformMode::RefreshManipulator()
     {
         DestroyManipulators();
-        if(!AZStd::holds_alternative<AZStd::monostate>(m_selection)) {
+        if (!AZStd::holds_alternative<AZStd::monostate>(m_selection))
+        {
             switch (m_transformType)
             {
             case TransformType::Translation:
@@ -308,9 +326,10 @@ namespace WhiteBox
             translationManipulators->SetLocalPosition(sharedState->m_polygonMidpoint);
         }
 
-        auto mouseMoveHandlerFn =
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
-            translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(translationManipulators)](const auto& action)
+        auto mouseMoveHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
+                                   sharedState,
+                                   translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
+                                       translationManipulators)](const auto& action)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -322,10 +341,9 @@ namespace WhiteBox
                 const AZ::Vector3 vertexPosition = sharedState->m_vertexPositions[vertexIndex++] + action.LocalPositionOffset();
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
-            if(auto manipulator = translationManipulator.lock()) {
-                manipulator->SetLocalPosition(
-                    sharedState->m_polygonMidpoint + action.LocalPositionOffset()
-                );
+            if (auto manipulator = translationManipulator.lock())
+            {
+                manipulator->SetLocalPosition(sharedState->m_polygonMidpoint + action.LocalPositionOffset());
             }
 
             Api::CalculatePlanarUVs(*whiteBox);
@@ -333,9 +351,10 @@ namespace WhiteBox
                 entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
         };
 
-         auto mouseUpHandlerFn =
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
-            translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(translationManipulators)](const auto& action)
+        auto mouseUpHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
+                                 sharedState,
+                                 translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
+                                     translationManipulators)](const auto& action)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -350,16 +369,16 @@ namespace WhiteBox
 
             sharedState->m_vertexPositions = Api::VertexPositions(*whiteBox, sharedState->m_vertexHandles);
             sharedState->m_polygonMidpoint = sharedState->m_polygonMidpoint + action.LocalPositionOffset();
-            
-            if(auto manipulator = translationManipulator.lock()) {
+
+            if (auto manipulator = translationManipulator.lock())
+            {
                 manipulator->SetLocalPosition(sharedState->m_polygonMidpoint);
             }
 
             Api::CalculateNormals(*whiteBox);
             Api::CalculatePlanarUVs(*whiteBox);
 
-            EditorWhiteBoxComponentRequestBus::Event(
-                    entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
+            EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
         translationManipulators->InstallLinearManipulatorMouseMoveCallback(mouseMoveHandlerFn);
@@ -402,19 +421,23 @@ namespace WhiteBox
         {
             rotationManipulators->SetLocalPosition(Api::PolygonMidpoint(*whiteBox, selection->GetHandle()));
             rotationManipulators->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
-            
+
             sharedState->m_vertexHandles = Api::PolygonVertexHandles(*whiteBox, selection->GetHandle());
             sharedState->m_vertexPositions = Api::VertexPositions(*whiteBox, sharedState->m_vertexHandles);
-            sharedState->m_polygonMidpoint = Api::PolygonMidpoint(*whiteBox, selection->GetHandle());;
+            sharedState->m_polygonMidpoint = Api::PolygonMidpoint(*whiteBox, selection->GetHandle());
+            ;
         }
 
         rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         rotationManipulators->ConfigureView(
-            AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            AzToolsFramework::RotationManipulatorRadius(),
+            AzFramework::ViewportColors::XAxisColor,
+            AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
         rotationManipulators->InstallMouseMoveCallback(
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
+            [entityComponentIdPair = m_entityComponentIdPair,
+             sharedState,
              translationManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
@@ -442,7 +465,8 @@ namespace WhiteBox
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
+            [entityComponentIdPair = m_entityComponentIdPair,
+             sharedState,
              translationManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
@@ -489,8 +513,10 @@ namespace WhiteBox
         scaleManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
         scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         scaleManipulators->ConfigureView(
-            AzToolsFramework::LinearManipulatorAxisLength(), AzFramework::ViewportColors::XAxisColor,
-            AzFramework::ViewportColors::YAxisColor, AzFramework::ViewportColors::ZAxisColor);
+            AzToolsFramework::LinearManipulatorAxisLength(),
+            AzFramework::ViewportColors::XAxisColor,
+            AzFramework::ViewportColors::YAxisColor,
+            AzFramework::ViewportColors::ZAxisColor);
 
         struct SharedState
         {
@@ -513,8 +539,9 @@ namespace WhiteBox
         }
 
         auto mouseMoveHandlerFn =
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
-            scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
+            [entityComponentIdPair = m_entityComponentIdPair,
+             sharedState,
+             scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -523,7 +550,9 @@ namespace WhiteBox
             for (const Api::VertexHandle& vertexHandle : sharedState->m_vertexHandles)
             {
                 const AZ::Vector3 vertexLocalPosition = (sharedState->m_vertexPositions[vertexIndex++] - sharedState->m_polygonMidpoint);
-                const AZ::Vector3 vertexPosition =  (vertexLocalPosition * (sharedState->m_polygonScale + (action.m_start.m_sign * action.LocalScaleOffset()))) + sharedState->m_polygonMidpoint;
+                const AZ::Vector3 vertexPosition =
+                    (vertexLocalPosition * (sharedState->m_polygonScale + (action.m_start.m_sign * action.LocalScaleOffset()))) +
+                    sharedState->m_polygonMidpoint;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
@@ -533,26 +562,28 @@ namespace WhiteBox
         };
 
         auto mouseUpHandlerFn =
-            [entityComponentIdPair = m_entityComponentIdPair, sharedState,
-            scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
+            [entityComponentIdPair = m_entityComponentIdPair,
+             sharedState,
+             scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-            
+
             size_t vertexIndex = 0;
             for (const Api::VertexHandle& vertexHandle : sharedState->m_vertexHandles)
             {
                 const AZ::Vector3 vertexLocalPosition = (sharedState->m_vertexPositions[vertexIndex++] - sharedState->m_polygonMidpoint);
-                const AZ::Vector3 vertexPosition =  (vertexLocalPosition * (sharedState->m_polygonScale + (action.m_start.m_sign * action.LocalScaleOffset()))) + sharedState->m_polygonMidpoint;
+                const AZ::Vector3 vertexPosition =
+                    (vertexLocalPosition * (sharedState->m_polygonScale + (action.m_start.m_sign * action.LocalScaleOffset()))) +
+                    sharedState->m_polygonMidpoint;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
             sharedState->m_vertexPositions = Api::VertexPositions(*whiteBox, sharedState->m_vertexHandles);
 
             Api::CalculateNormals(*whiteBox);
             Api::CalculatePlanarUVs(*whiteBox);
-            EditorWhiteBoxComponentRequestBus::Event(
-                    entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
+            EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
         scaleManipulators->InstallAxisMouseMoveCallback(mouseMoveHandlerFn);
