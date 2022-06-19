@@ -181,16 +181,6 @@ namespace AZ
         }
     }
 
-    Vector3::Vector3(const Vector2& source)
-    {
-        Set(source.GetX(), source.GetY(), 0.0f);
-    }
-
-    Vector3::Vector3(const Vector4& source)
-    {
-        *this = source.GetAsVector3();
-    }
-
     void Vector3::Reflect(ReflectContext* context)
     {
         auto serializeContext = azrtti_cast<SerializeContext*>(context);
