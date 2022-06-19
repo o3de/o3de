@@ -8,16 +8,14 @@
 
 #pragma once
 
-#include "AzCore/Math/Color.h"
 #include "EditorWhiteBoxComponentMode.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Viewport/WhiteBoxManipulatorViews.h"
 
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Manipulators/TranslationManipulators.h>
 
 namespace AZ
 {

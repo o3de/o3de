@@ -121,7 +121,6 @@ namespace WhiteBox
         DestroyManipulators();
     }
 
-
     void TransformMode::DestroyManipulators() {
         if (m_manipulator)
         {
