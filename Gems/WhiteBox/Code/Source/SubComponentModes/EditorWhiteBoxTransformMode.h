@@ -12,13 +12,17 @@
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Viewport/WhiteBoxManipulatorViews.h"
 
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <WhiteBox/WhiteBoxToolApi.h>
 
 namespace AZ
 {
+    class Color;
     class Transform;
     class EntityComponentIdPair;
 } // namespace AZ
@@ -51,6 +55,8 @@ namespace WhiteBox
         constexpr static const char* const ManipulatorModeClusterRotateTooltip = "Switch to rotate mode";
         constexpr static const char* const ManipulatorModeClusterScaleTooltip = "Switch to scale mode";
 
+        using IntersectionSelection = AZStd::variant<PolygonIntersection, EdgeIntersection, VertexIntersection, AZStd::monostate>;
+
         TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair);
         ~TransformMode();
 
@@ -78,23 +84,46 @@ namespace WhiteBox
             const AZStd::optional<VertexIntersection>& vertexIntersection);
 
     private:
+        struct VertexTransformSelection
+        {
+            AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
+
+            AZStd::vector<AZ::Vector3> m_vertexPositions;
+
+            Api::VertexHandles m_vertexHandles;
+
+            IntersectionSelection m_selection;
+        };
+
         void DrawFace(
             AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color);
         void DrawOutline(
             AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color);
+        void DrawEdge(
+            AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::EdgeHandle& edge, const AZ::Color& color);
+        void DrawPoints(
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            WhiteBoxMesh* mesh,
+            const AZ::Transform& worldFromLocal,
+            const AzFramework::ViewportInfo& viewportInfo,
+            const AZStd::span<Api::VertexHandle>& verts,
+            const AZ::Color& color);
 
         void CreateTranslationManipulators();
         void CreateRotationManipulators();
         void CreateScaleManipulators();
-
+        void UpdateTransformHandles(WhiteBoxMesh* mesh);
         void RefreshManipulator();
         void DestroyManipulators();
 
         AZ::EntityComponentIdPair m_entityComponentIdPair; //!< The entity and component id this modifier is associated with.
 
         AZStd::shared_ptr<AzToolsFramework::Manipulators> m_manipulator = nullptr;
-        AZStd::variant<PolygonIntersection, AZStd::monostate> m_selection = AZStd::monostate{};
+        AZStd::shared_ptr<VertexTransformSelection> m_vertexSelection = nullptr;
+
         AZStd::optional<PolygonIntersection> m_polygonIntersection = AZStd::nullopt;
+        AZStd::optional<EdgeIntersection> m_edgeIntersection = AZStd::nullopt;
+        AZStd::optional<VertexIntersection> m_vertexIntersection = AZStd::nullopt;
 
         TransformType m_transformType = TransformType::Translation;
         AzToolsFramework::ViewportUi::ClusterId m_transformClusterId;
