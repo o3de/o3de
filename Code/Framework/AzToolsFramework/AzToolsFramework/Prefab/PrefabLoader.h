@@ -61,6 +61,9 @@ namespace AzToolsFramework
              */
             void ReloadTemplateFromFile(AZ::IO::PathView relativePath);
 
+            //Reloads editor to display when the source file has been removed 
+            void RemoveTemplateFromEditor();
+
             /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.
              * Converts .prefab form into Prefab Template form by expanding source path and patch info

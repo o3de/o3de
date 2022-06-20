@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
 namespace AzToolsFramework
 {
@@ -128,12 +129,29 @@ namespace AzToolsFramework
 
             SanitizeLoadedTemplate(prefabDom);
 
+            // Mark the file as being in progress.
+            progressedFilePathsSet.emplace(relativePath);
+
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(relativePath);
 
             // Directly return loaded Template id.
             TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
             m_prefabSystemComponentInterface->UpdatePrefabTemplate(loadedTemplateId, prefabDom);
+        }
+
+        void PrefabLoader::RemoveTemplateFromEditor()
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+            if (!prefabEditorEntityOwnershipInterface)
+            {
+                AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
+                                          "(PrefabEditorEntityOwnershipInterface unavailable)."));
+            }
+            TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(rootTemplateId);
         }
 
         TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)

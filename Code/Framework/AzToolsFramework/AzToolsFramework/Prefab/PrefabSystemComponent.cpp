@@ -23,6 +23,8 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 
+#pragma optimize("", off)
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -177,14 +179,19 @@ namespace AzToolsFramework
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
             if (found != m_templateFilePathToIdMap.end())
             {
-                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
+               m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
             }
         }
 
         void PrefabSystemComponent::SourceFileRemoved(
             AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
-           //TODO notify user when file is removed for next steps
+            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
+            if (found != m_templateFilePathToIdMap.end())
+            {
+                RemoveTemplate(found->second);
+                m_prefabLoader.RemoveTemplateFromEditor();
+            }
         }
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
@@ -194,6 +201,7 @@ namespace AzToolsFramework
             {
                 auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
                 if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
+
                 {
                     // We need to initialize a queue here because once all linked instances of a template are updated,
                     // we will find all the linkIds corresponding to the updated template and add them to this queue again.
@@ -1164,3 +1172,4 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)
