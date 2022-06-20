@@ -189,6 +189,15 @@ namespace RecastNavigation
         BaseClass::Deactivate();
     }
 
+    void EditorRecastNavigationMeshComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        const bool saveState = m_controller.m_configuration.m_enableEditorPreview;
+        m_controller.m_configuration.m_enableEditorPreview = false;
+        // The game entity must query the regular game PhysX scene, while the Editor component must query the Editor PhysX scene.
+        BaseClass::BuildGameEntity(gameEntity);
+        m_controller.m_configuration.m_enableEditorPreview = saveState;
+    }
+
     AZ::u32 EditorRecastNavigationMeshComponent::OnConfigurationChanged()
     {
         m_controller.CreateNavigationMesh(GetEntityId());

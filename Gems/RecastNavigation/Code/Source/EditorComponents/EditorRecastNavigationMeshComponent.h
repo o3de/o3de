@@ -34,6 +34,8 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
 
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
+
         //! Enables or disables in-Editor preview of navigation mesh without entering game mode.
         //! @param enable if true, the preview will be enabled
         void SetEditorPreview(bool enable);
