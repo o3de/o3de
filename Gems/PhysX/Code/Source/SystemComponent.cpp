@@ -419,6 +419,16 @@ namespace PhysX
         m_physXSystem->CreateCollisionGroup(groupName, group);
     }
 
+    bool SystemComponent::ShouldCollide(
+        const Physics::ColliderConfiguration& colliderConfigurationA, const Physics::ColliderConfiguration& colliderConfigurationB)
+    {
+        physx::PxFilterData filterDataA = PhysX::Collision::CreateFilterData(
+            colliderConfigurationA.m_collisionLayer, GetCollisionGroupById(colliderConfigurationA.m_collisionGroupId));
+        physx::PxFilterData filterDataB = PhysX::Collision::CreateFilterData(
+            colliderConfigurationB.m_collisionLayer, GetCollisionGroupById(colliderConfigurationB.m_collisionGroupId));
+        return PhysX::Collision::ShouldCollide(filterDataA, filterDataB);
+    }
+
     physx::PxFilterData SystemComponent::CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group)
     {
         return PhysX::Collision::CreateFilterData(layer, group);
