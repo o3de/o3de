@@ -134,7 +134,7 @@ namespace ScriptCanvasEditor
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
-        const char* className = m_className.toUtf8().data();
+        const AZStd::string className = GetClassMethodName();
         if (behaviorContext->m_classes.contains(className))
         {
             auto behaviorClass = behaviorContext->m_classes.find(className);

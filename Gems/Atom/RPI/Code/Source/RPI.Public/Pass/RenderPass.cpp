@@ -53,7 +53,7 @@ namespace AZ
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
         {
             RHI::RenderAttachmentLayoutBuilder builder;
-            auto* pass = builder.AddSubpass();
+            auto* layoutBuilder = builder.AddSubpass();
 
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
@@ -67,7 +67,7 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    pass->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    layoutBuilder->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
                     continue;
                 }
 
@@ -80,7 +80,7 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
                     RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
-                    pass->RenderTargetAttachment(format);
+                    layoutBuilder->RenderTargetAttachment(format);
                 }
             }
 

@@ -826,10 +826,13 @@ namespace AssetProcessor
                     break;
                 }
 
-                // The product file path is always lower cased, we can't check that for existance.
+                // The product file path is always lower cased, we can't check that for existence.
                 // Let rebuild a fs sensitive file path by replacing the cache path.
                 // We assume any file paths normalized, ie no .. nor (back) slashes.
-                const QString productFilePath = m_cacheRootDir.filePath(product.m_productFileName.substr(m_normalizedCacheRootPath.length() +1).c_str());
+
+                const QString productFilePath = (m_normalizedCacheRootPath.length() + 1 < product.m_productFileName.length()) ?
+                    m_cacheRootDir.filePath(product.m_productFileName.substr(m_normalizedCacheRootPath.length() +1).c_str()) :
+                    product.m_productFileName.c_str();
 
                 // if the claimed product does not exist, remove it so it does not get into the database
                 if (!QFile::exists(productFilePath))
@@ -2158,6 +2161,8 @@ namespace AssetProcessor
         }
         else
         {
+            UpdateForCacheServer(jobDetails);
+
             // macOS requires that the cacheRootDir to not be all lowercase, otherwise file copies will not work correctly.
             // So use the lowerCasePath string to capture the parts that need to be lower case while keeping the cache root
             // mixed case.
@@ -2180,6 +2185,39 @@ namespace AssetProcessor
         }
 
         return true;
+    }
+
+    void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
+    {
+        if (AssetUtilities::ServerAddress().isEmpty())
+        {
+            // Asset Cache Server mode feature is turned off
+            return;
+        }
+        else if (!m_platformConfig)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, m_platformConfig, "Platform not configured. Called too soon?");
+            return;
+        }
+
+        auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
+        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        {
+            auto matchingPatternIt = AZStd::find_if(
+                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
+                jobDetails.m_assetBuilderDesc.m_patterns.end(),
+                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
+                {
+                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
+                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
+                }
+            );
+
+            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            {
+                jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+            }
+        }
     }
 
     void AssetProcessorManager::CheckDeletedCacheFolder(QString normalizedPath)

@@ -9,7 +9,9 @@
 #pragma once
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterial.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
+#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -21,8 +23,6 @@ namespace AZ
 
 namespace Physics
 {
-    class Material;
-
     class ColliderConfiguration
     {
     public:
@@ -51,7 +51,7 @@ namespace Physics
 
         AZ::Crc32 GetIsTriggerVisibility() const;
         AZ::Crc32 GetCollisionLayerVisibility() const;
-        AZ::Crc32 GetMaterialSelectionVisibility() const;
+        AZ::Crc32 GetMaterialSlotsVisibility() const;
         AZ::Crc32 GetOffsetVisibility() const;
 
         AzPhysics::CollisionLayer m_collisionLayer; ///< Which collision layer is this collider on.
@@ -62,7 +62,8 @@ namespace Physics
         bool m_isExclusive = true; ///< Can this collider be shared between multiple bodies?
         AZ::Vector3 m_position = AZ::Vector3::CreateZero(); /// Shape offset relative to the connected rigid body.
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity(); ///< Shape rotation relative to the connected rigid body.
-        Physics::MaterialSelection m_materialSelection; ///< Materials for the collider.
+        MaterialSlots m_materialSlots; ///< Material slots for the collider.
+        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; ///< Kept to convert old physics material assets.
         AZ::u8 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u8>::max)(); ///< Visibility flags for collider.
                                                                                  ///< Note: added parenthesis for std::numeric_limits is
                                                                                  ///< to avoid collision with `max` macro in uber builds.
@@ -132,7 +133,8 @@ namespace Physics
         //! @param indices A buffer to be filled with indices
         //! @param optionalBounds Optional AABB that, if provided, will limit the mesh returned to that AABB.  
         //!                       Currently only supported by the heightfield shape.
-        virtual void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) = 0;
+        virtual void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const = 0;
 
     };
 } // namespace Physics

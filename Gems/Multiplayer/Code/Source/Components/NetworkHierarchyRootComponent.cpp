@@ -298,7 +298,18 @@ namespace Multiplayer
                         return;
                     }
 
-                    const AZStd::vector<AZ::EntityId> allChildren = candidate->GetTransform()->GetChildren();
+                    AZStd::vector<AZ::EntityId> allChildren;
+                    if (candidate->GetTransform())
+                    {
+                        allChildren = candidate->GetTransform()->GetChildren();
+                    }
+                    else
+                    {
+                        // Child entities may not be in the Active state so skip for now.
+                        // They will notify when ready causing another rebuild.
+                        continue;
+                    }
+
                     for (const AZ::EntityId& newChildId : allChildren)
                     {
                         candidates.push_back(componentApplicationRequests->FindEntity(newChildId));

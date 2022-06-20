@@ -131,7 +131,10 @@ void SRemoteServer::StartServer()
 void SRemoteServer::StopServer()
 {
     m_bAcceptClients = false;
-    AZ::AzSock::CloseSocket(m_socket);
+    if (AZ::AzSock::IsAzSocketValid(m_socket))
+    {
+        AZ::AzSock::CloseSocket(m_socket);
+    }
     m_socket = SOCKET_ERROR;
 
     AZStd::unique_lock<AZStd::recursive_mutex> lock(m_mutex);

@@ -657,17 +657,15 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     viewMenu.AddAction(ID_OPEN_QUICK_ACCESS_BAR);
 
     // Layouts
-    if (CViewManager::IsMultiViewportEnabled()) // Only supports 1 viewport for now.
-    {
-        // Disable Layouts menu
-        m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
-        connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
-            {
-                UpdateViewLayoutsMenu(m_layoutsMenu);
-            });
+    // Disable Layouts menu
+    m_layoutsMenu = viewMenu.AddMenu(tr("Layouts"));
+    connect(m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, this, [this]()
+        {
+            UpdateViewLayoutsMenu(m_layoutsMenu);
+        }
+    );
 
-        UpdateViewLayoutsMenu(m_layoutsMenu);
-    }
+    UpdateViewLayoutsMenu(m_layoutsMenu);
 
     // Viewport
     auto viewportViewsMenuWrapper = viewMenu.AddMenu(tr("Viewport"));
@@ -758,7 +756,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     layout->addWidget(lineEdit);
     containerWidget->setLayout(layout);
     containerWidget->setContentsMargins(2, 0, 2, 0);
-    lineEdit->setPlaceholderText(tr("Search documentation"));
+    lineEdit->setPlaceholderText(tr("Search documentation..."));
     lineEditSearchAction->setDefaultWidget(containerWidget);
 
     auto searchAction = [lineEdit]()
@@ -766,7 +764,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+                QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/"));
             }
             else
             {
@@ -775,7 +773,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
 
-                QUrl docSearchUrl("https://o3de.org/docs/");
+                QUrl docSearchUrl("https://www.o3de.org/search/");
                 QUrlQuery docSearchQuery;
                 docSearchQuery.addQueryItem("query", text);
                 docSearchUrl.setQuery(docSearchQuery);

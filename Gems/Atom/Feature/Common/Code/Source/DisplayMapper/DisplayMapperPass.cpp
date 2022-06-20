@@ -84,7 +84,7 @@ namespace AZ
             // display mapper parameters.
             if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
             {
-                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->m_descriptor.m_image.m_format;
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)
