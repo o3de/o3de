@@ -10,7 +10,7 @@
 		<Member Type="AZStd::string" Name="displayName" />
 	</Packet>
 
-	<Packet Name="RemoteToolsPacket" Desc="Transmits buffers between Neighbor Targets">
+	<Packet Name="RemoteToolsMessage" Desc="Transmits buffers between Neighbor Targets">
 		<Member Type="RemoteTools::RemoteToolsMessageBuffer" Name="messageBuffer" />
 		<Member Type="uint32_t" Name="size" Init="0" />
 		<Member Type="uint32_t" Name="persistentId" Init="0" />

@@ -297,10 +297,7 @@ namespace RemoteTools
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         const RemoteToolsPackets::RemoteToolsConnect& packet)
     {
-        AzNetworking::ByteOrder byteOrder = connection->GetConnectionRole() == AzNetworking::ConnectionRole::Acceptor
-            ? AzNetworking::ByteOrder::Host
-            : AzNetworking::ByteOrder::Network;
-        AZ::Crc32 key = connection->GetRemoteAddress().GetPort(byteOrder);
+        AZ::Crc32 key = packet.GetPersistentId();
 
         if (m_entryRegistry.contains(key))
         {
@@ -317,7 +314,7 @@ namespace RemoteTools
     bool RemoteToolsSystemComponent::HandleRequest(
         AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
-        [[maybe_unused]] const RemoteToolsPackets::RemoteToolsPacket& packet)
+        [[maybe_unused]] const RemoteToolsPackets::RemoteToolsMessage& packet)
     {
         AZ::Crc32 key = packet.GetPersistentId();
 

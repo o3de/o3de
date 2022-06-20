@@ -14,7 +14,7 @@
 namespace RemoteToolsPackets
 {
     class RemoteToolsConnect;
-    class RemoteToolsPacket;
+    class RemoteToolsMessage;
 } // namespace RemoteToolsPackets
 
 namespace RemoteTools
@@ -65,7 +65,7 @@ namespace RemoteTools
         bool HandleRequest(
             AzNetworking::IConnection* connection,
             const AzNetworking::IPacketHeader& packetHeader,
-            const RemoteToolsPackets::RemoteToolsPacket& packet);
+            const RemoteToolsPackets::RemoteToolsMessage& packet);
 
     protected:
         //////////////////////////////////////////////////////////////////////////

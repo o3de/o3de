@@ -60,7 +60,7 @@ namespace RemoteTools
                 {
                     // Fragment the message into NeighborMessageBuffer packet sized chunks and send
                     size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(RemoteToolsBufferSize));
-                    RemoteToolsPackets::RemoteToolsPacket tmPacket;
+                    RemoteToolsPackets::RemoteToolsMessage tmPacket;
                     tmPacket.SetPersistentId(outBoxElem.datum.first);
                     tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
                     RemoteToolsMessageBuffer encodingBuffer;
