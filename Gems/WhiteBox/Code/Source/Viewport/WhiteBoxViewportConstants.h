@@ -30,9 +30,11 @@ namespace WhiteBox
     AZ_CVAR_EXTERNED(float, cl_whiteBoxEdgeSelectionWidth);
     AZ_CVAR_EXTERNED(float, cl_whiteBoxSelectedEdgeVisualWidth);
     
+    AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxVertexHover);
     AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxPolygonHover);
     AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxOutlineHover);
     AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxPolygonSelection);
+    AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxVertexSelection);
     AZ_CVAR_EXTERNED(AZ::Color, ed_whiteBoxOutlineSelection);
     AZ_CVAR_EXTERNED(float, ed_whiteBoxPolygonViewOverlapOffset);
 
