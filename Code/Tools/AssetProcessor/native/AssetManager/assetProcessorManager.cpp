@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+
 #include <QStringList>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -5104,4 +5106,3 @@ namespace AssetProcessor
 
 
 } // namespace AssetProcessor
-
