@@ -90,7 +90,7 @@ namespace AssetProcessor
                 AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
-            return AZ::Failure(AZStd::string("Connection failed, see previous error messages for details."));
+            return AZ::Failure(AZStd::string::format("Connection failed to builder %.*s", AZ_STRING_ARG(UuidString())));
         }
 
         return AZ::Success();
@@ -166,7 +166,7 @@ namespace AssetProcessor
 
         if (!m_processWatcher)
         {
-            return AZ::Failure(AZStd::string("Process watcher failed to start. See previous log messages for details."));
+            return AZ::Failure(AZStd::string::format("Failed to start process watcher for Builder %.*s.", AZ_STRING_ARG(UuidString())));
         }
 
         m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
