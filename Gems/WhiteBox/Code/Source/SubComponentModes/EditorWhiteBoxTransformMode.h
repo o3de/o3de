@@ -95,20 +95,6 @@ namespace WhiteBox
             IntersectionSelection m_selection;
         };
 
-        void DrawFace(
-            AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color);
-        void DrawOutline(
-            AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color);
-        void DrawEdge(
-            AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::EdgeHandle& edge, const AZ::Color& color);
-        void DrawPoints(
-            AzFramework::DebugDisplayRequests& debugDisplay,
-            WhiteBoxMesh* mesh,
-            const AZ::Transform& worldFromLocal,
-            const AzFramework::ViewportInfo& viewportInfo,
-            const AZStd::span<Api::VertexHandle>& verts,
-            const AZ::Color& color);
-
         void CreateTranslationManipulators();
         void CreateRotationManipulators();
         void CreateScaleManipulators();
