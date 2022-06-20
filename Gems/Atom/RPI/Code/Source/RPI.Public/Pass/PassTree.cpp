@@ -80,11 +80,8 @@ namespace AZ::RPI
         if (m_passesChangedThisFrame)
         {
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
-            if (!m_isHotReloading)
-            {
-                AZ_Printf("PassSystem", "\nFinished building passes:\n");
-                DebugPrintPassHierarchy();
-            }
+            AZ_Printf("PassTree", "\nFinished building passes:\n");
+            m_rootPass->DebugPrint();
 #endif
         }
         m_state = PassTreeState::Idle;
