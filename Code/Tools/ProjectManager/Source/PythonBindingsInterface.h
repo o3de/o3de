@@ -126,9 +126,10 @@ namespace O3DE::ProjectManager
          * Create a project 
          * @param projectTemplatePath the path to the project template to use 
          * @param projectInfo the project info to use 
+         * @param registerProject whether to register the project or not
          * @return an outcome with ProjectInfo on success 
          */
-        virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
         
         /**
          * Get info about a project 

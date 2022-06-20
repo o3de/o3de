@@ -144,29 +144,6 @@ namespace EMotionFX
         void contextMenuEvent(QContextMenuEvent* event) override;
         QSize sizeHint() const override;
 
-        /**
-         * Render the given colliders.
-         * @param[in] colliders The colliders to render.
-         * @param[in] actorInstance The actor instance from which the world space transforms for the colliders are read from.
-         * @param[in] node The node to which the colliders belong to.
-         * @param[in] renderInfo Needed to access the render util.
-         * @param[in] colliderColor The collider color.
-         */
-        //! Deprecated: remove after openglrenderwidget is gone.
-        static void LegacyRenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& colliderColor);
-
-        //! Deprecated: remove after openglrenderwidget is gone.
-        static void LegacyRenderColliders(
-            PhysicsSetup::ColliderConfigType colliderConfigType,
-            const MCore::RGBAColor& defaultColor,
-            const MCore::RGBAColor& selectedColor,
-            EMStudio::RenderPlugin* renderPlugin,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo);
-
         static int s_layoutSpacing;
 
     signals:

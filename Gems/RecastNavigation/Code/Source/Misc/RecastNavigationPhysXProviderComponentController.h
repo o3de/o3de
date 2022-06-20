@@ -12,7 +12,7 @@
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <Misc/RecastNavigationPhysXProviderConfig.h>
 #include <RecastNavigation/RecastNavigationProviderBus.h>
 

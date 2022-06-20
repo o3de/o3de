@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::UpdateProjectPreviewPath);
         m_verticalLayout->addWidget(m_projectPreview);
 
-        QVBoxLayout* previewExtrasLayout = new QVBoxLayout(this);
+        QVBoxLayout* previewExtrasLayout = new QVBoxLayout();
         previewExtrasLayout->setAlignment(Qt::AlignTop);
         previewExtrasLayout->setContentsMargins(30, 45, 30, 0);
 

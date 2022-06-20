@@ -19,6 +19,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzCore/Asset/AssetSerializer.h>
@@ -193,6 +194,7 @@ namespace AzToolsFramework
             {
                 delete m_widget;
             }
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
 
         QWidget* GetWidget() override
@@ -248,8 +250,11 @@ namespace AzToolsFramework
                 }
             }
 
-            AZ::Dom::Value value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node).value();
-            m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value).value();
+            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
+            if (value.has_value())
+            {
+                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+            }
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
 
@@ -308,20 +313,7 @@ namespace AzToolsFramework
 
         void OnRequestPropertyNotify() override
         {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyRefreshLevel;
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-
-            // Trigger ChangeNotify
-            auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(m_domNode);
-            if (changeNotify.IsSuccess())
-            {
-                // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-                PropertyRefreshLevel value = changeNotify.GetValue();
-                if (value != PropertyRefreshLevel::Undefined && value != PropertyRefreshLevel::None)
-                {
-                    PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(m_domNode, value);
-                }
-            }
+            AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(m_domNode);
         }
 
     private:
