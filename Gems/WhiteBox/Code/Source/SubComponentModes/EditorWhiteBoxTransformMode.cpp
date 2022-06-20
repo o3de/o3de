@@ -10,6 +10,7 @@
 #include "AzCore/std/smart_ptr/make_shared.h"
 #include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
+#include "Util/WhiteBoxEditorDrawUtil.h"
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/base.h>
@@ -142,69 +143,6 @@ namespace WhiteBox
         [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         return {};
-    }
-
-    void TransformMode::DrawFace(
-        AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color)
-    {
-        AZStd::vector<AZ::Vector3> triangles = Api::PolygonFacesPositions(*mesh, polygon);
-        const AZ::Vector3 normal = Api::PolygonNormal(*mesh, polygon);
-
-        if (!triangles.empty())
-        {
-            // draw selected polygon
-            debugDisplay.PushMatrix(AZ::Transform::CreateTranslation(normal * ed_whiteBoxPolygonViewOverlapOffset));
-
-            debugDisplay.SetColor(color);
-            debugDisplay.DrawTriangles(triangles, color);
-
-            debugDisplay.PopMatrix();
-        }
-    }
-
-    void TransformMode::DrawOutline(
-        AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::PolygonHandle& polygon, const AZ::Color& color)
-    {
-        Api::VertexPositionsCollection outlines = Api::PolygonBorderVertexPositions(*mesh, polygon);
-        if (!outlines.empty())
-        {
-            // draw outline
-            debugDisplay.SetColor(color);
-            debugDisplay.SetLineWidth(cl_whiteBoxEdgeVisualWidth);
-            for (const auto& outline : outlines)
-            {
-                debugDisplay.DrawPolyLine(outline.data(), aznumeric_caster(outline.size()));
-            }
-        }
-    }
-
-    void TransformMode::DrawEdge(
-        AzFramework::DebugDisplayRequests& debugDisplay, WhiteBoxMesh* mesh, const Api::EdgeHandle& edge, const AZ::Color& color)
-    {
-        auto vertexEdgePosition = Api::EdgeVertexPositions(*mesh, edge);
-        debugDisplay.SetColor(color);
-        debugDisplay.SetLineWidth(cl_whiteBoxEdgeVisualWidth);
-        debugDisplay.DrawLine(vertexEdgePosition[0], vertexEdgePosition[1]);
-    }
-
-    void TransformMode::DrawPoints(
-        AzFramework::DebugDisplayRequests& debugDisplay,
-        WhiteBoxMesh* mesh,
-        const AZ::Transform& worldFromLocal,
-        const AzFramework::ViewportInfo& viewportInfo,
-        const AZStd::span<Api::VertexHandle>& verts,
-        const AZ::Color& color)
-    {
-        debugDisplay.SetColor(color);
-        for (auto& vert : verts)
-        {
-            const auto vertPos = Api::VertexPosition(*mesh, vert);
-            const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-            const float radius =
-                cl_whiteBoxVertexManipulatorSize * AzToolsFramework::CalculateScreenToWorldMultiplier(vertPos, cameraState);
-
-            debugDisplay.DrawBall(vertPos, radius);
-        }
     }
 
     void TransformMode::Display(
