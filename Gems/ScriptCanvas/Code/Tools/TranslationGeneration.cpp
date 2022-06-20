@@ -30,7 +30,6 @@
 #include <Libraries/Libraries.h>
 #include <Libraries/Core/GetVariable.h>
 #include <Libraries/Core/SetVariable.h>
-#include <Utils/NodeUtils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -610,10 +609,8 @@ namespace ScriptCanvasEditorTools
                 details.m_category = "Uncategorized";
             }
 
-            ScriptCanvas::NodeTypeIdentifier suffix = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier(classData->m_typeId);
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(details.m_name);
-
-            AZStd::string targetFile = AZStd::string::format("Nodes/%s_%zu", filename.c_str(), suffix);
+            AZStd::string fileName = ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(details.m_name, classData->m_typeId);
+            AZStd::string targetFile = AZStd::string::format("Nodes/%s", fileName.c_str());
 
             SaveJSONData(targetFile, translationRoot);
 

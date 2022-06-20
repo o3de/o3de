@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Time Delay",
-                "category": "Timing",
+                "category": "Nodeables",
                 "tooltip": "Delays all incoming execution for the specified number of ticks"
             },
             "slots": [
