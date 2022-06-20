@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
         , m_propertyStatus(propertyStatus)
     {
         GraphCanvas::TranslationKey key;
-        key << "EBusSender" << busName << "methods" << eventName << "details";
+        key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusSenderContext << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = eventName;
@@ -135,6 +135,23 @@ namespace ScriptCanvasEditor
     ScriptCanvas::EBusEventId EBusSendEventPaletteTreeItem::GetEventId() const
     {
         return m_eventId;
+    }
+
+    AZ::IO::Path EBusSendEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusSenderPath) / GetBusName();
+    }
+
+    void EBusSendEventPaletteTreeItem::GenerateTranslationData()
+    {
+        AZ::BehaviorContext* behaviorContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+        const char* ebusName = m_busName.toUtf8().data();
+        auto behaviorEbus = behaviorContext->m_ebuses.find(ebusName);
+
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        translation.TranslateEBus(behaviorEbus->second);
     }
 
     ScriptCanvas::PropertyStatus EBusSendEventPaletteTreeItem::GetPropertyStatus() const
@@ -297,7 +314,7 @@ namespace ScriptCanvasEditor
         , m_eventId(eventId)
     {
         GraphCanvas::TranslationKey key;
-        key << "EBusHandler" << busName << "methods" << eventName << "details";
+        key << ScriptCanvasEditor::TranslationHelper::AssetContext::EBusHandlerContext << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = m_eventName;
@@ -336,5 +353,21 @@ namespace ScriptCanvasEditor
     ScriptCanvas::EBusEventId EBusHandleEventPaletteTreeItem::GetEventId() const
     {
         return m_eventId;
+    }
+
+    AZ::IO::Path EBusHandleEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusHandlerPath) / GetBusName();
+    }
+
+    void EBusHandleEventPaletteTreeItem::GenerateTranslationData()
+    {
+        AZ::BehaviorContext* behaviorContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+        auto behaviorEbus = behaviorContext->m_ebuses.find(m_busName.c_str());
+
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        translation.TranslateEBus(behaviorEbus->second);
     }
 }

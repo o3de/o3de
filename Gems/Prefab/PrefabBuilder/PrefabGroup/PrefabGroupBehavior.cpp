@@ -106,10 +106,10 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshTransformMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>;
         using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
+        using NodeEntityMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
         using EntityIdList = AZStd::vector<AZ::EntityId>;
 
         void AssignCustomPropertyMapIndex(
@@ -192,7 +192,7 @@ namespace AZ::SceneAPI::Behaviors
 
         bool AddEditorMaterialComponent(const AZ::EntityId& entityId, const DataTypes::ICustomPropertyData& propertyData)
         {
-            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de.default.material");
+            const auto propertyMaterialPathIterator = propertyData.GetPropertyMap().find("o3de_default_material");
             if (propertyMaterialPathIterator == propertyData.GetPropertyMap().end())
             {
                 // skip these assignment since the default material override was not provided
@@ -202,7 +202,7 @@ namespace AZ::SceneAPI::Behaviors
             const AZStd::any& propertyMaterialPath = propertyMaterialPathIterator->second;
             if (propertyMaterialPath.empty() || propertyMaterialPath.is<AZStd::string>() == false)
             {
-                AZ_Error("prefab", false, "The 'o3de.default.material' custom property value type must be a string."
+                AZ_Error("prefab", false, "The 'o3de_default_material' custom property value type must be a string."
                                           "This will need to be fixed in the DCC tool and re-export the file asset.");
                 return false;
             }
@@ -304,11 +304,14 @@ namespace AZ::SceneAPI::Behaviors
                 const auto meshNodeIndex = entry.second.m_meshIndex;
                 const auto propertyDataIndex = entry.second.m_propertyMapIndex;
                 const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
+                const auto meshSubId = DataTypes::Utilities::CreateStableUuid(
+                    scene,
+                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
+                    meshNodeName.GetPath());
 
-                AZStd::string meshNodePath{ meshNodeName.GetPath() };
                 AZStd::string meshGroupName = "default_";
                 meshGroupName += scene.GetName();
-                meshGroupName += meshNodePath;
+                meshGroupName += meshSubId.ToFixedString().c_str();
 
                 // clean up the mesh group name
                 AZStd::replace_if(
@@ -317,6 +320,7 @@ namespace AZ::SceneAPI::Behaviors
                     [](char c) { return (!AZStd::is_alnum(c) && c != '_'); },
                     '_');
 
+                AZStd::string meshNodePath{ meshNodeName.GetPath() };
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
                 meshGroup->SetName(meshGroupName);
                 meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
@@ -328,10 +332,7 @@ namespace AZ::SceneAPI::Behaviors
                         meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
                     }
                 }
-                meshGroup->OverrideId(DataTypes::Utilities::CreateStableUuid(
-                    scene,
-                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
-                    meshNodeName.GetPath()));
+                meshGroup->OverrideId(meshSubId);
 
                 // this clears out the mesh coordinates each mesh group will be rotated and translated
                 // using the attached scene graph node
@@ -391,7 +392,7 @@ namespace AZ::SceneAPI::Behaviors
             const Containers::SceneGraph& graph,
             const MeshTransformMap& meshTransformMap)
         {
-            EntityIdList entities;            
+            EntityIdList entities;
             entities.reserve(nodeEntityMap.size());
 
             for (const auto& nodeEntity : nodeEntityMap)
@@ -520,7 +521,21 @@ namespace AZ::SceneAPI::Behaviors
 
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
+        Events::ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester) override;
     };
+
+    Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::PrepareForAssetLoading(
+        [[maybe_unused]] Containers::Scene& scene,
+        RequestingApplication requester)
+    {
+        using namespace AzToolsFramework;
+        if (requester == RequestingApplication::AssetProcessor)
+        {
+            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
+            AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
+        }
+        return Events::ProcessingResult::Success;
+    }
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
         Containers::Scene& scene,

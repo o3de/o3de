@@ -27,6 +27,7 @@ set(FILES
     Include/ScriptCanvas/Core/Endpoint.cpp
     Include/ScriptCanvas/Core/Graph.cpp
     Include/ScriptCanvas/Core/GraphData.cpp
+    Include/ScriptCanvas/Core/GraphSerialization.cpp
     Include/ScriptCanvas/Core/MethodConfiguration.cpp
     Include/ScriptCanvas/Core/ModifiableDatumView.cpp
     Include/ScriptCanvas/Core/Node.cpp
@@ -63,17 +64,22 @@ set(FILES
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
+    Include/ScriptCanvas/Execution/Executor.cpp
     Include/ScriptCanvas/Execution/ExecutionContext.cpp
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
     Include/ScriptCanvas/Execution/ExecutionState.cpp
+    Include/ScriptCanvas/Execution/ExecutionStateHandler.cpp
+    Include/ScriptCanvas/Execution/ExecutionStateStorage.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedComponentAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedDebugAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedEBusAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedOut.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.cpp
+    Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPerActivation.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedPure.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.cpp
@@ -83,6 +89,7 @@ set(FILES
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp
     Include/ScriptCanvas/Grammar/ParsingUtilities.cpp
+    Include/ScriptCanvas/Grammar/ParsingUtilitiesScriptEventExtension.cpp
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp
@@ -112,8 +119,13 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SendScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Entity/Entity.cpp
-    Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Contains.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Replace.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/StringMethods.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Utilities.cpp
+    Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
     Include/ScriptCanvas/Libraries/Logic/Cycle.cpp
@@ -126,9 +138,22 @@ set(FILES
     Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/While.cpp
+    Include/ScriptCanvas/Libraries/Math/AABB.cpp
+    Include/ScriptCanvas/Libraries/Math/Color.cpp
+    Include/ScriptCanvas/Libraries/Math/CRC.cpp
     Include/ScriptCanvas/Libraries/Math/Math.cpp
+    Include/ScriptCanvas/Libraries/Math/MathFunctions.cpp
     Include/ScriptCanvas/Libraries/Math/MathExpression.cpp
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
+    Include/ScriptCanvas/Libraries/Math/Matrix3x3.cpp
+    Include/ScriptCanvas/Libraries/Math/Matrix4x4.cpp
+    Include/ScriptCanvas/Libraries/Math/OBB.cpp
+    Include/ScriptCanvas/Libraries/Math/Plane.cpp
+    Include/ScriptCanvas/Libraries/Math/Quaternion.cpp
+    Include/ScriptCanvas/Libraries/Math/Transform.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector2.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector3.cpp
+    Include/ScriptCanvas/Libraries/Math/Vector4.cpp
     Include/ScriptCanvas/Libraries/Comparison/Comparison.cpp
     Include/ScriptCanvas/Libraries/Time/Time.cpp
     Include/ScriptCanvas/Libraries/Time/Countdown.cpp
@@ -141,16 +166,11 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
-    Include/ScriptCanvas/Libraries/Spawning/SpawnableAsset.cpp
-    Include/ScriptCanvas/Libraries/Spawning/SpawnTicketInstance.cpp
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp
-    Include/ScriptCanvas/Libraries/String/Contains.cpp
-    Include/ScriptCanvas/Libraries/String/Replace.cpp
     Include/ScriptCanvas/Libraries/String/String.cpp
-    Include/ScriptCanvas/Libraries/String/StringMethods.cpp
-    Include/ScriptCanvas/Libraries/String/Utilities.cpp
+    Include/ScriptCanvas/Libraries/String/StringFunctions.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectFalse.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThan.cpp
@@ -198,4 +218,5 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
+    Include/ScriptCanvas/Utils/ReplacementUtils.cpp
 )

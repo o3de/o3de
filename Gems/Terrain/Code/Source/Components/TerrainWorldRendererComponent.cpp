@@ -34,10 +34,18 @@ namespace Terrain
                 ->Field("Scale", &DetailMaterialConfiguration::m_scale)
                 ;
 
+            serialize->Class<MeshConfiguration>()
+                ->Version(2)
+                ->Field("RenderDistance", &MeshConfiguration::m_renderDistance)
+                ->Field("FirstLodDistance", &MeshConfiguration::m_firstLodDistance)
+                ->Field("ClodEnabled", &MeshConfiguration::m_clodEnabled)
+                ->Field("ClodDistance", &MeshConfiguration::m_clodDistance)
+                ;
+
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
                 ->Version(2)
-                ->Field("WorldSize", &TerrainWorldRendererConfig::m_worldSize)
                 ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
+                ->Field("MeshConfiguration", &TerrainWorldRendererConfig::m_meshConfig)
                 ;
 
             AZ::EditContext* editContext = serialize->GetEditContext();
@@ -58,19 +66,32 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ;
 
+                editContext->Class<MeshConfiguration>("Mesh", "Settings related to rendering terrain meshes")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_renderDistance, "Mesh render distance", "The distance from the camera that terrain meshes will render.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_firstLodDistance, "First LOD distance", "The distance from the camera that the first Lod renders to. Subsequent LODs will be at double the distance from the previous LOD.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshConfiguration::m_clodEnabled, "Continuous LOD (CLOD)", "Enables the use of continuous level of detail, which smoothly blends geometry between terrain lods.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_clodDistance, "CLOD Distance", "Distance in meters over which the first lod will blend into the next lod. Subsequent lod blend distances will double with each lod for a consistent visual appearance.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodDisabled)
+                    ;
+
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainWorldRendererConfig::m_worldSize, "Rendered world size", "The maximum amount of terrain that's rendered")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_512Meters, "512 Meters")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_1024Meters, "1 Kilometer")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_2048Meters, "2 Kilometers")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_4096Meters, "4 Kilometers")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_8192Meters, "8 Kilometers")
-                        ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_16384Meters, "16 Kilometers")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, false) // Keeping invisible until it's hooked up under the hood
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_meshConfig, "Mesh configuration", "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig, "Detail material configuration", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
@@ -139,27 +160,7 @@ namespace Terrain
             m_terrainFeatureProcessor = scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
             
             m_terrainFeatureProcessor->SetDetailMaterialConfiguration(m_configuration.m_detailMaterialConfig);
-            switch (m_configuration.m_worldSize)
-            {
-            case TerrainWorldRendererConfig::WorldSize::_512Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(512.0f, 512.0f));
-                break;
-            case TerrainWorldRendererConfig::WorldSize::_1024Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(1024.0f, 1024.0f));
-                break;
-            case TerrainWorldRendererConfig::WorldSize::_2048Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(2048.0f, 2048.0f));
-                break;
-            case TerrainWorldRendererConfig::WorldSize::_4096Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(4096.0f, 4096.0f));
-                break;
-            case TerrainWorldRendererConfig::WorldSize::_8192Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(8192.0f, 8192.0f));
-                break;
-            case TerrainWorldRendererConfig::WorldSize::_16384Meters:
-                m_terrainFeatureProcessor->SetWorldSize(AZ::Vector2(16384.0f, 16384.0f));
-                break;
-            }
+            m_terrainFeatureProcessor->SetMeshConfiguration(m_configuration.m_meshConfig);
         }
         m_terrainRendererActive = true;
     }

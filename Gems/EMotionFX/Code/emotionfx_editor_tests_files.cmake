@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Tests/ActorBuilderTests.cpp
     Tests/BlendTreeParameterNodeTests.cpp
     Tests/CommandRemoveMotionTests.cpp
     Tests/EMotionFXTest.cpp
@@ -92,7 +93,6 @@ set(FILES
     Tests/ProvidesUI/MotionSet/CanRemoveMotionSet.cpp
     Tests/ProvidesUI/Motions/CanAddMotions.cpp
     Tests/ProvidesUI/Motions/CanRemoveMotions.cpp
-    Tests/ProvidesUI/Motions/MotionPlaybacksTests.cpp
     Tests/ProvidesUI/Ragdoll/CanCopyPasteJointLimits.cpp
     Tests/ProvidesUI/Ragdoll/CanCopyPasteColliders.cpp
     Tests/EMotionFXBuilderTests.cpp

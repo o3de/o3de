@@ -13,7 +13,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <PhysX/HeightFieldAsset.h>

@@ -342,6 +342,9 @@ namespace AssetProcessor
     {
         // Note: this occurs inside a worker thread.
 
+        // Signal start and end of the job
+        ScopedJobSignaler signaler;
+
         // listen for the user quitting (CTRL-C or otherwise)
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
@@ -662,7 +665,6 @@ namespace AssetProcessor
         case AssetBuilderSDK::ProcessJobResult_Success:
             // make sure there's no subid collision inside a job.
             {
-
                 if (!CopyCompiledAssets(builderParams, result))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -725,20 +727,6 @@ namespace AssetProcessor
             return false;
         }
 
-        // if outputDirectory does not exist then create it
-        unsigned int waitTimeInSecs = 3;
-        if (!AssetUtilities::CreateDirectoryWithTimeout(QDir(cacheDirectory.AsPosix().c_str()), waitTimeInSecs))
-        {
-            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create output directory: %s\n", cacheDirectory.c_str());
-            return false;
-        }
-
-        if(!AssetUtilities::CreateDirectoryWithTimeout(QDir(intermediateDirectory.AsPosix().c_str()), waitTimeInSecs))
-        {
-            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create intermediate directory: %s\n", intermediateDirectory.c_str());
-            return false;
-        }
-
         // copy the built products into the appropriate location in the real cache and update the job status accordingly.
         // note that we go to the trouble of first doing all the checking for disk space and existence of the source files
         // before we notify the AP or start moving any of the files so that failures cause the least amount of damage possible.
@@ -749,6 +737,9 @@ namespace AssetProcessor
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
         qint64 totalCacheFileSizeRequired = 0;
         qint64 totalIntermediateFileSizeRequired = 0;
+
+        bool needCacheDirectory = false;
+        bool needIntermediateDirectory = false;
 
         for (AssetBuilderSDK::JobProduct& product : response.m_outputProducts)
         {
@@ -773,7 +764,6 @@ namespace AssetProcessor
             bool outputToIntermediate = (product.m_outputFlags & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) ==
                 AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
 
-
             if (outputToCache && outputToIntermediate)
             {
                 // We currently do not support both since intermediate outputs require the Common platform, which is not supported for cache outputs yet
@@ -789,8 +779,31 @@ namespace AssetProcessor
                 return false;
             }
 
+            // Intermediates are required to output for the common platform only
+            if (outputToIntermediate && params.m_processJobRequest.m_platformInfo.m_identifier != AssetBuilderSDK::CommonPlatformName)
+            {
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "Intermediate outputs are only supported for the %s platform.  "
+                    "Either change the Job platform to %s or change the output flag to AssetBuilderSDK::ProductOutputFlags::ProductAsset",
+                    AssetBuilderSDK::CommonPlatformName,
+                    AssetBuilderSDK::CommonPlatformName);
+                return false;
+            }
+
+            // Common platform is not currently supported for product assets
+            if (outputToCache && params.m_processJobRequest.m_platformInfo.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                AZ_Error(
+                    AssetProcessor::ConsoleChannel, false,
+                    "Product asset outputs are not currently supported for the %s platform.  "
+                    "Either change the Job platform a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
+                    AssetBuilderSDK::CommonPlatformName);
+                return false;
+            }
+
             if(outputToCache)
             {
+                needCacheDirectory = true;
+
                 if(!product.m_outputPathOverride.empty())
                 {
                     AZ_Error(AssetProcessor::ConsoleChannel, false, "%s specified m_outputPathOverride on a ProductAsset.  This is not supported."
@@ -799,7 +812,7 @@ namespace AssetProcessor
                 }
 
                 if (!VerifyOutputProduct(
-                    QDir((cacheDirectory / relativeFilePath).c_str()), outputFilename, absolutePathOfSource, totalCacheFileSizeRequired,
+                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, totalCacheFileSizeRequired,
                     outputsToCopy))
                 {
                     return false;
@@ -808,13 +821,15 @@ namespace AssetProcessor
 
             if(outputToIntermediate)
             {
+                needIntermediateDirectory = true;
+
                 if(!product.m_outputPathOverride.empty())
                 {
                     relativeFilePath = product.m_outputPathOverride;
                 }
 
                 if (!VerifyOutputProduct(
-                    QDir((intermediateDirectory / relativeFilePath).c_str()), outputFilename, absolutePathOfSource,
+                    QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
                     totalIntermediateFileSizeRequired, outputsToCopy))
                 {
                     return false;
@@ -867,6 +882,20 @@ namespace AssetProcessor
         }
 
         // if we get here, we are good to go in terms of disk space and sources existing, so we make the best attempt we can.
+
+        // if outputDirectory does not exist then create it
+        unsigned int waitTimeInSecs = 3;
+        if (needCacheDirectory && !AssetUtilities::CreateDirectoryWithTimeout(QDir(cacheDirectory.AsPosix().c_str()), waitTimeInSecs))
+        {
+            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create output directory: %s\n", cacheDirectory.c_str());
+            return false;
+        }
+
+        if (needIntermediateDirectory && !AssetUtilities::CreateDirectoryWithTimeout(QDir(intermediateDirectory.AsPosix().c_str()), waitTimeInSecs))
+        {
+            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create intermediate directory: %s\n", intermediateDirectory.c_str());
+            return false;
+        }
 
         bool anyFileFailed = false;
 
@@ -941,6 +970,7 @@ namespace AssetProcessor
         for (AssetBuilderSDK::JobProduct& product : jobResponse.m_outputProducts)
         {
             // Try to handle Absolute paths within the temp folder
+            AzFramework::StringFunc::Path::Normalize(product.m_productFileName);
             if (!AzFramework::StringFunc::Replace(product.m_productFileName, normalizedTempFolderPath.c_str(), s_tempString))
             {
                 // From CopyCompiledAssets:
@@ -959,7 +989,6 @@ namespace AssetProcessor
                     AzFramework::StringFunc::Path::Normalize(sourceFile);
                     AzFramework::StringFunc::Path::StripFullName(sourceFile);
 
-                    AzFramework::StringFunc::Path::Normalize(product.m_productFileName);
                     size_t sourcePathPos = product.m_productFileName.find(sourceFile.c_str());
                     if(sourcePathPos != AZStd::string::npos)
                     {
@@ -968,7 +997,9 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Failed to find source path %s or temp path %s in non relative path in %s", sourceFile.c_str(), normalizedTempFolderPath.c_str(), product.m_productFileName.c_str());
+                        AZ_Warning(AssetBuilderSDK::WarningWindow, false,
+                            "Failed to find source path %s or temp path %s in non relative path in %s",
+                            sourceFile.c_str(), normalizedTempFolderPath.c_str(), product.m_productFileName.c_str());
                     }
                 }
             }
@@ -1032,8 +1063,8 @@ namespace AssetProcessor
 
             if(jobLogResponse.m_jobLog.find("No log file found") != AZStd::string::npos)
             {
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to find job log from the server. This could happen if you are trying to use the server cache with a copy job,\
-please check the assetprocessorplatformconfig.ini file and ensure that server cache is disabled for the job.\n");
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to find job log from the server. This could happen if you are trying to use the server cache with a copy job, "
+                    "please check the assetprocessorplatformconfig.ini file and ensure that server cache is disabled for the job.\n");
             }
 
             return false;
@@ -1043,9 +1074,9 @@ please check the assetprocessorplatformconfig.ini file and ensure that server ca
         AZ_TracePrintf(AssetProcessor::DebugChannel, "------------SERVER BEGIN----------\n");
         AzToolsFramework::Logging::LogLine::ParseLog(jobLogResponse.m_jobLog.c_str(), jobLogResponse.m_jobLog.size(),
             [&jobLogTraceListener](AzToolsFramework::Logging::LogLine& line)
-        {
-            jobLogTraceListener.AppendLog(line);
-        });
+            {
+                jobLogTraceListener.AppendLog(line);
+            });
         AZ_TracePrintf(AssetProcessor::DebugChannel, "------------SERVER END----------\n");
         return true;
     }

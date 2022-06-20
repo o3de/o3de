@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
@@ -30,6 +30,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Time/ITime.h>
@@ -79,6 +80,14 @@ namespace AZ
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
+            //If xr system is registered with RPI init xr instance
+            if (m_xrSystem)
+            {
+                [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
+            }
+
+            //Init RHI device
             m_rhiSystem.InitDevice();
 
             // Gather asset handlers from sub-systems.
@@ -264,7 +273,7 @@ namespace AZ
 
         void RPISystem::SimulationTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
                 return;
             }
@@ -288,8 +297,9 @@ namespace AZ
 
         void RPISystem::RenderTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
+                m_dynamicDraw.FrameEnd();
                 return;
             }
 
@@ -408,6 +418,11 @@ namespace AZ
             return m_systemAssetsInitialized;
         }
 
+        bool RPISystem::IsNullRenderer() const
+        {
+            return m_descriptor.m_isNullRenderer;
+        }
+
         void RPISystem::InitializeSystemAssetsForTests()
         {
             if (m_systemAssetsInitialized)
@@ -464,5 +479,17 @@ namespace AZ
             return m_multisampleState;
         }
 
+        void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
+        { 
+            AZ_Assert(!m_xrSystem, "XR System is already registered");
+            m_xrSystem = xrSystemInterface;
+            m_rhiSystem.RegisterXRSystem(dynamic_cast<RHI::XRRenderingInterface*>(xrSystemInterface));
+        }
+
+        void RPISystem::UnRegisterXRSystem()
+        {
+            m_rhiSystem.UnRegisterXRSystem();
+            m_xrSystem = nullptr;
+        }
     } //namespace RPI
 } //namespace AZ

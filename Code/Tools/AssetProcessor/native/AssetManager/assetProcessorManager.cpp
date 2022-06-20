@@ -769,6 +769,99 @@ namespace AssetProcessor
         QueueIdleCheck();
     }
 
+    AssetProcessorManager::ConflictResult AssetProcessorManager::CheckIntermediateProductConflict(
+        bool isIntermediateProduct,
+        const char* searchSourcePath)
+    {
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+
+        if (m_stateData->GetSourcesBySourceName(searchSourcePath, sources))
+        {
+            for (const auto& source : sources)
+            {
+                AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
+                if (!m_stateData->GetScanFolderByScanFolderID(source.m_scanFolderPK, scanfolder))
+                {
+                    AZ_Error(AssetProcessor::ConsoleChannel, false, "CheckIntermediateProductConflict: Failed to get scanfolder %d for source %s",
+                        source.m_scanFolderPK,
+                        source.m_sourceName.c_str());
+                }
+
+                auto intermediateScanfolderId = m_platformConfig->GetIntermediateAssetsScanFolderId();
+
+                if (!intermediateScanfolderId)
+                {
+                    AZ_Error(
+                        AssetProcessor::ConsoleChannel, false,
+                        "GetIntermediateAssetsScanFolderId is invalid.  Make sure CacheIntermediateAssetsScanFolderId has been called");
+
+                    return ConflictResult{ ConflictResult::ConflictType::None };
+                }
+
+                bool scanfolderIsIntermediateAssetsFolder = intermediateScanfolderId.value() == scanfolder.m_scanFolderID;
+
+                if (isIntermediateProduct)
+                {
+                    // Check if this newly created intermediate will conflict with an existing source
+                    if (!scanfolderIsIntermediateAssetsFolder)
+                    {
+                        return ConflictResult{ ConflictResult::ConflictType::Intermediate, AZ::IO::Path(scanfolder.m_scanFolder) / source.m_sourceName };
+                    }
+                }
+                else
+                {
+                    // Check if the source for this product conflicts with an existing intermediate product (which is also a source)
+                    if(scanfolderIsIntermediateAssetsFolder)
+                    {
+                        return ConflictResult{ ConflictResult::ConflictType::Source, AZ::IO::Path(scanfolder.m_scanFolder) / source.m_sourceName };
+                    }
+                }
+            }
+        }
+
+        if (isIntermediateProduct)
+        {
+            // Its possible we haven't recorded the source in the database yet, so check the filesystem to confirm there's no normal source we're overriding
+            if (QString overriddenFile = m_platformConfig->FindFirstMatchingFile(searchSourcePath, true); !overriddenFile.isEmpty())
+            {
+                return ConflictResult{ ConflictResult::ConflictType::Intermediate, AZ::IO::Path(overriddenFile.toUtf8().constData()) };
+            }
+        }
+
+        return ConflictResult{ ConflictResult::ConflictType::None };
+    }
+
+    bool AssetProcessorManager::CheckForIntermediateAssetLoop(AZStd::string_view currentAsset, AZStd::string_view productAsset)
+    {
+        auto intermediateSources =
+            AssetUtilities::GetAllIntermediateSources(currentAsset, m_stateData);
+
+        auto sourceItr = AZStd::find_if(
+            intermediateSources.begin(), intermediateSources.end(),
+            [&currentAsset](auto path)
+            {
+                return AZ::StringFunc::Equal(path, currentAsset);
+            });
+
+        auto productItr = AZStd::find_if(
+            intermediateSources.begin(), intermediateSources.end(),
+            [&productAsset](auto path)
+            {
+                return AZ::StringFunc::Equal(path, productAsset);
+            });
+
+        if (sourceItr != intermediateSources.end() && productItr != intermediateSources.end())
+        {
+            if (AZStd::distance(sourceItr, productItr) <= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void AssetProcessorManager::AssetProcessed_Impl()
     {
         using AssetBuilderSDK::ProductOutputFlags;
@@ -820,7 +913,64 @@ namespace AssetProcessor
                     break;
                 }
 
-                if(!productWrapper.IsValid())
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+
+
+                if (productWrapper.HasIntermediateProduct() && CheckForIntermediateAssetLoop(
+                        itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData(), productPath.GetRelativePath()))
+                {
+                    // Loop detected
+                    auto errorMessage = AZStd::string::format(
+                        "An output loop has been detected.  File %s has already been output as an intermediate in the processing chain. "
+                        "This is most likely an issue that must be fixed in the builder (%s)",
+                        productPath.GetRelativePath().c_str(), itProcessedAsset->m_entry.m_builderGuid.ToString<AZStd::string>().c_str());
+
+                    AutoFailJob(errorMessage, errorMessage, itProcessedAsset);
+                    productWrapper.DeleteFiles(false);
+
+                    FailTopLevelSourceForIntermediate(itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData(), errorMessage);
+                    remove = true;
+                    break;
+                }
+
+                // Check if there is an intermediate product that conflicts with a normal source asset
+                // Its possible for the intermediate product to process first, so we need to do this check
+                // for both the intermediate product and normal products
+                if (auto result = CheckIntermediateProductConflict(productWrapper.HasIntermediateProduct(),
+                    productWrapper.HasIntermediateProduct() ? productPath.GetRelativePath().c_str() : itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData());
+                    result.m_type != ConflictResult::ConflictType::None)
+                {
+                    if(result.m_type == ConflictResult::ConflictType::Intermediate)
+                    {
+                        auto errorMessage = AZStd::string::format(
+                            "Asset (%s) has produced an intermediate asset file which conflicts with an existing source asset "
+                            "with the same relative path: " AZ_STRING_FORMAT ".  Please move/rename one of the files to fix the conflict.",
+                            itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData(),
+                            AZ_STRING_ARG(result.m_conflictingFile.Native()));
+
+                        // Fail this job and delete its files, since it might actually be the top level source, and since we haven't recorded it yet, FailTopLevelSourceForIntermediate will do nothing in that case
+                        AutoFailJob(errorMessage, errorMessage, itProcessedAsset);
+                        productWrapper.DeleteFiles(false);
+
+                        FailTopLevelSourceForIntermediate(itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData(), errorMessage);
+                        remove = true;
+                        break;
+                    }
+                    else
+                    {
+                        auto errorMessage = AZStd::string::format(
+                            "Asset (" AZ_STRING_FORMAT ") has produced an intermediate asset file which conflicts with an existing source asset "
+                            "with the same relative path: %s.  Please move/rename one of the files to fix the conflict.",
+                            AZ_STRING_ARG(result.m_conflictingFile.Native()),
+                            itProcessedAsset->m_entry.m_databaseSourceName.toUtf8().constData()
+                        );
+
+                        // We need to fail the other, intermediate asset job
+                        FailTopLevelSourceForIntermediate(result.m_conflictingFile, errorMessage);
+                    }
+                }
+
+                if(!remove && !productWrapper.IsValid())
                 {
                     auto errorMessage = AZStd::string::format("Output product %s for file %s is not valid.  The file may have been deleted unexpectedly or have an invalid path.",
                         product.m_productFileName.c_str(),
@@ -831,11 +981,12 @@ namespace AssetProcessor
                     continue;
                 }
 
-                if(!productWrapper.ExistOnDisk())
+                if(!remove && !productWrapper.ExistOnDisk(true))
                 {
                     remove = true;
                 }
-                else
+
+                if(!remove)
                 {
                     AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobEntries;
 
@@ -892,7 +1043,6 @@ namespace AssetProcessor
                                         // The product file path is always lower cased, we can't check that for existance.
                                         // Let rebuild a fs sensitive file path by replacing the cache path.
                                         // We assume any file paths normalized, ie no .. nor (back) slashes.
-                                        //const QString outputProductFilePath = m_cacheRootDir.filePath(outputProduct.m_productFileName.substr(m_normalizedCacheRootPath.length() + 1).c_str());
                                         AssetUtilities::ProductPath outputProductPath(outputProduct.m_productFileName, itProcessedAsset->m_entry.m_platformInfo.m_identifier);
                                         ProductAssetWrapper wrapper(outputProduct, outputProductPath);
 
@@ -988,7 +1138,6 @@ namespace AssetProcessor
             job.m_platform = processedAsset.m_entry.m_platformInfo.m_identifier;
             job.m_builderGuid = processedAsset.m_entry.m_builderGuid;
             job.m_jobRunKey = processedAsset.m_entry.m_jobRunKey;
-
 
             if (!AZ::IO::FileIOBase::GetInstance()->Exists(job.m_lastLogFile.c_str()))
             {
@@ -1331,6 +1480,17 @@ namespace AssetProcessor
                 Q_EMIT AssetMessage( message);
 
                 AddKnownFoldersRecursivelyForFile(fullProductPath, m_cacheRootDir.absolutePath());
+
+                auto productPath = AssetUtilities::ProductPath::FromDatabasePath(pair.first.m_productName);
+                ProductAssetWrapper wrapper{*pair.second, productPath};
+
+                if (wrapper.HasIntermediateProduct())
+                {
+                    // Now that we've verified that the output doesn't conflict with an existing source
+                    // And we've updated the database, trigger processing the output
+
+                    AssessFileInternal(productPath.GetIntermediatePath().c_str(), false);
+                }
             }
 
             QString fullSourcePath = processedAsset.m_entry.GetAbsoluteSourcePath();
@@ -1572,28 +1732,27 @@ namespace AssetProcessor
             return;
         }
 
-        //remove the cache root from the cached product path
-        QString relativeProductFile = m_cacheRootDir.relativeFilePath(fullProductFile);
+        AZStd::string platform;
+        auto productPath = AssetUtilities::ProductPath::FromAbsoluteProductPath(fullProductFile.toUtf8().constData(), platform);
 
-        //platform
-        QString platform = relativeProductFile;// currently <platform>/<relative_asset_path>
-        platform = platform.left(platform.indexOf('/')); // also consume the extra slash - remove PLATFORM
+        //remove the cache root from the cached product path
+        AZStd::string productDatabasePath = productPath.GetDatabasePath();
 
         //we are going to force the processor to re process the source file associated with this product
         //we do that by setting the fingerprint to some other value than which will be recomputed
         //we only want to notify any listeners that the product file was removed for this particular product
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        if (!m_stateData->GetSourcesByProductName(relativeProductFile, sources))
+        if (!m_stateData->GetSourcesByProductName(productDatabasePath.c_str(), sources))
         {
             return;
         }
         AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
-        if (!m_stateData->GetJobsByProductName(relativeProductFile, jobs, AZ::Uuid::CreateNull(), QString(), platform))
+        if (!m_stateData->GetJobsByProductName(productDatabasePath.c_str(), jobs, AZ::Uuid::CreateNull(), QString(), platform.c_str()))
         {
             return;
         }
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-        if (!m_stateData->GetProductsByProductName(relativeProductFile, products, AZ::Uuid::CreateNull(), QString(), platform))
+        if (!m_stateData->GetProductsByProductName(productDatabasePath.c_str(), products, AZ::Uuid::CreateNull(), QString(), platform.c_str()))
         {
             return;
         }
@@ -1663,7 +1822,11 @@ namespace AssetProcessor
 
             successfullyRemoved = wrapper.DeleteFiles(true);
 
-            if (successfullyRemoved)
+            if(!successfullyRemoved)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Failed to delete product files for %s\n", product.m_productName.c_str());
+            }
+            else
             {
                 if (!m_stateData->RemoveProduct(product.m_productID))
                 {
@@ -1690,6 +1853,14 @@ namespace AssetProcessor
                         message.m_legacyAssetIds.push_back(legacySourceAssetId);
                     }
                     Q_EMIT AssetMessage( message);
+                }
+
+                if (wrapper.HasIntermediateProduct())
+                {
+                    CheckDeletedSourceFile(
+                        productPath.GetIntermediatePath().c_str(), productPath.GetRelativePath().c_str(),
+                        productPath.GetRelativePath().c_str(),
+                        AZStd::chrono::system_clock::now());
                 }
 
                 m_checkFoldersToRemove.insert(productPath.GetCachePath().c_str());
@@ -1729,6 +1900,32 @@ namespace AssetProcessor
         {
             for (const auto& source : sources)
             {
+                if (IsInIntermediateAssetsFolder(normalizedPath))
+                {
+                    auto topLevelSource = AssetUtilities::GetTopLevelSourceForProduct(source.m_sourceName.c_str(), m_stateData);
+
+                    if (topLevelSource)
+                    {
+                        ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+                        m_stateData->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanfolderForTopLevelSource);
+
+                        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+                        fullPath /= topLevelSource->m_sourceName;
+
+                        if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                        {
+                            // The top level file for this intermediate exists, treat this as a product deletion in that case which should
+                            // regenerate the product
+                            CheckDeletedProductFile(normalizedPath);
+                            return;
+                        }
+                        else
+                        {
+                            // The top level file is gone, so we need to continue on to delete the child products
+                        }
+                    }
+                }
+
                 AzToolsFramework::AssetSystem::JobInfo jobInfo;
                 jobInfo.m_sourceFile = databaseSourceFile.toUtf8().constData();
 
@@ -1816,7 +2013,8 @@ namespace AssetProcessor
         QString normalizedRoot = AssetUtilities::NormalizeFilePath(root);
 
         // also track parent folders up to the specified root.
-        QString parentFolderName = QFileInfo(fullFile).absolutePath();
+        QFileInfo fullFileInfo(fullFile);
+        QString parentFolderName = fullFileInfo.isDir() ? fullFileInfo.absoluteFilePath() : fullFileInfo.absolutePath();
         QString normalizedParentFolder = AssetUtilities::NormalizeFilePath(parentFolderName);
 
         if (!normalizedParentFolder.startsWith(normalizedRoot, Qt::CaseInsensitive))
@@ -2032,7 +2230,7 @@ namespace AssetProcessor
                     auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName);
                     ProductAssetWrapper wrapper{ product, productPath };
 
-                    if(!wrapper.ExistOnDisk())
+                    if(!wrapper.ExistOnDisk(true))
                     {
                         shouldProcessAsset = true;
                     }
@@ -2102,6 +2300,8 @@ namespace AssetProcessor
         }
         else
         {
+            UpdateForCacheServer(jobDetails);
+
             // macOS requires that the cacheRootDir to not be all lowercase, otherwise file copies will not work correctly.
             // So use the lowerCasePath string to capture the parts that need to be lower case while keeping the cache root
             // mixed case.
@@ -2117,15 +2317,47 @@ namespace AssetProcessor
                 pathRel = QString();
             }
 
-            platformId = platformId.toLower();
-            pathRel = pathRel.toLower();
+            AssetUtilities::ProductPath productPath{ pathRel.toUtf8().constData(), platformId.toUtf8().constData() };
 
-            jobDetails.m_cachePath = m_cacheRootDir.absoluteFilePath(platformId).toUtf8().constData();
-            jobDetails.m_intermediatePath = AssetUtilities::GetIntermediateAssetsFolder(m_cacheRootDir.absolutePath().toUtf8().constData());
-            jobDetails.m_relativePath = pathRel.toUtf8().constData();
+            jobDetails.m_cachePath = productPath.GetCachePath();
+            jobDetails.m_intermediatePath = productPath.GetIntermediatePath();
+            jobDetails.m_relativePath = productPath.GetRelativePath();
         }
 
         return true;
+    }
+
+    void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
+    {
+        if (AssetUtilities::ServerAddress().isEmpty())
+        {
+            // Asset Cache Server mode feature is turned off
+            return;
+        }
+        else if (!m_platformConfig)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, m_platformConfig, "Platform not configured. Called too soon?");
+            return;
+        }
+
+        auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
+        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        {
+            auto matchingPatternIt = AZStd::find_if(
+                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
+                jobDetails.m_assetBuilderDesc.m_patterns.end(),
+                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
+                {
+                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
+                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
+                }
+            );
+
+            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            {
+                jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+            }
+        }
     }
 
     void AssetProcessorManager::CheckDeletedCacheFolder(QString normalizedPath)
@@ -2146,10 +2378,12 @@ namespace AssetProcessor
 
         for (const auto& product : products)
         {
-            QString fileFound = m_cacheRootDir.absoluteFilePath(product.m_productName.c_str());
-            if (!QFile::exists(fileFound))
+            auto productPath = AssetUtilities::ProductPath::FromDatabasePath(product.m_productName);
+            ProductAssetWrapper productWrapper{ product, productPath };
+
+            if (!productWrapper.ExistOnDisk(false))
             {
-                AssessDeletedFile(fileFound);
+                AssessDeletedFile(productPath.GetCachePath().c_str());
             }
         }
 
@@ -2170,7 +2404,7 @@ namespace AssetProcessor
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
         QString sourceName = relativePath;
-        m_stateData->GetSourcesLikeSourceName(sourceName, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
+        m_stateData->GetSourcesLikeSourceNameScanFolderId(sourceName, scanFolderInfo->ScanFolderID(), AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "CheckDeletedSourceFolder: %i matching files.\n", sources.size());
 
@@ -2190,7 +2424,7 @@ namespace AssetProcessor
 
         m_knownFolders.remove(normalizedPath);
 
-        SourceFolderDeleted(sourceName);
+        SourceFolderDeleted(normalizedPath);
     }
 
     namespace
@@ -2279,6 +2513,55 @@ namespace AssetProcessor
         {
             AssessModifiedFile(fileEntry);
         }
+    }
+
+    void AssetProcessorManager::FailTopLevelSourceForIntermediate(
+        AZ::IO::PathView relativePathToIntermediateProduct, AZStd::string_view errorMessage)
+    {
+        auto topLevelSourceForIntermediateConflict =
+            AssetUtilities::GetTopLevelSourceForProduct(relativePathToIntermediateProduct, m_stateData);
+
+        if (!topLevelSourceForIntermediateConflict)
+        {
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "FailTopLevelSourceForIntermediate: No top level source found for " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(relativePathToIntermediateProduct.Native()));
+            return;
+        }
+
+        AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
+        m_stateData->GetJobsBySourceID(topLevelSourceForIntermediateConflict->m_sourceID, jobs);
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry topLevelSourceScanFolder;
+        if (!m_stateData->GetScanFolderByScanFolderID(topLevelSourceForIntermediateConflict->m_scanFolderPK, topLevelSourceScanFolder))
+        {
+            AZ_Error(
+                AssetProcessor::ConsoleChannel, false, "FailTopLevelSourceForIntermediate: Failed to get scanfolder %d for file %s",
+                topLevelSourceForIntermediateConflict->m_scanFolderPK,
+                topLevelSourceForIntermediateConflict->m_sourceName.c_str());
+            return;
+        }
+
+        for (auto& job : jobs)
+        {
+            JobEntry jobEntry{ topLevelSourceScanFolder.m_scanFolder.c_str(),
+                               topLevelSourceForIntermediateConflict->m_sourceName.c_str(),
+                               topLevelSourceForIntermediateConflict->m_sourceName.c_str(),
+                               job.m_builderGuid,
+                               *m_platformConfig->GetPlatformByIdentifier(job.m_platform.c_str()),
+                               job.m_jobKey.c_str(),
+                               job.m_fingerprint,
+                               job.m_jobRunKey,
+                               topLevelSourceForIntermediateConflict->m_sourceGuid };
+
+            AutoFailJob(
+                errorMessage, errorMessage,
+                AZ::IO::Path(topLevelSourceScanFolder.m_scanFolder) / topLevelSourceForIntermediateConflict->m_sourceName, jobEntry);
+        }
+
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+        m_stateData->GetProductsBySourceID(topLevelSourceForIntermediateConflict->m_sourceID, products);
+        DeleteProducts(products);
+
+        m_stateData->RemoveSource(topLevelSourceForIntermediateConflict->m_sourceID);
     }
 
     void AssetProcessorManager::ProcessFilesToExamineQueue()
@@ -2431,8 +2714,14 @@ namespace AssetProcessor
                 // note that "ConvertToRelativePath" does add output prefix to it.
                 if (!m_platformConfig->ConvertToRelativePath(normalizedPath, databasePathToFile, scanFolderName))
                 {
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessFilesToExamineQueue: Unable to find the relative path.\n");
+                    AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessFilesToExamineQueue: Unable to find the relative path for %s.\n", normalizedPath.toUtf8().constData());
                     continue;
+                }
+
+                if (normalizedPath == scanFolderName)
+                {
+                    // We found a scanfolder, record it
+                    m_knownFolders.insert(scanFolderName);
                 }
 
                 const ScanFolderInfo* scanFolderInfo = m_platformConfig->GetScanFolderForFile(normalizedPath);
@@ -2576,11 +2865,42 @@ namespace AssetProcessor
 
                 if (!overrider.isEmpty())
                 {
-                    // this file is being overridden by an earlier file.
-                    // ignore us, and pretend the other file changed:
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "File overridden by %s.\n", overrider.toUtf8().constData());
-                    CheckSource(FileEntry(overrider, false, examineFile.m_isFromScanner));
-                    continue;
+                    if (!IsInIntermediateAssetsFolder(overrider))
+                    {
+                        FileStateInfo foundFileInfo;
+                        bool found = AZ::Interface<IFileStateRequests>::Get()->GetFileInfo(overrider, &foundFileInfo);
+
+                        if(!found)
+                        {
+                            AZ_Error(AssetProcessor::ConsoleChannel, false, "ProcessFilesToExamineQueue: Found overrider %s for file %s, but FileStateCache has no information about this file.  File will not be processed.",
+                                overrider.toUtf8().constData(), normalizedPath.toUtf8().constData());
+                            continue;
+                        }
+
+                        if(foundFileInfo.m_isDirectory)
+                        {
+                            // It makes no sense for directories to override directories.  This happens usually because a directory was deleted, but we have no way of knowing it was a directory (since it's already deleted)
+                            // Since we know the overrider is a directory, ignore this overrider and continue on processing the actual directory.
+                        }
+                        else
+                        {
+                            // this file is being overridden by an earlier file.
+                            // ignore us, and pretend the other file changed:
+                            AZ_TracePrintf(AssetProcessor::DebugChannel, "File overridden by %s.\n", overrider.toUtf8().constData());
+                            CheckSource(FileEntry(overrider, false, examineFile.m_isFromScanner));
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        auto errorMessage = AZStd::string::format(
+                            "Intermediate asset (%s) conflicts with an existing source asset "
+                            "with the same relative path: %s.  Please move/rename one of the files to fix the conflict.",
+                            overrider.toUtf8().constData(),
+                            normalizedPath.toUtf8().constData());
+
+                        FailTopLevelSourceForIntermediate(databasePathToFile.toUtf8().constData(), errorMessage);
+                    }
                 }
 
                 // its an input file or a file we don't care about...
@@ -2714,7 +3034,23 @@ namespace AssetProcessor
                     m_metaFilesWhichActuallyExistOnDisk.clear(); // invalidate the map, force a recompuation later.
                 }
             }
+        }
 
+        if (!isDelete && IsInIntermediateAssetsFolder(normalizedFullFile) && !m_knownFolders.contains(normalizedFullFile))
+        {
+            QString relativePath, scanfolderPath;
+            m_platformConfig->ConvertToRelativePath(normalizedFullFile, relativePath, scanfolderPath);
+
+            auto productName = AssetUtilities::GetIntermediateAssetDatabaseName(relativePath.toUtf8().constData());
+
+            AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+
+            if(!m_stateData->GetProductsByProductName(productName.c_str(), products))
+            {
+                // This file is an intermediate asset product but it doesn't exist in the database yet.  This means the job which produced this asset has not completed yet.
+                // Do not process this file yet.  When the job is done it will retrigger processing for this file.
+                return;
+            }
         }
 
         m_AssetProcessorIsBusy = true;
@@ -2781,7 +3117,6 @@ namespace AssetProcessor
         if (!QFileInfo(filePath).isDir())
         {
             // we also don't care if you modify files in the cache, only deletions matter.
-            [[maybe_unused]] bool match = !filePath.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive);
             if(!IsInCacheFolder(filePath.toUtf8().constData()))
             {
                 AssessFileInternal(filePath, false);
@@ -2831,6 +3166,16 @@ namespace AssetProcessor
         if (m_allowModtimeSkippingFeature)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
+        }
+    }
+
+    void AssetProcessorManager::RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths)
+    {
+        // Record all the folders so we can differentiate between a folder delete and a file delete later on
+        // Sometimes a folder is empty, which is why its not sufficient to only record folders from the AssessFilesFromScanner event
+        for(const auto& folder : folderPaths)
+        {
+            AddKnownFoldersRecursivelyForFile(folder.m_filePath, folder.m_scanFolder->ScanPath());
         }
     }
 
@@ -3160,6 +3505,11 @@ namespace AssetProcessor
         return AssetUtilities::IsInIntermediateAssetsFolder(path, m_normalizedCacheRootPath.toUtf8().constData());
     }
 
+    bool AssetProcessorManager::IsInIntermediateAssetsFolder(QString path) const
+    {
+        return AssetProcessorManager::IsInIntermediateAssetsFolder(AZ::IO::PathView(path.toUtf8().constData()));
+    }
+
     void AssetProcessorManager::UpdateJobDependency(JobDetails& job)
     {
         for(size_t jobDependencySlot = 0; jobDependencySlot < job.m_jobDependencyList.size();)
@@ -3290,7 +3640,6 @@ namespace AssetProcessor
         // Either this job does not have any dependent jobs or all of its dependent jobs have been fingerprinted
         return true;
     }
-
 
     void AssetProcessorManager::ProcessBuilders(QString normalizedPath, QString databasePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList)
     {
@@ -4091,6 +4440,9 @@ namespace AssetProcessor
             // update the in-memory value of the scan folder id from the above query.
             scanFolderFromConfigFile.SetScanFolderID(scanFolderToWrite.m_scanFolderID);
         }
+
+        m_platformConfig->CacheIntermediateAssetsScanFolderId();
+
         return true;
     }
 
@@ -4922,11 +5274,11 @@ namespace AssetProcessor
         UpdateAnalysisTrackerForFile(absolutePath.toUtf8().constData(), updateType);
     }
 
-    void AssetProcessorManager::AutoFailJob([[maybe_unused]] AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZ::IO::Path& filePath, JobEntry jobEntry, AZStd::string_view jobLog)
+    void AssetProcessorManager::AutoFailJob([[maybe_unused]] AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZ::IO::Path& absoluteFilePath, JobEntry jobEntry, AZStd::string_view jobLog)
     {
         if (!consoleMsg.empty())
         {
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, AZ_STRING_FORMAT, AZ_STRING_ARG(consoleMsg));
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, AZ_STRING_FORMAT "\n", AZ_STRING_ARG(consoleMsg));
         }
 
         JobDetails jobdetail;
@@ -4944,7 +5296,7 @@ namespace AssetProcessor
 
         // this is a failure, so make sure that the system that is tracking files
         // knows that this file must not be skipped next time:
-        UpdateAnalysisTrackerForFile(filePath.c_str(), AnalysisTrackerUpdateType::JobFailed);
+        UpdateAnalysisTrackerForFile(absoluteFilePath.c_str(), AnalysisTrackerUpdateType::JobFailed);
 
         Q_EMIT AssetToProcess(jobdetail); // forwarding this job to rccontroller to fail it
     }
@@ -4967,16 +5319,19 @@ namespace AssetProcessor
     {
         QFileInfo dirCheck{ sourcePathRequest };
         auto normalizedSourcePath = AssetUtilities::NormalizeFilePath(sourcePathRequest);
-        QStringList reprocessList;
+        AZStd::list<AZStd::string> reprocessList;
+
         if (dirCheck.isDir())
         {
             QString scanFolderName;
             QString relativePathToFile;
+            QString searchPath;
+
             if (!m_platformConfig->ConvertToRelativePath(normalizedSourcePath, relativePathToFile, scanFolderName))
             {
                 return 0;
             }
-            QString searchPath;
+
             // If we have a path beyond the scanFolder we need to keep that as part of our search string
             if (sourcePathRequest.length() > scanFolderName.length())
             {
@@ -4991,33 +5346,54 @@ namespace AssetProcessor
             {
                 searchPath += "*";
             }
-            reprocessList = m_platformConfig->FindWildcardMatches(scanFolderName, searchPath);
+            auto result = AzFramework::FileFunc::FindFilesInPath(sourcePathRequest.toUtf8().constData(), "*", true);
+
+            if (result)
+            {
+                reprocessList = result.GetValue();
+            }
         }
         else
         {
-            reprocessList.append(normalizedSourcePath);
+            reprocessList.push_back(normalizedSourcePath.toUtf8().constData());
         }
 
+        return RequestReprocess(reprocessList);
+    }
+
+    AZ::u64 AssetProcessorManager::RequestReprocess(const AZStd::list<AZStd::string>& reprocessList)
+    {
         AZ::u64 filesFound{ 0 };
-        for (const auto& sourcePath : reprocessList)
+        for (const AZStd::string& entry : reprocessList)
         {
+            // Remove invalid characters
+            QString sourcePath = entry.c_str();
+            sourcePath.remove(QRegExp("[\\n\\r]"));
+
             QString scanFolderName;
             QString relativePathToFile;
+
             if (!m_platformConfig->ConvertToRelativePath(sourcePath, relativePathToFile, scanFolderName))
             {
                 continue;
             }
-            AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs; //should only find one when we specify builder, job key, platform
-            m_stateData->GetJobsBySourceName(relativePathToFile, jobs);
-            for (auto& job : jobs)
+
+            auto sources = AssetUtilities::GetAllIntermediateSources(relativePathToFile.toUtf8().constData(), m_stateData);
+
+            for (const auto& source : sources)
             {
-                job.m_fingerprint = 0;
-                m_stateData->SetJob(job);
-            }
-            if (jobs.size())
-            {
-                filesFound++;
-                AssessModifiedFile(sourcePath);
+                AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs; // should only find one when we specify builder, job key, platform
+                m_stateData->GetJobsBySourceName(source.c_str(), jobs);
+                for (auto& job : jobs)
+                {
+                    job.m_fingerprint = 0;
+                    m_stateData->SetJob(job);
+                }
+                if (jobs.size())
+                {
+                    filesFound++;
+                    AssessModifiedFile(sourcePath);
+                }
             }
         }
         return filesFound;

@@ -9,9 +9,11 @@
 
 #include <Asset/BlastAsset.h>
 #include <AzCore/Component/Component.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
+#include <Blast/BlastActorConfiguration.h>
 #include <Blast/BlastDebug.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterialAsset.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
@@ -47,16 +49,16 @@ namespace Blast
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-        /// Returns the material library asset id. Used to supply MaterialIdWidget with material library.
-        AZ::Data::AssetId GetMaterialLibraryAssetId() const;
-
-        /// Return the physics material library asset id. Used to supply MaterialIdWidget with material library.
-        AZ::Data::AssetId GetPhysicsMaterialLibraryAssetId() const;
+        AZ::Data::AssetId GetDefaultBlastAssetId() const;
+        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
-        Blast::BlastMaterialId m_materialId;
-        Physics::MaterialId m_physicsMaterialId;
+        AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
+        BlastMaterialId m_legacyBlastMaterialId; // Kept to convert old blast material assets.
+        AZ::Data::Asset<Physics::MaterialAsset> m_physicsMaterialAsset;
+        PhysicsLegacy::MaterialId m_legacyPhysicsMaterialId; // Kept to convert old physics material assets.
+
         BlastActorConfiguration m_actorConfiguration;
     };
 } // namespace Blast

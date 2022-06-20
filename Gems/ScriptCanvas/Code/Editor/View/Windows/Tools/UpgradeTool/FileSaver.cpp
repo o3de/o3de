@@ -8,20 +8,27 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
+
+#include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 
 namespace ScriptCanvasEditor
 {
     namespace VersionExplorer
     {
+        bool FileSaveResult::IsSuccess() const
+        {
+            return fileSaveError.empty();
+        }
+
         FileSaver::FileSaver
             ( AZStd::function<bool()> onReadOnlyFile
             , AZStd::function<void(const FileSaveResult& result)> onComplete)
@@ -120,10 +127,10 @@ namespace ScriptCanvasEditor
             AZ::IO::FileIOStream fileStream(tmpFileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
             if (fileStream.IsOpen())
             {
-                auto saveOutcome = ScriptCanvasEditor::SaveToStream(source, fileStream);
-                if (!saveOutcome.IsSuccess())
+                auto serializeResult = Serialize(*source.Data(), fileStream);
+                if (!serializeResult)
                 {
-                    saveError = saveOutcome.TakeError();
+                    saveError = serializeResult.m_errors;
                 }
 
                 fileStream.Close();

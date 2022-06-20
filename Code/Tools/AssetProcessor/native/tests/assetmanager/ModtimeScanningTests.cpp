@@ -52,20 +52,8 @@ namespace UnitTests
 
         m_data = AZStd::make_unique<StaticData>();
 
-        // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
-        m_mockApplicationManager->BusDisconnect();
-
-        m_data->m_mockBuilderInfoHandler.m_builderDesc = m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
-            "test builder", "{DF09DDC0-FD22-43B6-9E22-22C8574A6E1E}",
-            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) });
-        m_data->m_mockBuilderInfoHandler.BusConnect();
-
-        ASSERT_TRUE(m_mockApplicationManager->GetBuilderByID("txt files", m_data->m_builderTxtBuilder));
-
-        SetUpAssetProcessorManager();
-
         // Create the test file
-        const auto& scanFolder = m_config->GetScanFolderAt(0);
+        const auto& scanFolder = m_config->GetScanFolderAt(1);
         m_data->m_relativePathFromWatchFolder[0] = "modtimeTestFile.txt";
         m_data->m_absolutePath.push_back(QDir(scanFolder.ScanPath()).absoluteFilePath(m_data->m_relativePathFromWatchFolder[0]));
 
@@ -80,7 +68,18 @@ namespace UnitTests
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(path, ""));
         }
 
-        m_data->m_mockBuilderInfoHandler.m_dependencyFilePath = m_data->m_absolutePath[1].toUtf8().data();
+        // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
+        m_mockApplicationManager->BusDisconnect();
+
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
+            "test builder", "{DF09DDC0-FD22-43B6-9E22-22C8574A6E1E}",
+            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
+            MockMultiBuilderInfoHandler::AssetBuilderExtraInfo{ "", m_data->m_absolutePath[1].toUtf8().data(), "", "", {} });
+        m_data->m_mockBuilderInfoHandler.BusConnect();
+
+        ASSERT_TRUE(m_mockApplicationManager->GetBuilderByID("txt files", m_data->m_builderTxtBuilder));
+
+        SetUpAssetProcessorManager();
 
         // Add file to database with no modtime
         {
@@ -149,7 +148,7 @@ namespace UnitTests
 
             AssetBuilderSDK::ProcessJobResponse response;
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file, AZ::Uuid::CreateNull(), 1));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct((processResult.m_relativePath / file).StringAsPosix(), AZ::Uuid::CreateNull(), 1));
 
             using JobEntry = AssetProcessor::JobEntry;
 
@@ -268,7 +267,7 @@ namespace UnitTests
 
         // There's no way to remove scanfolders and adding a new one after enabling the platform will cause the pc assets to build as well,
         // which we don't want Instead we'll just const cast the vector and modify the enabled platforms for the scanfolder
-        auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(0).GetPlatforms());
+        auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(1).GetPlatforms());
         platforms.push_back(androidPlatform);
 
         // We need the builder fingerprints to be updated to reflect the newly enabled platform
@@ -504,7 +503,7 @@ namespace UnitTests
     {
         using namespace AzToolsFramework::AssetSystem;
 
-        const auto& scanFolder = m_config->GetScanFolderAt(0);
+        const auto& scanFolder = m_config->GetScanFolderAt(1);
 
         QString scanPath = scanFolder.ScanPath();
         m_assetProcessorManager->RequestReprocess(scanPath);
@@ -596,9 +595,9 @@ namespace UnitTests
         // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
         m_mockApplicationManager->BusDisconnect();
 
-        m_data->m_mockBuilderInfoHandler.m_builderDesc = m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(
             "test builder", "{DF09DDC0-FD22-43B6-9E22-22C8574A6E1E}",
-            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) });
+            { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, {});
         m_data->m_mockBuilderInfoHandler.BusConnect();
 
         ASSERT_TRUE(m_mockApplicationManager->GetBuilderByID("txt files", m_data->m_builderTxtBuilder));
@@ -649,6 +648,7 @@ namespace UnitTests
         m_data->m_mockBuilderInfoHandler.m_createJobsCount = 0;
 
         // Reboot the APM since we added stuff to the database that needs to be loaded on-startup of the APM
+        m_assetProcessorManager = nullptr; // Destroy the old instance first so everything can destruct before we construct a new instance
         m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
 
         SetUpAssetProcessorManager();
@@ -685,7 +685,7 @@ namespace UnitTests
         ASSERT_TRUE(BlockUntilIdle(5000));
 
         ASSERT_THAT(m_data->m_deletedSources, testing::UnorderedElementsAre("textures/a.txt"));
-        ASSERT_THAT(deletedFolders, testing::UnorderedElementsAre("textures"));
+        ASSERT_THAT(deletedFolders, testing::UnorderedElementsAre(absPath.toUtf8().constData()));
     }
 
     TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)

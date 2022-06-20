@@ -240,9 +240,8 @@ namespace WhiteBox
         if (m_renderMesh.has_value())
         {
             (*m_renderMesh)->UpdateMaterial(m_material);
+            m_renderData.m_material = m_material;
         }
-
-        RebuildRenderMesh();
     }
 
     AZ::Crc32 EditorWhiteBoxComponent::AssetVisibility() const
@@ -318,6 +317,7 @@ namespace WhiteBox
         if (AzToolsFramework::IsEntityVisible(entityId))
         {
             ShowRenderMesh();
+            OnMaterialChange();
         }
     }
 
@@ -433,12 +433,12 @@ namespace WhiteBox
                 if (IsWhiteBoxNullRenderMesh(m_renderMesh))
                 {
                     // create a concrete implementation of the render mesh
-                    WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface);
+                    WhiteBoxRequestBus::BroadcastResult(m_renderMesh, &WhiteBoxRequests::CreateRenderMeshInterface, GetEntityId());
                 }
 
                 // generate the mesh
-                // TODO: LYN-786
-                (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal, GetEntityId());
+                (*m_renderMesh)->BuildMesh(m_renderData, m_worldFromLocal);
+                OnMaterialChange();
             }
         }
 
@@ -732,12 +732,12 @@ namespace WhiteBox
         const AZ::Vector3 localRayEnd = localRayOrigin + localRayDirection * rayLength;
 
         bool intersection = false;
+        AZ::Intersect::SegmentTriangleHitTester hitTester(localRayOrigin, localRayEnd);
         for (const auto& face : m_faces.value())
         {
             float t;
             AZ::Vector3 normal;
-            if (AZ::Intersect::IntersectSegmentTriangle(
-                    localRayOrigin, localRayEnd, face[0], face[1], face[2], normal, t))
+            if (hitTester.IntersectSegmentTriangle(face[0], face[1], face[2], normal, t))
             {
                 intersection = true;
 
@@ -769,7 +769,7 @@ namespace WhiteBox
     {
         // if we wish to display the render mesh, set a null render mesh indicating a mesh can exist
         // note: if the optional remains empty, no render mesh will be created
-        m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>());
+        m_renderMesh.emplace(AZStd::make_unique<WhiteBoxNullRenderMesh>(AZ::EntityId{}));
         RebuildRenderMesh();
     }
 

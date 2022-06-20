@@ -17,6 +17,8 @@
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/ColliderShapeBus.h>
 
+#include <Source/HeightfieldCollider.h>
+
 namespace AzPhysics
 {
     struct SimulatedBody;
@@ -35,10 +37,7 @@ namespace PhysX
     class HeightfieldColliderComponent
         : public AZ::Component
         , public ColliderComponentRequestBus::Handler
-        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
-        , protected PhysX::ColliderShapeRequestBus::Handler
         , protected Physics::CollisionFilteringRequestBus::Handler
-        , protected Physics::HeightfieldProviderNotificationBus::Handler
     {
     public:
         using Configuration = Physics::HeightfieldShapeConfiguration;
@@ -55,20 +54,14 @@ namespace PhysX
         void Activate() override;
         void Deactivate() override;
 
-        void SetShapeConfiguration(const AzPhysics::ShapeColliderPair& shapeConfig);
+        void SetColliderConfiguration(const Physics::ColliderConfiguration& colliderConfig);
+
+        void BlockOnPendingJobs();
 
     protected:
         // ColliderComponentRequestBus
         AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
-
-        // ColliderShapeRequestBus
-        AZ::Aabb GetColliderShapeAabb() override;
-        bool IsTrigger() override
-        {
-            // PhysX Heightfields don't support triggers.
-            return false;
-        }
 
         // CollisionFilteringRequestBus
         void SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 filterTag) override;
@@ -77,31 +70,14 @@ namespace PhysX
         AZStd::string GetCollisionGroupName() override;
         void ToggleCollisionLayer(const AZStd::string& layerName, AZ::Crc32 filterTag, bool enabled) override;
 
-        // SimulatedBodyComponentRequestsBus
-        void EnablePhysics() override;
-        void DisablePhysics() override;
-        bool IsPhysicsEnabled() const override;
-        AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
-        AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-
-        // HeightfieldProviderNotificationBus
-        void OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask) override;
-
     private:
         AZStd::shared_ptr<Physics::Shape> GetHeightfieldShape();
 
-        void ClearHeightfield();
-        void InitHeightfieldShapeConfiguration();
-        void InitStaticRigidBody();
-        void RefreshHeightfield(const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull(), 
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
-
-        AzPhysics::ShapeColliderPair m_shapeConfig;
-        AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+        //! Stores collision layers, whether the collider is a trigger, etc.
+        AZStd::shared_ptr<Physics::ColliderConfiguration> m_colliderConfig{ aznew Physics::ColliderConfiguration() };
+        //! Stores all of the cached information for the heightfield shape.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
+        //! Contains all of the runtime logic for creating / updating / destroying the heightfield collider.
+        AZStd::unique_ptr<HeightfieldCollider> m_heightfieldCollider;
     };
 } // namespace PhysX

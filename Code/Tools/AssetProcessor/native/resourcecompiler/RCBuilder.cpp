@@ -97,79 +97,6 @@ namespace AssetProcessor
         }
     }
 
-    // don't make this too high, its basically how slowly the app responds to a job finishing.
-    // this basically puts a hard cap on how many RC jobs can execute per second, since at 10ms per job (minimum), with 8 cores, thats a max
-    // of 800 jobs per second that can possibly run.  However, the actual time it takes to launch RC.EXE is far, far longer than 10ms, so this is not a bad number for now...
-    const int NativeLegacyRCCompiler::s_maxSleepTime = 10;
-
-    // You have up to 60 minutes to finish processing an asset.
-    // This was increased from 10 to account for PVRTC compression
-    // taking up to an hour for large normal map textures, and should
-    // be reduced again once we move to the ASTC compression format, or
-    // find another solution to reduce processing times to be reasonable.
-    const unsigned int NativeLegacyRCCompiler::s_jobMaximumWaitTime = 1000 * 60 * 60;
-
-    NativeLegacyRCCompiler::Result::Result(int exitCode, bool crashed, const QString& outputDir)
-        : m_exitCode(exitCode)
-        , m_crashed(crashed)
-        , m_outputDir(outputDir)
-    {
-    }
-
-    NativeLegacyRCCompiler::NativeLegacyRCCompiler()
-        : m_resourceCompilerInitialized(false)
-        , m_requestedQuit(false)
-    {
-    }
-    
-    bool NativeLegacyRCCompiler::Initialize()
-    {
-        this->m_resourceCompilerInitialized = true;
-        return true;
-    }
-
-    bool NativeLegacyRCCompiler::Execute(
-        [[maybe_unused]] const QString& inputFile,
-        [[maybe_unused]] const QString& watchFolder,
-        [[maybe_unused]] const QString& platformIdentifier,
-        [[maybe_unused]] const QString& params,
-        [[maybe_unused]] const QString& dest,
-        [[maybe_unused]] const AssetBuilderSDK::JobCancelListener* jobCancelListener,
-        [[maybe_unused]] Result& result) const
-    {
-        // running RC.EXE is deprecated.
-        AZ_Error("RC Builder", false, "running RC.EXE is deprecated");
-
-        return false;
-    }
-
-    QString NativeLegacyRCCompiler::BuildCommand(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest)
-    {
-        QString cmdLine;
-        if (!dest.isEmpty())
-        {
-            QString projectPath = AssetUtilities::ComputeProjectPath();
-
-            int portNumber = 0;
-            ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
-
-            AZStd::string appBranchToken;
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::CalculateBranchTokenForEngineRoot, appBranchToken);
-            cmdLine = QString("\"%1\" --platform=%2 %3 --unattended=true --project-path=\"%4\" --watchfolder=\"%6\" --targetroot=\"%5\" --logprefix=\"%5/\" --port=%7 --branchtoken=\"%8\"");
-            cmdLine = cmdLine.arg(inputFile, platformIdentifier, params, projectPath, dest, watchFolder).arg(portNumber).arg(appBranchToken.c_str());
-        }
-        else
-        {
-            cmdLine = QString("\"%1\" --platform=%2 %3").arg(inputFile, platformIdentifier, params);
-        }
-        return cmdLine;
-    }
-
-    void NativeLegacyRCCompiler::RequestQuit()
-    {
-        this->m_requestedQuit = true;
-    }
-
     BuilderIdAndName::BuilderIdAndName(QString builderName, QString builderId, Type type, QString rcParam /*=QString("")*/)
         : m_builderName(builderName)
         , m_builderId(builderId)
@@ -261,7 +188,6 @@ namespace AssetProcessor
     //! unit testing.
     InternalRecognizerBasedBuilder::InternalRecognizerBasedBuilder(QHash<QString, BuilderIdAndName> inputBuilderByIdMap, AZ::Uuid internalBuilderUuid)
         : m_isShuttingDown(false)
-        , m_rcCompiler(new NativeLegacyRCCompiler())
         , m_internalRecognizerBuilderUuid(internalBuilderUuid)
     {
         for (BuilderIdAndName builder : inputBuilderByIdMap)
@@ -311,7 +237,6 @@ namespace AssetProcessor
     void InternalRecognizerBasedBuilder::ShutDown()
     {
         m_isShuttingDown = true;
-        this->m_rcCompiler->RequestQuit();
     }
 
     bool InternalRecognizerBasedBuilder::FindRC(QString& rcAbsolutePathOut)
@@ -330,7 +255,7 @@ namespace AssetProcessor
     bool InternalRecognizerBasedBuilder::Initialize(const RecognizerConfiguration& recognizerConfig)
     {
         InitializeAssetRecognizers(recognizerConfig.GetAssetRecognizerContainer());
-        return m_rcCompiler->Initialize();
+        return true;
     }
 
 
@@ -674,21 +599,6 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Job ID %lld Failed, encountered an invalid 'skip' parameter during job processing\n", AssetProcessor::GetThreadLocalJobId());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             }
-            else
-            {
-                // If the job fails due to a networking issue, we will attempt to retry RetriesForJobNetworkError times
-                int retryCount = 0;
-
-                do
-                {
-                    ++retryCount;
-                    ProcessLegacyRCJob(request, rcParam, assetRecognizer->m_productAssetType, jobCancelListener, response);
-
-                    AZ_Warning("RC Builder", response.m_resultCode != AssetBuilderSDK::ProcessJobResult_NetworkIssue, "RC.exe reported a network connection issue.  %s",
-                        retryCount <= AssetProcessor::RetriesForJobNetworkError ? "Attempting to retry job." : "Maximum retry attempts exceeded, giving up.");
-                } while (response.m_resultCode == AssetBuilderSDK::ProcessJobResult_NetworkIssue && retryCount <= AssetProcessor::RetriesForJobNetworkError);
-
-            }
 
             if (jobCancelListener.IsCancelled())
             {
@@ -704,50 +614,12 @@ namespace AssetProcessor
         }
     }
 
-    void InternalRecognizerBasedBuilder::CreateLegacyRCJob(const AssetBuilderSDK::CreateJobsRequest& request, QString rcParam, AssetBuilderSDK::CreateJobsResponse& response)
+    void InternalRecognizerBasedBuilder::CreateLegacyRCJob(
+        [[maybe_unused]] const AssetBuilderSDK::CreateJobsRequest& request,
+        [[maybe_unused]] QString rcParam,
+        AssetBuilderSDK::CreateJobsResponse& response)
     {
-        const char* requestFileName = "createjobsRequest.xml";
-        const char* responseFileName = "createjobsResponse.xml";
-        const char* createJobsParam = "/createjobs";
-
-        QDir watchDir(request.m_watchFolder.c_str());
-        auto normalizedPath = watchDir.absoluteFilePath(request.m_sourceFile.c_str());
-
-        QString workFolder;
-
-        if (!AssetUtilities::CreateTempWorkspace(workFolder))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to create temporary workspace");
-            return;
-        }
-
-        QString watchFolder = request.m_watchFolder.c_str();
-        NativeLegacyRCCompiler::Result  rcResult;
-
-        QDir workDir(workFolder);
-        QString requestPath = workDir.absoluteFilePath(requestFileName);
-        QString responsePath = workDir.absoluteFilePath(responseFileName);
-
-        if (!AZ::Utils::SaveObjectToFile(requestPath.toStdString().c_str(), AZ::DataStream::ST_XML, &request))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to write CreateJobsRequest to file %s", requestPath.toStdString().c_str());
-            return;
-        }
-
-        QString params = QString("%1=\"%2\"").arg(createJobsParam).arg(requestPath);
-
-        //Platform and platform id are hard coded to PC because it doesn't matter, the actual platform info is in the CreateJobsRequest
-        if ((!this->m_rcCompiler->Execute(normalizedPath, watchFolder, "pc", rcParam.append(params), workFolder, nullptr, rcResult)) || (rcResult.m_exitCode != 0))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Job ID %lld Failed with exit code %d\n", AssetProcessor::GetThreadLocalJobId(), rcResult.m_exitCode);
-            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
-            return;
-        }
-
-        if (AZ::Utils::LoadObjectFromFileInPlace(responsePath.toStdString().c_str(), response))
-        {
-            workDir.removeRecursively();
-        }
+        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
     bool InternalRecognizerBasedBuilder::SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request)
@@ -798,7 +670,6 @@ namespace AssetProcessor
         QString platformIdentifier = request.m_jobDescription.GetPlatformIdentifier().c_str();
         QString dest = request.m_tempDirPath.c_str();
         QString watchFolder = request.m_watchFolder.c_str();
-        NativeLegacyRCCompiler::Result  rcResult;
 
         QDir workDir(dest);
 
@@ -806,21 +677,6 @@ namespace AssetProcessor
         {
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
-        }
-
-        if ((!this->m_rcCompiler->Execute(inputFile, watchFolder, platformIdentifier, rcParam, dest, &jobCancelListener, rcResult)) || (rcResult.m_exitCode != 0))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Job ID %lld Failed with exit code %d\n", AssetProcessor::GetThreadLocalJobId(), rcResult.m_exitCode);
-            if (jobCancelListener.IsCancelled())
-            {
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-                return;
-            }
-            else if (rcResult.m_crashed)
-            {
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Crashed;
-                return;
-            }
         }
 
         // did the rc Compiler output a response file?
@@ -833,17 +689,8 @@ namespace AssetProcessor
 
         if (!responseFromRCCompiler)
         {
-            if(rcResult.m_exitCode != 0)
-            {
-                // RC didn't crash and didn't write a response, but returned a failure code
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                return;
-            }
-            else
-            {
-                // if the response was NOT loaded from a response file, we assume success (since RC did not crash or anything)
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            }
+            // if the response was NOT loaded from a response file, we assume success (since RC did not crash or anything)
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
         if (jobCancelListener.IsCancelled())
@@ -1038,14 +885,6 @@ namespace AssetProcessor
         }
         // Temporary solution to get around the fact that we don't have job dependencies
         TempSolution_TouchCopyJobActivity();
-
-        if (outputProductDependencies)
-        {
-            // Launch the external process when it requires the old cry code to parse a specific type of asset
-            QString rcParam = QString("/copyonly /outputproductdependencies /targetroot");
-            rcParam = QString("%1=\"%2\"").arg(rcParam).arg(request.m_tempDirPath.c_str());
-            ProcessLegacyRCJob(request, rcParam, productAssetType, jobCancelListener, response);
-        }
     }
 
     QFileInfoList InternalRecognizerBasedBuilder::GetFilesInDirectory(const QString& directoryPath)

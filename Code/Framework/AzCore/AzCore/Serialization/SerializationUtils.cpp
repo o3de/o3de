@@ -446,6 +446,20 @@ namespace AZ::Utils
         return false;
     }
 
+    bool IsTupleContainerType(const AZ::Uuid& type)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        if (serializeContext)
+        {
+            GenericClassInfo* classInfo = serializeContext->FindGenericClassInfo(type);
+            return classInfo && classInfo->GetGenericTypeId() == AZ::GetGenericClassTupleTypeId();
+        }
+
+        return false;
+    }
+
     AZ::TypeId GetGenericContainerType(const AZ::TypeId& type)
     {
         AZ::SerializeContext* serializeContext = nullptr;

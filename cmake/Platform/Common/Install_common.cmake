@@ -303,8 +303,9 @@ set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
 )
 ")
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
-        else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
+        elseif(target_type STREQUAL STATIC_LIBRARY) # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             set(target_location "\${LY_ROOT_FOLDER}/${archive_output_directory}/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>")
+        else() # OBJECT_LIBRARY has no output target
         endif()
 
         if(target_location)
@@ -397,10 +398,12 @@ endif()
     ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
     ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
     ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
+    ly_setup_subdirectory_install_code("${absolute_target_source_dir}" O3DE_INSTALL_CODE_PLACEHOLDER)
 
     # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
     file(WRITE "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
         "${cmake_copyright_comment}"
+        "${O3DE_INSTALL_CODE_PLACEHOLDER}"
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
@@ -590,7 +593,7 @@ endif()
 
     set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${permutation_builtin_file}
-        CONTENT ${builtinpackages}
+        CONTENT "${builtinpackages}"
     )
     ly_install(FILES "${permutation_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
@@ -611,15 +614,17 @@ function(ly_setup_runtime_dependencies)
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
-"function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME target_filename)
-    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
-    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
-    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
-        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
-        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
-        file(TOUCH_NOCREATE \"${target_file}\")
-    endif()
+"function(ly_copy source_files target_directory)
+    foreach(source_file IN LISTS source_files)
+        cmake_path(GET source_file FILENAME target_filename)
+        cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+        cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+            message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+            file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+            file(TOUCH_NOCREATE \"${target_file}\")
+        endif()
+    endforeach()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )
@@ -821,6 +826,15 @@ function(ly_setup_subdirectory_enable_gems absolute_target_source_dir output_scr
         string(APPEND enable_gems_calls ${enable_gems_command})
     endforeach()
     set(${output_script} ${enable_gems_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_install_code: Add the CMake code specified in the O3DE_SUBDIRECTORY_INSTALL_CODE
+#!  DIRECTORY property to the beginning of the generated CMakeLists.txt in the same relative install layout diredctory
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_install_code absolute_target_source_dir output_script)
+    unset(${output_script} PARENT_SCOPE)
+    get_property(subdirectory_install_code DIRECTORY ${absolute_target_source_dir} PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE)
+    set(${output_script} ${subdirectory_install_code} PARENT_SCOPE)
 endfunction()
 
 #! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt

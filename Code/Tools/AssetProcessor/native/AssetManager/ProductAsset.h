@@ -39,7 +39,7 @@ namespace AssetProcessor
         ProductAssetWrapper(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, const AssetUtilities::ProductPath& productPath);
 
         bool IsValid() const;
-        bool ExistOnDisk() const;
+        bool ExistOnDisk(bool printErrorMessage) const;
         bool DeleteFiles(bool sendNotification) const;
         AZ::u64 ComputeHash() const;
         bool HasCacheProduct() const;

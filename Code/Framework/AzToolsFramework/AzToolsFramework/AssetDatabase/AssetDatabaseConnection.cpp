@@ -217,6 +217,20 @@ namespace AzToolsFramework
             static const auto s_querySourceLikeSourcename = MakeSqlQuery(QUERY_SOURCE_LIKE_SOURCENAME, QUERY_SOURCE_LIKE_SOURCENAME_STATEMENT, LOG_NAME,
                     SqlParam<const char*>(":sourcename"));
 
+            static const char* QUERY_SOURCE_LIKE_SOURCENAME_SCANFOLDER =
+                "AzToolsFramework::AssetDatabase::QuerySourceLikeSourceNameScanfolder";
+            static const char* QUERY_SOURCE_LIKE_SOURCENAME_SCANFOLDER_STATEMENT =
+                "SELECT * FROM Sources WHERE "
+                "SourceName LIKE :sourcename ESCAPE '|' "
+                "AND ScanFolderPK = :scanfolder ";
+
+            static const auto s_querySourceLikeSourcenameScanfolder = MakeSqlQuery(
+                QUERY_SOURCE_LIKE_SOURCENAME_SCANFOLDER,
+                QUERY_SOURCE_LIKE_SOURCENAME_SCANFOLDER_STATEMENT,
+                LOG_NAME,
+                SqlParam<const char*>(":sourcename"),
+                SqlParam<AZ::s64>(":scanfolder"));
+
             // lookup by primary key
             static const char* QUERY_JOB_BY_JOBID = "AzToolsFramework::AssetDatabase::QueryJobByJobID";
             static const char* QUERY_JOB_BY_JOBID_STATEMENT =
@@ -905,13 +919,18 @@ namespace AzToolsFramework
                     SqlParam<const char*>(":filename")
                 );
 
-            static const char* QUERY_FILES_LIKE_FILENAME = "AzToolsFramework::AssetDatabase::QueryFilesLikeFileName";
-            static const char* QUERY_FILES_LIKE_FILENAME_STATEMENT =
+            static const char* QUERY_FILES_LIKE_FILENAME_SCANFOLDERID = "AzToolsFramework::AssetDatabase::QueryFilesLikeFileNameScanFolderID";
+            static const char* QUERY_FILES_LIKE_FILENAME_SCANFOLDERID_STATEMENT =
                 "SELECT * FROM Files WHERE "
-                "FileName LIKE :filename ESCAPE '|';";
+                "FileName LIKE :filename ESCAPE '|' "
+                "AND ScanFolderPK = :scanfolderid;";
 
-            static const auto s_queryFilesLikeFileName = MakeSqlQuery(QUERY_FILES_LIKE_FILENAME, QUERY_FILES_LIKE_FILENAME_STATEMENT, LOG_NAME,
-                    SqlParam<const char*>(":filename"));
+            static const auto s_queryFilesLikeFileNameScanfolderid = MakeSqlQuery(
+                QUERY_FILES_LIKE_FILENAME_SCANFOLDERID,
+                QUERY_FILES_LIKE_FILENAME_SCANFOLDERID_STATEMENT,
+                LOG_NAME,
+                    SqlParam<const char*>(":filename"),
+                SqlParam<AZ::s64>(":scanfolderid"));
 
             static const char* QUERY_FILES_BY_SCANFOLDERID = "AzToolsFramework::AssetDatabase::QueryFilesByScanFolderID";
             static const char* QUERY_FILES_BY_SCANFOLDERID_STATEMENT =
@@ -1772,6 +1791,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_querySourceBySourcename);
             AddStatement(m_databaseConnection, s_querySourceBySourcenameScanfolderid);
             AddStatement(m_databaseConnection, s_querySourceLikeSourcename);
+            AddStatement(m_databaseConnection, s_querySourceLikeSourcenameScanfolder);
             AddStatement(m_databaseConnection, s_querySourceAnalysisFingerprint);
             AddStatement(m_databaseConnection, s_querySourcesAndScanfolders);
 
@@ -1854,7 +1874,7 @@ namespace AzToolsFramework
 
             AddStatement(m_databaseConnection, s_queryFileByFileid);
             AddStatement(m_databaseConnection, s_queryFilesByFileName);
-            AddStatement(m_databaseConnection, s_queryFilesLikeFileName);
+            AddStatement(m_databaseConnection, s_queryFilesLikeFileNameScanfolderid);
             AddStatement(m_databaseConnection, s_queryFilesByScanfolderid);
             AddStatement(m_databaseConnection, s_queryFileByFileNameScanfolderid);
 
@@ -2093,6 +2113,14 @@ namespace AzToolsFramework
             AZStd::string actualSearchTerm = GetLikeActualSearchTerm(likeSourceName, likeType);
 
             return s_querySourceLikeSourcename.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, actualSearchTerm.c_str());
+        }
+
+        bool AssetDatabaseConnection::QuerySourceLikeSourceNameScanFolderID(
+            const char* likeSourceName, AZ::s64 scanFolderID, LikeType likeType, sourceHandler handler)
+        {
+            AZStd::string actualSearchTerm = GetLikeActualSearchTerm(likeSourceName, likeType);
+
+            return s_querySourceLikeSourcenameScanfolder.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, actualSearchTerm.c_str(), scanFolderID);
         }
 
         bool AssetDatabaseConnection::QueryJobByJobID(AZ::s64 jobid, jobHandler handler)
@@ -2596,11 +2624,11 @@ namespace AzToolsFramework
             return s_queryFilesByFileName.BindAndQuery(*m_databaseConnection, handler, &GetFileResult, scanFolderID, fileName);
         }
 
-        bool AssetDatabaseConnection::QueryFilesLikeFileName(const char* likeFileName, LikeType likeType, fileHandler handler)
+        bool AssetDatabaseConnection::QueryFilesLikeFileNameAndScanFolderID(const char* likeFileName, LikeType likeType, AZ::s64 scanFolderID, fileHandler handler)
         {
             AZStd::string actualSearchTerm = GetLikeActualSearchTerm(likeFileName, likeType);
 
-            return s_queryFilesLikeFileName.BindAndQuery(*m_databaseConnection, handler, &GetFileResult, actualSearchTerm.c_str());
+            return s_queryFilesLikeFileNameScanfolderid.BindAndQuery(*m_databaseConnection, handler, &GetFileResult, actualSearchTerm.c_str(), scanFolderID);
         }
 
         bool AssetDatabaseConnection::QueryFilesByScanFolderID(AZ::s64 scanFolderID, fileHandler handler)

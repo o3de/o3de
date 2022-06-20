@@ -44,9 +44,11 @@ namespace AZ::DocumentPropertyEditor
 
         virtual ~DocumentAdapter() = default;
 
-        //! Retrieves the contents of this adapter. This must be an Adapter DOM node.
-        //! \see AdapterBuilder for building out this DOM structure.
-        virtual Dom::Value GetContents() const = 0;
+        //! Retrieves the contents of this adapter.
+        //! These contents will be lazily initialized and kept cached, allowing cheap access.
+        //! Adapters may send notifications via reset and change notifications to indicate when the
+        //! internal state has changed.
+        Dom::Value GetContents() const;
 
         //! Connects a listener for the reset event, fired when the contents of this adapter have completely changed.
         //! Any views listening to this adapter will need to call GetContents to retrieve the new contents of the adapter.
@@ -56,10 +58,41 @@ namespace AZ::DocumentPropertyEditor
         //! GetContents() result).
         void ConnectChangedHandler(ChangedEvent::Handler& handler);
 
+        //! Sets a router responsible for chaining nested adapters, if supported.
+        //! \see RoutingAdapter
+        virtual void SetRouter(RoutingAdapter* router, const Dom::Path& route);
+
+        //! If true, debug mode is enabled for all DocumentAdapters.
+        //! \see SetDebugModeEnabled
+        static bool IsDebugModeEnabled();
+        //! Enables or disables debug mode globally for all DocumentAdapters.
+        //! Debug mode adds expensive extra steps to notification operations to ensure the
+        //! adapter is behaving correctly and will report warnings if an issue is detected.
+        //! This can also be set at runtime with the `ed_debugDocumentPropertyEditorUpdates` CVar.
+        static void SetDebugModeEnabled(bool enableDebugMode);
+
     protected:
+        //! Generates the contents of this adapter. This must be an Adapter DOM node.
+        //! These contents will be cached - to notify clients of changes to the structure,
+        //! NotifyResetDocument or NotifyContentsChanged must be used.
+        //! \see AdapterBuilder for building out this DOM structure.
+        virtual Dom::Value GenerateContents() = 0;
+
+        //! Specifies the type of reset operation triggered in NotifyResetDocument.
+        enum class DocumentResetType
+        {
+            //! (Default) On soft reset, the adapter will compare any existing cached contents to the new result of
+            //! GetContents and produce patches based on the difference, assuming cached contents are available.
+            SoftReset,
+            //! On hard reset, the adapter will clear any cached contents and simply emit a reset event, ensuring
+            //! any views fully reset their contents. In cases where the new adapter contents are fully disparate,
+            //! this can be more efficient than the comparison from a soft reset.
+            HardReset,
+        };
+
         //! Subclasses may call this to trigger a ResetEvent and let the view know that GetContents should be requeried.
         //! Where possible, prefer to use NotifyContentsChanged instead.
-        void NotifyResetDocument();
+        void NotifyResetDocument(DocumentResetType resetType = DocumentResetType::SoftReset);
         //! Subclasses may call this to trigger a ChangedEvent to notify the view that this adapter's contents have changed.
         //! This patch should apply cleanly on the last result GetContents would have returned after any preceding changed
         //! or reset events.
@@ -68,5 +101,12 @@ namespace AZ::DocumentPropertyEditor
     private:
         ResetEvent m_resetEvent;
         ChangedEvent m_changedEvent;
+
+        mutable Dom::Value m_cachedContents;
     };
 } // namespace AZ::DocumentPropertyEditor
+
+namespace AZ
+{
+    namespace Dpe = AZ::DocumentPropertyEditor;
+} // namespace AZ

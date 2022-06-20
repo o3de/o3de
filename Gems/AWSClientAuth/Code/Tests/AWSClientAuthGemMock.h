@@ -96,7 +96,8 @@ namespace AWSClientAuthUnitTest
             ON_CALL(*this, GetResourceNameId).WillByDefault(testing::Return(TEST_RESOURCE_NAME_ID));
             ON_CALL(*this, GetDefaultRegion).WillByDefault(testing::Return(TEST_REGION));
         }
-        ~AWSResourceMappingRequestBusMock()
+
+        ~AWSResourceMappingRequestBusMock() override
         {
             AWSCore::AWSResourceMappingRequestBus::Handler::BusDisconnect();
         }
@@ -126,7 +127,7 @@ namespace AWSClientAuthUnitTest
             ON_CALL(*this, GetDefaultConfig).WillByDefault(testing::Return(nullptr));
         }
 
-        ~AWSCoreRequestBusMock()
+        ~AWSCoreRequestBusMock() override
         {
             AWSCore::AWSCoreRequestBus::Handler::BusDisconnect();
         }
@@ -141,11 +142,12 @@ namespace AWSClientAuthUnitTest
     public:
         HttpRequestorRequestBusMock()
         {
-            ON_CALL(*this, AddRequestWithHeadersAndBody(testing::_, testing::_, testing::_, testing::_, testing::_)).WillByDefault(testing::Invoke(this, &HttpRequestorRequestBusMock::AddRequestWithHeadersAndBodyMock));
+            ON_CALL(*this, AddRequestWithHeadersAndBody(testing::_, testing::_, testing::_, testing::_, testing::_))
+                .WillByDefault(testing::Invoke(this, &HttpRequestorRequestBusMock::AddRequestWithHeadersAndBodyMock));
             HttpRequestor::HttpRequestorRequestBus::Handler::BusConnect();
         }
 
-        virtual ~HttpRequestorRequestBusMock()
+        ~HttpRequestorRequestBusMock() override
         {
             HttpRequestor::HttpRequestorRequestBus::Handler::BusDisconnect();
         }
@@ -180,6 +182,7 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(headers);
             AZ_UNUSED(callback);
         }
+
         void AddRequestWithHeadersAndBodyMock(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Headers& headers, const AZStd::string& body, const HttpRequestor::Callback& callback)
         {
             AZ_UNUSED(URI);
@@ -191,10 +194,10 @@ namespace AWSClientAuthUnitTest
             jsonValue.WithString("user_code", "TestCode");
             jsonValue.WithString("device_code", "TestDeviceCode");
             jsonValue.WithString("verification_uri", "TestVerificationURI");
-            jsonValue.WithString("access_token", "TestAccessToken");
-            jsonValue.WithString("refresh_token", "TestRefreshToken");
-            jsonValue.WithString("id_token", "TestIdToken");
-            jsonValue.WithString("expires_in", "600");
+            jsonValue.WithString("access_token", TEST_ACCESS_TOKEN);
+            jsonValue.WithString("refresh_token", TEST_REFRESH_TOKEN);
+            jsonValue.WithString("id_token", TEST_ID_TOKEN);
+            jsonValue.WithInteger("expires_in", 600);
             Aws::Utils::Json::JsonView jsonView(jsonValue);
             Aws::Http::HttpResponseCode code = Aws::Http::HttpResponseCode::OK;
             callback(jsonView, code);
@@ -206,6 +209,7 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(method);
             AZ_UNUSED(callback);
         }
+
         void AddTextRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Headers& headers, const HttpRequestor::TextCallback& callback) override
         {
             AZ_UNUSED(URI);
@@ -213,6 +217,7 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(headers);
             AZ_UNUSED(callback);
         }
+
         void AddTextRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Headers& headers, const AZStd::string& body, const HttpRequestor::TextCallback& callback) override
         {
             AZ_UNUSED(URI);
@@ -227,8 +232,8 @@ namespace AWSClientAuthUnitTest
         : public Aws::CognitoIdentityProvider::CognitoIdentityProviderClient
     {
     public:
-
-        CognitoIdentityProviderClientMock() : Aws::CognitoIdentityProvider::CognitoIdentityProviderClient(Aws::Auth::AWSCredentials())
+        CognitoIdentityProviderClientMock()
+            : Aws::CognitoIdentityProvider::CognitoIdentityProviderClient(Aws::Auth::AWSCredentials())
         {
             ON_CALL(*this, InitiateAuth(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityProviderClientMock::InitiateAuthMock));
             ON_CALL(*this, SignUp(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityProviderClientMock::SignUpMock));
@@ -239,21 +244,27 @@ namespace AWSClientAuthUnitTest
             ON_CALL(*this, SetUserMFAPreference(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityProviderClientMock::SetUserMFAPreferenceMock));
         }
 
-        MOCK_CONST_METHOD1(InitiateAuth
-            , Aws::CognitoIdentityProvider::Model::InitiateAuthOutcome(const Aws::CognitoIdentityProvider::Model::InitiateAuthRequest& request));
-        MOCK_CONST_METHOD1(RespondToAuthChallenge
-            , Aws::CognitoIdentityProvider::Model::RespondToAuthChallengeOutcome(const Aws::CognitoIdentityProvider::Model::RespondToAuthChallengeRequest& request));
-        MOCK_CONST_METHOD1(SignUp
-            , Aws::CognitoIdentityProvider::Model::SignUpOutcome(const Aws::CognitoIdentityProvider::Model::SignUpRequest& request));
-        MOCK_CONST_METHOD1(ConfirmSignUp
-            , Aws::CognitoIdentityProvider::Model::ConfirmSignUpOutcome(const Aws::CognitoIdentityProvider::Model::ConfirmSignUpRequest& request));
-        MOCK_CONST_METHOD1(ForgotPassword
-            , Aws::CognitoIdentityProvider::Model::ForgotPasswordOutcome(const Aws::CognitoIdentityProvider::Model::ForgotPasswordRequest& request));
-        MOCK_CONST_METHOD1(ConfirmForgotPassword
-            , Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordOutcome(const Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordRequest& request));
-        MOCK_CONST_METHOD1(SetUserMFAPreference
-            , Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceOutcome(const Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceRequest& request));
-
+        MOCK_CONST_METHOD1(
+            InitiateAuth,
+            Aws::CognitoIdentityProvider::Model::InitiateAuthOutcome(const Aws::CognitoIdentityProvider::Model::InitiateAuthRequest& request));
+        MOCK_CONST_METHOD1(
+            RespondToAuthChallenge,
+            Aws::CognitoIdentityProvider::Model::RespondToAuthChallengeOutcome(const Aws::CognitoIdentityProvider::Model::RespondToAuthChallengeRequest& request));
+        MOCK_CONST_METHOD1(
+            SignUp,
+            Aws::CognitoIdentityProvider::Model::SignUpOutcome(const Aws::CognitoIdentityProvider::Model::SignUpRequest& request));
+        MOCK_CONST_METHOD1(
+            ConfirmSignUp,
+            Aws::CognitoIdentityProvider::Model::ConfirmSignUpOutcome(const Aws::CognitoIdentityProvider::Model::ConfirmSignUpRequest& request));
+        MOCK_CONST_METHOD1(
+            ForgotPassword,
+            Aws::CognitoIdentityProvider::Model::ForgotPasswordOutcome(const Aws::CognitoIdentityProvider::Model::ForgotPasswordRequest& request));
+        MOCK_CONST_METHOD1(
+            ConfirmForgotPassword,
+            Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordOutcome(const Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordRequest& request));
+        MOCK_CONST_METHOD1(
+            SetUserMFAPreference,
+            Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceOutcome(const Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceRequest& request));
 
         Aws::CognitoIdentityProvider::Model::InitiateAuthOutcome InitiateAuthMock(const Aws::CognitoIdentityProvider::Model::InitiateAuthRequest& request)
         {
@@ -316,7 +327,7 @@ namespace AWSClientAuthUnitTest
             Aws::CognitoIdentityProvider::Model::ConfirmForgotPasswordOutcome outcome(result);
             return outcome;
         }
-        
+
         Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceOutcome SetUserMFAPreferenceMock(const Aws::CognitoIdentityProvider::Model::SetUserMFAPreferenceRequest& request)
         {
             AZ_UNUSED(request);
@@ -330,17 +341,17 @@ namespace AWSClientAuthUnitTest
         : public Aws::CognitoIdentity::CognitoIdentityClient
     {
     public:
-        CognitoIdentityClientMock() : Aws::CognitoIdentity::CognitoIdentityClient(Aws::Auth::AWSCredentials())
+        CognitoIdentityClientMock()
+            : Aws::CognitoIdentity::CognitoIdentityClient(Aws::Auth::AWSCredentials())
         {
             ON_CALL(*this, GetId(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityClientMock::GetIdMock));
             ON_CALL(*this, GetCredentialsForIdentity(testing::_)).WillByDefault(testing::Invoke(this, &CognitoIdentityClientMock::GetCredentialsForIdentityMock));
         }
 
-        MOCK_CONST_METHOD1(GetId
-            , Aws::CognitoIdentity::Model::GetIdOutcome(const Aws::CognitoIdentity::Model::GetIdRequest& request));
-        MOCK_CONST_METHOD1(GetCredentialsForIdentity
-            , Aws::CognitoIdentity::Model::GetCredentialsForIdentityOutcome(const Aws::CognitoIdentity::Model::GetCredentialsForIdentityRequest& request));
-
+        MOCK_CONST_METHOD1(GetId, Aws::CognitoIdentity::Model::GetIdOutcome(const Aws::CognitoIdentity::Model::GetIdRequest& request));
+        MOCK_CONST_METHOD1(
+            GetCredentialsForIdentity,
+            Aws::CognitoIdentity::Model::GetCredentialsForIdentityOutcome(const Aws::CognitoIdentity::Model::GetCredentialsForIdentityRequest& request));
 
         Aws::CognitoIdentity::Model::GetIdOutcome GetIdMock(const Aws::CognitoIdentity::Model::GetIdRequest& request)
         {
@@ -370,13 +381,12 @@ namespace AWSClientAuthUnitTest
         : public AWSClientAuth::AuthenticationProviderInterface
     {
     public:
-
         AuthenticationProviderMock()
         {
             ON_CALL(*this, Initialize()).WillByDefault(testing::Return(true));
         }
 
-        virtual ~AuthenticationProviderMock() = default;
+        ~AuthenticationProviderMock() override = default;
 
         MOCK_METHOD0(Initialize, bool());
         MOCK_METHOD2(PasswordGrantSingleFactorSignInAsync, void(const AZStd::string& username, const AZStd::string& password));
@@ -395,10 +405,15 @@ namespace AWSClientAuthUnitTest
     public:
         AuthenticationProviderNotificationsBusMock()
         {
+            ON_CALL(*this, OnPasswordGrantSingleFactorSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnPasswordGrantMultiFactorConfirmSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnDeviceCodeGrantConfirmSignInSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+            ON_CALL(*this, OnRefreshTokensSuccess(testing::_)).WillByDefault(testing::Invoke(this, &AuthenticationProviderNotificationsBusMock::AssertAuthenticationTokensPopulated));
+
             AWSClientAuth::AuthenticationProviderNotificationBus::Handler::BusConnect();
         }
 
-        virtual ~AuthenticationProviderNotificationsBusMock()
+        ~AuthenticationProviderNotificationsBusMock() override
         {
             AWSClientAuth::AuthenticationProviderNotificationBus::Handler::BusDisconnect();
         }
@@ -416,6 +431,20 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD1(OnRefreshTokensSuccess, void(const AWSClientAuth::AuthenticationTokens& authenticationToken));
         MOCK_METHOD1(OnRefreshTokensFail, void(const AZStd::string& error));
         MOCK_METHOD1(OnSignOut, void(const AWSClientAuth::ProviderNameEnum& providerName));
+
+    private:
+        void AssertAuthenticationTokensPopulated([[maybe_unused]] const AWSClientAuth::AuthenticationTokens& authenticationToken)
+        {
+            AZ_Assert(authenticationToken.GetAccessToken() == TEST_ACCESS_TOKEN, "Access token expected to match");
+            AZ_Assert(
+                authenticationToken.GetProviderName() == AWSClientAuth::ProviderNameEnum::LoginWithAmazon
+                    ? authenticationToken.GetOpenIdToken() == TEST_ACCESS_TOKEN
+                    : authenticationToken.GetOpenIdToken() == TEST_ID_TOKEN,
+                "Id token expected to match");
+            AZ_Assert(authenticationToken.GetRefreshToken() == TEST_REFRESH_TOKEN, "Refresh token expected match");
+            AZ_Assert(authenticationToken.GetTokensExpireTimeSeconds() != 0, "Access token expiry expected to be set");
+            AZ_Assert(authenticationToken.AreTokensValid(), "Tokens expected to be valid");
+        }
     };
 
     class AWSCognitoAuthorizationNotificationsBusMock
@@ -427,7 +456,7 @@ namespace AWSClientAuthUnitTest
             AWSClientAuth::AWSCognitoAuthorizationNotificationBus::Handler::BusConnect();
         }
 
-        virtual ~AWSCognitoAuthorizationNotificationsBusMock()
+        ~AWSCognitoAuthorizationNotificationsBusMock() override
         {
             AWSClientAuth::AWSCognitoAuthorizationNotificationBus::Handler::BusDisconnect();
         }
@@ -445,7 +474,7 @@ namespace AWSClientAuthUnitTest
             AWSClientAuth::AWSCognitoUserManagementNotificationBus::Handler::BusConnect();
         }
 
-        virtual ~AWSCognitoUserManagementNotificationsBusMock()
+        ~AWSCognitoUserManagementNotificationsBusMock() override
         {
             AWSClientAuth::AWSCognitoUserManagementNotificationBus::Handler::BusDisconnect();
         }
@@ -470,10 +499,8 @@ namespace AWSClientAuthUnitTest
         , public AWSClientAuth::AWSClientAuthRequestBus::Handler
     {
     public:
-
         AWSClientAuthGemAllocatorFixture()
         {
-
         }
 
         AWSClientAuthGemAllocatorFixture(bool connectClientAuthBus)
@@ -481,7 +508,7 @@ namespace AWSClientAuthUnitTest
             m_connectClientAuthBus = connectClientAuthBus;
         }
 
-        virtual ~AWSClientAuthGemAllocatorFixture() = default;
+        ~AWSClientAuthGemAllocatorFixture() override = default;
 
     protected:
         AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
@@ -500,6 +527,7 @@ namespace AWSClientAuthUnitTest
         AuthenticationProviderNotificationsBusMock m_authenticationProviderNotificationsBusMock;
         AWSCognitoAuthorizationNotificationsBusMock m_awsCognitoAuthorizationNotificationsBusMock;
         AWSCognitoUserManagementNotificationsBusMock m_awsCognitoUserManagementNotificationsBusMock;
+        bool m_hasCognitoControllers = true;
 
         void SetUp() override
         {
@@ -585,31 +613,91 @@ namespace AWSClientAuthUnitTest
             m_serializeContext.reset();
             m_registrationContext.reset();
 
-
             delete AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(nullptr);
-
         }
 
         // ComponentApplicationBus overrides. Required by settings registry for json serialization context.
-        AZ::ComponentApplication* GetApplication() override { return nullptr; }
-        void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
-        void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
-        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
-        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
-        void RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&) override { }
-        void RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&) override { }
-        void SignalEntityActivated(AZ::Entity*) override { }
-        void SignalEntityDeactivated(AZ::Entity*) override { }
-        bool AddEntity(AZ::Entity*) override { return true; }
-        bool RemoveEntity(AZ::Entity*) override { return true; }
-        bool DeleteEntity(const AZ::EntityId&) override { return true; }
-        AZ::Entity* FindEntity(const AZ::EntityId&) override { return nullptr; }
-        AZ::BehaviorContext* GetBehaviorContext() override { return nullptr; }
-        const char* GetExecutableFolder() const override { return nullptr; }
-        const char* GetEngineRoot() const override { return nullptr; }
-        void EnumerateEntities(const EntityCallback& /*callback*/) override {}
-        void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
+        AZ::ComponentApplication* GetApplication() override
+        {
+            return nullptr;
+        }
+
+        void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override
+        {
+        }
+
+        void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override
+        {
+        }
+
+        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override
+        {
+        }
+
+        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override
+        {
+        }
+
+        void RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&) override
+        {
+        }
+
+        void RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&) override
+        {
+        }
+
+        void SignalEntityActivated(AZ::Entity*) override
+        {
+        }
+
+        void SignalEntityDeactivated(AZ::Entity*) override
+        {
+        }
+
+        bool AddEntity(AZ::Entity*) override
+        {
+            return true;
+        }
+
+        bool RemoveEntity(AZ::Entity*) override
+        {
+            return true;
+        }
+
+        bool DeleteEntity(const AZ::EntityId&) override
+        {
+            return true;
+        }
+
+        AZ::Entity* FindEntity(const AZ::EntityId&) override
+        {
+            return nullptr;
+        }
+
+        AZ::BehaviorContext* GetBehaviorContext() override
+        {
+            return nullptr;
+        }
+
+        const char* GetExecutableFolder() const override
+        {
+            return nullptr;
+        }
+
+        const char* GetEngineRoot() const override
+        {
+            return nullptr;
+        }
+
+        void EnumerateEntities(const EntityCallback& /*callback*/) override
+        {
+        }
+
+        void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override
+        {
+        }
+
         AZ::SerializeContext* GetSerializeContext() override
         {
             return m_serializeContext.get();
@@ -629,6 +717,11 @@ namespace AWSClientAuthUnitTest
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> GetCognitoIdentityClient() override
         {
             return m_cognitoIdentityClientMock;
+        }
+
+        bool HasCognitoControllers() const override
+        {
+            return m_hasCognitoControllers;
         }
 
         // TODO Add safety check. Also use pattern to create and remove one file.
@@ -683,5 +776,5 @@ namespace AWSClientAuthUnitTest
             m_testFolderCreated = true;
             return path;
         }
-    };  
-}
+    };
+} // namespace AWSClientAuthUnitTest

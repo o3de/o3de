@@ -273,9 +273,10 @@ namespace AssetProcessor
         {
             AssetDatabase::FileDatabaseEntryContainer container;
             AZStd::string searchStr = file.m_fileName + AZ_CORRECT_DATABASE_SEPARATOR;
-            m_connection->GetFilesLikeFileName(
+            m_connection->GetFilesLikeFileNameScanFolderId(
                 searchStr.c_str(),
                 AssetDatabaseConnection::LikeType::StartsWith,
+                file.m_scanFolderPK,
                 container);
             for (const auto& subFile : container)
             {

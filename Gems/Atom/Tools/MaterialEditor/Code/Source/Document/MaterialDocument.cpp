@@ -77,7 +77,7 @@ namespace MaterialEditor
         return &m_materialTypeSourceData;
     }
 
-    void MaterialDocument::SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value)
+    void MaterialDocument::SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value)
     {
         if (!IsOpen())
         {
@@ -85,11 +85,13 @@ namespace MaterialEditor
             return;
         }
 
+        const AZ::Name propertyName(propertyId);
+
         AtomToolsFramework::DynamicProperty* foundProperty = {};
         TraverseGroups(m_groups, [&, this](auto& group) {
             for (auto& property : group->m_properties)
             {
-                if (property.GetId() == propertyId)
+                if (property.GetId() == propertyName)
                 {
                     foundProperty = &property;
 
@@ -98,7 +100,7 @@ namespace MaterialEditor
 
                     property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
 
-                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
+                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
                     if (!propertyIndex.IsNull())
                     {
                         if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
@@ -124,11 +126,11 @@ namespace MaterialEditor
 
         if (!foundProperty)
         {
-            AZ_Error("MaterialDocument", false, "Document property could not be found: '%s'.", propertyId.GetCStr());
+            AZ_Error("MaterialDocument", false, "Document property could not be found: '%s'.", propertyId.c_str());
         }
     }
 
-    const AZStd::any& MaterialDocument::GetPropertyValue(const AZ::Name& propertyId) const
+    const AZStd::any& MaterialDocument::GetPropertyValue(const AZStd::string& propertyId) const
     {
         if (!IsOpen())
         {
@@ -136,10 +138,10 @@ namespace MaterialEditor
             return m_invalidValue;
         }
 
-        auto property = FindProperty(propertyId);
+        auto property = FindProperty(AZ::Name(propertyId));
         if (!property)
         {
-            AZ_Error("MaterialDocument", false, "Document property could not be found: '%s'.", propertyId.GetCStr());
+            AZ_Error("MaterialDocument", false, "Document property could not be found: '%s'.", propertyId.c_str());
             return m_invalidValue;
         }
 
@@ -336,7 +338,7 @@ namespace MaterialEditor
         {
             const auto& propertyName = propertyBeforeEditPair.first;
             const auto& propertyValueForUndo = propertyBeforeEditPair.second;
-            const auto& propertyValueForRedo = GetPropertyValue(propertyName);
+            const auto& propertyValueForRedo = GetPropertyValue(propertyName.GetStringView());
             if (!AtomToolsFramework::ArePropertyValuesEqual(propertyValueForUndo, propertyValueForRedo))
             {
                 propertyValuesForUndo[propertyName] = propertyValueForUndo;
@@ -636,7 +638,10 @@ namespace MaterialEditor
                     if (propertyIndexInBounds)
                     {
                         AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
-                        
+                        propertyConfig.m_description +=
+                            "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
+                            "overridden values that are different from the parent material, or material type if there is no parent.";
+
                         // (Does DynamicPropertyConfig really even need m_groupName? It doesn't seem to be used anywhere)
                         propertyConfig.m_groupName = m_groups.back()->m_name;
                         propertyConfig.m_groupDisplayName = m_groups.back()->m_displayName;
@@ -648,7 +653,7 @@ namespace MaterialEditor
                         propertyConfig.m_dataChangeCallback = [documentId = m_id, propertyId = propertyConfig.m_id](const AZStd::any& value)
                         {
                             MaterialDocumentRequestBus::Event(
-                                documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue, propertyId, value);
+                                documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue, propertyId.GetStringView(), value);
                             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                         };
 
@@ -789,7 +794,7 @@ namespace MaterialEditor
         {
             const auto& propertyName = propertyValuePair.first;
             const auto& propertyValue = propertyValuePair.second;
-            SetPropertyValue(propertyName, propertyValue);
+            SetPropertyValue(propertyName.GetStringView(), propertyValue);
         }
     }
 

@@ -25,6 +25,7 @@ namespace AZ::IO
     namespace Requests
     {
         struct ReadData;
+        struct ReportData;
     }
 
     struct BlockCacheConfig final :
@@ -131,6 +132,8 @@ namespace AZ::IO
         bool IsCacheBlockInFlight(u32 index) const;
         void ResetCacheEntry(u32 index);
         void ResetCache();
+
+        void Report(const Requests::ReportData& data) const;
 
         //! Map of the file requests that are being processed and the sections of the parent requests they'll complete.
         AZStd::unordered_multimap<FileRequest*, Section> m_pendingRequests;

@@ -28,7 +28,7 @@ namespace AZ
             static const RHI::Format IrradianceImageFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const RHI::Format DistanceImageFormat = RHI::Format::R32G32_FLOAT;
             static const RHI::Format ProbeDataImageFormat = RHI::Format::R16G16B16A16_FLOAT;
-            static const uint32_t GridDataBufferSize = 164;
+            static const uint32_t GridDataBufferSize = 180;
 
             RHI::Ptr<RHI::ImagePool> m_imagePool;          
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
@@ -247,7 +247,8 @@ namespace AZ
             float m_probeBrightnessThreshold = 1.0f;
             float m_probeIrradianceEncodingGamma = 5.0f;
             float m_probeMinFrontfaceDistance = 1.0f;
-            float m_probeBackfaceThreshold = 0.25f;
+            float m_probeRandomRayBackfaceThreshold = 0.1f;
+            float m_probeFixedRayBackfaceThreshold = 0.25f;
             float m_ambientMultiplier = 1.0f;
             bool  m_giShadows = true;
             bool  m_useDiffuseIbl = true;

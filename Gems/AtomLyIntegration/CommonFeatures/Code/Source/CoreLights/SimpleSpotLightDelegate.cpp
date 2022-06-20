@@ -82,4 +82,20 @@ namespace AZ::Render
             debugDisplay.PopMatrix();
         }
     }
+
+    void SimpleSpotLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+        }
+    }
+
+    void SimpleSpotLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+        }
+    }
 } // namespace AZ::Render

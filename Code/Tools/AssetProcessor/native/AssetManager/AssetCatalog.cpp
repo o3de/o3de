@@ -30,6 +30,12 @@ namespace AssetProcessor
 
         for (const AssetBuilderSDK::PlatformInfo& info : m_platformConfig->GetEnabledPlatforms())
         {
+            if (info.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                // Currently the Common platform is not supported as a product asset platform
+                continue;
+            }
+
             m_platforms.push_back(QString::fromUtf8(info.m_identifier.c_str()));
         }
 
@@ -1330,6 +1336,12 @@ namespace AssetProcessor
                 QString productName;
                 for (const AssetBuilderSDK::PlatformInfo& platformInfo : platforms)
                 {
+                    if (platformInfo.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                    {
+                        // Common platform is not supported for product assets currently
+                        continue;
+                    }
+
                     QString platformName = QString::fromUtf8(platformInfo.m_identifier.c_str());
                     productName = AssetUtilities::GuessProductNameInDatabase(normalizedAssetPath, platformName, m_db.get());
                     if (!productName.isEmpty())

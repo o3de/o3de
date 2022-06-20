@@ -172,7 +172,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRHI(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
@@ -400,7 +400,14 @@ namespace AZ
         {
             if (srg)
             {
-                m_shaderResourceGroupsToBind.push_back(srg);
+                if (!m_shaderResourceGroupsToBind.full())
+                {
+                    m_shaderResourceGroupsToBind.push_back(srg);
+                }
+                else
+                {
+                    AZ_Error("Pass System", false, "Attempting to bind an srg to a RenderPass, but there is no more room.")
+                }
             }
         }
 

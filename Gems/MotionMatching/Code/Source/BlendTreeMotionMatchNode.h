@@ -84,12 +84,16 @@ namespace EMotionFX::MotionMatching
 
         static void Reflect(AZ::ReflectContext* context);
 
+        const FeatureSchema& GetFeatureSchema() const { return m_featureSchema; }
+
     private:
         void Output(AnimGraphInstance* animGraphInstance) override;
         void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
         void PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
 
         AZ::Crc32 GetTrajectoryPathSettingsVisibility() const;
+        AZ::Crc32 OnVisualizeSchemaButtonClicked();
+        AZStd::string OnVisualizeSchemaButtonText() const;
 
         FeatureSchema m_featureSchema;
         AZStd::vector<AZStd::string> m_motionIds;

@@ -261,6 +261,7 @@ namespace AssetProcessor
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true,  platforms, -1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "temp",       "tempfolder", true, false,  platforms, 0)); // add the root
 
+        config.AddIntermediateScanFolder();
 
         config.AddMetaDataType("exportsettings", QString());
 
@@ -1731,12 +1732,13 @@ namespace AssetProcessor
         for (const auto& processResult : processResults)
         {
             ++resultIdx;
-            auto filename = processResult.m_relativePath / ("doesn'tmatter.dds" + processResult.m_jobEntry.m_jobKey).toUtf8().constData();
+            AZStd::string filename = ("doesn'tmatter.dds" + processResult.m_jobEntry.m_jobKey).toUtf8().constData();
             QString outputFile = (processResult.m_cachePath / filename).AsPosix().c_str();
             CreateDummyFile(outputFile);
             response = {};
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
+            response.m_outputProducts.push_back(
+                AssetBuilderSDK::JobProduct((processResult.m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
             apm.AssetProcessed(processResult.m_jobEntry, response);
         }
 
@@ -1827,14 +1829,15 @@ namespace AssetProcessor
             for (const JobDetails& processResult : processResults)
             {
                 ++resultIdx;
-                auto filename = processResult.m_relativePath / "ship_nrm.dds";
+                AZStd::string filename = "ship_nrm.dds";
                 QString outputFile = (processResult.m_cachePath / filename).AsPosix().c_str();
 
                 CreateDummyFile(outputFile);
 
                 AssetBuilderSDK::ProcessJobResponse jobResponse;
                 jobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
+                jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                    (processResult.m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), resultIdx));
 
                 apm.AssetProcessed(processResult.m_jobEntry, jobResponse);
             }
@@ -1923,13 +1926,13 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            auto filename = processResults[index].m_relativePath / fi.fileName().toUtf8().constData();
+            AZStd::string filename = fi.fileName().toUtf8().constData();
             QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct((processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -1980,13 +1983,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            auto filename = processResults[index].m_relativePath / fi.fileName().toUtf8().constData();
+            AZStd::string filename = fi.fileName().toUtf8().constData();
             QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2042,13 +2046,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            auto filename = processResults[index].m_relativePath / fi.fileName().toUtf8().constData();
+            AZStd::string filename = fi.fileName().toUtf8().constData();
             QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2098,13 +2103,14 @@ namespace AssetProcessor
         for (int index = 0; index < processResults.size(); ++index)
         {
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
-            auto filename = processResults[index].m_relativePath / fi.fileName().toUtf8().constData();
+            AZStd::string filename = fi.fileName().toUtf8().constData();
             QString pcout = (processResults[index].m_cachePath / filename).c_str();
             UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcout, "products."));
 
             response.m_outputProducts.clear();
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename.StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
 
@@ -2158,11 +2164,13 @@ namespace AssetProcessor
             // this time, ouput 2 files for each job instead of just one:
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
 
-            auto filename0 = processResults[index].m_relativePath / (fi.fileName() + ".0.txt").toUtf8().constData();
-            auto filename1 = processResults[index].m_relativePath / (fi.fileName() + ".1.txt").toUtf8().constData();
+            AZStd::string filename0 = (fi.fileName() + ".0.txt").toUtf8().constData();
+            AZStd::string filename1 = (fi.fileName() + ".1.txt").toUtf8().constData();
 
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename0.StringAsPosix(), AZ::Uuid::CreateNull(), index));
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(filename1.StringAsPosix(), AZ::Uuid::CreateNull(), index + 100));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename0).StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename1).StringAsPosix(), AZ::Uuid::CreateNull(), index + 100));
 
             createdDummyFiles.push_back((processResults[index].m_cachePath / filename0).c_str()); // we're only gong to delete this one out of the two, which is why we don't push the other one.
 
@@ -2200,10 +2208,11 @@ namespace AssetProcessor
             // this time, ouput only one file for each job instead of just one:
             QFileInfo fi(processResults[index].m_jobEntry.GetAbsoluteSourcePath());
 
-            auto relativePath = processResults[index].m_relativePath / (fi.fileName() + ".1.txt").toUtf8().constData();
+            AZStd::string filename = (fi.fileName() + ".1.txt").toUtf8().constData();
 
-            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(relativePath.StringAsPosix(), AZ::Uuid::CreateNull(), index));
-            UNIT_TEST_EXPECT_TRUE(CreateDummyFile((processResults[index].m_cachePath / relativePath).c_str(), "product 1 changed"));
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(
+                (processResults[index].m_relativePath / filename).StringAsPosix(), AZ::Uuid::CreateNull(), index));
+            UNIT_TEST_EXPECT_TRUE(CreateDummyFile((processResults[index].m_cachePath / filename).c_str(), "product 1 changed"));
 
             QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[index].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
         }
@@ -2368,6 +2377,8 @@ namespace AssetProcessor
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse order
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms,-1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
+
+        config.AddIntermediateScanFolder();
 
         AssetProcessorManager_Test apm(&config);
 
@@ -2823,6 +2834,8 @@ namespace AssetProcessor
         //                                               PATH                 DisplayName  PortKey       outputfolder  root recurse order
         config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1)); // subfolder1 overrides root
         config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0)); // add the root
+
+        config.AddIntermediateScanFolder();
 
         AssetProcessorManager_Test apm(&config);
 

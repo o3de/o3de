@@ -42,6 +42,7 @@
 #include "SourceFileRelocator.h"
 
 #include <AssetManager/ExcludedFolderCache.h>
+#include <AssetManager/ProductAsset.h>
 #endif
 
 class FileWatcher;
@@ -130,7 +131,6 @@ namespace AssetProcessor
                 , m_initialProcessTime(initialProcessTime)
             {
             }
-
         };
 
         struct AssetProcessedEntry
@@ -194,6 +194,7 @@ namespace AssetProcessor
         void SetQueryLogging(bool enableLogging);
 
         void SetBuilderDebugFlag(bool enabled);
+        bool GetBuilderDebugFlag() const { return m_builderDebugFlag; }
 
         //! Scans assets that match the given pattern for content that looks like a missing product dependency.
         //! Note that the database pattern is used as an SQL query, so use SQL syntax for the search (wildcard is %, not *).
@@ -222,6 +223,7 @@ namespace AssetProcessor
 
         //! Request to invalidate and reprocess a source asset or folder containing source assets
         AZ::u64 RequestReprocess(const QString& sourcePath);
+        AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
 
@@ -271,6 +273,7 @@ namespace AssetProcessor
         void AssetCancelled(JobEntry jobEntry);
 
         void AssessFilesFromScanner(QSet<AssetFileInfo> filePaths);
+        void RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths);
 
         virtual void AssessModifiedFile(QString filePath);
         virtual void AssessAddedFile(QString filePath);
@@ -323,6 +326,7 @@ namespace AssetProcessor
         void CheckDeletedCacheFolder(QString normalizedPath);
         void CheckDeletedSourceFolder(QString normalizedPath, QString relativePath, const ScanFolderInfo* scanFolderInfo);
         void CheckCreatedSourceFolder(QString normalizedPath);
+        void FailTopLevelSourceForIntermediate(AZ::IO::PathView relativePathToIntermediateProduct, AZStd::string_view errorMessage);
         void CheckMetaDataRealFiles(QString relativePath);
         bool DeleteProducts(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products);
         void DispatchFileChange();
@@ -331,7 +335,7 @@ namespace AssetProcessor
         void AutoFailJob(
             AZStd::string_view consoleMsg,
             AZStd::string_view autoFailReason,
-            const AZ::IO::Path& filePath,
+            const AZ::IO::Path& absoluteFilePath,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
         void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
@@ -364,6 +368,23 @@ namespace AssetProcessor
             QString m_sourceRelativeToWatchFolder;
             QString m_sourceDatabaseName;
             QString m_analysisFingerprint;
+        };
+
+        struct ConflictResult
+        {
+            enum class ConflictType
+            {
+                None,
+                //! Indicates the conflict occurred because of a new intermediate overriding an existing source
+                Intermediate,
+                //! Indicates the conflict occurred because of a new source overriding an existing intermediate
+                Source
+            };
+
+            ConflictType m_type;
+
+            //! Full path to the file that has caused the conflict.  If ConflictType == Intermediate, this is the path to the source, if ConflictType == Source, this is the intermediate
+            AZ::IO::Path m_conflictingFile;
         };
 
         //! Search the database and the the source dependency maps for the the sourceUuid. if found returns the cached info
@@ -416,6 +437,13 @@ namespace AssetProcessor
 
         // Returns true if the path is inside the Intermediate Assets folder
         bool IsInIntermediateAssetsFolder(AZ::IO::PathView path) const;
+        bool IsInIntermediateAssetsFolder(QString path) const;
+
+        ConflictResult CheckIntermediateProductConflict(bool isIntermediateProduct, const char* searchSourcePath);
+
+        bool CheckForIntermediateAssetLoop(AZStd::string_view currentAsset, AZStd::string_view productAsset);
+
+        void UpdateForCacheServer(JobDetails& jobDetails);
 
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 

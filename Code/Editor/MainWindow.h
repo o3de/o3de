@@ -30,25 +30,27 @@
 #include "IEditor.h"
 #endif
 
+class ActionManager;
 class AssetImporterManager;
-class LevelEditorMenuHandler;
-class CMainFrame;
-class UndoStackStateAdapter;
-class QComboBox;
-class KeyboardCustomizationSettings;
-class QToolButton;
-class MainStatusBar;
-class CLayoutWnd;
-struct QtViewPane;
 class CLayoutViewPane;
-class QtViewport;
-class QtViewPaneManager;
+class CLayoutWnd;
+class CMainFrame;
 class EngineConnectionListener;
+class KeyboardCustomizationSettings;
+class LevelEditorMenuHandler;
+class MainStatusBar;
+class ShortcutDispatcher;
 class ToolbarManager;
 class ToolbarCustomizationDialog;
+class UndoStackStateAdapter;
+
+class QComboBox;
+class QToolButton;
+class QtViewport;
+class QtViewPaneManager;
 class QWidgetAction;
-class ActionManager;
-class ShortcutDispatcher;
+
+struct QtViewPane;
 
 namespace AzQtComponents
 {
@@ -57,6 +59,9 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class ToolBarManagerInterface;
     class Ticker;
     class QtSourceControlNotificationHandler;
 
@@ -74,8 +79,8 @@ namespace AzToolsFramework
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"
 #define MAINFRM_LAYOUT_PREVIEW "PreviewLayout"
 
-// Subclassing so we can add slots to our toolbar widgets
-// Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
+// Sub-classing so we can add slots to our toolbar widgets
+// Using lambdas is prone to crashes since the lambda doesn't know when the widget is deleted.
 
 class UndoRedoToolButton
     : public QToolButton
@@ -208,6 +213,16 @@ private:
 
     QToolButton* CreateUndoRedoButton(int command);
 
+    // Editor Action Manager initialization functions
+    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
+
+    void InitializeActionContext();
+    void InitializeActions();
+    void InitializeMenus();
+    void InitializeToolBars();
+
 private Q_SLOTS:
     void ShowKeyboardCustomization();
     void ExportKeyboardShortcuts();
@@ -238,15 +253,15 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     ShortcutDispatcher* m_shortcutDispatcher = nullptr;
     ActionManager* m_actionManager = nullptr;
+    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
-    LevelEditorMenuHandler* m_levelEditorMenuHandler;
+    LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
     CLayoutWnd* m_pLayoutWnd;
 

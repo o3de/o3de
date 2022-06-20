@@ -83,75 +83,99 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     # Having a repo is also optional
     repo_list = []
     try:
-        repo_list.append(repo_data['repos'])
+        repo_list.extend(repo_data['repos'])
     except KeyError:
         pass
 
     for repo in repo_list:
         if repo not in repo_set:
             repo_set.add(repo)
-            for o3de_object_uri in o3de_object_uris:
-                parsed_uri = urllib.parse.urlparse(f'{repo}/repo.json')
-                manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
-                cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-                if cache_file.is_file():
-                    cache_file.unlink()
-                download_file_result = utils.download_file(parsed_uri, cache_file, True)
-                if download_file_result != 0:
-                    return download_file_result
+            parsed_uri = urllib.parse.urlparse(f'{repo}/repo.json')
+            manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
+            cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
 
-                return process_add_o3de_repo(parsed_uri.geturl(), repo_set)
+            download_file_result = utils.download_file(parsed_uri, cache_file, True)
+            if download_file_result != 0:
+                return download_file_result
+
+            return process_add_o3de_repo(cache_file, repo_set)
     return 0
 
 
-def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
+def get_object_json_paths_from_cached_repo(repo_uri: str, repo_key: str, object_manifest_filename: str) -> set:
     url = f'{repo_uri}/repo.json'
     repo_sha256 = hashlib.sha256(url.encode())
     cache_folder = manifest.get_o3de_cache_folder()
     cache_filename = cache_folder / str(repo_sha256.hexdigest() + '.json')
 
-    gem_set = set()
+    o3de_object_set = set()
 
     file_name = pathlib.Path(cache_filename).resolve()
     if not file_name.is_file():
         logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
-        return gem_set
+        return o3de_object_set
 
     with file_name.open('r') as f:
         try:
             repo_data = json.load(f)
         except json.JSONDecodeError as e:
             logger.error(f'{file_name} failed to load: {str(e)}')
-            return gem_set
+            return o3de_object_set
 
-        # Get list of gems, then add all json paths to the list if they exist in the cache
-        repo_gems = []
+        # Get list of objects, then add all json paths to the list if they exist in the cache
+        repo_objects = []
         try:
-            repo_gems.append((repo_data['gems'], 'gem.json'))
+            repo_objects.append((repo_data[repo_key], object_manifest_filename + '.json'))
         except KeyError:
             pass
 
-        for o3de_object_uris, manifest_json in repo_gems:
+        for o3de_object_uris, manifest_json in repo_objects:
             for o3de_object_uri in o3de_object_uris:
                 manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
                 manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
-                cache_gem_json_filepath = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-                if cache_gem_json_filepath.is_file():
-                    gem_set.add(cache_gem_json_filepath)
+                cache_object_json_filepath = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
+                if cache_object_json_filepath.is_file():
+                    o3de_object_set.add(cache_object_json_filepath)
                 else:
-                    logger.warning(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+                    logger.warning(f'Could not find cached {repo_key} json file {cache_object_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
 
-    return gem_set
+    return o3de_object_set
+
+def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
+    return get_object_json_paths_from_cached_repo(repo_uri, 'gems', 'gem')
 
 def get_gem_json_paths_from_all_cached_repos() -> set:
     json_data = manifest.load_o3de_manifest()
     gem_set = set()
 
     for repo_uri in json_data.get('repos', []):
-        gem_set.update(get_gem_json_paths_from_cached_repo(repo_uri)) 
+        gem_set.update(get_gem_json_paths_from_cached_repo(repo_uri))
 
     return gem_set
-    
+
+def get_project_json_paths_from_cached_repo(repo_uri: str) -> set:
+    return get_object_json_paths_from_cached_repo(repo_uri, 'projects', 'project')
+
+def get_project_json_paths_from_all_cached_repos() -> set:
+    json_data = manifest.load_o3de_manifest()
+    project_set = set()
+
+    for repo_uri in json_data.get('repos', []):
+        project_set.update(get_project_json_paths_from_cached_repo(repo_uri))
+
+    return project_set
+
+def get_template_json_paths_from_cached_repo(repo_uri: str) -> set:
+    return get_object_json_paths_from_cached_repo(repo_uri, 'templates', 'template')
+
+def get_template_json_paths_from_all_cached_repos() -> set:
+    json_data = manifest.load_o3de_manifest()
+    template_set = set()
+
+    for repo_uri in json_data.get('repos', []):
+        template_set.update(get_template_json_paths_from_cached_repo(repo_uri))
+
+    return template_set
 
 def refresh_repo(repo_uri: str,
                  cache_folder: str = None,

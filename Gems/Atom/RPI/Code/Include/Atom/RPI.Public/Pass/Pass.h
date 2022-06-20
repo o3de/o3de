@@ -36,6 +36,7 @@
     friend class PassFactory;                                                       \
     friend class PassLibrary;                                                       \
     friend class PassSystem;                                                        \
+    friend class PassTree;                                                          \
     friend class ParentPass;                                                        \
     friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
@@ -126,37 +127,43 @@ namespace AZ
             // --- Simple getters/setters ---
 
             //! Returns the name of the pass (example: Bloom)
-            const Name& GetName() const;
+            const Name& GetName() const { return m_name; }
 
             //! Return the path name of the pass (example: Root.SwapChain.Bloom)
-            const Name& GetPathName() const;
+            const Name& GetPathName() const { return m_path; }
 
             //! Returns the depth of this pass in the tree hierarchy (Root depth is 0)
-            uint32_t GetTreeDepth() const;
+            uint32_t GetTreeDepth() const { return m_treeDepth; }
+
+            //! Returns the index in the parent's array of children that this pass occupies (used for sorting passes)
+            uint32_t GetParentChildIndex() const { return m_parentChildIndex; }
 
             //! Returns the number of input attachment bindings
-            uint32_t GetInputCount() const;
+            uint32_t GetInputCount() const { return uint32_t(m_inputBindingIndices.size()); }
 
             //! Returns the number of input/output attachment bindings
-            uint32_t GetInputOutputCount() const;
+            uint32_t GetInputOutputCount() const { return uint32_t(m_inputOutputBindingIndices.size()); }
 
             //! Returns the number of output attachment bindings
-            uint32_t GetOutputCount() const;
+            uint32_t GetOutputCount() const { return uint32_t(m_outputBindingIndices.size()); }
 
             //! Returns the pass template which was used for create this pass.
             //! It may return nullptr if the pass wasn't create from a template
-            const PassTemplate* GetPassTemplate() const;
+            const PassTemplate* GetPassTemplate() const { return m_template.get(); }
 
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
-            virtual bool IsEnabled() const;
+            virtual bool IsEnabled() const { return m_flags.m_enabled; }
 
-            bool HasDrawListTag() const;
-            bool HasPipelineViewTag() const;
+            bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
+            bool HasPipelineViewTag() const { return m_flags.m_hasPipelineViewTag; }
+
+            // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
+            PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
 
             //! Return the set of attachment bindings
-            PassAttachmentBindingListView GetAttachmentBindings() const;
+            PassAttachmentBindingListView GetAttachmentBindings() const { return m_attachmentBindings; }
 
             //! Casts the pass to a parent pass if valid, else returns nullptr
             ParentPass* AsParent();
@@ -212,7 +219,7 @@ namespace AZ
 
             //! Set render pipeline this pass belongs to
             virtual void SetRenderPipeline(RenderPipeline* pipeline);
-            RenderPipeline* GetRenderPipeline() const;
+            RenderPipeline* GetRenderPipeline() const { return m_pipeline; }
 
             Scene* GetScene() const;
 
@@ -232,10 +239,10 @@ namespace AZ
             PipelineStatisticsResult GetLatestPipelineStatisticsResult() const;
 
             //! Enables/Disables Timestamp queries for this pass
-            virtual void SetTimestampQueryEnabled(bool enable);
+            virtual void SetTimestampQueryEnabled(bool enable) { m_flags.m_timestampQueryEnabled = enable; }
 
             //! Enables/Disables PipelineStatistics queries for this pass
-            virtual void SetPipelineStatisticsQueryEnabled(bool enable);
+            virtual void SetPipelineStatisticsQueryEnabled(bool enable) { m_flags.m_pipelineStatisticsQueryEnabled = enable; }
 
             //! Readback an attachment attached to the specified slot name
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
@@ -246,10 +253,10 @@ namespace AZ
             bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
-            bool IsTimestampQueryEnabled() const;
+            bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }
 
             //! Returns whether the PipelineStatistics queries is enabled/disabled for this pass
-            bool IsPipelineStatisticsQueryEnabled() const;
+            bool IsPipelineStatisticsQueryEnabled() const { return m_flags.m_pipelineStatisticsQueryEnabled; }
 
             //! Helper function to print spaces to indent the pass
             void PrintIndent(AZStd::string& stringOutput, uint32_t indent) const;
@@ -276,9 +283,9 @@ namespace AZ
             void PrintBindingsWithoutAttachments(uint32_t slotTypeMask) const;
 
             //! Returns pointer to the parent pass
-            ParentPass* GetParent() const;
+            ParentPass* GetParent() const { return m_parent; }
 
-            PassState GetPassState() const;
+            PassState GetPassState() const { return m_state; }
 
             // Update all bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedBindings();
@@ -306,9 +313,6 @@ namespace AZ
             // Special names: "This" will return this, and "Parent" will return the parent pass.
             // Search order: 1.This -> 2.Parent -> 3.Siblings -> 4.Children
             Ptr<Pass> FindAdjacentPass(const Name& passName);
-
-            // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
-            PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
 
             // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
             const PassAttachmentBinding* FindAttachmentBinding(const Name& slotName) const;
@@ -488,10 +492,10 @@ namespace AZ
 
         private:
             // Return the Timestamp result of this pass
-            virtual TimestampResult GetTimestampResultInternal() const;
+            virtual TimestampResult GetTimestampResultInternal() const { return TimestampResult(); }
 
             // Return the PipelineStatistics result of this pass
-            virtual PipelineStatisticsResult GetPipelineStatisticsResultInternal() const;
+            virtual PipelineStatisticsResult GetPipelineStatisticsResultInternal() const { return PipelineStatisticsResult(); }
 
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
@@ -593,6 +597,10 @@ namespace AZ
             // Example: Root would be depth 0, Root.Ssao.Downsample depth 2
             uint32_t m_treeDepth = 0;
 
+            // The index in the parent's array of children that this pass occupies
+            // Used for sorting passes during update.
+            uint32_t m_parentChildIndex = 0;
+
             // Used to track what phase of build/execution the pass is in
             PassState m_state = PassState::Uninitialized;
 
@@ -657,12 +665,7 @@ namespace AZ
 // This macro will break in pass code (functions that belong to Pass or it's child classes)
 // if the name of the pass being executed is the same as the one specified for targeted debugging
 // in the pass system (see functions with "TargetedPassDebugging" above)
-#define AZ_RPI_BREAK_ON_TARGET_PASS                                                          \
-    if(!GetName().IsEmpty() &&                                                               \
-        GetName() == AZ::RPI::PassSystemInterface::Get()->GetTargetedPassDebuggingName())    \
-    {                                                                                        \
-        AZ::Debug::Trace::Break();                                                           \
-    }
+#define AZ_RPI_BREAK_ON_TARGET_PASS  AZ::RPI::PassSystemInterface::Get()->DebugBreakOnPass(this);
 
 #else
 

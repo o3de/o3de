@@ -99,14 +99,14 @@ namespace AssetProcessor
             AssetBuilderSDK::ProductOutputFlags::ProductAsset)
         {
             m_cacheProduct = true;
-            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.m_cachePath));
+            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.GetCachePath()));
         }
 
         if ((jobProduct.m_outputFlags & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) ==
             AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
         {
             m_intermediateProduct = true;
-            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.m_intermediatePath));
+            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.GetIntermediatePath()));
         }
     }
 
@@ -118,14 +118,14 @@ namespace AssetProcessor
             AssetBuilderSDK::ProductOutputFlags::ProductAsset)
         {
             m_cacheProduct = true;
-            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.m_cachePath));
+            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.GetCachePath()));
         }
 
         if((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) ==
             AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
         {
             m_intermediateProduct = true;
-            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.m_intermediatePath));
+            m_products.emplace_back(AZStd::make_unique<ProductAsset>(productPath.GetIntermediatePath()));
         }
     }
 
@@ -139,13 +139,13 @@ namespace AssetProcessor
             });
     }
 
-    bool ProductAssetWrapper::ExistOnDisk() const
+    bool ProductAssetWrapper::ExistOnDisk(bool printErrorMessage) const
     {
         return AZStd::all_of(
             m_products.begin(), m_products.end(),
-            [](const AZStd::unique_ptr<ProductAsset>& productAsset)
+            [printErrorMessage](const AZStd::unique_ptr<ProductAsset>& productAsset)
             {
-                return productAsset->ExistsOnDisk(true);
+                return productAsset->ExistsOnDisk(printErrorMessage);
             });
     }
 

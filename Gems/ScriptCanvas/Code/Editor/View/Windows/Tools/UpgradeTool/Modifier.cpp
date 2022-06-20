@@ -225,10 +225,10 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto outcome = LoadFromFile(handle.Path().c_str());
-                if (outcome.IsSuccess())
+                auto result = ScriptCanvas::LoadFromFile(handle.Path().c_str());
+                if (result)
                 {
-                    handle = outcome.GetValue().handle;
+                    handle = result.m_handle;
                 }
             }
         }
@@ -375,7 +375,7 @@ namespace ScriptCanvasEditor
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
             m_fileSaver.reset();
 
-            if (m_fileSaveResult.fileSaveError.empty())
+            if (m_fileSaveResult.IsSuccess())
             {
                 ReportModificationSuccess();
             }

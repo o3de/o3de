@@ -177,6 +177,7 @@ set(FILES
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
@@ -252,6 +253,8 @@ set(FILES
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
@@ -266,6 +269,8 @@ set(FILES
     Math/Frustum.inl
     Math/Geometry2DUtils.cpp
     Math/Geometry2DUtils.h
+    Math/Geometry3DUtils.cpp
+    Math/Geometry3DUtils.h
     Math/Guid.h
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl
@@ -292,6 +297,8 @@ set(FILES
     Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
+    Math/LineSegment.cpp
+    Math/LineSegment.h
     Math/MathIntrinsics.h
     Math/MathReflection.cpp
     Math/MathReflection.h
@@ -328,8 +335,11 @@ set(FILES
     Math/Quaternion.inl
     Math/Quaternion.h
     Math/Random.h
+    Math/Ray.cpp
+    Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h
@@ -451,6 +461,7 @@ set(FILES
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
+    RTTI/BehaviorContextEBusEventRawSignature.inl
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
     RTTI/BehaviorInterfaceProxy.h

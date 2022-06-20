@@ -426,6 +426,19 @@
                     }
                 },
                 {
+                    "name": "shadowFactor",
+                    "displayName": "Shadow Factor",
+                    "description": "Strength factor for self-shadowing on surfaces with pixel depth offset (PDO). Use lower values to reduce the appearance of shadow acne or other artifacts.",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_parallax_pdo_shadowFactor"
+                    }
+                },
+                {
                     "name": "showClipping",
                     "displayName": "Show Clipping",
                     "description": "Highlight areas where the height map is clipped by the mesh surface.",
@@ -2660,25 +2673,25 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_ShaderEnable.lua"
+                "file": "Materials/Types/StandardMultilayerPBR_ShaderEnable.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_LayerEnable.lua"
+                "file": "Materials/Types/StandardMultilayerPBR_LayerEnable.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_ClearCoatEnableFeature.lua"
+                "file": "Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_Displacement.lua"
+                "file": "Materials/Types/StandardMultilayerPBR_Displacement.lua"
             }
         },
         //##############################################################################################
@@ -2700,7 +2713,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Metallic.lua",
+                "file": "Materials/Types/StandardPBR_Metallic.lua",
                 "propertyNamePrefix": "layer1_metallic.",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
@@ -2709,7 +2722,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua",
+                "file": "Materials/Types/StandardPBR_Roughness.lua",
                 "propertyNamePrefix": "layer1_roughness.",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
@@ -2744,7 +2757,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ClearCoatState.lua",
+                "file": "Materials/Types/StandardPBR_ClearCoatState.lua",
                 "propertyNamePrefix": "layer1_clearCoat.",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
@@ -2771,7 +2784,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_EmissiveState.lua",
+                "file": "Materials/Types/StandardPBR_EmissiveState.lua",
                 "propertyNamePrefix": "layer1_emissive.",
                 "srgNamePrefix": "m_layer1_",
                 "optionsNamePrefix": "o_layer1_"
@@ -2833,7 +2846,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Metallic.lua",
+                "file": "Materials/Types/StandardPBR_Metallic.lua",
                 "propertyNamePrefix": "layer2_metallic.",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
@@ -2842,7 +2855,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua",
+                "file": "Materials/Types/StandardPBR_Roughness.lua",
                 "propertyNamePrefix": "layer2_roughness.",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
@@ -2877,7 +2890,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ClearCoatState.lua",
+                "file": "Materials/Types/StandardPBR_ClearCoatState.lua",
                 "propertyNamePrefix": "layer2_clearCoat.",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
@@ -2904,7 +2917,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_EmissiveState.lua",
+                "file": "Materials/Types/StandardPBR_EmissiveState.lua",
                 "propertyNamePrefix": "layer2_emissive.",
                 "srgNamePrefix": "m_layer2_",
                 "optionsNamePrefix": "o_layer2_"
@@ -2966,7 +2979,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Metallic.lua",
+                "file": "Materials/Types/StandardPBR_Metallic.lua",
                 "propertyNamePrefix": "layer3_metallic.",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
@@ -2975,7 +2988,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_Roughness.lua",
+                "file": "Materials/Types/StandardPBR_Roughness.lua",
                 "propertyNamePrefix": "layer3_roughness.",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
@@ -3010,7 +3023,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_ClearCoatState.lua",
+                "file": "Materials/Types/StandardPBR_ClearCoatState.lua",
                 "propertyNamePrefix": "layer3_clearCoat.",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"
@@ -3037,7 +3050,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_EmissiveState.lua",
+                "file": "Materials/Types/StandardPBR_EmissiveState.lua",
                 "propertyNamePrefix": "layer3_emissive.",
                 "srgNamePrefix": "m_layer3_",
                 "optionsNamePrefix": "o_layer3_"

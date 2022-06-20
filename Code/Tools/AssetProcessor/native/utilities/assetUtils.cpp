@@ -237,6 +237,7 @@ namespace AssetUtilities
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
+    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
@@ -551,37 +552,75 @@ namespace AssetUtilities
 
     bool InServerMode()
     {
-        static bool s_serverMode = CheckServerMode();
-        return s_serverMode;
+        if (s_serverMode.has_value())
+        {
+            return s_serverMode.value();
+        }
+        s_serverMode = AZStd::make_optional<bool>(CheckServerMode());
+        return s_serverMode.value();
+    }
+
+    void ResetServerMode()
+    {
+        if (s_serverMode.has_value())
+        {
+            s_serverMode.reset();
+        }
     }
 
     bool CheckServerMode()
     {
-        QStringList args = QCoreApplication::arguments();
-        for (const QString& arg : args)
+        bool inServerMode = false;
+        if (QCoreApplication::instance())
         {
-            if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
+            QStringList args = QCoreApplication::arguments();
+            for (const QString& arg : args)
             {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
+                if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
+                    inServerMode = true;
+                    break;
                 }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
-                break;
             }
         }
 
+        if (!inServerMode)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                bool enableAssetCacheServerMode = false;
+                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+                {
+                    inServerMode = enableAssetCacheServerMode;
+                }
+            }
+        }
+
+        if (inServerMode)
+        {
+            bool isServerAddressValid = false;
+            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
+            if (isServerAddressValid)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
+                return true;
+            }
+            else
+            {
+                AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
+            }
+        }
         return false;
     }
 
+    void ResetServerAddress()
+    {
+        s_assetServerAddress.clear();
+    }
 
     QString ServerAddress()
     {
@@ -617,10 +656,9 @@ namespace AssetUtilities
                 + "/Server/cacheServerAddress"))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+                s_assetServerAddress = address;
+                return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
             }
-            s_assetServerAddress = address;
-
-            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
         }
 
         return QString();
@@ -1508,6 +1546,82 @@ namespace AssetUtilities
         return path / AssetProcessor::IntermediateAssetsFolderName;
     }
 
+    AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath)
+    {
+        // For intermediate assets, the platform must always be common, we don't support anything else for intermediate assets
+        AZ::IO::Path platformPrefix = AssetBuilderSDK::CommonPlatformName;
+
+        return (platformPrefix / relativePath).LexicallyNormal().StringAsPosix();
+    }
+
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(
+        AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(relativePath).c_str(), sources);
+
+        if (sources.empty())
+        {
+            return {};
+        }
+
+        if (sources.size() > 1)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", relativePath.FixedMaxPathStringAsPosix().c_str());
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+
+        do
+        {
+            source = sources[0];
+            sources = {}; // Clear the array, otherwise it keeps accumulating the results
+        } while (db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(source.m_sourceName.c_str()).c_str(), sources));
+
+        return source;
+    }
+
+    AZStd::vector<AZStd::string> GetAllIntermediateSources(
+        AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        AZStd::vector<AZStd::string> sources;
+
+        auto topLevelSource = GetTopLevelSourceForProduct(relativeSourcePath, db);
+
+        if (!topLevelSource)
+        {
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+            db->GetSourceBySourceName(relativeSourcePath.FixedMaxPathStringAsPosix().c_str(), source);
+
+            topLevelSource = source;
+        }
+
+        sources.emplace_back(topLevelSource->m_sourceName);
+
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+        db->GetProductsBySourceID(topLevelSource->m_sourceID, products);
+
+        auto size = products.size();
+        for (int i = 0; i < size; ++i)
+        {
+            const auto& product = products[i];
+
+            if ((static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) == AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)
+            {
+                auto productSourceName = StripAssetPlatformNoCopy(product.m_productName);
+                sources.emplace_back(productSourceName);
+
+                // Note: This call is intentionally re-using the products array.  The new results will be appended to the end (via push_back).
+                // The array will not be cleared.  We're essentially using products as a queue
+                db->GetProductsBySourceName(QString(QByteArray(productSourceName.data(), static_cast<int>(productSourceName.size()))), products);
+                size = products.size(); // Update the loop size since the array grew
+            }
+        }
+
+        return sources;
+    }
+
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)
         : AssetBuilderSDK::FilePatternMatcher(pattern)
         , m_builderDescID(builderDescID)
@@ -1763,5 +1877,34 @@ namespace AssetUtilities
         }
 
         return ProductPath{ relativeProductPath, platform };
+    }
+
+    ProductPath ProductPath::FromAbsoluteProductPath(AZ::IO::PathView absolutePath, AZStd::string& outPlatform)
+    {
+        QDir cacheDir;
+        [[maybe_unused]] bool result = ComputeProjectCacheRoot(cacheDir);
+
+        AZ_Error("AssetUtils", result, "Failed to get cache root for IsInCacheFolder");
+
+        AZ::IO::FixedMaxPath parentFolder = cacheDir.absolutePath().toUtf8().constData();
+
+        bool intermediateAsset = IsInIntermediateAssetsFolder(absolutePath, parentFolder);
+        if (intermediateAsset)
+        {
+            parentFolder = AssetUtilities::GetIntermediateAssetsFolder(parentFolder);
+            outPlatform = AssetBuilderSDK::CommonPlatformName;
+        }
+
+        auto relativePath = absolutePath.LexicallyRelative(parentFolder);
+
+        if (!intermediateAsset)
+        {
+            AZStd::string_view platform;
+            auto fixedString = relativePath.FixedMaxPathStringAsPosix();
+            relativePath = StripAssetPlatformNoCopy(fixedString, &platform);
+            outPlatform = platform;
+        }
+
+        return ProductPath{ relativePath.StringAsPosix(), outPlatform };
     }
 } // namespace AssetUtilities

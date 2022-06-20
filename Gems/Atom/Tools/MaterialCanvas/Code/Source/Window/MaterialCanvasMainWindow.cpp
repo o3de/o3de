@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/MaterialCanvasViewportContent.h>
@@ -16,9 +15,11 @@
 
 namespace MaterialCanvas
 {
-    MaterialCanvasMainWindow::MaterialCanvasMainWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, "MaterialCanvasMainWindow",  parent)
-        , m_styleManager(toolId, "MaterialCanvas/StyleSheet/graphcanvas_style.json")
+    MaterialCanvasMainWindow::MaterialCanvasMainWindow(
+        const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent)
+        : Base(toolId, "MaterialCanvasMainWindow", parent)
+        , m_graphViewConfig(graphViewConfig)
+        , m_styleManager(toolId, graphViewConfig.m_styleManagerPath)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
         m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
@@ -62,18 +63,17 @@ namespace MaterialCanvas
         AddDockWidget("Bookmarks", m_bookmarkDockWidget, Qt::BottomDockWidgetArea);
 
         GraphCanvas::NodePaletteConfig nodePaletteConfig;
-        nodePaletteConfig.m_rootTreeItem = GetNodePaletteRootTreeItem();
+        nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
-        nodePaletteConfig.m_mimeType = "materialcanvas/node-palette-mime-event";
+        nodePaletteConfig.m_mimeType = m_graphViewConfig.m_nodeMimeType.c_str();
         nodePaletteConfig.m_isInContextMenu = false;
-        nodePaletteConfig.m_saveIdentifier = "MaterialCanvas_ContextMenu";
+        nodePaletteConfig.m_saveIdentifier = m_graphViewConfig.m_nodeSaveIdentifier;
 
         m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
         AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(
-            "@products@/translation/materialcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_graphViewConfig.m_translationPath.c_str(), unresolvedPath.data(), unresolvedPath.size());
 
         QString translationFilePath(unresolvedPath.data());
         if (m_translator.load(QLocale::Language::English, translationFilePath))
@@ -162,22 +162,6 @@ namespace MaterialCanvas
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
             </body></html>)");
-    }
-
-    GraphCanvas::GraphCanvasTreeItem* MaterialCanvasMainWindow::GetNodePaletteRootTreeItem() const
-    {
-        GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", m_toolId);
-        auto nodeCategory1 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 1", m_toolId);
-        nodeCategory1->SetTitlePalette("NodeCategory1");
-        auto nodeCategory2 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 2", m_toolId);
-        nodeCategory2->SetTitlePalette("NodeCategory2");
-        auto nodeCategory3 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 3", m_toolId);
-        nodeCategory3->SetTitlePalette("NodeCategory3");
-        auto nodeCategory4 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 4", m_toolId);
-        nodeCategory4->SetTitlePalette("NodeCategory4");
-        auto nodeCategory5 = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Node Category 5", m_toolId);
-        nodeCategory5->SetTitlePalette("NodeCategory5");
-        return rootItem;
     }
 } // namespace MaterialCanvas
 

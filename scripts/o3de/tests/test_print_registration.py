@@ -185,6 +185,7 @@ class TestPrintRegistration:
         test_args = parser.parse_args(arg_list)
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_engine_json_data',
                       side_effect=self.get_engine_json_data) as get_engine_json_data_patch, \
                 patch('o3de.manifest.get_project_json_data',
@@ -214,6 +215,7 @@ class TestPrintRegistration:
 
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_engine_json_data', side_effect=self.get_engine_json_data) as get_engine_json_data_patch:
             result = print_registration._run_register_show(test_args)
             assert result == 0
@@ -239,6 +241,7 @@ class TestPrintRegistration:
 
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_json_data_patch:
             result = print_registration._run_register_show(test_args)
             assert result == 0
@@ -271,6 +274,7 @@ class TestPrintRegistration:
         # Patch the manifest.py function to locate gem.json files in external subdirectories
         # to just return a fake path to a single test gem
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_gem_json_data', side_effect=self.get_gem_json_data) as get_json_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_project_json_patch, \
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
@@ -302,8 +306,8 @@ class TestPrintRegistration:
             arg_list += ['-' + 'v' * verbose]
         test_args = parser.parse_args(arg_list)
 
-
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_template_json_data', side_effect=self.get_template_json_data) as get_json_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_project_json_patch, \
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
@@ -336,6 +340,7 @@ class TestPrintRegistration:
         test_args = parser.parse_args(arg_list)
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_restricted_json_data', side_effect=self.get_restricted_json_data) as get_json_patch, \
                 patch('o3de.manifest.get_project_json_data', side_effect=self.get_project_json_data) as get_project_json_patch, \
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:
@@ -365,6 +370,7 @@ class TestPrintRegistration:
         test_args = parser.parse_args(arg_list)
 
         with patch('o3de.manifest.load_o3de_manifest', side_effect=self.load_manifest_json) as load_manifest_patch, \
+                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_manifest_patch, \
                 patch('o3de.manifest.get_project_json_data',
                       side_effect=self.get_project_json_data) as get_project_json_patch, \
                 patch('o3de.print_registration.get_project_path', return_value=project_path) as get_project_path_patch:

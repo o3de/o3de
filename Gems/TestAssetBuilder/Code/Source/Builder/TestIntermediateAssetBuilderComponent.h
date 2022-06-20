@@ -38,6 +38,8 @@ namespace TestAssetBuilder
 
         void CreateJobsStage2(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
         void ProcessJobStage2(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void CreateJobsStage3(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
+        void ProcessJobStage3(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
 
         //////////////////////////////////////////////////////////////////////////
         //!AssetBuilderSDK::AssetBuilderCommandBus interface

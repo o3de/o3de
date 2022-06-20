@@ -7,6 +7,9 @@
 #
 
 set(FILES
+    Source/AtomToolsFrameworkSystemComponent.cpp
+    Source/AtomToolsFrameworkSystemComponent.h
+
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Source/Application/AtomToolsApplication.cpp
 
@@ -50,6 +53,20 @@ set(FILES
     Source/Document/AtomToolsDocumentTypeInfo.cpp
     Source/Document/CreateDocumentDialog.cpp
 
+    Include/AtomToolsFramework/DynamicNode/DynamicNode.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeConfig.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeManager.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
+    Source/DynamicNode/DynamicNode.cpp
+    Source/DynamicNode/DynamicNodeConfig.cpp
+    Source/DynamicNode/DynamicNodeManager.cpp
+    Source/DynamicNode/DynamicNodePaletteItem.cpp
+    Source/DynamicNode/DynamicNodeSlotConfig.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
+    Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
+
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Source/DynamicProperty/DynamicProperty.cpp
@@ -73,6 +90,10 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
+
+    Include/AtomToolsFramework/GraphView/GraphView.h
+    Include/AtomToolsFramework/GraphView/GraphViewConfig.h
+    Source/GraphView/GraphView.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
@@ -108,8 +129,6 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
-    Source/PropertyEditor/PropertyImageAssetCtrl.cpp
-    Source/PropertyEditor/PropertyImageAssetCtrl.h
 
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h

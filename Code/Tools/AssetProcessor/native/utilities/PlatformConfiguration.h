@@ -70,8 +70,8 @@ namespace AssetProcessor
     {
         AssetRecognizer() = default;
 
-        AssetRecognizer(const QString& name, bool testLockSource, int priority, 
-            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+        AssetRecognizer(const QString& name, bool testLockSource, int priority,
+            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher,
             const QString& version, const AZ::Data::AssetType& productAssetType, bool outputProductDependencies, bool checkServer = false)
             : m_name(name)
             , m_testLockSource(testLockSource)
@@ -120,6 +120,7 @@ namespace AssetProcessor
     struct RecognizerConfiguration
     {
         virtual const RecognizerContainer& GetAssetRecognizerContainer() const = 0;
+        virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
     };
 
@@ -195,6 +196,25 @@ namespace AssetProcessor
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
     };
 
+    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
+    struct ACSVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZStd::vector<AssetRecognizer> m_assetRecognizers;
+    private:
+        AssetRecognizer* CurrentAssetRecognizer();
+
+        AZStd::stack<AZStd::string> m_nameStack;
+    };
+
     /** Reads the platform ini configuration file to determine
     * platforms for which assets needs to be build
     */
@@ -246,6 +266,8 @@ namespace AssetProcessor
         //! Gets the minumum jobs specified in the configuration file
         int GetMinJobs() const;
         int GetMaxJobs() const;
+
+        void EnableCommonPlatform();
         void AddIntermediateScanFolder();
 
         //! Return how many scan folders there are
@@ -299,7 +321,7 @@ namespace AssetProcessor
         QString GetOverridingFile(QString relativeName, QString scanFolderName) const;
 
         //! given a relative name, loop over folders and resolve it to a full path with the first existing match.
-        QString FindFirstMatchingFile(QString relativeName) const;
+        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
         QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
@@ -332,6 +354,8 @@ namespace AssetProcessor
 
         const RecognizerContainer& GetAssetRecognizerContainer() const override;
 
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override;
+
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
 
         /** returns true if the config is valid.
@@ -348,6 +372,9 @@ namespace AssetProcessor
         const AZStd::string& GetError() const;
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
+
+        void CacheIntermediateAssetsScanFolderId();
+        AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
 
     protected:
 
@@ -368,11 +395,13 @@ namespace AssetProcessor
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
         RecognizerContainer m_assetRecognizers;
+        RecognizerContainer m_assetCacheServerRecognizers;
         ExcludeRecognizerContainer m_excludeAssetRecognizers;
         AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolders;
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
+        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

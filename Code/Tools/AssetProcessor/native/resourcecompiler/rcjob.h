@@ -28,6 +28,42 @@ namespace AssetProcessor
     struct AssetRecognizer;
     class RCJob;
 
+    //! Interface for signalling when jobs start and stop
+    //! Primarily intended for unit tests
+    struct IRCJobSignal
+    {
+        AZ_RTTI(JobSignalReceiver, "{F81AEDE6-C670-4F3D-8393-4E2FF8ADDD02}");
+
+        virtual ~IRCJobSignal() = default;
+
+        virtual void Started(){}
+        virtual void Finished(){}
+    };
+
+    //! Scoped class to automatically signal job start and stop
+    struct ScopedJobSignaler
+    {
+        ScopedJobSignaler()
+        {
+            auto signalReciever = AZ::Interface<IRCJobSignal>::Get();
+
+            if (signalReciever)
+            {
+                signalReciever->Started();
+            }
+        }
+
+        ~ScopedJobSignaler()
+        {
+            auto signalReciever = AZ::Interface<IRCJobSignal>::Get();
+
+            if (signalReciever)
+            {
+                signalReciever->Finished();
+            }
+        }
+    };
+
     //! Params Base class
     struct Params
     {
@@ -178,7 +214,7 @@ namespace AssetProcessor
         void SetCheckExclusiveLock(bool value);
 
     Q_SIGNALS:
-        //! This signal will be emitted when we make sure that no other application has a lock on the source file 
+        //! This signal will be emitted when we make sure that no other application has a lock on the source file
         //! and also that the fingerprint of the source file is stable and not changing.
         //! This will basically indicate that we are starting to perform work on the current job
         void BeginWork();
@@ -211,7 +247,7 @@ namespace AssetProcessor
         const AZStd::vector<JobDependencyInternal>& GetJobDependencies();
 
     protected:
-        //! DoWork ensure that the job is ready for being processing and than makes the actual builder call   
+        //! DoWork ensure that the job is ready for being processing and than makes the actual builder call
         virtual void DoWork(AssetBuilderSDK::ProcessJobResponse& result, BuilderParams& builderParams, AssetUtilities::QuitListener& listener);
         void PopulateProcessJobRequest(AssetBuilderSDK::ProcessJobRequest& processJobRequest);
 
@@ -221,7 +257,7 @@ namespace AssetProcessor
 
         QueueElementID m_queueElementID; // cached to prevent lots of construction of this all over the place
 
-        int m_JobEscalation = AssetProcessor::JobEscalation::Default; // Escalation indicates how important the job is and how soon it needs processing, the greater the number the greater the escalation  
+        int m_JobEscalation = AssetProcessor::JobEscalation::Default; // Escalation indicates how important the job is and how soon it needs processing, the greater the number the greater the escalation
 
         QDateTime m_timeCreated;
         QDateTime m_timeLaunched;

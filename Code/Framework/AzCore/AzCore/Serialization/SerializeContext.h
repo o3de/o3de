@@ -60,6 +60,21 @@ namespace AZ
         class ObjectStreamImpl;
     }
 
+    namespace SerializeContextAttributes
+    {
+        // Attribute used to set an override function on a SerializeContext::ClassData attribute array
+        // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
+        static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
+    }
+
+    enum class ObjectStreamWriteOverrideResponse
+    {
+        CompletedWrite,
+        FallbackToDefaultWrite,
+        AbortWrite
+    };
+    AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideResponse, "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
+
     namespace Edit
     {
         struct ElementData;
@@ -1052,8 +1067,8 @@ namespace AZ
             ErrorHandler*                   m_errorHandler;         ///< Optional user error handler.
             const SerializeContext*         m_context;              ///< Serialize context containing class reflection required for data traversal.
 
-            IDataContainer::ElementCB       m_elementCallback;      // Pre-bound functor computed internally to avoid allocating closures during traversal.
-            ErrorHandler                    m_defaultErrorHandler;  // If no custom error handler is provided, the context provides one.
+            IDataContainer::ElementCB       m_elementCallback;      ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            ErrorHandler                    m_defaultErrorHandler;  ///< If no custom error handler is provided, the context provides one.
         };
 
         /// Find a class data (stored information) based on a class ID and possible parent class data.
@@ -2516,7 +2531,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = AzTypeInfo<T>::Uuid();
+        const AZ::TypeId& canonicalTypeId = azrtti_typeid<T>();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {

@@ -36,6 +36,8 @@ namespace AZ
             float GetEffectiveSolidAngle() const override { return PhotometricValue::DirectionalEffectiveSteradians; }
             float CalculateAttenuationRadius(float lightThreshold) const override;
             void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
+            void SetAffectsGI(bool affectsGI) override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
 

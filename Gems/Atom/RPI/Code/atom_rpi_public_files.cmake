@@ -64,6 +64,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/ParentPass.h
     Include/Atom/RPI.Public/Pass/Pass.h
     Include/Atom/RPI.Public/Pass/PassAttachment.h
+    Include/Atom/RPI.Public/Pass/PassTree.h
     Include/Atom/RPI.Public/Pass/PassDefines.h
     Include/Atom/RPI.Public/Pass/PassFactory.h
     Include/Atom/RPI.Public/Pass/PassFilter.h
@@ -100,6 +101,7 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
@@ -143,6 +145,7 @@ set(FILES
     Source/RPI.Public/Pass/ParentPass.cpp
     Source/RPI.Public/Pass/Pass.cpp
     Source/RPI.Public/Pass/PassAttachment.cpp
+    Source/RPI.Public/Pass/PassTree.cpp
     Source/RPI.Public/Pass/PassFactory.cpp
     Source/RPI.Public/Pass/PassFilter.cpp
     Source/RPI.Public/Pass/PassLibrary.cpp
