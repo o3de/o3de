@@ -223,7 +223,7 @@ namespace RecastNavigation
         {
             component->SetEditorPreview(autoUpdate);
 
-            component->OnAutoUpdateChanged();
+            component->OnConfigurationChanged();
         }
 
         void Tick(float time = 0.1f)
@@ -466,6 +466,55 @@ namespace RecastNavigation
             Tick();
             wait.BlockUntilCalled();
             EXPECT_EQ(wait.m_updatedCalls, 1);
+        }
+    }
+
+    TEST_F(EditorNavigationTest, StartAsyncThenChangedNavigationMeshSettings)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+        AddTestGeometry(true);
+
+        ON_CALL(*m_timeSystem, GetElapsedTimeMs()).WillByDefault(Return(AZ::TimeMs{ 1500 }));
+        {
+            const Wait wait(AZ::EntityId(1));
+            Tick();
+            wait.BlockUntilNavigationMeshRecalculating(AZ::TimeMs{ 100 });
+            EXPECT_EQ(wait.m_recalculatingCalls, 1);
+        }
+
+        // This forces a rebuild of the navigation mesh as the configuration changed.
+        m_editorRecastNavigationMeshComponent->OnConfigurationChanged();
+        e.Deactivate();
+    }
+
+    TEST_F(EditorNavigationTest, AsyncThenChangeSettingsThenAsyncAgain)
+    {
+        Entity e;
+        PopulateEntity(e);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+        AddTestGeometry(true);
+
+        ON_CALL(*m_timeSystem, GetElapsedTimeMs()).WillByDefault(Return(AZ::TimeMs{ 1500 }));
+
+        {
+            const Wait wait(AZ::EntityId(1));
+            Tick();
+            wait.BlockUntilNavigationMeshRecalculating(AZ::TimeMs{ 100 });
+            EXPECT_EQ(wait.m_recalculatingCalls, 1);
+        }
+
+        // This forces a rebuild of the navigation mesh as the configuration changed.
+        m_editorRecastNavigationMeshComponent->OnConfigurationChanged();
+
+        {
+            const Wait wait(AZ::EntityId(1));
+            Tick();
+            wait.BlockUntilCalled(AZ::TimeMs{ 100 });
+            EXPECT_EQ(wait.m_updatedCalls, 0);
         }
     }
 }

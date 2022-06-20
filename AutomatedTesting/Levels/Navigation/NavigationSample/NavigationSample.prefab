@@ -106,6 +106,7 @@
                     "Id": 15323900898074703000,
                     "Controller": {
                         "Configuration": {
+                            "Agent Radius": 0.5,
                             "Editor Preview": true
                         }
                     }

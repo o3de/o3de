@@ -105,6 +105,9 @@ namespace RecastNavigation
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
 
+        //! If true, an update operation is in progress.
+        AZStd::atomic<bool> m_updateInProgress{ false };
+
         //! Task graph objects to collect geometry data in tiles over a grid.
         AZ::TaskGraph m_taskGraph;
         AZ::TaskExecutor m_taskExecutor;

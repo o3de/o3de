@@ -36,9 +36,9 @@ namespace RecastNavigation
     {
         RecastNavigationMeshConfig::Reflect(context);
 
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationMeshComponentController>()
+            serializeContext->Class<RecastNavigationMeshComponentController>()
                 ->Field("Configuration", &RecastNavigationMeshComponentController::m_configuration)
                 ->Version(1)
                 ;
@@ -153,7 +153,7 @@ namespace RecastNavigation
 
         // It is safe to create the navigation mesh object now.
         // The actual navigation data will be passed at a later time.
-        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId(), m_configuration.m_tileSize);
+        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId());
 
         if (IsDebugDrawEnabled())
         {
@@ -198,9 +198,12 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::OnSendNotificationTick()
     {
-        RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
-            &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
-        m_updateInProgress = false;
+        if (m_updateInProgress)
+        {
+            RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
+            m_updateInProgress = false;
+        }
     }
 
     bool RecastNavigationMeshComponentController::IsDebugDrawEnabled() const
@@ -234,9 +237,12 @@ namespace RecastNavigation
     {
         if (tile)
         {
-            // Store tile data until we received all of them.
-            AZStd::lock_guard lock(m_tileProcessingMutex);
-            m_tilesToBeProcessed.push_back(tile);
+            if (m_shouldProcessTiles)
+            {
+                // Store tile data until we received all of them.
+                AZStd::lock_guard lock(m_tileProcessingMutex);
+                m_tilesToBeProcessed.push_back(tile);
+            }
         }
         else
         {
@@ -308,7 +314,7 @@ namespace RecastNavigation
     {
     }
 
-    bool RecastNavigationMeshComponentController::CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize)
+    bool RecastNavigationMeshComponentController::CreateNavigationMesh(AZ::EntityId meshEntityId)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create mesh");
 
@@ -327,11 +333,11 @@ namespace RecastNavigation
         const RecastVector3 worldCenter = RecastVector3::CreateFromVector3SwapYZ(worldVolume.GetMin());
         rcVcopy(params.orig, worldCenter.m_xyz);
 
-        RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, tileSize);
+        RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, m_configuration.m_tileSize);
 
         // in world units
-        params.tileWidth = tileSize;
-        params.tileHeight = tileSize;
+        params.tileWidth = m_configuration.m_tileSize;
+        params.tileHeight = m_configuration.m_tileSize;
 
         dtStatus status = navMesh->init(&params);
         if (dtStatusFailed(status))
@@ -349,7 +355,19 @@ namespace RecastNavigation
             return false;
         }
 
-        m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        const AZStd::shared_ptr<NavMeshQuery> object = GetNavigationObject();
+        if (object)
+        {
+            NavMeshQuery::LockGuard lock(*object);
+            m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        }
+        else
+        {
+            m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        }
+
+        m_shouldProcessTiles = false;
+        m_updateInProgress = false;
 
         return true;
     }
@@ -375,7 +393,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent)
     {
-        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        if (m_shouldProcessTiles && (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled()))
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: OnReceivedAllNewTiles");
 

@@ -38,9 +38,9 @@ namespace RecastNavigation
         //! @param enable if true, the preview will be enabled
         void SetEditorPreview(bool enable);
 
-        void OnAutoUpdateChanged();
-
         void OnEditorUpdateTick();
+
+        AZ::u32 OnConfigurationChanged() override;
 
     private:
         AZ::ScheduledEvent m_inEditorUpdateTick{ [this]() {OnEditorUpdateTick(); }, AZ::Name("EditorRecastNavigationMeshTick") };

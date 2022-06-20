@@ -181,7 +181,7 @@ namespace RecastNavigation
     void EditorRecastNavigationMeshComponent::Activate()
     {
         BaseClass::Activate();
-        OnAutoUpdateChanged();
+        OnConfigurationChanged();
     }
 
     void EditorRecastNavigationMeshComponent::Deactivate()
@@ -189,8 +189,10 @@ namespace RecastNavigation
         BaseClass::Deactivate();
     }
 
-    void EditorRecastNavigationMeshComponent::OnAutoUpdateChanged()
+    AZ::u32 EditorRecastNavigationMeshComponent::OnConfigurationChanged()
     {
+        m_controller.CreateNavigationMesh(GetEntityId());
+
         if (m_controller.m_configuration.m_enableEditorPreview)
         {
             m_inEditorUpdateTick.Enqueue(AZ::TimeMs{ aznumeric_cast<int>(ed_navmesh_updateFrequencyMs) }, true);
@@ -199,6 +201,9 @@ namespace RecastNavigation
         {
             m_inEditorUpdateTick.RemoveFromQueue();
         }
+
+        BaseClass::OnConfigurationChanged();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
     void EditorRecastNavigationMeshComponent::OnEditorUpdateTick()
