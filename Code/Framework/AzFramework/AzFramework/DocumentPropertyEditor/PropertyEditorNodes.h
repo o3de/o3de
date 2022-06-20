@@ -178,6 +178,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct ComboBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "ComboBox";
+        static constexpr auto StringList = AttributeDefinition<AZStd::vector<AZStd::string>>("StringList");
     };
 
     struct RadioButton : PropertyEditorDefinition
