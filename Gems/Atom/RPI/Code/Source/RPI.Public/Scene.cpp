@@ -699,7 +699,6 @@ namespace AZ
             if (m_pipelineStatesLookupNeedsRebuild)
             {
                 RebuildPipelineStatesLookup();
-                m_pipelineStatesLookupNeedsRebuild = false;
             }
 
             // Return if there is no active render pipeline
@@ -1027,6 +1026,7 @@ namespace AZ
                     }
                 }
             }
+            m_pipelineStatesLookupNeedsRebuild = false;
         }
 
         RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)

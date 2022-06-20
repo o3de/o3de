@@ -176,7 +176,7 @@ namespace AZ
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
-            void PipelineStateLookupNeedsRebuild();
+            void PipelineStateLookupNeedsRebuild() override;
 
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
