@@ -8,20 +8,22 @@
 
 #include "ProfilingCaptureSystemComponent.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <AzCore/Statistics/RunningStatistic.h>
 
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/parallel/thread.h>
 
 namespace AZ
 {
@@ -34,8 +36,8 @@ namespace AZ
         public:
             AZ_EBUS_BEHAVIOR_BINDER(ProfilingCaptureNotificationBusHandler, "{E45E4F37-EC1F-4010-994B-4F80998BEF15}", AZ::SystemAllocator,
                 OnCaptureQueryTimestampFinished,
+                OnCaptureCpuFrameTimeFinished,
                 OnCaptureQueryPipelineStatisticsFinished,
-                OnCaptureCpuProfilingStatisticsFinished,
                 OnCaptureBenchmarkMetadataFinished
             );
 
@@ -44,14 +46,14 @@ namespace AZ
                 Call(FN_OnCaptureQueryTimestampFinished, result, info);
             }
 
+            void OnCaptureCpuFrameTimeFinished(bool result, const AZStd::string& info) override
+            {
+                Call(FN_OnCaptureCpuFrameTimeFinished, result, info);
+            }
+
             void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override
             {
                 Call(FN_OnCaptureQueryPipelineStatisticsFinished, result, info);
-            }
-
-            void OnCaptureCpuProfilingStatisticsFinished(bool result, const AZStd::string& info) override
-            {
-                Call(FN_OnCaptureCpuProfilingStatisticsFinished, result, info);
             }
 
             void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override
@@ -64,7 +66,7 @@ namespace AZ
                 if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
                 {
                     behaviorContext->EBus<ProfilingCaptureNotificationBus>("ProfilingCaptureNotificationBus")
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "atom")
                         ->Handler<ProfilingCaptureNotificationBusHandler>()
                         ;
@@ -95,6 +97,19 @@ namespace AZ
             AZStd::vector<TimestampSerializerEntry> m_timestampEntries;
         };
 
+        // Intermediate class to serialize CPU frame time statistics.
+        class CpuFrameTimeSerializer
+        {
+        public:
+            AZ_TYPE_INFO(Render::CpuFrameTimeSerializer, "{584B415E-8769-4757-AC64-EA57EDBCBC3E}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            CpuFrameTimeSerializer() = default;
+            CpuFrameTimeSerializer(double frameTime);
+
+            double m_frameTime;
+        };
+
         // Intermediate class to serialize pass' PipelineStatistics data.
         class PipelineStatisticsSerializer
         {
@@ -116,35 +131,6 @@ namespace AZ
             PipelineStatisticsSerializer(AZStd::vector<const RPI::Pass*>&& passes);
 
             AZStd::vector<PipelineStatisticsSerializerEntry> m_pipelineStatisticsEntries;
-        };
-
-        // Intermediate class to serialize Cpu TimedRegion data.
-        class CpuProfilingStatisticsSerializer
-        {
-        public:
-            class CpuProfilingStatisticsSerializerEntry
-            {
-            public:
-                AZ_TYPE_INFO(CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry, "{26B78F65-EB96-46E2-BE7E-A1233880B225}");
-                static void Reflect(AZ::ReflectContext* context);
-
-                CpuProfilingStatisticsSerializerEntry() = default;
-                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion);
-
-            private:
-                Name m_groupName;
-                Name m_regionName;
-                uint16_t m_stackDepth;
-                AZStd::sys_time_t m_elapsedInNanoseconds;
-            };
-
-            AZ_TYPE_INFO(CpuProfilingStatisticsSerializer, "{D5B02946-0D27-474F-9A44-364C2706DD41}");
-            static void Reflect(AZ::ReflectContext* context);
-
-            CpuProfilingStatisticsSerializer() = default;
-            CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap);
-
-            AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
         };
 
         // Intermediate class to serialize benchmark metadata.
@@ -248,6 +234,24 @@ namespace AZ
             }
         }
 
+        // --- CpuFrameTimeSerializer ---
+
+        CpuFrameTimeSerializer::CpuFrameTimeSerializer(double frameTime)
+        {
+            m_frameTime = frameTime;
+        }
+
+        void CpuFrameTimeSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuFrameTimeSerializer>()
+                    ->Version(1)
+                    ->Field("frameTime", &CpuFrameTimeSerializer::m_frameTime)
+                    ;
+            }
+        }
+
         // --- PipelineStatisticsSerializer ---
 
         PipelineStatisticsSerializer::PipelineStatisticsSerializer(AZStd::vector<const RPI::Pass*>&& passes)
@@ -281,69 +285,6 @@ namespace AZ
                     ->Version(1)
                     ->Field("passName", &PipelineStatisticsSerializerEntry::m_passName)
                     ->Field("pipelineStatisticsResult", &PipelineStatisticsSerializerEntry::m_pipelineStatisticsResult)
-                    ;
-            }
-        }
-
-        // --- CpuProfilingStatisticsSerializer ---
-
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const RHI::CpuProfiler::TimeRegionMap& timeRegionMap)
-        {
-            // Create serializable entries
-            for (auto& threadEntry : timeRegionMap)
-            {
-                for (auto& cachedRegionEntry : threadEntry.second)
-                {
-                    m_cpuProfilingStatisticsSerializerEntries.insert(
-                        m_cpuProfilingStatisticsSerializerEntries.end(),
-                        cachedRegionEntry.second.begin(),
-                        cachedRegionEntry.second.end());
-                }
-            }
-        }
-
-        void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<CpuProfilingStatisticsSerializer>()
-                    ->Version(1)
-                    ->Field("cpuProfilingStatisticsSerializerEntry", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
-                    ;
-            }
-
-            CpuProfilingStatisticsSerializerEntry::Reflect(context);
-        }
-
-        // --- CpuProfilingStatisticsSerializerEntry ---
-
-        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion)
-        {
-            // Converts ticks to Nanoseconds
-            static const auto ticksToNanoSeconds = [](AZStd::sys_time_t elapsedInTicks) -> AZStd::sys_time_t
-            {
-                const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-
-                const AZStd::sys_time_t timeInNanoseconds = (elapsedInTicks * 1000000) / (ticksPerSecond / 1000);
-                return timeInNanoseconds;
-            };
-
-            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
-            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
-            m_stackDepth = cachedTimeRegion.m_stackDepth;
-            m_elapsedInNanoseconds = ticksToNanoSeconds(cachedTimeRegion.m_endTick - cachedTimeRegion.m_startTick);
-        }
-
-        void CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<CpuProfilingStatisticsSerializerEntry>()
-                    ->Version(1)
-                    ->Field("groupName", &CpuProfilingStatisticsSerializerEntry::m_groupName)
-                    ->Field("regionName", &CpuProfilingStatisticsSerializerEntry::m_regionName)
-                    ->Field("stackDepth", &CpuProfilingStatisticsSerializerEntry::m_stackDepth)
-                    ->Field("elapsedInNanoseconds", &CpuProfilingStatisticsSerializerEntry::m_elapsedInNanoseconds)
                     ;
             }
         }
@@ -405,11 +346,11 @@ namespace AZ
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<ProfilingCaptureRequestBus>("ProfilingCaptureRequestBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "atom")
                     ->Event("CapturePassTimestamp", &ProfilingCaptureRequestBus::Events::CapturePassTimestamp)
+                    ->Event("CaptureCpuFrameTime", &ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime)
                     ->Event("CapturePassPipelineStatistics", &ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics)
-                    ->Event("CaptureCpuProfilingStatistics", &ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics)
                     ->Event("CaptureBenchmarkMetadata", &ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata)
                     ;
 
@@ -417,8 +358,8 @@ namespace AZ
             }
 
             TimestampSerializer::Reflect(context);
+            CpuFrameTimeSerializer::Reflect(context);
             PipelineStatisticsSerializer::Reflect(context);
-            CpuProfilingStatisticsSerializer::Reflect(context);
             BenchmarkMetadataSerializer::Reflect(context);
         }
 
@@ -436,14 +377,7 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
         {
-            // Find the root pass.
-            AZStd::vector<RPI::Pass*> passes = FindPasses({ "Root" });
-            if (passes.empty())
-            {
-                return false;
-            }
-
-            RPI::Pass* root = passes[0];
+            RPI::Pass* root = AZ::RPI::PassSystemInterface::Get()->GetRootPass().get();
 
             // Enable all the Timestamp queries in passes.
             root->SetTimestampQueryEnabled(true);
@@ -484,16 +418,47 @@ namespace AZ
             return captureStarted;
         }
 
-        bool ProfilingCaptureSystemComponent::CapturePassPipelineStatistics(const AZStd::string& outputFilePath)
+        bool ProfilingCaptureSystemComponent::CaptureCpuFrameTime(const AZStd::string& outputFilePath)
         {
-            // Find the root pass.
-            AZStd::vector<RPI::Pass*> passes = FindPasses({ "Root" });
-            if (passes.empty())
+            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([outputFilePath]()
             {
-                return false;
+                JsonSerializerSettings serializationSettings;
+                serializationSettings.m_keepDefaults = true;
+
+                double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
+                AZ_Warning("ProfilingCaptureSystemComponent", frameTime > 0, "Failed to get Cpu frame time");
+
+                CpuFrameTimeSerializer serializer(frameTime);
+                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
+                    outputFilePath, (CpuFrameTimeSerializer*)nullptr, &serializationSettings);
+
+                AZStd::string captureInfo = outputFilePath;
+                if (!saveResult.IsSuccess())
+                {
+                    captureInfo = AZStd::string::format("Failed to save Cpu frame time to file '%s'. Error: %s",
+                        outputFilePath.c_str(),
+                        saveResult.GetError().c_str());
+                    AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
+                }
+
+                // Notify listeners that the Cpu frame time statistics capture has finished.
+                ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuFrameTimeFinished,
+                    saveResult.IsSuccess(),
+                    captureInfo);
+            });
+
+            // Start the TickBus.
+            if (captureStarted)
+            {
+                TickBus::Handler::BusConnect();
             }
 
-            RPI::Pass* root = passes[0];
+            return captureStarted;
+        }
+
+        bool ProfilingCaptureSystemComponent::CapturePassPipelineStatistics(const AZStd::string& outputFilePath)
+        {
+            RPI::Pass* root = AZ::RPI::PassSystemInterface::Get()->GetRootPass().get();
 
             // Enable all the PipelineStatistics queries in passes.
             root->SetPipelineStatisticsQueryEnabled(true);
@@ -534,65 +499,9 @@ namespace AZ
             return captureStarted;
         }
 
-        bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
-        {
-            // Start the cpu profiling
-            bool wasEnabled = RHI::CpuProfiler::Get()->IsProfilerEnabled();
-            if (!wasEnabled)
-            {
-                RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
-            }
-
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
-            {
-                JsonSerializerSettings serializationSettings;
-                serializationSettings.m_keepDefaults = true;
-
-                // Get time Cpu profiled time regions
-                const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
-
-                CpuProfilingStatisticsSerializer serializer(timeRegionMap);
-                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
-                    outputFilePath, (CpuProfilingStatisticsSerializer*)nullptr, &serializationSettings);
-
-                AZStd::string captureInfo = outputFilePath;
-                if (!saveResult.IsSuccess())
-                {
-                    captureInfo = AZStd::string::format("Failed to save Cpu Profiling Statistics data to file '%s'. Error: %s",
-                        outputFilePath.c_str(),
-                        saveResult.GetError().c_str());
-                    AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
-                }
-                else
-                {
-                    AZ_Printf("ProfilingCaptureSystemComponent", "Cpu profiling statistics was saved to file [%s]\n", outputFilePath.c_str());
-                }
-
-                // Disable the profiler again
-                if (!wasEnabled)
-                {
-                    RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
-                }
-
-                // Notify listeners that the pass' PipelineStatistics queries capture has finished.
-                ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
-                    saveResult.IsSuccess(),
-                    captureInfo);
-
-            });
-
-            // Start the TickBus.
-            if (captureStarted)
-            {
-                TickBus::Handler::BusConnect();
-            }
-
-            return captureStarted;
-        }
-
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
         {
-            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([this, benchmarkName, outputFilePath]()
+            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([benchmarkName, outputFilePath]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
@@ -649,29 +558,16 @@ namespace AZ
             return passes;
         }
 
-        AZStd::vector<RPI::Pass*> ProfilingCaptureSystemComponent::FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const
-        {
-            // Find the pass first.
-            RPI::PassHierarchyFilter passFilter(passHierarchy);
-            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (foundPasses.size() == 0)
-            {
-                AZ_Warning("ProfilingCaptureSystemComponent", false, "Failed to find pass from %s", passFilter.ToString().c_str());
-            }
-
-            return foundPasses;
-        }
-
         void ProfilingCaptureSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)
         {
             // Update the delayed captures
             m_timestampCapture.UpdateCapture();
+            m_cpuFrameTimeStatisticsCapture.UpdateCapture();
             m_pipelineStatisticsCapture.UpdateCapture();
-            m_cpuProfilingStatisticsCapture.UpdateCapture();
             m_benchmarkMetadataCapture.UpdateCapture();
 
             // Disconnect from the TickBus if all capture states are set to idle.
-            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle())
+            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle() && m_cpuFrameTimeStatisticsCapture.IsIdle())
             {
                 TickBus::Handler::BusDisconnect();
             }

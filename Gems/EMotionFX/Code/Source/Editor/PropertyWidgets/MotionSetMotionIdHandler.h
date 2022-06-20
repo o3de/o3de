@@ -59,7 +59,7 @@ namespace EMotionFX
         static void ResetDisplayedRoundingError();
 
     private:
-        size_t                                              m_id = -1;
+        size_t                                              m_id = std::numeric_limits<size_t>::max();
         bool                                                m_displayMotionSelectionWeight = false;
         const IRandomMotionSelectionDataContainer*          m_dataContainer = nullptr;
         static float                                        s_displayedRoundingError;

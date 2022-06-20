@@ -18,8 +18,6 @@ set(FILES
     Include/ScriptCanvas/Debugger/Debugger.cpp
     Include/ScriptCanvas/Debugger/Logger.h
     Include/ScriptCanvas/Debugger/Logger.cpp
-    Include/ScriptCanvas/Debugger/LogReader.h
-    Include/ScriptCanvas/Debugger/LogReader.cpp
     Include/ScriptCanvas/Debugger/StatusBus.h
     Include/ScriptCanvas/Debugger/Messages/Notify.cpp
     Include/ScriptCanvas/Debugger/Messages/Notify.h
@@ -35,6 +33,7 @@ set(FILES
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/DynamicDataTypeEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidExpressionEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidRandomSignalEvent.h
+    Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidVariableTypeEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/SlotReferenceEvent.h
     Include/ScriptCanvas/Debugger/ValidationEvents/DataValidation/UnknownEndpointEvent.h

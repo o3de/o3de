@@ -28,8 +28,7 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
-#include <IEntityRenderState.h>
-#include <IStatObj.h>
+static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -56,18 +55,17 @@ public:
     }
 
 protected:
-    virtual void Release() { delete this; };
-    virtual int GetSize() { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() { return "Entity Link"; };
-    virtual QString GetObjectName(){ return ""; };
+    void Release() override { delete this; };
+    int GetSize() override { return sizeof(*this); }; // Return size of xml state.
+    QString GetObjectName() override{ return ""; };
 
-    virtual void Undo([[maybe_unused]] bool bUndo)
+    void Undo([[maybe_unused]] bool bUndo) override
     {
-        for (int i = 0, iLinkSize(m_Links.size()); i < iLinkSize; ++i)
+        for (int i = 0, iLinkSize = static_cast<int>(m_Links.size()); i < iLinkSize; ++i)
         {
             SLink& link = m_Links[i];
             CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(link.entityID);
-            if (pObj == NULL)
+            if (pObj == nullptr)
             {
                 continue;
             }
@@ -83,7 +81,7 @@ protected:
             pEntity->LoadLink(link.linkXmlNode->getChild(0));
         }
     }
-    virtual void Redo(){}
+    void Redo() override{}
 
 private:
 
@@ -109,7 +107,7 @@ public:
         , m_bAttach(bAttach)
     {}
 
-    virtual void Undo([[maybe_unused]] bool bUndo) override
+    void Undo([[maybe_unused]] bool bUndo) override
     {
         if (!m_bAttach)
         {
@@ -117,7 +115,7 @@ public:
         }
     }
 
-    virtual void Redo() override
+    void Redo() override
     {
         if (m_bAttach)
         {
@@ -138,8 +136,7 @@ private:
         }
     }
 
-    virtual int GetSize() { return sizeof(CUndoAttachEntity); }
-    virtual QString GetDescription() { return "Attachment Changed"; }
+    int GetSize() override { return sizeof(CUndoAttachEntity); }
 
     GUID m_attachedEntityGUID;
     CEntityObject::EAttachmentType m_attachmentType;
@@ -151,8 +148,6 @@ private:
 // CBase implementation.
 //////////////////////////////////////////////////////////////////////////
 
-float CEntityObject::m_helperScale = 1;
-
 namespace
 {
     CEntityObject* s_pPropertyPanelEntityObject = nullptr;
@@ -163,11 +158,8 @@ namespace
 
 //////////////////////////////////////////////////////////////////////////
 CEntityObject::CEntityObject()
-    : m_listeners(1)
 {
     m_bLoadFailed = false;
-
-    m_visualObject = 0;
 
     m_box.min.Set(0, 0, 0);
     m_box.max.Set(0, 0, 0);
@@ -208,7 +200,6 @@ CEntityObject::CEntityObject()
 
     // Init Variables.
     mv_castShadow = true;
-    mv_castShadowMinSpec = CONFIG_LOW_SPEC;
     mv_outdoor          =   false;
     mv_recvWind = false;
     mv_renderNearest = false;
@@ -223,32 +214,31 @@ CEntityObject::CEntityObject()
     mv_ratioLOD = 100;
     mv_viewDistanceMultiplier = 1.0f;
     mv_ratioLOD.SetLimits(0, 255);
-    mv_viewDistanceMultiplier.SetLimits(0.0f, IRenderNode::VIEW_DISTANCE_MULTIPLIER_MAX);
+    mv_viewDistanceMultiplier.SetLimits(0.0f, VIEW_DISTANCE_MULTIPLIER_MAX);
 
-    m_physicsState = 0;
+    m_physicsState = nullptr;
 
     m_attachmentType = eAT_Pivot;
 
     // cache all the variable callbacks, must match order of enum defined in header
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightSizeChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxLengthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxProjectionChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeXChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeYChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeZChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnColorChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnInnerRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnOuterRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectInAllDirsChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorFOVChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorTextureChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnPropertyChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnRadiusChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightSizeChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxLengthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxProjectionChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeXChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeYChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeZChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnColorChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnInnerRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnOuterRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectInAllDirsChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorFOVChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorTextureChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnRadiusChange(var); });
 }
 
 CEntityObject::~CEntityObject()
@@ -258,18 +248,10 @@ CEntityObject::~CEntityObject()
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::InitVariables()
 {
-    mv_castShadowMinSpec.AddEnumItem("Never",          END_CONFIG_SPEC_ENUM);
-    mv_castShadowMinSpec.AddEnumItem("Low",                CONFIG_LOW_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("Medium",     CONFIG_MEDIUM_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("High",               CONFIG_HIGH_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("VeryHigh",       CONFIG_VERYHIGH_SPEC);
-
     mv_castShadow.SetFlags(mv_castShadow.GetFlags() | IVariable::UI_INVISIBLE);
-    mv_castShadowMinSpec->SetFlags(mv_castShadowMinSpec->GetFlags() | IVariable::UI_UNSORTED);
 
     AddVariable(mv_outdoor, "OutdoorOnly", tr("Outdoor Only"));
     AddVariable(mv_castShadow, "CastShadow", tr("Cast Shadow"));
-    AddVariable(mv_castShadowMinSpec, "CastShadowMinspec", tr("Cast Shadow MinSpec"));
 
     AddVariable(mv_ratioLOD, "LodRatio");
     AddVariable(mv_viewDistanceMultiplier, "ViewDistanceMultiplier");
@@ -294,11 +276,6 @@ void CEntityObject::Done()
 
     ReleaseEventTargets();
     RemoveAllEntityLinks();
-
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnDone();
-    }
 
     CBaseObject::Done();
 }
@@ -366,12 +343,6 @@ void CEntityObject::SetTransformDelegate(ITransformDelegate* pTransformDelegate)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CEntityObject::IsSameClass(CBaseObject* obj)
-{
-    return (GetClassDesc() == obj->GetClassDesc());
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CEntityObject::ConvertFromObject(CBaseObject* object)
 {
     CBaseObject::ConvertFromObject(object);
@@ -381,7 +352,6 @@ bool CEntityObject::ConvertFromObject(CBaseObject* object)
         CEntityObject* pObject = ( CEntityObject* )object;
 
         mv_outdoor = pObject->mv_outdoor;
-        mv_castShadowMinSpec = pObject->mv_castShadowMinSpec;
         mv_ratioLOD = pObject->mv_ratioLOD;
         mv_viewDistanceMultiplier = pObject->mv_viewDistanceMultiplier;
         mv_hiddenInGame = pObject->mv_hiddenInGame;
@@ -459,32 +429,9 @@ bool CEntityObject::HitTest(HitContext& hc)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CEntityObject::HitHelperTest(HitContext& hc)
-{
-    bool bResult = CBaseObject::HitHelperTest(hc);
-    if (bResult)
-    {
-        hc.object = this;
-    }
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CEntityObject::HitTestRect(HitContext& hc)
 {
-    bool bResult = false;
-
-    if (m_visualObject && !gSettings.viewports.bShowIcons && !gSettings.viewports.bShowSizeBasedIcons)
-    {
-        AABB box;
-        box.SetTransformedAABB(GetWorldTM(), m_visualObject->GetAABB());
-        bResult = HitTestRectBounds(hc, box);
-    }
-    else
-    {
-        bResult = CBaseObject::HitTestRect(hc);
-    }
+    bool bResult = CBaseObject::HitTestRect(hc);
 
     if (bResult)
     {
@@ -492,42 +439,6 @@ bool CEntityObject::HitTestRect(HitContext& hc)
     }
 
     return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-
-    if (event == eMouseMove || event == eMouseLDown)
-    {
-        Vec3 pos;
-        // Rise Entity above ground on Bounding box amount.
-        if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-        {
-            pos = view->MapViewToCP(point);
-        }
-        else
-        {
-            // Snap to terrain.
-            bool hitTerrain;
-            pos = view->ViewToWorld(point, &hitTerrain);
-            if (hitTerrain)
-            {
-                pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-                pos.z = pos.z - m_box.min.z;
-            }
-            pos = view->SnapToGrid(pos);
-        }
-        SetPos(pos);
-
-        if (event == eMouseLDown)
-        {
-            return MOUSECREATE_OK;
-        }
-        return MOUSECREATE_CONTINUE;
-    }
-    return CBaseObject::MouseCreateCallback(view, event, point, flags);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -540,7 +451,7 @@ IVariable* CEntityObject::FindVariableInSubBlock(CVarBlockPtr& properties, IVari
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* pSubBlock)
 {
-    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : NULL;
+    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : nullptr;
 
     if (IVariable* pRadius = FindVariableInSubBlock(properties, pSubBlockVar, "Radius"))
     {
@@ -588,32 +499,14 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
         pAreaLight->SetHumanName("PlanarLight");
     }
 
-    bool bCastShadowLegacy = false;  // Backward compatibility for existing shadow casting lights
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
-
-        if (pCastShadowVarLegacy->GetDisplayValue()[0] != '0')
+        const QString zeroPrefix("0");
+        if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
-            bCastShadowLegacy = true;
-            pCastShadowVarLegacy->SetDisplayValue("0");
+            pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
-    }
-
-    if (IVariable* pCastShadowVar = FindVariableInSubBlock(properties, pSubBlockVar, "nCastShadows"))
-    {
-        if (bCastShadowLegacy)
-        {
-            pCastShadowVar->SetDisplayValue("1");
-        }
-        pCastShadowVar->SetDataType(IVariable::DT_UIENUM);
-        pCastShadowVar->SetFlags(pCastShadowVar->GetFlags() | IVariable::UI_UNSORTED);
-    }
-
-    if (IVariable* pShadowMinRes = FindVariableInSubBlock(properties, pSubBlockVar, "nShadowMinResPercent"))
-    {
-        pShadowMinRes->SetDataType(IVariable::DT_UIENUM);
-        pShadowMinRes->SetFlags(pShadowMinRes->GetFlags() | IVariable::UI_UNSORTED);
     }
 
     if (IVariable* pFade = FindVariableInSubBlock(properties, pSubBlockVar, "vFadeDimensionsLeft"))
@@ -680,11 +573,6 @@ void CEntityObject::SetName(const QString& name)
 
     CBaseObject::SetName(name);
 
-    CListenerSet<IEntityObjectListener*> listeners = m_listeners;
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnNameChanged(name.toUtf8().data());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -697,19 +585,6 @@ void CEntityObject::SetSelected(bool bSelect)
         UpdateLightProperty();
     }
 
-    for (CListenerSet<IEntityObjectListener*>::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
-    {
-        notifier->OnSelectionChanged(bSelect);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnPropertyChange([[maybe_unused]] IVariable* var)
-{
-    if (s_ignorePropertiesUpdate)
-    {
-        return;
-    }
 }
 
 template <typename T>
@@ -933,16 +808,17 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 XmlNodeRef eventTarget = eventTargets->getChild(i);
                 CEntityEventTarget et;
-                et.target = 0;
+                et.target = nullptr;
                 GUID targetId = GUID_NULL;
                 eventTarget->getAttr("TargetId", targetId);
                 eventTarget->getAttr("Event", et.event);
                 eventTarget->getAttr("SourceEvent", et.sourceEvent);
-                m_eventTargets.push_back(et);
+                m_eventTargets.emplace_back(AZStd::move(et));
                 if (targetId != GUID_NULL)
                 {
-                    using namespace AZStd::placeholders;
-                    ar.SetResolveCallback(this, targetId, AZStd::bind(&CEntityObject::ResolveEventTarget, this, _1, _2), i);
+                    ar.SetResolveCallback(
+                        this, targetId,
+                        [this,i](CBaseObject* object) { ResolveEventTarget(object, i); });
                 }
             }
         }
@@ -953,11 +829,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
         QString attachmentType;
         xmlNode->getAttr("AttachmentType", attachmentType);
 
-        if (attachmentType == "GeomCacheNode")
-        {
-            m_attachmentType = eAT_GeomCacheNode;
-        }
-        else if (attachmentType == "CharacterBone")
+        if (attachmentType == "CharacterBone")
         {
             m_attachmentType = eAT_CharacterBone;
         }
@@ -973,22 +845,12 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             RemoveAllEntityLinks();
             PostLoad(ar);
         }
-
-        if ((mv_castShadowMinSpec == CONFIG_LOW_SPEC) && !mv_castShadow) // backwards compatibility check
-        {
-            mv_castShadowMinSpec = END_CONFIG_SPEC_ENUM;
-            mv_castShadow = true;
-        }
     }
     else
     {
         if (m_attachmentType != eAT_Pivot)
         {
-            if (m_attachmentType == eAT_GeomCacheNode)
-            {
-                xmlNode->setAttr("AttachmentType", "GeomCacheNode");
-            }
-            else if (m_attachmentType == eAT_CharacterBone)
+            if (m_attachmentType == eAT_CharacterBone)
             {
                 xmlNode->setAttr("AttachmentType", "CharacterBone");
             }
@@ -1029,7 +891,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 CEntityEventTarget& et = m_eventTargets[i];
                 GUID targetId = GUID_NULL;
-                if (et.target != 0)
+                if (et.target != nullptr)
                 {
                     targetId = et.target->GetId();
                 }
@@ -1060,7 +922,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 {
     if (m_bLoadFailed)
     {
-        return 0;
+        return nullptr;
     }
 
     // Do not export entity with bad id.
@@ -1088,11 +950,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
                 objNode->setAttr("ParentId", parentEntity->GetEntityId());
                 if (m_attachmentType != eAT_Pivot)
                 {
-                    if (m_attachmentType == eAT_GeomCacheNode)
-                    {
-                        objNode->setAttr("AttachmentType", "GeomCacheNode");
-                    }
-                    else if (m_attachmentType == eAT_CharacterBone)
+                    if (m_attachmentType == eAT_CharacterBone)
                     {
                         objNode->setAttr("AttachmentType", "CharacterBone");
                     }
@@ -1141,8 +999,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
         objNode->setAttr("ViewDistanceMultiplier", mv_viewDistanceMultiplier);
     }
 
-    objNode->setAttr("CastShadowMinSpec", mv_castShadowMinSpec);
-
     if (mv_recvWind)
     {
         objNode->setAttr("RecvWind", true);
@@ -1156,17 +1012,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
     if (mv_outdoor)
     {
         objNode->setAttr("OutdoorOnly", true);
-    }
-
-    if (GetMinSpec() != 0)
-    {
-        objNode->setAttr("MinSpec", ( uint32 )GetMinSpec());
-    }
-
-    uint32 nMtlLayersMask = GetMaterialLayersMask();
-    if (nMtlLayersMask != 0)
-    {
-        objNode->setAttr("MatLayersMask", nMtlLayersMask);
     }
 
     if (mv_hiddenInGame)
@@ -1217,7 +1062,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
     if (!m_links.empty())
     {
         XmlNodeRef linksNode = objNode->newChild("EntityLinks");
-        for (int i = 0, num = m_links.size(); i < num; i++)
+        for (size_t i = 0, num = m_links.size(); i < num; i++)
         {
             if (m_links[i].target)
             {
@@ -1265,11 +1110,6 @@ void CEntityObject::OnEvent(ObjectEvent event)
 
     case EVENT_CONFIG_SPEC_CHANGE:
     {
-        IObjectManager* objMan = GetIEditor()->GetObjectManager();
-        if (objMan && objMan->IsLightClass(this))
-        {
-            OnPropertyChange(NULL);
-        }
         break;
     }
     default:
@@ -1282,8 +1122,8 @@ void CEntityObject::UpdateVisibility(bool bVisible)
 {
     CBaseObject::UpdateVisibility(bVisible);
 
-    bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
-    if (bVisibleWithSpec != m_bVisible)
+    bool bVisibleWithSpec = bVisible;
+    if (bVisibleWithSpec != static_cast<bool>(m_bVisible))
     {
         m_bVisible = bVisibleWithSpec;
     }
@@ -1314,7 +1154,7 @@ IVariable* CEntityObject::GetLightVariable(const char* name0) const
             {
                 IVariable* pChild = pLightProperties->GetVariable(i);
 
-                if (pChild == NULL)
+                if (pChild == nullptr)
                 {
                     continue;
                 }
@@ -1341,7 +1181,7 @@ QString CEntityObject::GetLightAnimation() const
         {
             IVariable* pChild = pStyleGroup->GetVariable(i);
 
-            if (pChild == NULL)
+            if (pChild == nullptr)
             {
                 continue;
             }
@@ -1360,60 +1200,10 @@ QString CEntityObject::GetLightAnimation() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx)
-{
-    CBaseObject::PostClone(pFromObject, ctx);
-
-    CEntityObject* pFromEntity = ( CEntityObject* )pFromObject;
-    // Clone event targets.
-    if (!pFromEntity->m_eventTargets.empty())
-    {
-        int numTargets = pFromEntity->m_eventTargets.size();
-        for (int i = 0; i < numTargets; i++)
-        {
-            CEntityEventTarget& et = pFromEntity->m_eventTargets[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            AddEventTarget(pClonedTarget, et.event, et.sourceEvent, true);
-        }
-    }
-
-    // Clone links.
-    if (!pFromEntity->m_links.empty())
-    {
-        int numTargets = pFromEntity->m_links.size();
-        for (int i = 0; i < numTargets; i++)
-        {
-            CEntityLink& et = pFromEntity->m_links[i];
-            CBaseObject* pClonedTarget = ctx.FindClone(et.target);
-            if (!pClonedTarget)
-            {
-                pClonedTarget = et.target;  // If target not cloned, link to original target.
-            }
-
-            // Add cloned event.
-            if (pClonedTarget)
-            {
-                AddEntityLink(et.name, pClonedTarget->GetId());
-            }
-            else
-            {
-                AddEntityLink(et.name, GUID_NULL);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.
-    assert(index >= 0 && index < m_eventTargets.size());
+    assert(index < m_eventTargets.size());
     if (object)
     {
         object->AddEventListener(this);
@@ -1437,7 +1227,7 @@ void CEntityObject::RemoveAllEntityLinks()
 {
     while (!m_links.empty())
     {
-        RemoveEntityLink(m_links.size() - 1);
+        RemoveEntityLink(static_cast<int>(m_links.size() - 1));
     }
     m_links.clear();
     SetModified(false);
@@ -1448,7 +1238,7 @@ void CEntityObject::ReleaseEventTargets()
 {
     while (!m_eventTargets.empty())
     {
-        RemoveEventTarget(m_eventTargets.size() - 1, false);
+        RemoveEventTarget(static_cast<int>(m_eventTargets.size() - 1), false);
     }
     m_eventTargets.clear();
     SetModified(false);
@@ -1518,7 +1308,7 @@ void CEntityObject::SaveLink(XmlNodeRef xmlNode)
     }
 
     XmlNodeRef linksNode = xmlNode->newChild("EntityLinks");
-    for (int i = 0, num = m_links.size(); i < num; i++)
+    for (size_t i = 0, num = m_links.size(); i < num; i++)
     {
         XmlNodeRef linkNode = linksNode->newChild("Link");
         linkNode->setAttr("TargetId", m_links[i].targetId);
@@ -1534,26 +1324,26 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
     if (event == CBaseObject::ON_DELETE)
     {
         // Find this target in events list and remove.
-        int numTargets = m_eventTargets.size();
+        int numTargets = static_cast<int>(m_eventTargets.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_eventTargets[i].target == target)
             {
                 RemoveEventTarget(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
     }
     else if (event == CBaseObject::ON_PREDELETE)
     {
-        int numTargets = m_links.size();
+        int numTargets = static_cast<int>(m_links.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_links[i].target == target)
             {
                 RemoveEntityLink(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
@@ -1563,7 +1353,7 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, const QString& sourceEvent, [[maybe_unused]] bool bUpdateScript)
 {
-    StoreUndo("Add EventTarget");
+    StoreUndo();
     CEntityEventTarget et;
     et.target = target;
     et.event = event;
@@ -1589,7 +1379,7 @@ int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, con
     m_eventTargets.push_back(et);
 
     SetModified(false);
-    return m_eventTargets.size() - 1;
+    return static_cast<int>(m_eventTargets.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1597,7 +1387,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 {
     if (index >= 0 && index < m_eventTargets.size())
     {
-        StoreUndo("Remove EventTarget");
+        StoreUndo();
 
         if (m_eventTargets[index].pLineGizmo)
         {
@@ -1617,7 +1407,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 {
-    CEntityObject* target = 0;
+    CEntityObject* target = nullptr;
     if (targetEntityId != GUID_NULL)
     {
         CBaseObject* pObject = FindObject(targetEntityId);
@@ -1633,9 +1423,9 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
         }
     }
 
-    StoreUndo("Add EntityLink");
+    StoreUndo();
 
-    CLineGizmo* pLineGizmo = 0;
+    CLineGizmo* pLineGizmo = nullptr;
 
     // Assign event target.
     if (target)
@@ -1659,13 +1449,13 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     SetModified(false);
 
-    return m_links.size() - 1;
+    return static_cast<int>(m_links.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CEntityObject::EntityLinkExists(const QString& name, GUID targetEntityId)
 {
-    for (int i = 0, num = m_links.size(); i < num; ++i)
+    for (size_t i = 0, num = m_links.size(); i < num; ++i)
     {
         if (m_links[i].targetId == targetEntityId && name.compare(m_links[i].name, Qt::CaseInsensitive) == 0)
         {
@@ -1681,7 +1471,7 @@ void CEntityObject::RemoveEntityLink(int index)
     if (index >= 0 && index < m_links.size())
     {
         CEntityLink& link = m_links[index];
-        StoreUndo("Remove EntityLink");
+        StoreUndo();
 
         if (link.pLineGizmo)
         {
@@ -1704,7 +1494,7 @@ void CEntityObject::RenameEntityLink(int index, const QString& newName)
 {
     if (index >= 0 && index < m_links.size())
     {
-        StoreUndo("Rename EntityLink");
+        StoreUndo();
 
         if (m_links[index].pLineGizmo)
         {
@@ -1852,18 +1642,6 @@ void CEntityObject::OnLoadFailed()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetHelperScale(float scale)
-{
-    m_helperScale = scale;
-}
-
-//////////////////////////////////////////////////////////////////////////
-float CEntityObject::GetHelperScale()
-{
-    return m_helperScale;
-}
-
-//////////////////////////////////////////////////////////////////////////
 //! Analyze errors for this object.
 void CEntityObject::Validate(IErrorReport* report)
 {
@@ -1911,19 +1689,6 @@ bool CEntityObject::IsSimilarObject(CBaseObject* pObject)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnContextMenu(QMenu* pMenu)
-{
-    if (!pMenu->isEmpty())
-    {
-        pMenu->addSeparator();
-    }
-
-    // Events
-
-    CBaseObject::OnContextMenu(pMenu);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::PreInitLightProperty()
 {
     if (!IsLight() || !m_pProperties)
@@ -1968,7 +1733,7 @@ void CEntityObject::ResetCallbacks()
 
         //@FIXME Hack to display radii of properties.
         // wires properties from param block, to this entity internal variables.
-        IVariable* var = 0;
+        IVariable* var = nullptr;
         var = pProperties->FindVariable("Radius", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
@@ -2180,21 +1945,11 @@ void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
     }
 }
 
-void CEntityObject::RegisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Add(pListener);
-}
-
-void CEntityObject::UnregisterListener(IEntityObjectListener* pListener)
-{
-    m_listeners.Remove(pListener);
-}
-
 template <typename T>
 T CEntityObject::GetEntityProperty(const char* pName, T defaultvalue) const
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);
@@ -2228,7 +1983,7 @@ template <typename T>
 void CEntityObject::SetEntityProperty(const char* pName, T value)
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);

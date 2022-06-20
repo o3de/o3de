@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/TickBus.h>
@@ -167,7 +166,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesAdded(const EntityList& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         for (AZ::Entity* entity : entities)
         {
@@ -184,7 +183,7 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::HandleEntitiesRemoved(const EntityIdList& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         for (AZ::EntityId id : entityIds)
         {
@@ -243,8 +242,6 @@ namespace AzFramework
     //=========================================================================
     void EntityContext::ActivateEntity(AZ::EntityId entityId)
     {
-        AZ_ASSET_ATTACH_TO_SCOPE(this);
-
         // Verify that this context has the right to perform operations on the entity
         bool validEntity = IsOwnedByThisContext(entityId);
         AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);

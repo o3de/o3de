@@ -5,14 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_DEQUE_H
-#define AZSTD_DEQUE_H 1
+#pragma once
+
 
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/is_integral.h>
 
 namespace AZStd
 {
@@ -133,9 +135,10 @@ namespace AZStd
             AZ_FORCE_INLINE this_type& operator--()     { --m_offset;   return *this;   }
             AZ_FORCE_INLINE this_type  operator--(int)  { this_type tmp = *this; --m_offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator+=(difference_type offset)   { m_offset += offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator+(difference_type offset)        { this_type tmp = *this; tmp += offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator+(difference_type offset) const   { this_type tmp = *this; tmp += offset; return tmp; }
+            friend AZ_FORCE_INLINE this_type operator+(difference_type offset, const this_type& rhs) { this_type tmp = rhs; tmp += offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator-=(difference_type offset)   { m_offset -= offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator-(difference_type offset)        { this_type tmp = *this; tmp -= offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator-(difference_type offset) const  { this_type tmp = *this; tmp -= offset; return tmp; }
             /// ???
             AZ_FORCE_INLINE difference_type operator-(const this_type& rhs) const
             {
@@ -195,9 +198,10 @@ namespace AZStd
             AZ_FORCE_INLINE this_type& operator--()     { --base_type::m_offset;    return *this;   }
             AZ_FORCE_INLINE this_type  operator--(int)  { this_type tmp = *this; --base_type::m_offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator+=(difference_type offset)   { base_type::m_offset += offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator+(difference_type offset)        { this_type tmp = *this; tmp += offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator+(difference_type offset) const { this_type tmp = *this; tmp += offset; return tmp; }
+            friend AZ_FORCE_INLINE this_type  operator+(difference_type offset, const this_type& rhs) { this_type tmp = rhs; tmp += offset; return tmp; }
             AZ_FORCE_INLINE this_type& operator-=(difference_type offset)   { base_type::m_offset -= offset; return *this; }
-            AZ_FORCE_INLINE this_type  operator-(difference_type offset)        { this_type tmp = *this; tmp -= offset; return tmp; }
+            AZ_FORCE_INLINE this_type  operator-(difference_type offset) const { this_type tmp = *this; tmp -= offset; return tmp; }
             AZ_FORCE_INLINE difference_type operator-(const this_type& rhs) const
             {
                 return rhs.m_offset <= base_type::m_offset ? base_type::m_offset - rhs.m_offset : -(difference_type)(rhs.m_offset - base_type::m_offset);
@@ -323,15 +327,19 @@ namespace AZStd
             return *this;
         }
 
-        AZ_FORCE_INLINE iterator        begin()         { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this)); }
-        AZ_FORCE_INLINE const_iterator  begin() const   { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this)); }
-        AZ_FORCE_INLINE iterator        end()           { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this)); }
-        AZ_FORCE_INLINE const_iterator  end() const     { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this)); }
+        AZ_FORCE_INLINE iterator        begin() noexcept         { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this)); }
+        AZ_FORCE_INLINE const_iterator  begin() const noexcept   { return cbegin(); }
+        AZ_FORCE_INLINE const_iterator  cbegin() const noexcept  { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this)); }
+        AZ_FORCE_INLINE iterator        end() noexcept           { return iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this)); }
+        AZ_FORCE_INLINE const_iterator  end() const noexcept     { return cend(); }
+        AZ_FORCE_INLINE const_iterator  cend() const noexcept    { return const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this)); }
 
-        AZ_FORCE_INLINE reverse_iterator        rbegin()        { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this))); }
-        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const  { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this))); }
-        AZ_FORCE_INLINE reverse_iterator        rend()          { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this))); }
-        AZ_FORCE_INLINE const_reverse_iterator  rend() const    { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this))); }
+        AZ_FORCE_INLINE reverse_iterator        rbegin() noexcept        { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset + m_size, this))); }
+        AZ_FORCE_INLINE const_reverse_iterator  rbegin() const noexcept  { return crbegin(); }
+        AZ_FORCE_INLINE const_reverse_iterator  crbegin() const noexcept { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + m_size, this))); }
+        AZ_FORCE_INLINE reverse_iterator        rend() noexcept          { return reverse_iterator(iterator(AZSTD_CHECKED_ITERATOR_2(iterator_impl, m_firstOffset, this))); }
+        AZ_FORCE_INLINE const_reverse_iterator  rend() const noexcept    { return crend(); }
+        AZ_FORCE_INLINE const_reverse_iterator  crend() const noexcept   { return const_reverse_iterator(const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset, this))); }
 
         AZ_FORCE_INLINE void resize(size_type newSize)              { resize(newSize, value_type()); }
         AZ_FORCE_INLINE void resize(size_type newSize, const value_type& value)
@@ -347,7 +355,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type size() const      { return m_size; }
-        AZ_FORCE_INLINE size_type max_size() const  { return m_allocator.get_max_size() / sizeof(block_node_type); }
+        AZ_FORCE_INLINE size_type max_size() const  { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(block_node_type); }
         AZ_FORCE_INLINE bool empty() const          { return m_size == 0; }
 
         AZ_FORCE_INLINE const_reference at(size_type offset) const { return *const_iterator(AZSTD_CHECKED_ITERATOR_2(const_iterator_impl, m_firstOffset + offset, this)); }
@@ -1231,6 +1239,14 @@ namespace AZStd
         right.swap(AZStd::forward<this_type>(left));
     }
 
+    template<class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize, class U>
+    decltype(auto) erase(deque<T, Allocator, NumElementsPerBlock, MinMapSize>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
     template<class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize, class Predicate>
     decltype(auto) erase_if(deque<T, Allocator, NumElementsPerBlock, MinMapSize>& container, Predicate predicate)
     {
@@ -1240,6 +1256,3 @@ namespace AZStd
         return removedCount;
     }
 }
-
-#endif // AZSTD_DEQUE_H
-#pragma once

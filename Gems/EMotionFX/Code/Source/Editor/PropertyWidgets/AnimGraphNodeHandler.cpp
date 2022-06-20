@@ -113,7 +113,7 @@ namespace EMotionFX
             const AZStd::vector<AnimGraphSelectionItem>& selectedNodes = dialog.GetAnimGraphHierarchyWidget().GetSelectedItems();
             if (!selectedNodes.empty())
             {
-                AnimGraphNode* selectedNode = m_animGraph->RecursiveFindNodeByName(selectedNodes[0].mNodeName.c_str());
+                AnimGraphNode* selectedNode = m_animGraph->RecursiveFindNodeByName(selectedNodes[0].m_nodeName.c_str());
                 if (selectedNode)
                 {
                     m_nodeId = selectedNode->GetId();

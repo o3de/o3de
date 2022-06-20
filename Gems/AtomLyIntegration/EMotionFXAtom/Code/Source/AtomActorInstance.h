@@ -18,9 +18,10 @@
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
-#include <Atom/Feature/SkinnedMesh/SkinnedMeshRenderProxyInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
@@ -53,6 +54,7 @@ namespace AZ
         class SkinnedMeshInputBuffers;
         class MeshFeatureProcessorInterface;
         class AtomActor;
+        class AtomActorDebugDraw;
 
         //! Render node for managing and rendering actor instances. Each Actor Component
         //! creates an ActorRenderNode. The render node is responsible for drawing meshes and
@@ -64,10 +66,12 @@ namespace AZ
             , public AzFramework::BoundsRequestBus::Handler
             , public AZ::Render::MaterialComponentNotificationBus::Handler
             , public AZ::Render::MeshComponentRequestBus::Handler
+            , public AZ::Render::SkinnedMeshOverrideRequestBus::Handler
             , private AZ::Render::SkinnedMeshFeatureProcessorNotificationBus::Handler
             , private AZ::Render::SkinnedMeshOutputStreamNotificationBus::Handler
             , private LmbrCentral::SkeletalHierarchyRequestBus::Handler
             , private Data::AssetBus::MultiHandler
+            , private MeshHandleStateRequestBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL;
@@ -85,10 +89,10 @@ namespace AZ
 
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
+            void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
-            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
+            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
 
@@ -120,10 +124,10 @@ namespace AZ
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialReceiverRequestBus::Handler overrides...
-            virtual MaterialAssignmentId FindMaterialAssignmentId(
+            MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
-            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
-            MaterialAssignmentMap GetMaterialAssignments() const override;
+            MaterialAssignmentLabelMap GetMaterialLabels() const override;
+            MaterialAssignmentMap GetDefautMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,11 +145,24 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // SkinnedMeshOverrideRequestBus::Handler overrides...
+            void EnableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
+            void DisableSkinning(uint32_t lodIndex, uint32_t meshIndex) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // SkeletalHierarchyRequestBus::Handler overrides...
@@ -165,10 +182,13 @@ namespace AZ
             void CreateRenderProxy(const MaterialAssignmentMap& materials);
 
         private:
+            // MeshHandleStateRequestBus overrides ...
+            const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
+
             void CreateSkinnedMeshInstance();
 
-            // Copies input buffers to output skinned buffers when the skinned mesh instance is created.
-            void FillSkinnedMeshInstanceBuffers();
+            // Skip skinning for certain meshes (like those with cloth)
+            void OverrideSkinning();
 
             // SkinnedMeshOutputStreamNotificationBus
             void OnSkinnedMeshOutputStreamMemoryAvailable() override;
@@ -178,17 +198,13 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
-            // Helper and debug geometry rendering
-            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
-            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
-            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
-            AZStd::vector<AZ::Vector3> m_auxVertices;
-            AZStd::vector<AZ::Color> m_auxColors;
+            // Debug geometry rendering
+            AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
             AZ::Data::Instance<AZ::RPI::Buffer> m_boneTransforms = nullptr;
-            AZ::Render::SkinnedMeshRenderProxyInterfaceHandle m_skinnedMeshRenderProxy;
+            AZ::Render::SkinnedMeshFeatureProcessorInterface::SkinnedMeshHandle m_skinnedMeshHandle;
             AZ::Render::SkinnedMeshFeatureProcessorInterface* m_skinnedMeshFeatureProcessor = nullptr;
             AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             //m_meshHandle is wrapped in a shared pointer so that it can be shared between this and the SkinnedMeshRenderProxy (the handle itself cannot be copied)

@@ -10,6 +10,10 @@
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbConnectionManager.h>
+#endif
+
 namespace AZ
 {
     namespace Vulkan
@@ -21,7 +25,7 @@ namespace AZ
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
             xcb_connection_t* xcb_connection = nullptr;
-            if (auto xcbConnectionManager = AzFramework::LinuxXcbConnectionManagerInterface::Get();
+            if (auto xcbConnectionManager = AzFramework::XcbConnectionManagerInterface::Get();
                 xcbConnectionManager != nullptr)
             {
                 xcb_connection = xcbConnectionManager->GetXcbConnection();
@@ -40,9 +44,6 @@ namespace AZ
             return ConvertResult(result);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             #error "Linux Window Manager Wayland not supported."
-            return RHI::ResultCode::Unimplemented;
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB
-            #error "Linux Window Manager XLIB not supported."
             return RHI::ResultCode::Unimplemented;
 #else
             #error "Linux Window Manager not recognized."

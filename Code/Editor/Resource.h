@@ -82,12 +82,10 @@
 #define ID_TOOLS_CUSTOMIZEKEYBOARD                 32914
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
-#define ID_SNAPANGLE                               32917
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
 #define ID_FILE_SAVELEVELRESOURCES                 32942
-#define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
@@ -105,12 +103,10 @@
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
 #define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
+#define ID_VIEW_SWITCHTOGAME_VIEWPORT              33479
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
 #define ID_FETCH                                   33496
-#define ID_EDITMODE_ROTATE                         33506
-#define ID_EDITMODE_SCALE                          33507
-#define ID_EDITMODE_MOVE                           33508
 #define ID_SELECTION_DELETE                        33512
 #define ID_EDIT_ESCAPE                             33513
 #define ID_UNDO                                    33524
@@ -137,7 +133,6 @@
 #define ID_ADDNODE                                 33570
 #define ID_ADDSCENETRACK                           33573
 #define ID_FIND                                    33574
-#define ID_SNAP_TO_GRID                            33575
 #define ID_TAG_LOC1                                33576
 #define ID_TAG_LOC2                                33577
 #define ID_TAG_LOC3                                33578
@@ -195,13 +190,11 @@
 #define ID_BRUSH_CSGSUBSTRUCT                      33837
 #define ID_MATERIAL_PICKTOOL                       33842
 #define ID_MODIFY_AIPOINT_PICKIMPASSLINK           33865
-#define ID_DISPLAY_SHOWHELPERS                     33871
 #define ID_FILE_EXPORTSELECTION                    33875
 #define ID_EDIT_PASTE_WITH_LINKS                   33893
 #define ID_FILE_EXPORT_TERRAINAREA                 33904
 #define ID_FILE_EXPORT_TERRAINAREAWITHOBJECTS      33910
 #define ID_FILE_EXPORT_SELECTEDOBJECTS             33911
-#define ID_TERRAIN_TIMEOFDAY                       33912
 #define ID_SPLINE_PREVIOUS_KEY                     33916
 #define ID_SPLINE_NEXT_KEY                         33917
 #define ID_SPLINE_FLATTEN_ALL                      33918
@@ -242,7 +235,6 @@
 #define ID_SNAP_TO_GRID_RANGE_END       34106
 #define ID_TOOLS_EXPORT_SHORTCUTS       34138
 #define ID_TOOLS_IMPORT_SHORTCUTS       34139
-#define ID_TOOLS_VALIDATEOBJECTPOSITIONS 34143
 #define ID_TOOLS_BATCH_RENDER           34151
 #define ID_TOOLS_SCRIPTHELP             34152
 #define ID_TV_MODE_OPENCURVEEDITOR      34153
@@ -295,7 +287,6 @@
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_TERRAIN_EDITOR          36007
 #define ID_OPEN_UICANVASEDITOR          36010
-#define ID_TERRAIN_TIMEOFDAYBUTTON      36011
 #define ID_OPEN_TERRAINTEXTURE_EDITOR   36012
 #define ID_SKINS_REFRESH                36014
 #define ID_FILE_GENERATETERRAIN         36016

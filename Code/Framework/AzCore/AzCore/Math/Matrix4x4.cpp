@@ -280,7 +280,7 @@ namespace AZ
             behaviorContext->Class<Matrix4x4>()->
                 Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)->
                 Attribute(Script::Attributes::Module, "math")->
-                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::Matrix4x4DefaultConstructor)->
                 Property<Vector4(Matrix4x4::*)() const, void (Matrix4x4::*)(const Vector4&)>("basisX", &Matrix4x4::GetBasisX, &Matrix4x4::SetBasisX)->

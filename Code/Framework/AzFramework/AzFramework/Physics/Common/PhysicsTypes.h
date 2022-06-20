@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace Physics
 {
@@ -56,7 +57,7 @@ namespace AzPhysics
     //! A handle to a Scene within the physics simulation.
     //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
     using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
-    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), -1 };
+    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), SceneIndex(-1) };
 
     //! Ease of use type for referencing a List of SceneHandle objects.
     using SceneHandleList = AZStd::vector<SceneHandle>;
@@ -103,17 +104,10 @@ namespace AzPhysics
 
         DEFAULT = COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
     };
-    //! Bitwise operators for MassComputeFlags
-    inline MassComputeFlags operator|(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) | aznumeric_cast<AZ::u8>(rhs));
-    }
 
-    inline MassComputeFlags operator&(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) & aznumeric_cast<AZ::u8>(rhs));
-    }
-    
+    //! Bitwise operators for MassComputeFlags
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(MassComputeFlags)
+
     //! Variant to allow support for the system to either create the Shape(s) or use the provide Shape(s) that have been created externally.
     //! Can be one of the following.
     //! @code{ .cpp }

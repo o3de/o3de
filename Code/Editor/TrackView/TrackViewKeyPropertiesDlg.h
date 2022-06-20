@@ -74,7 +74,7 @@ protected:
     // Helper functions.
     //////////////////////////////////////////////////////////////////////////
     template <class T>
-    void SyncValue(CSmartVariable<T>& var, T& value, bool bCopyToUI, IVariable* pSrcVar = NULL)
+    void SyncValue(CSmartVariable<T>& var, T& value, bool bCopyToUI, IVariable* pSrcVar = nullptr)
     {
         if (bCopyToUI)
         {

@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_SELECTIONCOMMANDS_H
-#define __EMFX_SELECTIONCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -19,7 +18,7 @@
 namespace CommandSystem
 {
     MCORE_DEFINECOMMAND_START(CommandSelect, "Select object", true)
-    SelectionList mData;
+    SelectionList m_data;
 public:
     static const char* s_SelectCmdName;
     static bool Select(MCore::Command* command, const MCore::CommandLine& parameters, AZStd::string& outResult, bool unselect);
@@ -44,11 +43,8 @@ public:
     MCORE_DEFINECOMMAND_1_END
 
     // helper functions
-    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const MCore::Array<EMotionFX::ActorInstance*>& selectedActorInstances);
+    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const AZStd::vector<EMotionFX::ActorInstance*>& selectedActorInstances);
     bool COMMANDSYSTEM_API CheckIfHasMotionSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasAnimGraphSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasActorSelectionParameter(const MCore::CommandLine& parameters, bool ignoreInstanceParameters = false);
 } // namespace CommandSystem
-
-
-#endif

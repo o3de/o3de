@@ -23,14 +23,14 @@ class CGizmoManager
     : public IGizmoManager
 {
 public:
-    void AddGizmo(CGizmo* gizmo);
-    void RemoveGizmo(CGizmo* gizmo);
+    void AddGizmo(CGizmo* gizmo) override;
+    void RemoveGizmo(CGizmo* gizmo) override;
 
     int GetGizmoCount() const override;
     CGizmo* GetGizmoByIndex(int nIndex) const override;
 
-    void Display(DisplayContext& dc);
-    bool HitTest(HitContext& hc);
+    void Display(DisplayContext& dc) override;
+    bool HitTest(HitContext& hc) override;
 
     void DeleteAllTransformManipulators();
 

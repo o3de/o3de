@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __MCOMMON_MANIPULATORCALLBACKS_H
-#define __MCOMMON_MANIPULATORCALLBACKS_H
+#pragma once
 
 // include the Core system
 #include "../EMStudioConfig.h"
@@ -42,6 +41,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Vector3& value) override;
 
         /**
@@ -85,6 +85,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Quaternion& value) override;
 
         /**
@@ -125,6 +126,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Vector3& value) override;
 
         /**
@@ -139,7 +141,4 @@ namespace EMStudio
 
         bool GetResetFollowMode() const override                { return true; }
     };
-} // namespace MCommon
-
-
-#endif
+} // namespace EMStudio

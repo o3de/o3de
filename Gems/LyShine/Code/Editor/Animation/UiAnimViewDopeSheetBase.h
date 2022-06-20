@@ -87,7 +87,7 @@ public:
     void SetEditLock(bool bLock) { m_bEditLock = bLock; }
 
     // IUiAnimationContextListener
-    virtual void OnTimeChanged(float newTime);
+    void OnTimeChanged(float newTime) override;
 
     float TickSnap(float time) const;
 

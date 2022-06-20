@@ -10,8 +10,9 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <PhysX/MeshAsset.h>
-#include <PhysX/HeightFieldAsset.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+
+#include <Source/Material/PhysXMaterialManager.h>
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
@@ -21,6 +22,8 @@
 #include <Source/PhysXCharacters/API/CharacterController.h>
 #include <Source/WindProvider.h>
 
+#include <PhysX/MeshAsset.h>
+#include <PhysX/HeightFieldAsset.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <System/PhysXSystem.h>
 
@@ -101,7 +104,7 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration")
+                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
@@ -115,16 +118,17 @@ namespace PhysX
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXService", 0x75beae2d));
+        provided.push_back(AZ_CRC_CE("PhysXService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXService", 0x75beae2d));
+        incompatible.push_back(AZ_CRC_CE("PhysXService"));
     }
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -190,13 +194,7 @@ namespace PhysX
             return;
         }
 
-        m_materialManager.Connect();
         m_defaultWorldComponent.Activate();
-
-        // Assets related work
-        auto* materialAsset = aznew AzFramework::GenericAssetHandler<Physics::MaterialLibraryAsset>("Physics Material", "Physics", "physmaterial");
-        materialAsset->Register();
-        m_assetHandlers.emplace_back(materialAsset);
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         RegisterAsset<Pipeline::MeshAssetHandler, Pipeline::MeshAsset>(m_assetHandlers);
@@ -217,12 +215,9 @@ namespace PhysX
         PhysX::SystemRequestsBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
 
-        // Reset material manager
-        m_materialManager.ReleaseAllMaterials();
-
         m_defaultWorldComponent.Deactivate();
-        m_materialManager.Disconnect();
 
+        m_materialManager.reset();
         m_windProvider.reset();
 
         m_onSystemInitializedHandler.Disconnect();
@@ -232,7 +227,8 @@ namespace PhysX
             m_physXSystem->Shutdown();
             m_physXSystem = nullptr;
         }
-        m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown(); For it will drop the default material library reference.
+
+        m_assetHandlers.clear(); //this need to be after m_physXSystem->Shutdown();
     }
 
     physx::PxConvexMesh* SystemComponent::CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride)
@@ -250,6 +246,22 @@ namespace PhysX
         AZ_Error("PhysX", convex, "Error. Unable to create convex mesh");
 
         return convex;
+    }
+
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows)
+    {
+        physx::PxHeightFieldDesc desc;
+        desc.format = physx::PxHeightFieldFormat::eS16_TM;
+        desc.nbColumns = static_cast<physx::PxU32>(numColumns);
+        desc.nbRows = static_cast<physx::PxU32>(numRows);
+        desc.samples.data = samples;
+        desc.samples.stride = sizeof(physx::PxHeightFieldSample);
+
+        physx::PxHeightField* heightfield =
+            m_physXSystem->GetPxCooking()->createHeightField(desc, m_physXSystem->GetPxPhysics()->getPhysicsInsertionCallback());
+        AZ_Error("PhysX", heightfield, "Error. Unable to create heightfield");
+
+        return heightfield;
     }
 
     bool SystemComponent::CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount)
@@ -337,9 +349,12 @@ namespace PhysX
         return nullptr;
     }
 
-    AZStd::shared_ptr<Physics::Material> SystemComponent::CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration)
+    void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
     {
-        return AZStd::make_shared<PhysX::Material>(materialConfiguration);
+        if (nativeHeightfieldObject)
+        {
+            static_cast<physx::PxBase*>(nativeHeightfieldObject)->release();
+        }
     }
 
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
@@ -396,7 +411,7 @@ namespace PhysX
 
     void SystemComponent::SetCollisionLayerName(int index, const AZStd::string& layerName)
     {
-        m_physXSystem->SetCollisionLayerName(aznumeric_cast<AZ::u64>(index), layerName);
+        m_physXSystem->SetCollisionLayerName(aznumeric_cast<int>(index), layerName);
     }
 
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
@@ -458,7 +473,13 @@ namespace PhysX
             {
                 const PhysXSystemConfiguration defaultConfig = PhysXSystemConfiguration::CreateDefault();
                 m_physXSystem->Initialize(&defaultConfig);
-                registryManager.SaveSystemConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default PhysX configuration.");
+                };
+                registryManager.SaveSystemConfiguration(defaultConfig, saveCallback);
             }
 
             //Load the DefaultSceneConfig
@@ -471,7 +492,13 @@ namespace PhysX
             {
                 const AzPhysics::SceneConfiguration defaultConfig = AzPhysics::SceneConfiguration::CreateDefault();
                 m_physXSystem->UpdateDefaultSceneConfiguration(defaultConfig);
-                registryManager.SaveDefaultSceneConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default Scene configuration.");
+                };
+                registryManager.SaveDefaultSceneConfiguration(defaultConfig, saveCallback);
             }
 
             //load the debug configuration and initialize the PhysX debug interface
@@ -486,11 +513,19 @@ namespace PhysX
                 {
                     const Debug::DebugConfiguration defaultConfig = Debug::DebugConfiguration::CreateDefault();
                     debug->Initialize(defaultConfig);
-                    registryManager.SaveDebugConfiguration(defaultConfig, {});
+
+                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                    {
+                        AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                            "Unable to save the default PhysX Debug configuration.");
+                    };
+                    registryManager.SaveDebugConfiguration(defaultConfig, saveCallback);
                 }
             }
         }
 
         m_windProvider = AZStd::make_unique<WindProvider>();
+        m_materialManager = AZStd::make_unique<MaterialManager>();
+        m_materialManager->Init();
     }
 } // namespace PhysX

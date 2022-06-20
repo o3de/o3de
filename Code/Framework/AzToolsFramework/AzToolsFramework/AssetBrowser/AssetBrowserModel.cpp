@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <QMimeData>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
@@ -134,7 +135,8 @@ namespace AzToolsFramework
             {
                 return 0;
             }
-            
+
+            //If the column of the parent is one of those we don't want any more rows as children
             if (parent.isValid())
             {
                 if ((parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
@@ -265,6 +267,21 @@ namespace AzToolsFramework
         void AssetBrowserModel::SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry)
         {
             m_rootEntry = rootEntry;
+        }
+
+        AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel()
+        {
+            return m_filterModel;
+        }
+
+        const AssetBrowserFilterModel* AssetBrowserModel::GetFilterModel() const
+        {
+            return m_filterModel;
+        }
+
+        void AssetBrowser::AssetBrowserModel::SetFilterModel(AssetBrowserFilterModel* filterModel)
+        {
+            m_filterModel = filterModel;
         }
 
         QModelIndex AssetBrowserModel::parent(const QModelIndex& child) const

@@ -150,10 +150,7 @@ namespace AzToolsFramework
             TypeBeingHandled actualValue = instance;
             for (int idx = 0; idx < m_common.GetElementCount(); ++idx)
             {
-                if (elements[idx]->wasValueEditedByUser())
-                {
-                    actualValue.SetElement(idx, static_cast<float>(elements[idx]->getValue()));
-                }
+                actualValue.SetElement(idx, static_cast<float>(elements[idx]->getValue()));
             }
             instance = actualValue;
         }

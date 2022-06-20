@@ -12,7 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/TypeHash.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -41,8 +41,6 @@ namespace AZ
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::IndirectCommandTiers);
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
 
         //! Arguments when setting an indirect Vertex Buffer View command.
         struct IndirectBufferViewArguments
@@ -83,8 +81,6 @@ namespace AZ
             /// Arguments when the command is a Vertex Buffer View type.
             IndirectBufferViewArguments m_vertexBufferArgs;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         AZ_FORCE_INLINE bool operator==(const IndirectCommandDescriptor& lhs, const IndirectCommandDescriptor& rhs)
         {
@@ -141,7 +137,7 @@ namespace AZ
             bool AddIndirectCommand(const IndirectCommandDescriptor& command);
 
             /// Returns the list of indirect commands of the layout. Must be called after the layout is finalized.
-            AZStd::array_view<IndirectCommandDescriptor> GetCommands() const;
+            AZStd::span<const IndirectCommandDescriptor> GetCommands() const;
 
             //! Returns the position of a command.
             //! Must be called after the layout is finalized.

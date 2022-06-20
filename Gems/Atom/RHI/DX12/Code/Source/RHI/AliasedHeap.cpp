@@ -14,7 +14,6 @@
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/sort.h>
 
 namespace AZ
@@ -73,7 +72,7 @@ namespace AZ
             heapMemoryUsage.m_reservedInBytes = heapDesc.SizeInBytes;
 
             Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-            AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
+            device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
             m_heap = heap.Get();
             
             return m_heap ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
@@ -104,8 +103,6 @@ namespace AZ
         {
             const RHI::BufferDescriptor& descriptor = request.m_descriptor;
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
-            const size_t alignmentInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-            const size_t sizeInBytes = RHI::AlignUp<size_t>(descriptor.m_byteCount, alignmentInBytes);
 
             MemoryView memoryView =
                 GetDX12RHIDevice().CreateBufferPlaced(
@@ -116,7 +113,7 @@ namespace AZ
 
             if (!memoryView.IsValid())
             {
-                RHI::ResultCode::OutOfMemory;
+                return RHI::ResultCode::OutOfMemory;
             }
 
             buffer->SetDescriptor(descriptor);

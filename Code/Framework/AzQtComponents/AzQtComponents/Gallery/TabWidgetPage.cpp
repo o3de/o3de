@@ -36,17 +36,17 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     menu->addAction("Action 4 (No-op)");
     actionMenu->setMenu(menu);
 
-    connect(action1, &QAction::triggered, this, [this]() {
+    connect(action1, &QAction::triggered, this, []() {
         QMessageBox messageBox({}, "Action 1 triggered", "Action 1 has been triggered", QMessageBox::Ok);
         messageBox.exec();
     });
 
-    connect(action2, &QAction::triggered, this, [this]() {
+    connect(action2, &QAction::triggered, this, []() {
         QMessageBox messageBox({}, "Action 2 triggered", "Action 2 has been triggered", QMessageBox::Ok);
         messageBox.exec();
     });
 
-    connect(action3, &QAction::triggered, this, [this]() {
+    connect(action3, &QAction::triggered, this, []() {
         QMessageBox messageBox({}, "Action 3 triggered", "Action 3 has been triggered", QMessageBox::Ok);
         messageBox.exec();
     });

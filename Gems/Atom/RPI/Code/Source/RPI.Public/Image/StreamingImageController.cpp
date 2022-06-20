@@ -12,8 +12,9 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/Job.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -34,7 +35,7 @@ namespace AZ
 
         void StreamingImageController::AttachImage(StreamingImage* image)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             AZ_Assert(image, "Image must not be null");
 
@@ -69,7 +70,7 @@ namespace AZ
 
         void StreamingImageController::Update()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             UpdateInternal(m_timestamp, m_contexts);
@@ -88,7 +89,7 @@ namespace AZ
                 {
                     if (StreamingImage* image = context->TryGetImage())
                     {
-                        const RHI::ResultCode resultCode = image->ExpandMipChain();
+                        [[maybe_unused]] const RHI::ResultCode resultCode = image->ExpandMipChain();
                         AZ_Warning("StreamingImageController", resultCode == RHI::ResultCode::Success, "Failed to expand mip chain for streaming image.");
                     }
                     context->m_queuedForMipExpand = false;

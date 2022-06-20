@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
@@ -18,7 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
@@ -121,7 +119,7 @@ namespace AZ
          */
         MessageOutcome FrameGraphCompiler::Compile(const FrameGraphCompileRequest& request)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Compile");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: Compile");
 
             MessageOutcome outcome = ValidateCompileRequest(request);
             if (!outcome)
@@ -146,7 +144,7 @@ namespace AZ
 
             /// [Phase 4] Compile platform-specific scope data after all attachments and views have been compiled.
             {
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: Scope Compile");
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: Scope Compile");
 
                 for (Scope* scope : frameGraph.GetScopes())
                 {
@@ -162,7 +160,7 @@ namespace AZ
             FrameGraph& frameGraph,
             FrameSchedulerCompileFlags compileFlags)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileQueueCentricScopeGraph");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileQueueCentricScopeGraph");
 
             const bool disableAsyncQueues = CheckBitsAll(compileFlags, FrameSchedulerCompileFlags::DisableAsyncQueues);
             if (disableAsyncQueues)
@@ -289,7 +287,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             /**
              * Each attachment declares which queue classes it can be used on. We require that the first scope be on the most
@@ -480,7 +478,7 @@ namespace AZ
                 return;
             }
 
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileTransientAttachments");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileTransientAttachments");
 
             ExtendTransientAttachmentAsyncQueueLifetimes(frameGraph, compileFlags);
 
@@ -628,7 +626,7 @@ namespace AZ
 
                     case Action::DeactivateBuffer:
                     {
-                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRenderer(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                         transientBuffers[attachmentIndex] = nullptr;
@@ -637,7 +635,7 @@ namespace AZ
 
                     case Action::DeactivateImage:
                     {
-                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRenderer(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                         transientImages[attachmentIndex] = nullptr;
@@ -769,7 +767,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphCompiler: CompileResourceViews");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceViews");
 
             for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
             {

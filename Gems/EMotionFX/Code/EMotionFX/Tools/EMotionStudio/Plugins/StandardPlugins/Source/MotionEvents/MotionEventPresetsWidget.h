@@ -13,8 +13,6 @@
 #include <EMotionStudio/EMStudioSDK/Source/MotionEventPresetManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <MysticQt/Source/DialogStack.h>
 #include <QLabel>
 #include <QTableWidget>
@@ -46,7 +44,7 @@ namespace EMStudio
         void Init();
         void UpdateInterface();
 
-        QTableWidget* GetMotionEventPresetsTable()                                                          { return mTableWidget; }
+        QTableWidget* GetMotionEventPresetsTable()                                                          { return m_tableWidget; }
 
     public slots:
         void ReInit();
@@ -93,12 +91,12 @@ namespace EMStudio
             }
         };
 
-        DragTableWidget* mTableWidget = nullptr;
+        DragTableWidget* m_tableWidget = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
         QAction* m_saveAction = nullptr;
         QAction* m_saveAsAction = nullptr;
         QAction* m_loadAction = nullptr;
-        MotionEventsPlugin* mPlugin = nullptr;
+        MotionEventsPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

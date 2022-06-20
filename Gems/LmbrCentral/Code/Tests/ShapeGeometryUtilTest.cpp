@@ -94,6 +94,39 @@ namespace UnitTest
         EXPECT_TRUE(triangles.size() == 18);
     }
 
+    // thin
+    TEST_F(ShapeGeometryUtilTest, GenerateTrianglesThin)
+    {
+        // given a series of vertices that are known to cause an infinite loop in the past
+        // due to numerical precision issues with very thin triangles
+        AZStd::vector<AZ::Vector3> triangles =
+            LmbrCentral::GenerateTriangles(
+            {
+                AZ::Vector2( 2.00000000f, -1.50087357f),
+                AZ::Vector2( 2.00000000f, -1.24706364f),
+                AZ::Vector2( 1.99930608f, -0.999682188f),
+                AZ::Vector2( 1.99859631f, -0.746669292f),
+                AZ::Vector2( 1.99789453f, -0.496492654f),
+                AZ::Vector2( 1.89999998f, 34.4000015f),
+                AZ::Vector2( 1.95483327f, 0.787139893f),
+                AZ::Vector2( 1.95505607f, 0.650562286f),
+                AZ::Vector2( 1.95553458f, 0.357242584f),
+                AZ::Vector2( 1.95596826f, 0.0913925171f),
+                AZ::Vector2( 1.95620418f, -0.0532035828f),
+                AZ::Vector2( 1.95642424f, -0.188129425f),
+                AZ::Vector2( 1.95684254f, -0.444545746f),
+                AZ::Vector2( 1.95693028f, -0.498298645f),
+                AZ::Vector2( 1.95734584f, -0.753005981f),
+                AZ::Vector2( 1.95775008f, -1.00079727f),
+                AZ::Vector2( 1.95814919f, -1.24542999f),
+                AZ::Vector2( 1.95856297f, -1.49910200f)
+            }
+        );
+
+        // expect the algorithm completes and produces triangles (num verts - 2) * 3
+        EXPECT_TRUE(triangles.size() == 48);
+    }
+
     // test double to record if DrawTrianglesIndexed or DrawLines are called
     class DebugShapeDebugDisplayRequests : public AzFramework::DebugDisplayRequests
     {

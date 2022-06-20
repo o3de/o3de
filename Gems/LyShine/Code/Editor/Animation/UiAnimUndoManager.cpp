@@ -6,11 +6,10 @@
  *
  */
 
-
 #include "UiAnimUndoManager.h"
 #include "UiAnimUndoObject.h"
 #include "Undo/IUndoManagerListener.h"
-#include <list>
+#include <CryCommon/StlUtils.h>
 
 // UI Editor
 #include "EditorCommon.h"
@@ -59,7 +58,7 @@ public:
     virtual bool IsEmpty() const { return m_undoObjects.empty(); };
     virtual void Undo(bool bUndo)
     {
-        for (int i = m_undoObjects.size() - 1; i >= 0; i--)
+        for (int i = aznumeric_cast<int>(m_undoObjects.size()) - 1; i >= 0; i--)
         {
             m_undoObjects[i]->Undo(bUndo);
         }

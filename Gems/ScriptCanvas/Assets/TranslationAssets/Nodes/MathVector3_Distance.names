@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{2326F5E9-022F-5754-9A65-8E4BBD712A5A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Distance",
+                "category": "Math/Vector3",
+                "tooltip": "returns the distance from B to A, that is the magnitude of the vector (A - B)"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_A_0",
+                    "details": {
+                        "name": "A"
+                    }
+                },
+                {
+                    "base": "DataInput_B_1",
+                    "details": {
+                        "name": "B"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

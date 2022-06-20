@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
@@ -83,7 +84,7 @@ namespace AZ
             size_t GetMipCount(size_t mipChainIndex) const;
 
             //! Get image data for specified mip and slice. It may return empty array if its mipchain assets are not loaded
-            AZStd::array_view<uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
+            AZStd::span<const uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
 
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
             const Data::AssetId& GetPoolAssetId() const;
@@ -96,6 +97,12 @@ namespace AZ
 
             //! Returns the total size of pixel data across all mips, both in this StreamingImageAsset and in all child ImageMipChainAssets. 
             size_t GetTotalImageDataSize() const;
+
+            //! Returns the average color of this image (alpha-weighted in case of 4-component images).
+            Color GetAverageColor() const;
+
+            //! Returns the image descriptor for the specified mip level.
+            RHI::ImageDescriptor GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const;
 
         private:
             struct MipChain
@@ -114,7 +121,7 @@ namespace AZ
             // The tail mip chain asset reference is empty since the data is embedded in m_tailMipChain.
             AZStd::fixed_vector<MipChain, RHI::Limits::Image::MipCountMax> m_mipChains;
 
-            // The tail mip chain data which is embedded in this SreamingImageAsset
+            // The tail mip chain data which is embedded in this StreamingImageAsset
             // The tail mip chain is required at initialization time. This is so the pool can initialize the RHI image with valid,
             // albeit low-resolution, content.
             ImageMipChainAsset m_tailMipChain;
@@ -127,6 +134,15 @@ namespace AZ
             uint32_t m_totalImageDataSize = 0;
 
             StreamingImageFlags m_flags = StreamingImageFlags::None;
+
+            // Cached value of the average color of this image (alpha-weighted average in case of 4-component images)
+            AZ::Color m_averageColor = AZ::Color(AZStd::numeric_limits<float>::quiet_NaN());
+
+            //! Helper method for retrieving the ImageMipChainAsset for a given
+            //! mip level. The public method GetMipChainAsset takes in the
+            //! mip chain index, not the level. And will fail for any level
+            //! that resides in the tail mip chain.
+            const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
         };
     }
 }

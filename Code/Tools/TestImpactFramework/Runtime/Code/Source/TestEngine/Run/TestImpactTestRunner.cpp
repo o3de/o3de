@@ -6,11 +6,10 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/IO/SystemFile.h>
@@ -28,7 +27,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         AZStd::optional<ClientJobCallback> clientCallback)
     {
-        const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
+        const auto payloadGenerator = [](const JobDataMap& jobDataMap)
         {
             PayloadMap<Job> runs;
             for (const auto& [jobId, jobData] : jobDataMap)

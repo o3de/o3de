@@ -62,7 +62,7 @@ namespace AZ
                 // so they can be separated by engine code instead.
                 bool foundTextureCoordinates = false;
                 AZStd::array<int, AI_MAX_NUMBER_OF_TEXTURECOORDS> meshesPerTextureCoordinateIndex = {};
-                for (int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
+                for (unsigned int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
                     for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
@@ -88,7 +88,7 @@ namespace AZ
                     AZ_Error(
                         Utilities::ErrorWindow,
                         meshesPerTextureCoordinateIndex[texCoordIndex] == 0 ||
-                            meshesPerTextureCoordinateIndex[texCoordIndex] == currentNode->mNumMeshes,
+                            meshesPerTextureCoordinateIndex[texCoordIndex] == static_cast<int>(currentNode->mNumMeshes),
                         "Texture coordinate index %d for node %s is not on all meshes on this node. "
                             "Placeholder arbitrary texture values will be generated to allow the data to process, but the source art "
                             "needs to be fixed to correct this. All meshes on this node should have the same number of texture coordinate channels.",
@@ -110,33 +110,33 @@ namespace AZ
                     uvMap->ReserveContainerSpace(vertexCount);
                     bool customNameFound = false;
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
-                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                    for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
                         const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         if(mesh->mTextureCoords[texCoordIndex])
                         {
-                            if (mesh->mTextureCoordsNames[texCoordIndex].length > 0)
+                            if (mesh->HasTextureCoordsName(texCoordIndex))
                             {
                                 if (!customNameFound)
                                 {
-                                    name = mesh->mTextureCoordsNames[texCoordIndex].C_Str();
+                                    name = mesh->GetTextureCoordsName(texCoordIndex)->C_Str();
                                     customNameFound = true;
                                 }
                                 else
                                 {
                                     AZ_Warning(Utilities::WarningWindow,
-                                        strcmp(name.c_str(), mesh->mTextureCoordsNames[texCoordIndex].C_Str()) == 0,
+                                        strcmp(name.c_str(), mesh->GetTextureCoordsName(texCoordIndex)->C_Str()) == 0,
                                         "Node %s has conflicting mesh coordinate names at index %d, %s and %s. Using %s.",
                                         currentNode->mName.C_Str(),
                                         texCoordIndex,
                                         name.c_str(),
-                                        mesh->mTextureCoordsNames[texCoordIndex].C_Str(),
+                                        mesh->GetTextureCoordsName(texCoordIndex)->C_Str(),
                                         name.c_str());
                                 }
                             }
                         }
 
-                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                         {
                             if (mesh->mTextureCoords[texCoordIndex])
                             {

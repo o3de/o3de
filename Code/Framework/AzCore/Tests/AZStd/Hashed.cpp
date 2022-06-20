@@ -18,11 +18,11 @@
 #include <benchmark/benchmark.h>
 #endif // HAVE_BENCHMARK
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+    
     AZ_HAS_MEMBER(HashValidate, validate, void, ());
 
     /**
@@ -285,6 +285,55 @@ namespace UnitTest
         {
             EXPECT_EQ(101, *iter2);
         }
+    }
+
+    TEST_F(HashedContainers, HashTable_InsertionDuplicateOnRehash)
+    {
+        struct TwoPtrs
+        {
+            void* m_ptr1;
+            void* m_ptr2;
+
+            bool operator==(const TwoPtrs& other) const
+            {
+                if (m_ptr1 == other.m_ptr1)
+                {
+                    return m_ptr2 == other.m_ptr2;
+                }
+                else if (m_ptr1 == other.m_ptr2)
+                {
+                    return m_ptr2 == other.m_ptr1;
+                }
+                return false;
+            }
+        };
+
+        // This hashing function produces different hashes for two equal values,
+        // which violates the requirement for hashing functions.
+        // The test makes sure that this does not reproduce an issue that caused the insert() function to loop infinitely.
+        struct TwoPtrsHasher
+        {
+            size_t operator()(const TwoPtrs& p) const
+            {
+                size_t hash{ 0 };
+                AZStd::hash_combine(hash, p.m_ptr1, p.m_ptr2);
+                return hash;
+            }
+        };
+        using PairSet = AZStd::unordered_set<TwoPtrs, TwoPtrsHasher>;
+        PairSet set;
+        set.insert({ (void*)1, (void*)2 });
+        set.insert({ (void*)3, (void*)4 });
+        set.insert({ (void*)5, (void*)6 });
+        set.insert({ (void*)7, (void*)8 });
+        // Elements with different hashes, but equal
+        set.insert({ (void*)0x000001ceddd9ca20, (void*)0x000001ceddd9cba0 }); // hash(148335135725641)
+        set.insert({ (void*)0x000001ceddd9cba0, (void*)0x000001ceddd9ca20 }); // hash(148335135764189)
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        // This will trigger the assertion of duplicated elements found
+        // A bucket size of 23 since is where the collision between different hashes happens
+        set.rehash(23);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // 1 assertion
     }
 
     TEST_F(HashedContainers, HashTable_Fixed)
@@ -1351,7 +1400,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1364,7 +1413,7 @@ namespace UnitTest
         >;
     TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1386,7 +1435,7 @@ namespace UnitTest
                 }
             }, ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     template<typename ContainerType>
     class HashedMapContainers
@@ -1749,7 +1798,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
@@ -1762,7 +1811,7 @@ namespace UnitTest
     >;
     TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TYPED_TEST(HashedMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
     {
         using ContainerType = typename TypeParam::ContainerType;
@@ -1784,7 +1833,7 @@ namespace UnitTest
             }
         } , ".*");
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 
     namespace HashedContainerTransparentTestInternal
     {
@@ -2051,8 +2100,8 @@ namespace UnitTest
         typename TypeParam::ContainerType container;
         container.emplace(-2352);
         container.emplace(3534);
-        container.emplace(1535408957);
-        container.emplace(3310556522);
+        container.emplace(535408957);
+        container.emplace(1310556522);
         container.emplace(55546193);
         container.emplace(1582);
 

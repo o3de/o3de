@@ -323,6 +323,13 @@ namespace AzFramework
         return localZ;
     }
 
+    void TransformComponent::SetWorldRotation(const AZ::Vector3& eulerAnglesRadian)
+    {
+        AZ::Transform newWorldTransform = m_worldTM;
+        newWorldTransform.SetRotation(AZ::Quaternion::CreateFromEulerAnglesRadians(eulerAnglesRadian));
+        SetWorldTM(newWorldTransform);
+    }
+
     void TransformComponent::SetWorldRotationQuaternion(const AZ::Quaternion& quaternion)
     {
         AZ::Transform newWorldTransform = m_worldTM;
@@ -527,7 +534,7 @@ namespace AzFramework
 
     void TransformComponent::SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
     {
-        if (parentId == GetEntityId())
+        if (GetEntity() && parentId == GetEntityId())
         {
             AZ_Warning("TransformComponent", false, "An entity can not be set as its own parent.");
             return;
@@ -750,10 +757,13 @@ namespace AzFramework
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
                 ->Event("IsStaticTransform", &AZ::TransformBus::Events::IsStaticTransform)
+                ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ;
 
             behaviorContext->Constant("TransformComponentTypeId", BehaviorConstant(AZ::TransformComponentTypeId));
-            behaviorContext->Constant("EditorTransformComponentTypeId", BehaviorConstant(AZ::EditorTransformComponentTypeId));
+            behaviorContext->ConstantProperty("EditorTransformComponentTypeId", BehaviorConstant(AZ::EditorTransformComponentTypeId))
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ;
 
             behaviorContext->Class<AZ::TransformConfig>()
                 ->Attribute(AZ::Script::Attributes::ConstructorOverride, &AZ::TransformConfigConstructor)

@@ -13,7 +13,7 @@
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -75,7 +75,7 @@ namespace AZ
         };
 
         using PassRequestList = AZStd::vector<PassRequest>;
-        using PassRequestListView = AZStd::array_view<PassRequest>;
+        using PassRequestListView = AZStd::span<const PassRequest>;
 
     }   // namespace RPI
 }   // namespace AZ

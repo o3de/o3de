@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "SurfaceMaskDepthFilterComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Surface Mask Depth Filter Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetSurfaceMaskDepthFilterComponentTypeId",
+                    "details": {
+                        "name": "Get Surface Mask Depth Filter Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

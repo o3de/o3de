@@ -56,7 +56,7 @@ namespace AZ
             return m_byteStride;
         }
 
-        bool ValidateStreamBufferViews(const RHI::InputStreamLayout& inputStreamLayout, AZStd::array_view<RHI::StreamBufferView> streamBufferViews)
+        bool ValidateStreamBufferViews(const RHI::InputStreamLayout& inputStreamLayout, AZStd::span<const RHI::StreamBufferView> streamBufferViews)
         {
             bool ok = true;
 

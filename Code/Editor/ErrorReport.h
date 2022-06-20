@@ -17,8 +17,8 @@
 // forward declarations.
 class CParticleItem;
 
-#include "BaseLibraryItem.h"
 #include "Objects/BaseObject.h"
+#include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
 #include "ErrorRecorder.h"
 
@@ -56,16 +56,13 @@ public:
     int count;
     //! Object that caused this error.
     _smart_ptr<CBaseObject> pObject;
-    //! Library Item that caused this error.
-    _smart_ptr<CBaseLibraryItem> pItem;
     int flags;
 
     CErrorRecord(CBaseObject* object, ESeverity _severity, const QString& _error, int _flags = 0, int _count = 0,
-        CBaseLibraryItem* item = 0, EValidatorModule _module = VALIDATOR_MODULE_EDITOR)
+        EValidatorModule _module = VALIDATOR_MODULE_EDITOR)
         : severity(_severity)
         , module(_module)
         , pObject(object)
-        , pItem(item)
         , flags(_flags)
         , count(_count)
         , error(_error)
@@ -77,7 +74,6 @@ public:
         severity = ESEVERITY_WARNING;
         module = VALIDATOR_MODULE_EDITOR;
         pObject = 0;
-        pItem = 0;
         flags = 0;
         count = 0;
     }
@@ -105,7 +101,7 @@ public:
     bool IsEmpty() const;
 
     //! Get number of contained error records.
-    int GetErrorCount() const { return m_errors.size(); };
+    int GetErrorCount() const { return static_cast<int>(m_errors.size()); };
     //! Get access to indexed error record.
     CErrorRecord& GetError(int i);
     //! Clear all error records.
@@ -116,15 +112,8 @@ public:
 
     //! Assign current Object to which new reported warnings are assigned.
     void SetCurrentValidatorObject(CBaseObject* pObject);
-    //! Assign current Item to which new reported warnings are assigned.
-    void SetCurrentValidatorItem(CBaseLibraryItem* pItem);
     //! Assign current filename.
     void SetCurrentFile(const QString& file);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Implement IValidator interface.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void Report(SValidatorRecord& record);
 
 private:
     //! Array of all error records added to report.
@@ -132,7 +121,6 @@ private:
     bool m_bImmediateMode;
     bool m_bShowErrors;
     _smart_ptr<CBaseObject> m_pObject;
-    _smart_ptr<CBaseLibraryItem> m_pItem;
     CParticleItem* m_pParticle;
     QString m_currentFilename;
 };

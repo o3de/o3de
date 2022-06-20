@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{7809B038-3F50-533D-8AEF-35CDBDDFCA71}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Shortest Arc",
+                "category": "Math/Quaternion",
+                "tooltip": "creates a rotation representing the shortest arc between From and To"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_From_0",
+                    "details": {
+                        "name": "From"
+                    }
+                },
+                {
+                    "base": "DataInput_To_1",
+                    "details": {
+                        "name": "To"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

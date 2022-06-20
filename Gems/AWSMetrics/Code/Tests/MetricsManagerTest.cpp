@@ -75,6 +75,23 @@ namespace AZ
 
 namespace AWSMetrics
 {
+    class MetricsManagerMock
+        : public MetricsManager
+    {
+    private:
+        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue) override
+        {
+            if (AZ::IO::FileIOBase::GetInstance())
+            {
+                return AZ::Success();
+            }
+            else
+            {
+                return AZ::Failure(AZStd::string{ "Invalid File IO" });
+            }
+        }
+    };
+
     class AWSMetricsNotificationBusMock
         : protected AWSMetricsNotificationBus::Handler
     {
@@ -134,13 +151,11 @@ namespace AWSMetrics
             AWSMetricsGemAllocatorFixture::SetUp();
             AWSMetricsRequestBus::Handler::BusConnect();
 
-            m_metricsManager = AZStd::make_unique<MetricsManager>();
+            m_metricsManager = AZStd::make_unique<MetricsManagerMock>();
             AZStd::string configFilePath = CreateClientConfigFile(true, (double) TestMetricsEventSizeInBytes / MbToBytes * 2, DefaultFlushPeriodInSeconds, 0);
             m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
             m_metricsManager->Init();
 
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            
             ReplaceLocalFileIOWithMockIO();
         }
 
@@ -149,8 +164,6 @@ namespace AWSMetrics
             RevertMockIOToLocalFileIO();
 
             RemoveFile(GetDefaultTestFilePath());
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            RemoveDirectory(m_metricsManager->GetMetricsFileDirectory());
 
             m_metricsManager.reset();
 
@@ -233,7 +246,7 @@ namespace AWSMetrics
             }   
         }
 
-        AZStd::unique_ptr<MetricsManager> m_metricsManager;
+        AZStd::unique_ptr<MetricsManagerMock> m_metricsManager;
         AWSMetricsNotificationBusMock m_notifications;
 
         AZ::IO::FileIOBase* m_fileIOMock;
@@ -290,7 +303,7 @@ namespace AWSMetrics
 
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
-            producers.emplace_back(AZStd::thread([this, index]()
+            producers.emplace_back(AZStd::thread([index]()
             {
                 AZStd::vector<MetricsAttribute> metricsAttributes;
                 metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
@@ -417,14 +430,14 @@ namespace AWSMetrics
         ReplaceLocalFileIOWithMockIO();
     }
 
-    TEST_F(MetricsManagerTest, OnResponseReceived_WithResponseRecords_RetryFailedMetrics)
+    TEST_F(MetricsManagerTest, OnResponseReceived_WithResponseEntries_RetryFailedMetrics)
     {
         // Reset the config file to change the max queue size setting.
         ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
             DefaultFlushPeriodInSeconds, 1);
 
         MetricsQueue metricsEvents;
-        ServiceAPI::MetricsEventSuccessResponsePropertyEvents responseRecords;
+        ServiceAPI::PostMetricsEventsResponseEntries responseEntries;
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             MetricsEvent newEvent;
@@ -432,19 +445,19 @@ namespace AWSMetrics
 
             metricsEvents.AddMetrics(newEvent);
 
-            ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
+            ServiceAPI::PostMetricsEventsResponseEntry responseEntry;
             if (index % 2 == 0)
             {
-                responseRecord.errorCode = "Error";
+                responseEntry.m_errorCode = "Error";
             }
             else
             {
-                responseRecord.result = "Ok";
+                responseEntry.m_result = "Ok";
             }
-            responseRecords.emplace_back(responseRecord);
+            responseEntries.emplace_back(responseEntry);
         }
 
-        m_metricsManager->OnResponseReceived(metricsEvents, responseRecords);
+        m_metricsManager->OnResponseReceived(metricsEvents, responseEntries);
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
         EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
@@ -452,13 +465,13 @@ namespace AWSMetrics
         EXPECT_EQ(stats.m_numErrors, MaxNumMetricsEvents / 2);
         EXPECT_EQ(stats.m_numDropped, 0);
 
-        int metricsEventSize = sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue);
+        int metricsEventSize = static_cast<int>(sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue));
         EXPECT_EQ(stats.m_sendSizeInBytes, metricsEventSize * MaxNumMetricsEvents / 2);
 
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);
     }
 
-    TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseRecords_RetryAllMetrics)
+    TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseEntries_RetryAllMetrics)
     {
         // Reset the config file to change the max queue size setting.
         ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,

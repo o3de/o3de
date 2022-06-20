@@ -11,6 +11,7 @@
 #include "CreateNodeMimeEvent.h"
 
 #include <ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
+#include "TranslationGeneration.h"
 
 namespace ScriptCanvasEditor
 {
@@ -61,6 +62,9 @@ namespace ScriptCanvasEditor
         bool IsOverload() const;
 
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         bool m_isOverload;
@@ -153,6 +157,9 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::EBusBusId GetBusId() const;
         ScriptCanvas::EBusEventId GetEventId() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         AZStd::string m_busName;

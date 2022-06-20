@@ -25,6 +25,9 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
+
+            // Return a default fallback image if an asset is missing
+            Data::AssetId AssetMissingInCatalog(const Data::Asset<Data::AssetData>& /*asset*/) override;
         };
     }
 }

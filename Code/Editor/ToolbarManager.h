@@ -87,6 +87,7 @@ public:
     const QString& GetTranslatedName() const { return m_translatedName; }
 
     void AddAction(int actionId, int toolbarVersionAdded = 0);
+    void AddWidget(QWidget* widget, int actionId, int toolbarVersionAdded = 0);
 
     QToolBar* Toolbar() const { return m_toolbar; }
 
@@ -117,6 +118,7 @@ private:
     {
         int actionId;
         int toolbarVersionAdded;
+        QWidget* widget;
 
         bool operator ==(const AmazonToolbar::ActionData& other) const
         {
@@ -133,7 +135,9 @@ private:
 class AmazonToolBarExpanderWatcher;
 
 class ToolbarManager
+    : public QObject
 {
+    Q_OBJECT
 public:
     explicit ToolbarManager(ActionManager* actionManager, MainWindow* mainWindow);
     ~ToolbarManager();
@@ -177,6 +181,8 @@ private:
     void InitializeStandardToolbars();
     void UpdateAllowedAreas(QToolBar* toolbar);
     bool IsDirty(const AmazonToolbar& toolbar) const;
+
+    QMenu* CreatePlayButtonMenu() const;
 
     const AmazonToolbar* FindDefaultToolbar(const QString& toolbarName) const;
     AmazonToolbar* FindToolbar(const QString& toolbarName);

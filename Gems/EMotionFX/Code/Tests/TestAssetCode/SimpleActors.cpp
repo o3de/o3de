@@ -15,6 +15,8 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/MeshFactory.h>
 
+#include <numeric>
+
 namespace EMotionFX
 {
     SimpleJointChainActor::SimpleJointChainActor(size_t jointCount, const char* name)
@@ -31,7 +33,7 @@ namespace EMotionFX
             AddNode(i, ("joint" + AZStd::to_string(i)).c_str(), i - 1);
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }
@@ -44,7 +46,7 @@ namespace EMotionFX
             AddNode(i, ("rootJoint" + AZStd::to_string(i)).c_str());
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }
@@ -87,7 +89,7 @@ namespace EMotionFX
             AddNode(i, ("joint" + AZStd::to_string(i)).c_str(), i - 1);
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }

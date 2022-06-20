@@ -61,7 +61,7 @@ namespace AZ
                     ImGui::Text("%d", request.m_requestCount);
                     ImGui::NextColumn();
 
-                    ImGui::Text(request.m_shaderName.GetCStr());
+                    ImGui::Text("%s", request.m_shaderName.GetCStr());
                     ImGui::NextColumn();
 
                     ImGui::Text("%d", request.m_shaderVariantStableId.GetIndex());

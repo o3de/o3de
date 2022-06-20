@@ -9,7 +9,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzTest/AzTest.h>
 
 #include <ScriptCanvas/AWSScriptBehaviorsComponent.h>
 #include <TestFramework/AWSCoreFixture.h>
@@ -17,11 +16,12 @@
 using namespace AWSCore;
 
 class AWSScriptBehaviorsComponentTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
 {
 public:
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_serializeContext->CreateEditContext();
         m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
@@ -39,6 +39,7 @@ public:
         m_componentDescriptor.reset();
         m_behaviorContext.reset();
         m_serializeContext.reset();
+        AWSCoreFixture::TearDownFixture();
     }
 
 protected:
@@ -51,7 +52,7 @@ protected:
 
 TEST_F(AWSScriptBehaviorsComponentTest, Reflect)
 {
-    int oldEBusNum = m_behaviorContext->m_ebuses.size();
+    int oldEBusNum = static_cast<int>(m_behaviorContext->m_ebuses.size());
     m_componentDescriptor.reset(AWSScriptBehaviorsComponent::CreateDescriptor());
     m_componentDescriptor->Reflect(m_serializeContext.get());
     m_componentDescriptor->Reflect(m_behaviorContext.get());

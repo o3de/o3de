@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -14,25 +15,21 @@
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
 #include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 #include <MCore/Source/AzCoreConversions.h>
 
 
 namespace EMotionFX
 {
-    float RagdollNodeInspectorPlugin::s_scale = 0.1f;
-    AZ::u32 RagdollNodeInspectorPlugin::s_angularSubdivisions = 32;
-    AZ::u32 RagdollNodeInspectorPlugin::s_radialSubdivisions = 2;
-
     RagdollNodeInspectorPlugin::RagdollNodeInspectorPlugin()
         : EMStudio::DockWidgetPlugin()
         , m_nodeWidget(nullptr)
@@ -44,32 +41,21 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* RagdollNodeInspectorPlugin::Clone()
-    {
-        RagdollNodeInspectorPlugin* newPlugin = new RagdollNodeInspectorPlugin();
-        return newPlugin;
-    }
-
-    bool RagdollNodeInspectorPlugin::PhysXGemAvailable() const
+    bool RagdollNodeInspectorPlugin::IsPhysXGemAvailable() const
     {
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (serializeContext)
-        {
-            // TypeId of D6JointLimitConfiguration
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(AZ::TypeId::CreateString("{90C5C23D-16C0-4F23-AD50-A190E402388E}"));
-            if (classData && ColliderHelpers::AreCollidersReflected())
-            {
-                return true;
-            }
-        }
 
-        return false;
+        // TypeId of PhysX::SystemComponent
+        const char* typeIDPhysXSystem = "{85F90819-4D9A-4A77-AB89-68035201F34B}";
+
+        return serializeContext
+            && serializeContext->FindClassData(AZ::TypeId::CreateString(typeIDPhysXSystem));
     }
 
     bool RagdollNodeInspectorPlugin::Init()
     {
-        if (PhysXGemAvailable())
+        if (IsPhysXGemAvailable() && ColliderHelpers::AreCollidersReflected())
         {
             m_nodeWidget = new RagdollNodeWidget();
             m_nodeWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -80,13 +66,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_nodeWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the Project Manager."));
         }
 
         return true;
@@ -415,179 +401,5 @@ namespace EMotionFX
         {
             AZ_Error("EMotionFX", false, result.c_str());
         }
-    }
-
-    void RagdollNodeInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_RAGDOLL_COLLIDERS);
-        const bool renderJointLimits = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_RAGDOLL_JOINTLIMITS);
-        if (!renderColliders && !renderJointLimits)
-        {
-            return;
-        }
-
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
-        const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
-        renderUtil->EnableLighting(false);
-
-        const AZ::u32 actorInstanceCount = GetActorManager().GetNumActorInstances();
-        for (AZ::u32 i = 0; i < actorInstanceCount; ++i)
-        {
-            ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
-            RenderRagdoll(actorInstance, renderColliders, renderJointLimits, renderPlugin, renderInfo);
-        }
-
-        renderUtil->RenderLines();
-        renderUtil->EnableLighting(oldLightingEnabled);
-    }
-
-    void RagdollNodeInspectorPlugin::RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        const Actor* actor = actorInstance->GetActor();
-        const Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numNodes = skeleton->GetNumNodes();
-        const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-        const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
-        const AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
-        const Physics::CharacterColliderConfiguration& colliderConfig = ragdollConfig.m_colliders;
-        const RagdollInstance* ragdollInstance = actorInstance->GetRagdollInstance();
-
-        EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-        const MCore::RGBAColor defaultColor = renderOptions->GetRagdollColliderColor();
-        const MCore::RGBAColor selectedColor = renderOptions->GetSelectedRagdollColliderColor();
-
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-
-        for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
-        {
-            const Node* joint = skeleton->GetNode(nodeIndex);
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-
-            AZ::Outcome<size_t> ragdollNodeIndex = AZ::Failure();
-            if (ragdollInstance)
-            {
-                ragdollNodeIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);
-            }
-            else
-            {
-                ragdollNodeIndex = ragdollConfig.FindNodeConfigIndexByName(joint->GetNameString());
-            }
-
-            if (!ragdollNodeIndex.IsSuccess())
-            {
-                continue;
-            }
-
-            const bool jointSelected = selectedJointIndices.empty() || selectedJointIndices.find(jointIndex) != selectedJointIndices.end();
-
-            MCore::RGBAColor finalColor;
-            if (jointSelected)
-            {
-                finalColor = selectedColor;
-            }
-            else
-            {
-                finalColor = defaultColor;
-            }
-
-            const Physics::RagdollNodeConfiguration& ragdollNode = ragdollNodes[ragdollNodeIndex.GetValue()];
-
-            if (renderColliders)
-            {
-                const Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = colliderConfig.FindNodeConfigByName(joint->GetNameString());
-                if (colliderNodeConfig)
-                {
-                    const AzPhysics::ShapeColliderPairList& colliders = colliderNodeConfig->m_shapes;
-                    ColliderContainerWidget::RenderColliders(colliders, actorInstance, joint, renderInfo, finalColor);
-                }
-            }
-
-            if (renderJointLimits && jointSelected)
-            {
-                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
-                if (jointLimitConfig)
-                {
-                    const Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
-                    if (ragdollParentNode)
-                    {
-                        RenderJointLimit(*jointLimitConfig, actorInstance, joint, ragdollParentNode, renderPlugin, renderInfo, finalColor);
-                        RenderJointFrame(*jointLimitConfig, actorInstance, joint, ragdollParentNode, renderInfo, finalColor);
-                    }
-                }
-            }
-        }
-    }
-
-    void RagdollNodeInspectorPlugin::RenderJointLimit(
-        const AzPhysics::JointConfiguration& configuration,
-        const ActorInstance* actorInstance,
-        const Node* node,
-        const Node* parentNode,
-        EMStudio::RenderPlugin* renderPlugin,
-        EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-        const MCore::RGBAColor& color)
-    {
-        const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-        const MCore::RGBAColor violatedColor = renderOptions->GetViolatedJointLimitColor();
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
-        const AZ::u32 parentNodeIndex = parentNode->GetNodeIndex();
-        const Transform& actorInstanceWorldTransform = actorInstance->GetWorldSpaceTransform();
-        const Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).mRotation;
-        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).mRotation;
-
-        m_vertexBuffer.clear();
-        m_indexBuffer.clear();
-        m_lineBuffer.clear();
-        m_lineValidityBuffer.clear();
-        if(auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
-        {
-            jointHelpers->GenerateJointLimitVisualizationData(
-                configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions, m_vertexBuffer,
-                m_indexBuffer, m_lineBuffer, m_lineValidityBuffer);
-        }           
-
-        Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
-        jointModelSpaceTransform.mPosition = currentPose->GetModelSpaceTransform(nodeIndex).mPosition;
-        const Transform jointGlobalTransformNoScale = jointModelSpaceTransform * actorInstanceWorldTransform;
-
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
-        const size_t numLineBufferEntries = m_lineBuffer.size();
-        if (m_lineValidityBuffer.size() * 2 != numLineBufferEntries)
-        {
-            AZ_ErrorOnce("EMotionFX", false, "Unexpected buffer size in joint limit visualization for node %s", node->GetName());
-            return;
-        }
-
-        for (size_t i = 0; i < numLineBufferEntries; i += 2)
-        {
-            renderUtil->RenderLine(jointGlobalTransformNoScale.TransformPoint(m_lineBuffer[i]),
-                jointGlobalTransformNoScale.TransformPoint(m_lineBuffer[i + 1]), m_lineValidityBuffer[i / 2] ? color : violatedColor);
-        }
-    }
-
-    void RagdollNodeInspectorPlugin::RenderJointFrame(
-        const AzPhysics::JointConfiguration& configuration,
-        const ActorInstance* actorInstance,
-        const Node* node,
-        const Node* parentNode,
-        EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-        const MCore::RGBAColor& color)
-    {
-        AZ_UNUSED(parentNode);
-
-        const Transform& actorInstanceWorldSpaceTransform = actorInstance->GetWorldSpaceTransform();
-        const Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const Transform childJointLocalSpaceTransform(AZ::Vector3::CreateZero(), configuration.m_childLocalRotation);
-        const Transform childModelSpaceTransform = childJointLocalSpaceTransform * currentPose->GetModelSpaceTransform(node->GetNodeIndex());
-        const Transform jointChildWorldSpaceTransformNoScale = (childModelSpaceTransform * actorInstanceWorldSpaceTransform);
-
-        renderInfo->mRenderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.mPosition, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
     }
 } // namespace EMotionFX

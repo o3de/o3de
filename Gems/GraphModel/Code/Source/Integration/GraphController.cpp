@@ -35,7 +35,7 @@
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/DataType.h>
 #include <GraphModel/Integration/BooleanDataInterface.h>
 #include <GraphModel/Integration/IntegerDataInterface.h>
@@ -280,6 +280,7 @@ namespace GraphModelIntegration
                 }
                 else
                 {
+                    AZ_UNUSED(this); // Prevent unused warning in release builds
                     AZ_Error(m_graph->GetSystemName(), false, "Failed to load position information for node [%d]", nodeId);
                 }
 
@@ -697,7 +698,10 @@ namespace GraphModelIntegration
         GraphModel::NodePtrList nodeList;
         for (auto nodeId : nodeIds)
         {
-            nodeList.push_back(m_elementMap.Find<GraphModel::Node>(nodeId));
+            if (GraphModel::NodePtr nodePtr = m_elementMap.Find<GraphModel::Node>(nodeId))
+            {
+                nodeList.push_back(nodePtr);
+            }
         }
 
         return nodeList;

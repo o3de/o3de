@@ -67,7 +67,7 @@ public:
     //! Set this gizmo to be deleted.
     void DeleteThis();
 
-    virtual CBaseObjectPtr GetBaseObject() const {  return NULL; }
+    virtual CBaseObjectPtr GetBaseObject() const {  return nullptr; }
 
 
 protected:

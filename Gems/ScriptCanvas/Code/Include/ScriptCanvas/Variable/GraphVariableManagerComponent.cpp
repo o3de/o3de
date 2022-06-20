@@ -220,7 +220,6 @@ namespace ScriptCanvas
         return AZ::Success(newId);
     }
 
-    // #functions2 slot<->variable add this to the graph, using the old datum
     AZ::Outcome<VariableId, AZStd::string> GraphVariableManagerComponent::AddVariable(AZStd::string_view name, const Datum& value, bool functionScope)
     {
         if (FindVariable(name))

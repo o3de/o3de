@@ -21,6 +21,7 @@ namespace AZStd
         1610612741ul, 3221225473ul, 4294967291ul
     };
 
+    // Bucket size suitable to hold n elements.
     AZStd::size_t hash_next_bucket_size(AZStd::size_t n)
     {
         const AZStd::size_t* first = prime_list;

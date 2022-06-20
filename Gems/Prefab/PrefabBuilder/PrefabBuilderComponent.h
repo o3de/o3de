@@ -14,7 +14,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <AzFramework/FileFunc/FileFunc.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <Fingerprinting/TypeFingerprinter.h>
@@ -29,6 +29,7 @@ namespace AZ::Prefab
     public:
         static constexpr const char* BuilderId = "{A2E0791C-4607-4363-A7FD-73D01ED49660}";
         static constexpr const char* PrefabJobKey = "Prefabs";
+        static constexpr const char* ConfigKey = "GameObjectCreation";
 
         AZ_COMPONENT(PrefabBuilderComponent, BuilderId);
         static void Reflect(AZ::ReflectContext* context);
@@ -53,7 +54,7 @@ namespace AZ::Prefab
             const AzToolsFramework::Prefab::PrefabDom& genericDocument);
         bool ProcessPrefab(
             const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
-            AzToolsFramework::Prefab::PrefabDom& mutableRootDom,
+            AzToolsFramework::Prefab::PrefabDom&& rootDom,
             AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts);
 
     protected:

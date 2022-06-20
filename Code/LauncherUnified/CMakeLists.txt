@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 include(${pal_dir}/LauncherUnified_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -94,3 +94,26 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
+################################################################################
+# Install
+################################################################################
+
+ly_install_files(
+    FILES
+        launcher_generator.cmake
+        launcher_project_files.cmake
+        LauncherProject.cpp
+        StaticModules.in
+    DESTINATION LauncherGenerator
+)
+ly_install_directory(
+    DIRECTORIES 
+        Platform/${PAL_PLATFORM_NAME}
+        Platform/Common
+    DESTINATION LauncherGenerator/Platform
+    VERBATIM
+)
+ly_install_files(
+    FILES FindLauncherGenerator.cmake
+    DESTINATION cmake
+)

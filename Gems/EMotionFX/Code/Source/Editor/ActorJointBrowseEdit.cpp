@@ -64,9 +64,9 @@ namespace EMStudio
         m_previouslySelectedJoints = m_selectedJoints;
 
         m_jointSelectionWindow = new NodeSelectionWindow(this, m_singleJointSelection);
-        connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), qOverload<MCore::Array<SelectionItem>>(&NodeHierarchyWidget::OnSelectionDone), this, &ActorJointBrowseEdit::OnSelectionDoneMCoreArray);
         connect(m_jointSelectionWindow, &NodeSelectionWindow::rejected, this, &ActorJointBrowseEdit::OnSelectionRejected);
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &ActorJointBrowseEdit::OnSelectionChanged);
+        connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &ActorJointBrowseEdit::OnSelectionDone);
 
         NodeSelectionWindow::connect(m_jointSelectionWindow, &QDialog::finished, [=]([[maybe_unused]] int resultCode)
             {
@@ -118,12 +118,6 @@ namespace EMStudio
         emit SelectionDone(selectedJoints);
     }
 
-    void ActorJointBrowseEdit::OnSelectionDoneMCoreArray(const MCore::Array<SelectionItem>& selectedJoints)
-    {
-        AZStd::vector<SelectionItem> convertedSelection = FromMCoreArray(selectedJoints);
-        OnSelectionDone(convertedSelection);
-    }
-
     void ActorJointBrowseEdit::OnSelectionChanged()
     {
         if (m_jointSelectionWindow)
@@ -161,8 +155,8 @@ namespace EMStudio
         EMotionFX::Actor* actor = selectionList.GetSingleActor();
         if (actor)
         {
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance2 = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (actorInstance2->GetActor() == actor)
@@ -175,15 +169,4 @@ namespace EMStudio
         return nullptr;
     }
 
-    AZStd::vector<SelectionItem> ActorJointBrowseEdit::FromMCoreArray(const MCore::Array<SelectionItem>& in) const
-    {
-        const AZ::u32 numItems = in.GetLength();
-        AZStd::vector<SelectionItem> result(static_cast<size_t>(numItems));
-        for (AZ::u32 i = 0; i < numItems; ++i)
-        {
-            result[static_cast<size_t>(i)] = in[i];
-        }
-
-        return result;
-    }
 } // namespace EMStudio

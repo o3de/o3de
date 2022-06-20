@@ -11,6 +11,4 @@ set(FILES
     XMLBinaryNode.h
     XMLBinaryReader.cpp
     XMLBinaryReader.h
-    XMLBinaryWriter.cpp
-    XMLBinaryWriter.h
 )

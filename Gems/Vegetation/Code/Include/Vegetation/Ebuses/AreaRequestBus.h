@@ -56,12 +56,12 @@ namespace Vegetation
         ClaimHandle m_handle;
         AZ::Vector3 m_position;
         AZ::Vector3 m_normal;
-        SurfaceData::SurfaceTagWeightMap m_masks;
+        SurfaceData::SurfaceTagWeights m_masks;
     };
 
     struct ClaimContext
     {
-        SurfaceData::SurfaceTagWeightMap m_masks;
+        SurfaceData::SurfaceTagWeights m_masks;
         AZStd::vector<ClaimPoint> m_availablePoints;
         AZStd::function<bool(const ClaimPoint&, const InstanceData&)> m_existedCallback;
         AZStd::function<void(const ClaimPoint&, const InstanceData&)> m_createdCallback;

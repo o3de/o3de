@@ -39,16 +39,28 @@ namespace AZ
             //! Otherwise an attempt will be made to find or create a shared instance.
             void RebuildInstance();
 
+            //! Release asset and instance references
+            void Release();
+
+            //! Return true if contained assets have not been loaded
+            bool RequiresLoading() const;
+
+            //! Applies property overrides to material instance
+            bool ApplyProperties();
+
             //! Returns a string composed of the asset path.
             AZStd::string ToString() const;
 
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
+            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
             Data::Instance<RPI::Material> m_materialInstance;
             MaterialPropertyOverrideMap m_propertyOverrides;
             RPI::MaterialModelUvOverrideMap m_matModUvOverrides;
+            bool m_materialInstancePreCreated = false;
         };
 
         using MaterialAssignmentMap = AZStd::unordered_map<MaterialAssignmentId, MaterialAssignment>;
+        using MaterialAssignmentLabelMap = AZStd::unordered_map<MaterialAssignmentId, AZStd::string>;
         static const MaterialAssignment DefaultMaterialAssignment;
         static const MaterialAssignmentId DefaultMaterialAssignmentId;
         static const MaterialAssignmentMap DefaultMaterialAssignmentMap;
@@ -62,10 +74,20 @@ namespace AZ
             const MaterialAssignmentMap& materials, const MaterialAssignmentId& id);
 
         //! Utility function for generating a set of available material assignments in a model
-        MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model);
+        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
+
+        //! Get material slot labels from a model
+        MaterialAssignmentLabelMap GetMaterialSlotLabelsFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
 
         //! Find an assignment id corresponding to the lod and label substring filters
-        MaterialAssignmentId FindMaterialAssignmentIdInModel(
-            const Data::Instance<AZ::RPI::Model>& model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
+        MaterialAssignmentId GetMaterialSlotIdFromModelAsset(
+            const Data::Asset<AZ::RPI::ModelAsset> modelAsset,
+            const MaterialAssignmentLodIndex lodFilter,
+            const AZStd::string& labelFilter);
+
+        //! Special case handling to convert script values to supported types
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
+            const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value);
+
     } // namespace Render
 } // namespace AZ

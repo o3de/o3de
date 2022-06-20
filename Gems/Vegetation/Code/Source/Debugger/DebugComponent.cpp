@@ -334,16 +334,11 @@ void DebugComponent::FillSectorEnd([[maybe_unused]] int sectorX, [[maybe_unused]
 
 namespace DebugComponentUtilities
 {
-    constexpr uint32 RoundUpAndDivide(uint32 value, uint32 divide)
-    {
-        return (value + divide - 1) / divide;
-    }
-
     template <typename ValueType>
     union LocalAliasingUnion
     {
         ValueType aliasedValue;
-        AZStd::size_t aliasedValueArray[RoundUpAndDivide(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
+        AZStd::size_t aliasedValueArray[AZ::DivideAndRoundUp(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
     };
 
     template <typename ValueType>
@@ -599,8 +594,8 @@ namespace DebugUtility
                 timing.m_lowestTimeUs = AZ::GetMin<decltype(timing.m_lowestTimeUs)>(timeSpan, timing.m_lowestTimeUs);
                 timing.m_peakTimeUs = AZ::GetMax<decltype(timing.m_peakTimeUs)>(timeSpan, timing.m_peakTimeUs);
                 timing.m_totalUpdateTimeUs += timeSpan;
-                timing.m_numInstancesCreated += datum.m_numInstancesCreated;
-                timing.m_numClaimPointsRemaining += datum.m_numClaimPointsRemaining;
+                timing.m_numInstancesCreated += static_cast<AZ::u32>(datum.m_numInstancesCreated);
+                timing.m_numClaimPointsRemaining += static_cast<AZ::u32>(datum.m_numClaimPointsRemaining);
 
                 ++timing.m_totalCount;
                 timing.m_averageTimeUs = timing.m_totalUpdateTimeUs / timing.m_totalCount;
@@ -615,8 +610,8 @@ namespace DebugUtility
                 timing.m_peakTimeUs = timeSpan;
                 timing.m_averageTimeUs = timeSpan;
                 timing.m_totalUpdateTimeUs = timeSpan;
-                timing.m_numInstancesCreated = datum.m_numInstancesCreated;
-                timing.m_numClaimPointsRemaining = datum.m_numClaimPointsRemaining;
+                timing.m_numInstancesCreated = static_cast<AZ::u32>(datum.m_numInstancesCreated);
+                timing.m_numClaimPointsRemaining = static_cast<AZ::u32>(datum.m_numClaimPointsRemaining);
                 timing.m_totalCount = 1;
 
                 mergeData(datum, timing);
@@ -861,8 +856,9 @@ void DebugComponent::PrepareNextReport()
                                 0.0f);
 
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, pos, SurfaceData::SurfaceTagVector(), points);
-        timing.m_worldPosition = points.empty() ? pos : points.front().m_position;
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(pos, SurfaceData::SurfaceTagVector(), points);
+        constexpr size_t inPositionIndex = 0;
+        timing.m_worldPosition = points.IsEmpty(inPositionIndex) ? pos : points.GetHighestSurfacePoint(inPositionIndex).m_position;
         return timing;
     },
     [](const SectorTracker& sectorTracker, SectorTiming& sectorTiming)
@@ -876,7 +872,7 @@ void DebugComponent::PrepareNextReport()
             {
                 AreaSectorTiming& areaSectorTiming = iterator->second;
                 areaSectorTiming.m_totalTime += AZStd::chrono::microseconds(sectorAreaData.m_end - sectorAreaData.m_start).count();
-                areaSectorTiming.m_numInstances += sectorAreaData.m_numInstancesCreated;
+                areaSectorTiming.m_numInstances += static_cast<AZ::u32>(sectorAreaData.m_numInstancesCreated);
                 for( const auto& reasonValue : sectorAreaData.m_numInstancesRejectedByFilters )
                 {
                     DebugComponentUtilities::IncrementFilterReason(areaSectorTiming.m_numInstancesRejectedByFilters, reasonValue.first, reasonValue.second);
@@ -887,7 +883,7 @@ void DebugComponent::PrepareNextReport()
             {
                 AreaSectorTiming newAreaSectorTiming;
                 newAreaSectorTiming.m_totalTime = AZStd::chrono::microseconds(sectorAreaData.m_end - sectorAreaData.m_start).count();
-                newAreaSectorTiming.m_numInstances = sectorAreaData.m_numInstancesCreated;
+                newAreaSectorTiming.m_numInstances = static_cast<AZ::u32>(sectorAreaData.m_numInstancesCreated);
                 newAreaSectorTiming.m_numInstancesRejectedByFilters = sectorAreaData.m_numInstancesRejectedByFilters;
                 newAreaSectorTiming.m_filteredByMasks = sectorAreaData.m_filteredByMasks;
                 sectorTiming.m_perAreaData[areaId] = newAreaSectorTiming;
@@ -913,7 +909,7 @@ void DebugComponent::PrepareNextReport()
             AreaSectorTiming& areaSectorTiming = iterator->second;
 
             areaSectorTiming.m_totalTime += AZStd::chrono::microseconds(areaTracker.m_end - areaTracker.m_start).count();
-            areaSectorTiming.m_numInstances += areaTracker.m_numInstancesCreated;
+            areaSectorTiming.m_numInstances += static_cast<AZ::u32>(areaTracker.m_numInstancesCreated);
             for (const auto& filterReasonEntry : areaTracker.m_numInstancesRejectedByFilters)
             {
                 DebugComponentUtilities::IncrementFilterReason(areaSectorTiming.m_numInstancesRejectedByFilters, filterReasonEntry.first, filterReasonEntry.second);
@@ -925,7 +921,7 @@ void DebugComponent::PrepareNextReport()
         {
             AreaSectorTiming newAreaSectorTiming;
             newAreaSectorTiming.m_totalTime = AZStd::chrono::microseconds(areaTracker.m_end - areaTracker.m_start).count();
-            newAreaSectorTiming.m_numInstances = areaTracker.m_numInstancesCreated;
+            newAreaSectorTiming.m_numInstances = static_cast<AZ::u32>(areaTracker.m_numInstancesCreated);
             newAreaSectorTiming.m_numInstancesRejectedByFilters = areaTracker.m_numInstancesRejectedByFilters;
             newAreaSectorTiming.m_filteredByMasks = areaTracker.m_filteredByMasks;
             areaTiming.m_perSectorData[areaTracker.m_sectorId] = newAreaSectorTiming;

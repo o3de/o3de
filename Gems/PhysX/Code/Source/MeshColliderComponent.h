@@ -34,9 +34,7 @@ namespace PhysX
 
         // MeshColliderComponentRequestsBus
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialId(const Physics::MaterialId& id) override;
 
         // BaseColliderComponent
         void UpdateScaleForShapeConfigs() override;

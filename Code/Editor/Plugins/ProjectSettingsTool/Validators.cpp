@@ -16,7 +16,7 @@
 
 namespace 
 {
-    typedef ProjectSettingsTool::FunctorValidator::ReturnType RetType;
+    using RetType = ProjectSettingsTool::FunctorValidator::ReturnType;
 
     static const int noMaxLength = -1;
     static const int maxIosVersionLength = 18;
@@ -106,6 +106,11 @@ namespace ProjectSettingsTool
             return RegularExpressionValidator("[\\w,-]+", name);
         }
 
+        // Returns true if valid iOS file or directory name
+        RetType IOSFileName(const QString& name)
+        {
+            return RegularExpressionValidator("[\\w,-.]+", name);
+        }
         RetType FileNameOrEmpty(const QString& name)
         {
             if (IsNotEmpty(name).first == QValidator::Acceptable)

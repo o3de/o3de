@@ -13,47 +13,8 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"              // for CTrackViewKeyUIControls// Editor
-
-
-//////////////////////////////////////////////////////////////////////////
-class CTimeRangeKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariable<float> mv_startTime;
-    CSmartVariable<float> mv_endTime;
-    CSmartVariable<float> mv_timeScale;
-    CSmartVariable<bool> mv_bLoop;
-
-    virtual void OnCreateVars()
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
-        AddVariable(mv_table, mv_timeScale, "Time Scale");
-        AddVariable(mv_table, mv_bLoop, "Loop");
-        mv_timeScale->SetLimits(0.001f, 100.f);
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
-    {
-        return paramType == AnimParamType::TimeRanges;
-    }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
-
-    virtual unsigned int GetPriority() const { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {E977A6F4-CEC1-4c67-8735-28721B3F6FEF}
-        static const GUID guid = {
-            0xe977a6f4, 0xcec1, 0x4c67, { 0x87, 0x35, 0x28, 0x72, 0x1b, 0x3f, 0x6f, 0xef }
-        };
-        return guid;
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CTimeRangeKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -122,5 +83,3 @@ void CTimeRangeKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& s
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CTimeRangeKeyUIControls, "TrackView.KeyUI.TimeRange", "TrackViewKeyUI");

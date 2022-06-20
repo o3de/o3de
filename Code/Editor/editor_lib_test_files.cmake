@@ -8,7 +8,6 @@
 
 set(FILES
     Lib/Tests/IEditorMock.h
-    Lib/Tests/test_ClickableLabel.cpp
     Lib/Tests/test_CryEditPythonBindings.cpp
     Lib/Tests/test_CryEditDocPythonBindings.cpp
     Lib/Tests/test_EditorPythonBindings.cpp
@@ -20,6 +19,9 @@ set(FILES
     Lib/Tests/test_ViewPanePythonBindings.cpp
     Lib/Tests/test_ViewportTitleDlgPythonBindings.cpp
     Lib/Tests/test_DisplaySettingsPythonBindings.cpp
+    Lib/Tests/test_ViewportManipulatorController.cpp
+    Lib/Tests/test_ModularViewportCameraController.cpp
+    Lib/Tests/Camera/test_EditorCamera.cpp
     DisplaySettingsPythonFuncs.cpp
     DisplaySettingsPythonFuncs.h
 )

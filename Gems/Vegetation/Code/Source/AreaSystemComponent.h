@@ -18,7 +18,6 @@
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <CrySystemBus.h>
-#include <StatObjBus.h>
 #include <ISystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -81,7 +80,6 @@ namespace Vegetation
         , private AreaSystemRequestBus::Handler
         , private GradientSignal::SectorDataRequestBus::Handler
         , private SystemConfigurationRequestBus::Handler
-        , private InstanceStatObjEventBus::Handler
         , private CrySystemEventBus::Handler
         , private ISystemEventListener
         , private SurfaceData::SurfaceDataSystemNotificationBus::Handler
@@ -136,11 +134,12 @@ namespace Vegetation
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceData::SurfaceDataSystemNotificationBus
-        void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) override;
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // InstanceStatObjEventBus
-        void ReleaseData() override;
 
         ////////////////////////////////////////////////////////////////////////////
         // CrySystemEvents
@@ -460,6 +459,7 @@ namespace Vegetation
 
         bool ApplyPendingConfigChanges();
 
+        void ReleaseData();
         void ReleaseAllClaims();
         void ReleaseWithoutCleanup();
 

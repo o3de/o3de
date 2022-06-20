@@ -1,0 +1,4 @@
+Library source files from:
+	https://github.com/GPUOpen-LibrariesAndSDKs/Cauldron/tree/5acc12602c55e469cc1f9181967dbcb122f8e6c7
+	
+	

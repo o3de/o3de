@@ -1,0 +1,124 @@
+{
+    "entries": [
+        {
+            "base": "CharacterGameplayRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Character"
+            },
+            "methods": [
+                {
+                    "base": "GetFallingVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Falling Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Falling Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Falling Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Falling Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGravityMultiplier",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Gravity Multiplier"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Gravity Multiplier is invoked"
+                    },
+                    "details": {
+                        "name": "Get Gravity Multiplier"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Gravity Multiplier"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGravityMultiplier",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Gravity Multiplier"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Gravity Multiplier is invoked"
+                    },
+                    "details": {
+                        "name": "Set Gravity Multiplier"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Gravity Multiplier"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsOnGround",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is On Ground"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is On Ground is invoked"
+                    },
+                    "details": {
+                        "name": "Is On Ground"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is On Ground"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFallingVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Falling Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Falling Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Falling Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Falling Velocity"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

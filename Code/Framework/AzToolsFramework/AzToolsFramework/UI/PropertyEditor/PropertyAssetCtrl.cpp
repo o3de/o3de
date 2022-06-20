@@ -28,11 +28,15 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QTableView>
 #include <QHeaderView>
 #include <QPainter>
+#include <QPixmap>
+#include <QByteArray>
+#include <QDataStream>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>
@@ -48,7 +52,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -98,7 +101,7 @@ namespace AzToolsFramework
         m_editButton->setAutoRaise(true);
         m_editButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
         m_editButton->setToolTip("Edit asset");
-        m_editButton->setVisible(false);
+        SetEditButtonVisible(false);
 
         connect(m_editButton, &QToolButton::clicked, this, &PropertyAssetCtrl::OnEditButtonClicked);
 
@@ -146,7 +149,7 @@ namespace AzToolsFramework
         m_view->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
         m_view->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-        m_model->SetFilter(m_currentAssetType);
+        m_model->SetFilter(GetSelectableAssetTypes());
     }
 
     void PropertyAssetCtrl::RefreshAutocompleter()
@@ -326,7 +329,7 @@ namespace AzToolsFramework
             QMimeData* newMimeData = new QMimeData();
 
             AzToolsFramework::EditorAssetMimeDataContainer mimeDataContainer;
-            mimeDataContainer.AddEditorAsset(GetCurrentAssetID(), m_currentAssetType);
+            mimeDataContainer.AddEditorAsset(GetCurrentAssetID(), GetCurrentAssetType());
             mimeDataContainer.AddToMimeData(newMimeData);
 
             clipboard->setMimeData(newMimeData);
@@ -340,6 +343,14 @@ namespace AzToolsFramework
         }
     }
 
+    bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    {
+        const auto selectableAssetTypes = GetSelectableAssetTypes();
+        const auto isSelectableAssetType =
+            AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
+        return (assetId.IsValid() && !assetType.IsNull() && isSelectableAssetType);
+    }
+
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const
     {
         if (pAssetId)
@@ -349,7 +360,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = 0;
+            (*pAssetType) = nullptr;
         }
 
         if (!pData)
@@ -360,7 +371,7 @@ namespace AzToolsFramework
         // Helper function to consistently check and set asset ID and type for all possible mime types
         auto checkAsset = [&, this](const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType)
         {
-            if (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType())
+            if (CanAcceptAsset(assetId, assetType))
             {
                 if (pAssetId)
                 {
@@ -523,13 +534,13 @@ namespace AzToolsFramework
             m_errorButton = nullptr;
         }
     }
-
-    void PropertyAssetCtrl::UpdateErrorButton(const AZStd::string& errorLog)
+    
+    void PropertyAssetCtrl::UpdateErrorButton()
     {
         if (m_errorButton)
         {
             // If the button is already active, disconnect its pressed handler so we don't get multiple popups
-            disconnect(m_errorButton, &QPushButton::pressed, this, 0);
+            disconnect(m_errorButton, &QPushButton::pressed, this, nullptr);
         }
         else
         {
@@ -539,16 +550,21 @@ namespace AzToolsFramework
             m_errorButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_errorButton->setFixedSize(QSize(16, 16));
             m_errorButton->setMouseTracking(true);
-            m_errorButton->setIcon(QIcon("Icons/PropertyEditor/error_icon.png"));
+            m_errorButton->setIcon(QIcon(":/PropertyEditor/Resources/error_icon.png"));
             m_errorButton->setToolTip("Show Errors");
 
             // Insert the error button after the asset label
             qobject_cast<QHBoxLayout*>(layout())->insertWidget(1, m_errorButton);
         }
+    }
+
+    void PropertyAssetCtrl::UpdateErrorButtonWithLog(const AZStd::string& errorLog)
+    {
+        UpdateErrorButton();
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
-        connect(m_errorButton, &QPushButton::pressed, this, [this, errorLog]() {
+        connect(m_errorButton, &QPushButton::pressed, this, [errorLog]() {
             // Create the dialog for the log panel, and set the layout
             QDialog* logDialog = new QDialog();
             logDialog->setMinimumSize(1024, 400);
@@ -581,6 +597,21 @@ namespace AzToolsFramework
             // Show the dialog
             logDialog->adjustSize();
             logDialog->show();
+        });
+    }
+    
+    void PropertyAssetCtrl::UpdateErrorButtonWithMessage(const AZStd::string& message)
+    {
+        UpdateErrorButton();
+        
+        connect(m_errorButton, &QPushButton::clicked, this, [this, message]() {
+            QMessageBox::critical(nullptr, "Error", message.c_str());
+
+            // Without this, the error button would maintain focus after clicking, which left the red error icon in a blue-highlighted state
+            if (parentWidget())
+            {
+                parentWidget()->setFocus();
+            }
         });
     }
 
@@ -677,14 +708,14 @@ namespace AzToolsFramework
 
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
-        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType());
+        auto selectionModel = AssetSelectionModel::AssetTypesSelection(GetSelectableAssetTypes());
         selectionModel.SetTitle(m_title);
         return selectionModel;
     }
 
     void PropertyAssetCtrl::UpdateTabOrder()
     {
-        setTabOrder(m_browseEdit, m_editButton);
+        setTabOrder(m_browseEdit->lineEdit(), m_editButton);
     }
 
     bool PropertyAssetCtrl::eventFilter(QObject* obj, QEvent* event)
@@ -759,7 +790,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::PopupAssetPicker()
     {
-        AZ_Assert(m_currentAssetType != AZ::Data::s_invalidAssetType, "No asset type was assigned.");
+        AZ_Assert(!GetSelectableAssetTypes().empty(), "No asset type was assigned.");
 
         // Request the AssetBrowser Dialog and set a type filter
         AssetSelectionModel selection = GetAssetSelectionModel();
@@ -789,7 +820,7 @@ namespace AzToolsFramework
             selection.SetDisplayFilter(FilterConstType(compFilter));
         }
 
-        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
+        PickAssetSelectionFromDialog(selection, parentWidget());
         if (selection.IsValid())
         {
             const auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
@@ -805,6 +836,11 @@ namespace AzToolsFramework
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
+    }
+
+    void PropertyAssetCtrl::PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent)
+    {
+        AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parent);
     }
 
     void PropertyAssetCtrl::OnClearButtonClicked()
@@ -928,8 +964,18 @@ namespace AzToolsFramework
         else
         {
             const AZStd::string platformName = ""; // Empty for default
-            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequest::GetAssetInfoById, defaultID, m_currentAssetType, platformName, assetInfo, rootFilePath);
-            assetPath = assetInfo.m_relativePath;
+            for (const auto& assetType : GetSelectableAssetTypes())
+            {
+                bool result = false;
+                AssetSystemRequestBus::BroadcastResult(
+                    result, &AssetSystem::AssetSystemRequest::GetAssetInfoById, defaultID, assetType, platformName, assetInfo,
+                    rootFilePath);
+                if (result)
+                {
+                    assetPath = assetInfo.m_relativePath;
+                    break;
+                }
+            }
         }
 
         if (!assetPath.empty())
@@ -937,11 +983,15 @@ namespace AzToolsFramework
             AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), m_defaultAssetHint);
         }
         m_browseEdit->setPlaceholderText((m_defaultAssetHint + m_DefaultSuffix).c_str());
+
+        UpdateEditButton();
     }
 
     void PropertyAssetCtrl::UpdateAssetDisplay()
     {
         UpdateThumbnail();
+
+        UpdateEditButton();
 
         if (m_currentAssetType == AZ::Data::s_invalidAssetType)
         {
@@ -956,7 +1006,6 @@ namespace AzToolsFramework
         else
         {
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
-            m_currentAssetHint = "";
 
             AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
@@ -1014,7 +1063,7 @@ namespace AzToolsFramework
                         // In case of failure, render failure icon
                         case AssetSystem::JobStatus::Failed:
                         {
-                            UpdateErrorButton(errorLog);
+                            UpdateErrorButtonWithLog(errorLog);
                         }
                         break;
 
@@ -1038,6 +1087,10 @@ namespace AzToolsFramework
                 {
                     m_currentAssetHint = assetPath;
                 }
+            }
+            else
+            {
+                UpdateErrorButtonWithMessage(AZStd::string::format("Asset is missing.\n\nID: %s\nHint:%s", assetID.ToString<AZStd::string>().c_str(), GetCurrentAssetHint().c_str()));
             }
         }
 
@@ -1068,10 +1121,10 @@ namespace AzToolsFramework
             RefreshAutocompleter();
         }
 
-        // When focus is lost, clear the field if necessary
+        // When focus is lost, revert to the selected asset
         if (!focus && m_incompleteFilename)
         {
-            HandleFieldClear();
+            SetSelectedAssetID(GetCurrentAssetID());
         }
     }
 
@@ -1082,7 +1135,9 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::SetEditButtonVisible(bool visible)
     {
-        m_editButton->setVisible(visible);
+        m_showEditButton = visible;
+        m_editButton->setVisible(m_showEditButton);
+        UpdateEditButton();
     }
 
     void PropertyAssetCtrl::SetEditButtonIcon(const QIcon& icon)
@@ -1168,7 +1223,7 @@ namespace AzToolsFramework
                     SharedThumbnailKey thumbnailKey = MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetID);
                     if (m_showThumbnail)
                     {
-                        m_thumbnail->SetThumbnailKey(thumbnailKey, Thumbnailer::ThumbnailContext::DefaultContext);
+                        m_thumbnail->SetThumbnailKey(thumbnailKey);
                     }
                     return;
                 }
@@ -1176,6 +1231,15 @@ namespace AzToolsFramework
         }
 
         m_thumbnail->ClearThumbnail();
+    }
+
+    void PropertyAssetCtrl::UpdateEditButton()
+    {
+        // if Edit button is in use (shown), enable/disable it depending on the current asset id.
+        if (m_showEditButton && m_disableEditButtonWhenNoAssetSelected)
+        {
+            m_editButton->setEnabled(GetCurrentAssetID().IsValid());
+        }
     }
 
     void PropertyAssetCtrl::SetClearButtonEnabled(bool enable)
@@ -1209,6 +1273,17 @@ namespace AzToolsFramework
         return m_hideProductFilesInAssetPicker;
     }
 
+    void PropertyAssetCtrl::SetDisableEditButtonWhenNoAssetSelected(bool disableEditButtonWhenNoAssetSelected)
+    {
+        m_disableEditButtonWhenNoAssetSelected = disableEditButtonWhenNoAssetSelected;
+        UpdateEditButton();
+    }
+
+    bool PropertyAssetCtrl::GetDisableEditButtonWhenNoAssetSelected() const
+    {
+        return m_disableEditButtonWhenNoAssetSelected;
+    }
+
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
     {
         m_showThumbnail = enable;
@@ -1227,6 +1302,36 @@ namespace AzToolsFramework
     bool PropertyAssetCtrl::GetShowThumbnailDropDownButton() const
     {
         return m_showThumbnailDropDownButton;
+    }
+
+    void PropertyAssetCtrl::SetCustomThumbnailEnabled(bool enabled)
+    {
+        m_thumbnail->SetCustomThumbnailEnabled(enabled);
+    }
+
+    void PropertyAssetCtrl::SetCustomThumbnailPixmap(const QPixmap& pixmap)
+    {
+        m_thumbnail->SetCustomThumbnailPixmap(pixmap);
+    }
+
+    void PropertyAssetCtrl::SetSupportedAssetTypes(const AZStd::vector<AZ::Data::AssetType>& supportedAssetTypes)
+    {
+        m_supportedAssetTypes = supportedAssetTypes;
+    }
+
+    const AZStd::vector<AZ::Data::AssetType>& PropertyAssetCtrl::GetSupportedAssetTypes() const
+    {
+        return m_supportedAssetTypes;
+    }
+
+    AZStd::vector<AZ::Data::AssetType> PropertyAssetCtrl::GetSelectableAssetTypes() const
+    {
+        AZStd::vector<AZ::Data::AssetType> types = GetSupportedAssetTypes();
+        if (GetCurrentAssetType() != AZ::Data::s_invalidAssetType)
+        {
+            types.push_back(GetCurrentAssetType());
+        }
+        return types;
     }
 
     void PropertyAssetCtrl::SetThumbnailCallback(EditCallbackType* editNotifyCallback)
@@ -1251,7 +1356,7 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void AssetPropertyHandlerDefault::ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    void AssetPropertyHandlerDefault::ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
         (void)debugName;
 
@@ -1312,6 +1417,12 @@ namespace AzToolsFramework
                 GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
             }
         }
+        else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
+        {
+            bool disableEditButtonWhenNoAssetSelected = false;
+            attrValue->Read<bool>(disableEditButtonWhenNoAssetSelected);
+            GUI->SetDisableEditButtonWhenNoAssetSelected(disableEditButtonWhenNoAssetSelected);
+        }
         else if (attrib == AZ::Edit::Attributes::DefaultAsset)
         {
             AZ::Data::AssetId assetId;
@@ -1355,14 +1466,29 @@ namespace AzToolsFramework
                 GUI->SetClearNotifyCallback(nullptr);
             }
         }
-        else if (attrib == AZ_CRC("BrowseIcon", 0x507d7a4f))
+        else if (attrib == AZ_CRC_CE("BrowseIcon"))
         {
             AZStd::string iconPath;
-            attrValue->Read<AZStd::string>(iconPath);
-
-            if (!iconPath.empty())
+            if (attrValue->Read<AZStd::string>(iconPath) && !iconPath.empty())
             {
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
+            }
+            else
+            {
+                // A QPixmap object can't be assigned directly via an attribute.
+                // This allows dynamic icon data to be supplied as a buffer containing a serialized QPixmap.
+                AZStd::vector<char> pixmapBuffer;
+                if (attrValue->Read<AZStd::vector<char>>(pixmapBuffer) && !pixmapBuffer.empty())
+                {
+                    QByteArray pixmapBytes(pixmapBuffer.data(), aznumeric_cast<int>(pixmapBuffer.size()));
+                    QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
+                    QPixmap pixmap;
+                    stream >> pixmap;
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetBrowseButtonIcon(pixmap);
+                    }
+                }
             }
         }
         else if (attrib == AZ_CRC_CE("BrowseButtonEnabled"))
@@ -1389,6 +1515,35 @@ namespace AzToolsFramework
                 GUI->SetShowThumbnail(showThumbnail);
             }
         }
+        else if (attrib == AZ_CRC_CE("ThumbnailIcon"))
+        {
+            GUI->SetCustomThumbnailEnabled(false);
+
+            AZStd::string iconPath;
+            if (attrValue->Read<AZStd::string>(iconPath) && !iconPath.empty())
+            {
+                GUI->SetCustomThumbnailEnabled(true);
+                GUI->SetCustomThumbnailPixmap(QPixmap::fromImage(QImage(iconPath.c_str())));
+            }
+            else
+            {
+                // A QPixmap object can't be assigned directly via an attribute.
+                // This allows dynamic icon data to be supplied as a buffer containing a serialized QPixmap.
+                AZStd::vector<char> pixmapBuffer;
+                if (attrValue->Read<AZStd::vector<char>>(pixmapBuffer) && !pixmapBuffer.empty())
+                {
+                    QByteArray pixmapBytes(pixmapBuffer.data(), aznumeric_cast<int>(pixmapBuffer.size()));
+                    QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
+                    QPixmap pixmap;
+                    stream >> pixmap;
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetCustomThumbnailEnabled(true);
+                        GUI->SetCustomThumbnailPixmap(pixmap);
+                    }
+                }
+            }
+        }
         else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
         {
             PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
@@ -1404,9 +1559,22 @@ namespace AzToolsFramework
                 GUI->SetThumbnailCallback(nullptr);
             }
         }
+        else if (attrib == AZ_CRC_CE("SupportedAssetTypes"))
+        {
+            AZStd::vector<AZ::Data::AssetType> supportedAssetTypes;
+            if (attrValue->Read<AZStd::vector<AZ::Data::AssetType>>(supportedAssetTypes))
+            {
+                GUI->SetSupportedAssetTypes(supportedAssetTypes);
+            }
+        }
     }
 
-    void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void AssetPropertyHandlerDefault::ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    {
+        ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+    }
+
+    void AssetPropertyHandlerDefault::WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1421,7 +1589,12 @@ namespace AzToolsFramework
         }
     }
 
-    bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        WriteGUIValuesIntoPropertyInternal(index, GUI, instance, node);
+    }
+
+    bool AssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1439,6 +1612,11 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
         return false;
+    }
+
+    bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
     QWidget* SimpleAssetPropertyHandlerDefault::CreateGUI(QWidget* pParent)
@@ -1511,6 +1689,12 @@ namespace AzToolsFramework
                 GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
             }
         }
+        else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
+        {
+            bool disableEditButtonWhenNoAssetSelected = false;
+            attrValue->Read<bool>(disableEditButtonWhenNoAssetSelected);
+            GUI->SetDisableEditButtonWhenNoAssetSelected(disableEditButtonWhenNoAssetSelected);
+        }
     }
 
     void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
@@ -1548,8 +1732,8 @@ namespace AzToolsFramework
 
     void RegisterAssetPropertyHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AssetPropertyHandlerDefault());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SimpleAssetPropertyHandlerDefault());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew AssetPropertyHandlerDefault());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew SimpleAssetPropertyHandlerDefault());
     }
 }
 

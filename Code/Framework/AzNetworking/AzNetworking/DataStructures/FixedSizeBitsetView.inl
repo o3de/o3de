@@ -15,12 +15,12 @@ namespace AzNetworking
         , m_startOffset(startOffset)
         , m_count(startOffset < bitset.GetValidBitCount() && startOffset + count <= bitset.GetValidBitCount() ? count : 0)
     {
-        AZ_Assert(startOffset + count <= bitset.GetValidBitCount(), "Out of bounds setup in BitsetSubset. Defaulting to 0 bit count.");
+        AZ_Warning("FixedSizeBitsetView", startOffset + count <= bitset.GetValidBitCount(), "Out of bounds setup in BitsetSubset. Defaulting to 0 bit count.");
     }
 
     inline void FixedSizeBitsetView::SetBit(uint32_t index, bool value)
     {
-        AZ_Assert(index < m_count, "Out of bounds access in BitsetSubset (requested %u, count %u)", index, m_count);
+        AZ_Warning("FixedSizeBitsetView", index < m_count, "Out of bounds access in BitsetSubset (requested %u, count %u)", index, m_count);
         if (m_count)
         {
             m_bitset.SetBit(m_startOffset + index, value);
@@ -29,7 +29,7 @@ namespace AzNetworking
 
     inline bool FixedSizeBitsetView::GetBit(uint32_t index) const
     {
-        AZ_Assert(index < m_count, "Out of bounds access in BitsetSubset (requested %u, count %u)", index, m_count);
+        AZ_Warning("FixedSizeBitsetView", index < m_count, "Out of bounds access in BitsetSubset (requested %u, count %u)", index, m_count);
         if (m_count)
         {
             return m_bitset.GetBit(m_startOffset + index);

@@ -40,7 +40,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">#m_filePathText { margin: 2px; color: grey; }</string>
+        <string notr="true">#m_filePathText { margin: 2px; color: white; }</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

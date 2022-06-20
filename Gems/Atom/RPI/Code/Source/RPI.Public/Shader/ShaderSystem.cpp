@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
@@ -25,8 +26,6 @@ namespace AZ
 {
     namespace RPI
     {
-        static constexpr char ShaderSystemLog[] = "ShaderSystem";
-
         void ShaderSystem::Reflect(ReflectContext* context)
         {
             ShaderOptionDescriptor::Reflect(context);
@@ -88,10 +87,13 @@ namespace AZ
                 };
                 Data::InstanceDatabase<ShaderResourceGroupPool>::Create(azrtti_typeid<ShaderResourceGroupPool>(), handler, false);
             }
+
+            ShaderReloadDebugTracker::Init();
         }
 
         void ShaderSystem::Shutdown()
         {
+            ShaderReloadDebugTracker::Shutdown();
             Data::InstanceDatabase<Shader>::Destroy();
             Data::InstanceDatabase<ShaderResourceGroup>::Destroy();
             Data::InstanceDatabase<ShaderResourceGroupPool>::Destroy();

@@ -129,7 +129,10 @@ namespace ScriptCanvasEditor
     {
         if (row == NodePaletteTreeItem::Column::Customization)
         {
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, GetSourceAssetId(), -1);
+            GeneralRequestBus::Broadcast
+                ( &GeneralRequests::OpenScriptCanvasAssetId
+                , SourceHandle(nullptr, GetSourceAssetId().m_guid, "")
+                , Tracker::ScriptCanvasFileState::UNMODIFIED);
         }
     }
 
@@ -137,7 +140,10 @@ namespace ScriptCanvasEditor
     {
         if (row != NodePaletteTreeItem::Column::Customization)
         {
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset, GetSourceAssetId(), -1);
+            GeneralRequestBus::Broadcast
+                ( &GeneralRequests::OpenScriptCanvasAssetId
+                , SourceHandle(nullptr, GetSourceAssetId().m_guid, "")
+                , Tracker::ScriptCanvasFileState::UNMODIFIED);
             return true;
         }
 

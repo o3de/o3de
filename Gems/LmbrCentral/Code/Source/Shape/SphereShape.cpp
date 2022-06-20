@@ -62,13 +62,17 @@ namespace LmbrCentral
 
     void SphereShape::InvalidateCache(InvalidateShapeCacheReason reason)
     {
+        AZStd::unique_lock lock(m_mutex);
         m_intersectionDataCache.InvalidateCache(reason);
     }
 
     void SphereShape::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        m_currentTransform = world;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_currentTransform = world;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::TransformChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
@@ -76,8 +80,11 @@ namespace LmbrCentral
 
     void SphereShape::SetRadius(float radius)
     {
-        m_sphereShapeConfig.m_radius = radius;
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        {
+            AZStd::unique_lock lock(m_mutex);
+            m_sphereShapeConfig.m_radius = radius;
+            m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+        }
         ShapeComponentNotificationsBus::Event(
             m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
@@ -85,25 +92,29 @@ namespace LmbrCentral
 
     float SphereShape::GetRadius()
     {
+        AZStd::shared_lock lock(m_mutex);
         return m_sphereShapeConfig.m_radius;
     }
 
     AZ::Aabb SphereShape::GetEncompassingAabb()
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
 
         return AZ::Aabb::CreateCenterRadius(m_currentTransform.GetTranslation(), m_intersectionDataCache.m_radius);
     }
 
     void SphereShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
     {
+        AZStd::shared_lock lock(m_mutex);
         bounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), m_sphereShapeConfig.m_radius);
         transform = m_currentTransform;
     }
 
     bool SphereShape::IsPointInside(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
 
         return AZ::Intersect::PointSphere(
             m_intersectionDataCache.m_position, powf(m_intersectionDataCache.m_radius, 2.0f), point);
@@ -111,7 +122,8 @@ namespace LmbrCentral
 
     float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
 
         const AZ::Vector3 pointToSphereCenter = m_intersectionDataCache.m_position - point;
         const float distance = pointToSphereCenter.GetLength() - m_intersectionDataCache.m_radius;
@@ -120,7 +132,8 @@ namespace LmbrCentral
 
     bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig);
+        AZStd::shared_lock lock(m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
 
         return AZ::Intersect::IntersectRaySphere(
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, distance) > 0;

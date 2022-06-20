@@ -8,6 +8,7 @@
 
 #include <PythonBuilderWorker.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <Source/PythonAssetBuilderSystemComponent.h>
@@ -56,7 +57,7 @@ namespace PythonAssetBuilder
         {
             this->ProcessJob(request, response);
         };
-        
+
         // connect to the shutdown signal handler
         AssetBuilderCommandBus::Handler::BusConnect(m_assetBuilderDesc->m_busId);
 

@@ -49,6 +49,7 @@ namespace AssetProcessor
         {
         }
 
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZ::SettingsRegistryInterface* m_settingsRegistry;
@@ -119,6 +120,7 @@ namespace AssetProcessor
     struct RecognizerConfiguration
     {
         virtual const RecognizerContainer& GetAssetRecognizerContainer() const = 0;
+        virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
     };
 
@@ -129,6 +131,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
@@ -152,6 +156,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
@@ -169,6 +175,8 @@ namespace AssetProcessor
         }
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
@@ -186,6 +194,25 @@ namespace AssetProcessor
         AZStd::stack<AZStd::string> m_rcNameStack;
         const AZ::SettingsRegistryInterface& m_registry;
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
+    };
+
+    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
+    struct ACSVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZStd::vector<AssetRecognizer> m_assetRecognizers;
+    private:
+        AssetRecognizer* CurrentAssetRecognizer();
+
+        AZStd::stack<AZStd::string> m_nameStack;
     };
 
     /** Reads the platform ini configuration file to determine
@@ -249,6 +276,9 @@ namespace AssetProcessor
         //! Retrieve the scan folder at a given index.
         AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index);
 
+        //! Retrieve the scan folder at a given index.
+        const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
+
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
 
@@ -291,7 +321,16 @@ namespace AssetProcessor
         QString FindFirstMatchingFile(QString relativeName) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
-        QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false, bool recursiveSearch = true) const;
+        QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
+            bool recursiveSearch = true) const;
+
+        //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
+        QStringList FindWildcardMatches(
+            const QString& sourceFolder,
+            QString relativeName,
+            const AZStd::unordered_set<AZStd::string>& excludedFolders,
+            bool includeFolders = false,
+            bool recursiveSearch = true) const;
 
         //! given a fileName (as a full path), return the database source name which includes the output prefix.
         //!
@@ -311,6 +350,8 @@ namespace AssetProcessor
         const AssetProcessor::ScanFolderInfo* GetScanFolderByPath(const QString& scanFolderPath) const;
 
         const RecognizerContainer& GetAssetRecognizerContainer() const override;
+
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override;
 
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
 
@@ -348,6 +389,7 @@ namespace AssetProcessor
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
         RecognizerContainer m_assetRecognizers;
+        RecognizerContainer m_assetCacheServerRecognizers;
         ExcludeRecognizerContainer m_excludeAssetRecognizers;
         AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolders;
         QList<QPair<QString, QString> > m_metaDataFileTypes;

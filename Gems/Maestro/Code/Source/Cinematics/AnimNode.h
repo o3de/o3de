@@ -33,6 +33,8 @@ public:
     AZ_CLASS_ALLOCATOR(CAnimNode, AZ::SystemAllocator, 0);
     AZ_RTTI(CAnimNode, "{57736B48-5EE7-4530-8051-657ACC9BA1EE}", IAnimNode);
 
+    typedef AZStd::vector<AZStd::intrusive_ptr<IAnimTrack>> AnimTracks;
+
     CAnimNode();
     CAnimNode(const CAnimNode& other);
     CAnimNode(const int id, AnimNodeType nodeType);
@@ -46,7 +48,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     void SetName(const char* name) override { m_name = name; };
-    const char* GetName() { return m_name.c_str(); };
+    const char* GetName() const override { return m_name.c_str(); };
 
     void SetSequence(IAnimSequence* sequence) override { m_pSequence = sequence; }
     // Return Animation Sequence that owns this node.
@@ -60,7 +62,7 @@ public:
     int GetFlags() const override;
     bool AreFlagsSetOnNodeOrAnyParent(EAnimNodeFlags flagsToCheck) const override;
 
-    IMovieSystem*   GetMovieSystem() const { return gEnv->pMovieSystem; };
+    IMovieSystem*   GetMovieSystem() const override { return gEnv->pMovieSystem; };
 
     virtual void OnStart() {}
     void OnReset() override {}
@@ -85,23 +87,23 @@ public:
     virtual Matrix34 GetReferenceMatrix() const;
 
     //////////////////////////////////////////////////////////////////////////
-    bool IsParamValid(const CAnimParamType& paramType) const;
-    virtual const char* GetParamName(const CAnimParamType& param) const;
-    virtual AnimValueType GetParamValueType(const CAnimParamType& paramType) const;
-    virtual IAnimNode::ESupportedParamFlags GetParamFlags(const CAnimParamType& paramType) const;
-    virtual unsigned int GetParamCount() const { return 0; };
+    bool IsParamValid(const CAnimParamType& paramType) const override;
+    AZStd::string GetParamName(const CAnimParamType& param) const override;
+    AnimValueType GetParamValueType(const CAnimParamType& paramType) const override;
+    IAnimNode::ESupportedParamFlags GetParamFlags(const CAnimParamType& paramType) const override;
+    unsigned int GetParamCount() const override { return 0; };
 
-    bool SetParamValue(float time, CAnimParamType param, float val);
-    bool SetParamValue(float time, CAnimParamType param, const Vec3& val);
-    bool SetParamValue(float time, CAnimParamType param, const Vec4& val);
-    bool GetParamValue(float time, CAnimParamType param, float& val);
-    bool GetParamValue(float time, CAnimParamType param, Vec3& val);
-    bool GetParamValue(float time, CAnimParamType param, Vec4& val);
+    bool SetParamValue(float time, CAnimParamType param, float val) override;
+    bool SetParamValue(float time, CAnimParamType param, const Vec3& val) override;
+    bool SetParamValue(float time, CAnimParamType param, const Vec4& val) override;
+    bool GetParamValue(float time, CAnimParamType param, float& val) override;
+    bool GetParamValue(float time, CAnimParamType param, Vec3& val) override;
+    bool GetParamValue(float time, CAnimParamType param, Vec4& val) override;
 
     void SetTarget([[maybe_unused]] IAnimNode* node) {};
     IAnimNode* GetTarget() const { return 0; };
 
-    void StillUpdate() {}
+    void StillUpdate() override {}
     void Animate(SAnimContext& ec) override;
 
     virtual void PrecacheStatic([[maybe_unused]] float startTime) {}
@@ -114,7 +116,7 @@ public:
     IAnimNodeOwner* GetNodeOwner() override { return m_pOwner; };
 
     // Called by sequence when needs to activate a node.
-    virtual void Activate(bool bActivate);
+    void Activate(bool bActivate) override;
 
     //////////////////////////////////////////////////////////////////////////
     void SetParent(IAnimNode* parent) override;
@@ -147,9 +149,8 @@ public:
 
     int GetId() const override { return m_id; }
     void SetId(int id) { m_id = id; }
-    const char* GetNameFast() const { return m_name.c_str(); }
 
-    virtual void Render(){}
+    void Render() override{}
 
     void UpdateDynamicParams() final;
 
@@ -177,7 +178,7 @@ protected:
 
     CMovieSystem* GetCMovieSystem() const { return (CMovieSystem*)gEnv->pMovieSystem; }
 
-    virtual bool NeedToRender() const { return false; }
+    bool NeedToRender() const override { return false; }
 
     // nodes which support sounds should override this to reset their start/stop sound states
     virtual void ResetSounds() {}
@@ -189,20 +190,18 @@ protected:
     void AnimateSound(std::vector<SSoundInfo>& nodeSoundInfo, SAnimContext& ec, IAnimTrack* pTrack, size_t numAudioTracks);
     //////////////////////////////////////////////////////////////////////////
 
-    int m_refCount;
+    AnimTracks m_tracks;
     AnimNodeType m_nodeType;
-    int m_id;
     AZStd::string m_name;
     IAnimSequence* m_pSequence;
     IAnimNodeOwner* m_pOwner;
     IAnimNode* m_pParentNode;
+    int m_refCount;
+    int m_id;
     int m_nLoadedParentNodeId;  // only used in legacy Serialize()
     int m_parentNodeId;
     int m_flags;
     unsigned int m_bIgnoreSetParam : 1; // Internal flags.
-
-    typedef AZStd::vector<AZStd::intrusive_ptr<IAnimTrack> > AnimTracks;
-    AnimTracks m_tracks;
     bool m_expanded;
 
 private:

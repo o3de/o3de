@@ -94,7 +94,7 @@ namespace AZ
 
             Microsoft::WRL::ComPtr<ID3D12CommandSignature> signatureComPtr;
             HRESULT  hr = device.GetDevice()->CreateCommandSignature(&desc, rootSignature, IID_GRAPHICS_PPV_ARGS(signatureComPtr.GetAddressOf()));
-            if (!AssertSuccess(hr))
+            if (!device.AssertSuccess(hr))
             {
                 return RHI::ResultCode::Fail;
             }
@@ -111,6 +111,8 @@ namespace AZ
 
         void IndirectBufferSignature::ShutdownInternal()
         {
+            auto& device = static_cast<Device&>(GetDevice());
+            device.QueueForRelease(m_signature);
             m_signature = nullptr;
             m_stride = 0;
         }

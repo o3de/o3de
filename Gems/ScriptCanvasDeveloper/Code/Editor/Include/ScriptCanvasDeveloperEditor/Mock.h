@@ -16,13 +16,10 @@
 
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
-
         enum class SlotConfigState : AZ::u8
         {
             New,
@@ -118,7 +115,7 @@ namespace ScriptCanvasDeveloper
 
         private:
             //// ScriptCanvasEditor::EditorGraphNotificationBus
-            void OnGraphCanvasNodeDisplayed(AZ::EntityId graphCanvasEntityId);
+            void OnGraphCanvasNodeDisplayed(AZ::EntityId graphCanvasEntityId) override;
             ////
 
             AZStd::string m_nodeTitle;

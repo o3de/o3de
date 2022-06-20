@@ -9,7 +9,6 @@
 #include "OperatorBack.h"
 
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvas
@@ -23,7 +22,7 @@ namespace ScriptCanvas
                 if (sourceType == SourceType::SourceInput)
                 {
                     ContractDescriptor supportsMethodContract;
-                    supportsMethodContract.m_createFunc = [this]() -> SupportsMethodContract* { return aznew SupportsMethodContract("Back"); };
+                    supportsMethodContract.m_createFunc = []() -> SupportsMethodContract* { return aznew SupportsMethodContract("Back"); };
                     contractDescs.push_back(AZStd::move(supportsMethodContract));
                 }
             }

@@ -12,13 +12,14 @@
 
 #include <platform.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+#include <AzCore/Console/ILogger.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <IAudioSystem.h>
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSourceManager.h>
 #include <AudioSystemImplCVars.h>
 #include <Common_wwise.h>
@@ -52,7 +53,7 @@ namespace Audio
 {
     namespace Platform
     {
-        void InitializeMemory(CAudioLogger& audioLogger);
+        void InitializeMemory();
         void SetupAkSoundEngine(AkPlatformInitSettings& platformInitSettings);
     }
 
@@ -103,10 +104,9 @@ namespace Audio
 
     } // namespace Wwise::MemHooks
 
-    extern CAudioLogger g_audioImplLogger_wwise;
 
     const char* const CAudioSystemImpl_wwise::WwiseImplSubPath = "wwise/";
-    const char* const CAudioSystemImpl_wwise::WwiseGlobalAudioObjectName = "LY-GlobalAudioObject";
+    const char* const CAudioSystemImpl_wwise::WwiseGlobalAudioObjectName = "GlobalAudioObject";
     const float CAudioSystemImpl_wwise::ObstructionOcclusionMin = 0.0f;
     const float CAudioSystemImpl_wwise::ObstructionOcclusionMax = 1.0f;
 
@@ -122,12 +122,9 @@ namespace Audio
 
             if (eventData)
             {
-                SAudioRequest request;
-                SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, true);
-                request.nFlags = eARF_THREAD_SAFE_PUSH;
-                request.pData = &requestData;
-
-                AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+                Audio::CallbackRequest::ReportFinishedEvent reportFinishedEvent;
+                reportFinishedEvent.m_eventId = eventData->nATLID;
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(reportFinishedEvent));
 
                 if (eventData->nSourceId != INVALID_AUDIO_SOURCE_ID)
                 {
@@ -140,10 +137,14 @@ namespace Audio
         {
             auto durationInfo = static_cast<AkDurationCallbackInfo*>(callbackInfo);
             auto const eventData = static_cast<SATLEventData_wwise*>(callbackInfo->pCookie);
-            if (durationInfo && eventData)
+            if (durationInfo && eventData && eventData->m_owner)
             {
-                AudioTriggerNotificationBus::QueueEvent(eventData->m_triggerId, &AudioTriggerNotificationBus::Events::ReportDurationInfo,
-                    eventData->nATLID, durationInfo->fDuration, durationInfo->fEstimatedDuration);
+                AudioTriggerNotificationBus::QueueEvent(
+                    TriggerNotificationIdType{ eventData->m_owner }, &AudioTriggerNotificationBus::Events::ReportDurationInfo,
+                    eventData->m_triggerId,
+                    eventData->nATLID,
+                    durationInfo->fDuration,
+                    durationInfo->fEstimatedDuration);
             }
         }
     }
@@ -167,7 +168,7 @@ namespace Audio
     void PrepareEventCallback(
         AkUniqueID akEventId,
         [[maybe_unused]] const void* bankPtr,
-        AKRESULT loadResult,
+        [[maybe_unused]] AKRESULT loadResult,
         [[maybe_unused]] AkMemPoolId memPoolId,
         void* cookie)
     {
@@ -177,30 +178,25 @@ namespace Audio
         {
             eventData->nAKID = akEventId;
 
-            SAudioRequest request;
-            SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, loadResult ==  AK_Success);
-            request.nFlags = eARF_THREAD_SAFE_PUSH;
-            request.pData = &requestData;
-
-            AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+            // TODO (PrepareTrigger/PrepareEvent functionality):
+            // Audio::CallbackRequest::ReportFinishedEvent (eventData->nATLID, loadResult == AK_Success)
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(WWISE_RELEASE)
     static void ErrorMonitorCallback(
-        AK::Monitor::ErrorCode in_eErrorCode,   ///< Error code number value
-        const AkOSChar* in_pszError,            ///< Message or error string to be displayed
-        AK::Monitor::ErrorLevel in_eErrorLevel, ///< Specifies whether it should be displayed as a message or an error
-        AkPlayingID in_playingID,               ///< Related Playing ID if applicable, AK_INVALID_PLAYING_ID otherwise
-        AkGameObjectID in_gameObjID             ///< Related Game Object ID if applicable, AK_INVALID_GAME_OBJECT otherwise
-        )
+        AK::Monitor::ErrorCode in_eErrorCode,       ///< Error code number value
+        const AkOSChar* in_pszError,                ///< Message or error string to be displayed
+        AK::Monitor::ErrorLevel /*in_eErrorLevel*/, ///< Specifies whether it should be displayed as a message or an error
+        AkPlayingID in_playingID,                   ///< Related Playing ID if applicable, AK_INVALID_PLAYING_ID otherwise
+        AkGameObjectID in_gameObjID)                ///< Related Game Object ID if applicable, AK_INVALID_GAME_OBJECT otherwise
     {
         char* errorStr = nullptr;
         CONVERT_OSCHAR_TO_CHAR(in_pszError, errorStr);
-        g_audioImplLogger_wwise.Log(
-            ((in_eErrorLevel & AK::Monitor::ErrorLevel_Error) != 0) ? eALT_ERROR : eALT_COMMENT,
-            "<Wwise> %s ErrorCode: %d PlayingID: %u GameObjID: %llu", errorStr, in_eErrorCode, in_playingID, in_gameObjID);
+        AZLOG_NOTICE(
+            "<Wwise> %s ErrorCode: %d PlayingID: %u GameObjID: %llu", errorStr, in_eErrorCode, in_playingID,
+            static_cast<AZ::u64>(in_gameObjID));
     }
 #endif // WWISE_RELEASE
 
@@ -255,7 +251,7 @@ namespace Audio
             m_assetsPlatform = assetsPlatformName;
         }
 
-        Platform::InitializeMemory(g_audioImplLogger_wwise);
+        Platform::InitializeMemory();
 
         SetBankPaths();
 
@@ -264,7 +260,7 @@ namespace Audio
 
         // Set up memory categories for debug tracking, do this early before initializing Wwise so they are available
         // before the any allocations through hooks occur.
-        g_audioImplLogger_wwise.Log(eALT_COMMENT, "Memory Categories:\n");
+        AZLOG_INFO("Memory Categories:");
         m_debugMemoryInfo.reserve(AkMemID_NUM + 1);
 
         for (AZ::u32 memId = 0; memId < AkMemID_NUM; ++memId)
@@ -274,8 +270,7 @@ namespace Audio
             memInfo.m_poolId = memId;
 
             m_debugMemoryInfo.push_back(memInfo);
-
-            g_audioImplLogger_wwise.Log(eALT_COMMENT, "Memory category ID: %u - '%s'\n", memId, Wwise::MemoryManagerCategories[memId]);
+            AZLOG_INFO("Memory category ID: %u - '%s'", memId, Wwise::MemoryManagerCategories[memId]);
         }
 
         // Add one more category for global stats.
@@ -308,7 +303,7 @@ namespace Audio
         AKRESULT akResult = AK::SoundEngine::Suspend();
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to Suspend, AKRESULT = %d\n", akResult);
+            AZLOG_ERROR("Wwise failed to Suspend, AKRESULT %d", akResult);
         }
     #endif // AZ_TRAIT_AUDIOENGINEWWISE_AUDIOSYSTEMIMPL_USE_SUSPEND
     }
@@ -320,7 +315,7 @@ namespace Audio
         AKRESULT akResult = AK::SoundEngine::WakeupFromSuspend();
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to WakeupFromSuspend, AKRESULT = %d\n", akResult);
+            AZLOG_ERROR("Wwise failed to WakeupFromSuspend, AKRESULT %d", akResult);
         }
     #endif // AZ_TRAIT_AUDIOENGINEWWISE_AUDIOSYSTEMIMPL_USE_SUSPEND
     }
@@ -348,8 +343,7 @@ namespace Audio
 
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload %s, returned the AKRESULT: %d", Wwise::InitBank, akResult);
-                AZ_Assert(false, "<Wwise> Failed to unload %s!", Wwise::InitBank);
+                AZLOG_ERROR("Wwise failed to unload %s, returned AKRESULT %d", Wwise::InitBank, akResult);
             }
         }
 
@@ -359,9 +353,8 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load %s, returned the AKRESULT: %d", Wwise::InitBank, akResult);
+            AZLOG_ERROR("Wwise failed to load %s, returned AKRESULT %d", Wwise::InitBank, akResult);
             m_initBankID = AK_INVALID_BANK_ID;
-            AZ_Assert(false, "<Wwise> Failed to load %s!", Wwise::InitBank);
         }
     }
 
@@ -374,7 +367,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystemImpl_wwise::Update([[maybe_unused]] const float updateIntervalMS)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         if (AK::SoundEngine::IsInitialized())
         {
@@ -422,7 +415,7 @@ namespace Audio
     EAudioRequestStatus CAudioSystemImpl_wwise::Initialize()
     {
         // If something fails so severely during initialization that we need to fall back to a 'Null' implementation
-        // we will need to shut down what has been initialized so far. Therefore make sure to call Shutdown() before returning eARS_FAILURE!
+        // we will need to shut down what has been initialized so far. Therefore make sure to call Shutdown() before returning EAudioRequestStatus::Failure!
 
         AkMemSettings akMemSettings;
         AK::MemoryMgr::GetDefaultSettings(akMemSettings);
@@ -439,15 +432,15 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::MemoryMgr::Init() returned AKRESULT %d", akResult);
+            AZLOG_ERROR("AK::MemoryMgr::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         akResult = AK::SoundEngine::RegisterAudioDeviceStatusCallback(AudioDeviceCallback);
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "AK::SoundEngine::RegisterAudioDeviceStatusCallback failed!\n");
+            AZLOG_ERROR("AK::SoundEngine::RegisterAudioDeviceStatusCallback returned AKRESULT %d", akResult);
         }
 
         AkStreamMgrSettings akStreamSettings;
@@ -455,18 +448,18 @@ namespace Audio
 
         if (AK::StreamMgr::Create(akStreamSettings) == nullptr)
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::StreamMgr::Create() failed!\n");
+            AZLOG_ERROR("AK::StreamMrg::Create() failed!");
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         akResult = m_fileIOHandler.Init(Wwise::Cvars::s_StreamDeviceMemorySize << 10);
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "m_fileIOHandler.Init() returned AKRESULT %d", akResult);
+            AZLOG_ERROR("m_fileIOHandler.Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         m_fileIOHandler.SetBankPath(m_soundbankFolder.c_str());
@@ -494,9 +487,9 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::SoundEngine::Init() returned AKRESULT %d", akResult);
+            AZLOG_ERROR("AK::SoundEngine::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         AkMusicSettings akMusicSettings;
@@ -506,9 +499,9 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::MusicEngine::Init() returned AKRESULT %d", akResult);
+            AZLOG_ERROR("AK::MusicEngine::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
         AkSpatialAudioInitSettings akSpatialAudioSettings;
@@ -516,9 +509,9 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::SpatialAudio::Init() returned AKRESULT %d", akResult);
+            AZLOG_ERROR("AK::SpatialAudio::Init() returned AKRESULT %d", akResult);
             ShutDown();
-            return eARS_FAILURE;
+            return EAudioRequestStatus::Failure;
         }
 
 #if !defined(WWISE_RELEASE)
@@ -532,7 +525,10 @@ namespace Audio
 
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::Comm::Init() returned AKRESULT %d. Communication between the Wwise authoring application and the game will not be possible\n", akResult);
+                AZLOG_ERROR(
+                    "AK::Comm::Init() returned AKRESULT %d.  Communication between the Wwise authoring application and the game will not "
+                    "be possible",
+                    akResult);
                 m_isCommSystemInitialized = false;
             }
 
@@ -541,7 +537,7 @@ namespace Audio
             if (!IS_WWISE_OK(akResult))
             {
                 AK::Comm::Term();
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "AK::Monitor::SetLocalOutput() returned AKRESULT %d", akResult);
+                AZLOG_ERROR("AK::Monitor::SetLocalOutput() returned AKRESULT %d", akResult);
                 m_isCommSystemInitialized = false;
             }
         }
@@ -555,7 +551,7 @@ namespace Audio
 
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "AK::SoundEngine::RegisterGameObject() failed for '%s' with AKRESULT %d", WwiseGlobalAudioObjectName, akResult);
+            AZLOG_ERROR("AK::SoundEngine::RegisterGameObject() failed for '%s' with AKRESULT %d", WwiseGlobalAudioObjectName, akResult);
         }
 
         // Load init.bnk before making the system available to the users
@@ -566,11 +562,11 @@ namespace Audio
         if (!IS_WWISE_OK(akResult))
         {
             // This does not qualify for a fallback to the 'Null' audio implementation!
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load %s, returned AKRESULT %d", Wwise::InitBank, akResult);
+            AZLOG_ERROR("Wwise failed to load %s, returned AKRESULT %d", Wwise::InitBank, akResult);
             m_initBankID = AK_INVALID_BANK_ID;
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -587,7 +583,7 @@ namespace Audio
 
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "AK::Monitor::SetLocalOutput() returned AKRESULT %d", akResult);
+                AZLOG_WARN("AK::Monitor::SetLocalOutput() returned AKRESULT %d", akResult);
             }
 
             m_isCommSystemInitialized = false;
@@ -597,7 +593,7 @@ namespace Audio
         akResult = AK::SoundEngine::UnregisterAudioDeviceStatusCallback();
         if (akResult != AK_Success)
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "AK::SoundEngine::UnregisterAudioDeviceStatusCallback failed!\n");
+            AZLOG_WARN("AK::SoundEngine::UnregisterAudioDeviceStatusCallback() returned AKRESULT %d", akResult);
         }
 
         // Shutdown the AudioSourceManager
@@ -612,14 +608,15 @@ namespace Audio
 
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "AK::SoundEngine::UnregisterGameObject() failed for '%s' with AKRESULT %d", WwiseGlobalAudioObjectName, akResult);
+                AZLOG_WARN(
+                    "AK::SoundEngine::UnregisterGameObject() failed for '%s' with AKRESULT %d", WwiseGlobalAudioObjectName, akResult);
             }
 
             akResult = AK::SoundEngine::ClearBanks();
 
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Failed to clear sound banks!");
+                AZLOG_ERROR("AK::SoundEngine::ClearBanks() returned AKRESULT %d", akResult);
             }
 
             AK::SoundEngine::Term();
@@ -640,21 +637,21 @@ namespace Audio
             AK::MemoryMgr::Term();
         }
 
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::Release()
     {
         // Deleting this object and destroying the allocator has been moved to AudioEngineWwiseSystemComponent
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::StopAllSounds()
     {
         AK::SoundEngine::StopAll();
-        return eARS_SUCCESS;
+        return EAudioRequestStatus::Success;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -672,15 +669,15 @@ namespace Audio
 
             if (!akSuccess)
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise RegisterGameObj failed with AKRESULT: %d", akResult);
+                AZLOG_WARN("AK::SoundEngine::RegisterGameObj() returned AKRESULT %d", akResult);
             }
 
             return BoolToARS(akSuccess);
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise RegisterGameObj failed, audioObjectData was null");
-            return eARS_FAILURE;
+            AZLOG_WARN("RegisterAudioObject failed, audioObjectData was null");
+            return EAudioRequestStatus::Failure;
         }
     }
 
@@ -697,15 +694,15 @@ namespace Audio
 
             if (!akSuccess)
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise UnregisterGameObj failed with AKRESULT: %d", akResult);
+                AZLOG_WARN("AK::SoundEngine::UnregisterGameObj() returned AKRESULT %d", akResult);
             }
 
             return BoolToARS(akSuccess);
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise UnregisterGameObj failed, audioObjectData was null");
-            return eARS_FAILURE;
+            AZLOG_WARN("UnregisterAudioObject failed, audioObjectData was null");
+            return EAudioRequestStatus::Failure;
         }
     }
 
@@ -719,21 +716,21 @@ namespace Audio
             implObjectData->cEnvironmentImplAmounts.clear();
             implObjectData->bNeedsToUpdateEnvironments = false;
 
-            return eARS_SUCCESS;
+            return EAudioRequestStatus::Success;
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_WARNING, "Resetting Audio object failed, audioObjectData was null");
-            return eARS_FAILURE;
+            AZLOG_WARN("ResetAudioObject failed, audioObjectData was null");
+            return EAudioRequestStatus::Failure;
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UpdateAudioObject(IATLAudioObjectData* const audioObjectData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (audioObjectData)
         {
@@ -789,7 +786,7 @@ namespace Audio
         IATLEventData* const eventData,
         const SATLSourceData* const sourceData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
@@ -797,16 +794,11 @@ namespace Audio
 
         if (implObjectData && implTriggerData && implEventData)
         {
-            AkGameObjectID akObjectId = AK_INVALID_GAME_OBJECT;
+            AkGameObjectID akObjectId = (implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID);
 
             if (implObjectData->bHasPosition)
             {
-                akObjectId = implObjectData->nAKID;
                 PostEnvironmentAmounts(implObjectData);
-            }
-            else
-            {
-                akObjectId = m_globalGameObjectID;
             }
 
             AkPlayingID akPlayingId = AK_INVALID_PLAYING_ID;
@@ -816,7 +808,7 @@ namespace Audio
                 {
                     AZ_Assert(sourceData, "SourceData not provided for source type!");
                     // format: "external/{collection_id}/{language_id}/{file_id}.wem"
-                    auto filePath = AZStd::string::format("%s" "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 ".wem",
+                    auto filePath = AZStd::string::format("%s/%llu/%llu/%llu.wem",
                         Audio::Wwise::ExternalSourcesPath,
                         sourceData->m_sourceInfo.m_collectionId,
                         sourceData->m_sourceInfo.m_languageId,
@@ -833,7 +825,7 @@ namespace Audio
                     akPlayingId = AK::SoundEngine::PostEvent(
                         implTriggerData->nAKID,
                         akObjectId,
-                        AK_EndOfEvent | AK_Duration,
+                        AK_EndOfEvent,
                         &WwiseEventCallback,
                         implEventData,
                         1,
@@ -843,13 +835,12 @@ namespace Audio
                     {
                         implEventData->audioEventState = eAES_PLAYING;
                         implEventData->nAKID = akPlayingId;
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
                         // if Posting an Event failed, try to prepare it, if it isn't prepared already
-                        g_audioImplLogger_wwise.Log(eALT_WARNING, "Failed to Post Wwise event %u with external source '%s'",
-                            implTriggerData->nAKID, filePath.c_str());
+                        AZLOG_WARN("Failed to post Wwise event %u with external source '%s'", implTriggerData->nAKID, filePath.c_str());
                     }
                     break;
                 }
@@ -882,12 +873,12 @@ namespace Audio
 
                         implEventData->audioEventState = eAES_PLAYING;
                         implEventData->nAKID = akPlayingId;
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
                         // if Posting an Event failed, try to prepare it, if it isn't prepared already
-                        g_audioImplLogger_wwise.Log(eALT_WARNING, "Failed to Post Wwise event %u", implTriggerData->nAKID);
+                        AZLOG_WARN("Failed to post Wwise event %u", implTriggerData->nAKID);
                     }
                     break;
                 }
@@ -895,7 +886,7 @@ namespace Audio
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData, ATLTriggerData or EventData passed to the Wwise implementation of ActivateTrigger.");
+            AZLOG_ERROR("Invalid AudioObjectData, ATLTriggerData, or EventData passed to ActivateTrigger");
         }
 
         return result;
@@ -906,7 +897,7 @@ namespace Audio
         [[maybe_unused]] IATLAudioObjectData* const audioObjectData,
         const IATLEventData* const eventData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implEventData = static_cast<const SATLEventData_wwise*>(eventData);
 
@@ -917,19 +908,19 @@ namespace Audio
                 case eAES_PLAYING:
                 {
                     AK::SoundEngine::StopPlayingID(implEventData->nAKID, 10);
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                     break;
                 }
                 default:
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Stopping an event of this type is not supported yet");
+                    AZLOG_ERROR("Stopping an event in this state is not supported yet");
                     break;
                 }
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid EventData passed to the Wwise implementation of StopEvent.");
+            AZLOG_ERROR("Invalid EventData passed to StopEvent");
         }
 
         return result;
@@ -938,7 +929,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::StopAllEvents(IATLAudioObjectData* const audioObjectData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -948,11 +939,11 @@ namespace Audio
 
             AK::SoundEngine::StopAll(akObjectId);
 
-            result = eARS_SUCCESS;
+            result = EAudioRequestStatus::Success;
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData passed to the Wwise implementation of StopAllEvents.");
+            AZLOG_ERROR("Invalid AudioObjectData passed to StopAllEvents");
         }
         return result;
     }
@@ -962,7 +953,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const SATLWorldPosition& worldPosition)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -974,16 +965,16 @@ namespace Audio
             const AKRESULT akResult = AK::SoundEngine::SetPosition(implObjectData->nAKID, akSoundPos);
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise SetPosition failed with AKRESULT: %d", akResult);
+                AZLOG_WARN("AK::SoundEngine::SetPosition() returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData passed to the Wwise implementation of SetPosition.");
+            AZLOG_ERROR("Invalid AudioObjectData passed to SetPosition");
         }
 
         return result;
@@ -994,7 +985,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const MultiPositionParams& multiPositionParams)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -1018,16 +1009,16 @@ namespace Audio
             const AKRESULT akResult = AK::SoundEngine::SetMultiplePositions(implObjectData->nAKID, akPositions.data(), static_cast<AkUInt16>(akPositions.size()), type);
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise SetMultiplePositions failed with AKRESULT: %d\n", akResult);
+                AZLOG_WARN("AK::SoundEngine::SetMultiplePositions returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData passed to the Wwise implementation of SetMultiplePositions.");
+            AZLOG_ERROR("Invalid AudioObjectData passed to SetMultiplePositions");
         }
 
         return result;
@@ -1041,7 +1032,7 @@ namespace Audio
     {
         static const float s_envEpsilon = 0.0001f;
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implEnvironmentData = static_cast<const SATLEnvironmentImplData_wwise*>(environmentData);
@@ -1065,7 +1056,7 @@ namespace Audio
                         implObjectData->bNeedsToUpdateEnvironments = true;
                     }
 
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                     break;
                 }
                 case eWAET_RTPC:
@@ -1076,16 +1067,11 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
-                        g_audioImplLogger_wwise.Log(
-                            eALT_WARNING,
-                            "Wwise failed to set the Rtpc %u to value %f on object %u in SetEnvironement()",
-                            implEnvironmentData->nAKRtpcID,
-                            akRtpcValue,
-                            implObjectData->nAKID);
+                        AZLOG_WARN("AK::SoundEngine::SetRTPCValue returned AKRESULT %d", akResult);
                     }
                     break;
                 }
@@ -1097,7 +1083,7 @@ namespace Audio
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData or EnvironmentData passed to the Wwise implementation of SetEnvironment");
+            AZLOG_ERROR("Invalid AudioObjectData or EnvironmentData passed to SetEnvironment");
         }
 
         return result;
@@ -1109,7 +1095,7 @@ namespace Audio
         const IATLRtpcImplData* const rtpcData,
         const float value)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implRtpcData = static_cast<const SATLRtpcImplData_wwise*>(rtpcData);
@@ -1122,21 +1108,16 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(
-                    eALT_WARNING,
-                    "Wwise failed to set the Rtpc %llu to value %f on object %llu",
-                    implRtpcData->nAKID,
-                    static_cast<AkRtpcValue>(value),
-                    implObjectData->nAKID);
+                AZLOG_WARN("AK::SoundEngine::SetRTPCValue returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData or RtpcData passed to the Wwise implementation of SetRtpc");
+            AZLOG_ERROR("Invalid AudioObjectData or RtpcData passed to SetRtpc");
         }
 
         return result;
@@ -1147,7 +1128,7 @@ namespace Audio
         IATLAudioObjectData* const audioObjectData,
         const IATLSwitchStateImplData* const switchStateData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implSwitchStateData = static_cast<const SATLSwitchStateImplData_wwise*>(switchStateData);
@@ -1158,7 +1139,7 @@ namespace Audio
             {
                 case eWST_SWITCH:
                 {
-                    const AkGameObjectID akObjectId = implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID;
+                    const AkGameObjectID akObjectId = (implObjectData->bHasPosition ? implObjectData->nAKID : m_globalGameObjectID);
 
                     const AKRESULT akResult = AK::SoundEngine::SetSwitch(
                             implSwitchStateData->nAKSwitchID,
@@ -1167,16 +1148,11 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
-                        g_audioImplLogger_wwise.Log(
-                            eALT_WARNING,
-                            "Wwise failed to set the switch group %u to state %u on object %llu",
-                            implSwitchStateData->nAKSwitchID,
-                            implSwitchStateData->nAKStateID,
-                            akObjectId);
+                        AZLOG_WARN("AK::SoundEngine::SetSwitch() returned AKRESULT %d", akResult);
                     }
                     break;
                 }
@@ -1188,15 +1164,11 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
-                        g_audioImplLogger_wwise.Log(
-                            eALT_WARNING,
-                            "Wwise failed to set the state group %u to state %u",
-                            implSwitchStateData->nAKSwitchID,
-                            implSwitchStateData->nAKStateID);
+                        AZLOG_WARN("AK::SoundEngine::SetState() returned AKRESULT %d", akResult);
                     }
                     break;
                 }
@@ -1211,16 +1183,11 @@ namespace Audio
 
                     if (IS_WWISE_OK(akResult))
                     {
-                        result = eARS_SUCCESS;
+                        result = EAudioRequestStatus::Success;
                     }
                     else
                     {
-                        g_audioImplLogger_wwise.Log(
-                            eALT_WARNING,
-                            "Wwise failed to set the Rtpc %u to value %f on object %llu",
-                            implSwitchStateData->nAKSwitchID,
-                            static_cast<AkRtpcValue>(implSwitchStateData->fRtpcValue),
-                            akObjectId);
+                        AZLOG_WARN("AK::SoundEngine::SetRTPCValue() returned AKRESULT %d", akResult);
                     }
                     break;
                 }
@@ -1230,7 +1197,6 @@ namespace Audio
                 }
                 default:
                 {
-                    g_audioImplLogger_wwise.Log(eALT_WARNING, "Unknown EWwiseSwitchType: %u", implSwitchStateData->eType);
                     AZ_Assert(false, "<Wwise> Unknown EWwiseSwitchType");
                     break;
                 }
@@ -1238,7 +1204,7 @@ namespace Audio
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData or RtpcData passed to the Wwise implementation of SetRtpc");
+            AZLOG_ERROR("Invalid AudioObjectData or SwitchStateData passed to SetSwitchState");
         }
 
         return result;
@@ -1252,21 +1218,19 @@ namespace Audio
     {
         if (obstruction < ObstructionOcclusionMin || obstruction > ObstructionOcclusionMax)
         {
-            g_audioImplLogger_wwise.Log(
-                eALT_WARNING,
-                "Obstruction value %f is out of range, Obstruction should be between %f and %f.",
-                obstruction, ObstructionOcclusionMin, ObstructionOcclusionMax);
+            AZLOG_WARN(
+                "Obstruction value %f is out of range, Obstruction should be in range [%f, %f]", obstruction, ObstructionOcclusionMin,
+                ObstructionOcclusionMax);
         }
 
         if (occlusion < ObstructionOcclusionMin || occlusion > ObstructionOcclusionMax)
         {
-            g_audioImplLogger_wwise.Log(
-                eALT_WARNING,
-                "Occlusion value %f is out of range, Occlusion should be between %f and %f.",
-                occlusion, ObstructionOcclusionMin, ObstructionOcclusionMax);
+            AZLOG_WARN(
+                "Occlusion value %f is out of range, Occlusion should be in range [%f, %f]", occlusion, ObstructionOcclusionMin,
+                ObstructionOcclusionMax);
         }
 
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
@@ -1280,21 +1244,16 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(
-                    eALT_WARNING,
-                    "Wwise failed to set Obstruction %f and Occlusion %f on object %llu",
-                    obstruction,
-                    occlusion,
-                    implObjectData->nAKID);
+                AZLOG_WARN("AK::SoundEngine::SetObjectObstructionAndOcclusion() returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData passed to the Wwise implementation of SetObjectObstructionAndOcclusion");
+            AZLOG_ERROR("Invalid AudioObjectData passed to SetObjectObstructionAndOcclusion");
         }
 
         return result;
@@ -1305,7 +1264,7 @@ namespace Audio
         IATLListenerData* const listenerData,
         const SATLWorldPosition& newPosition)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implListenerData = static_cast<SATLListenerData_wwise*>(listenerData);
 
@@ -1318,16 +1277,16 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise SetListenerPosition failed with AKRESULT: %u", akResult);
+                AZLOG_WARN("AK::SoundEngine::SetPosition() returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid ATLListenerData passed to the Wwise implementation of SetListenerPosition");
+            AZLOG_ERROR("Invalid ListenerData passed to SetListenerPosition");
         }
 
         return result;
@@ -1336,7 +1295,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::ResetRtpc(IATLAudioObjectData* const audioObjectData, const IATLRtpcImplData* const rtpcData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
         auto const implRtpcDat = static_cast<const SATLRtpcImplData_wwise*>(rtpcData);
@@ -1347,20 +1306,16 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(
-                    eALT_WARNING,
-                    "Wwise failed to reset the Rtpc %u on object %llu",
-                    implRtpcDat->nAKID,
-                    implObjectData->nAKID);
+                AZLOG_WARN("AK::SoundEngine::ResetRTPCValue() returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioObjectData or RtpcData passed to the Wwise implementation of ResetRtpc");
+            AZLOG_ERROR("Invalid AudioObjectData or RtpcData passed to ResetRtpc");
         }
 
         return result;
@@ -1369,7 +1324,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::RegisterInMemoryFile(SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (fileEntryInfo)
         {
@@ -1387,17 +1342,17 @@ namespace Audio
                 if (IS_WWISE_OK(akResult))
                 {
                     implFileEntryData->nAKBankID = akBankId;
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                 }
                 else
                 {
                     implFileEntryData->nAKBankID = AK_INVALID_BANK_ID;
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load bank '%s'\n", fileEntryInfo->sFileName);
+                    AZLOG_WARN("AK::SoundEngine::LoadBankMemoryView() returned AKRESULT %d", akResult);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to RegisterInMemoryFile");
+                AZLOG_ERROR("Invalid AudioFileEntryData passed to RegisterInMemoryFile");
             }
         }
 
@@ -1407,7 +1362,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UnregisterInMemoryFile(SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (fileEntryInfo)
         {
@@ -1419,16 +1374,16 @@ namespace Audio
 
                 if (IS_WWISE_OK(akResult))
                 {
-                    result = eARS_SUCCESS;
+                    result = EAudioRequestStatus::Success;
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload bank '%s'\n", fileEntryInfo->sFileName);
+                    AZLOG_WARN("AK::SoundEngine::UnloadBank() returned AKRESULT %d", akResult);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
+                AZLOG_ERROR("Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
             }
         }
 
@@ -1438,7 +1393,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::ParseAudioFileEntry(const AZ::rapidxml::xml_node<char>* audioFileEntryNode, SATLAudioFileEntryInfo* const fileEntryInfo)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         if (audioFileEntryNode && azstricmp(audioFileEntryNode->name(), WwiseXmlTags::WwiseFileTag) == 0 && fileEntryInfo)
         {
@@ -1472,7 +1427,7 @@ namespace Audio
                 fileEntryInfo->sFileName = audioFileEntryName;
                 fileEntryInfo->nMemoryBlockAlignment = AK_BANK_PLATFORM_DATA_ALIGNMENT;
                 fileEntryInfo->pImplData = azcreate(SATLAudioFileEntryData_wwise, (), Audio::AudioImplAllocator, "ATLAudioFileEntryData_wwise");
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
@@ -1531,7 +1486,7 @@ namespace Audio
         auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise-Default");
         if (newObjectData)
         {
-            auto listenerName = AZStd::string::format("DefaultAudioListener(%" PRIu64 ")", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
+            auto listenerName = AZStd::string::format("DefaultAudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
             AKRESULT akResult = AK::SoundEngine::RegisterGameObj(newObjectData->nAKListenerObjectId, listenerName.c_str());
             if (IS_WWISE_OK(akResult))
             {
@@ -1542,12 +1497,12 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise failed in SetDefaultListeners to set AkGameObjectID %llu as default with AKRESULT: %u", newObjectData->nAKListenerObjectId, akResult);
+                    AZLOG_WARN("AK::SoundEngine::SetDefaultListeners() returned AKRESULT %d", akResult);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise failed in RegisterGameObj registering a DefaultAudioListener with AKRESULT: %u", akResult);
+                AZLOG_WARN("AK::SoundEngine::RegisterGameObj() returned AKRESULT %d", akResult);
             }
         }
 
@@ -1560,11 +1515,11 @@ namespace Audio
         auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise");
         if (newObjectData)
         {
-            auto listenerName = AZStd::string::format("AudioListener(%" PRIu64 ")", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
+            auto listenerName = AZStd::string::format("AudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
             AKRESULT akResult = AK::SoundEngine::RegisterGameObj(newObjectData->nAKListenerObjectId, listenerName.c_str());
             if (!IS_WWISE_OK(akResult))
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise failed in RegisterGameObj registering an AudioListener with AKRESULT: %u", akResult);
+                AZLOG_WARN("AK::SoundEngine::RegisterGameObj() returned AKRESULT %d", akResult);
             }
         }
 
@@ -1587,7 +1542,7 @@ namespace Audio
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING, "Wwise failed in UnregisterGameObj unregistering an AudioListener(%llu) with AKRESULT: %u", listenerData->nAKListenerObjectId, akResult);
+                AZLOG_WARN("AK::SoundEngine::UnregisterGameObj() returned AKRESULT %d", akResult);
             }
         }
 
@@ -1779,8 +1734,8 @@ namespace Audio
             AK::MemoryMgr::CategoryStats categoryStats;
             AK::MemoryMgr::GetCategoryStats(memInfo.m_poolId, categoryStats);
 
-            memInfo.m_memoryUsed = categoryStats.uUsed;
-            memInfo.m_peakUsed = categoryStats.uPeakUsed;
+            memInfo.m_memoryUsed = static_cast<AZ::u32>(categoryStats.uUsed);
+            memInfo.m_peakUsed = static_cast<AZ::u32>(categoryStats.uPeakUsed);
             memInfo.m_numAllocs = categoryStats.uAllocs;
             memInfo.m_numFrees = categoryStats.uFrees;
         }
@@ -1789,9 +1744,9 @@ namespace Audio
         AK::MemoryMgr::GetGlobalStats(globalStats);
 
         auto& memInfo = m_debugMemoryInfo.back();
-        memInfo.m_memoryReserved = globalStats.uReserved;
-        memInfo.m_memoryUsed = globalStats.uUsed;
-        memInfo.m_peakUsed = globalStats.uMax;
+        memInfo.m_memoryReserved = static_cast<AZ::u32>(globalStats.uReserved);
+        memInfo.m_memoryUsed = static_cast<AZ::u32>(globalStats.uUsed);
+        memInfo.m_peakUsed = static_cast<AZ::u32>(globalStats.uMax);
 
         // return the memory infos...
         return m_debugMemoryInfo;
@@ -1831,7 +1786,7 @@ namespace Audio
         AKRESULT akResult = AK::SoundEngine::SetPanningRule(panningRule);
         if (!IS_WWISE_OK(akResult))
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to set Panning Rule to [%s]\n", panningRule == AkPanningRule_Speakers ? "Speakers" : "Headphones");
+            AZLOG_WARN("AK::SoundEngine::SetPanningRule() returned AKRESULT %d", akResult);
         }
     }
 
@@ -1931,7 +1886,7 @@ namespace Audio
         const IATLTriggerImplData* const triggerData,
         bool prepare)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
 
@@ -1946,23 +1901,16 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(
-                    eALT_WARNING,
-                    "Wwise PrepareEvent with %s failed for Wwise event %u with AKRESULT: %u",
-                    prepare ? "Preparation_Load" : "Preparation_Unload",
-                    akUniqueId,
-                    akResult);
+                AZLOG_WARN("AK::SoundEngine::PrepareEvent() returned AKRESULT %d", akResult);
             }
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR,
-                "Invalid ATLTriggerData or EventData passed to the Wwise implementation of %sTriggerSync",
-                prepare ? "Prepare" : "Unprepare");
+            AZLOG_ERROR("Invalid ATLTriggerData or EventData passed to PrepUnprepTriggerSync");
         }
 
         return result;
@@ -1974,7 +1922,7 @@ namespace Audio
         [[maybe_unused]] IATLEventData* const eventData,
         [[maybe_unused]] bool prepare)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
 
 #if 0   // Turned off, PrepareEvent is not supported yet.
         auto const implTriggerData = static_cast<const SATLTriggerImplData_wwise*>(triggerData);
@@ -1996,12 +1944,12 @@ namespace Audio
                 implEventData->nAKID = akUniqueId;
                 implEventData->audioEventState = eAES_UNLOADING;
 
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
                 g_audioImplLogger_wwise.Log(
-                    eALT_WARNING,
+                    LogType::Warning,
                     "Wwise PrepareEvent with %s failed for Wwise event %u with AKRESULT: %u",
                     prepare ? "Preparation_Load" : "Preparation_Unload",
                     akUniqueId,
@@ -2010,7 +1958,7 @@ namespace Audio
         }
         else
         {
-            g_audioImplLogger_wwise.Log(eALT_ERROR,
+            g_audioImplLogger_wwise.Log(LogType::Error,
                 "Invalid ATLTriggerData or EventData passed to the Wwise implementation of %sTriggerAsync",
                 prepare ? "Prepare" : "Unprepare");
         }
@@ -2077,7 +2025,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::PostEnvironmentAmounts(IATLAudioObjectData* const audioObjectData)
     {
-        EAudioRequestStatus result = eARS_FAILURE;
+        EAudioRequestStatus result = EAudioRequestStatus::Failure;
         auto const implObjectData = static_cast<SATLAudioObjectData_wwise*>(audioObjectData);
 
         if (implObjectData)
@@ -2146,14 +2094,13 @@ namespace Audio
 
             if (IS_WWISE_OK(akResult))
             {
-                result = eARS_SUCCESS;
+                result = EAudioRequestStatus::Success;
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_WARNING,
-                    "Wwise SetGameObjectAuxSendValues failed on object %llu with AKRESULT: %u",
-                    implObjectData->nAKID,
-                    akResult);
+                AZLOG_WARN(
+                    "AK::SoundEngine::SetGameObjectAuxSendValues() on object %llu returned AKRESULT %u",
+                    static_cast<AZ::u64>(implObjectData->nAKID), akResult);
             }
 
             implObjectData->bNeedsToUpdateEnvironments = false;
@@ -2173,16 +2120,7 @@ namespace Audio
     {
         if (language)
         {
-            AZStd::string languageSubfolder;
-
-            if (azstricmp(language, "english") == 0)
-            {
-                languageSubfolder = "english(us)";
-            }
-            else
-            {
-                languageSubfolder = language;
-            }
+            AZStd::string languageSubfolder(language);
 
             languageSubfolder += "/";
 

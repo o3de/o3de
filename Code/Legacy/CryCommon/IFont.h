@@ -14,16 +14,17 @@
 #define CRYINCLUDE_CRYCOMMON_IFONT_H
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #include <Cry_Math.h>
 #include <Cry_Color.h>
-#include <CryString.h>
 #include <smartptr.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
 struct ISystem;
-class ICrySizer;
 
 struct ICryFont;
 struct IFFont;
@@ -33,9 +34,9 @@ struct SVF_P2F_C4B_T2F_F4B;
 
 extern "C"
 #ifdef CRYFONT_EXPORTS
-DLL_EXPORT
+AZ_DLL_EXPORT
 #else
-DLL_IMPORT
+AZ_DLL_IMPORT
 #endif
 ICryFont * CreateCryFontInterface(ISystem * pSystem);
 
@@ -95,13 +96,10 @@ struct ICryFont
     virtual void AddCharsToFontTextures(FontFamilyPtr pFontFamily, const char* pChars, int glyphSizeX = defaultGlyphSizeX, int glyphSizeY = defaultGlyphSizeY) = 0;
 
     // Summary:
-    //   Puts the objects used in this module into the sizer interface
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
-    // Summary:
     //   All font names separated by ,
     // Example:
     //   "console,default,hud"
-    virtual string GetLoadedFontNames() const = 0;
+    virtual AZStd::string GetLoadedFontNames() const = 0;
 
     //! \brief Called when the g_language (current language) setting changes.
     //!
@@ -264,11 +262,7 @@ struct IFFont
 
     // Description:
     //   Wraps text based on specified maximum line width (UTF-8)
-    virtual void WrapText(string& result, float maxWidth, const char* pStr, const STextDrawContext& ctx) = 0;
-
-    // Description:
-    //   Puts the memory used by this font into the given sizer.
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
+    virtual void WrapText(AZStd::string& result, float maxWidth, const char* pStr, const STextDrawContext& ctx) = 0;
 
     // Description:
     //   useful for special feature rendering interleaved with fonts (e.g. box behind the text)
@@ -338,7 +332,7 @@ struct FontFamily
     FontFamily& operator=(const FontFamily&) = delete;
     FontFamily& operator=(const FontFamily&&) = delete;
 
-    string familyName;
+    AZStd::string familyName;
     IFFont* normal;
     IFFont* bold;
     IFFont* italic;

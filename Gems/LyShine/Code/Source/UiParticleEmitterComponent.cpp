@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/ISprite.h>
 
@@ -73,7 +74,7 @@ void UiParticleEmitterComponent::SetIsEmitting(bool emitParticles)
     {
         m_nextEmitTime = (m_isHitParticleCountOnActivate ? -m_particleLifetime : 0.0f);
         m_emitterAge = 0.0f;
-        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : gEnv->pTimer->GetAsyncTime().GetMilliSecondsAsInt64());
+        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : aznumeric_cast<int64_t>(AZ::GetElapsedTimeMs()));
     }
     m_isEmitting = emitParticles;
 }
@@ -409,7 +410,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellIndex(int spriteSheetIndex)
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellIndex = AZ::GetMin(numCells, m_spriteSheetCellIndex);
         m_spriteSheetCellEndIndex = AZ::GetMax(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -428,7 +429,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellEndIndex(int spriteSheetEndIn
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellEndIndex = AZ::GetMin(numCells, m_spriteSheetCellEndIndex);
         m_spriteSheetCellIndex = AZ::GetMin(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -759,7 +760,7 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
+    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(static_cast<AZ::u32>(m_particleContainer.size()), m_particleBufferSize);
     if (particlesToRender == 0)
     {
         return;
@@ -785,11 +786,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
-        if (sprite)
-        {
-            image = sprite->GetImage();
-        }
+        image = m_sprite->GetImage();
     }
 
     bool isClampTextureMode = true;
@@ -830,9 +827,9 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::u32 totalVerticesInserted = 0;
 
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
-    for (int i = 0; i < particlesToRender; ++i)
+    for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
-        SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
+        LyShine::UiPrimitiveVertex* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
         if (m_particleContainer[i].FillVertices(firstVertexOfParticle, renderParameters, transform))
         {
@@ -843,11 +840,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-    if (lyRenderGraph)
-    {
-        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-    }
+    renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1436,14 +1429,14 @@ void UiParticleEmitterComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
 
     if (!m_sprite && !m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     m_currentAspectRatio = m_particleSize.GetX() / m_particleSize.GetY();
@@ -1825,9 +1818,9 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
-    for (int i = 0; i < numIndices; i += indicesPerParticle)
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
+    for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;
         m_cachedPrimitive.m_indices[i + 1] = 1 + baseIndex;
@@ -1844,7 +1837,7 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     {
         delete [] m_cachedPrimitive.m_vertices;
     }
-    m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+    m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
 
     m_particleContainer.clear();
     m_particleContainer.reserve(m_particleBufferSize);
@@ -1934,7 +1927,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     SAFE_RELEASE(m_sprite);
@@ -1943,7 +1936,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     m_spriteSheetCellIndex = 0;
     if (IsSpriteTypeSpriteSheet())
     {
-        m_spriteSheetCellEndIndex = m_sprite->GetSpriteSheetCells().size() - 1;
+        m_spriteSheetCellEndIndex = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size() - 1);
     }
 }
 
@@ -2086,7 +2079,7 @@ UiParticleEmitterComponent::AZu32ComboBoxVec UiParticleEmitterComponent::Populat
     // There may not be a sprite loaded for this component
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
 
         if (numCells != 0)
         {

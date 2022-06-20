@@ -1,0 +1,22 @@
+{
+    "entries": [
+        {
+            "base": "UiInitializationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Initialization",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "InGamePostActivate",
+                    "details": {
+                        "name": "In-game Post-activate",
+                        "tooltip": "Executes after all loaded UI elements have been activated and their parent and canvas references fixed-up"
+                    }
+                }
+            ]
+        }
+    ]
+}

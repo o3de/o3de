@@ -8,6 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AutomatedTestingSystemComponent.h>
 
@@ -27,6 +28,8 @@ namespace AutomatedTesting
             m_descriptors.insert(m_descriptors.end(), {
                 AutomatedTestingSystemComponent::CreateDescriptor(),
             });
+
+            CreateComponentDescriptors(m_descriptors); //< Register multiplayer components
         }
 
         /**

@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{F269F2DB-F2D8-515D-BA5C-4C9E28A725E3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Length",
+                "category": "Deprecated",
+                "tooltip": "This node is deprecated, use the Length node, it provides contextual type and slot configurations"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

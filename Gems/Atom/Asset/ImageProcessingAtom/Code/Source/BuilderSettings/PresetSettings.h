@@ -11,9 +11,9 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Asset/AssetCommon.h>
 
-#include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/CubemapSettings.h>
 #include <BuilderSettings/MipmapSettings.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <Atom/ImageProcessing/PixelFormats.h>
 
 namespace ImageProcessingAtom
@@ -25,13 +25,21 @@ namespace ImageProcessingAtom
         AZ_TYPE_INFO(PresetSettings, "{4F4DEC5C-48DD-40FD-97B4-5FB6FC7242E9}");
         AZ_CLASS_ALLOCATOR(PresetSettings, AZ::SystemAllocator, 0);
 
+        //! Custom overrides for how to handle the output format
+        enum OutputTypeHandling
+        {
+            UseSpecifiedOutputType = 0,
+            UseInputFormat
+        };
+
         PresetSettings();
         PresetSettings(const PresetSettings& other);
         PresetSettings& operator= (const PresetSettings& other);
         bool operator== (const PresetSettings& other) const;
         static void Reflect(AZ::ReflectContext* context);
         
-        //unique id for the preset
+        // unique id for the preset
+        // this uuid will be deprecated. The preset name will be used as an unique id for the preset
         AZ::Uuid m_uuid = 0;
 
         PresetName m_name;
@@ -83,16 +91,7 @@ namespace ImageProcessingAtom
 
         //settings for mipmap generation. it's null if this preset disable mipmap.
         AZStd::unique_ptr<MipmapSettings> m_mipmapSetting;
-
-        //some specific settings
-        // "colorchart". This is to indicate if need to extract color chart from the image and output the color chart data.
-        // This is very specific usage for cryEngine. Check ColorChart.cpp for better explanation.
-        bool m_isColorChart = false;
-
-        //"highpass". Defines which mip level is subtracted when applying the high pass filter
-        //this is only used for terrain asset. we might remove it later since it can be done with source image directly
-        AZ::u32 m_highPassMip = 0;
-
+        
         //"glossfromnormals". Bake normal variance into smoothness stored in alpha channel
         AZ::u32 m_glossFromNormals = 0;
 
@@ -108,12 +107,11 @@ namespace ImageProcessingAtom
         //that add up to 64K or lower
         AZ::u8 m_numResidentMips = 0;
 
-        //legacy options might be removed later
-        //"glosslegacydist". If the gloss map use legacy distribution. NW is still using legacy dist
-        bool m_isLegacyGloss = false;
-
         //"swizzle". need to be 4 character and each character need to be one of "rgba01"
         AZStd::string m_swizzle;
+
+        //! Controls how the output type format is derived
+        OutputTypeHandling m_outputTypeHandling = UseSpecifiedOutputType;
 
     protected:
         void DeepCopyMembers(const PresetSettings& other);
@@ -148,3 +146,10 @@ namespace ImageProcessingAtom
     };
     
 } // namespace ImageProcessingAtom
+
+namespace AZ
+{
+    // Bind enums with uuids. Required for named enum support.
+    // Note: AZ_TYPE_INFO_SPECIALIZE has to be declared in AZ namespace
+    AZ_TYPE_INFO_SPECIALIZE(ImageProcessingAtom::PresetSettings::OutputTypeHandling, "{F919ECB6-BF80-4BEF-9E72-EA76504EBE9D}");
+}

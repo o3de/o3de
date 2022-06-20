@@ -9,7 +9,10 @@
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
@@ -36,6 +39,13 @@ namespace AzToolsFramework
                             AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden |
                                 AZ::Edit::SliceFlags::DontGatherReference);
                 }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->ConstantProperty(
+                    "EditorPrefabComponentTypeId", BehaviorConstant(AZ::Uuid(EditorPrefabComponent::EditorPrefabComponentTypeId)))
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
         }
 

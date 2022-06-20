@@ -66,13 +66,6 @@ namespace ImageProcessingAtom
         bool GammaToLinearRGBA32F(bool bDeGamma);
         void LinearToGamma();
 
-        // ---------------------------------------------------------------------------------
-        // Tools for A32B32G32R32F
-
-        void CreateHighPass(uint32 dwMipDown);
-
-        void CreateColorChart();
-
         //convert various original cubemap layouts to new layout
         bool ConvertCubemapLayout(CubemapLayoutType newLayout);
     };

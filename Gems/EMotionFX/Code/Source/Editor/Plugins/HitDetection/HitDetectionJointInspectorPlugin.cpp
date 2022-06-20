@@ -8,13 +8,12 @@
 
 #include <AzFramework/Physics/SystemBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #include <Editor/Plugins/HitDetection/HitDetectionJointWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -32,12 +31,6 @@ namespace EMotionFX
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
     }
 
-    EMStudio::EMStudioPlugin* HitDetectionJointInspectorPlugin::Clone()
-    {
-        HitDetectionJointInspectorPlugin* newPlugin = new HitDetectionJointInspectorPlugin();
-        return newPlugin;
-    }
-
     bool HitDetectionJointInspectorPlugin::Init()
     {
         if (ColliderHelpers::AreCollidersReflected())
@@ -51,13 +44,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_nodeWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
         }
 
         return true;
@@ -157,26 +150,4 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::HitDetection);
     }
 
-    void HitDetectionJointInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_HITDETECTION_COLLIDERS);
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::HitDetection,
-            renderOptions->GetHitDetectionColliderColor(),
-            renderOptions->GetSelectedHitDetectionColliderColor(),
-            renderPlugin,
-            renderInfo);
-    }
 } // namespace EMotionFX

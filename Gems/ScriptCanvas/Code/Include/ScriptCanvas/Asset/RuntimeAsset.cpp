@@ -9,8 +9,9 @@
 #include "RuntimeAsset.h"
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
-namespace ScriptCanvasRuntimeAssetCpp
+namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
 {
     enum class RuntimeDataVersion
     {
@@ -58,6 +59,7 @@ namespace ScriptCanvas
             m_script = AZStd::move(other.m_script);
             m_requiredAssets = AZStd::move(other.m_requiredAssets);
             m_requiredScriptEvents = AZStd::move(other.m_requiredScriptEvents);
+            m_areScriptLocalStaticsInitialized = AZStd::move(other.m_areScriptLocalStaticsInitialized);
         }
 
         return *this;
@@ -70,7 +72,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<RuntimeData>()
-                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataVersion::Current))
+                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::RuntimeDataVersion::Current))
                 ->Field("input", &RuntimeData::m_input)
                 ->Field("debugMap", &RuntimeData::m_debugMap)
                 ->Field("script", &RuntimeData::m_script)
@@ -109,22 +111,74 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
-    bool RuntimeDataOverrides::IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides)
+    IsPreloadedResult IsPreloaded(const RuntimeDataOverrides& overrides)
     {
-        if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        if (!overrides.m_runtimeAsset.Get())
         {
-            return false;
+            if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
         }
+
+//         const auto runtimeData = overrides.m_runtimeAsset.Get()->m_runtimeData;
+// 
+//         if (!runtimeData.m_script.Get())
+//         {
+//             if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+//             {
+//                 return IsPreloadedResult::PreloadBehaviorNotEnforced;
+//             }
+// 
+//             return IsPreloadedResult::DataNotLoaded;
+//         }
 
         for (auto& dependency : overrides.m_dependencies)
         {
-            if (!IsPreloadBehaviorEnforced(dependency))
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
             {
-                return false;
+                return dependencyResult;
             }
         }
 
-        return true;
+        return IsPreloadedResult::Yes;
+    }
+
+    IsPreloadedResult IsPreloaded(RuntimeAssetPtr asset)
+    {
+        if (!asset.Get())
+        {
+            if (asset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        const auto runtimeData = asset.Get()->m_runtimeData;
+
+        if (!runtimeData.m_script.Get())
+        {
+            if (runtimeData.m_script.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                return IsPreloadedResult::PreloadBehaviorNotEnforced;
+            }
+
+            return IsPreloadedResult::DataNotLoaded;
+        }
+
+        for (auto& dependency : runtimeData.m_requiredAssets)
+        {
+            if (const auto dependencyResult = IsPreloaded(dependency); dependencyResult != IsPreloadedResult::Yes)
+            {
+                return dependencyResult;
+            }
+        }
+
+        return IsPreloadedResult::Yes;
     }
 
     void RuntimeDataOverrides::EnforcePreloadBehavior()
@@ -144,7 +198,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeDataOverrides>()
-                ->Version(static_cast<unsigned int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataOverridesVersion::Current))
+                ->Version(static_cast<unsigned int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::RuntimeDataOverridesVersion::Current))
                 ->Field("runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
                 ->Field("variables", &RuntimeDataOverrides::m_variables)
                 ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
@@ -193,7 +247,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<SubgraphInterfaceData>()
-                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::FunctionRuntimeDataVersion::Current))
+                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::FunctionRuntimeDataVersion::Current))
                 ->Field("name", &SubgraphInterfaceData::m_name)
                 ->Field("interface", &SubgraphInterfaceData::m_interface)
                 ;

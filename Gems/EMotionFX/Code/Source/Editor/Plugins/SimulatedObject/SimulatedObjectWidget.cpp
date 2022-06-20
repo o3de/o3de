@@ -8,6 +8,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -16,8 +17,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
@@ -25,6 +25,7 @@
 #include <Editor/ReselectingTreeView.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <QLabel>
 #include <QPushButton>
@@ -84,7 +85,7 @@ namespace EMotionFX
             }
             else
             {
-                AZStd::unordered_set<AZ::u32> selectedJointIndices;
+                AZStd::unordered_set<size_t> selectedJointIndices;
                 for (const QModelIndex& index : selectedIndices)
                 {
                     const SimulatedJoint* joint = index.data(SimulatedObjectModel::ROLE_JOINT_PTR).value<SimulatedJoint*>();
@@ -113,7 +114,7 @@ namespace EMotionFX
 
         connect(m_addSimulatedObjectButton, &QPushButton::clicked, this, [this]()
         {
-            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, mDock);
+            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, m_dock);
         });
 
         AZ::SerializeContext* serializeContext;
@@ -130,9 +131,9 @@ namespace EMotionFX
         mainLayout->addWidget(m_selectionWidget, /*stretch=*/1);
         mainLayout->addStretch();
 
-        mDock->setWidget(m_mainWidget);
+        m_dock->setWidget(m_mainWidget);
 
-        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget("Simulated Object Inspector", mDock);
+        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget("Simulated Object Inspector", m_dock);
         m_simulatedObjectInspectorDock->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         m_simulatedObjectInspectorDock->setObjectName("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
         m_simulatedJointWidget = new SimulatedJointWidget(this);
@@ -330,6 +331,11 @@ namespace EMotionFX
 
         const Actor* actor = selectedRowIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
         const SimulatedObjectSetup* simulatedObjectSetup = actor->GetSimulatedObjectSetup().get();
+        if (!simulatedObjectSetup)
+        {
+            AZ_Assert(false, "Expected a simulated object setup on the actor.");
+            return;
+        }
 
         AZStd::unordered_set<const SimulatedObject*> addToCandidates;
         for (const QModelIndex& index : selectedRowIndices)
@@ -361,7 +367,7 @@ namespace EMotionFX
         connect(addToSimulatedObjectMenu->addAction("New simulated object..."), &QAction::triggered, this, [this, selectedRowIndices]() {
             const bool addChildren = (QMessageBox::question(this->GetDockWidget(),
                 "Add children of joints?", "Add all children of selected joints to the simulated object?") == QMessageBox::Yes);
-            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, selectedRowIndices, addChildren, mDock);
+            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, selectedRowIndices, addChildren, m_dock);
         });
         menu->addSeparator();
 
@@ -451,7 +457,7 @@ namespace EMotionFX
     {
         CommandAddSimulatedJoints* addSimulatedJointsCommand = static_cast<CommandAddSimulatedJoints*>(command);
         const size_t objectIndex = addSimulatedJointsCommand->GetObjectIndex();
-        const AZStd::vector<AZ::u32>& jointIndices = addSimulatedJointsCommand->GetJointIndices();
+        const AZStd::vector<size_t>& jointIndices = addSimulatedJointsCommand->GetJointIndices();
 
         SimulatedObjectWidget* simulatedObjectPlugin = static_cast<SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(SimulatedObjectWidget::CLASS_ID));
         if (simulatedObjectPlugin)
@@ -475,34 +481,29 @@ namespace EMotionFX
         return true;
     }
 
-    // --------------------------------------------------  Rendering -------------------------------------------------------------
-
-    void SimulatedObjectWidget::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
+    void SimulatedObjectWidget::Render(EMotionFX::ActorRenderFlags renderFlags)
     {
         if (!m_actor || !m_actorInstance)
         {
             return;
         }
 
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderSimulatedJoints = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_SIMULATEJOINTS);
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-        if (renderSimulatedJoints && !selectedJointIndices.empty())
+        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
+        if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::SimulatedJoints) && !selectedJointIndices.empty())
         {
             // Render the joint radius.
-            const MCore::RGBAColor defaultColor = renderPlugin->GetRenderOptions()->GetSelectedSimulatedObjectColliderColor();
-            const AZ::u32 actorInstanceCount = GetActorManager().GetNumActorInstances();
-            for (AZ::u32 actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
+            const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
+            for (size_t actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
             {
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(actorInstanceIndex);
                 const Actor* actor = actorInstance->GetActor();
                 const SimulatedObjectSetup* setup = actor->GetSimulatedObjectSetup().get();
-                AZ_Assert(setup, "Expected a simulated object setup on the actor instance.");
+                if (!setup)
+                {
+                    AZ_Assert(false, "Expected a simulated object setup on the actor instance.");
+                    return;
+                }
+
                 const size_t objectCount = setup->GetNumSimulatedObjects();
                 for (size_t objectIndex = 0; objectIndex < objectCount; ++objectIndex)
                 {
@@ -511,7 +512,7 @@ namespace EMotionFX
                     for (size_t simulatedJointIndex = 0; simulatedJointIndex < simulatedJointCount; ++simulatedJointIndex)
                     {
                         const SimulatedJoint* simulatedJoint = object->GetSimulatedJoint(simulatedJointIndex);
-                        const AZ::u32 skeletonJointIndex = simulatedJoint->GetSkeletonJointIndex();
+                        const size_t skeletonJointIndex = simulatedJoint->GetSkeletonJointIndex();
                         if (selectedJointIndices.find(skeletonJointIndex) != selectedJointIndices.end())
                         {
                             RenderJointRadius(simulatedJoint, actorInstance, AZ::Color(1.0f, 0.0f, 1.0f, 1.0f));
@@ -520,26 +521,15 @@ namespace EMotionFX
                 }
             }
         }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_SIMULATEDOBJECT_COLLIDERS);
-        if (renderColliders)
-        {
-            const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-            ColliderContainerWidget::RenderColliders(PhysicsSetup::SimulatedObjectCollider,
-                renderOptions->GetSimulatedObjectColliderColor(),
-                renderOptions->GetSelectedSimulatedObjectColliderColor(),
-                renderPlugin,
-                renderInfo);
-        }
     }
 
-    void SimulatedObjectWidget::RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance,  const AZ::Color& color)
+    void SimulatedObjectWidget::RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance, const AZ::Color& color)
     {
-        #ifndef EMFX_SCALE_DISABLED
-            const float scale = actorInstance->GetWorldSpaceTransform().mScale.GetX();
-        #else
-            const float scale = 1.0f;
-        #endif
+#ifndef EMFX_SCALE_DISABLED
+        const float scale = actorInstance->GetWorldSpaceTransform().m_scale.GetX();
+#else
+        const float scale = 1.0f;
+#endif
 
         const float radius = joint->GetCollisionRadius() * scale;
         if (radius <= AZ::Constants::FloatEpsilon)
@@ -547,13 +537,22 @@ namespace EMotionFX
             return;
         }
 
-        AZ_Assert(joint->GetSkeletonJointIndex() != MCORE_INVALIDINDEX32, "Expected skeletal joint index to be valid.");
-        const EMotionFX::Transform jointTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(joint->GetSkeletonJointIndex());
+        AZ_Assert(joint->GetSkeletonJointIndex() != InvalidIndex, "Expected skeletal joint index to be valid.");
+        const EMotionFX::Transform jointTransform =
+            actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(joint->GetSkeletonJointIndex());
 
-        DebugDraw& debugDraw = GetDebugDraw();
-        DebugDraw::ActorInstanceData* drawData = debugDraw.GetActorInstanceData(actorInstance);
-        drawData->Lock();
-        drawData->DrawWireframeSphere(jointTransform.mPosition, radius, color, jointTransform.mRotation, 12, 12);
-        drawData->Unlock();
+        AZ::s32 viewportId = -1;
+        EMStudio::ViewportPluginRequestBus::BroadcastResult(viewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewportId);
+        AzFramework::DebugDisplayRequests* debugDisplay = nullptr;
+        debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (!debugDisplay)
+        {
+            return;
+        }
+
+        debugDisplay->SetColor(color);
+        debugDisplay->DrawWireSphere(jointTransform.m_position, radius);
     }
 } // namespace EMotionFX

@@ -39,7 +39,7 @@ public:
 protected:
     void dragMoveEvent(QDragMoveEvent* ev) override;
     void dragEnterEvent(QDragEnterEvent* ev) override;
-    void dropEvent(QDropEvent* ev);
+    void dropEvent(QDropEvent* ev) override;
 
 private:
     void OnTabChanged(int index);

@@ -25,7 +25,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/GraphStates.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/UtilityStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ///////////////////////
     // AltClickDeleteTest
@@ -176,7 +176,7 @@ namespace ScriptCanvasDeveloper
                 ProcessCreationSet();
             }
         }
-        else if (stateId == stateId == m_duplicateCheckpoint->GetStateId())
+        else if (stateId == m_duplicateCheckpoint->GetStateId())
         {
             if (m_createdSet.empty())
             {

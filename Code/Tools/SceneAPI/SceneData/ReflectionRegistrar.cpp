@@ -27,6 +27,7 @@
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
+#include <SceneAPI/SceneData/GraphData/CustomPropertyData.h>
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
@@ -49,7 +50,7 @@ namespace AZ
         {
             // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
             //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-            //      Gems with system components need to do the same in the Project Configurator.
+            //      Gems with system components need to do the same in the Project Manager.
             if (!context->IsRemovingReflection() && context->FindClassData(SceneData::MeshGroup::TYPEINFO_Uuid()))
             {
                 return;
@@ -91,6 +92,7 @@ namespace AZ
             context->Class<AZ::SceneData::GraphData::SkinMeshData>()->Version(1);
             context->Class<AZ::SceneData::GraphData::SkinWeightData>()->Version(1);
             AZ::SceneData::GraphData::TransformData::Reflect(context);
+            AZ::SceneData::GraphData::CustomPropertyData::Reflect(context);
         }
 
         void RegisterDataTypeBehaviorReflection(AZ::BehaviorContext* context)
@@ -107,6 +109,7 @@ namespace AZ
             AZ::SceneData::GraphData::AnimationData::Reflect(context);
             AZ::SceneData::GraphData::BlendShapeAnimationData::Reflect(context);
             AZ::SceneData::GraphData::BlendShapeData::Reflect(context);
+            AZ::SceneData::GraphData::CustomPropertyData::Reflect(context);
         }
     } // namespace SceneAPI
 } // namespace AZ

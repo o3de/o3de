@@ -1,0 +1,115 @@
+{
+    "entries": [
+        {
+            "base": "IBlendShapeAnimationData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "IBlend Shape Animation Data",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendShapeName",
+                    "context": "IBlendShapeAnimationData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Blend Shape Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Blend Shape Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Blend Shape Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKeyFrameCount",
+                    "context": "IBlendShapeAnimationData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Key Frame Count"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Key Frame Count is invoked"
+                    },
+                    "details": {
+                        "name": "Get Key Frame Count"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKeyFrame",
+                    "context": "IBlendShapeAnimationData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Key Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Key Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Get Key Frame"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTimeStepBetweenFrames",
+                    "context": "IBlendShapeAnimationData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Time Step Between Frames"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Time Step Between Frames is invoked"
+                    },
+                    "details": {
+                        "name": "Get Time Step Between Frames"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

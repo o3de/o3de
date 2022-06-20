@@ -124,7 +124,7 @@ namespace AWSMetrics
             queue.AddMetrics(metrics);
         }
 
-        int maxCapacity = queue[0].GetSizeInBytes() * NumTestMetrics / 2;
+        int maxCapacity = static_cast<int>(queue[0].GetSizeInBytes() * NumTestMetrics / 2);
 
         ASSERT_EQ(queue.FilterMetricsByPriority(maxCapacity), NumTestMetrics / 2);
         ASSERT_EQ(queue.GetNumMetrics(), NumTestMetrics / 2);
@@ -230,7 +230,7 @@ namespace AWSMetrics
     {
         MetricsEvent metrics;
         metrics.AddAttribute(MetricsAttribute(AttrName, AttrValue));
-        int sizeOfEachMetrics = metrics.GetSizeInBytes();
+        int sizeOfEachMetrics = static_cast<int>(metrics.GetSizeInBytes());
 
         MetricsQueue queue;
         queue.AddMetrics(metrics);

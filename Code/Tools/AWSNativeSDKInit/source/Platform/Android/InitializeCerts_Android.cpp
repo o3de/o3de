@@ -27,7 +27,7 @@ namespace AWSNativeSDKInit
         void CopyCaCertBundle()
         {
             AZStd::vector<char> contents;
-            AZStd::string certificatePath = "@assets@/certificates/aws/cacert.pem";
+            AZStd::string certificatePath = "@products@/certificates/aws/cacert.pem";
             AZStd::string publicStoragePath = AZ::Android::Utils::GetAppPublicStoragePath();
             publicStoragePath.append("/certificates/aws/cacert.pem");
 

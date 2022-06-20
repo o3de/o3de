@@ -33,9 +33,9 @@ namespace GraphModel
     using DataTypePtr = AZStd::shared_ptr<const DataType>; //!< All pointers are const since this data is immutable anyway
     using DataTypeList = AZStd::vector<DataTypePtr>;
 
-    class IGraphContext;
-    using IGraphContextPtr = AZStd::shared_ptr<IGraphContext>;
-    using ConstIGraphContextPtr = AZStd::shared_ptr<const IGraphContext>;
+    class GraphContext;
+    using GraphContextPtr = AZStd::shared_ptr<GraphContext>;
+    using ConstGraphContextPtr = AZStd::shared_ptr<const GraphContext>;
 
     class Graph;
     using GraphPtr = AZStd::shared_ptr<Graph>;
@@ -66,6 +66,6 @@ namespace GraphModel
     using ModuleGraphManagerPtr = AZStd::shared_ptr<ModuleGraphManager>;
     using ConstModuleGraphManagerPtr = AZStd::shared_ptr<const ModuleGraphManager>;
 
-    static const AZ::u32 DefaultWrappedNodeLayoutOrder = -1;
+    static const AZ::u32 DefaultWrappedNodeLayoutOrder = std::numeric_limits<AZ::u32>::max();
 
 } // namespace GraphModel

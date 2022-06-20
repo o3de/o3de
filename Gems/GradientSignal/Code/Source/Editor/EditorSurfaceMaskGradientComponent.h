@@ -9,7 +9,7 @@
 #pragma once
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/SurfaceMaskGradientComponent.h>
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
 
 namespace GradientSignal
 {
@@ -26,6 +26,6 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient based on underlying surface types";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "";
     };
 }

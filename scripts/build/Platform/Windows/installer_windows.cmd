@@ -17,12 +17,6 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
 )
 PUSHD %OUTPUT_DIRECTORY%
 
-REM Override the temporary directory used by wix to the workspace
-SET "WIX_TEMP=!WORKSPACE_TMP!/wix"
-IF NOT EXIST "%WIX_TEMP%" (
-    MKDIR "%WIX_TEMP%"
-)
-
 REM Make sure we are using the CMake version of CPack and not the one that comes with chocolatey
 SET CPACK_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
@@ -45,10 +39,6 @@ ECHO [ci_build] "!CPACK_PATH!" --version
 IF ERRORLEVEL 1 (
     ECHO [ci_build] CPack not found!
     GOTO :popd_error
-)
-
-IF NOT "%CPACK_BUCKET%"=="" (
-    SET "CPACK_OPTIONS=-D CPACK_UPLOAD_URL=s3://%CPACK_BUCKET% %CPACK_OPTIONS%"
 )
 
 ECHO [ci_build] "!CPACK_PATH!" -C %CONFIGURATION% %CPACK_OPTIONS%

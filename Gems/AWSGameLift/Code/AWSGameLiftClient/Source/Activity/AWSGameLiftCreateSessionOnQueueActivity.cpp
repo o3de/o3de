@@ -6,9 +6,16 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <AWSGameLiftSessionConstants.h>
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
 
 namespace AWSGameLift
 {
@@ -33,7 +40,7 @@ namespace AWSGameLift
 
             // Required attributes
             request.SetGameSessionQueueName(createSessionOnQueueRequest.m_queueName.c_str());
-            request.SetMaximumPlayerSessionCount(createSessionOnQueueRequest.m_maxPlayer);
+            request.SetMaximumPlayerSessionCount(static_cast<int>(createSessionOnQueueRequest.m_maxPlayer));
             request.SetPlacementId(createSessionOnQueueRequest.m_placementId.c_str());
 
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
@@ -47,17 +54,23 @@ namespace AWSGameLift
             return request;
         }
 
-        AZStd::string CreateSessionOnQueue(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
+        AZStd::string CreateSessionOnQueue(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
         {
+            AZStd::string result = "";
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftCreateSessionOnQueueActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return result;
+            }
+
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
                 "Requesting StartGameSessionPlacement against Amazon GameLift service ...");
 
-            AZStd::string result = "";
             Aws::GameLift::Model::StartGameSessionPlacementRequest request =
                 BuildAWSGameLiftStartGameSessionPlacementRequest(createSessionOnQueueRequest);
-            auto createSessionOnQueueOutcome = gameliftClient.StartGameSessionPlacement(request);
+            auto createSessionOnQueueOutcome = gameliftClient->StartGameSessionPlacement(request);
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
                 "StartGameSessionPlacement request against Amazon GameLift service is complete.");
 
@@ -74,12 +87,12 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateCreateSessionOnQueueRequest(const AzFramework::CreateSessionRequest& createSessionRequest)
+        bool ValidateCreateSessionOnQueueRequest(const Multiplayer::CreateSessionRequest& createSessionRequest)
         {
             auto gameliftCreateSessionOnQueueRequest =
                 azrtti_cast<const AWSGameLiftCreateSessionOnQueueRequest*>(&createSessionRequest);
 
-            return gameliftCreateSessionOnQueueRequest && gameliftCreateSessionOnQueueRequest->m_maxPlayer >= 0 &&
+            return gameliftCreateSessionOnQueueRequest &&
                 !gameliftCreateSessionOnQueueRequest->m_queueName.empty() && !gameliftCreateSessionOnQueueRequest->m_placementId.empty();
         }
     } // namespace CreateSessionOnQueueActivity

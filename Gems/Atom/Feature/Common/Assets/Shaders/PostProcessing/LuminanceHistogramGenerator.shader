@@ -1,5 +1,5 @@
 {
-    "Source": "LuminanceHistogramGenerator",
+    "Source": "LuminanceHistogramGenerator.azsl",
 
     "DrawList" : "forward",
 

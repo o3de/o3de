@@ -168,9 +168,9 @@ namespace LmbrCentral
         {
         public:
 
-            bool IsPathIntersectingObstacles(const NavigationMeshID /*meshID*/, const Vec3& /*start*/, const Vec3& /*end*/, float /*radius*/) const { return false; }
-            bool IsPointInsideObstacles(const Vec3& /*position*/) const { return false; }
-            bool IsLineSegmentIntersectingObstaclesOrCloseToThem(const Lineseg& /*linesegToTest*/, float /*maxDistanceToConsiderClose*/) const { return false; }
+            bool IsPathIntersectingObstacles(const NavigationMeshID /*meshID*/, const Vec3& /*start*/, const Vec3& /*end*/, float /*radius*/) const override { return false; }
+            bool IsPointInsideObstacles(const Vec3& /*position*/) const override { return false; }
+            bool IsLineSegmentIntersectingObstaclesOrCloseToThem(const Lineseg& /*linesegToTest*/, float /*maxDistanceToConsiderClose*/) const override { return false; }
         };
 
         NullPathObstacles m_pathObstacles;
@@ -344,7 +344,7 @@ namespace LmbrCentral
         bool GetValidPositionNearby(const Vec3&, Vec3&) const override { return false; }
         bool GetTeleportPosition(Vec3&) const override { return false; }
         class IPathFollower* GetPathFollower() const override { return nullptr; }
-        bool IsPointValidForAgent(const Vec3&, AZ::u32) const { return true; };
+        bool IsPointValidForAgent(const Vec3&, AZ::u32) const override { return true; };
         //// ~IAIPathAgent
     };
 } // namespace LmbrCentral

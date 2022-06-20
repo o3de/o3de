@@ -176,6 +176,20 @@ namespace AZ
             return {};
         }
 
+        ViewportContextPtr ViewportContextManager::GetViewportContextByScene(const Scene* scene) const
+        {
+            AZStd::lock_guard lock(m_containerMutex);
+            for (const auto& viewportData : m_viewportContexts)
+            {
+                ViewportContextPtr viewportContext = viewportData.second.context.lock();
+                if (viewportContext && viewportContext->GetRenderScene().get() == scene)
+                {
+                    return viewportContext;
+                }
+            }
+            return {};
+        }
+
         void ViewportContextManager::RenameViewportContext(ViewportContextPtr viewportContext, const Name& newContextName)
         {
             auto currentAssignedViewportContext = GetViewportContextByName(newContextName);
@@ -305,7 +319,7 @@ namespace AZ
 
             ViewportContextNotificationBus::Event(
                 context,
-                &ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged,
+                &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
                 currentView);
         }
     } // namespace RPI

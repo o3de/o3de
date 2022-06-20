@@ -248,8 +248,8 @@ namespace ImageProcessingAtom
         {
             const uint8* data = buf;
             r = U8ToF32(data[0]);
-            g = 0.f;
-            b = 0.f;
+            g = r;
+            b = r;
             a = 1.f;
         }
 
@@ -333,8 +333,8 @@ namespace ImageProcessingAtom
         {
             const uint16* data = (uint16*)(buf);
             r = U16ToF32(data[0]);
-            g = 0.f;
-            b = 0.f;
+            g = r;
+            b = r;
             a = 1.f;
         }
 
@@ -418,8 +418,8 @@ namespace ImageProcessingAtom
         {
             const float* data = (float*)(buf);
             r = data[0];
-            g = 0.f;
-            b = 0.f;
+            g = r;
+            b = r;
             a = 1.f;
         }
 
@@ -485,8 +485,8 @@ namespace ImageProcessingAtom
         {
             const SHalf* data = (SHalf*)(buf);
             r = data[0];
-            g = 0.f;
-            b = 0.f;
+            g = r;
+            b = r;
             a = 1.f;
         }
 

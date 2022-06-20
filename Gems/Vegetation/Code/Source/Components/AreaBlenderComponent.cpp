@@ -220,15 +220,16 @@ namespace Vegetation
 
     bool AreaBlenderComponent::PrepareToClaim(EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool result = true;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
-        if (!m_isRequestInProgress)
-        {
-            m_isRequestInProgress = true;
+        AZ_ErrorOnce("Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
+        {
             //build a "modifier stack" of contributing entity ids considering inherit and propagate flags
             EntityIdStack emptyIds;
             EntityIdStack& processedIds = m_configuration.m_inheritBehavior && m_configuration.m_propagateBehavior ? stackIds : emptyIds;
@@ -250,25 +251,26 @@ namespace Vegetation
                     break;
                 }
             }
-            m_isRequestInProgress = false;
         }
         return result;
     }
 
     void AreaBlenderComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (context.m_availablePoints.empty())
         {
             return;
         }
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
-        if (!m_isRequestInProgress)
-        {
-            m_isRequestInProgress = true;
+        AZ_ErrorOnce(
+            "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
 
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
+        {
             //build a "modifier stack" of contributing entity ids considering inherit and propagate flags
             EntityIdStack emptyIds;
             EntityIdStack& processedIds = m_configuration.m_inheritBehavior && m_configuration.m_propagateBehavior ? stackIds : emptyIds;
@@ -287,31 +289,32 @@ namespace Vegetation
                 AreaNotificationBus::Event(entityId, &AreaNotificationBus::Events::OnAreaDisconnect);
                 VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FillAreaEnd, entityId, AZStd::chrono::system_clock::now(), aznumeric_cast<AZ::u32>(context.m_availablePoints.size())));
             }
-            m_isRequestInProgress = false;
         }
     }
 
     void AreaBlenderComponent::UnclaimPosition(const ClaimHandle handle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
-        if (!m_isRequestInProgress)
+        AZ_ErrorOnce(
+            "Vegetation", !AreaRequestBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        if (!AreaRequestBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
                 AreaNotificationBus::Event(entityId, &AreaNotificationBus::Events::OnAreaConnect);
                 AreaRequestBus::Event(entityId, &AreaRequestBus::Events::UnclaimPosition, handle);
                 AreaNotificationBus::Event(entityId, &AreaNotificationBus::Events::OnAreaDisconnect);
             }
-            m_isRequestInProgress = false;
         }
     }
 
     AZ::Aabb AreaBlenderComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
 
@@ -320,10 +323,13 @@ namespace Vegetation
             LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         }
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
-        if (!m_isRequestInProgress)
+        AZ_ErrorOnce(
+            "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
                 if (entityId != GetEntityId())
@@ -333,21 +339,23 @@ namespace Vegetation
                     bounds.AddAabb(operationBounds);
                 }
             }
-            m_isRequestInProgress = false;
         }
         return bounds;
     }
 
     AZ::u32 AreaBlenderComponent::GetProductCount() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::u32 count = 0;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
-        if (!m_isRequestInProgress)
+        AZ_ErrorOnce(
+            "Vegetation", !AreaInfoBus::HasReentrantEBusUseThisThread(),
+            "Detected cyclic dependencies with vegetation entity references on entity '%s' (%s)", GetEntity()->GetName().c_str(),
+            GetEntityId().ToString().c_str());
+
+        if (!AreaInfoBus::HasReentrantEBusUseThisThread())
         {
-            m_isRequestInProgress = true;
             for (const auto& entityId : m_configuration.m_vegetationAreaIds)
             {
                 if (entityId != GetEntityId())
@@ -357,7 +365,6 @@ namespace Vegetation
                     count += operationCount;
                 }
             }
-            m_isRequestInProgress = false;
         }
         return count;
     }

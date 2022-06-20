@@ -15,14 +15,18 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/any.h>
 
 // These Streamer includes need to be moved to Streamer internals/implementation,
 // and pull out only what we need for visibility at IStreamer.h interface declaration.
 #include <AzCore/IO/Streamer/Statistics.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ::IO
 {
+    class ExternalFileRequest;
+    class FileRequestHandle;
+
+    using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
     /**
      * Data Streamer Interface
      */
@@ -42,8 +46,8 @@ namespace AZ::IO
         // These functions can't be called after a request has been queued.
         //
 
-        //! Creates a request to read a file. 
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @assets@.
+        //! Creates a request to read a file.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param outputBuffer The buffer that will hold the loaded data. This must be able to at least hold "size" number of bytes.
         //! @param outputBufferSize The size of the buffer that will hold the loaded data. This must be equal or larger than "size" number of bytes.
         //! @param readSize The number of bytes to read from the file at the relative path.
@@ -58,13 +62,13 @@ namespace AZ::IO
             void* outputBuffer,
             size_t outputBufferSize,
             size_t readSize,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
-        //! Sets a request to the read command. 
+        //! Sets a request to the read command.
         //! @param request The request that will store the read command.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param outputBuffer The buffer that will hold the loaded data. This must be able to at least hold "size" number of bytes.
         //! @param outputBufferSize The size of the buffer that will hold the loaded data. This must be equal or larger than "size" number of bytes.
         //! @param readSize The number of bytes to read from the file at the relative path.
@@ -80,12 +84,12 @@ namespace AZ::IO
             void* outputBuffer,
             size_t outputBufferSize,
             size_t readSize,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
-        //! Creates a request to the read command. 
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @assets@.
+        //! Creates a request to the read command.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param allocator The allocator used to reserve and release memory for the read request. Memory allocated this way will
         //!         be automatically freed when there are no more references to the FileRequestPtr. To avoid this, use GetReadRequestResult
         //!         to claim the pointer and use the provided allocator to release the memory at a later point.
@@ -102,13 +106,13 @@ namespace AZ::IO
             AZStd::string_view relativePath,
             IStreamerTypes::RequestMemoryAllocator& allocator,
             size_t size,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
-        //! Sets a request to the read command. 
+        //! Sets a request to the read command.
         //! @param request The request that will store the read command.
-        //! @param relativePath Relative path to the file to load. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file to load. This can include aliases such as @products@.
         //! @param allocator The allocator used to reserve and release memory for the read request. Memory allocated this way will
         //!         be automatically freed when there are no more references to the FileRequestPtr. To avoid this, use GetReadRequestResult
         //!         to claim the pointer and use the provided allocator to release the memory at a later point.
@@ -126,7 +130,7 @@ namespace AZ::IO
             AZStd::string_view relativePath,
             IStreamerTypes::RequestMemoryAllocator& allocator,
             size_t size,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
@@ -138,7 +142,7 @@ namespace AZ::IO
         //! @result A smart pointer to the newly created request with the cancel command.
         virtual FileRequestPtr Cancel(FileRequestPtr target) = 0;
 
-        //! Sets a request to the cancel command. 
+        //! Sets a request to the cancel command.
         //! When this request completes it's not guaranteed to have canceled the target request. Not all requests can be canceled and requests
         //! that already processing may complete. It's recommended to let the target request handle the completion of the request as normal
         //! and handle cancellation by checking the status on the target request is set to IStreamerTypes::RequestStatus::Canceled.
@@ -155,9 +159,7 @@ namespace AZ::IO
         //! @param newPriority The new priority for the request.
         //! @result A smart pointer to the newly created request with the reschedule command.
         virtual FileRequestPtr RescheduleRequest(
-            FileRequestPtr target,
-            AZStd::chrono::microseconds newDeadline,
-            IStreamerTypes::Priority newPriority) = 0;
+            FileRequestPtr target, IStreamerTypes::Deadline newDeadline, IStreamerTypes::Priority newPriority) = 0;
 
         //! Adjusts the deadline and priority of a request.
         //! This has no effect if the requests is already being processed, if the
@@ -168,16 +170,13 @@ namespace AZ::IO
         //! @param newPriority The new priority for the request.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& RescheduleRequest(
-            FileRequestPtr& request,
-            FileRequestPtr target,
-            AZStd::chrono::microseconds newDeadline,
-            IStreamerTypes::Priority newPriority) = 0;
+            FileRequestPtr& request, FileRequestPtr target, IStreamerTypes::Deadline newDeadline, IStreamerTypes::Priority newPriority) = 0;
 
         //! Creates a dedicated cache for the target file. The target file won't be removed from the cache until
         //! DestroyDedicatedCache is called. Typical use of a dedicated cache is for files that have their own compression
         //! and are periodically visited to read a section, e.g. streaming video play or streaming audio banks. This
         //! request will fail if there are no nodes in Streamer's stack that deal with dedicated caches.
-        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to create a dedicated cache.
         virtual FileRequestPtr CreateDedicatedCache(AZStd::string_view relativePath) = 0;
 
@@ -186,25 +185,25 @@ namespace AZ::IO
         //! and are periodically visited to read a section, e.g. streaming video play or streaming audio banks. This
         //! request will fail if there are no nodes in Streamer's stack that deal with dedicated caches.
         //! @param request The request that will store the command to create a dedicated cache.
-        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file to receive a dedicated cache. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& CreateDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 
         //! Destroy a dedicated cache created by CreateDedicatedCache. See CreateDedicatedCache for more details.
-        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to destroy a dedicated cache.
         virtual FileRequestPtr DestroyDedicatedCache(AZStd::string_view relativePath) = 0;
 
         //! Destroy a dedicated cache created by CreateDedicatedCache. See CreateDedicatedCache for more details.
         //! @param request The request that will store the command to destroy a dedicated cache.
-        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file that got a dedicated cache. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& DestroyDedicatedCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 
         //! Clears a file from all caches in use by Streamer.
         //! Flushing the cache will cause the streaming stack to pause processing until it's idle before issuing the flush and resuming
         //! processing. This can result in a noticeable interruption.
-        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @products@.
         //! @return A smart pointer to the newly created request with the command to flush a file from all caches.
         virtual FileRequestPtr FlushCache(AZStd::string_view relativePath) = 0;
 
@@ -212,7 +211,7 @@ namespace AZ::IO
         //! Flushing the cache will cause the streaming stack to pause processing until it's idle before issuing the flush and resuming
         //! processing. This can result in a noticeable interruption.
         //! @param request The request that will store the command to flush a file from all caches.
-        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @assets@.
+        //! @param relativePath Relative path to the file that will be cleared from all caches. This can include aliases such as @products@.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& FlushCache(FileRequestPtr& request, AZStd::string_view relativePath) = 0;
 
@@ -230,6 +229,24 @@ namespace AZ::IO
         //! @param request The request that will store the command to flush all caches.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& FlushCaches(FileRequestPtr& request) = 0;
+
+        //! Retrieves statistics for the requested type. This is meant for statistics that can't be retrieved in a lockless manner. For
+        //! metrics that can be retrieved lockless use CollectStatistics.
+        //! @param output The storage for the information that's being reported. The container needs to remain alive for the duration of
+        //!     the call. Register a callback with SetRequestCompleteCallback to determine when the container is no longer needed.
+        //! @param reportType The type of information to report.
+        //! @return A smart pointer to the newly created request with the command to report statistics.
+        virtual FileRequestPtr Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) = 0;
+
+        //! Retrieves statistics for the requested type. This is meant for statistics that can't be retrieved in a lockless manner. For
+        //! metrics that can be retrieved lockless use CollectStatistics.
+        //! @param request The request that will store the command to report.
+        //! @param output The storage for the information that's being reported. The container needs to remain alive for the duration of
+        //!     the call. Register a callback with SetRequestCompleteCallback to determine when the container is no longer needed.
+        //! @param reportType The type of information to report.
+        //! @return A reference to the provided request.
+        virtual FileRequestPtr& Report(
+            FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) = 0;
 
         //! Creates a custom request. This can be used by extensions to Streamer's stack to add their own commands.
         //! @param data Storage for the arguments to the command.
@@ -334,9 +351,9 @@ namespace AZ::IO
         //
 
         //! Collect statistics from all the components that make up Streamer.
-        //! This is thread safe in the sense that it won't crash. 
-        //! Data is collected lockless from involved threads and might be slightly
-        //! out of date in some cases.
+        //! This function is immediately executed and returns immediately with the results. Due to this behavior there's a limit
+        //! to the number of statistics that can be returned as only lockless retrieval data can be retrieved. The data is also a
+        //! snapshot so may be slightly out of date. To get additional data use Report.
         //! @param statistics The container where statistics will be added to.
         virtual void CollectStatistics(AZStd::vector<Statistic>& statistics) = 0;
 
@@ -352,6 +369,8 @@ namespace AZ::IO
         //! were made.
         virtual void ResumeProcessing() = 0;
 
+        //! Whether or not processing of requests has been suspended.
+        virtual bool IsSuspended() const = 0;
     };
 
 } // namespace AZ::IO

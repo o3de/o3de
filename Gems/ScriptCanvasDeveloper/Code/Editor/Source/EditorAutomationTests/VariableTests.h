@@ -36,7 +36,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/VariableStates.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/UtilityStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutmationTest that will create a variable of the specified type using the specified creation type, and optionally give it a name
@@ -256,14 +256,11 @@ namespace ScriptCanvasDeveloper
 
         int SetupNextVariable();
 
-        CreateVariableAction::CreationType m_creationType = CreateVariableAction::CreationType::AutoComplete;
-
         ScriptCanvas::VariableId             m_activeVariableId;
         AZStd::vector<CreateVariableAction*> m_createVariables;
         AZStd::vector<ScriptCanvas::Data::Type> m_typesToMake;
         
         bool m_createVariablesNodesViaContextMenu = true;
-        bool m_closedGraph = false;
         int m_activeIndex = 0;
 
         GraphCanvas::ViewId             m_viewId;

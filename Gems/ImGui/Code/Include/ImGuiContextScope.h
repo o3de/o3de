@@ -39,6 +39,6 @@ namespace ImGui
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ImGuiContext* m_previousContext = nullptr;
+        [[maybe_unused]] ImGuiContext* m_previousContext = nullptr;
     };
 }

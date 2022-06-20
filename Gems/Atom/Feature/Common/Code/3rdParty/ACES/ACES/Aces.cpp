@@ -203,47 +203,37 @@ namespace AZ
             return ODT_48nits;
         }
 
+        ShaperParams GetLog2ShaperParameters(float minStops, float maxStops)
+        {
+            ShaperParams shaperParams;
+
+            constexpr float Log2MediumGray = -2.47393118833f; // log2f(0.18f);
+            shaperParams.m_type = ShaperType::Log2;
+            shaperParams.m_scale = 1.0f / (maxStops - minStops);
+            shaperParams.m_bias = -((minStops + Log2MediumGray) * shaperParams.m_scale);
+
+            return shaperParams;
+        }
+
         ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType)
         {
             AZ_Assert(static_cast<uint32_t>(odtType) < static_cast<uint32_t>(NumOutputDeviceTransformTypes), "Invalid ODT type specified.");
 
-            ShaperParams shaperParams;
-
-            // These values represent and low and high end of the dynamic range in terms of stops from middle grey (0.18)
-            float lowerDynamicRangeInStops;
-            float higherDynamicRangeInStops;
-            const float MIDDLE_GREY = 0.18f;
-
             switch (odtType)
             {
             case OutputDeviceTransformType_48Nits:
-                lowerDynamicRangeInStops = -6.5f;
-                higherDynamicRangeInStops = 6.5f;
-                break;
+                return GetLog2ShaperParameters(-6.5f, 6.5f);
             case OutputDeviceTransformType_1000Nits:
-                lowerDynamicRangeInStops = -12.f;
-                higherDynamicRangeInStops = 10.f;
-                break;
+                return GetLog2ShaperParameters(-12.0f, 10.0f);
             case OutputDeviceTransformType_2000Nits:
-                lowerDynamicRangeInStops = -12.f;
-                higherDynamicRangeInStops = 11.f;
-                break;
+                return GetLog2ShaperParameters(-12.0f, 11.0f);
             case OutputDeviceTransformType_4000Nits:
-                lowerDynamicRangeInStops = -12.f;
-                higherDynamicRangeInStops = 12.f;
-                break;
+                return GetLog2ShaperParameters(-12.0f, 12.0f);
             default:
                 AZ_Assert(false, "Invalid output device transform type.");
-                return shaperParams;
                 break;
             }
-
-            float logMin = log2(MIDDLE_GREY * exp2(lowerDynamicRangeInStops));
-            float logMax = log2(MIDDLE_GREY * exp2(higherDynamicRangeInStops));
-            shaperParams.scale = 1.0f / (logMax - logMin);
-            shaperParams.bias = -shaperParams.scale * logMin;
-            shaperParams.type = ShaperType::Log2;
-            return shaperParams;
+            return ShaperParams();
         }
 
         Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type)

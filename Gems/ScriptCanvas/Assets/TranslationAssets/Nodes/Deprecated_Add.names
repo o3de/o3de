@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{2AFC1F99-6216-58E1-9E06-7F0E50C64E53}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Add",
+                "category": "Deprecated",
+                "tooltip": "This node is deprecated, use Add (+), it provides contextual type and slots"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_A_0",
+                    "details": {
+                        "name": "A"
+                    }
+                },
+                {
+                    "base": "DataInput_B_1",
+                    "details": {
+                        "name": "B"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

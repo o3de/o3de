@@ -83,7 +83,7 @@ namespace ExpressionEvaluation
             expressionTree.PushElement(AZStd::move(expressionToken));
         }
 
-        ExpressionEvaluationRequests* ExpressionEvaluationRequests()
+        ExpressionEvaluationRequests* GetExpressionEvaluationRequests()
         {
             return m_systemComponent;
         }

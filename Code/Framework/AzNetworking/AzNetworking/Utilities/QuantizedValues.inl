@@ -218,14 +218,7 @@ namespace AzNetworking
         {
             SerializeType serializedValue = static_cast<SerializeType>(m_serializeValues[i]);
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
-            if (NUM_BYTES == 3)
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
+            if constexpr (NUM_BYTES == 3)
             {
                 uint8_t lowByte = static_cast<uint8_t>((serializedValue & 0x000000FF)      );
                 uint8_t midByte = static_cast<uint8_t>((serializedValue & 0x0000FF00) >>  8);

@@ -67,6 +67,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_pad3; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
     
     uint m_parallaxUvIndex;
+    float m_parallax_pdo_shadowFactor;
 
     float3x3 m_uvMatrix;
     float4 m_pad4; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
@@ -104,6 +105,7 @@ option bool o_layer3_enabled;
 enum class DebugDrawMode { None, BlendMask, Displacement, FinalBlendWeights };
 option DebugDrawMode o_debugDrawMode;
 
+// If you modify this enum, you must update the BlendSourceUsesDisplacement function in StandardMultilayerPBR_Displacement.lua
 enum class LayerBlendSource { BlendMaskTexture, BlendMaskVertexColors, Displacement, Displacement_With_BlendMaskTexture, Displacement_With_BlendMaskVertexColors, Fallback };
 option LayerBlendSource o_layerBlendSource;
 

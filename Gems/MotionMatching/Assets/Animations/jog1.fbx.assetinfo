@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "jog1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{9200D325-808C-5B2D-B323-1FF9790C07B7}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 64.0,
+                                                "endTime": 65.53333282470703
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

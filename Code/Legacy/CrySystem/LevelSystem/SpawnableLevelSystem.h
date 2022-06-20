@@ -12,6 +12,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <CryCommon/TimeValue.h>
 
 namespace LegacyLevelSystem
 {
@@ -65,8 +66,6 @@ class SpawnableLevelSystem
         void OnUnloadComplete(const char* levelName);
 
         void LogLoadingTime();
-
-        ISystem* m_pSystem{nullptr};
 
         AZStd::string m_lastLevelName;
         float m_fLastLevelLoadTime{0.0f};

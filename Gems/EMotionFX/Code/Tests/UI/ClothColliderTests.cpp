@@ -17,6 +17,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -48,18 +49,6 @@ namespace EMotionFX
     class ClothColliderTestsFixture : public UIFixture
     {
     public:
-        void SetUp() override
-        {
-            SetupQtAndFixtureBase();
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            SystemComponent::Reflect(serializeContext);
-
-            SetupPluginWindows();
-        }
-
         void TearDown() override
         {
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -85,6 +74,19 @@ namespace EMotionFX
         }
 
     protected:
+        bool ShouldReflectPhysicSystem() override { return true; }
+
+        void ReflectMockedSystems() override
+        {
+            UIFixture::ReflectMockedSystems();
+
+            // Reflect the mocked version of the cloth system.
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            SystemComponent::Reflect(serializeContext);
+        }
+
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
@@ -102,7 +104,9 @@ namespace EMotionFX
         const int lastIndex = 6;
         RecordProperty("test_case_id", "C18970351");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(numJoints, "RagdollEditTestsActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "RagdollEditTestsActor");
 
         CreateSkeletonAndModelIndices();
         EXPECT_EQ(m_indexList.size(), numJoints);

@@ -10,6 +10,7 @@
 
 #include "PackedFloat2.h"
 
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
@@ -85,7 +86,7 @@ namespace WhiteBox
     template<typename VertexStreamDataType>
     Buffer<VertexStreamDataType>::Buffer(const AZStd::vector<VertexStreamDataType>& data)
     {
-        const uint32_t elementCount = data.size();
+        const uint32_t elementCount = static_cast<uint32_t>(data.size());
         const uint32_t elementSize = sizeof(VertexStreamDataType);
         const uint32_t bufferSize = elementCount * elementSize;
 
@@ -166,7 +167,7 @@ namespace WhiteBox
             return false;
         }
 
-        const uint32_t elementCount = data.size();
+        const uint32_t elementCount = static_cast<uint32_t>(data.size());
         const uint32_t elementSize = sizeof(VertexStreamDataType);
         const uint32_t bufferSize = elementCount * elementSize;
 

@@ -34,6 +34,9 @@ namespace AZ
 
             // Pass Overrides...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+            bool IsEnabled() const override;
+
+            mutable uint32_t m_frameDelayCount = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

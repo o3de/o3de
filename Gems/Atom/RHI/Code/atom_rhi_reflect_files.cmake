@@ -112,15 +112,12 @@ set(FILES
     Source/RHI.Reflect/ShaderResourceGroupLayout.cpp
     Source/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.cpp
     Source/RHI.Reflect/ShaderResourceGroupPoolDescriptor.cpp
-    Include/Atom/RHI.Reflect/CpuTimingStatistics.h
     Include/Atom/RHI.Reflect/MemoryStatistics.h
     Include/Atom/RHI.Reflect/TransientAttachmentStatistics.h
     Include/Atom/RHI.Reflect/SwapChainDescriptor.h
     Source/RHI.Reflect/SwapChainDescriptor.cpp
     Include/Atom/RHI.Reflect/ReflectSystemComponent.h
-    Include/Atom/RHI.Reflect/RHISystemDescriptor.h
     Source/RHI.Reflect/ReflectSystemComponent.cpp
-    Source/RHI.Reflect/RHISystemDescriptor.cpp
     Include/Atom/RHI.Reflect/AliasedHeapEnums.h
     Include/Atom/RHI.Reflect/TransientBufferDescriptor.h
     Include/Atom/RHI.Reflect/TransientImageDescriptor.h

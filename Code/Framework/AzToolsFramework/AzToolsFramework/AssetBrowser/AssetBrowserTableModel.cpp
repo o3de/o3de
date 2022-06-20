@@ -16,7 +16,6 @@ namespace AzToolsFramework
         AssetBrowserTableModel::AssetBrowserTableModel(QObject* parent /* = nullptr */)
             : QSortFilterProxyModel(parent)
         {
-            setDynamicSortFilter(false);
         }
 
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
@@ -25,17 +24,40 @@ namespace AzToolsFramework
             AZ_Assert(
                 m_filterModel,
                 "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
+
             QSortFilterProxyModel::setSourceModel(sourceModel);
+
+            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
         }
 
         QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
         {
             Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() == this);
-            if (!proxyIndex.isValid())
+            if (!proxyIndex.isValid() || !m_indexMap.contains(proxyIndex.row()))
             {
                 return QModelIndex();
             }
             return m_indexMap[proxyIndex.row()];
+        }
+
+        QModelIndex AssetBrowserTableModel::mapFromSource(const QModelIndex& sourceIndex) const
+        {
+            Q_ASSERT(!sourceIndex.isValid() || sourceIndex.model() == sourceModel());
+            if (!sourceIndex.isValid() || !m_rowMap.contains(sourceIndex))
+            {
+                return QModelIndex();
+            }
+
+            return createIndex(m_rowMap[sourceIndex], sourceIndex.column());
+        }
+
+        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
+        {
+            return m_indexMap.contains(source_row);
         }
 
         QVariant AssetBrowserTableModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -49,20 +71,8 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTableModel::data(const QModelIndex& index, int role) const
         {
-            auto sourceIndex = mapToSource(index);
-            if (!sourceIndex.isValid())
-            {
-                return QVariant();
-            }
-
-            AssetBrowserEntry* entry = GetAssetEntry(sourceIndex);
-            if (entry == nullptr)
-            {
-                AZ_Assert(false, "AssetBrowserTableModel - QModelIndex does not reference an AssetEntry. Source model is not valid.");
-                return QVariant();
-            }
-
-            return sourceIndex.data(role);
+            Q_ASSERT(index.isValid() && index.model() == this);
+            return sourceModel()->data(mapToSource(index), role);
         }
 
         QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
@@ -76,8 +86,22 @@ namespace AzToolsFramework
             return QModelIndex();
         }
 
+        void AssetBrowserTableModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+        {
+            for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
+            {
+                if (!m_indexMap.contains(row))
+                {
+                    UpdateTableModelMaps();
+                    return;
+                }
+            }
+        }
+
         QModelIndex AssetBrowserTableModel::index(int row, int column, const QModelIndex& parent) const
         {
+            Q_ASSERT(!parent.isValid());
+
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());
         }
 
@@ -86,28 +110,63 @@ namespace AzToolsFramework
             return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
+        void AssetBrowserTableModel::timerEvent([[maybe_unused]] QTimerEvent* event)
+        {
+            killTimer(m_updateModelMapTimerId);
+            m_updateModelMapTimerId = 0;
+            UpdateTableModelMaps();
+        }
+
+        void AssetBrowserTableModel::StartUpdateModelMapTimer()
+        {
+            constexpr int ModelRefreshWaitTimeMS = 250;
+            if (m_updateModelMapTimerId > 0)
+            {
+                killTimer(m_updateModelMapTimerId);
+            }
+            m_updateModelMapTimerId = startTimer(ModelRefreshWaitTimeMS);
+        }
+
         int AssetBrowserTableModel::BuildTableModelMap(
             const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
             int rows = model ? model->rowCount(parent) : 0;
-            for (int i = 0; i < rows; ++i)
+
+            if (parent == QModelIndex())
             {
-                QModelIndex index = model->index(i, 0, parent);
-                AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
-                //We only wanna see the source assets.
-                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                {
-                    beginInsertRows(parent, row, row);
-                    m_indexMap[row] = index;
-                    endInsertRows();
+                m_displayedItemsCounter = 0;
+            }
 
-                    Q_EMIT dataChanged(index, index);
-                    ++row;
+            for (int currentRow = 0; currentRow < rows; ++currentRow)
+            {
+                if (m_displayedItemsCounter < m_numberOfItemsDisplayed)
+                {
+                    QModelIndex index = model->index(currentRow, 0, parent);
+                    AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
+                    // We only want to see source and product assets.
+                    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source ||
+                        entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                    {
+                        m_indexMap[row] = index;
+                        m_rowMap[index] = row;
+                        ++row;
+
+                        // We only want to increase the displayed counter if it is a parent (Source)
+                        // so we don't cut children entries.
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            ++m_displayedItemsCounter;
+                        }
+                    }
+
+                    if (model->hasChildren(index))
+                    {
+                        row = BuildTableModelMap(model, index, row);
+                    }
                 }
-
-                if (model->hasChildren(index))
+                else
                 {
-                    row = BuildTableModelMap(model, index, row);
+                    break;
                 }
             }
             return row;
@@ -115,28 +174,29 @@ namespace AzToolsFramework
 
         AssetBrowserEntry* AssetBrowserTableModel::GetAssetEntry(QModelIndex index) const
         {
-            if (index.isValid())
-            {
-                return static_cast<AssetBrowserEntry*>(index.internalPointer());
-            }
-            else
+            if (!index.isValid())
             {
                 AZ_Error("AssetBrowser", false, "Invalid Source Index provided to GetAssetEntry.");
                 return nullptr;
             }
+            return static_cast<AssetBrowserEntry*>(index.internalPointer());
         }
 
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
+            beginResetModel();
             emit layoutAboutToBeChanged();
-            if (!m_indexMap.isEmpty())
+
+            if (!m_indexMap.isEmpty() || !m_rowMap.isEmpty())
             {
-                beginRemoveRows(m_indexMap.first(), m_indexMap.first().row(), m_indexMap.last().row());
                 m_indexMap.clear();
-                endRemoveRows();
+                m_rowMap.clear();
             }
+            AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
+                m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
+            endResetModel();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

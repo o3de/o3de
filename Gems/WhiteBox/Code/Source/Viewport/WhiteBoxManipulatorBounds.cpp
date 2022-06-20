@@ -39,6 +39,9 @@ namespace WhiteBox
     {
         AZ_Assert(polygonBound.m_triangles.size() % 3 == 0, "Invalid number of points to represent triangles");
 
+        const float rayLength = 1000.0f;
+        AZ::Intersect::SegmentTriangleHitTester hitTester(rayOrigin, rayOrigin + rayDirection * rayLength);
+
         for (size_t triangleIndex = 0; triangleIndex < polygonBound.m_triangles.size(); triangleIndex += 3)
         {
             AZ::Vector3 p0 = polygonBound.m_triangles[triangleIndex];
@@ -47,11 +50,9 @@ namespace WhiteBox
 
             float time;
             AZ::Vector3 normal;
-            const float rayLength = 1000.0f;
-            const int intersected = AZ::Intersect::IntersectSegmentTriangleCCW(
-                rayOrigin, rayOrigin + rayDirection * rayLength, p0, p1, p2, normal, time);
+            const bool intersected = hitTester.IntersectSegmentTriangleCCW(p0, p1, p2, normal, time);
 
-            if (intersected != 0)
+            if (intersected)
             {
                 rayIntersectionDistance = time * rayLength;
                 intersectedTriangleIndex = triangleIndex / 3;

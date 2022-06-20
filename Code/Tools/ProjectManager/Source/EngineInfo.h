@@ -25,12 +25,15 @@ namespace O3DE::ProjectManager
         QString m_name;
         QString m_thirdPartyPath;
 
-        // from o3de_manifest.json
         QString m_path;
+
+        // from o3de_manifest.json
         QString m_defaultProjectsFolder;
         QString m_defaultGemsFolder;
         QString m_defaultTemplatesFolder;
         QString m_defaultRestrictedFolder;
+
+        bool m_registered = false;
 
         bool IsValid() const;
     };

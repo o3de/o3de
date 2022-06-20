@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-
+#include "LyShineFeatureProcessor.h"
 #include "LyShineSystemComponent.h"
 #include "UiSerialize.h"
 
@@ -49,6 +49,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
+#include "LyShinePass.h"
 
 namespace LyShine
 {
@@ -98,6 +99,8 @@ namespace LyShine
                 ->Event("GetUiCursorPosition", &UiCursorBus::Events::GetUiCursorPosition)
                 ;
         }
+        
+        LyShineFeatureProcessor::Reflect(context);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,9 +116,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,11 +191,32 @@ namespace LyShine
         RegisterComponentTypeForMenuOrdering(UiDynamicScrollBoxComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiParticleEmitterComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        // Add LyShine pass
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+        passSystem->AddPassCreator(AZ::Name("LyShinePass"), &LyShine::LyShinePass::Create);
+        passSystem->AddPassCreator(AZ::Name("LyShineChildPass"), &LyShine::LyShineChildPass::Create);
+        passSystem->AddPassCreator(AZ::Name("RttChildPass"), &LyShine::RttChildPass::Create);
+
+        // Setup handler for load pass template mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+        
+        // Register feature processor
+        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<LyShineFeatureProcessor>();
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::Deactivate()
     {
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        m_loadTemplatesHandler.Disconnect();        
+        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<LyShineFeatureProcessor>();
+#endif
+
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
@@ -328,8 +354,6 @@ namespace LyShine
         // Build a map of entity Ids to their parent Ids, for faster lookup during processing.
         for (AZ::Entity* exportParentEntity : exportSliceEntities)
         {
-            AZ::EntityId exportParentId = exportParentEntity->GetId();
-
             UiElementComponent* exportParentComponent = exportParentEntity->FindComponent<UiElementComponent>();
             if (!exportParentComponent)
             {
@@ -361,24 +385,46 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
     {
 #if !defined(AZ_MONOLITHIC_BUILD)
         // When module is linked dynamically, we must set our gEnv pointer.
         // When module is linked statically, we'll share the application's gEnv pointer.
         gEnv = system.GetGlobalEnvironment();
 #endif
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
+        m_lyShine = AZStd::make_unique<CLyShine>();
+        AZ::Interface<ILyShine>::Register(m_lyShine.get());
+
+        system.GetILevelSystem()->AddListener(this);
 
         BroadcastCursorImagePathname();
+
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            AZ::Interface<ILyShine>::Get()->PostInit();
+        }
     }
 
-    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemShutdown(ISystem& system)
     {
-        gEnv->pLyShine = nullptr;
-        delete m_pLyShine;
-        m_pLyShine = nullptr;       
+        system.GetILevelSystem()->RemoveListener(this);
+
+        if (m_lyShine)
+        {
+            AZ::Interface<ILyShine>::Unregister(m_lyShine.get());
+            m_lyShine.reset();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        // Perform level unload procedures for the LyShine UI system
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            AZ::Interface<ILyShine>::Get()->OnLevelUnload();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -386,4 +432,13 @@ namespace LyShine
     {
         UiCursorBus::Broadcast(&UiCursorInterface::SetUiCursor, m_cursorImagePathname.GetAssetPath().c_str());
     }
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::LoadPassTemplateMappings()
+    {
+        const char* passTemplatesFile = "Passes/LyShinePassTemplates.azasset";
+        AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+    }
+#endif
 }

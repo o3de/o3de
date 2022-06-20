@@ -64,7 +64,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZ::u32 m_nodeIndex = InvalidIndex32;
+            size_t m_nodeIndex = InvalidIndex;
         };
 
         BlendTreeGetTransformNode();

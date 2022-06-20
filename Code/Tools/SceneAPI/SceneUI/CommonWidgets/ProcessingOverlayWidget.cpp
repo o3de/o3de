@@ -63,7 +63,7 @@ namespace AZ
             }
 
             ProcessingOverlayWidget::ProcessingOverlayWidget(UI::OverlayWidget* overlay, Layout layout, Uuid traceTag)
-                : QWidget()
+                : QWidget(nullptr, Qt::Tool | Qt::WindowStaysOnTopHint)
                 , m_traceTag(traceTag)
                 , ui(new Ui::ProcessingOverlayWidget())
                 , m_overlay(overlay)

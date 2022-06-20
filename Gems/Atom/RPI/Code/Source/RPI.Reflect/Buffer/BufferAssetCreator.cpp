@@ -57,7 +57,7 @@ namespace AZ
             // Only allocate buffer if initial data is not empty
             if (initialData != nullptr && initialDataSize > 0)
             {
-                bufferAsset->m_buffer.resize(descriptor.m_byteCount);
+                bufferAsset->m_buffer.resize_no_construct(descriptor.m_byteCount);
                 memcpy(bufferAsset->m_buffer.data(), initialData, initialDataSize);
             }
 
@@ -165,7 +165,7 @@ namespace AZ
             creator.SetPoolAsset(sourceAsset->GetPoolAsset());
             creator.SetBufferViewDescriptor(sourceAsset->GetBufferViewDescriptor());
 
-            const AZStd::array_view<uint8_t> sourceBuffer = sourceAsset->GetBuffer();
+            const AZStd::span<const uint8_t> sourceBuffer = sourceAsset->GetBuffer();
             creator.SetBuffer(sourceBuffer.data(), sourceBuffer.size(), sourceAsset->GetBufferDescriptor());
 
             return creator.End(clonedResult);

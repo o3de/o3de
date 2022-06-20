@@ -6,7 +6,6 @@
  *
  */
 
-// include the required headers
 #include "EMotionFXConfig.h"
 #include "Motion.h"
 #include <MCore/Source/IDGenerator.h>
@@ -19,9 +18,9 @@
 #include "EventHandler.h"
 #include "MotionEventTable.h"
 #include <EMotionFX/Source/Allocators.h>
-#include <EMotionFX/Source/MotionData/MotionData.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/MotionData/MotionData.h>
 
 namespace EMotionFX
 {
@@ -30,11 +29,11 @@ namespace EMotionFX
     Motion::Motion(const char* name)
         : BaseObject()
     {
-        mID = MCore::GetIDGenerator().GenerateID();
+        m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_eventTable = AZStd::make_unique<MotionEventTable>();
-        mUnitType = GetEMotionFX().GetUnitType();
-        mFileUnitType = mUnitType;
-        mExtractionFlags = static_cast<EMotionExtractionFlags>(0);
+        m_unitType = GetEMotionFX().GetUnitType();
+        m_fileUnitType = m_unitType;
+        m_extractionFlags = static_cast<EMotionExtractionFlags>(0);
 
         if (name)
         {
@@ -42,7 +41,7 @@ namespace EMotionFX
         }
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        mIsOwnedByRuntime       = false;
+        m_isOwnedByRuntime       = false;
 #endif // EMFX_DEVELOPMENT_BUILD
 
         // automatically register the motion
@@ -55,7 +54,7 @@ namespace EMotionFX
         GetEventManager().OnDeleteMotion(this);
 
         // automatically unregister the motion
-        if (mAutoUnregister)
+        if (m_autoUnregister)
         {
             GetMotionManager().RemoveMotion(this, false);
         }
@@ -68,42 +67,42 @@ namespace EMotionFX
     void Motion::SetName(const char* name)
     {
         // calculate the ID
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // set the filename of the motion
     void Motion::SetFileName(const char* filename)
     {
-        mFileName = filename;
+        m_fileName = filename;
     }
 
 
     // adjust the dirty flag
     void Motion::SetDirtyFlag(bool dirty)
     {
-        mDirtyFlag = dirty;
+        m_dirtyFlag = dirty;
     }
 
 
     // adjust the auto unregistering from the motion manager on delete
     void Motion::SetAutoUnregister(bool enabled)
     {
-        mAutoUnregister = enabled;
+        m_autoUnregister = enabled;
     }
 
 
     // do we auto unregister from the motion manager on delete?
     bool Motion::GetAutoUnregister() const
     {
-        return mAutoUnregister;
+        return m_autoUnregister;
     }
 
 
     void Motion::SetIsOwnedByRuntime(bool isOwnedByRuntime)
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        mIsOwnedByRuntime = isOwnedByRuntime;
+        m_isOwnedByRuntime = isOwnedByRuntime;
 #else
         AZ_UNUSED(isOwnedByRuntime);
 #endif
@@ -113,7 +112,7 @@ namespace EMotionFX
     bool Motion::GetIsOwnedByRuntime() const
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        return mIsOwnedByRuntime;
+        return m_isOwnedByRuntime;
 #else
         return true;
 #endif
@@ -122,25 +121,25 @@ namespace EMotionFX
 
     const char* Motion::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     const AZStd::string& Motion::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 
     void Motion::SetMotionFPS(float motionFPS)
     {
-        mMotionFPS = motionFPS;
+        m_motionFps = motionFPS;
     }
 
 
     float Motion::GetMotionFPS() const
     {
-        return mMotionFPS;
+        return m_motionFps;
     }
 
 
@@ -163,31 +162,31 @@ namespace EMotionFX
 
     bool Motion::GetDirtyFlag() const
     {
-        return mDirtyFlag;
+        return m_dirtyFlag;
     }
 
 
     void Motion::SetMotionExtractionFlags(EMotionExtractionFlags flags)
     {
-        mExtractionFlags = flags;
+        m_extractionFlags = flags;
     }
 
 
     EMotionExtractionFlags Motion::GetMotionExtractionFlags() const
     {
-        return mExtractionFlags;
+        return m_extractionFlags;
     }
 
 
     void Motion::SetCustomData(void* dataPointer)
     {
-        mCustomData = dataPointer;
+        m_customData = dataPointer;
     }
 
 
     void* Motion::GetCustomData() const
     {
-        return mCustomData;
+        return m_customData;
     }
 
 
@@ -203,48 +202,48 @@ namespace EMotionFX
 
     void Motion::SetID(uint32 id)
     {
-        mID = id;
+        m_id = id;
     }
 
     const char* Motion::GetFileName() const
     {
-        return mFileName.c_str();
+        return m_fileName.c_str();
     }
 
 
     const AZStd::string& Motion::GetFileNameString() const
     {
-        return mFileName;
+        return m_fileName;
     }
 
 
     uint32 Motion::GetID() const
     {
-        return mID;
+        return m_id;
     }
 
 
     void Motion::SetUnitType(MCore::Distance::EUnitType unitType)
     {
-        mUnitType = unitType;
+        m_unitType = unitType;
     }
 
 
     MCore::Distance::EUnitType Motion::GetUnitType() const
     {
-        return mUnitType;
+        return m_unitType;
     }
 
 
     void Motion::SetFileUnitType(MCore::Distance::EUnitType unitType)
     {
-        mFileUnitType = unitType;
+        m_fileUnitType = unitType;
     }
 
 
     MCore::Distance::EUnitType Motion::GetFileUnitType() const
     {
-        return mFileUnitType;
+        return m_fileUnitType;
     }
 
     void Motion::Scale(float scaleFactor)
@@ -257,17 +256,17 @@ namespace EMotionFX
     // scale everything to the given unit type
     void Motion::ScaleToUnitType(MCore::Distance::EUnitType targetUnitType)
     {
-        if (mUnitType == targetUnitType)
+        if (m_unitType == targetUnitType)
         {
             return;
         }
 
         // calculate the scale factor and scale
-        const float scaleFactor = static_cast<float>(MCore::Distance::GetConversionFactor(mUnitType, targetUnitType));
+        const float scaleFactor = static_cast<float>(MCore::Distance::GetConversionFactor(m_unitType, targetUnitType));
         Scale(scaleFactor);
 
         // update the unit type
-        mUnitType = targetUnitType;
+        m_unitType = targetUnitType;
     }
 
     void Motion::UpdateDuration()
@@ -286,7 +285,7 @@ namespace EMotionFX
     {
         AZ_Assert(m_motionData, "Expecting motion data");
 
-        MotionData::SampleSettings sampleSettings;
+        MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = instance->GetActorInstance();
         sampleSettings.m_inPlace = instance->GetIsInPlace();
         sampleSettings.m_mirror = instance->GetMirrorMotion();
@@ -301,7 +300,7 @@ namespace EMotionFX
     {
         AZ_Assert(m_motionData, "Expecting motion data");
 
-        MotionData::SampleSettings sampleSettings;
+        MotionDataSampleSettings sampleSettings;
         sampleSettings.m_actorInstance = instance->GetActorInstance();
         sampleSettings.m_inPlace = instance->GetIsInPlace();
         sampleSettings.m_mirror = instance->GetMirrorMotion();
@@ -309,6 +308,12 @@ namespace EMotionFX
         sampleSettings.m_sampleTime = instance->GetCurrentTime();
         sampleSettings.m_inputPose = inputPose ? inputPose : sampleSettings.m_actorInstance->GetTransformData()->GetBindPose();
         
+        m_motionData->SamplePose(sampleSettings, outputPose);
+    }
+
+    void Motion::SamplePose(Pose* outputPose, const MotionDataSampleSettings& sampleSettings)
+    {
+        AZ_Assert(m_motionData, "Expecting motion data");
         m_motionData->SamplePose(sampleSettings, outputPose);
     }
 

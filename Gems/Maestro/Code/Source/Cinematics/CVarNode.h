@@ -26,21 +26,21 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides from CAnimNode
     //////////////////////////////////////////////////////////////////////////
-    void SetName(const char* name);
-    void Animate(SAnimContext& ec);
-    void CreateDefaultTracks();
-    void OnReset();
-    void OnResume();
+    void SetName(const char* name) override;
+    void Animate(SAnimContext& ec) override;
+    void CreateDefaultTracks() override;
+    void OnReset() override;
+    void OnResume() override;
 
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CAnimParamType GetParamType(unsigned int nIndex) const override;
 
     int GetDefaultKeyTangentFlags() const override;
 
     static void Reflect(AZ::ReflectContext* context);
 
 protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
 private:
     float m_value;

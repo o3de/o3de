@@ -159,6 +159,7 @@ private:
 class CConsoleSCB
     : public QWidget
     , private AzToolsFramework::EditorPreferencesNotificationBus::Handler
+    , public IEditorNotifyListener
 {
     Q_OBJECT
 public:
@@ -187,8 +188,9 @@ private Q_SLOTS:
     void findNext();
 
 private:
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+
     QScopedPointer<Ui::Console> ui;
-    int m_richEditTextLength;
 
     Lines m_lines;
     static Lines s_pendingLines;

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string.h>
@@ -31,7 +31,6 @@ namespace AzPhysics
         static void Reflect(AZ::ReflectContext* context);
 
         static const CollisionLayer Default; //!< Default collision layer, 0.
-        static const CollisionLayer TouchBend; //!< Touch Bendable Vegetation collision layer.
 
         //! Construct a layer with the given index.
         //! @param index The index of the layer. Must be between 0 - CollisionLayers::MaxCollisionLayers. Default CollisionLayer::Default.

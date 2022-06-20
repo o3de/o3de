@@ -24,7 +24,7 @@
 
 class QWindow;
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     class EditorAutomationTestDialogRequests
         : public AZ::EBusTraits
@@ -101,7 +101,7 @@ namespace ScriptCanvasDeveloper
         void RunTest(QModelIndex index);
 
         // SystemTickBus
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // EditorAutomationTestDialogRequestBus::Handler
@@ -133,7 +133,5 @@ namespace ScriptCanvasDeveloper
         QLabel*      m_errorTestLabel = nullptr;
         QLabel*      m_runLabel = nullptr;
         QMainWindow* m_scriptCanvasWindow = nullptr;
-
-        QWindow* m_canvasWindow = nullptr;
     };
 }

@@ -146,7 +146,9 @@ void CanvasSizeToolbarSection::InitWidgets(QToolBar* parent, bool addSeparator)
         m_canvasHeightAction->setVisible(false);
 
         m_lineEditCanvasWidth->setMaximumWidth(35);
+        m_lineEditCanvasWidth->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasWidth));
         m_lineEditCanvasHeight->setMaximumWidth(35);
+        m_lineEditCanvasHeight->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasHeight));
 
         // Delimit between width x height
         m_labelCustomSizeDelimiter->setText("x");
@@ -493,7 +495,7 @@ void CanvasSizeToolbarSection::HandleIndexChanged()
 
 int CanvasSizeToolbarSection::GetCustomSizeIndex()
 {
-    return m_canvasSizePresets.size() - 1;
+    return static_cast<int>(m_canvasSizePresets.size() - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

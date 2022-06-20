@@ -103,8 +103,8 @@ namespace EMotionFX
         MCORE_INLINE void SetStorageTypeValue(const StorageType& value);
 
     protected:
-        StorageType mValue; /**< The key value. */
-        float       mTime;  /**< Time in seconds. */
+        StorageType m_value; /**< The key value. */
+        float       m_time;  /**< Time in seconds. */
     };
 
     // include inline code

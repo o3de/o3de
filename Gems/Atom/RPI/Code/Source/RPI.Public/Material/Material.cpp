@@ -8,18 +8,21 @@
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
+#include <AtomCore/Utils/ScopedValue.h>
 
 namespace AZ
 {
@@ -56,7 +59,9 @@ namespace AZ
 
         RHI::ResultCode Material::Init(MaterialAsset& materialAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
+
+            ScopedValue isInitializing(&m_isInitializing, true, false);
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
@@ -97,8 +102,14 @@ namespace AZ
                 ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
 
+            // If this Init() is actually a re-initialize, we need to re-apply any overridden property values
+            // after loading the property values from the asset, so we save that data here.
             MaterialPropertyFlags prevOverrideFlags = m_propertyOverrideFlags;
             AZStd::vector<MaterialPropertyValue> prevPropertyValues = m_propertyValues;
+
+            // The property values are cleared to their default state to ensure that SetPropertyValue() does not early-return
+            // when called below. This is important when Init() is actually a re-initialize.
+            m_propertyValues.clear();
 
             // Initialize the shader runtime data like shader constant buffers and shader variants by applying the 
             // material's property values. This will feed through the normal runtime material value-change data flow, which may
@@ -198,6 +209,27 @@ namespace AZ
             return AZ::Success(appliedCount);
         }
 
+        void Material::ApplyGlobalShaderOptions()
+        {
+            // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
+            // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
+            ShaderSystemInterface* shaderSystem = ShaderSystemInterface::Get();
+            for (auto iter : shaderSystem->GetGlobalShaderOptions())
+            {
+                const Name& shaderOptionName = iter.first;
+                ShaderOptionValue value = iter.second;
+                if (!SetSystemShaderOption(shaderOptionName, value).IsSuccess())
+                {
+                    AZ_Warning("Material", false, "Shader option '%s' is owned by this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
+                }
+            }
+        }
+
+        void Material::SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride)
+        {
+            m_psoHandling = psoHandlingOverride;
+        }
+
         const RHI::ShaderResourceGroup* Material::GetRHIShaderResourceGroup() const
         {
             return m_rhiShaderResourceGroup;
@@ -220,7 +252,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = { asset.GetAs<MaterialAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
 
             if (newMaterialAsset)
             {
@@ -306,11 +338,26 @@ namespace AZ
 
         bool Material::Compile()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
-            if (NeedsCompile() && CanCompile())
+            if (!NeedsCompile())
             {
-                AZ_PROFILE_EVENT_BEGIN(Debug::ProfileCategory::AzRender, "Material::Compile() Processing Functors");
+                return true;
+            }
+
+            if (CanCompile())
+            {
+                // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
+                // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
+                // thoroughly address this in 2022, but for now we just report a warning to alert users who are using the engine in a way that might
+                // not be supported for much longer. PSO changes should only be allowed in developer tools (though we could also expose a way for users to
+                // enable dynamic PSO changes if their project only targets platforms that support this).
+                // PSO modifications are allowed during initialization because that's using the stored asset data, which the asset system can
+                // access to pre-compile the necessary PSOs.
+                MaterialPropertyPsoHandling psoHandling = m_isInitializing ? MaterialPropertyPsoHandling::Allowed : m_psoHandling;
+
+
+                AZ_PROFILE_BEGIN(RPI, "Material::Compile() Processing Functors");
                 for (const Ptr<MaterialFunctor>& functor : m_materialAsset->GetMaterialFunctors())
                 {
                     if (functor)
@@ -325,7 +372,8 @@ namespace AZ
                                 m_layout,
                                 &m_shaderCollection,
                                 m_shaderResourceGroup.get(),
-                                &materialPropertyDependencies
+                                &materialPropertyDependencies,
+                                psoHandling
                             );
 
 
@@ -339,7 +387,7 @@ namespace AZ
                         AZ_Error(s_debugTraceName, false, "Material functor is null.");
                     }
                 }
-                AZ_PROFILE_EVENT_END(Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_END(RPI);
 
                 m_propertyDirtyFlags.reset();
 
@@ -361,9 +409,39 @@ namespace AZ
             return m_currentChangeId;
         }
 
-        MaterialPropertyIndex Material::FindPropertyIndex(const Name& name) const
+        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId, bool* wasRenamed, Name* newName) const
         {
-            return m_layout->FindPropertyIndex(name);
+            if (wasRenamed)
+            {
+                *wasRenamed = false;
+            }
+
+            MaterialPropertyIndex index = m_layout->FindPropertyIndex(propertyId);
+            if (!index.IsValid())
+            {
+                Name renamedId = propertyId;
+                
+                if (m_materialAsset->GetMaterialTypeAsset()->ApplyPropertyRenames(renamedId))
+                {                                
+                    index = m_layout->FindPropertyIndex(renamedId);
+
+                    if (wasRenamed)
+                    {
+                        *wasRenamed = true;
+                    }
+
+                    if (newName)
+                    {
+                        *newName = renamedId;
+                    }
+
+                    AZ_Warning("Material", false,
+                        "Material property '%s' has been renamed to '%s'. Consider updating the corresponding source data.",
+                        propertyId.GetCStr(),
+                        renamedId.GetCStr());
+                }
+            }
+            return index;
         }
 
         template<typename Type>
@@ -484,6 +562,13 @@ namespace AZ
             }
 
             MaterialPropertyValue& savedPropertyValue = m_propertyValues[index.GetIndex()];
+
+            // If the property value didn't actually change, don't waste time running functors and compiling the changes.
+            if (savedPropertyValue == value)
+            {
+                return false;
+            }
+
             savedPropertyValue = value;
             m_propertyDirtyFlags.set(index.GetIndex());
             m_propertyOverrideFlags.set(index.GetIndex());
@@ -537,33 +622,39 @@ namespace AZ
             }
             else
             {
-                if (!imageAsset.IsReady())
+                AZ::Data::AssetType assetType = imageAsset.GetType();
+                if (assetType != azrtti_typeid<StreamingImageAsset>() && assetType != azrtti_typeid<AttachmentImageAsset>())
                 {
-                    imageAsset = Data::AssetManager::Instance().GetAsset<StreamingImageAsset>(imageAsset.GetId(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    imageAsset.BlockUntilLoadComplete();
-                    if (!imageAsset.IsReady())
-                    {
-                        AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
-                        return false;
-                    }
+                    AZ::Data::AssetInfo assetInfo;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, imageAsset.GetId());
+                    assetType = assetInfo.m_assetType;
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = { imageAsset.GetAs<StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad })
+                Data::Instance<Image> image = nullptr;
+                if (assetType == azrtti_typeid<StreamingImageAsset>())
                 {
-                    Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
-                    if (!image)
-                    {
-                        AZ_Error(s_debugTraceName, false, "Could not create StreamingImage");
-                        return false;
-                    }
-
-                    return SetPropertyValue(index, image);
+                    Data::Asset<StreamingImageAsset> streamingImageAsset = imageAsset;
+                    image = StreamingImage::FindOrCreate(streamingImageAsset);
+                }
+                else if (assetType == azrtti_typeid<AttachmentImageAsset>())
+                {
+                    Data::Asset<AttachmentImageAsset> attachmentImageAsset = imageAsset;
+                    image = AttachmentImage::FindOrCreate(attachmentImageAsset);
                 }
                 else
                 {
-                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type");
+                    AZ_Error(s_debugTraceName, false, "Unsupported image asset type: %s", assetType.ToString<AZStd::string>().c_str());
                     return false;
                 }
+
+                if (!image)
+                {
+                    AZ_Error(s_debugTraceName, false, "Image asset could not be loaded");
+                    return false;
+                }
+
+                return SetPropertyValue(index, image);
             }
         }
 

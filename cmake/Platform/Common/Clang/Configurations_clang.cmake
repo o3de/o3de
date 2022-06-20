@@ -9,6 +9,10 @@
 include(cmake/Platform/Common/Configurations_common.cmake)
 
 ly_append_configurations_options(
+    DEFINES_PROFILE
+        _FORTIFY_SOURCE=2
+    DEFINES_RELEASE
+        _FORTIFY_SOURCE=2
     COMPILATION
         -fno-exceptions
         -fvisibility=hidden
@@ -16,44 +20,52 @@ ly_append_configurations_options(
         -Wall
         -Werror
 
-        # Disabled warnings (please do not disable any others without first consulting ly-warnings)
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
+        -Wno-inconsistent-missing-override # unfortunately there is no warning in MSVC to detect missing overrides,
+            # MSVC's static analyzer can, but that is a different run that most developers are not aware of. A pass
+            # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
+
         -Wrange-loop-analysis
-        -Wno-unknown-warning-option       
-        "-Wno-#pragma-messages"
-        -Wno-absolute-value
-        -Wno-dynamic-class-memaccess
-        -Wno-format-security
-        -Wno-inconsistent-missing-override
-        -Wno-invalid-offsetof
-        -Wno-multichar
+        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
         -Wno-parentheses
         -Wno-reorder
-        -Wno-self-assign
         -Wno-switch
-        -Wno-tautological-compare
         -Wno-undefined-var-template
-        -Wno-unknown-pragmas
-        -Wno-unused-function
-        -Wno-unused-private-field
-        -Wno-unused-value
-        -Wno-unused-variable
-        -Wno-unused-lambda-capture
-        # Workaround for compiler seeing file case differently from what OS show in console.
-        -Wno-nonportable-include-path
+
+        ###################
+        # Enabled warnings (that are disabled by default)
+        ###################
 
     COMPILATION_DEBUG
-        -O0 # No optimization
-        -g # debug symbols
-        -fno-inline # don't inline functions
-        -fstack-protector # Add additional checks to catch stack corruption issues
+        -O0                         # No optimization
+        -g                          # debug symbols
+        -fno-inline                 # don't inline functions
+
+        -fstack-protector-all       # Enable stack protectors for all functions
+        -fstack-check
+
     COMPILATION_PROFILE
         -O2
-        -g # debug symbols
+        -g                          # debug symbols
+
+        -fstack-protector-all       # Enable stack protectors for all functions
+        -fstack-check
+
     COMPILATION_RELEASE
         -O2
-    LINK_NON_STATIC
-        -Wl,-undefined,error
 )
 
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    ly_append_configurations_options(
+        COMPILATION_DEBUG
+            -fsanitize=address
+            -fno-omit-frame-pointer
+        LINK_NON_STATIC_DEBUG
+            -shared-libsan
+            -fsanitize=address
+    )
+endif()
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 

@@ -117,7 +117,6 @@ namespace GraphCanvas
     
     void ParticleGraphicsItem::paint([[maybe_unused]] QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
     {
-        static const float k_pulseWidth = 60.0f;
         painter->save();
 
         float alpha = m_configuration.m_alphaStart;

@@ -1,6 +1,0 @@
-<download name="C4976242_Verify_Collision_SameCollisionlayer_SameCollisiongroup" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39215" md5="cef71237a034e50cd6f9d07815205864"/>
- </files>
-</download>

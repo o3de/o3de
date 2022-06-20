@@ -6,15 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_IEDITOR_H
-#define CRYINCLUDE_EDITOR_IEDITOR_H
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef PLUGIN_EXPORTS
-#define PLUGIN_API DLL_EXPORT
+#define PLUGIN_API AZ_DLL_EXPORT
 #else
-#define PLUGIN_API DLL_IMPORT
+#define PLUGIN_API AZ_DLL_IMPORT
 #endif
 
 #include <ISystem.h>
@@ -22,9 +21,8 @@
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 
-#include <WinWidgetId.h>
-
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 
 class QMenu;
 
@@ -46,18 +44,13 @@ class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
-class CBaseLibraryItem;
 class ICommandManager;
 class CEditorCommandManager;
 class CHyperGraphManager;
 class CConsoleSynchronization;
-class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
-struct IDataBaseItem;
 struct ITransformManipulator;
-struct IDataBaseManager;
-class IFacialEditor;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -68,26 +61,16 @@ class CDisplaySettings;
 struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
-struct IResourceSelectorHost;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-struct IEditorPanelUtils;
-
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
 
 struct ISystem;
 struct IRenderer;
 struct AABB;
-struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IEditorMaterialManager;  // Vladimir@conffx
-struct IBaseLibraryManager;  // Vladimir@conffx
 struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
@@ -170,8 +153,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
     eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
-    eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -333,17 +314,6 @@ enum UpdateConentFlags
 enum MouseCallbackFlags
 {
     MK_CALLBACK_FLAGS = 0x100
-};
-
-//! Types of database items
-enum EDataBaseItemType
-{
-    EDB_TYPE_MATERIAL,
-    EDB_TYPE_PARTICLE,
-    EDB_TYPE_MUSIC,
-    EDB_TYPE_EAXPRESET,
-    EDB_TYPE_SOUNDMOOD,
-    EDB_TYPE_FLARE
 };
 
 enum EEditorPathName
@@ -511,8 +481,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Clone object
-    virtual CBaseObject* CloneObject(CBaseObject* obj) = 0;
     //! Get current selection group
     virtual CSelectionGroup* GetSelection() = 0;
     virtual CBaseObject* GetSelectedObject() = 0;
@@ -527,14 +495,8 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Get DB manager that own items of specified type.
-    virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
-    virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
-    //! Get Panel Editor Utilities
-    virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
@@ -547,11 +509,6 @@ struct IEditor
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
-
-    // These are needed for Qt integration:
-    virtual void RegisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    virtual void UnregisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    // ^^^
 
     //! QMimeData is used by the Qt clipboard.
     //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
@@ -570,7 +527,7 @@ struct IEditor
     //////////////////////////////////////////////////////////////////////////
     virtual class CLevelIndependentFileMan* GetLevelIndependentFileMan() = 0;
     //! Notify all views that data is changed.
-    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AABB* updateRegion = NULL) = 0;
+    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AABB* updateRegion = nullptr) = 0;
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;
@@ -589,7 +546,7 @@ struct IEditor
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
     //! Return a pointer to a ITransformManipulator pointer if shown.
-    //! NULL is manipulator is not shown.
+    //! nullptr if manipulator is not shown.
     virtual ITransformManipulator* GetTransformManipulator() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
@@ -616,10 +573,6 @@ struct IEditor
     virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
     virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
-
-    // We want to open a view object but not wrap it in a view pane)
-    virtual QWidget* OpenWinWidget(WinWidgetId openId) = 0;
-    virtual WinWidget::WinWidgetManager* GetWinWidgetManager() const = 0;
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
@@ -702,19 +655,12 @@ struct IEditor
     //! Only returns true if source control is both available AND currently connected and functioning
     virtual bool IsSourceControlConnected() = 0;
 
-    virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
-    virtual void AddUIEnums() = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     virtual IExportManager* GetExportManager() = 0;
-    //! Set current configuration spec of the editor.
-    virtual void SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform) = 0;
-    virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
-    virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
@@ -740,4 +686,5 @@ struct IInitializeUIInfo
     virtual void SetInfoText(const char* text) = 0;
 };
 
-#endif // CRYINCLUDE_EDITOR_IEDITOR_H
+AZ_DECLARE_BUDGET(Editor);
+

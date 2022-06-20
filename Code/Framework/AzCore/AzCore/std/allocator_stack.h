@@ -59,7 +59,7 @@ namespace AZStd
 
         AZ_FORCE_INLINE const char*  get_name() const            { return m_name; }
         AZ_FORCE_INLINE void         set_name(const char* name)  { m_name = name; }
-        AZ_FORCE_INLINE size_type    get_max_size() const        { return m_size - (m_freeData - m_data); }
+        constexpr size_type          max_size() const            { return m_size; }
         AZ_FORCE_INLINE size_type    get_allocated_size() const  { return m_freeData - m_data; }
 
         pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)

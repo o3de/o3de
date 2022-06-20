@@ -79,7 +79,14 @@ namespace UnitTest
 
         // verify template updated correctly
         //instantiate second instance for checking if propogation works
-        AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(templateId);
+        AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(
+            templateId, AZStd::nullopt,
+            [](const AzToolsFramework::EntityList& entities)
+            {
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, entities);
+            });
+
         ASSERT_TRUE(secondInstance);
 
         ValidateInstanceEntitiesActive(*secondInstance);
@@ -99,7 +106,6 @@ namespace UnitTest
         //create single entity
         AZ::Entity* newEntity = CreateEntity("New Entity", false);
         ASSERT_TRUE(newEntity);
-        AZ::EntityId entityId = newEntity->GetId();
 
         //create a first instance where the entity will be added
         AZStd::unique_ptr<Instance> testInstance = m_prefabSystemComponent->CreatePrefab({}, {}, "test/path");

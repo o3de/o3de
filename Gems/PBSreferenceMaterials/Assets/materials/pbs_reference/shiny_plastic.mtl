@@ -1,9 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="80000081" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_plastic" MatTemplate="" Diffuse="1,1,1" Specular="0.042987008,0.042987008,0.042987008" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/red_diff.tif">
-   <TexMod TileU="3" TileV="1.5"/>
-  </Texture>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/gloss80_ddna.tif"/>
- </Textures>
- <PublicParams SSSIndex="0" IndirectColor="0.23489527,0.0025858255,0.00017512396"/>
-</Material>

@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "base": "{91B3D89A-4A4B-49FF-AD91-CAAC49E141A8}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Mock",
+                "category": "Developer",
+                "tooltip": "Node for mocking node visuals"
+            }
+        }
+    ]
+}

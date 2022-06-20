@@ -17,23 +17,60 @@
 
 namespace O3DE::ProjectManager
 {
+    class TestablePythonBindings
+        : public PythonBindings
+    {
+    public:
+        TestablePythonBindings(const AZ::IO::PathView& enginePath)
+            : PythonBindings(enginePath)
+        {
+        }
+
+        void TestOnStdOut(const char* msg)
+        {
+            PythonBindings::OnStdOut(msg);
+        }
+
+        void TestOnStdError(const char* msg)
+        {
+            PythonBindings::OnStdError(msg);
+        }
+
+        //! override with an implementation that won't do anything
+        //! so we avoid modifying the manifest 
+        bool RemoveInvalidProjects() override
+        {
+            constexpr bool removalResult = true;
+            return removalResult;
+        }
+    };
+
     class PythonBindingsTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
+        , public AZ::Debug::TraceMessageBus::Handler
     {
     public:
 
-        PythonBindingsTests()
+        void SetUp() override
         {
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
-            m_pythonBindings = AZStd::make_unique<PythonBindings>(AZ::IO::PathView(engineRootPath));
+            m_pythonBindings = AZStd::make_unique<TestablePythonBindings>(AZ::IO::PathView(engineRootPath));
         }
 
-        ~PythonBindingsTests()
+        void TearDown() override
         {
             m_pythonBindings.reset();
         }
 
-        AZStd::unique_ptr<ProjectManager::PythonBindings> m_pythonBindings;
+        //! AZ::Debug::TraceMessageBus
+        bool OnOutput(const char*, const char* message) override
+        {
+            m_gatheredMessages.emplace_back(message);
+            return true;
+        }
+
+        AZStd::unique_ptr<ProjectManager::TestablePythonBindings> m_pythonBindings;
+        AZStd::vector<AZStd::string> m_gatheredMessages;
     };
 
     TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
@@ -60,11 +97,42 @@ namespace O3DE::ProjectManager
         projectInfo.m_path = QDir::toNativeSeparators(QString(tempDir.GetDirectory()) + "/" + "TestProject");
         projectInfo.m_projectName = "TestProjectName";
 
-        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo);
+        constexpr bool registerProject = false;
+        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo, registerProject);
         EXPECT_TRUE(result.IsSuccess());
 
         ProjectInfo resultProjectInfo = result.GetValue();
         EXPECT_EQ(projectInfo.m_path, resultProjectInfo.m_path);
         EXPECT_EQ(projectInfo.m_projectName, resultProjectInfo.m_projectName);
     }
-}
+
+    TEST_F(PythonBindingsTests, PythonBindings_Print_Percent_Does_Not_Crash)
+    {
+        bool testMessageFound = false;
+        bool testErrorFound = false;
+        const char* testMessage = "PythonTestMessage%";
+        const char* testError = "ERROR:root:PythonTestError%";
+
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+
+        m_pythonBindings->TestOnStdOut(testMessage);
+        m_pythonBindings->TestOnStdError(testError);
+
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+
+        for (const auto& message : m_gatheredMessages)
+        {
+            if (message.contains(testMessage))
+            {
+                testMessageFound = true;
+            }
+            else if (message.contains(testError))
+            {
+                testErrorFound = true;
+            }
+        }
+
+        EXPECT_TRUE(testMessageFound);
+        EXPECT_TRUE(testErrorFound);
+    }
+} // namespace O3DE::ProjectManager

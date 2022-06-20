@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
@@ -162,7 +162,7 @@ namespace TestImpact
             {
             }
 
-            [[nodiscard]] ProcessCallbackResult operator()(const typename JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+            [[nodiscard]] ProcessCallbackResult operator()(const JobInfo& jobInfo, const TestImpact::JobMeta& meta)
             {
                 const auto id = jobInfo.GetId().m_value;
                 const auto& args = jobInfo.GetCommand().m_args;
@@ -189,7 +189,7 @@ namespace TestImpact
 
         private:
             const AZStd::vector<const TestTarget*>& m_testTargets;
-            TestEngineJobMap<typename IdType>* m_engineJobs;
+            TestEngineJobMap<IdType>* m_engineJobs;
             Policy::ExecutionFailure m_executionFailurePolicy;
             Policy::TestFailure m_testFailurePolicy;
             AZStd::optional<TestEngineJobCompleteCallback>* m_callback;
@@ -239,8 +239,7 @@ namespace TestImpact
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
-        : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(
+        : m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(
             sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
         , m_testEnumerator(AZStd::make_unique<TestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<InstrumentedTestRunner>(maxConcurrentRuns))
@@ -262,7 +261,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         TestEngineJobMap<TestEnumerator::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateTestEnumerationJobInfos(testTargets, TestEnumerator::JobInfo::CachePolicy::Write);
@@ -285,7 +284,7 @@ namespace TestImpact
         [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         DeleteArtifactXmls();
 
@@ -312,7 +311,7 @@ namespace TestImpact
         [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback) const
     {
         DeleteArtifactXmls();
 

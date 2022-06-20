@@ -7,7 +7,6 @@
  */
 
 #include "Contract.h"
-#include "ContractBus.h"
 #include "Slot.h"
 
 #include <ScriptCanvas/Data/Data.h>

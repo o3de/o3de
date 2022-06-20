@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "PhotometricUnit_Lumen",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Lumen",
+                "category": "Constants/Photometric Unit"
+            },
+            "methods": [
+                {
+                    "base": "GetPhotometricUnit_Lumen",
+                    "details": {
+                        "name": "Lumen"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

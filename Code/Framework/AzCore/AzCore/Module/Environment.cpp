@@ -11,6 +11,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 namespace AZ
 {
@@ -23,10 +24,10 @@ namespace AZ
         class OSStdAllocator
         {
         public:
-            typedef void*               pointer_type;
-            typedef AZStd::size_t       size_type;
-            typedef AZStd::ptrdiff_t    difference_type;
-            typedef AZStd::false_type   allow_memory_leaks;         ///< Regular allocators should not leak.
+            using pointer_type = void *;
+            using size_type = AZStd::size_t;
+            using difference_type = AZStd::ptrdiff_t;
+            using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
             OSStdAllocator(Environment::AllocatorInterface* allocator)
                 : m_name("GlobalEnvironmentAllocator")
@@ -60,7 +61,7 @@ namespace AZ
 
             const char* get_name() const            { return m_name; }
             void        set_name(const char* name)  { m_name = name; }
-            size_type   get_max_size() const        { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
+            constexpr size_type max_size() const    { return AZ_CORE_MAX_ALLOCATOR_SIZE; }
             size_type   get_allocated_size() const  { return 0; }
 
             bool is_lock_free()                     { return false; }
@@ -75,6 +76,42 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
+        void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
+        {
+            const bool releaseByUseCount = (--m_useCount == 0);
+            // We take over the lock, and release it before potentially destroying/freeing ourselves
+            {
+                AZStd::scoped_lock envLockHolder(AZStd::adopt_lock, m_mutex);
+                const bool releaseByModule = (moduleRelease && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId());
+
+                if (!releaseByModule && !releaseByUseCount)
+                {
+                    return;
+                }
+                // if the environment that created us is gone the owner can be null
+                // which means (assuming intermodule allocator) that the variable is still alive
+                // but can't be found as it's not part of any environment.
+                if (m_environmentOwner)
+                {
+                    m_environmentOwner->RemoveVariable(m_guid);
+                    m_environmentOwner = nullptr;
+                }
+                if (m_isConstructed)
+                {
+                    destruct(this, DestroyTarget::Member); // destruct the value
+                }
+            }
+            // m_mutex is no longer held here, envLockHolder has released it above.
+            if (releaseByUseCount)
+            {
+                // m_mutex is unlocked before this is deleted
+                Environment::AllocatorInterface* allocator = m_allocator;
+                // Call child class dtor and clear the memory
+                destruct(this, DestroyTarget::Self);
+                allocator->DeAllocate(this);
+            }
+        }
+
         // instance of the environment
         EnvironmentInterface* EnvironmentInterface::s_environment = nullptr;
 
@@ -85,7 +122,7 @@ namespace AZ
             : public EnvironmentInterface
         {
         public:
-            typedef AZStd::unordered_map<u32, void*, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator> MapType;
+            using MapType = AZStd::unordered_map<u32, void *, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator>;
 
             static EnvironmentInterface* Get();
             static void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback);
@@ -110,8 +147,8 @@ namespace AZ
 #ifdef AZ_ENVIRONMENT_VALIDATE_ON_EXIT
                 AZ_Assert(m_numAttached == 0, "We should not delete an environment while there are %d modules attached! Unload all DLLs first!", m_numAttached);
 #endif
-                
-                for (auto variableIt : m_variableMap)
+
+                for (const auto &variableIt : m_variableMap)
                 {
                     EnvironmentVariableHolderBase* holder = reinterpret_cast<EnvironmentVariableHolderBase*>(variableIt.second);
                     if (holder)

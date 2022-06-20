@@ -29,8 +29,8 @@ namespace EMStudio
     template<class ManagerType, typename GetNumFunc, typename GetEntityFunc>
     bool HasEntityInEditor(const ManagerType& manager, const GetNumFunc& getNumEntitiesFunc, const GetEntityFunc& getEntityFunc)
     {
-        const uint32 numEntities = (manager.*getNumEntitiesFunc)();
-        for (uint32 i = 0; i < numEntities; ++i)
+        const size_t numEntities = (manager.*getNumEntitiesFunc)();
+        for (size_t i = 0; i < numEntities; ++i)
         {
             const auto& entity = (manager.*getEntityFunc)(i);
             if (!entity->GetIsOwnedByRuntime())
@@ -65,8 +65,7 @@ namespace EMStudio
 
         m_actorCheckbox = new QCheckBox("Actors");
         m_actorCheckbox->setObjectName("EMFX.ResetSettingsDialog.Actors");
-        const bool hasActors = HasEntityInEditor(
-            EMotionFX::GetActorManager(), &EMotionFX::ActorManager::GetNumActors, &EMotionFX::ActorManager::GetActor);
+        const bool hasActors = EMotionFX::GetActorManager().GetNumActors() > 0;
         m_actorCheckbox->setChecked(hasActors);
         m_actorCheckbox->setDisabled(!hasActors);
 

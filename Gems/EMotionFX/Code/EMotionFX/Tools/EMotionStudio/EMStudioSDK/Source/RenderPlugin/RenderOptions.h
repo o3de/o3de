@@ -15,8 +15,14 @@
 #include "../EMStudioConfig.h"
 #include "../PluginOptions.h"
 #include "../PluginOptionsBus.h"
+#include <Integration/Rendering/RenderFlag.h>
 
 QT_FORWARD_DECLARE_CLASS(QSettings);
+
+namespace AZ::Render
+{
+    class RenderActorSettings;
+}
 
 namespace EMStudio
 {
@@ -59,8 +65,6 @@ namespace EMStudio
         static const char* s_nodeAABBColorOptionName;
         static const char* s_staticAABBColorOptionName;
         static const char* s_meshAABBColorOptionName;
-        static const char* s_collisionMeshAABBColorOptionName;
-        static const char* s_OBBsColorOptionName;
         static const char* s_lineSkeletonColorOptionName;
         static const char* s_skeletonColorOptionName;
         static const char* s_selectionColorOptionName;
@@ -79,6 +83,26 @@ namespace EMStudio
         static const char* s_selectedClothColliderColorOptionName;
         static const char* s_lastUsedLayoutOptionName;
         static const char* s_renderSelectionBoxOptionName;
+
+        enum ManipulatorMode
+        {
+            SELECT = 0,
+            TRANSLATE = 1,
+            ROTATE = 2,
+            SCALE = 3,
+            NUM_MODES = 4
+        };
+
+        enum CameraViewMode
+        {
+            FRONT,
+            BACK,
+            TOP,
+            BOTTOM,
+            LEFT,
+            RIGHT,
+            DEFAULT
+        };
 
         RenderOptions();
         ~RenderOptions();
@@ -116,7 +140,7 @@ namespace EMStudio
         float GetFarClipPlaneDistance() const { return m_farClipPlaneDistance; }
         void SetFarClipPlaneDistance(float farClipPlaneDistance);
 
-        float GetFOV() const { return m_FOV; }
+        float GetFOV() const { return m_fov; }
         void SetFOV(float FOV);
 
         float GetMainLightIntensity() const { return m_mainLightIntensity; }
@@ -191,12 +215,6 @@ namespace EMStudio
         AZ::Color GetMeshAABBColor() const { return m_meshAABBColor; }
         void SetMeshAABBColor(const AZ::Color& meshAABBColor);
 
-        AZ::Color GetCollisionMeshAABBColor() const { return m_collisionMeshAABBColor; }
-        void SetCollisionMeshAABBColor(const AZ::Color& collisionMeshAABBColor);
-
-        AZ::Color GetOBBsColor() const { return m_OBBsColor; }
-        void SetOBBsColor(const AZ::Color& OBBsColor);
-
         AZ::Color GetLineSkeletonColor() const { return m_lineSkeletonColor; }
         void SetLineSkeletonColor(const AZ::Color& lineSkeletonColor);
 
@@ -257,17 +275,18 @@ namespace EMStudio
         bool GetRenderSelectionBox() const { return m_renderSelectionBox; }
         void SetRenderSelectionBox(bool renderSelectionBox);
 
-        enum ManipulatorMode
-        {
-            SELECT = 0,
-            TRANSLATE = 1,
-            ROTATE = 2,
-            SCALE = 3,
-            NUM_MODES = 4
-        };
-
         void SetManipulatorMode(ManipulatorMode mode);
         ManipulatorMode GetManipulatorMode() const;
+
+        void SetCameraViewMode(CameraViewMode mode);
+        CameraViewMode GetCameraViewMode() const;
+
+        void SetCameraFollowUp(bool followUp);
+        bool GetCameraFollowUp() const;
+
+        void ToggerRenderFlag(uint8 index);
+        void SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags);
+        EMotionFX::ActorRenderFlags GetRenderFlags() const;
 
     private:
         void OnGridUnitSizeChangedCallback() const;
@@ -303,8 +322,6 @@ namespace EMStudio
         void OnNodeAABBColorChangedCallback() const;
         void OnStaticAABBColorChangedCallback() const;
         void OnMeshAABBColorChangedCallback() const;
-        void OnCollisionMeshAABBColorChangedCallback() const;
-        void OnOBBsColorChangedCallback() const;
         void OnLineSkeletonColorChangedCallback() const;
         void OnSkeletonColorChangedCallback() const;
         void OnSelectionColorChangedCallback() const;
@@ -324,6 +341,9 @@ namespace EMStudio
         void OnLastUsedLayoutChangedCallback() const;
         void OnRenderSelectionBoxChangedCallback() const;
 
+        // Copy render actor related settings to the global settings in emfx.
+        void CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const;
+
         // Maintain the order between here and the reflect method.
         // The order in the SerializeContext defines the order it is shown in the UI
         float            m_gridUnitSize;
@@ -334,7 +354,7 @@ namespace EMStudio
         bool             m_scaleBonesOnLength;
         float            m_nearClipPlaneDistance;
         float            m_farClipPlaneDistance;
-        float            m_FOV;
+        float            m_fov;
         float            m_mainLightIntensity;
         float            m_mainLightAngleA;
         float            m_mainLightAngleB;
@@ -361,8 +381,6 @@ namespace EMStudio
         AZ::Color        m_nodeAABBColor;
         AZ::Color        m_staticAABBColor;
         AZ::Color        m_meshAABBColor;
-        AZ::Color        m_collisionMeshAABBColor;
-        AZ::Color        m_OBBsColor;
         AZ::Color        m_lineSkeletonColor;
         AZ::Color        m_skeletonColor;
         AZ::Color        m_selectionColor;
@@ -382,10 +400,13 @@ namespace EMStudio
         AZ::Color        m_simulatedObjectColliderColor;
         AZ::Color        m_selectedSimulatedObjectColliderColor;
 
-        // The following are not in the  UI
+        // The following are not in the UI
         AZStd::string    m_lastUsedLayout;
         bool             m_renderSelectionBox;
-        ManipulatorMode  m_manipulatorMode = SELECT;
+        ManipulatorMode  m_manipulatorMode = ManipulatorMode::SELECT;
+        CameraViewMode   m_cameraViewMode = CameraViewMode::DEFAULT;
+        bool             m_cameraFollowUp = false;
+        EMotionFX::ActorRenderFlags m_renderFlags;
     };
 
 } // namespace EMStudio

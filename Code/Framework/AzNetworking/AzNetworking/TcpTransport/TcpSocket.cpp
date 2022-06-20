@@ -53,18 +53,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForListenInternal(port)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForListenInternal(port))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 
@@ -75,18 +68,11 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal())
+        if (!SocketCreateInternal()
+         || !BindSocketForConnectInternal(address)
+         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
-            return false;
-        }
-
-        if (!BindSocketForConnectInternal(address))
-        {
-            return false;
-        }
-
-        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
-        {
+            Close();
             return false;
         }
 
@@ -199,7 +185,7 @@ namespace AzNetworking
         if (::connect(static_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
         {
             const int32_t error = GetLastNetworkError();
-            AZLOG_ERROR("Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
+            AZLOG(NET_TcpTraffic, "Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
             return false;
         }
 

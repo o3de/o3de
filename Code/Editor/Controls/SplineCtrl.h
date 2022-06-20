@@ -59,7 +59,7 @@ public:
     // Lock value of first and last key to be the same.
     void LockFirstAndLastKeys(bool bLock) { m_bLockFirstLastKey = bLock; }
 
-    void SetSpline(ISplineInterpolator* pSpline, BOOL bRedraw = FALSE);
+    void SetSpline(ISplineInterpolator* pSpline, bool bRedraw = false);
     ISplineInterpolator* GetSpline();
 
     void SetTimeMarker(float fTime);

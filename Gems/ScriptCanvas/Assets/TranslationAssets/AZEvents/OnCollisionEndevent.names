@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "base": "On Collision End event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Collision End event"
+            },
+            "slots": [
+                {
+                    "base": "Simulated Body Handle",
+                    "details": {
+                        "name": "Simulated Body Handle"
+                    }
+                },
+                {
+                    "base": "Collision Event",
+                    "details": {
+                        "name": "Collision Event"
+                    }
+                },
+                {
+                    "base": "On Collision End event",
+                    "details": {
+                        "name": "On Collision End event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

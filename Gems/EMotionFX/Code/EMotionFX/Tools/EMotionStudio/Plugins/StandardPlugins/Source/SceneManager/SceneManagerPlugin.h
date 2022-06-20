@@ -24,39 +24,6 @@ QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace EMStudio
 {
-    class SaveDirtyActorFilesCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyActorFilesCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS)
-
-    public:
-        enum
-        {
-            TYPE_ID = 0x00000001
-        };
-
-    public:
-        SaveDirtyActorFilesCallback(SceneManagerPlugin* plugin)
-            : SaveDirtyFilesCallback()  { mPlugin = plugin; }
-        ~SaveDirtyActorFilesCallback()                                                      {}
-
-        uint32 GetType() const override                                                     { return TYPE_ID; }
-        uint32 GetPriority() const override                                                 { return 4; }
-        bool GetIsPostProcessed() const override                                            { return false; }
-        const char* GetExtension() const override                                           { return "actor"; }
-        const char* GetFileType() const override                                            { return "actor"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMotionFX::Actor>();
-        }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override;
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override;
-
-    private:
-        SceneManagerPlugin* mPlugin;
-    };
-
     class SceneManagerPlugin
         : public EMStudio::DockWidgetPlugin
     {
@@ -73,22 +40,17 @@ namespace EMStudio
         ~SceneManagerPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Actor Manager"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new SceneManagerPlugin(); }
         void UpdateInterface();
         void ReInit();
-
-        int SaveDirtyActor(EMotionFX::Actor* actor, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
     public slots:
         void WindowReInit(bool visible);
@@ -107,22 +69,19 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorInstanceCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandScaleActorDataCallback);
 
-        ImportActorCallback*                    mImportActorCallback;
-        CreateActorInstanceCallback*            mCreateActorInstanceCallback;
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        RemoveActorCallback*                    mRemoveActorCallback;
-        RemoveActorInstanceCallback*            mRemoveActorInstanceCallback;
-        SaveActorAssetInfoCallback*             mSaveActorAssetInfoCallback;
-        CommandAdjustActorCallback*             mAdjustActorCallback;
-        CommandActorSetCollisionMeshesCallback* mActorSetCollisionMeshesCallback;
-        CommandAdjustActorInstanceCallback*     mAdjustActorInstanceCallback;
-        CommandScaleActorDataCallback*          mScaleActorDataCallback;
-
-        SaveDirtyActorFilesCallback*            mDirtyFilesCallback;
-
-        ActorsWindow*                           mActorsWindow;
-        ActorPropertiesWindow*                  mActorPropsWindow;
+        ImportActorCallback*                    m_importActorCallback;
+        CreateActorInstanceCallback*            m_createActorInstanceCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        RemoveActorCallback*                    m_removeActorCallback;
+        RemoveActorInstanceCallback*            m_removeActorInstanceCallback;
+        SaveActorAssetInfoCallback*             m_saveActorAssetInfoCallback;
+        CommandAdjustActorCallback*             m_adjustActorCallback;
+        CommandActorSetCollisionMeshesCallback* m_actorSetCollisionMeshesCallback;
+        CommandAdjustActorInstanceCallback*     m_adjustActorInstanceCallback;
+        CommandScaleActorDataCallback*          m_scaleActorDataCallback;
+        ActorsWindow*                           m_actorsWindow;
+        ActorPropertiesWindow*                  m_actorPropsWindow;
     };
 } // namespace EMStudio

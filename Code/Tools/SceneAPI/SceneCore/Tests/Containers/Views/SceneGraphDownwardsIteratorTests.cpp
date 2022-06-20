@@ -303,7 +303,6 @@ namespace AZ
                 TYPED_TEST_P(SceneGraphDownwardsIteratorContext, Algorithms_FindIf_FindsValue3InNodeAdotC)
                 {
                     using Traversal = typename SceneGraphDownwardsIteratorContext<TypeParam>::Traversal;
-                    SceneGraph::NodeIndex index = this->m_graph.Find("A.C");
                     auto sceneView = MakeSceneGraphDownwardsView<Traversal>(this->m_graph, this->m_graph.GetContentStorage().begin());
                     auto result = AZStd::find_if(sceneView.begin(), sceneView.end(),
                         [](const AZStd::shared_ptr<DataTypes::IGraphObject>& object) -> bool

@@ -43,10 +43,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 namespace {{attribute_Namespace}}
 {
 {% endif %}
-
 {% set className = Class.attrib['Name'] %}
-{% set baseClass = Class.attrib['Base'] %}
-
+{% set baseClasses = ", ".join(Class.attrib['Base'].split(';')) if Class.attrib['Base'] is string else "ScriptCanvas::Node" %}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -66,18 +64,18 @@ namespace {{attribute_Namespace}}
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
-    AZ_COMPONENT({{ className }}, "{{ classUuid }}"{% if baseClass is defined %}, {{ baseClass }}{% endif %}); \
+    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClasses }} ); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
     bool IsDeprecated() const override; \
-{% if deprecationUuid is defined %}    ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override; \
+{% if deprecationUuid is defined %}    ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override; \
 {% endif %}
     using Node::FindDatum; \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \
 {% endif %}
 public: \
-    friend struct ::{{ className | replace(' ','') }}Property;
+    friend struct {% if attribute_Namespace is not defined %}::{% endif %}{{ className | replace(' ','') }}Property;
 
 // Helpers for easily accessing properties and slots
 struct {{ className | replace(' ','') }}Property

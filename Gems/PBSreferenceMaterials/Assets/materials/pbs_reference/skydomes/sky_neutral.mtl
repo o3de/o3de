@@ -1,6 +1,0 @@
-<Material MtlFlags="524288" Shader="Distanceclouds" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="1,1,1" Shininess="10" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/skydomes/neutral.tif"/>
- </Textures>
- <PublicParams StepSize="0.0040000002" Attenuation="0.117" AlphaSaturation="1.258" SkyColorMultiplier="3" SunColorMultiplier="4"/>
-</Material>

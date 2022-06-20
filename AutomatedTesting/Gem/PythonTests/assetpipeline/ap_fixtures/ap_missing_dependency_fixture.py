@@ -183,23 +183,26 @@ def ap_missing_dependency_fixture(request, workspace, ap_setup_fixture) -> Any:
             :return: None
             """
             logger.info(f"Searching output for expected dependencies for product {product}")
+            sorted_expected = sorted(expected_dependencies)
             # Check dependencies found either in the log or console output
             for product_name, missing_deps in self.extract_missing_dependencies_from_output(log_output).items():
                 if product in product_name:
+                    sorted_missing = sorted(missing_deps)
                     # fmt:off
-                    assert sorted(missing_deps) == sorted(expected_dependencies), \
+                    assert sorted_expected == sorted_missing, \
                         f"Missing dependencies for '{product_name}' did not match expected. Expected: " \
-                        f"{expected_dependencies}, Actual: {missing_deps}"
+                        f"{sorted_expected}, Actual: {sorted_missing}"
                     # fmt:on
 
             # Check dependencies found in Database
             for product_name, missing_deps in self.extract_missing_dependencies_from_database(product,
                                                                                               platforms).items():
                 if product.replace("\\", "/") in product_name:
+                    sorted_missing = sorted(missing_deps)
                     # fmt:off
-                    assert sorted(expected_dependencies) == sorted(missing_deps), \
-                        f"Product '{product_name}' expected missing dependencies: {expected_dependencies}; " \
-                        f"actual missing dependencies {missing_deps}"
+                    assert sorted_expected == sorted_missing, \
+                        f"Product '{product_name}' expected missing dependencies: {sorted_expected}; " \
+                        f"actual missing dependencies {sorted_missing}"
                     # fmt:on
 
         def __getitem__(self, item: str) -> object:

@@ -184,8 +184,5 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="C:/Users/luissemp/test.qrc"/>
- </resources>
  <connections/>
 </ui>

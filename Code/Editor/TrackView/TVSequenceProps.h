@@ -28,7 +28,7 @@ class CTVSequenceProps
 {
     Q_OBJECT
 public:
-    CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWidget* pParent = NULL);    // standard constructor
+    CTVSequenceProps(CTrackViewSequence* pSequence, float fps, QWidget* pParent = nullptr);    // standard constructor
     ~CTVSequenceProps();
 
 private:
@@ -39,7 +39,7 @@ private:
     };
     CTrackViewSequence* m_pSequence;
 
-    virtual BOOL OnInitDialog();
+    virtual bool OnInitDialog();
     virtual void OnOK();
 
     void MoveScaleKeys();

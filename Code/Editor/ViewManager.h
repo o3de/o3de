@@ -17,7 +17,6 @@
 
 #include "Cry_Geo.h"
 #include "Viewport.h"
-#include "Include/IViewPane.h"
 #include "QtViewPaneManager.h"
 // forward declaration.
 class CLayoutWnd;
@@ -86,14 +85,14 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! Get number of currently existing viewports.
-    virtual int GetViewCount() { return m_viewports.size(); };
+    virtual int GetViewCount() { return static_cast<int>(m_viewports.size()); };
     //! Get viewport by index.
     //! @param index 0 <= index < GetViewportCount()
     virtual CViewport* GetView(int index) { return m_viewports[index]; }
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current layout window.
-    //! @return Pointer to the layout window, can be NULL.
+    //! @return Pointer to the layout window, can be nullptr.
     virtual CLayoutWnd* GetLayout() const;
 
     //! Cycle between different 2D viewports type on same view pane.

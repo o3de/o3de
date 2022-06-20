@@ -59,7 +59,7 @@ namespace PhysX
         m_dimensionsManipulators.InstallAxisMouseMoveCallback(
             [this, idPair] (const AzToolsFramework::LinearManipulator::Action& action)
         {
-            OnManipulatorMoved(action.LocalScaleOffset() + m_initialScale, idPair);
+            OnManipulatorMoved(action.m_start.m_sign * action.LocalScaleOffset() + m_initialScale, idPair);
         });
 
         m_dimensionsManipulators.InstallUniformLeftMouseDownCallback(

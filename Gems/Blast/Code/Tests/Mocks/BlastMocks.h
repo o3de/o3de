@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <Actor/EntityProvider.h>
 #include <Blast/BlastActor.h>
@@ -68,7 +69,7 @@ namespace Blast
 
         uint32_t getChunkCount() const override
         {
-            return m_chunks.size();
+            return static_cast<uint32_t>(m_chunks.size());
         }
 
         const Nv::Blast::ExtPxChunk* getChunks() const override
@@ -78,7 +79,7 @@ namespace Blast
 
         uint32_t getSubchunkCount() const override
         {
-            return m_subchunks.size();
+            return static_cast<uint32_t>(m_subchunks.size());
         }
 
         const Nv::Blast::ExtPxSubchunk* getSubchunks() const override
@@ -209,13 +210,7 @@ namespace Blast
             AZStd::shared_ptr<Physics::Shape>(
                 const Physics::ColliderConfiguration&, const Physics::ShapeConfiguration&));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void*));
-        MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration&));
-        MOCK_METHOD0(GetDefaultMaterial, AZStd::shared_ptr<Physics::Material>());
-        MOCK_METHOD1(
-            CreateMaterialsFromLibrary,
-            AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection&));
-        MOCK_METHOD2(
-            UpdateMaterialSelection, bool(const Physics::ShapeConfiguration&, Physics::ColliderConfiguration&));
+        MOCK_METHOD1(ReleaseNativeHeightfieldObject, void(void*));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string&, const AZ::Vector3*, AZ::u32));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3*, AZ::u32, AZStd::vector<AZ::u8>&));
         MOCK_METHOD5(
@@ -237,6 +232,43 @@ namespace Blast
             Physics::DefaultWorldBus::Handler::BusDisconnect();
         }
         MOCK_CONST_METHOD0(GetDefaultSceneHandle, AzPhysics::SceneHandle());
+    };
+
+    class DummyPhysicsMaterial : public Physics::Material
+    {
+    public:
+        DummyPhysicsMaterial(
+            const Physics::MaterialId& id,
+            const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset)
+            : Physics::Material(id, materialAsset)
+        {
+        }
+
+        // Physics::Material overrides ...
+        Physics::MaterialPropertyValue GetProperty(AZStd::string_view) const override { return 0.0f; }
+        void SetProperty(AZStd::string_view, Physics::MaterialPropertyValue) override {}
+    };
+
+    class DummyPhysicsMaterialManager : public AZ::Interface<Physics::MaterialManager>::Registrar
+    {
+    public:
+        DummyPhysicsMaterialManager() = default;
+
+    protected:
+        AZStd::shared_ptr<Physics::Material> CreateDefaultMaterialInternal() override
+        {
+            return CreateMaterialInternal(
+                Physics::MaterialId::CreateRandom(),
+                AZ::Data::Asset<Physics::MaterialAsset>());
+        }
+
+        AZStd::shared_ptr<Physics::Material> CreateMaterialInternal(
+            [[maybe_unused]] const Physics::MaterialId& id,
+            [[maybe_unused]] const AZ::Data::Asset<Physics::MaterialAsset>& materialAsset) override
+        {
+            return AZStd::shared_ptr<Physics::Material>(
+                new DummyPhysicsMaterial(id, materialAsset));
+        }
     };
 
     class MockBlastListener : public BlastListener
@@ -327,7 +359,7 @@ namespace Blast
         MOCK_METHOD1(RayCastLocal, AzPhysics::SceneQueryHit(const AzPhysics::RayCastRequest&));
         MOCK_CONST_METHOD1(GetAabb, AZ::Aabb(const AZ::Transform&));
         MOCK_CONST_METHOD0(GetAabbLocal, AZ::Aabb());
-        MOCK_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, AZ::Aabb*));
+        MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
     };
 
     AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
@@ -344,9 +376,9 @@ namespace Blast
 
         void UpdateMassProperties(
             [[maybe_unused]] AzPhysics::MassComputeFlags flags,
-            [[maybe_unused]] const AZ::Vector3* centerOfMassOffsetOverride,
-            [[maybe_unused]] const AZ::Matrix3x3* inertiaTensorOverride,
-            [[maybe_unused]] const float* massOverride) override
+            [[maybe_unused]] const AZ::Vector3& centerOfMassOffsetOverride,
+            [[maybe_unused]] const AZ::Matrix3x3& inertiaTensorOverride,
+            [[maybe_unused]] const float massOverride) override
         {
         }
 
@@ -562,7 +594,7 @@ namespace Blast
     public:
         FakeEntityProvider(uint32_t entityCount)
         {
-            for (int i = 0; i < entityCount; ++i)
+            for (uint32 i = 0; i < entityCount; ++i)
             {
                 m_entities.push_back(AZStd::make_shared<AZ::Entity>());
             }
@@ -746,7 +778,7 @@ namespace Blast
     public:
         MOCK_CONST_METHOD0(GetTkFramework, Nv::Blast::TkFramework*());
         MOCK_CONST_METHOD0(GetExtSerialization, Nv::Blast::ExtSerialization*());
-        MOCK_METHOD0(GetTkGroup, Nv::Blast::TkGroup*());
+        MOCK_METHOD0(CreateTkGroup, Nv::Blast::TkGroup*());
         MOCK_CONST_METHOD0(GetGlobalConfiguration, const BlastGlobalConfiguration&());
         MOCK_METHOD1(SetGlobalConfiguration, void(const BlastGlobalConfiguration&));
         MOCK_METHOD0(InitPhysics, void());

@@ -35,11 +35,11 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = 1;
-        playBackInfo.mPlayNow = false;
-        playBackInfo.mFreezeAtLastFrame = false;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = 1;
+        playBackInfo.m_playNow = false;
+        playBackInfo.m_freezeAtLastFrame = false;
 
         // Add 2 motions to the queue
         const MotionInstance* motionInstance1 = motionSystem->PlayMotion(motion1, &playBackInfo);
@@ -59,16 +59,16 @@ namespace EMotionFX
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 1.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.0f);
 
-        GetEMotionFX().Update(8.0f);
+        GetEMotionFX().Update(8.0f); // time = 9.0f
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
         EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.0f);
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 9.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.0f);
 
-        GetEMotionFX().Update(0.5f);
+        GetEMotionFX().Update(0.5f); // time = 9.5f
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
-        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
+        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 0.5f); // motion 1 started blending out at time 9.0f
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.5f);
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 9.5f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.5f);
@@ -106,10 +106,10 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = EMFX_LOOPFOREVER;
-        playBackInfo.mPlayNow = true;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = EMFX_LOOPFOREVER;
+        playBackInfo.m_playNow = true;
 
         const MotionInstance* walkInstance = motionSystem->PlayMotion(walk, &playBackInfo);
 
@@ -163,11 +163,11 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = 1;
-        playBackInfo.mPlayNow = false;
-        playBackInfo.mFreezeAtLastFrame = false;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = 1;
+        playBackInfo.m_playNow = false;
+        playBackInfo.m_freezeAtLastFrame = false;
 
         // Add 2 motions to the queue
         const MotionInstance* motionInstance1 = motionSystem->PlayMotion(motion1, &playBackInfo);
@@ -179,7 +179,7 @@ namespace EMotionFX
         GetEMotionFX().Update(9.0f);
         GetEMotionFX().Update(0.5f);
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
-        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
+        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 0.5f); // motion 1 started blending out at time 9.0f
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.5f);
 
         motionSystem->StopAllMotions();

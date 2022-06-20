@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace AzFramework
@@ -36,6 +38,16 @@ namespace AzFramework
         return m_end;
     }
 
+    const AZ::Entity* const* SpawnableEntityContainerView::begin() const
+    {
+        return m_begin;
+    }
+
+    const AZ::Entity* const* SpawnableEntityContainerView::end() const
+    {
+        return m_end;
+    }
+
     const AZ::Entity* const* SpawnableEntityContainerView::cbegin()
     {
         return m_begin;
@@ -46,9 +58,26 @@ namespace AzFramework
         return m_end;
     }
 
-    size_t SpawnableEntityContainerView::size()
+    AZ::Entity* SpawnableEntityContainerView::operator[](size_t n)
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    const AZ::Entity* SpawnableEntityContainerView::operator[](size_t n) const
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    size_t SpawnableEntityContainerView::size() const
     {
         return AZStd::distance(m_begin, m_end);
+    }
+
+    bool SpawnableEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
     }
 
 
@@ -78,6 +107,16 @@ namespace AzFramework
         return m_end;
     }
 
+    const AZ::Entity* const* SpawnableConstEntityContainerView::begin() const
+    {
+        return m_begin;
+    }
+
+    const AZ::Entity* const* SpawnableConstEntityContainerView::end() const
+    {
+        return m_end;
+    }
+
     const AZ::Entity* const* SpawnableConstEntityContainerView::cbegin()
     {
         return m_begin;
@@ -88,9 +127,26 @@ namespace AzFramework
         return m_end;
     }
 
-    size_t SpawnableConstEntityContainerView::size()
+    const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n)
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Const Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    const AZ::Entity* SpawnableConstEntityContainerView::operator[](size_t n) const
+    {
+        AZ_Assert(n < size(), "Index %zu is out of bounds (size: %llu) for Spawnable Entity Container View", n, size());
+        return *(m_begin + n);
+    }
+
+    size_t SpawnableConstEntityContainerView::size() const
     {
         return AZStd::distance(m_begin, m_end);
+    }
+
+    bool SpawnableConstEntityContainerView::empty() const
+    {
+        return m_begin == m_end;
     }
 
 
@@ -98,7 +154,7 @@ namespace AzFramework
     // SpawnableIndexEntityPair
     //
 
-    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_entity(entityIterator)
         , m_index(indexIterator)
     {
@@ -114,7 +170,7 @@ namespace AzFramework
         return *m_entity;
     }
 
-    size_t SpawnableIndexEntityPair::GetIndex() const
+    uint32_t SpawnableIndexEntityPair::GetIndex() const
     {
         return *m_index;
     }
@@ -123,7 +179,7 @@ namespace AzFramework
     // SpawnableIndexEntityIterator
     //
 
-    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, size_t* indexIterator)
+    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, uint32_t* indexIterator)
         : m_value(entityIterator, indexIterator)
     {
     }
@@ -194,7 +250,7 @@ namespace AzFramework
     //
 
     SpawnableConstIndexEntityContainerView::SpawnableConstIndexEntityContainerView(
-        AZ::Entity** beginEntity, size_t* beginIndices, size_t length)
+        AZ::Entity** beginEntity, uint32_t* beginIndices, size_t length)
         : m_begin(beginEntity, beginIndices)
         , m_end(beginEntity + length, beginIndices + length)
     {
@@ -225,45 +281,74 @@ namespace AzFramework
     // EntitySpawnTicket
     //
 
+    EntitySpawnTicket::EntitySpawnTicket(const EntitySpawnTicket& rhs)
+        : m_payload(rhs.m_payload)
+        , m_interface(rhs.m_interface)
+    {
+        if (rhs.IsValid())
+        {
+            rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+        }
+    }
+
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
         : m_payload(rhs.m_payload)
+        , m_interface(rhs.m_interface)
     {
         rhs.m_payload = nullptr;
+        rhs.m_interface = nullptr;
     }
 
     EntitySpawnTicket::EntitySpawnTicket(AZ::Data::Asset<Spawnable> spawnable)
     {
         auto manager = SpawnableEntitiesInterface::Get();
         AZ_Assert(manager, "Attempting to create an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-        AZStd::pair<EntitySpawnTicket::Id, void*> result = manager->CreateTicket(AZStd::move(spawnable));
-        m_id = result.first;
-        m_payload = result.second;
+        m_payload = manager->CreateTicket(AZStd::move(spawnable));
+        m_interface = manager;
     }
 
     EntitySpawnTicket::~EntitySpawnTicket()
     {
-        if (m_payload)
+        if (IsValid())
         {
-            auto manager = SpawnableEntitiesInterface::Get();
-            AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-            manager->DestroyTicket(m_payload);
+            m_interface->DecrementTicketReference(m_payload);
             m_payload = nullptr;
-            m_id = 0;
+            m_interface = nullptr;
         }
+    }
+
+    EntitySpawnTicket& EntitySpawnTicket::operator=(const EntitySpawnTicket& rhs)
+    {
+        if (this != &rhs)
+        {
+            if (IsValid())
+            {
+                m_interface->DecrementTicketReference(m_payload);
+            }
+
+            m_interface = rhs.m_interface;
+            m_payload = rhs.m_payload;
+
+            if (rhs.IsValid())
+            {
+                rhs.m_interface->IncrementTicketReference(rhs.m_payload);
+            }
+
+        }
+        return *this;
     }
 
     EntitySpawnTicket& EntitySpawnTicket::operator=(EntitySpawnTicket&& rhs)
     {
         if (this != &rhs)
         {
-            if (m_payload)
+            if (IsValid())
             {
-                auto manager = SpawnableEntitiesInterface::Get();
-                AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-                manager->DestroyTicket(m_payload);
+                m_interface->DecrementTicketReference(m_payload);
             }
-            m_id = rhs.m_id;
-            rhs.m_id = 0;
+
+            m_interface = rhs.m_interface;
+            rhs.m_interface = nullptr;
 
             m_payload = rhs.m_payload;
             rhs.m_payload = nullptr;
@@ -271,13 +356,69 @@ namespace AzFramework
         return *this;
     }
 
+    bool EntitySpawnTicket::operator==(const EntitySpawnTicket& rhs) const
+    {
+        return GetId() == rhs.GetId();
+    }
+
+    bool EntitySpawnTicket::operator!=(const EntitySpawnTicket& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    void EntitySpawnTicket::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->Class<EntitySpawnTicket>();
+
+            serializeContext->RegisterGenericType<AZStd::vector<EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, EntitySpawnTicket>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, EntitySpawnTicket>>(); // required to support Map<Number, EntitySpawnTicket> in Script Canvas
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<EntitySpawnTicket>(
+                    "EntitySpawnTicket",
+                    "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.");
+            }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<EntitySpawnTicket>("EntitySpawnTicket")
+                ->Constructor()
+                ->Constructor<AZ::Data::Asset<Spawnable>>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
+                ->Attribute(AZ::Script::Attributes::Module, "prefabs")
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Method("GetId", &EntitySpawnTicket::GetId);
+            ;
+        }
+    }
+
     auto EntitySpawnTicket::GetId() const -> Id
     {
-        return m_id;
+        return IsValid() ? m_interface->GetTicketId(m_payload) : 0;
+    }
+
+    const AZ::Data::Asset<Spawnable>* EntitySpawnTicket::GetSpawnable() const
+    {
+        return IsValid() ? &(m_interface->GetSpawnableOnTicket(m_payload)) : nullptr;
     }
 
     bool EntitySpawnTicket::IsValid() const
     {
         return m_payload != nullptr;
+    }
+
+    EntitySpawnTicket SpawnableEntitiesDefinition::InternalToExternalTicket(void* internalTicket, SpawnableEntitiesDefinition* owner)
+    {
+        EntitySpawnTicket result;
+        result.m_interface = owner;
+        result.m_payload = internalTicket;
+        return result;
     }
 } // namespace AzFramework

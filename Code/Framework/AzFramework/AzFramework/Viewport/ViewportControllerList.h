@@ -45,10 +45,10 @@ namespace AzFramework
         //! All current and added controllers will be registered with this viewport.
         void RegisterViewportContext(ViewportId viewport) override;
         //! Unregisters a Viewport from this list and all associated controllers.
-        void UnregisterViewportContext(ViewportId viewport);
+        void UnregisterViewportContext(ViewportId viewport) override;
         //! All ViewportControllerLists have a priority of Custom to ensure
         //! that they receive events at all priorities from any parent controllers.
-        AzFramework::ViewportControllerPriority GetPriority() const { return ViewportControllerPriority::DispatchToAllPriorities; }
+        AzFramework::ViewportControllerPriority GetPriority() const override { return ViewportControllerPriority::DispatchToAllPriorities; }
         //! Returns true if this controller list is enabled, i.e.
         //! it is accepting and forwarding input and update events to its children.
         bool IsEnabled() const;
@@ -57,7 +57,6 @@ namespace AzFramework
         void SetEnabled(bool enabled);
 
     private:
-        void SortControllers();
         bool DispatchInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event);
         void DispatchUpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event);
 
@@ -65,4 +64,4 @@ namespace AzFramework
         AZStd::unordered_set<ViewportId> m_viewports;
         bool m_enabled = true;
     };
-} //namespace AzFramework
+} // namespace AzFramework

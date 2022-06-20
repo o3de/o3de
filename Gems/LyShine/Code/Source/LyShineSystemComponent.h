@@ -13,6 +13,7 @@
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <ILevelSystem.h>
 
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
@@ -20,11 +21,15 @@
 #include <LyShine/UiComponentTypes.h>
 #include "LyShine.h"
 
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#endif
+
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator and CryStringAllocator. This will be managed
+    // LyShine depends on the LegacyAllocator. This will be managed
     // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
+    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     class LyShineSystemComponent
         : public AZ::Component
@@ -33,6 +38,7 @@ namespace LyShine
         , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
         , protected CrySystemEventBus::Handler
+        , public ILevelSystemListener
     {
     public:
         AZ_COMPONENT(LyShineSystemComponent, lyShineSystemComponentUuid);
@@ -61,7 +67,7 @@ namespace LyShine
         // UiSystemBus interface implementation
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
-        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
+        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -85,14 +91,23 @@ namespace LyShine
 
         // CrySystemEventBus ///////////////////////////////////////////////////////
         void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ILevelSystemListener interface implementation
+        void OnUnloadComplete(const char* levelName) override;
 
         void BroadcastCursorImagePathname();
 
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        // Load pass template mappings for this gem
+        void LoadPassTemplateMappings();
+#endif
+
     protected:  // data
 
-        CLyShine* m_pLyShine = nullptr;
+        AZStd::unique_ptr<ILyShine> m_lyShine;
 
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset> m_cursorImagePathname;
 
@@ -102,5 +117,9 @@ namespace LyShine
 
         // We only store this in order to generate metrics on LyShine specific components
         static const AZStd::list<AZ::ComponentDescriptor*>* m_componentDescriptors;
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
+#endif
     };
 }

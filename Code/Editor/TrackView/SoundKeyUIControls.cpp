@@ -13,51 +13,8 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"  // for CTrackViewKeyUIControls
-
-
-//////////////////////////////////////////////////////////////////////////
-class CSoundKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariableArray mv_options;
-
-    CSmartVariable<QString> mv_startTrigger;
-    CSmartVariable<QString> mv_stopTrigger;
-    CSmartVariable<float> mv_duration;
-    CSmartVariable<Vec3> mv_customColor;
-
-    virtual void OnCreateVars()
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_startTrigger, "StartTrigger", IVariable::DT_AUDIO_TRIGGER);
-        AddVariable(mv_table, mv_stopTrigger, "StopTrigger", IVariable::DT_AUDIO_TRIGGER);
-        AddVariable(mv_table, mv_duration, "Duration");
-        AddVariable(mv_options, "Options");
-        AddVariable(mv_options, mv_customColor, "Custom Color", IVariable::DT_COLOR);
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
-    {
-        return paramType == AnimParamType::Sound;
-    }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
-
-    virtual unsigned int GetPriority() const { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {AB2226E5-D593-49d2-B7CB-989412CAAEDE}
-        static const GUID guid =
-        {
-            0xab2226e5, 0xd593, 0x49d2, { 0xb7, 0xcb, 0x98, 0x94, 0x12, 0xca, 0xae, 0xde }
-        };
-        return guid;
-    }
-};
-
 
 //////////////////////////////////////////////////////////////////////////
 bool CSoundKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -108,18 +65,15 @@ void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         {
             ISoundKey soundKey;
             keyHandle.GetKey(&soundKey);
-            bool bChangedSoundFile = false;
 
             if (pVar == mv_startTrigger.GetVar())
             {
                 QString sFilename = mv_startTrigger;
-                bChangedSoundFile = sFilename != soundKey.sStartTrigger.c_str();
                 soundKey.sStartTrigger = sFilename.toUtf8().data();
             }
             else if (pVar == mv_stopTrigger.GetVar())
             {
                 QString sFilename = mv_stopTrigger;
-                bChangedSoundFile = sFilename != soundKey.sStopTrigger.c_str();
                 soundKey.sStopTrigger = sFilename.toUtf8().data();
             }
 
@@ -130,5 +84,3 @@ void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CSoundKeyUIControls, "TrackView.KeyUI.Sound", "TrackViewKeyUI");

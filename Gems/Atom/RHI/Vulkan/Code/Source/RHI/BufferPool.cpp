@@ -49,7 +49,7 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(deviceBase);
 
-            VkDeviceSize bufferPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            VkDeviceSize bufferPageSizeInBytes = device.GetDescriptor().m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
             VkMemoryPropertyFlags additionalMemoryPropertyFlags = 0;
             if (const auto* descriptor = azrtti_cast<const BufferPoolDescriptor*>(&descriptorBase))
             {
@@ -232,6 +232,14 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             device.GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;
+        }
+
+        void BufferPool::ComputeFragmentation() const
+        {
+            float fragmentation = m_memoryAllocator.ComputeFragmentation();
+
+            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
+            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
         }
 
         void BufferPool::SetNameInternal(const AZStd::string_view& name)

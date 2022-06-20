@@ -1,0 +1,449 @@
+{% macro UpperFirst(text) %}{{ text[0] | upper}}{{ text[1:] }}{% endmacro %}
+{% macro LowerFirst(text) %}{{ text[0] | lower}}{{ text[1:] }}{% endmacro %}
+{#
+
+#}
+{%- macro ParseRpcParams(property, outNames, outTypes, outDefines, use_default_value=False) -%}
+{%-     for Param in property.iter('Param') -%}
+{%-         do outNames.append(LowerFirst(Param.attrib['Name'])) -%}
+{%-         do outTypes.append(Param.attrib['Type']) -%}
+{%-         if use_default_value and Param.attrib['DefaultValue'] -%}
+{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' + LowerFirst(Param.attrib['Name']) + ' = ' + Param.attrib['DefaultValue']) -%}
+{%-         else -%}
+{%-             do outDefines.append('const ' ~ Param.attrib['Type'] ~ '& ' ~ LowerFirst(Param.attrib['Name'])) -%}
+{%-         endif -%}
+{%-     endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro ParseIncludes(Component) -%}
+{%- for Include in Component.iter('Include') -%}
+{{ caller(Include) -}}
+{%- endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro ParseNetworkInputs(Component) -%}
+{%- for NetworkInput in Component.iter('NetworkInput') -%}
+{{ caller(NetworkInput) -}}
+{%- endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro ParseArchetypeProperties(Component) -%}
+{%- for ArchetypeProperty in Component.iter('ArchetypeProperty') -%}
+{{ caller(ArchetypeProperty) -}}
+{%- endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) -%}
+{%- for NetworkProperty in Component.iter('NetworkProperty') -%}
+{%-      if NetworkProperty.attrib['ReplicateFrom'] == ReplicateFrom and NetworkProperty.attrib['ReplicateTo'] == ReplicateTo -%}
+{{ caller(NetworkProperty) -}}
+{%-      endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro ParseRemoteProcedures(Component, InvokeFrom, HandleOn) -%}
+{%- for RemoteProcedure in Component.iter('RemoteProcedure') -%}
+{%-      if RemoteProcedure.attrib['InvokeFrom'] == InvokeFrom and RemoteProcedure.attrib['HandleOn'] == HandleOn -%}
+{{ caller(RemoteProcedure) -}}
+{%-      endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetPropertiesClassName(Component, ClassType) -%}
+{{ Component.attrib['Name'] }}{{ ClassType }}NetProperties
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetPropertiesDirtyEnumName(ComponentName, ReplicateFrom, ReplicateTo) -%}
+{{ UpperFirst(ComponentName) }}Internal::{{ ReplicateFrom }}To{{ ReplicateTo }}DirtyEnum
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetPropertiesPropertyDirtyEnum(Property, Extension = "none") -%}
+{%      if Extension == "none" %}
+{{ Property.attrib['Name'] }}_DirtyFlag{%      elif Extension.lower() == "size" %}
+{{ Property.attrib['Name'] }}_Size_DirtyFlag{%      elif Extension.lower() == "start" %}
+{{ Property.attrib['Name'] }}_Start_DirtyFlag{%      elif Extension.lower() == "end" %}
+{{ Property.attrib['Name'] }}_End_DirtyFlag{%      else %}
+#error "Unknown extension ({{ Extension }}) passed to GetNetPropertiesPropertyDirtyEnum"
+{%      endif %}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetPropertiesQualifiedPropertyDirtyEnum(ComponentName, ReplicateFrom, ReplicateTo, Property, Extension = "none") -%}
+{{ GetNetPropertiesDirtyEnumName(ComponentName, ReplicateFrom, ReplicateTo) }}::{{ GetNetPropertiesPropertyDirtyEnum(Property, Extension) }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetModelClassName(Component, ClassType) -%}
+{{ Component.attrib['Name'] }}Model{{ ClassType }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetArchetypeClassName(Entity, ClassType) -%}
+{{ Entity.attrib['Name'] }}Archetype{{ ClassType }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetPropertiesSetName(ReplicateFrom, ReplicateTo) -%}
+{{ ReplicateFrom }}To{{ ReplicateTo }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetModelReplicationRecordName(Component, ClassType) -%}
+{{ Component.attrib['Name'] }}{{ ClassType }}ReplicationRecord
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetComponentDeltaName(Component, ClassType) -%}
+{{ Component.attrib['Name'] }}Delta{{ ClassType }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetNetworkPropertyEventType(Property) -%}
+AZ::Event<{{ Property.attrib['Type'] }}>
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetEntityClassName(Entity, ClassType) -%}
+{{ Entity.attrib['Name'] }}{{ ClassType }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetEntityReplicatorName(Entity, ClassType) -%}
+{{ Entity.attrib['Name'] }}{{ ClassType }}Replicator
+{%- endmacro -%}
+{#
+
+#}
+{%- macro GetEntityReplicationRecordName(Entity) -%}
+{{ Entity.attrib['Name'] }}ReplicationRecord
+{%- endmacro -%}
+{#
+
+#}
+{% macro ParseComponentServiceTypeAndName(Component) %}
+{% for Service in Component.iter('ComponentRelation') %}
+{%      if Service.attrib['Constraint'] != 'Incompatible' %}
+{% set Type = Service.attrib['Namespace'] + "::" + Service.attrib['Name'] %}
+{% set Name = 'm_' + LowerFirst(Service.attrib['Name']) %}
+{{ caller(Type, Name) -}}
+{%      endif %}
+{% endfor %}
+{% endmacro %}
+{#
+
+#}
+{%- macro GetRpcEventAccessorName(InvokeFrom, HandleOn) -%}
+{{ "GetRpc" + InvokeFrom + "To" + HandleOn + "Event" }}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcHandler(Property, HandleOn, IsOverride) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+{% if IsOverride %}
+{%     if paramDefines|count > 0 %}
+void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ ', '.join(paramDefines) }}) override {}
+{%     else %}
+void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection) override {}
+{%     endif %}
+{% else %}
+//! {{ PropertyName }} Handler
+//! {{ Property.attrib['Description'] }}
+//! HandleOn {{ HandleOn }}
+{%     if paramDefines|count > 0 %}
+virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection, [[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }}) {}
+{%     else %}
+virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection) {}
+{%     endif %}
+{% endif %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcHandlers(Component, InvokeFrom, HandleOn, IsOverride) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{{- DeclareRpcHandler(Property, HandleOn, IsOverride) -}}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetter(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}>& Get{{ PropertyName }}Event() { return m_{{ PropertyName }}Event; }
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEventGetters(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEventGetter(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvent(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+AZ::Event<{{ ', '.join(paramTypes) }}> m_{{ PropertyName }}Event;
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcEvents(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcEvent(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignal(Property, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
+{{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+void Signal{{ PropertyName }}({{ ', '.join(paramDefines) }});
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareRpcSignals(Component, InvokeFrom, HandleOn) %}
+{% call(Property) ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{- DeclareRpcSignal(Property, HandleOn) -}}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro GetNetworkInputCount(Component) -%}
+{{ Component.findall('NetworkInput') | len }}
+{%- endmacro -%}
+{#
+
+#}
+{% macro ParseNetworkInputsExposedToScript(Component) -%}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% for netInput in Component.findall('NetworkInput') %}
+{%      if ('ExposeToScript' in netInput.attrib) and (netInput.attrib['ExposeToScript'] |booleanTrue) %}
+{{ caller(netInput) -}}
+{%      endif %}
+{% endfor %}
+{%- endmacro -%}
+{#
+
+#}
+{% macro GetNetworkInputsExposedToScriptCount(Component) -%}
+{% set NetworkInputsExposedToScript = namespace(value=0) %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
+{%      set NetworkInputsExposedToScript.value = NetworkInputsExposedToScript.value + 1 %}
+{% endcall %}
+{{ NetworkInputsExposedToScript.value }}
+{%- endmacro -%}
+{#
+
+#}
+{% macro GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) -%}
+{% set parameters = [] %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
+{%      set parameters = parameters.append(netInput.attrib['Type'] + ' ' + LowerFirst(netInput.attrib['Name'])) %}
+{% endcall %}
+{{ parameters | join(', ') }}
+{%- endmacro -%}
+{#
+
+#}
+{%- macro EmitDerivedClassesComment(dataFileNames, Component, ComponentName, ComponentNameBase, ComponentDerived, ControllerName, ControllerNameBase, ControllerDerived) -%}
+{% if ComponentDerived or ControllerDerived %}
+/* 
+/// You may use the classes below as a basis for your new derived classes. Derived classes must be marked in {{ (dataFileNames[0] | basename) }}
+/// Place in your .h
+#pragma once
+
+#include <Source/AutoGen/{{ ComponentName }}.AutoComponent.h>
+
+namespace {{ Component.attrib['Namespace'] }}
+{
+{% if ComponentDerived %}
+    class {{ ComponentName }}
+        : public {{ ComponentNameBase }}
+    {
+    public:
+        AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, {{ Component.attrib['Namespace'] }}::{{ ComponentNameBase }});
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        void OnInit() override;
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+        {{ DeclareRpcHandlers(Component, 'Authority', 'Client', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) }}
+    protected:
+        {{ DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
+    };
+{% endif %}
+
+{% if ControllerDerived %}
+    class {{ ControllerName }}
+        : public {{ ControllerNameBase }}
+    {
+    public:
+        {{ ControllerName }}({{ ComponentName }}& parent);
+
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+{% set NetworkInputCount = GetNetworkInputCount(Component) | int %}
+{% if NetworkInputCount > 0 %}
+
+        //! Common input creation logic for the NetworkInput. 
+        //! Fill out the input struct and the MultiplayerInputDriver will send the input data over the network
+        //!    to ensure it's processed.
+        //! @param input  input structure which to store input data for sending to the authority
+        //! @param deltaTime amount of time to integrate the provided inputs over
+        void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+
+        //! Common input processing logic for the NetworkInput.
+        //! @param input  input structure to process
+        //! @param deltaTime amount of time to integrate the provided inputs over
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+{%endif %}
+        {{ DeclareRpcHandlers(Component, 'Server', 'Authority', true)|indent(8) }}
+        {{ DeclareRpcHandlers(Component, 'Client', 'Authority', true)|indent(8) }}
+        {{ DeclareRpcHandlers(Component, 'Autonomous', 'Authority', true)|indent(8) }}
+        {{ DeclareRpcHandlers(Component, 'Authority', 'Autonomous', true)|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
+
+    protected:
+        {{ DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
+    };
+{% endif %}
+}
+/// Place in your .cpp
+#include <{{ Component.attrib['OverrideInclude'] }}>
+
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace {{ Component.attrib['Namespace'] }}
+{
+{% if ComponentDerived %}
+    void {{ ComponentName }}::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<{{ ComponentName }}, {{ ComponentNameBase }}>()
+                ->Version(1);
+        }
+        {{ ComponentNameBase }}::Reflect(context);
+    }
+
+    void {{ ComponentName }}::OnInit()
+    {
+    }
+
+    void {{ ComponentName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ComponentName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+{% endif %}
+{% if ControllerDerived %}
+    {{ ControllerName }}::{{ ControllerName }}({{ ComponentName }}& parent)
+        : {{ ControllerNameBase }}(parent)
+    {
+    }
+
+    void {{ ControllerName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ControllerName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+{%     if NetworkInputCount > 0 %}
+{% set net_input_parameters_name = [] %}
+{% call (netInput) ParseNetworkInputsExposedToScript(Component) %}
+{%      set net_input_parameters_name = net_input_parameters_name.append(LowerFirst(netInput.attrib['Name'])) %}
+{% endcall %}
+
+    void {{ ControllerName }}::CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+{%     if (GetNetworkInputsExposedToScriptCount(Component) | int) > 0 %}
+        // Remember the following NetworkInputs have been exposed to script: {{ net_input_parameters_name|join(', ') }}.
+        // If a script is handling these inputs they will have already be filled out by now.
+{%     endif %}
+    }
+
+    void {{ ControllerName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+    }
+{%     endif %}
+{% endif %}
+}
+*/
+{% else %}
+// NOTE:
+// No component roles have been overridden.  You can modify {{ (dataFileNames[0] | basename) }} to specify derived classes for your desired network role.
+// Once your modifications are complete, build the game.
+// Your build will fail, but this comment will be replaced with a stub that can be used as the basis for your derived component roles. 
+{% endif %}
+{%- endmacro -%}

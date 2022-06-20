@@ -39,7 +39,7 @@ namespace AZ
             }            
         }
 
-        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews)
+        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             VkDescriptorType type = layout.GetDescriptorType(layoutIndex);
@@ -119,7 +119,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
+        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
@@ -149,16 +149,17 @@ namespace AZ
                 {
                     imageInfo.imageView = imageView->GetNativeImageView();
 
-                    // Depending on the access (read or readwrite) and if it's a depth/stencil image, we choose the expected layout.
-                    switch (layout.GetDescriptorType(layoutIndex))
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even if the descriptor layout wants a read-only input
+                    if (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ||
+                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
                     {
-                    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
                         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                        break;
-                    default:
+                    }
+                    else
+                    {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
                         imageInfo.imageLayout = RHI::CheckBitsAny(imageView->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil) ?
                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        break;
                     }
                 }
                 
@@ -168,7 +169,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::array_view<RHI::SamplerState>& samplers)
+        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::span<const RHI::SamplerState>& samplers)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -188,7 +189,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateConstantData(AZStd::array_view<uint8_t> rawData)
+        void DescriptorSet::UpdateConstantData(AZStd::span<const uint8_t> rawData)
         {
             AZ_Assert(m_constantDataBuffer, "Null constant buffer");
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
@@ -466,7 +467,7 @@ namespace AZ
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo)
         {
-            return descriptorInfo.imageView == VK_NULL_HANDLE;
+            return (descriptorInfo.imageView == VK_NULL_HANDLE && descriptorInfo.sampler == VK_NULL_HANDLE);
         }
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkBufferView& descriptorInfo)

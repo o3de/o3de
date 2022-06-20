@@ -8,13 +8,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Vector2::Vector2(const Vector2& v)
-        : m_value(v.m_value)
-    {
-        ;
-    }
-
-
     AZ_MATH_INLINE Vector2::Vector2(float x)
         : m_value(Simd::Vec2::Splat(x))
     {
@@ -395,6 +388,24 @@ namespace AZ
     AZ_MATH_INLINE bool Vector2::IsGreaterEqualThan(const Vector2& v) const
     {
         return Simd::Vec2::CmpAllGtEq(m_value, v.m_value);
+    }
+
+
+    AZ_MATH_INLINE Vector2 Vector2::GetFloor() const
+    {
+        return Vector2(Simd::Vec2::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector2 Vector2::GetCeil() const
+    {
+        return Vector2(Simd::Vec2::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector2 Vector2::GetRound() const
+    {
+        return Vector2(Simd::Vec2::Round(m_value));
     }
 
 

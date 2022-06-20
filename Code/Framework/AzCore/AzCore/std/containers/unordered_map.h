@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_UNORDERED_MAP_H
-#define AZSTD_UNORDERED_MAP_H 1
+#pragma once
 
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/hash_table.h>
@@ -102,7 +101,7 @@ namespace AZStd
         typedef typename base_type::pair_iter_bool              pair_iter_bool;
 
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE unordered_map()
             : base_type(hasher(), key_eq(), allocator_type()) {}
@@ -344,6 +343,66 @@ namespace AZStd
         return originalSize - container.size();
     }
 
+    // deduction guides
+    template<class InputIterator,
+        class Hash = hash<iter_key_type<InputIterator>>,
+        class Pred = equal_to<iter_key_type<InputIterator>>,
+        class Allocator = allocator>
+        unordered_map(InputIterator, InputIterator,
+            typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>,
+                iter_mapped_type<InputIterator>, Hash, Pred, Allocator, false>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash, Pred,
+        Allocator>;
+
+    template<class Key, class T, class Hash = hash<Key>,
+        class Pred = equal_to<Key>, class Allocator = allocator>
+        unordered_map(initializer_list<pair<Key, T>>,
+            typename Internal::UnorderedMapTableTraits<Key, T, Hash, Pred, Allocator, false>::size_type = {},
+            Hash = Hash(),
+            Pred = Pred(), Allocator = Allocator())
+        ->unordered_map<Key, T, Hash, Pred, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_map(InputIterator, InputIterator,
+        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+            hash<iter_key_type<InputIterator>>, equal_to<iter_key_type<InputIterator>>, Allocator, false>::size_type,
+        Allocator)
+        ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        hash<iter_key_type<InputIterator>>,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_map(InputIterator, InputIterator, Allocator)
+        ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        hash<iter_key_type<InputIterator>>,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class InputIterator, class Hash, class Allocator>
+    unordered_map(InputIterator, InputIterator,
+        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+            Hash, equal_to<iter_key_type<InputIterator>>, Allocator, false>::size_type,
+        Hash, Allocator)
+        ->unordered_map<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_map(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
+        hash<Key>, equal_to<Key>, Allocator, false>::size_type,
+        Allocator)
+        ->unordered_map<Key, T, hash<Key>, equal_to<Key>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_map(initializer_list<pair<Key, T>>, Allocator)
+        ->unordered_map<Key, T, hash<Key>, equal_to<Key>, Allocator>;
+
+    template<class Key, class T, class Hash, class Allocator>
+    unordered_map(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
+        Hash, equal_to<Key>, Allocator, true>::size_type,
+        Hash, Allocator)
+        ->unordered_map<Key, T, Hash, equal_to<Key>, Allocator>;
+
+
     /**
      * Unordered multi map container is complaint with \ref CTR1 (6.2.4.6)
      * The only difference from the unordered_map is that we allow multiple entries with
@@ -560,7 +619,63 @@ namespace AZStd
 
         return originalSize - container.size();
     }
+
+    // deduction guides
+    template<class InputIterator,
+        class Hash = hash<iter_key_type<InputIterator>>,
+        class Pred = equal_to<iter_key_type<InputIterator>>,
+        class Allocator = allocator>
+        unordered_multimap(InputIterator, InputIterator,
+            typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>,
+                iter_mapped_type<InputIterator>, Hash, Pred, Allocator, true>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        Hash, Pred, Allocator>;
+
+    template<class Key, class T, class Hash = hash<Key>,
+        class Pred = equal_to<Key>, class Allocator = allocator>
+        unordered_multimap(initializer_list<pair<Key, T>>,
+            typename Internal::UnorderedMapTableTraits<Key, T, Hash, Pred, Allocator, true>::size_type = {},
+            Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+        ->unordered_multimap<Key, T, Hash, Pred, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_multimap(InputIterator, InputIterator,
+        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+            hash<iter_key_type<InputIterator>>, equal_to<iter_key_type<InputIterator>>, Allocator, true>::size_type,
+        Allocator)
+        ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        hash<iter_key_type<InputIterator>>,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class InputIterator, class Allocator>
+    unordered_multimap(InputIterator, InputIterator, Allocator)
+        ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+        hash<iter_key_type<InputIterator>>,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class InputIterator, class Hash, class Allocator>
+    unordered_multimap(InputIterator, InputIterator,
+        typename Internal::UnorderedMapTableTraits<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>,
+            Hash, equal_to<iter_key_type<InputIterator>>, Allocator, true>::size_type,
+        Hash, Allocator)
+        ->unordered_multimap<iter_key_type<InputIterator>, iter_mapped_type<InputIterator>, Hash,
+        equal_to<iter_key_type<InputIterator>>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_multimap(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
+            hash<Key>, equal_to<Key>, Allocator, true>::size_type,
+        Allocator)
+        ->unordered_multimap<Key, T, hash<Key>, equal_to<Key>, Allocator>;
+
+    template<class Key, class T, class Allocator>
+    unordered_multimap(initializer_list<pair<Key, T>>, Allocator)
+        ->unordered_multimap<Key, T, hash<Key>, equal_to<Key>, Allocator>;
+
+    template<class Key, class T, class Hash, class Allocator>
+    unordered_multimap(initializer_list<pair<Key, T>>, typename Internal::UnorderedMapTableTraits<Key, T,
+        Hash, equal_to<Key>, Allocator, true>::size_type,
+        Hash, Allocator)
+        ->unordered_multimap<Key, T, Hash, equal_to<Key>, Allocator>;
 }
 
-#endif // AZSTD_UNORDERED_MAP_H
-#pragma once

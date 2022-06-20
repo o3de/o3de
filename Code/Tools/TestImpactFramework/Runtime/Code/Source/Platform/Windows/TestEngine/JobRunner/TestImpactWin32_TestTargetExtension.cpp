@@ -14,8 +14,8 @@ namespace TestImpact
 {
     AZStd::string GetTestTargetExtension(const TestTarget* testTarget)
     {
-        static constexpr char* const standAloneExtension = ".exe"; 
-        static constexpr char* const testRunnerExtension = ".dll"; 
+        static constexpr const char* const standAloneExtension = ".exe";
+        static constexpr const char* const testRunnerExtension = ".dll"; 
 
         switch (const auto launchMethod = testTarget->GetLaunchMethod(); launchMethod)
         {

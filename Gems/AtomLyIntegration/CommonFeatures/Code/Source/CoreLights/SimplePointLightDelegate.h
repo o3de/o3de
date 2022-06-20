@@ -29,10 +29,11 @@ namespace AZ
             void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
             float GetSurfaceArea() const override;
             float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
+            void SetAffectsGI(bool affectsGI) override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
 
         private:
-            virtual void HandleShapeChanged();
-            
+            void HandleShapeChanged() override;
         };
 
     } // namespace Render

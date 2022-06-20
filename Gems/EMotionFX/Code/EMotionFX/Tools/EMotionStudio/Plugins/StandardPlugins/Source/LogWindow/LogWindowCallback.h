@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_LOGWINDOWCALLBACK_H
-#define __EMSTUDIO_LOGWINDOWCALLBACK_H
+#pragma once
 
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
@@ -40,13 +39,13 @@ namespace EMStudio
         void SetFind(const QString& find);
         QString GetFind() const
         {
-            return mFind;
+            return m_find;
         }
 
         void SetFilter(uint32 filter);
         uint32 GetFilter() const
         {
-            return mFilter;
+            return m_filter;
         }
 
     protected:
@@ -70,13 +69,11 @@ namespace EMStudio
         void SetColumnWidthToTakeWholeSpace();
 
     private:
-        QString mFind;
-        uint32 mFilter;
-        int mMaxSecondColumnWidth;
+        QString m_find;
+        uint32 m_filter;
+        int m_maxSecondColumnWidth;
         bool m_scrollToBottom;
     };
 } // namespace EMStudio
 
 Q_DECLARE_METATYPE(MCore::LogCallback::ELogLevel)
-
-#endif

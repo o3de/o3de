@@ -6,7 +6,7 @@
  *
  */
 #include "EditorCommon.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -15,7 +15,7 @@ float ViewportIcon::m_dpiScaleFactor = 1.0f;
 
 ViewportIcon::ViewportIcon(const char* textureFilename)
 {
-    m_image = CDraw2d::LoadTexture(textureFilename);
+    m_image = Draw2dHelper::LoadTexture(textureFilename);
 }
 
 ViewportIcon::~ViewportIcon()
@@ -27,7 +27,7 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        AZ::Vector2 scaledSize(size.m_width, size.m_height);
+        AZ::Vector2 scaledSize(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
         if (m_applyDpiScaleFactorToSize)
         {
             scaledSize *= m_dpiScaleFactor;
@@ -48,12 +48,11 @@ void ViewportIcon::DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, fl
         opacity);
 }
 
-void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts, [[maybe_unused]] float opacity)
+void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts)
 {
     // Use default blending and rounding modes
-    int blendMode = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
     IDraw2d::Rounding rounding = IDraw2d::Rounding::Nearest;
-    draw2d.DrawQuad(m_image, verts, blendMode, rounding);
+    draw2d.DrawQuad(m_image, verts, rounding);
 }
 
 void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 bound0, AZ::Vector2 bound1)
@@ -297,7 +296,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
 
     draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
     draw2d.SetTextRotation(rotation);
-    draw2d.DrawText(textBuf, textPos, 16.0f * ViewportIcon::GetDpiScaleFactor(), 1.0f);
+    draw2d.DrawText(textBuf, textPos, 8.0f, 1.0f);
 }
 
 void ViewportIcon::DrawAnchorLinesSplit(Draw2dHelper& draw2d, AZ::Vector2 anchorPos1, AZ::Vector2 anchorPos2,

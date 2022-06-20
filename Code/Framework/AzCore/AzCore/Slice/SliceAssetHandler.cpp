@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Debug/AssetTracking.h>
 
 namespace AZ
 {

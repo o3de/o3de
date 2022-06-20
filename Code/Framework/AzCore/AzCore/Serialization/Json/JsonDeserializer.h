@@ -28,6 +28,11 @@ namespace AZ
             FullyProcessed,
             ContinueProcessing
         };
+        enum class UseTypeDeserializer : bool
+        {
+            No,
+            Yes
+        };
         enum class TypeIdDetermination : u8
         {
             ExplicitTypeId, // Type id was explicitly defined using "$type".
@@ -55,10 +60,11 @@ namespace AZ
         JsonDeserializer(JsonDeserializer&& rhs) = delete;
 
         static JsonSerializationResult::ResultCode Load(
-            void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context);
+            void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, UseTypeDeserializer useCustom,
+            JsonDeserializerContext& context);
 
         static JsonSerializationResult::ResultCode LoadToPointer(void* object, const Uuid& typeId, const rapidjson::Value& value,
-            JsonDeserializerContext& context);
+            UseTypeDeserializer useCustom, JsonDeserializerContext& context);
 
         static JsonSerializationResult::ResultCode LoadWithClassElement(void* object, const rapidjson::Value& value,
             const SerializeContext::ClassElement& classElement, JsonDeserializerContext& context);

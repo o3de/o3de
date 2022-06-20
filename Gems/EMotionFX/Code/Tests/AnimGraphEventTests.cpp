@@ -49,7 +49,7 @@ namespace EMotionFX
             for (int i = 0; i < params.m_numStates; ++i)
             {
                 AnimGraphNode* state = aznew AnimGraphMotionNode();
-                state->SetName(AZStd::string(1, startChar + i).c_str());
+                state->SetName(AZStd::string(1, static_cast<char>(startChar + i)).c_str());
                 m_rootStateMachine->AddChildNode(state);
                 AddTransitionWithTimeCondition(prevState, state, /*blendTime*/params.m_transitionBlendTime, /*countDownTime*/params.m_conditionCountDownTime);
                 prevState = state;
@@ -63,8 +63,8 @@ namespace EMotionFX
             MotionSet::MotionEntry* motionEntry = AddMotionEntry("testMotion", 1.0);
 
             // Assign a motion to all our motion nodes
-            const AZ::u32 numStates = m_rootStateMachine->GetNumChildNodes();
-            for (AZ::u32 i = 0; i < numStates; ++i)
+            const size_t numStates = m_rootStateMachine->GetNumChildNodes();
+            for (size_t i = 0; i < numStates; ++i)
             {
                 AnimGraphMotionNode* motionNode = azdynamic_cast<AnimGraphMotionNode*>(m_rootStateMachine->GetChildNode(i));
                 if (motionNode)
@@ -88,7 +88,7 @@ namespace EMotionFX
         void SimulateTest(float simulationTime, float expectedFps, float fpsVariance)
         {
             Simulate(simulationTime, expectedFps, fpsVariance,
-                /*preCallback*/[this](AnimGraphInstance*)
+                /*preCallback*/[](AnimGraphInstance*)
                 {
                 },
                 /*postCallback*/[this](AnimGraphInstance*)
@@ -102,8 +102,8 @@ namespace EMotionFX
                     EXPECT_EQ(this->m_eventHandler->m_numTransitionsStarted, numStates);
                     EXPECT_EQ(this->m_eventHandler->m_numTransitionsEnded, numStates);
                 },
-                /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
-                /*postUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {});
+                /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
+                /*postUpdateCallback*/[](AnimGraphInstance*, float, float, int) {});
 
             const int numStates = GetParam().m_numStates;
             if (numStates > 1)

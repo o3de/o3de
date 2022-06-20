@@ -9,8 +9,11 @@
 #undef RC_INVOKED
 
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ
 {
@@ -21,10 +24,8 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ModelPreset>()
-                    ->Version(3)
-                    ->Field("displayName", &ModelPreset::m_displayName)
+                    ->Version(5)
                     ->Field("modelAsset", &ModelPreset::m_modelAsset)
-                    ->Field("previewImageAsset", &ModelPreset::m_previewImageAsset)
                     ;
             }
 
@@ -36,9 +37,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Constructor()
                     ->Constructor<const ModelPreset&>()
-                    ->Property("displayName", BehaviorValueProperty(&ModelPreset::m_displayName))
                     ->Property("modelAsset", BehaviorValueProperty(&ModelPreset::m_modelAsset))
-                    ->Property("previewImageAsset", BehaviorValueProperty(&ModelPreset::m_previewImageAsset))
                     ;
             }
         }

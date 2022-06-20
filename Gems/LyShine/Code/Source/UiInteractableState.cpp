@@ -21,9 +21,8 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
-#include <CryCommon/LyShine/ILyShine.h>
+#include <LyShine/ILyShine.h>
 
-#include <IRenderer.h>
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"
 
@@ -275,7 +274,7 @@ UiInteractableStateSprite::UiInteractableStateSprite(AZ::EntityId target, const 
 
     if (!m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 }
 
@@ -298,7 +297,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -307,7 +306,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
     // are not loaded then load them
     if (!m_sprite && !m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     if (!m_sprite)
@@ -367,7 +366,7 @@ void UiInteractableStateSprite::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     SAFE_RELEASE(m_sprite);
@@ -575,10 +574,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
             fontFamily = gEnv->pCryFont->LoadFontFamily(fileName.c_str());
             if (!fontFamily)
             {
-                string errorMsg = "Error loading a font from ";
-                errorMsg += fileName.c_str();
-                errorMsg += ".";
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error loading a font from %s.", fileName.c_str());
             }
         }
 
@@ -616,7 +612,7 @@ UiInteractableStateFont::FontEffectComboBoxVec UiInteractableStateFont::Populate
     // NOTE: Curently, in order for this to work, when the font is changed we need to do
     // "RefreshEntireTree" to get the combo box list refreshed.
     unsigned int numEffects = m_fontFamily ? m_fontFamily->normal->GetNumEffects() : 0;
-    for (int i = 0; i < numEffects; ++i)
+    for (unsigned int i = 0; i < numEffects; ++i)
     {
         const char* name = m_fontFamily->normal->GetEffectName(i);
         result.push_back(AZStd::make_pair(i, name));

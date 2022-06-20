@@ -16,9 +16,8 @@ from datetime import datetime, timezone
 from requests.auth import HTTPBasicAuth
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(cur_dir)), 'package'))
-from util import *
-
+sys.path.insert(0, os.path.abspath(f'{cur_dir}/../../../util'))
+import util
 
 class JenkinsAPIClient:
     def __init__(self, jenkins_base_url, jenkins_username, jenkins_api_token):
@@ -36,7 +35,7 @@ class JenkinsAPIClient:
             except Exception:
                 traceback.print_exc()
                 print(f'WARN: Get request {url} failed, retying....')
-        error(f'Get request {url} failed, see exception for more details.')
+        util.error(f'Get request {url} failed, see exception for more details.')
 
     def get_builds(self, pipeline_name, branch_name=''):
         url = self.jenkins_base_url + self.blueocean_api_path + f'/{pipeline_name}/{branch_name}/runs'
@@ -123,9 +122,9 @@ def upload_files_to_s3(env, formatted_date):
     else:
         python = os.path.join(engine_root, 'python', 'python.sh')
     upload_csv_cmd = [python, upload_to_s3_script_path, '--base_dir', cur_dir, '--file_regex', env['CSV_REGEX'], '--bucket', env['BUCKET'], '--key_prefix', csv_s3_prefix]
-    execute_system_call(upload_csv_cmd)
+    util.execute_system_call(upload_csv_cmd)
     upload_manifest_cmd = [python, upload_to_s3_script_path, '--base_dir', cur_dir, '--file_regex', env['MANIFEST_REGEX'], '--bucket', env['BUCKET'], '--key_prefix', manifest_s3_prefix]
-    execute_system_call(upload_manifest_cmd)
+    util.execute_system_call(upload_manifest_cmd)
 
 
 def get_required_env(env, keys):
@@ -134,7 +133,7 @@ def get_required_env(env, keys):
         try:
             env[key] = os.environ[key].strip()
         except KeyError:
-            error(f'{key} is not set in environment variable')
+            util.error(f'{key} is not set in environment variable')
             success = False
     return success
 
@@ -143,7 +142,7 @@ def main():
     env = {}
     required_env_list = ['JENKINS_URL', 'PIPELINE_NAME', 'BRANCH_NAME', 'JENKINS_USERNAME', 'JENKINS_API_TOKEN', 'BUCKET', 'CSV_REGEX', 'CSV_PREFIX', 'MANIFEST_REGEX', 'MANIFEST_PREFIX', 'DAYS_TO_COLLECT']
     if not get_required_env(env, required_env_list):
-        error('Required environment variable is not set, see log for more details.')
+        util.error('Required environment variable is not set, see log for more details.')
 
     target_date = datetime.today().date()
     formatted_date = f'{target_date.year}/{target_date:%m}/{target_date:%d}'

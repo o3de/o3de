@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/ISessionRequests.h>
+#include <Multiplayer/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -16,20 +16,20 @@ namespace AWSGameLift
     //! GameLift create session on queue request which corresponds to Amazon GameLift
     //! StartGameSessionPlacement
     struct AWSGameLiftCreateSessionOnQueueRequest
-        : public AzFramework::CreateSessionRequest
+        : public Multiplayer::CreateSessionRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftCreateSessionOnQueueRequest, "{2B99E594-CE81-4EB0-8888-74EF4242B59F}", AzFramework::CreateSessionRequest);
+        AZ_RTTI(AWSGameLiftCreateSessionOnQueueRequest, "{2B99E594-CE81-4EB0-8888-74EF4242B59F}", Multiplayer::CreateSessionRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftCreateSessionOnQueueRequest() = default;
         virtual ~AWSGameLiftCreateSessionOnQueueRequest() = default;
 
-        // Name of the queue to use to place the new game session. You can use either the queue name or ARN value. 
+        //! Name of the queue to use to place the new game session. You can use either the queue name or ARN value. 
         AZStd::string m_queueName;
 
-        // A unique identifier to assign to the new game session placement. This value is developer-defined.
-        // The value must be unique across all Regions and cannot be reused unless you are resubmitting a canceled or timed-out placement request.
+        //! A unique identifier to assign to the new game session placement. This value is developer-defined.
+        //! The value must be unique across all Regions and cannot be reused unless you are resubmitting a canceled or timed-out placement request.
         AZStd::string m_placementId;
     };
 } // namespace AWSGameLift

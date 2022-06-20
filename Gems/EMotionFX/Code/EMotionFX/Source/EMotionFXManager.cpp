@@ -6,7 +6,6 @@
  *
  */
 
-// include the required headers
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "Importer/Importer.h"
@@ -29,6 +28,8 @@
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
+#include <EMotionFX/Source/PoseDataFactory.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 
 namespace EMotionFX
 {
@@ -50,7 +51,7 @@ namespace EMotionFX
 
         // Create EMotion FX allocators
         Allocators::Create();
-        
+
         // create the new object
         gEMFX = AZ::Environment::CreateVariable<EMotionFXManager*>(kEMotionFXInstanceVarName);
         gEMFX.Set(EMotionFXManager::Create());
@@ -62,7 +63,7 @@ namespace EMotionFX
         }
 
         // set the unit type
-        gEMFX.Get()->SetUnitType(finalSettings.mUnitType);
+        gEMFX.Get()->SetUnitType(finalSettings.m_unitType);
 
         // create and set the objects
         gEMFX.Get()->SetImporter              (Importer::Create());
@@ -75,6 +76,7 @@ namespace EMotionFX
         gEMFX.Get()->SetRecorder              (Recorder::Create());
         gEMFX.Get()->SetMotionInstancePool    (MotionInstancePool::Create());
         gEMFX.Get()->SetDebugDraw             (aznew DebugDraw());
+        gEMFX.Get()->SetPoseDataFactory       (aznew PoseDataFactory());
         gEMFX.Get()->SetGlobalSimulationSpeed (1.0f);
 
         // set the number of threads
@@ -107,25 +109,25 @@ namespace EMotionFX
     // constructor
     EMotionFXManager::EMotionFXManager()
     {
-        mThreadDatas.SetMemoryCategory(EMFX_MEMCATEGORY_EMOTIONFXMANAGER);
         // build the low version string
         AZStd::string lowVersionString;
         BuildLowVersionString(lowVersionString);
 
-        mVersionString = AZStd::string::format("EMotion FX v%d.%s RC4", EMFX_HIGHVERSION, lowVersionString.c_str());
-        mCompilationDate        = MCORE_DATE;
-        mHighVersion            = EMFX_HIGHVERSION;
-        mLowVersion             = EMFX_LOWVERSION;
-        mImporter               = nullptr;
-        mActorManager           = nullptr;
-        mMotionManager          = nullptr;
-        mEventManager           = nullptr;
-        mSoftSkinManager        = nullptr;
-        mRecorder               = nullptr;
-        mMotionInstancePool     = nullptr;
-        mDebugDraw              = nullptr;
-        mUnitType               = MCore::Distance::UNITTYPE_METERS;
-        mGlobalSimulationSpeed  = 1.0f;
+        m_versionString = AZStd::string::format("EMotion FX v%d.%s RC4", EMFX_HIGHVERSION, lowVersionString.c_str());
+        m_compilationDate        = MCORE_DATE;
+        m_highVersion            = EMFX_HIGHVERSION;
+        m_lowVersion             = EMFX_LOWVERSION;
+        m_importer               = nullptr;
+        m_actorManager           = nullptr;
+        m_motionManager          = nullptr;
+        m_eventManager           = nullptr;
+        m_softSkinManager        = nullptr;
+        m_recorder               = nullptr;
+        m_motionInstancePool     = nullptr;
+        m_debugDraw              = nullptr;
+        m_poseDataFactory        = nullptr;
+        m_unitType               = MCore::Distance::UNITTYPE_METERS;
+        m_globalSimulationSpeed  = 1.0f;
         m_isInEditorMode        = false;
         m_isInServerMode        = false;
 
@@ -136,6 +138,8 @@ namespace EMotionFX
         {
             RegisterMemoryCategories(MCore::GetMemoryTracker());
         }
+
+        m_renderActorSettings = AZStd::make_unique<AZ::Render::RenderActorSettings>();
     }
 
 
@@ -144,41 +148,44 @@ namespace EMotionFX
     {
         // the motion manager has to get destructed before the anim graph manager as the motion manager kills all motion instances
         // from the motion nodes when destructing the motions itself
-        //mRigManager->Destroy();
-        mMotionManager->Destroy();
-        mMotionManager = nullptr;
+        m_motionManager->Destroy();
+        m_motionManager = nullptr;
 
-        mAnimGraphManager->Destroy();
-        mAnimGraphManager = nullptr;
+        m_animGraphManager->Destroy();
+        m_animGraphManager = nullptr;
 
-        mImporter->Destroy();
-        mImporter = nullptr;
+        m_importer->Destroy();
+        m_importer = nullptr;
 
-        mActorManager->Destroy();
-        mActorManager = nullptr;
+        m_actorManager->Destroy();
+        m_actorManager = nullptr;
 
-        mMotionInstancePool->Destroy();
-        mMotionInstancePool = nullptr;
+        m_motionInstancePool->Destroy();
+        m_motionInstancePool = nullptr;
 
-        mSoftSkinManager->Destroy();
-        mSoftSkinManager = nullptr;
+        m_softSkinManager->Destroy();
+        m_softSkinManager = nullptr;
 
-        mRecorder->Destroy();
-        mRecorder = nullptr;
+        m_recorder->Destroy();
+        m_recorder = nullptr;
 
-        delete mDebugDraw;
-        mDebugDraw = nullptr;
-        
+        delete m_debugDraw;
+        m_debugDraw = nullptr;
 
-        mEventManager->Destroy();
-        mEventManager = nullptr;
-        
+        delete m_poseDataFactory;
+        m_poseDataFactory = nullptr;
+
+        m_renderActorSettings.reset();
+
+        m_eventManager->Destroy();
+        m_eventManager = nullptr;
+
         // delete the thread datas
-        for (uint32 i = 0; i < mThreadDatas.GetLength(); ++i)
+        for (uint32 i = 0; i < m_threadDatas.size(); ++i)
         {
-            mThreadDatas[i]->Destroy();
+            m_threadDatas[i]->Destroy();
         }
-        mThreadDatas.Clear();
+        m_threadDatas.clear();
     }
 
 
@@ -192,18 +199,18 @@ namespace EMotionFX
     // update
     void EMotionFXManager::Update(float timePassedInSeconds)
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "EMotionFXManager::Update");
+        AZ_PROFILE_SCOPE(Animation, "EMotionFXManager::Update");
 
-        mDebugDraw->Clear();
-        mRecorder->UpdatePlayMode(timePassedInSeconds);
-        mActorManager->UpdateActorInstances(timePassedInSeconds);
-        mEventManager->OnSimulatePhysics(timePassedInSeconds);
-        mRecorder->Update(timePassedInSeconds);
+        m_debugDraw->Clear();
+        m_recorder->UpdatePlayMode(timePassedInSeconds);
+        m_actorManager->UpdateActorInstances(timePassedInSeconds);
+        m_eventManager->OnSimulatePhysics(timePassedInSeconds);
+        m_recorder->Update(timePassedInSeconds);
 
         // sample and apply all anim graphs we recorded
-        if (mRecorder->GetIsInPlayMode() && mRecorder->GetRecordSettings().mRecordAnimGraphStates)
+        if (m_recorder->GetIsInPlayMode() && m_recorder->GetRecordSettings().m_recordAnimGraphStates)
         {
-            mRecorder->SampleAndApplyAnimGraphs(mRecorder->GetCurrentPlayTime());
+            m_recorder->SampleAndApplyAnimGraphs(m_recorder->GetCurrentPlayTime());
         }
     }
 
@@ -218,9 +225,9 @@ namespace EMotionFX
         MCore::LogInfo("-----------------------------------------------");
         MCore::LogInfo("EMotion FX - Information");
         MCore::LogInfo("-----------------------------------------------");
-        MCore::LogInfo("Version:          v%d.%s", mHighVersion, lowVersionString.c_str());
-        MCore::LogInfo("Version string:   %s", mVersionString.c_str());
-        MCore::LogInfo("Compilation date: %s", mCompilationDate.c_str());
+        MCore::LogInfo("Version:          v%d.%s", m_highVersion, lowVersionString.c_str());
+        MCore::LogInfo("Version string:   %s", m_versionString.c_str());
+        MCore::LogInfo("Compilation date: %s", m_compilationDate.c_str());
 
     #ifdef MCORE_OPENMP_ENABLED
         MCore::LogInfo("OpenMP enabled:   Yes");
@@ -235,88 +242,88 @@ namespace EMotionFX
     // get the version string
     const char* EMotionFXManager::GetVersionString() const
     {
-        return mVersionString.c_str();
+        return m_versionString.c_str();
     }
 
 
     // get the compilation date string
     const char* EMotionFXManager::GetCompilationDate() const
     {
-        return mCompilationDate.c_str();
+        return m_compilationDate.c_str();
     }
 
 
     // get the high version
     uint32 EMotionFXManager::GetHighVersion() const
     {
-        return mHighVersion;
+        return m_highVersion;
     }
 
 
     // get the low version
     uint32 EMotionFXManager::GetLowVersion() const
     {
-        return mLowVersion;
+        return m_lowVersion;
     }
 
 
     // set the importer
     void EMotionFXManager::SetImporter(Importer* importer)
     {
-        mImporter = importer;
+        m_importer = importer;
     }
 
 
     // set the actor manager
     void EMotionFXManager::SetActorManager(ActorManager* manager)
     {
-        mActorManager = manager;
+        m_actorManager = manager;
     }
 
 
     // set the motion manager
     void EMotionFXManager::SetMotionManager(MotionManager* manager)
     {
-        mMotionManager = manager;
+        m_motionManager = manager;
     }
 
 
     // set the event manager
     void EMotionFXManager::SetEventManager(EventManager* manager)
     {
-        mEventManager = manager;
+        m_eventManager = manager;
     }
 
 
     // set the softskin manager
     void EMotionFXManager::SetSoftSkinManager(SoftSkinManager* manager)
     {
-        mSoftSkinManager = manager;
+        m_softSkinManager = manager;
     }
 
 
     // set the anim graph manager
     void EMotionFXManager::SetAnimGraphManager(AnimGraphManager* manager)
     {
-        mAnimGraphManager = manager;
+        m_animGraphManager = manager;
     }
 
 
     // set the recorder
     void EMotionFXManager::SetRecorder(Recorder* recorder)
     {
-        mRecorder = recorder;
+        m_recorder = recorder;
     }
 
     void EMotionFXManager::SetDebugDraw(DebugDraw* draw)
     {
-        mDebugDraw = draw;
+        m_debugDraw = draw;
     }
 
     // set the motion instance pool
     void EMotionFXManager::SetMotionInstancePool(MotionInstancePool* pool)
     {
-        mMotionInstancePool = pool;
+        m_motionInstancePool = pool;
         pool->Init();
     }
 
@@ -324,71 +331,71 @@ namespace EMotionFX
     // set the path of the media root directory
     void EMotionFXManager::SetMediaRootFolder(const char* path)
     {
-        mMediaRootFolder = path;
+        m_mediaRootFolder = path;
 
         // Make sure the media root folder has an ending slash.
-        if (mMediaRootFolder.empty() == false)
+        if (m_mediaRootFolder.empty() == false)
         {
-            const char lastChar = AzFramework::StringFunc::LastCharacter(mMediaRootFolder.c_str());
+            const char lastChar = AzFramework::StringFunc::LastCharacter(m_mediaRootFolder.c_str());
             if (lastChar != AZ_CORRECT_FILESYSTEM_SEPARATOR && lastChar != AZ_WRONG_FILESYSTEM_SEPARATOR)
             {
-                AzFramework::StringFunc::Path::AppendSeparator(mMediaRootFolder);
+                AzFramework::StringFunc::Path::AppendSeparator(m_mediaRootFolder);
             }
         }
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mMediaRootFolder);
+        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_mediaRootFolder);
     }
 
 
     void EMotionFXManager::InitAssetFolderPaths()
     {
         // Initialize the asset source folder path.
-        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (assetSourcePath)
         {
-            mAssetSourceFolder = assetSourcePath;
+            m_assetSourceFolder = assetSourcePath;
 
             // Add an ending slash in case there is none yet.
             // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Open 3D Engine does.
-            if (mAssetSourceFolder.empty() == false)
+            if (m_assetSourceFolder.empty() == false)
             {
-                const char lastChar = AzFramework::StringFunc::LastCharacter(mAssetSourceFolder.c_str());
+                const char lastChar = AzFramework::StringFunc::LastCharacter(m_assetSourceFolder.c_str());
                 if (lastChar != AZ_CORRECT_FILESYSTEM_SEPARATOR && lastChar != AZ_WRONG_FILESYSTEM_SEPARATOR)
                 {
-                    AzFramework::StringFunc::Path::AppendSeparator(mAssetSourceFolder);
+                    AzFramework::StringFunc::Path::AppendSeparator(m_assetSourceFolder);
                 }
             }
 
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mAssetSourceFolder);
+            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_assetSourceFolder);
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@devassets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@projectroot@'.");
         }
 
 
         // Initialize the asset cache folder path.
-        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         if (assetCachePath)
         {
-            mAssetCacheFolder = assetCachePath;
+            m_assetCacheFolder = assetCachePath;
 
             // Add an ending slash in case there is none yet.
             // TODO: Remove this and adopt EMotionFX code to work with folder paths without slash at the end like Open 3D Engine does.
-            if (mAssetCacheFolder.empty() == false)
+            if (m_assetCacheFolder.empty() == false)
             {
-                const char lastChar = AzFramework::StringFunc::LastCharacter(mAssetCacheFolder.c_str());
+                const char lastChar = AzFramework::StringFunc::LastCharacter(m_assetCacheFolder.c_str());
                 if (lastChar != AZ_CORRECT_FILESYSTEM_SEPARATOR && lastChar != AZ_WRONG_FILESYSTEM_SEPARATOR)
                 {
-                    AzFramework::StringFunc::Path::AppendSeparator(mAssetCacheFolder);
+                    AzFramework::StringFunc::Path::AppendSeparator(m_assetCacheFolder);
                 }
             }
 
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mAssetCacheFolder);
+            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, m_assetCacheFolder);
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@assets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@products@'.");
         }
     }
 
@@ -397,7 +404,7 @@ namespace EMotionFX
     {
         outAbsoluteFilename = relativeFilename;
         EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, outAbsoluteFilename);
-        AzFramework::StringFunc::Replace(outAbsoluteFilename, EMFX_MEDIAROOTFOLDER_STRING, mMediaRootFolder.c_str(), true);
+        AzFramework::StringFunc::Replace(outAbsoluteFilename, EMFX_MEDIAROOTFOLDER_STRING, m_mediaRootFolder.c_str(), true);
     }
 
 
@@ -457,14 +464,14 @@ namespace EMotionFX
     // get the global speed factor
     float EMotionFXManager::GetGlobalSimulationSpeed() const
     {
-        return mGlobalSimulationSpeed;
+        return m_globalSimulationSpeed;
     }
 
 
     // set the global speed factor
     void EMotionFXManager::SetGlobalSimulationSpeed(float speedFactor)
     {
-        mGlobalSimulationSpeed = MCore::Max<float>(0.0f, speedFactor);
+        m_globalSimulationSpeed = MCore::Max<float>(0.0f, speedFactor);
     }
 
 
@@ -477,23 +484,23 @@ namespace EMotionFX
             numThreads = 1;
         }
 
-        if (mThreadDatas.GetLength() == numThreads)
+        if (m_threadDatas.size() == numThreads)
         {
             return;
         }
 
         // get rid of old data
-        for (uint32 i = 0; i < mThreadDatas.GetLength(); ++i)
+        for (uint32 i = 0; i < m_threadDatas.size(); ++i)
         {
-            mThreadDatas[i]->Destroy();
+            m_threadDatas[i]->Destroy();
         }
 
-        mThreadDatas.Clear(false); // force calling constructors again to reset everything
-        mThreadDatas.Resize(numThreads);
+        m_threadDatas.clear(); // force calling constructors again to reset everything
+        m_threadDatas.resize(numThreads);
 
         for (uint32 i = 0; i < numThreads; ++i)
         {
-            mThreadDatas[i] = ThreadData::Create(i);
+            m_threadDatas[i] = ThreadData::Create(i);
         }
     }
 
@@ -502,21 +509,21 @@ namespace EMotionFX
     void EMotionFXManager::ShrinkPools()
     {
         Allocators::ShrinkPools();
-        mMotionInstancePool->Shrink();
+        m_motionInstancePool->Shrink();
     }
 
 
     // get the unit type
     MCore::Distance::EUnitType EMotionFXManager::GetUnitType() const
     {
-        return mUnitType;
+        return m_unitType;
     }
 
 
     // set the unit type
     void EMotionFXManager::SetUnitType(MCore::Distance::EUnitType unitType)
     {
-        mUnitType = unitType;
+        m_unitType = unitType;
     }
 
 
@@ -570,7 +577,6 @@ namespace EMotionFX
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK,                     "EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSE,                          "EMFX_MEMCATEGORY_ANIMGRAPH_POSE");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS,                    "EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS");
-        memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER,                "EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS,                  "EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL,                      "EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_NODES,                         "EMFX_MEMCATEGORY_ANIMGRAPH_NODES");
@@ -639,7 +645,6 @@ namespace EMotionFX
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSE);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS);
-        idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_NODES);

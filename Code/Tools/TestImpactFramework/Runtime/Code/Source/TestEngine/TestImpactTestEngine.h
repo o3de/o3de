@@ -69,7 +69,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
 
         //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -89,7 +89,7 @@ namespace TestImpact
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -111,13 +111,12 @@ namespace TestImpact
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
         void DeleteArtifactXmls() const;
 
-        size_t m_maxConcurrentRuns = 0;
         AZStd::unique_ptr<TestJobInfoGenerator> m_testJobInfoGenerator;
         AZStd::unique_ptr<TestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<InstrumentedTestRunner> m_instrumentedTestRunner;

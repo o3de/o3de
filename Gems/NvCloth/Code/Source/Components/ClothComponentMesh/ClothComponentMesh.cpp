@@ -11,6 +11,7 @@
 #include <AzCore/Math/PackedVector3.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/RHI/RHIUtils.h>
 
 #include <NvCloth/IClothSystem.h>
@@ -27,6 +28,9 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/WindBus.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 namespace NvCloth
 {
@@ -192,6 +196,9 @@ namespace NvCloth
             m_meshRemappedVertices);
         m_timeClothSkinningUpdates = 0.0f;
 
+        // Turn off GPU skinning for any sub-meshes simulated by the cloth component
+        DisableSkinning();
+
         m_clothConstraints = ClothConstraints::Create(
             m_meshClothInfo.m_motionConstraints,
             m_config.m_motionConstraintsMaxDistance,
@@ -232,6 +239,9 @@ namespace NvCloth
 
             AZ::Interface<IClothSystem>::Get()->RemoveCloth(m_cloth);
             AZ::Interface<IClothSystem>::Get()->DestroyCloth(m_cloth);
+
+            // Re-enable skinning for any sub-meshes that were previously skinned by the cloth component
+            EnableSkinning();
         }
         m_entityId.SetInvalid();
         m_renderDataBuffer = {};
@@ -250,7 +260,7 @@ namespace NvCloth
         [[maybe_unused]] ClothId clothId,
         float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         UpdateSimulationCollisions();
 
@@ -267,7 +277,7 @@ namespace NvCloth
         [[maybe_unused]] float deltaTime,
         const AZStd::vector<SimParticleFormat>& updatedParticles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Next buffer index of the render data
         m_renderDataBufferIndex = (m_renderDataBufferIndex + 1) % RenderDataBufferSize;
@@ -326,7 +336,7 @@ namespace NvCloth
     {
         if (m_actorClothColliders)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothColliders->Update();
 
@@ -342,7 +352,7 @@ namespace NvCloth
     {
         if (m_actorClothSkinning)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+            AZ_PROFILE_FUNCTION(Cloth);
 
             m_actorClothSkinning->UpdateSkinning();
 
@@ -376,7 +386,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateSimulationConstraints()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_motionConstraints = m_clothConstraints->GetMotionConstraints();
         m_separationConstraints = m_clothConstraints->GetSeparationConstraints();
@@ -396,7 +406,7 @@ namespace NvCloth
 
     void ClothComponentMesh::UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         if (!m_cloth)
         {
@@ -449,7 +459,7 @@ namespace NvCloth
 
     void ClothComponentMesh::CopyRenderDataToModel()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Previous buffer index of the render data
         const AZ::u32 previousBufferIndex = (m_renderDataBufferIndex + RenderDataBufferSize - 1) % RenderDataBufferSize;
@@ -525,7 +535,7 @@ namespace NvCloth
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;
-            if (subMesh.GetVertexCount() != numVertices)
+            if (subMesh.GetVertexCount() != static_cast<uint32_t>(numVertices))
             {
                 AZ_Error("ClothComponentMesh", false,
                     "Render mesh to be modified doesn't have the same number of vertices (%d) as the cloth's submesh (%d).",
@@ -549,14 +559,14 @@ namespace NvCloth
 
             if (!destVerticesBuffer)
             {
-                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRenderer(),
+                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRHI(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
                 continue;
             }
 
             for (size_t index = 0; index < numVertices; ++index)
             {
-                const int renderVertexIndex = firstVertex + index;
+                const int renderVertexIndex = static_cast<int>(firstVertex + index);
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
                 destVerticesBuffer[index].Set(
@@ -780,5 +790,33 @@ namespace NvCloth
             return globalWind + localWind;
         }
         return AZ::Vector3::CreateZero();
+    }
+
+    void ClothComponentMesh::EnableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::EnableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
+    }
+
+    void ClothComponentMesh::DisableSkinning() const
+    {
+        if (m_actorClothSkinning)
+        {
+            for (const auto& subMeshInfo : m_meshNodeInfo.m_subMeshes)
+            {
+                AZ::Render::SkinnedMeshOverrideRequestBus::Event(
+                    m_entityId,
+                    &AZ::Render::SkinnedMeshOverrideRequestBus::Events::DisableSkinning,
+                        aznumeric_cast<uint32_t>(m_meshNodeInfo.m_lodLevel), aznumeric_cast<uint32_t>(subMeshInfo.m_primitiveIndex));
+            }
+        }
     }
 } // namespace NvCloth

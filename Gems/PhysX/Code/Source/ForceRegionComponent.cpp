@@ -9,6 +9,8 @@
 #include <Source/ForceRegionForces.h>
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -115,7 +117,7 @@ namespace PhysX
 
     void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto entityId : m_entities)
         {

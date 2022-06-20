@@ -8,7 +8,6 @@
 #ifndef AZSTD_PARALLEL_SPIN_MUTEX_H
 #define AZSTD_PARALLEL_SPIN_MUTEX_H 1
 
-#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
 
@@ -32,8 +31,6 @@ namespace AZStd
             bool expected = false;
             if (!m_flag.compare_exchange_weak(expected, true, memory_order_acq_rel, memory_order_acquire))
             {
-                AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::AzCore);
-
                 exponential_backoff backoff;
                 for (;; )
                 {

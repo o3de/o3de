@@ -40,6 +40,12 @@ namespace AZ
             static unsigned int Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount = 0, void* nativeThread = 0);
         };
 
+        class StackConverter
+        {
+        public:
+            static unsigned int FromNative(StackFrame* frames, unsigned int maxNumOfFrames, void* nativeContext);
+        };
+
         class SymbolStorage
         {
         public:

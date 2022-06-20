@@ -23,8 +23,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
@@ -206,12 +204,12 @@ namespace EMStudio
         // If found motion entry, add select and play motion command strings to command group.
         EMotionFX::Motion* motion = motionEntry->GetMotion();
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
-        defaultPlayBackInfo->mBlendInTime = 0.0f;
-        defaultPlayBackInfo->mBlendOutTime = 0.0f;
+        defaultPlayBackInfo->m_blendInTime = 0.0f;
+        defaultPlayBackInfo->m_blendOutTime = 0.0f;
         commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
 
-        const AZ::u32 motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByName(motion->GetName());
-        commandString = AZStd::string::format("Select -motionIndex %d", motionIndex);
+        const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByName(motion->GetName());
+        commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
         commandGroup.AddCommandString(commandString);
 
         commandString = AZStd::string::format("PlayMotion -filename \"%s\" %s", motion->GetFileName(), commandParameters.c_str());
@@ -224,11 +222,11 @@ namespace EMStudio
         }
 
         // Update motion list window to select motion.
-        EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        MotionWindowPlugin* motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-        if (motionWindowPlugin)
+        EMStudioPlugin* motionSetBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
+        MotionSetsWindowPlugin* motionSetWindowPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
+        if (motionSetWindowPlugin)
         {
-            motionWindowPlugin->ReInit();
+            motionSetWindowPlugin->ReInit();
         }
 
         // Update time view plugin with new motion related data.
@@ -412,11 +410,9 @@ namespace EMStudio
         if (!nodesByAnimGraph.empty())
         {
             MCore::CommandGroup commandGroup("Delete anim graph nodes");
-            AZ::u32 numNodes = 0;
 
             for (const AZStd::pair<EMotionFX::AnimGraph*, AZStd::vector<EMotionFX::AnimGraphNode*>>& animGraphAndNodes : nodesByAnimGraph)
             {
-                numNodes += static_cast<AZ::u32>(animGraphAndNodes.second.size());
                 CommandSystem::DeleteNodes(&commandGroup, animGraphAndNodes.first, animGraphAndNodes.second, true);
             }
 
@@ -472,8 +468,8 @@ namespace EMStudio
             const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
 
             // In case no motion set was selected yet, use the first available. The activate graph callback will update the UI.
-            const AZ::u32 numMotionSets = motionManager.GetNumMotionSets();
-            for (AZ::u32 i = 0; i < numMotionSets; ++i)
+            const size_t numMotionSets = motionManager.GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* currentMotionSet = motionManager.GetMotionSet(i);
                 if (!currentMotionSet->GetIsOwnedByRuntime())
@@ -494,7 +490,7 @@ namespace EMStudio
     void AnimGraphActionManager::ActivateGraphForSelectedActors(EMotionFX::AnimGraph* animGraph, EMotionFX::MotionSet* motionSet)
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         if (numActorInstances == 0)
         {
@@ -507,7 +503,7 @@ namespace EMStudio
         commandGroup.AddCommandString("RecorderClear -force true");
 
         // Activate the anim graph each selected actor instance.
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
             if (actorInstance->GetIsOwnedByRuntime())

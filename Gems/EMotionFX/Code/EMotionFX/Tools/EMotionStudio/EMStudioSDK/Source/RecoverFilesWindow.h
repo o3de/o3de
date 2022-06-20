@@ -35,7 +35,7 @@ namespace EMStudio
     private:
         AZStd::string GetOriginalFilenameFromRecoverFile(const char* recoverFilename);
 
-        QTableWidget*                   mTableWidget;
-        AZStd::vector<AZStd::string>    mFiles;
+        QTableWidget*                   m_tableWidget;
+        AZStd::vector<AZStd::string>    m_files;
     };
 } // namespace EMStudio

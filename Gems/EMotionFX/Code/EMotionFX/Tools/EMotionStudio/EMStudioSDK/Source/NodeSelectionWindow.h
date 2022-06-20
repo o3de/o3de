@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_NODESELECTIONWINDOW_H
-#define __EMSTUDIO_NODESELECTIONWINDOW_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -28,9 +27,9 @@ namespace EMStudio
      * 2. Use the itemSelectionChanged() signal of the GetNodeHierarchyWidget()->GetTreeWidget() to detect when the user adjusts the selection in the node hierarchy widget.
      * 3. Use the OnSelectionDone() in the GetNodeHierarchyWidget() to detect when the user finished selecting and pressed the OK button.
      * Example:
-     * connect( mNodeSelectionWindow,                                               SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
-     * connect( mNodeSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),    SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
-     * connect( mNodeSelectionWindow->GetNodeHierarchyWidget(),                     SIGNAL(OnSelectionDone(MCore::Array<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(MCore::Array<SelectionItem>)) );
+     * connect( m_nodeSelectionWindow,                                               SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
+     * connect( m_nodeSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),    SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
+     * connect( m_nodeSelectionWindow->GetNodeHierarchyWidget(),                     SIGNAL(OnSelectionDone(AZStd::vector<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(AZStd::vector<SelectionItem>)) );
     */
     class EMSTUDIO_API NodeSelectionWindow
         : public QDialog
@@ -41,21 +40,19 @@ namespace EMStudio
     public:
         NodeSelectionWindow(QWidget* parent, bool useSingleSelection);
 
-        MCORE_INLINE NodeHierarchyWidget* GetNodeHierarchyWidget()                                                                { return mHierarchyWidget; }
-        void Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList = nullptr)                                { mHierarchyWidget->Update(actorInstanceID, selectionList); }
-        void Update(const MCore::Array<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr)          { mHierarchyWidget->Update(actorInstanceIDs, selectionList); }
+        MCORE_INLINE NodeHierarchyWidget* GetNodeHierarchyWidget()                                                                { return m_hierarchyWidget; }
+        void Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList = nullptr)                                { m_hierarchyWidget->Update(actorInstanceID, selectionList); }
+        void Update(const AZStd::vector<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr)          { m_hierarchyWidget->Update(actorInstanceIDs, selectionList); }
 
     public slots:
         void OnAccept();
-        void OnDoubleClicked(MCore::Array<SelectionItem> selection);
+        void OnDoubleClicked(AZStd::vector<SelectionItem> selection);
 
     private:
-        NodeHierarchyWidget*                mHierarchyWidget;
-        QPushButton*                        mOKButton;
-        QPushButton*                        mCancelButton;
-        bool                                mUseSingleSelection;
-        bool                                mAccepted;
+        NodeHierarchyWidget*                m_hierarchyWidget;
+        QPushButton*                        m_okButton;
+        QPushButton*                        m_cancelButton;
+        bool                                m_useSingleSelection;
+        bool                                m_accepted;
     };
 } // namespace EMStudio
-
-#endif

@@ -6,12 +6,12 @@
  *
  */
 
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 
 #include "MathConversion.h"
@@ -24,7 +24,6 @@
 #include "GotoTrack.h"
 #include "CaptureTrack.h"
 #include "ISystem.h"
-#include "ITimer.h"
 #include "AnimAZEntityNode.h"
 #include "AnimComponentNode.h"
 #include "Movie.h"
@@ -36,13 +35,10 @@
 
 #include <IAudioSystem.h>
 #include <IConsole.h>
-#include <IViewSystem.h>
 
 #define s_nodeParamsInitialized s_nodeParamsInitializedScene
 #define s_nodeParams s_nodeParamsSene
 #define AddSupportedParam AddSupportedParamScene
-
-float const kDefaultCameraFOV = 60.0f;
 
 namespace {
     bool s_nodeParamsInitialized = false;
@@ -91,13 +87,13 @@ namespace {
             AZ::Quaternion quat = LYQuaternionToAZQuaternion(localRotation);
             AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, quat);
         }
-        float GetFoV() const
+        float GetFoV() const override
         {
             float retFoV = DEFAULT_FOV;
             Camera::CameraRequestBus::EventResult(retFoV, m_cameraEntityId, &Camera::CameraComponentRequests::GetFovDegrees);
             return retFoV;
         }
-        float GetNearZ() const
+        float GetNearZ() const override
         {
             float retNearZ = DEFAULT_NEAR;
             Camera::CameraRequestBus::EventResult(retNearZ, m_cameraEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);
@@ -201,9 +197,8 @@ CAnimSceneNode::CAnimSceneNode(const int id)
     m_lastCaptureKey = -1;
     m_bLastCapturingEnded = true;
     m_captureFrameCount = 0;
-    m_cvar_t_FixedStep = NULL;
-    m_pCamNodeOnHoldForInterp = 0;
-    m_CurrentSelectTrack = 0;
+    m_pCamNodeOnHoldForInterp = nullptr;
+    m_CurrentSelectTrack = nullptr;
     m_CurrentSelectTrackKeyNumber = 0;
     m_lastPrecachePoint = -1.f;
     SetName("Scene");
@@ -254,13 +249,13 @@ void CAnimSceneNode::CreateDefaultTracks()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CAnimSceneNode::GetParamCount() const
 {
-    return s_nodeParams.size();
+    return static_cast<unsigned int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimSceneNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }
@@ -306,7 +301,6 @@ void CAnimSceneNode::Activate(bool bActivate)
             pSequenceTrack->GetKey(currKey, &key);
 
             IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-            
             if (pSequence)
             {
                 if (bActivate)
@@ -331,11 +325,6 @@ void CAnimSceneNode::Activate(bool bActivate)
             }
         }
     }
-
-    if (m_cvar_t_FixedStep == NULL)
-    {
-        m_cvar_t_FixedStep = gEnv->pConsole->GetCVar("t_FixedStep");
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -346,12 +335,12 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
         return;
     }
 
-    CSelectTrack* cameraTrack = NULL;
-    CEventTrack* pEventTrack = NULL;
-    CSequenceTrack* pSequenceTrack = NULL;
-    CConsoleTrack* pConsoleTrack = NULL;
-    CGotoTrack* pGotoTrack = NULL;
-    CCaptureTrack* pCaptureTrack = NULL;
+    CSelectTrack* cameraTrack = nullptr;
+    CEventTrack* pEventTrack = nullptr;
+    CSequenceTrack* pSequenceTrack = nullptr;
+    CConsoleTrack* pConsoleTrack = nullptr;
+    CGotoTrack* pGotoTrack = nullptr;
+    CCaptureTrack* pCaptureTrack = nullptr;
     /*
     bool bTimeJump = false;
     if (ec.time < m_time)
@@ -423,15 +412,16 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
             {
                 timeScale = .0f;
             }
-            
-            // if set, disable fixed time step cvar so timewarping will have an affect. We never set it back though - that is
-            // likely a bug!
-            if (m_cvar_t_FixedStep && m_cvar_t_FixedStep->GetFVal() != .0f)
+
+            if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
             {
-                m_cvar_t_FixedStep->Set(.0f);
+                m_simulationTickOverrideBackup = timeSystem->GetSimulationTickDeltaOverride();
+                // if set, disable fixed time step cvar so timewarping will have an affect.
+                timeSystem->SetSimulationTickDeltaOverride(AZ::Time::ZeroTimeMs);
+
+                m_timeScaleBackup = timeSystem->GetSimulationTickScale();
+                timeSystem->SetSimulationTickScale(timeScale);
             }
-            gEnv->pTimer->SetTimeScale(timeScale, ITimer::eTSC_Trackview);
-            
         }
         break;
         case AnimParamType::FixedTimeStep:
@@ -442,9 +432,12 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
             {
                 timeStep = 0;
             }
-            if (m_cvar_t_FixedStep)
+
+            if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
             {
-                m_cvar_t_FixedStep->Set(timeStep);
+                m_simulationTickOverrideBackup = timeSystem->GetSimulationTickDeltaOverride();
+                // if set, disable fixed time step cvar so timewarping will have an affect.
+                timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(timeStep));
             }
         }
         break;
@@ -452,11 +445,11 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
     }
 
     // Animate Camera Track (aka Select Track)
-    
+
     // Check if a camera override is set by CVar
     const char* overrideCamName = gEnv->pMovieSystem->GetOverrideCamName();
     AZ::EntityId overrideCamId;
-    if (overrideCamName != 0 && strlen(overrideCamName) > 0)
+    if (overrideCamName != nullptr && strlen(overrideCamName) > 0)
     {
         // overriding with a Camera Component entity is done by entityId (as names are not unique among AZ::Entities) - try to convert string to u64 to see if it's an id
         AZ::u64 u64Id = strtoull(overrideCamName, nullptr, /*base (radix)*/ 10);
@@ -624,17 +617,18 @@ void CAnimSceneNode::OnReset()
     m_bLastCapturingEnded = true;
     m_captureFrameCount = 0;
 
-    if (GetTrackForParameter(AnimParamType::TimeWarp))
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
-        gEnv->pTimer->SetTimeScale(1.0f, ITimer::eTSC_Trackview);
-        if (m_cvar_t_FixedStep)
+        if (GetTrackForParameter(AnimParamType::TimeWarp))
         {
-            m_cvar_t_FixedStep->Set(0);
+            timeSystem->SetSimulationTickScale(m_timeScaleBackup);
+            timeSystem->SetSimulationTickDeltaOverride(m_simulationTickOverrideBackup);
         }
-    }
-    if (GetTrackForParameter(AnimParamType::FixedTimeStep) && m_cvar_t_FixedStep)
-    {
-        m_cvar_t_FixedStep->Set(0);
+
+        if (GetTrackForParameter(AnimParamType::FixedTimeStep))
+        {
+            timeSystem->SetSimulationTickDeltaOverride(m_simulationTickOverrideBackup);
+        }
     }
 }
 
@@ -661,7 +655,7 @@ void CAnimSceneNode::OnStop()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ResetSounds()
 {
-    for (int i = m_SoundInfo.size(); --i >= 0; )
+    for (int i = static_cast<int>(m_SoundInfo.size()); --i >= 0; )
     {
         m_SoundInfo[i].Reset();
     }
@@ -673,13 +667,14 @@ void CAnimSceneNode::ReleaseSounds()
     // Stop all sounds on the global audio object,
     // but we want to have it filter based on the owner (this)
     // so we don't stop sounds that didn't originate with track view.
-    Audio::SAudioRequest request;
-    request.nFlags = Audio::eARF_PRIORITY_HIGH;
-    request.pOwner = this;
 
-    Audio::SAudioObjectRequestData<Audio::eAORT_STOP_ALL_TRIGGERS> requestData(/*filterByOwner = */ true);
-    request.pData = &requestData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        Audio::ObjectRequest::StopAllTriggers stopAll;
+        stopAll.m_filterByOwner = true;
+        stopAll.m_owner = this;
+        audioSystem->PushRequest(AZStd::move(stopAll));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -697,7 +692,6 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
         return;
     }
 
-    static const float EPSILON_TIME = 0.01f;            // consider times within EPSILON_TIME of beginning of blend time to be at the beginning of blend time
     float interpolatedFoV;
 
     ISceneCamera* secondCamera = static_cast<ISceneCamera*>(new CComponentEntitySceneCamera(secondKey.cameraAzEntityId));
@@ -715,11 +709,11 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
         InterpolatingCameraStartState camData;
 
         camData.m_interpolatedCamFirstPos = firstCamera->GetPosition();
-        camData.m_interpolatedCamFirstRot = firstCamera->GetRotation();     
+        camData.m_interpolatedCamFirstRot = firstCamera->GetRotation();
 
         // stash FoV from the first camera entity
         camData.m_FoV = firstCamera->GetFoV();
-        
+
         // stash nearZ
         camData.m_nearZ = firstCamera->GetNearZ();
 
@@ -730,7 +724,7 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
     InterpolatingCameraStartState stashedInterpCamData = retStashedInterpCamData->second;
 
     // interpolate FOV
-    float secondCameraFOV = secondCamera->GetFoV();   
+    float secondCameraFOV = secondCamera->GetFoV();
 
     interpolatedFoV = stashedInterpCamData.m_FoV + (secondCameraFOV - stashedInterpCamData.m_FoV) * t;
     // store the interpolated FoV to be returned, in radians
@@ -756,7 +750,7 @@ void CAnimSceneNode::InterpolateCameras(SCameraParams& retInterpolatedCameraPara
     // interpolate Rotation
     Quat firstCameraRotation = stashedInterpCamData.m_interpolatedCamFirstRot;
     Quat secondCameraRotation = secondCamera->GetRotation();
-    
+
     Quat interpolatedRotation;
     interpolatedRotation.SetSlerp(firstCameraRotation, secondCameraRotation, t);
 
@@ -791,7 +785,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     if (!bInterpolateCamera && m_pCamNodeOnHoldForInterp)
     {
         m_pCamNodeOnHoldForInterp->SetSkipInterpolatedCameraNode(false);
-        m_pCamNodeOnHoldForInterp = 0;
+        m_pCamNodeOnHoldForInterp = nullptr;
     }
 
     SCameraParams cameraParams;
@@ -799,25 +793,12 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     cameraParams.fov = 0;
     cameraParams.justActivated = true;
 
-    // Init the defaults with the current view settings.
-    // With component entities, the fov and near plane may be animated on an 
+    // With component entities, the fov and near plane may be animated on an
     // entity with a Camera component. Don't stomp the values if this update happens
     // after those properties are animated.
-    AZ_Assert(gEnv && gEnv->pSystem, "Expected valid gEnv->pSystem");
-    IViewSystem* viewSystem = gEnv->pSystem->GetIViewSystem();
-    if (viewSystem)
-    {
-        IView* view = viewSystem->GetActiveView();
-        if (view)
-        {
-            SViewParams params = *view->GetCurrentParams();
-            cameraParams.fov = params.fov;
-            cameraParams.nearZ = params.nearplane;
-        }
-    }
 
     ///////////////////////////////////////////////////////////////////
-    // find the Scene Camera (Camera Component Camera)  
+    // find the Scene Camera (Camera Component Camera)
     ISceneCamera* firstSceneCamera = nullptr;
 
     if (key.cameraAzEntityId.IsValid())
@@ -830,13 +811,13 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     if (firstSceneCamera)
     {
         cameraParams.fov = DEG2RAD(firstSceneCamera->GetFoV());
-    }   
+    }
 
     if (bInterpolateCamera && firstSceneCamera)
     {
         InterpolateCameras(cameraParams, firstSceneCamera, key, nextKey, ec.time);
     }
-    
+
     // Broadcast camera changes
     const SCameraParams& lastCameraParams = gEnv->pMovieSystem->GetCameraParams();
     if (lastCameraParams.cameraEntityId != cameraParams.cameraEntityId)
@@ -852,7 +833,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
                 cameraParams.cameraEntityId, &Camera::CameraRequestBus::Events::MakeActiveView);
         }
     }
-    
+
     gEnv->pMovieSystem->SetCameraParams(cameraParams);
 
     // This detects when we've switched from one Camera to another on the Camera Track
@@ -873,7 +854,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
             {
                 prevSceneCamera = static_cast<ISceneCamera*>(new CComponentEntitySceneCamera(prevKey.cameraAzEntityId));
             }
-            
+
             if (prevSceneCamera)
             {
                 prevSceneCamera->SetPosition(stashedData.m_interpolatedCamFirstPos);
@@ -881,9 +862,9 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
             }
 
             IAnimNode* prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), this);
-            if (prevCameraAnimNode == NULL)
+            if (prevCameraAnimNode == nullptr)
             {
-                prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), NULL);
+                prevCameraAnimNode = m_pSequence->FindNodeByName(prevKey.szSelection.c_str(), nullptr);
             }
 
             if (prevCameraAnimNode && prevCameraAnimNode->GetType() == AnimNodeType::Camera && prevCameraAnimNode->GetTrackForParameter(AnimParamType::FOV))
@@ -916,8 +897,8 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
 void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext& ec)
 {
     char funcName[1024];
-    cry_strcpy(funcName, "Event_");
-    cry_strcat(funcName, key.event.c_str());
+    azstrcpy(funcName, AZ_ARRAY_SIZE(funcName), "Event_");
+    azstrcat(funcName, AZ_ARRAY_SIZE(funcName), key.event.c_str());
     gEnv->pMovieSystem->SendGlobalEvent(funcName);
 }
 
@@ -925,24 +906,26 @@ void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext
 void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bPlay /* = true */)
 {
     Audio::TAudioControlID nAudioTriggerID = INVALID_AUDIO_CONTROL_ID;
-    Audio::AudioSystemRequestBus::BroadcastResult(nAudioTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, sTriggerName);
-    if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
     {
-        Audio::SAudioRequest oRequest;
-        oRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        oRequest.pOwner = this;
+        nAudioTriggerID = audioSystem->GetAudioTriggerID(sTriggerName);
 
-        if (bPlay)
+        if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
-            Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID, 0.0f);
-            oRequest.pData = &oRequestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oRequest);
-        }
-        else
-        {
-            Audio::SAudioObjectRequestData<Audio::eAORT_STOP_TRIGGER> oRequestData(nAudioTriggerID);
-            oRequest.pData = &oRequestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oRequest);
+            if (bPlay)
+            {
+                Audio::ObjectRequest::ExecuteTrigger execTrigger;
+                execTrigger.m_triggerId = nAudioTriggerID;
+                execTrigger.m_owner = this;
+                audioSystem->PushRequest(AZStd::move(execTrigger));
+            }
+            else
+            {
+                Audio::ObjectRequest::StopTrigger stopTrigger;
+                stopTrigger.m_triggerId = nAudioTriggerID;
+                stopTrigger.m_owner = this;
+                audioSystem->PushRequest(AZStd::move(stopTrigger));
+            }
         }
     }
 }
@@ -950,35 +933,33 @@ void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bP
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ApplySequenceKey(IAnimTrack* pTrack, [[maybe_unused]] int nPrevKey, int nCurrKey, ISequenceKey& key, SAnimContext& ec)
 {
-    if (nCurrKey >= 0)
+    if (nCurrKey < 0)
     {
-        IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-        if (pSequence)
-        {
-            float startTime = -FLT_MAX;
-            float endTime = -FLT_MAX;
+        return;
+    }
+    IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
+    if (!pSequence)
+    {
+        return;
+    }
 
-            if (key.bOverrideTimes)
-            {
-                key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
-                startTime = key.fStartTime;
-                endTime = key.fEndTime;
-            }
-            else
-            {
-                key.fDuration = pSequence->GetTimeRange().Length();
-            }
+    if (key.bOverrideTimes)
+    {
+        key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
+    }
+    else
+    {
+        key.fDuration = pSequence->GetTimeRange().Length();
+    }
 
-            pTrack->SetKey(nCurrKey, &key);
+    pTrack->SetKey(nCurrKey, &key);
 
-            SAnimContext newAnimContext = ec;
-            newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
+    SAnimContext newAnimContext = ec;
+    newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
 
-            if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
-            {
-                pSequence->Animate(newAnimContext);
-            }
-        }
+    if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
+    {
+        pSequence->Animate(newAnimContext);
     }
 }
 
@@ -1003,7 +984,7 @@ void CAnimSceneNode::ApplyGotoKey(CGotoTrack*   poGotoTrack, SAnimContext& ec)
         {
             if (stDiscreteFloadKey.m_fValue >= 0)
             {
-                string fullname = m_pSequence->GetName();
+                AZStd::string fullname = m_pSequence->GetName();
                 GetMovieSystem()->GoToFrame(fullname.c_str(), stDiscreteFloadKey.m_fValue);
             }
         }
@@ -1127,7 +1108,7 @@ void CAnimSceneNode::InitializeTrackDefaultValue(IAnimTrack* pTrack, const CAnim
             retSequence = gEnv->pMovieSystem->FindLegacySequenceByName(sequenceKey.szSelection.c_str());
         }
     }
-    
+
     return retSequence;
 }
 

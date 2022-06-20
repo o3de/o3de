@@ -8,6 +8,7 @@
 
 #include <AzQtComponents/Components/FancyDockingGhostWidget.h>
 
+#include <QApplication>
 #include <QDebug>
 #include <QCloseEvent>
 #include <QScreen>
@@ -47,7 +48,7 @@ namespace AzQtComponents
 
     void FancyDockingGhostWidget::setPixmap(const QPixmap& pixmap, const QRect& targetRect, QScreen* screen)
     {
-        const bool needsRepaint = m_pixmap.cacheKey() != pixmap.cacheKey() || m_clipToWidgets;
+        bool needsRepaint = m_pixmap.cacheKey() != pixmap.cacheKey() || m_clipToWidgets;
         m_pixmap = pixmap;
 
         if (pixmap.isNull() || targetRect.isNull() || !screen)
@@ -76,11 +77,48 @@ namespace AzQtComponents
             window->setScreen(screen);
         }
 
-        setGeometry(targetRect);
+        QPoint midPoint = targetRect.topLeft() + QPoint(targetRect.width() / 2, targetRect.height() / 2);
+        QScreen* pointScreen = QApplication::screenAt(midPoint);
+        QRect rect(targetRect);
+
+        // In environments with multiple screens the screen coordinate system may have gaps, especially when different scaling settings
+        // are involved. When that happens, if a widget is moved into the gap it will resize and translate with undefined behavior.
+        // To prevent this, whenever the widget would end up outside screen boundaries, we resize the widget to be twice its
+        // original size so that the center of the widget is back inside the screen boundaries, and set the ghost widget
+        // to paint the widget pixmap at half the previous size to make the process seamless.
+        // This makes the dragging a lot smoother in most situations.
+        PaintMode paintMode = PaintMode::FULL;
+
+        if (!pointScreen || pointScreen != screen)
+        {
+            if (midPoint.x() >= QCursor::pos().x())
+            {
+                rect.setLeft(rect.left() - rect.width());
+                rect.setTop(rect.top() - rect.height());
+                paintMode = PaintMode::BOTTOMRIGHT;
+            }
+            else
+            {
+                rect.setRight(rect.right() + rect.width());
+                rect.setTop(rect.top() - rect.height());
+                paintMode = PaintMode::BOTTOMLEFT;
+            }
+        }
+
+        if (m_paintMode != paintMode)
+        {
+            needsRepaint = true;
+        }
+
+        setGeometry(rect);
+        m_paintMode = paintMode;
+
         setPixmapVisible(true);
         if (needsRepaint)
         {
-            update();
+            // We use repaint instead of update since the latter has a delay of 1 frame,
+            // which would cause the ghost widget to flicker when changing paint mode.
+            repaint();
         }
     }
 
@@ -135,7 +173,27 @@ namespace AzQtComponents
                 yOffset = widgetSize.height() - aspectRatioHeight;
             }
 
-            painter.drawPixmap(QRect(0, yOffset, widgetSize.width(), aspectRatioHeight), m_pixmap);
+            switch (m_paintMode)
+            {
+                case PaintMode::FULL:
+                    {
+                        painter.drawPixmap(QRect(0, yOffset, widgetSize.width(), aspectRatioHeight), m_pixmap);
+                    }
+                break;
+
+                case PaintMode::BOTTOMLEFT:
+                    {
+                        painter.drawPixmap(QRect(0, (widgetSize.height() + yOffset) / 2, widgetSize.width() / 2, aspectRatioHeight / 2), m_pixmap);
+                    }
+                break;
+
+                case PaintMode::BOTTOMRIGHT:
+                    {
+                        painter.drawPixmap(QRect(widgetSize.width() / 2, (widgetSize.height() + yOffset) / 2, widgetSize.width() / 2, aspectRatioHeight / 2), m_pixmap);
+                    }
+                break;
+            }
+
             if (m_clipToWidgets)
             {
                 painter.restore();

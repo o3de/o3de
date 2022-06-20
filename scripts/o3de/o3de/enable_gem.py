@@ -10,16 +10,16 @@ Contains command to add a gem to a project's enabled_gem.cmake file
 """
 
 import argparse
-import json
+
 import logging
 import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, validation
+from o3de import cmake, manifest, project_properties, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.enable_gem')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def enable_gem_in_project(gem_name: str = None,
@@ -33,7 +33,7 @@ def enable_gem_in_project(gem_name: str = None,
     :param gem_path: path to the gem to add
     :param project_name: name of to the project to add the gem to
     :param project_path: path to the project to add the gem to
-    :param enabled_gem_file_file: if this dependency goes/is in a specific file
+    :param enabled_gem_file: if this dependency goes/is in a specific file
     :return: 0 for success or non 0 failure code
     """
     # we need either a project name or path
@@ -80,15 +80,12 @@ def enable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
-
-    ret_val = 0
     if enabled_gem_file:
         # make sure this is a project has an enabled gems file
         if not enabled_gem_file.is_file():
             logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
             return 1
-        # add the gem
-        ret_val = cmake.add_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
+        project_enabled_gem_file = enabled_gem_file
 
     else:
         # Find the path to enabled gem file.
@@ -96,21 +93,83 @@ def enable_gem_in_project(gem_name: str = None,
         project_enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
         if not project_enabled_gem_file.is_file():
             project_enabled_gem_file.touch()
-        # add the gem
-        ret_val = cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
+
+    # Before adding the gem_dependency check if the project is registered in either the project or engine manifest
+    buildable_gems = manifest.get_engine_gems()
+    buildable_gems.extend(manifest.get_project_gems(project_path))
+    # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
+    buildable_gems = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), buildable_gems)))
+
+    ret_val = 0
+    # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
+    if gem_path not in buildable_gems:
+        ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_json_data['gem_name'])
+
+    # add the gem if it is registered in either the project.json or engine.json
+    ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
+
+    return ret_val
+
+
+def add_explicit_gem_activation_for_all_paths(gem_root_folders: list,
+                                 project_name: str = None,
+                                 project_path: pathlib.Path = None,
+                                 enabled_gem_file: pathlib.Path = None) -> int:
+    """
+    walks each gem root folder directory structure and adds explicit
+    activation of the gems to the project
+    :param gem_root_folders: name of the gem to add
+    :param project_name: name of to the project to add the gem to
+    :param project_path: path to the project to add the gem to
+    :param enabled_gem_file: if this dependency goes/is in a specific file
+    :return: 0 for success or non 0 failure code
+    """
+    if not gem_root_folders:
+        logger.error('gem_root_folders list cannot be empty')
+        return 1
+
+    def stop_on_template_folders(directories: list, filenames: list) -> bool:
+        return 'template.json' in filenames
+
+    gem_dirs_set = set()
+    ret_val = 0
+    for gem_root_folder in gem_root_folders:
+        gem_root_folder = pathlib.Path(gem_root_folder).resolve()
+        if not gem_root_folder.is_dir():
+            logger.error(f'gem root folder of {gem_root_folder} is not a directory')
+            ret_val = 1
+        for root, dirs, files in os.walk(gem_root_folder):
+            # Skip activating gems within template directories
+            if stop_on_template_folders(dirs, files):
+                dirs[:] = []
+            elif 'gem.json' in files:
+                gem_dirs_set.add(pathlib.Path(root))
+
+    for gem_dir in sorted(gem_dirs_set):
+        # Run the command to add explicit activation even if previous calls failed
+        ret_val = enable_gem_in_project(gem_path=gem_dir,
+                                        project_name=project_name,
+                                        project_path=project_path,
+                                        enabled_gem_file=enabled_gem_file) or ret_val
 
     return ret_val
 
 
 def _run_enable_gem_in_project(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
-    return enable_gem_in_project(args.gem_name,
-                                 args.gem_path,
-                                 args.project_name,
-                                 args.project_path,
-                                 args.enabled_gem_file)
+    if args.all_gem_paths:
+        return add_explicit_gem_activation_for_all_paths(
+            args.all_gem_paths,
+            args.project_name,
+            args.project_path,
+            args.enabled_gem_file
+        )
+    else:
+        return enable_gem_in_project(args.gem_name,
+                                     args.gem_path,
+                                     args.project_name,
+                                     args.project_path,
+                                     args.enabled_gem_file
+                                     )
 
 
 def add_parser_args(parser):
@@ -120,6 +179,10 @@ def add_parser_args(parser):
     Ex. Directly run from this file alone with: python enable_gem.py --project-path "D:/TestProject" --gem-path "D:/TestGem"
     :param parser: the caller passes an argparse parser like instance to this method
     """
+
+    # Sub-commands should declare their own verbosity flag, if desired
+    utils.add_verbosity_arg(parser)
+
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                        help='The path to the project.')
@@ -130,12 +193,11 @@ def add_parser_args(parser):
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
+    group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
+                       help='Explicitly activates all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
                                    help='The cmake enabled_gem file in which the gem names are specified.'
                                         'If not specified it will assume enabled_gems.cmake')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                                   help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_enable_gem_in_project)
 
@@ -159,8 +221,6 @@ def main():
     # parse the command line args
     the_parser = argparse.ArgumentParser()
 
-    # add subparsers
-
     # add args to the parser
     add_parser_args(the_parser)
 
@@ -169,6 +229,7 @@ def main():
 
     # run
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    logger.info('Success!' if ret == 0 else 'Completed with issues: result {}'.format(ret))
 
     # return
     sys.exit(ret)

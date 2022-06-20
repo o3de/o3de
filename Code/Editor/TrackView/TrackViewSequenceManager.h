@@ -13,13 +13,11 @@
 
 
 #include "TrackViewSequence.h"
-#include "IDataBaseManager.h"
 
 #include <AzCore/Component/EntityBus.h>
 
 class CTrackViewSequenceManager
     : public IEditorNotifyListener
-    , public IDataBaseManagerListener
     , public ITrackViewSequenceManager
     , public AZ::EntitySystemBus::Handler
 {
@@ -27,9 +25,9 @@ public:
     CTrackViewSequenceManager();
     ~CTrackViewSequenceManager();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
-    unsigned int GetCount() const { return m_sequences.size(); }
+    unsigned int GetCount() const { return static_cast<int>(m_sequences.size()); }
 
     void CreateSequence(QString name, SequenceType sequenceType);
     void DeleteSequence(CTrackViewSequence* pSequence);
@@ -64,8 +62,6 @@ private:
 
     void OnSequenceAdded(CTrackViewSequence* pSequence);
     void OnSequenceRemoved(CTrackViewSequence* pSequence);
-
-    virtual void OnDataBaseItemEvent(IDataBaseItem* pItem, EDataBaseItemEvent event);
 
     // AZ::EntitySystemBus
     void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;

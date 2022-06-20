@@ -40,9 +40,11 @@
                         }
                     ]
                 },
+
                 {
-                    "Name": "HorizontalGaussianFilter",
-                    "TemplateName": "FilterDepthHorizontalTemplate",
+                    "Name": "KawaseBlur0",
+                    "TemplateName": "KawaseShadowBlurTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "Input",
@@ -54,26 +56,27 @@
                     ]
                 },
                 {
-                    "Name": "VerticalGaussianFiter",
-                    "TemplateName": "FilterDepthVerticalTemplate",
+                    "Name": "KawaseBlur1",
+                    "TemplateName": "KawaseShadowBlurTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "HorizontalGaussianFilter",
+                                "Pass": "KawaseBlur0",
                                 "Attachment": "Output"
                             }
                         }
                     ]
-                }
+                }     
             ],
             "Connections": [
                 {
                     "LocalSlot": "EsmShadowmaps",
                     "AttachmentRef": {
-                        "Pass": "VerticalGaussianFiter",
+                        "Pass": "KawaseBlur1",
                         "Attachment": "Output"
-                    }
+                    }    
                 }
             ]
         }

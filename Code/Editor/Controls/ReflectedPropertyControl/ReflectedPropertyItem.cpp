@@ -82,7 +82,7 @@ public:
     }
 
     //helps implement ReflectedPropertyControl::ReplaceVarBlock
-    void ReplaceVarBlock(CVarBlock *varBlock)
+    void ReplaceVarBlock(CVarBlock *varBlock) override
     {
         m_containerVar->Clear();
         UpdateCommon(m_item->GetVariable(), varBlock);
@@ -172,8 +172,8 @@ ReflectedPropertyItem::ReflectedPropertyItem(ReflectedPropertyControl *control, 
     if (parent)
         parent->AddChild(this);
 
-    m_onSetCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableChange, this, AZStd::placeholders::_1);
-    m_onSetEnumCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableEnumChange, this, AZStd::placeholders::_1);
+    m_onSetCallback = [this](IVariable* var) { OnVariableChange(var); };
+    m_onSetEnumCallback = [this](IVariable* var) { OnVariableEnumChange(var); };
 }
 
 ReflectedPropertyItem::~ReflectedPropertyItem()
@@ -207,7 +207,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         ReleaseVariable();
 
     m_pVariable = pInputVar;
-    assert(m_pVariable != NULL);
+    assert(m_pVariable != nullptr);
 
     m_pVariable->AddOnSetCallback(&m_onSetCallback);
     m_pVariable->AddOnSetEnumCallback(&m_onSetEnumCallback);
@@ -229,43 +229,24 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         break;
     case ePropertyFloat:
     case ePropertyAngle:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal float editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
+        m_reflectedVarAdapter = new ReflectedVarFloatAdapter;
         break;
     case ePropertyInt:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal int editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarIntAdapter;
+        m_reflectedVarAdapter = new ReflectedVarIntAdapter;
         break;
     case ePropertyBool:
         m_reflectedVarAdapter = new ReflectedVarBoolAdapter;
         break;
     case ePropertyString:
-        //if the Description has a valid global enumDB lookup, edit as an enum, otherwise use normal string editor
-        if (desc.m_pEnumDBItem)
-            m_reflectedVarAdapter = new ReflectedVarDBEnumAdapter;
-        else
-            m_reflectedVarAdapter = new ReflectedVarStringAdapter;
+        m_reflectedVarAdapter = new ReflectedVarStringAdapter;
         break;
     case ePropertySelection:
         m_reflectedVarAdapter = new ReflectedVarEnumAdapter;
-        break;
-    case ePropertyAnimation:
-        m_reflectedVarAdapter = new ReflectedVarAnimationAdapter;
-        break;
-    case ePropertyColor:
-        m_reflectedVarAdapter = new ReflectedVarColorAdapter;
         break;
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;
         break;
     case ePropertyEquip:
-    case ePropertyReverbPreset:
     case ePropertyGameToken:
     case ePropertyMissionObj:
     case ePropertySequence:
@@ -276,15 +257,12 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         m_reflectedVarAdapter = new ReflectedVarGenericPropertyAdapter(desc.m_type);
         break;
     case ePropertyTexture:
-    case ePropertyModel:
-    case ePropertyGeomCache:
     case ePropertyAudioTrigger:
     case ePropertyAudioSwitch:
     case ePropertyAudioSwitchState:
     case ePropertyAudioRTPC:
     case ePropertyAudioEnvironment:
     case ePropertyAudioPreloadRequest:
-    case ePropertyFile:
         m_reflectedVarAdapter = new ReflectedVarResourceAdapter;
         break;
     case ePropertyFloatCurve:
@@ -332,7 +310,7 @@ void ReflectedPropertyItem::RemoveAllChildren()
 {
     for (int i = 0; i < m_childs.size(); i++)
     {
-        m_childs[i]->m_parent = 0;
+        m_childs[i]->m_parent = nullptr;
     }
 
     m_childs.clear();
@@ -473,7 +451,7 @@ void ReflectedPropertyItem::ReleaseVariable()
         m_pVariable->RemoveOnSetCallback(&m_onSetCallback);
         m_pVariable->RemoveOnSetEnumCallback(&m_onSetEnumCallback);
     }
-    m_pVariable = 0;
+    m_pVariable = nullptr;
     delete m_reflectedVarAdapter;
     m_reflectedVarAdapter = nullptr;
 }
@@ -569,7 +547,6 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
         break;
 
     case ePropertyTexture:
-    case ePropertyModel:
         value.replace('\\', '/');
         break;
     }
@@ -578,8 +555,6 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
     switch (m_type)
     {
     case ePropertyTexture:
-    case ePropertyModel:
-    case ePropertyFile:
         if (value.length() >= MAX_PATH)
         {
             value = value.left(MAX_PATH);

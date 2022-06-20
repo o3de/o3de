@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "LyShineParentTemplate",
+                "Path": "Passes/LyShineParent.pass"
+            },
+            {
+                "Name": "LyShineChildPassTemplate",
+                "Path": "Passes/LyShineChildPass.pass"
+            },
+            {
+                "Name": "RttChildPassTemplate",
+                "Path": "Passes/RttChildPass.pass"
+            }      
+        ]
+    }
+}

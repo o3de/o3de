@@ -142,6 +142,7 @@ namespace EMStudio
             , m_manipulatorCallback(manipulatorCallback)
         {}
 
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Quaternion& value) override
         {
             // call the base class update function

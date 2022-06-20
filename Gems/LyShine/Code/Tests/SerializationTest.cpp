@@ -24,14 +24,14 @@ namespace UnitTest
             appDesc.m_stackRecordLevels = 20;
 
             AZ::ComponentApplication::StartupParameters appStartup;
-            // Module needs to be created this way to create CryString allocator for test
             appStartup.m_createStaticModulesCallback =
                 [](AZStd::vector<AZ::Module*>& modules)
             {
                 modules.emplace_back(new LyShine::LyShineModule);
             };
 
-            m_systemEntity = m_application.Create(appDesc, appStartup);
+            m_application = aznew AZ::ComponentApplication();
+            m_systemEntity = m_application->Create(appDesc, appStartup);
             m_systemEntity->Init();
             m_systemEntity->Activate();
         }

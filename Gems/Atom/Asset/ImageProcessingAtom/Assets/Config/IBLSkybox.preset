@@ -1,0 +1,100 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+            "Name": "IBLSkybox",
+            "Description": "The input cubemap generates a skybox, IBL specular, and IBL diffuse output cubemaps.",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "R9G9B9E5",
+            "DiscardAlpha": true,
+            "MinTextureSize": 256,
+            "IsPowerOf2": true,
+            "CubemapSettings": {
+                "RequiresConvolve": false,
+                "GenerateIBLSpecular": true,
+                "IBLSpecularPreset": "IBLSpecular",
+                "GenerateIBLDiffuse": true,
+                "IBLDiffusePreset": "IBLDiffuse"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "Name": "IBLSkybox",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 256,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "RequiresConvolve": false,
+                    "GenerateIBLSpecular": true,
+                    "IBLSpecularPreset": "IBLSpecular",
+                    "GenerateIBLDiffuse": true,
+                    "IBLDiffusePreset": "IBLDiffuse"
+                }
+            },
+            "ios": {
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "Name": "IBLSkybox",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 256,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "RequiresConvolve": false,
+                    "GenerateIBLSpecular": true,
+                    "IBLSpecularPreset": "IBLSpecular",
+                    "GenerateIBLDiffuse": true,
+                    "IBLDiffusePreset": "IBLDiffuse"
+                }
+            },
+            "mac": {
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "Name": "IBLSkybox",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 256,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "RequiresConvolve": false,
+                    "GenerateIBLSpecular": true,
+                    "IBLSpecularPreset": "IBLSpecular",
+                    "GenerateIBLDiffuse": true,
+                    "IBLDiffusePreset": "IBLDiffuse"
+                }
+            },
+            "provo": {
+                "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
+                "Name": "IBLSkybox",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 256,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "RequiresConvolve": false,
+                    "GenerateIBLSpecular": true,
+                    "IBLSpecularPreset": "IBLSpecular",
+                    "GenerateIBLDiffuse": true,
+                    "IBLDiffusePreset": "IBLDiffuse"
+                }
+            }
+        }
+    }
+}

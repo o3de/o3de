@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ImageGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ImageGradientComponent"
+            }
+        }
+    ]
+}

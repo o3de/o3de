@@ -1,4 +1,16 @@
 <!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/Application">
+        <file alias="popout-overlay.svg">Application/popout-overlay.svg</file>
+        <file alias="popout-overlay-hover.svg">Application/popout-overlay-hover.svg</file>
+        <file alias="titlebar-close.svg">Application/titlebar-close.svg</file>
+        <file alias="titlebar-maximize.svg">Application/titlebar-maximize.svg</file>
+        <file alias="titlebar-minimize.svg">Application/titlebar-minimize.svg</file>
+        <file alias="titlebar-popout-hover.svg">Application/titlebar-popout-hover.svg</file>
+        <file alias="titlebar-popout.svg">Application/titlebar-popout.svg</file>
+        <file alias="titlebar-popout-small.svg">Application/titlebar-popout-small.svg</file>
+        <file alias="titlebar-restore-hover.svg">Application/titlebar-restore-hover.svg</file>
+        <file alias="titlebar-restore.svg">Application/titlebar-restore.svg</file>
+    </qresource>
     <qresource prefix="/Entity">
         <file alias="entity.svg">Entity/entity.svg</file>
         <file alias="entity_editoronly.svg">Entity/entity_editoronly.svg</file>
@@ -6,6 +18,10 @@
         <file alias="layer.svg">Entity/layer.svg</file>
         <file alias="prefab.svg">Entity/prefab.svg</file>
         <file alias="prefab_edit.svg">Entity/prefab_edit.svg</file>
+        <file alias="prefab_edit_open.svg">Entity/prefab_edit_open.svg</file>
+        <file alias="prefab_edit_open_readonly.svg">Entity/prefab_edit_open_readonly.svg</file>
+        <file alias="prefab_edit_close.svg">Entity/prefab_edit_close.svg</file>
+        <file alias="readonly.svg">Entity/readonly.svg</file>
     </qresource>
     <qresource prefix="/Level">
         <file alias="level.svg">Level/level.svg</file>
@@ -30,6 +46,7 @@
         <file alias="checkmark.svg">Notifications/checkmark.svg</file>
         <file alias="download.svg">Notifications/download.svg</file>
         <file alias="link.svg">Notifications/link.svg</file>
+        <file alias="warning.svg">Notifications/warning.svg</file>
     </qresource>
     <qresource prefix="/Outliner">
         <file alias="sort_a_to_z.svg">Outliner/sort_a_to_z.svg</file>

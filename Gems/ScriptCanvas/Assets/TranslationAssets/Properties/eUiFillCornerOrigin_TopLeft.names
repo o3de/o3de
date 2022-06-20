@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiFillCornerOrigin_TopLeft",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Top Left",
+                "category": "Constants/UI/Fill Corner"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiFillCornerOrigin_TopLeft",
+                    "details": {
+                        "name": "Top Left"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "StencilOp_Keep",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Keep",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Keep",
+                    "details": {
+                        "name": "Keep"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

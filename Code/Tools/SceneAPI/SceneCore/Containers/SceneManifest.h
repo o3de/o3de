@@ -41,6 +41,8 @@ namespace AZ
 
                 AZ_RTTI(SceneManifest, "{9274AD17-3212-4651-9F3B-7DCCB080E467}");
                 
+                static constexpr size_t MaxSceneManifestFileSizeInBytes = AZStd::numeric_limits<size_t>::max();
+
                 virtual ~SceneManifest();
                 
                 static AZStd::shared_ptr<const DataTypes::IManifestObject> SceneManifestConstDataConverter(
@@ -106,7 +108,7 @@ namespace AZ
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
                 StorageLookup m_storageLookup;
                 ValueStorage m_values;
-            AZ_POP_DISABLE_OVERRIDE_WARNING
+            AZ_POP_DISABLE_WARNING
             };
         } // Containers
     } // SceneAPI

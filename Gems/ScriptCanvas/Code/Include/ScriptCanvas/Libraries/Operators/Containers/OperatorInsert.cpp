@@ -7,7 +7,6 @@
  */
 
 #include "OperatorInsert.h"
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/SupportsMethodContract.h>
 
 namespace ScriptCanvas
@@ -21,7 +20,7 @@ namespace ScriptCanvas
                 if (sourceType == SourceType::SourceInput)
                 {
                     ContractDescriptor supportsMethodContract;
-                    supportsMethodContract.m_createFunc = [this]() -> SupportsMethodContract* { return aznew SupportsMethodContract("Insert"); };
+                    supportsMethodContract.m_createFunc = []() -> SupportsMethodContract* { return aznew SupportsMethodContract("Insert"); };
                     contractDescs.push_back(AZStd::move(supportsMethodContract));
                 }
             }

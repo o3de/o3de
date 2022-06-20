@@ -16,8 +16,6 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
-            static const int NUMBER_OF_OUTPUTS = 8;
-
             Sequencer::Sequencer()
                 : Node()
                 , m_selectedIndex(0)
@@ -26,7 +24,7 @@ namespace ScriptCanvas
                 , m_outputIsValid(true)
             {}
 
-            NodeConfiguration Sequencer::GetReplacementNodeConfiguration() const
+            NodeReplacementConfiguration Sequencer::GetReplacementNodeConfiguration() const
             {
                 auto inSlot = SequencerProperty::GetInSlot(this);
                 auto nextSlot = SequencerProperty::GetNextSlot(this);

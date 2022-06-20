@@ -10,6 +10,9 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 
 #include "CreateNodeMimeEvent.h"
+#include "NodePaletteModel.h"
+#include <Source/Translation/TranslationBus.h>
+#include "TranslationGeneration.h"
 
 namespace ScriptCanvasEditor
 {
@@ -56,6 +59,9 @@ namespace ScriptCanvasEditor
         bool IsOverload() const;
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
     private:
         bool m_isOverload = false;
         QString m_className;
@@ -76,13 +82,14 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateGlobalMethodMimeEvent() = default;
-        CreateGlobalMethodMimeEvent(AZStd::string methodName);
+        CreateGlobalMethodMimeEvent(AZStd::string methodName, bool isProperty);
 
     protected:
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     //! GlobalMethod Node Palette Tree Item
@@ -101,8 +108,13 @@ namespace ScriptCanvasEditor
 
         const AZStd::string& GetMethodName() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
+
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
     //! <GlobalMethod>
 
@@ -137,15 +149,20 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(CustomNodePaletteTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(CustomNodePaletteTreeItem, "{50E75C4D-F59C-4AF6-A6A3-5BAD557E335C}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName);
+        explicit CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation&);
         ~CustomNodePaletteTreeItem() = default;
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
 
         AZ::Uuid GetTypeId() const;
+        const ScriptCanvasEditor::CustomNodeModelInformation& GetInfo() const { return m_info; }
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         AZ::Uuid m_typeId;
+        ScriptCanvasEditor::CustomNodeModelInformation m_info;
     };
 
     // </CustomNode>

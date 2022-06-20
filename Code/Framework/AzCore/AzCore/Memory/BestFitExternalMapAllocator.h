@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#define AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 
@@ -20,7 +19,6 @@ namespace AZ
      */
     class BestFitExternalMapAllocator
         : public AllocatorBase
-        , public IAllocatorAllocate
     {
     public:
         AZ_TYPE_INFO(BestFitExternalMapAllocator, "{36266C8B-9A2C-4E3E-9812-3DB260868A2B}")
@@ -38,7 +36,7 @@ namespace AZ
             static const int        m_memoryBlockAlignment = 16;
             void*                   m_memoryBlock;          ///< Pointer to memory to allocate from. Can be uncached.
             unsigned int            m_memoryBlockByteSize;  ///< Sizes if the memory block.
-            IAllocatorAllocate*     m_mapAllocator;         ///< Allocator for the free chunks map. If null the SystemAllocator will be used.
+            IAllocator*             m_mapAllocator;         ///< Allocator for the free chunks map. If null the SystemAllocator will be used.
 
             bool                    m_allocationRecords;    ///< True if we want to track memory allocations, otherwise false.
             unsigned char           m_stackRecordLevels;    ///< If stack recording is enabled, how many stack levels to record.
@@ -53,7 +51,7 @@ namespace AZ
         AllocatorDebugConfig GetDebugConfig() override;
 
         //////////////////////////////////////////////////////////////////////////
-        // IAllocatorAllocate
+        // IAllocatorSchema
         pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
         void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
         size_type       Resize(pointer_type ptr, size_type newSize) override;
@@ -63,7 +61,7 @@ namespace AZ
         size_type       NumAllocatedBytes() const override;
         size_type       Capacity() const override;
         size_type       GetMaxAllocationSize() const override;
-        IAllocatorAllocate*  GetSubAllocator() override;
+        size_type       GetMaxContiguousAllocationSize() const override;
         //////////////////////////////////////////////////////////////////////////
 
     protected:
@@ -71,11 +69,6 @@ namespace AZ
         BestFitExternalMapAllocator& operator=(const BestFitExternalMapAllocator&);
 
         Descriptor m_desc;
-        BestFitExternalMapSchema* m_schema;
     };
 }
-
-#endif // AZ_BEST_FIT_EXT_MAP_ALLOCATOR_H
-#pragma once
-
 

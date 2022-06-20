@@ -36,9 +36,6 @@ namespace PhysX
         }
     } // namespace Internal
 
-    // PhysX::Ragdoll
-    /*static*/ AZStd::mutex Ragdoll::m_sceneEventMutex;
-
     void Ragdoll::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -109,14 +106,15 @@ namespace PhysX
             })
     {
         m_sceneOwner = sceneHandle;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
+        }
     }
 
     Ragdoll::~Ragdoll()
     {
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            m_sceneStartSimHandler.Disconnect();
-        }
+        m_sceneStartSimHandler.Disconnect();
 
         m_nodes.clear(); //the nodes destructor will remove the simulated body from the scene.
     }
@@ -214,13 +212,6 @@ namespace PhysX
             }
         }
 
-        // the handler is also connected in EnableSimulationQueued(),
-        // which will call this function, so if called from that path dont connect here.
-        if (!m_sceneStartSimHandler.IsConnected()) 
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
-        }
         sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_bodyHandle);
     }
 
@@ -229,12 +220,6 @@ namespace PhysX
         if (m_simulating)
         {
             return;
-        }
-
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
         }
 
         m_queuedInitialState = initialState;
@@ -251,11 +236,6 @@ namespace PhysX
         {
             AZ_Error("PhysX Ragdoll", false, "Unable to Disable Ragdoll, Physics Scene Interface is missing.");
             return;
-        }
-
-        {
-            AZStd::scoped_lock lock(m_sceneEventMutex);
-            m_sceneStartSimHandler.Disconnect();
         }
 
         physx::PxScene* pxScene = Internal::GetPxScene(m_sceneOwner);

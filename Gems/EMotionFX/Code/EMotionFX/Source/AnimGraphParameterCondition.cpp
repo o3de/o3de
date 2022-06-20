@@ -78,7 +78,7 @@ namespace EMotionFX
     void AnimGraphParameterCondition::Reinit()
     {
         // Find the parameter index for the given parameter name, to prevent string based lookups every frame
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         SetFunction(m_function);
     }
 
@@ -114,7 +114,7 @@ namespace EMotionFX
     void AnimGraphParameterCondition::SetParameterName(const AZStd::string& parameterName)
     {
         m_parameterName = parameterName;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -131,7 +131,7 @@ namespace EMotionFX
         if (m_parameterIndex.IsSuccess())
         {
             // get access to the parameter info and return the type of its default value
-            const ValueParameter* valueParameter = mAnimGraph->FindValueParameter(m_parameterIndex.GetValue());
+            const ValueParameter* valueParameter = m_animGraph->FindValueParameter(m_parameterIndex.GetValue());
             return azrtti_typeid(valueParameter);
         }
         return AZ::TypeId::CreateNull();
@@ -144,7 +144,7 @@ namespace EMotionFX
             return false;
         }
 
-        const ValueParameter* valueParameter = mAnimGraph->FindValueParameter(m_parameterIndex.GetValue());
+        const ValueParameter* valueParameter = m_animGraph->FindValueParameter(m_parameterIndex.GetValue());
         if (!valueParameter)
         {
             return false;
@@ -500,7 +500,7 @@ namespace EMotionFX
         if (!newParameterMask.empty())
         {
             m_parameterName = *newParameterMask.begin();
-            m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+            m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         }
     }
 
@@ -514,7 +514,7 @@ namespace EMotionFX
     {
         AZ_UNUSED(newParameterName);
         // Just recompute the index in the case the new parameter was inserted before ours
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
     }
 
     void AnimGraphParameterCondition::ParameterRenamed(const AZStd::string& oldParameterName, const AZStd::string& newParameterName)
@@ -530,7 +530,7 @@ namespace EMotionFX
         AZ_UNUSED(beforeChange);
         AZ_UNUSED(afterChange);
         // Just recompute the index
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
     }
 
     void AnimGraphParameterCondition::ParameterRemoved(const AZStd::string& oldParameterName)
@@ -542,7 +542,7 @@ namespace EMotionFX
         }
         else
         {
-            m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+            m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         }
     }
 

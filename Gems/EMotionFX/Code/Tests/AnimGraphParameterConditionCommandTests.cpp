@@ -47,7 +47,7 @@ namespace EMotionFX
             newParameter->SetName(parameterName);
             CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph.get(),
                 newParameter.get(),
-                MCORE_INVALIDINDEX32);
+                InvalidIndex);
 
             EXPECT_TRUE(commandManager.ExecuteCommand(commandString, result)) << result.c_str();
         }

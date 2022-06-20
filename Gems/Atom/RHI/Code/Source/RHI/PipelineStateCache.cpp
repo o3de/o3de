@@ -6,9 +6,10 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/Factory.h>
+
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/exponential_backoff.h>
 
@@ -40,9 +41,12 @@ namespace AZ
                     AZ_Assert(readOnlyCache.empty(), "Inactive library has pipeline states in its global entry.");
                 }
 
+#if defined(AZ_DEBUG_BUILD)
+                // the PipelineStateSet is expensive to duplicate, only do this in debug.
                 PipelineStateSet readOnlyCacheCopy = readOnlyCache;
                 AZ_Assert(AZStd::unique(readOnlyCacheCopy.begin(), readOnlyCacheCopy.end()) == readOnlyCacheCopy.end(),
                     "'%d' Duplicates existed in the read-only cache!", readOnlyCache.size() - readOnlyCacheCopy.size());
+#endif
             }
 
             m_threadLibrarySet.ForEach([this](const ThreadLibrarySet& threadLibrarySet)
@@ -77,7 +81,7 @@ namespace AZ
             }
         }
 
-        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData)
+        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
@@ -106,8 +110,8 @@ namespace AZ
             m_globalLibraryActiveBits[handle.GetIndex()] = true;
 
             GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
-            libraryEntry.m_serializedData = serializedData;
-
+            libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = serializedData;
+            libraryEntry.m_pipelineLibraryDescriptor.m_filePath = filePath;
             AZ_Assert(libraryEntry.m_readOnlyCache.empty() && libraryEntry.m_pendingCache.empty(), "Library entry has entries in its caches!");
 
             return handle;
@@ -124,8 +128,9 @@ namespace AZ
 
                 GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
                 libraryEntry.m_readOnlyCache.clear();
-                libraryEntry.m_serializedData = nullptr;
-
+                libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = nullptr;
+                libraryEntry.m_pipelineLibraryDescriptor.m_filePath = "";
+                
                 m_globalLibraryActiveBits[handle.GetIndex()] = false;
                 m_libraryFreeList.push_back(handle);
             }
@@ -158,7 +163,7 @@ namespace AZ
             libraryEntry.m_pendingCacheMutex.unlock();
         }
 
-        ConstPtr<PipelineLibraryData> PipelineStateCache::GetLibrarySerializedData(PipelineLibraryHandle handle) const
+        Ptr<PipelineLibrary> PipelineStateCache::GetMergedLibrary(PipelineLibraryHandle handle) const
         {
             if (handle.IsNull())
             {
@@ -166,18 +171,14 @@ namespace AZ
             }
 
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
-
             const GlobalLibraryEntry& entry = m_globalLibrarySet[handle.GetIndex()];
 
-            /**
-             * Each thread has its own PipelineLibrary instance. To produce the final serialized data, we
-             * coalesce data from each individual library by merging the thread-local ones into a single
-             * global (temporary) library. The data is then extracted from this global library and returned.
-             * This operation is designed to happen once at application shutdown; certainly not every frame.
-             */
-
+            //! Each thread has its own PipelineLibrary instance. To produce the final serialized data, we
+            //! coalesce data from each individual library by merging the thread-local ones into a single
+            //! global (temporary) library. The data is then extracted from this global library and returned.
+            //! This operation is designed to happen once at application shutdown; certainly not every frame.
             AZStd::vector<const PipelineLibrary*> threadLibraries;
-            m_threadLibrarySet.ForEach([this, handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+            m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
                 const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
 
@@ -188,16 +189,26 @@ namespace AZ
                 }
             });
 
-            Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-            ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
-
-            if (resultCode == ResultCode::Success)
+            bool doesPSODataExist = entry.m_pipelineLibraryDescriptor.m_serializedData.get();
+            for (const RHI::PipelineLibrary* libraryBase : threadLibraries)
             {
-                resultCode = pipelineLibrary->MergeInto(threadLibraries);
+                const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
+                doesPSODataExist |= library->IsMergeRequired();
+            }
+
+            if (doesPSODataExist)
+            {
+                Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
+                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_pipelineLibraryDescriptor);
 
                 if (resultCode == ResultCode::Success)
                 {
-                    return pipelineLibrary->GetSerializedData();
+                    resultCode = pipelineLibrary->MergeInto(threadLibraries);
+
+                    if (resultCode == ResultCode::Success)
+                    {
+                        return pipelineLibrary;
+                    }
                 }
             }
 
@@ -206,7 +217,7 @@ namespace AZ
 
         void PipelineStateCache::Compact()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "PipelineStateCache: Compact");
+            AZ_PROFILE_SCOPE(RHI, "PipelineStateCache: Compact");
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
             // Merge the pending cache into the read-only cache.
@@ -272,8 +283,6 @@ namespace AZ
 
         const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             if (handle.IsNull())
             {
                 return nullptr;
@@ -308,7 +317,7 @@ namespace AZ
                     if (!threadLibraryEntry.m_library)
                     {
                         Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-                        RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_serializedData.get());
+                        RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_pipelineLibraryDescriptor);
                         if (resultCode != RHI::ResultCode::Success)
                         {
                             AZ_Warning("PipelineStateCache", false, "Failed to initialize pipeline library. PipelineLibrary usage is disabled.");
@@ -356,7 +365,7 @@ namespace AZ
                 AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
             }
 
-            ResultCode resultCode = ResultCode::InvalidArgument;
+            [[maybe_unused]] ResultCode resultCode = ResultCode::InvalidArgument;
 
             // Increment the pending compile count on the global entry, which tracks how many pipeline states
             // are currently being compiled across all threads.

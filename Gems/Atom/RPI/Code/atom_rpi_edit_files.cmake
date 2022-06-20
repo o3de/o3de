@@ -11,19 +11,19 @@ set(FILES
     Include/Atom/RPI.Edit/Common/AssetAliasesSourceData.h
     Include/Atom/RPI.Edit/Common/ColorUtils.h
     Include/Atom/RPI.Edit/Common/ConvertibleSource.h
-    Include/Atom/RPI.Edit/Common/JsonFileLoadContext.h
     Include/Atom/RPI.Edit/Common/JsonReportingHelper.h
     Include/Atom/RPI.Edit/Common/JsonUtils.h
     Include/Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialTypeSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialConverterBus.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyId.h
+    Include/Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h
+    Include/Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertySerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialSourceData.h
-    Include/Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h
@@ -36,12 +36,13 @@ set(FILES
     Source/RPI.Edit/Material/LuaMaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialTypeSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyId.cpp
+    Source/RPI.Edit/Material/MaterialPropertyGroupSerializer.cpp
+    Source/RPI.Edit/Material/MaterialPropertyConnectionSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertySerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialSourceData.cpp
-    Source/RPI.Edit/Material/MaterialSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.cpp
     Source/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.cpp
@@ -54,7 +55,6 @@ set(FILES
     Source/RPI.Edit/Common/AssetAliasesSourceData.cpp
     Source/RPI.Edit/Common/ColorUtils.cpp
     Source/RPI.Edit/Common/ConvertibleSource.cpp
-    Source/RPI.Edit/Common/JsonFileLoadContext.cpp
     Source/RPI.Edit/Common/JsonReportingHelper.cpp
     Source/RPI.Edit/Common/JsonUtils.cpp
 )

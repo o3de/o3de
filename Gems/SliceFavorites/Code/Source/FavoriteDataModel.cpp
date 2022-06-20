@@ -473,14 +473,14 @@ namespace SliceFavorites
 
         for (size_t index = 0; index < currentList.size(); index++)
         {
-            FavoriteData* current = currentList[index];
+            FavoriteData* current = currentList[static_cast<int>(index)];
 
             if (!current)
             {
                 continue;
             }
 
-            settings.setArrayIndex(index);
+            settings.setArrayIndex(static_cast<int>(index));
             settings.setValue("name", current->m_name);
 
             AZStd::string assetIdString;
@@ -562,7 +562,7 @@ namespace SliceFavorites
         // Rebuild the menu from the current tree
         m_favoritesMenu->clear();
 
-        m_favoritesMenu->addAction(QIcon(":/Icons/SliceFavorite_Icon_Manage"), "Manage favorites...", m_favoritesMenu.get(), [this]()
+        m_favoritesMenu->addAction(QIcon(":/Icons/SliceFavorite_Icon_Manage"), "Manage favorites...", m_favoritesMenu.get(), []()
         {
             AzToolsFramework::OpenViewPane(SliceFavorites::ManageSliceFavorites);
         });

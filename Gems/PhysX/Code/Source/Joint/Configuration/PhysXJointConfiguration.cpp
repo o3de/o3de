@@ -59,26 +59,112 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitY, "Swing limit Y",
-                        "Maximum angle from the Y axis of the joint frame")
+                        "The rotation angle limit around the joint's Y axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitZ, "Swing limit Z",
-                        "Maximum angle from the Z axis of the joint frame")
+                        "The rotation angle limit around the joint's Z axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitLower, "Twist lower limit",
-                        "Lower limit for rotation about the X axis of the joint frame")
+                        "The lower rotation angle limit around the joint's X axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitUpper, "Twist upper limit",
-                        "Upper limit for rotation about the X axis of the joint frame")
+                        "The upper rotation angle limit around the joint's X axis.")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                 ;
+            }
+        }
+    }
+
+    AZStd::optional<float> D6JointLimitConfiguration::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName)
+    {
+        if (propertyName == AZ::Name("SwingLimitY"))
+        {
+            return m_swingLimitY;
+        }
+        else if (propertyName == AZ::Name("SwingLimitZ"))
+        {
+            return m_swingLimitZ;
+        }
+        else if (propertyName == AZ::Name("TwistLimitLower"))
+        {
+            return m_twistLimitLower;
+        }
+        else if (propertyName == AZ::Name("TwistLimitUpper"))
+        {
+            return m_twistLimitUpper;
+        }
+        else
+        {
+            AZ_ErrorOnce("PhysX Joint Configuration", false, "Property %s not recognized.", propertyName.GetCStr());
+            return AZStd::nullopt;
+        }
+    }
+
+    void D6JointLimitConfiguration::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value)
+    {
+        if (propertyName == AZ::Name("SwingLimitY"))
+        {
+            m_swingLimitY = value;
+            ValidateSwingLimitY();
+        }
+        else if (propertyName == AZ::Name("SwingLimitZ"))
+        {
+            m_swingLimitZ = value;
+            ValidateSwingLimitZ();
+        }
+        else if (propertyName == AZ::Name("TwistLimitLower"))
+        {
+            m_twistLimitLower = value;
+            ValidateTwistLimits();
+        }
+        else if (propertyName == AZ::Name("TwistLimitUpper"))
+        {
+            m_twistLimitUpper = value;
+            ValidateTwistLimits();
+        }
+        else
+        {
+            AZ_ErrorOnce("PhysX Joint Configuration", false, "Property %s not recognized.", propertyName.GetCStr());
+        }
+    }
+
+    void D6JointLimitConfiguration::ValidateSwingLimitY()
+    {
+        m_swingLimitY = AZ::GetClamp(m_swingLimitY, JointConstants::MinSwingLimitDegrees, 180.0f - JointConstants::MinSwingLimitDegrees);
+    }
+
+    void D6JointLimitConfiguration::ValidateSwingLimitZ()
+    {
+        m_swingLimitZ = AZ::GetClamp(m_swingLimitZ, JointConstants::MinSwingLimitDegrees, 180.0f - JointConstants::MinSwingLimitDegrees);
+    }
+
+    void D6JointLimitConfiguration::ValidateTwistLimits()
+    {
+        m_twistLimitLower = AZ::GetClamp(m_twistLimitLower, -180.0f, 180.0f);
+        m_twistLimitUpper = AZ::GetClamp(m_twistLimitUpper, -180.0f, 180.0f);
+        // make sure lower limit is less than upper limit
+        if (m_twistLimitLower > m_twistLimitUpper)
+        {
+            AZStd::swap(m_twistLimitLower, m_twistLimitUpper);
+        }
+        // make sure the range between the lower and upper limits exceeds the minimum range
+        if (m_twistLimitUpper < m_twistLimitLower + JointConstants::MinTwistLimitRangeDegrees)
+        {
+            if (m_twistLimitLower > 0.0f)
+            {
+                m_twistLimitLower = m_twistLimitUpper - JointConstants::MinTwistLimitRangeDegrees;
+            }
+            else
+            {
+                m_twistLimitUpper = m_twistLimitLower + JointConstants::MinTwistLimitRangeDegrees;
             }
         }
     }

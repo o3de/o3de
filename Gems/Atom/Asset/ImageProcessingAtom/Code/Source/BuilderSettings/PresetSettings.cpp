@@ -45,15 +45,14 @@ namespace ImageProcessingAtom
                 ->Field("MinTextureSize", &PresetSettings::m_minTextureSize)
                 ->Field("IsPowerOf2", &PresetSettings::m_isPowerOf2)
                 ->Field("SizeReduceLevel", &PresetSettings::m_sizeReduceLevel)
-                ->Field("IsColorChart", &PresetSettings::m_isColorChart)
-                ->Field("HighPassMip", &PresetSettings::m_highPassMip)
                 ->Field("GlossFromNormal", &PresetSettings::m_glossFromNormals)
-                ->Field("UseLegacyGloss", &PresetSettings::m_isLegacyGloss)
                 ->Field("MipRenormalize", &PresetSettings::m_isMipRenormalize)
                 ->Field("NumberResidentMips", &PresetSettings::m_numResidentMips)
                 ->Field("Swizzle", &PresetSettings::m_swizzle)
                 ->Field("CubemapSettings", &PresetSettings::m_cubemapSetting)
-                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting);
+                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting)
+                ->Field("OutputTypeHandling", &PresetSettings::m_outputTypeHandling)
+                ;
 
             serialize->Enum<RGBWeight>()
                 ->Value("Uniform", RGBWeight::uniform)
@@ -109,13 +108,6 @@ namespace ImageProcessingAtom
                 ->Value("ASTC_10x10", EPixelFormat::ePixelFormat_ASTC_10x10)
                 ->Value("ASTC_12x10", EPixelFormat::ePixelFormat_ASTC_12x10)
                 ->Value("ASTC_12x12", EPixelFormat::ePixelFormat_ASTC_12x12)
-                ->Value("PVRTC2", EPixelFormat::ePixelFormat_PVRTC2)
-                ->Value("PVRTC4", EPixelFormat::ePixelFormat_PVRTC4)
-                ->Value("EAC_R11", EPixelFormat::ePixelFormat_EAC_R11)
-                ->Value("EAC_RG11", EPixelFormat::ePixelFormat_EAC_RG11)
-                ->Value("ETC2", EPixelFormat::ePixelFormat_ETC2)
-                ->Value("ETC2a1", EPixelFormat::ePixelFormat_ETC2a1)
-                ->Value("ETC2a", EPixelFormat::ePixelFormat_ETC2a)
                 ->Value("BC1", EPixelFormat::ePixelFormat_BC1)
                 ->Value("BC1a", EPixelFormat::ePixelFormat_BC1a)
                 ->Value("BC3", EPixelFormat::ePixelFormat_BC3)
@@ -139,6 +131,11 @@ namespace ImageProcessingAtom
                 ->Value("B8G8R8", EPixelFormat::ePixelFormat_B8G8R8)
                 ->Value("R32", EPixelFormat::ePixelFormat_R32)
                 ->Value("Unknown", EPixelFormat::ePixelFormat_Unknown)
+                ;
+
+            serialize->Enum<OutputTypeHandling>()
+                ->Value("Default", OutputTypeHandling::UseSpecifiedOutputType)
+                ->Value("UseInputFormat", OutputTypeHandling::UseInputFormat)
                 ;
         }
     }
@@ -207,13 +204,12 @@ namespace ImageProcessingAtom
             m_maxTextureSize == other.m_maxTextureSize &&
             m_isPowerOf2 == other.m_isPowerOf2 &&
             m_sizeReduceLevel == other.m_sizeReduceLevel &&
-            m_isColorChart == other.m_isColorChart &&
-            m_highPassMip == other.m_highPassMip &&
             m_glossFromNormals == other.m_glossFromNormals &&
-            m_isLegacyGloss == other.m_isLegacyGloss &&
             m_swizzle == other.m_swizzle &&
             m_isMipRenormalize == other.m_isMipRenormalize &&
-            m_numResidentMips == other.m_numResidentMips;
+            m_numResidentMips == other.m_numResidentMips &&
+            m_outputTypeHandling == other.m_outputTypeHandling
+            ;
     }
 
     void PresetSettings::DeepCopyMembers(const PresetSettings& other)
@@ -246,13 +242,11 @@ namespace ImageProcessingAtom
             m_maxTextureSize = other.m_maxTextureSize;
             m_isPowerOf2 = other.m_isPowerOf2;
             m_sizeReduceLevel = other.m_sizeReduceLevel;
-            m_isColorChart = other.m_isColorChart;
-            m_highPassMip = other.m_highPassMip;
             m_glossFromNormals = other.m_glossFromNormals;
-            m_isLegacyGloss = other.m_isLegacyGloss;
             m_swizzle = other.m_swizzle;
             m_isMipRenormalize = other.m_isMipRenormalize;
             m_numResidentMips = other.m_numResidentMips;
+            m_outputTypeHandling = other.m_outputTypeHandling;
         }
     }
 

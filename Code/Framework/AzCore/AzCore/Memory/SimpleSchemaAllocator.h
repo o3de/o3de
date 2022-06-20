@@ -12,9 +12,7 @@
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/Memory/AllocatorBase.h>
-#include <AzCore/Debug/Profiler.h>
-
-#include <AzCore/Memory/AllocatorBase.h>
+#include <AzCore/Debug/MemoryProfiler.h>
 
 namespace AZ
 {
@@ -24,17 +22,15 @@ namespace AZ
     template <class Schema, class DescriptorType=typename Schema::Descriptor, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
     class SimpleSchemaAllocator
         : public AllocatorBase
-        , public IAllocatorAllocate
     {
     public:
         using Descriptor = DescriptorType;
-        using pointer_type = typename IAllocatorAllocate::pointer_type;
-        using size_type = typename IAllocatorAllocate::size_type;
-        using difference_type = typename IAllocatorAllocate::difference_type;
+        using pointer_type = typename Schema::pointer_type;
+        using size_type = typename Schema::size_type;
+        using difference_type = typename Schema::difference_type;
 
         SimpleSchemaAllocator(const char* name, const char* desc)
-            : AllocatorBase(this, name, desc)
-            , m_schema(nullptr)
+            : AllocatorBase(nullptr, name, desc)
         {
         }
 
@@ -67,13 +63,8 @@ namespace AZ
             return AllocatorDebugConfig();
         }
 
-        IAllocatorAllocate* GetSchema() override
-        {
-            return m_schema;
-        }
-
         //---------------------------------------------------------------------
-        // IAllocatorAllocate
+        // IAllocatorSchema
         //---------------------------------------------------------------------
         pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) override
         {
@@ -82,7 +73,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC_EX(AZ::Debug::ProfileCategory::MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
+                AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
                 AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
             }
 
@@ -102,7 +93,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+                AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
                 AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             }
 
@@ -128,7 +119,7 @@ namespace AZ
         {
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+                AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             }
 
             newSize = MemorySizeAdjustedUp(newSize);
@@ -142,7 +133,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC(AZ::Debug::ProfileCategory::MemoryReserved, newPtr, newSize, GetName());
+                AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newPtr, newSize, GetName());
                 AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
             }
 
@@ -181,18 +172,15 @@ namespace AZ
             return m_schema->GetMaxAllocationSize();
         }
 
+        size_type GetMaxContiguousAllocationSize() const override
+        {
+            return m_schema->GetMaxContiguousAllocationSize();
+        }
+
         size_type GetUnAllocatedMemory(bool isPrint = false) const override
         { 
             return m_schema->GetUnAllocatedMemory(isPrint);
         }
-        
-        IAllocatorAllocate* GetSubAllocator() override
-        {
-            return m_schema->GetSubAllocator();
-        }
-
-    protected:
-        IAllocatorAllocate* m_schema;
 
     private:
         typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;

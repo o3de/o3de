@@ -117,7 +117,7 @@ namespace DebugDraw
         void OnBeginPrepareRender() override;
 
         // AZ::Render::Bootstrap::NotificationBus
-        void OnBootstrapSceneReady(AZ::RPI::Scene* scene);
+        void OnBootstrapSceneReady(AZ::RPI::Scene* scene) override;
 
         // EntityBus
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;

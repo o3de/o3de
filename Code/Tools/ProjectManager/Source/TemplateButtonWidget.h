@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
     class TemplateButton
         : public QPushButton 
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit TemplateButton(const QString& imagePath, const QString& labelText, QWidget* parent = nullptr);

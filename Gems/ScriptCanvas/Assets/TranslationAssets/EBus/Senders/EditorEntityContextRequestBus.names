@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "EditorEntityContextRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Editor Entity Context"
+            },
+            "methods": [
+                {
+                    "base": "GetEditorEntityContextId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEditorEntityContextId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEditorEntityContextId is invoked"
+                    },
+                    "details": {
+                        "name": "GetEditorEntityContextId"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

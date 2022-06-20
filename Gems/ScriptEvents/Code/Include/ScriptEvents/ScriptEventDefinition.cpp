@@ -33,13 +33,14 @@ namespace ScriptEvents
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ScriptEvent>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("m_version", &ScriptEvent::m_version)
                 ->Field("m_name", &ScriptEvent::m_name)
                 ->Field("m_category", &ScriptEvent::m_category)
                 ->Field("m_tooltip", &ScriptEvent::m_tooltip)
                 ->Field("m_addressType", &ScriptEvent::m_addressType)
                 ->Field("m_methods", &ScriptEvent::m_methods)
+                ->Field("scriptCanvasSerializedData", &ScriptEvent::m_scriptCanvasSerializedData)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -131,10 +132,7 @@ namespace ScriptEvents
             return AZ::Failure(AZStd::string::format("%s, invalid name specified, event name must only have alpha numeric characters, may not start with a number and may not have white space", name.c_str()));
         }
 
-        if (m_methods.empty())
-        {
-            return AZ::Failure(AZStd::string::format("Script Events (%s) must provide at least one event otherwise they are unusable, be sure to add an event before saving.", name.c_str()));
-        }
+        AZ_Warning("Script Events", !m_methods.empty(), AZStd::string::format("Script Events (%s) must provide at least one event, otherwise they are unusable.", name.c_str()).c_str());
 
         // Validate each method
         AZStd::string methodName;

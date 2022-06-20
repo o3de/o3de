@@ -257,7 +257,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateMainMenu::GetMainMenuCanvasAssetPath()
     {
-        return "@assets@/ui/canvases/defaultmainmenuscreen.uicanvas";
+        return "@products@/ui/canvases/defaultmainmenuscreen.uicanvas";
     }
 
 
@@ -277,7 +277,7 @@ namespace GameStateSamples
 
             bool usePrefabSystemForLevels = false;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
             if (usePrefabSystemForLevels)
             {
@@ -300,7 +300,7 @@ namespace GameStateSamples
 
                 // Add all the levels into the UI as buttons
 
-                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, levelNames.size());
+                UiDynamicLayoutBus::Event(dynamicLayoutElementId, &UiDynamicLayoutInterface::SetNumChildElements, static_cast<int>(levelNames.size()));
                 for (int i = 0; i < levelNames.size(); ++i)
                 {
                     AZ::IO::PathView level(levelNames[i].c_str());
@@ -334,7 +334,7 @@ namespace GameStateSamples
                 {
                     // Get the level name (strip folder names from the path)
                     const char* levelPath = levelSystem->GetLevelInfo(i)->GetName();
-                    const int levelPathLength = strlen(levelPath);
+                    const int levelPathLength = static_cast<int>(strlen(levelPath));
                     const char* levelName = levelPath;
                     for (int j = 0; j < levelPathLength; ++j)
                     {

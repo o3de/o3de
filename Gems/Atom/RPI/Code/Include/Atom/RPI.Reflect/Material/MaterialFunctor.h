@@ -28,11 +28,29 @@ namespace AZ
         class MaterialPropertiesLayout;
 
         using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
+        
+        //! Indicates how the material system should respond to any material property changes that
+        //! impact Pipeline State Object configuration. This is significant because some platforms
+        //! require that PSOs be pre-compiled and shipped with the game.
+        enum class MaterialPropertyPsoHandling
+        {
+            //! PSO-impacting property changes are not allowed, are ignored, and will report an error.
+            //! This should be used at runtime. It is recommended to do this on all platforms, not just the restricted ones,
+            //! to encourage best-practices. However, if a game project is not shipping on any restricted platforms,
+            //! then the team could decide to allow PSO changes.
+            Error,
+
+            //! PSO-impacting property changes are allowed, but produce a warning message.
+            Warning,
+ 
+            //! PSO-impacting property changes are allowed. This can be used during asset processing, in developer tools, or on platforms that don't restrict PSO changes.
+            Allowed
+        };
 
         //! MaterialFunctor objects provide custom logic and calculations to configure shaders, render states,
         //! editor metadata, and more.
-        //! Atom will provide an implementation of this class that uses a script to define the custom logic
-        //! for a convenient workflow. Clients may also provide their own custom hard-coded implementations
+        //! Atom provides a LuaMaterialFunctor subclass that uses a script to define the custom logic
+        //! for a convenient workflow. Developers may also provide their own custom hard-coded implementations
         //! as an optimization rather than taking the scripted approach.
         //! Any custom subclasses of MaterialFunctor will also need a corresponding MaterialFunctorSourceData subclass
         //! to create the functor at build-time. Depending on the builder context, clients can choose to create a runtime
@@ -73,14 +91,16 @@ namespace AZ
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
                 template<typename Type>
-                const Type& GetMaterialPropertyValue(const Name& propertyName) const;
+                const Type& GetMaterialPropertyValue(const Name& propertyId) const;
                 template<typename Type>
                 const Type& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
                 //! Get the property value. GetMaterialPropertyValue<T>() is equivalent to GetMaterialPropertyValue().GetValue<T>().
-                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyName) const;
+                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
+                
+                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return m_psoHandling; }
 
                 //! Set the value of a shader option
                 //! @param shaderIndex the index of a shader in the material's ShaderCollection
@@ -126,58 +146,62 @@ namespace AZ
                     RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
                     ShaderCollection* shaderCollection,
                     ShaderResourceGroup* shaderResourceGroup,
-                    const MaterialPropertyFlags* materialPropertyDependencies
+                    const MaterialPropertyFlags* materialPropertyDependencies,
+                    MaterialPropertyPsoHandling psoHandling
                 );
             private:
                 bool SetShaderOptionValue(ShaderCollection::Item& shaderItem, ShaderOptionIndex optionIndex, ShaderOptionValue value);
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
-                ShaderCollection*     m_shaderCollection;
-                ShaderResourceGroup*  m_shaderResourceGroup;
+                ShaderCollection* m_shaderCollection;
+                ShaderResourceGroup* m_shaderResourceGroup;
                 const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
+                MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Error;
             };
 
             class EditorContext
             {
                 friend class LuaMaterialFunctorEditorContext;
             public:
-                const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyName) const;
+                const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyId) const;
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const;
-                
-                const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyName) const;
+
+                const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyId) const;
 
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
                 template<typename Type>
-                const Type& GetMaterialPropertyValue(const Name& propertyName) const;
+                const Type& GetMaterialPropertyValue(const Name& propertyId) const;
                 template<typename Type>
                 const Type& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
                 //! Get the property value. GetMaterialPropertyValue<T>() is equivalent to GetMaterialPropertyValue().GetValue<T>().
-                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyName) const;
+                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
+                
+                MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return MaterialPropertyPsoHandling::Allowed; }
 
                 //! Set the visibility dynamic metadata of a material property.
-                bool SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility);
+                bool SetMaterialPropertyVisibility(const Name& propertyId, MaterialPropertyVisibility visibility);
                 bool SetMaterialPropertyVisibility(const MaterialPropertyIndex& index, MaterialPropertyVisibility visibility);
 
-                bool SetMaterialPropertyDescription(const Name& propertyName, AZStd::string description);
+                bool SetMaterialPropertyDescription(const Name& propertyId, AZStd::string description);
                 bool SetMaterialPropertyDescription(const MaterialPropertyIndex& index, AZStd::string description);
 
-                bool SetMaterialPropertyMinValue(const Name& propertyName, const MaterialPropertyValue& min);
+                bool SetMaterialPropertyMinValue(const Name& propertyId, const MaterialPropertyValue& min);
                 bool SetMaterialPropertyMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min);
 
-                bool SetMaterialPropertyMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
+                bool SetMaterialPropertyMaxValue(const Name& propertyId, const MaterialPropertyValue& max);
                 bool SetMaterialPropertyMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
 
-                bool SetMaterialPropertySoftMinValue(const Name& propertyName, const MaterialPropertyValue& min);
+                bool SetMaterialPropertySoftMinValue(const Name& propertyId, const MaterialPropertyValue& min);
                 bool SetMaterialPropertySoftMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min);
 
-                bool SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
+                bool SetMaterialPropertySoftMaxValue(const Name& propertyId, const MaterialPropertyValue& max);
                 bool SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
-                
+
                 bool SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility);
 
                 // [GFX TODO][ATOM-4168] Replace the workaround for unlink-able RPI.Public classes in MaterialFunctor
@@ -194,8 +218,8 @@ namespace AZ
                 );
 
             private:
-                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyName) const;
-                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const;
+                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyId) const;
+                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const;
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;

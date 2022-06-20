@@ -268,7 +268,7 @@ namespace Vegetation
 
     bool SurfaceMaskFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //determine if tags provided by the component should be considered
         bool useCompTags = !m_configuration.m_allowOverrides || (instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_surfaceFilterOverrideMode != OverrideMode::Replace);
@@ -281,14 +281,15 @@ namespace Vegetation
         const float exclusiveWeightMax = AZ::GetMax(m_configuration.m_exclusiveWeightMin, m_configuration.m_exclusiveWeightMax);
 
         if (useCompTags &&
-            SurfaceData::HasMatchingTags(instanceData.m_masks, m_configuration.m_exclusiveSurfaceMasks, exclusiveWeightMin, exclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(m_configuration.m_exclusiveSurfaceMasks, exclusiveWeightMin, exclusiveWeightMax))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceMaskFilter")));
             return false;
         }
 
         if (useDescTags &&
-            SurfaceData::HasMatchingTags(instanceData.m_masks, instanceData.m_descriptorPtr->m_exclusiveSurfaceFilterTags, exclusiveWeightMin, exclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(
+                instanceData.m_descriptorPtr->m_exclusiveSurfaceFilterTags, exclusiveWeightMin, exclusiveWeightMax))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceMaskFilter")));
             return false;
@@ -299,13 +300,14 @@ namespace Vegetation
         const float inclusiveWeightMax = AZ::GetMax(m_configuration.m_inclusiveWeightMin, m_configuration.m_inclusiveWeightMax);
 
         if (useCompTags &&
-            SurfaceData::HasMatchingTags(instanceData.m_masks, m_configuration.m_inclusiveSurfaceMasks, inclusiveWeightMin, inclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(m_configuration.m_inclusiveSurfaceMasks, inclusiveWeightMin, inclusiveWeightMax))
         {
             return true;
         }
 
         if (useDescTags &&
-            SurfaceData::HasMatchingTags(instanceData.m_masks, instanceData.m_descriptorPtr->m_inclusiveSurfaceFilterTags, inclusiveWeightMin, inclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(
+                instanceData.m_descriptorPtr->m_inclusiveSurfaceFilterTags, inclusiveWeightMin, inclusiveWeightMax))
         {
             return true;
         }

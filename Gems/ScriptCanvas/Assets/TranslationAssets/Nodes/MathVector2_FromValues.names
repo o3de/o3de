@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{10158AAB-73B0-5863-A7CA-11616E05CBE4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Values",
+                "category": "Math/Vector2",
+                "tooltip": "returns a vector from elements"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_X_0",
+                    "details": {
+                        "name": "X"
+                    }
+                },
+                {
+                    "base": "DataInput_Y_1",
+                    "details": {
+                        "name": "Y"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

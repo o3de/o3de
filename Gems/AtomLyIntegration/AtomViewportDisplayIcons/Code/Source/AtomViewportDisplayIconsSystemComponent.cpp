@@ -8,6 +8,7 @@
 
 #include "AtomViewportDisplayIconsSystemComponent.h"
 
+#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -73,7 +74,7 @@ namespace AZ::Render
     void AtomViewportDisplayIconsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("RPISystem", 0xf2add773));
-        required.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+        required.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -82,6 +83,8 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Activate()
     {
+        m_drawContextRegistered = false;
+
         AzToolsFramework::EditorViewportIconDisplay::Register(this);
 
         Bootstrap::NotificationBus::Handler::BusConnect();
@@ -97,9 +100,10 @@ namespace AZ::Render
         {
             return;
         } 
-        if (perViewportDynamicDrawInterface)
+        if (perViewportDynamicDrawInterface && m_drawContextRegistered)
         {
             perViewportDynamicDrawInterface->UnregisterDynamicDrawContext(m_drawContextName);
+            m_drawContextRegistered = false;
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -114,8 +118,7 @@ namespace AZ::Render
             return;
         }
 
-        auto perViewportDynamicDrawInterface =
-            AtomBridge::PerViewportDynamicDraw::Get();
+        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
         if (!perViewportDynamicDrawInterface)
         {
             return;
@@ -128,7 +131,7 @@ namespace AZ::Render
             return;
         }
 
-        // Find our icon, falling back on a grey placeholder if its image is unavailable
+        // Find our icon, falling back on a gray placeholder if its image is unavailable
         AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
         if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
         {
@@ -143,14 +146,12 @@ namespace AZ::Render
             return;
         }
 
+        const auto [viewportWidth, viewportHeight] = viewportContext->GetViewportSize();
+        const auto viewportSize = AzFramework::ScreenSize(viewportWidth, viewportHeight);
+
         // Initialize our shader
-        AZ::Vector2 viewportSize;
-        {
-            AzFramework::WindowSize viewportWindowSize = viewportContext->GetViewportSize();
-            viewportSize = AZ::Vector2{aznumeric_cast<float>(viewportWindowSize.m_width), aznumeric_cast<float>(viewportWindowSize.m_height)};
-        }
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-        drawSrg->SetConstant(m_viewportSizeIndex,viewportSize);
+        drawSrg->SetConstant(m_viewportSizeIndex, AzFramework::Vector2FromScreenSize(viewportSize));
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
 
@@ -169,13 +170,15 @@ namespace AZ::Render
         }
         else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
         {
+            // Calculate the ndc point (0.0-1.0 range) including depth
+            const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(
+                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                viewportContext->GetCameraProjectionMatrix());
+
             // Calculate our screen space position using the viewport size
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
-            AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
-                drawParameters.m_position, viewportContext->GetCameraViewMatrix(), viewportContext->GetCameraProjectionMatrix(),
-                viewportSize);
-            screenPosition.SetX(aznumeric_cast<float>(position.m_x));
-            screenPosition.SetY(aznumeric_cast<float>(position.m_y));
+            const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
+            screenPosition = AzFramework::Vector3FromScreenPoint(screenPoint, ndcPoint.GetZ());
         }
 
         struct Vertex
@@ -207,7 +210,12 @@ namespace AZ::Render
             createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
         AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
-        dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
+
+        dynamicDraw->SetSortKey(
+            aznumeric_cast<int64_t>(screenPosition.GetZ() * aznumeric_cast<float>(AZStd::numeric_limits<int64_t>::max())));
+        dynamicDraw->DrawIndexed(
+            &vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16,
+            drawSrg);
     }
 
     QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const
@@ -351,7 +359,7 @@ namespace AZ::Render
     {
         // Once the shader is loaded, register it with the dynamic draw context
         Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
-        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> dynamicDraw)
             {
                 AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomViewportDisplayIconsSystemComponent"
                     " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
@@ -359,13 +367,14 @@ namespace AZ::Render
                     " will be executed during scene processing and there may be multiple scenes executing in parallel.");
 
                 Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
-                drawContext->InitShader(shader);
-                drawContext->InitVertexFormat(
-                    { {"POSITION", RHI::Format::R32G32B32_FLOAT},
-                     {"COLOR", RHI::Format::R8G8B8A8_UNORM},
-                     {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
-                drawContext->EndInit();
+                dynamicDraw->InitShader(shader);
+                dynamicDraw->InitVertexFormat({ { "POSITION", RHI::Format::R32G32B32_FLOAT },
+                                                { "COLOR", RHI::Format::R8G8B8A8_UNORM },
+                                                { "TEXCOORD", RHI::Format::R32G32_FLOAT } });
+                dynamicDraw->EndInit();
             });
+
+        m_drawContextRegistered = true;
 
         Data::AssetBus::Handler::BusDisconnect();
     }

@@ -13,13 +13,7 @@
                     "ScopeAttachmentUsage": "DepthStencil",
                     "LoadStoreAction": {
                         "ClearValue": {
-                            "Type": "DepthStencil",
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
+                            "Type": "DepthStencil"
                         },
                         "LoadActionStencil": "Clear"
                     }

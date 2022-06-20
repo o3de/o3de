@@ -81,7 +81,7 @@ namespace UnitTest
             EXPECT_EQ(data.c, TestData::DefaultValueC);
 
             // Assign new unique values
-            data.a = TestData::DefaultValueA * i;
+            data.a = TestData::DefaultValueA * static_cast<int>(i);
             data.b = TestData::DefaultValueB * float(i);
             data.c = i % 2 == 0;
         }
@@ -190,12 +190,12 @@ namespace UnitTest
             EXPECT_EQ(data.b, TestData::DefaultValueB);
             EXPECT_EQ(data.c, TestData::DefaultValueC);
             
-            data.a = TestData::DefaultValueA * i;
+            data.a = TestData::DefaultValueA * static_cast<int>(i);
             data.b = TestData::DefaultValueB * float(i);
             data.c = i % 2 == 0;
 
             // Assign some values to the uninitialized primitive types
-            container.GetElement<1>(indices[i]) = i * 10;
+            container.GetElement<1>(indices[i]) = static_cast<int>(i * 10);
             container.GetElement<2>(indices[i]) = i * 20.0f;
         }
 
@@ -254,7 +254,7 @@ namespace UnitTest
         {
             indices[i] = container.Reserve();
 
-            container.GetElement<1>(i) = i * 10;
+            container.GetElement<1>(i) = static_cast<int>(i * 10);
             container.GetElement<2>(i) = i * 20.0f;
         }
 

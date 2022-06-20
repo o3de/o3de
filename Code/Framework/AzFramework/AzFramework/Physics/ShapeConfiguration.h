@@ -9,8 +9,12 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace Physics
 {
@@ -26,7 +30,17 @@ namespace Physics
         Native, ///< Native shape configuration if user wishes to bypass generic shape configurations.
         PhysicsAsset, ///< Shapes configured in the asset.
         CookedMesh, ///< Stores a blob of mesh data cooked for the specific engine.
+        Heightfield ///< Interacts with the physics system heightfield
     };
+
+    namespace ShapeConstants
+    {
+        static constexpr float DefaultCapsuleRadius = 0.25f;
+        static constexpr float DefaultCapsuleHeight = 1.0f;
+        static constexpr float DefaultSphereRadius = 0.5f;
+        static const AZ::Vector3 DefaultBoxDimensions = AZ::Vector3::CreateOne();
+        static const AZ::Vector3 DefaultScale = AZ::Vector3::CreateOne();
+    } // namespace ShapeConstants
 
     class ShapeConfiguration
     {
@@ -37,7 +51,7 @@ namespace Physics
         virtual ~ShapeConfiguration() = default;
         virtual ShapeType GetShapeType() const = 0;
 
-        AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_scale = ShapeConstants::DefaultScale;
     };
 
     class SphereShapeConfiguration : public ShapeConfiguration
@@ -46,11 +60,11 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(SphereShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(SphereShapeConfiguration, "{0B9F3D2E-0780-4B0B-BFEE-B41C5FDE774A}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit SphereShapeConfiguration(float radius = 0.5f);
+        explicit SphereShapeConfiguration(float radius = ShapeConstants::DefaultSphereRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
 
-        float m_radius = 0.5f;
+        float m_radius = ShapeConstants::DefaultSphereRadius;
     };
 
     class BoxShapeConfiguration : public ShapeConfiguration
@@ -59,11 +73,11 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(BoxShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(BoxShapeConfiguration, "{E58040ED-3E50-4882-B0E9-525E7A548F8D}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = AZ::Vector3::CreateOne());
+        explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne();
+        AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
 
     class CapsuleShapeConfiguration : public ShapeConfiguration
@@ -72,12 +86,13 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(CapsuleShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(CapsuleShapeConfiguration, "{19C6A07E-5644-46B7-A49E-48703B56ED32}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit CapsuleShapeConfiguration(float height = 1.0f, float radius = 0.25f);
+        explicit CapsuleShapeConfiguration(
+            float height = ShapeConstants::DefaultCapsuleHeight, float radius = ShapeConstants::DefaultCapsuleRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
 
-        float m_height = 1.0f;
-        float m_radius = 0.25f;
+        float m_height = ShapeConstants::DefaultCapsuleHeight;
+        float m_radius = ShapeConstants::DefaultCapsuleRadius;
 
     private:
         void OnHeightChanged();
@@ -182,8 +197,9 @@ namespace Physics
         
         MeshType GetMeshType() const;
 
-        void* GetCachedNativeMesh() const;
-        void SetCachedNativeMesh(void* cachedNativeMesh) const;
+        void* GetCachedNativeMesh();
+        const void* GetCachedNativeMesh() const;
+        void SetCachedNativeMesh(void* cachedNativeMesh);
 
     private:
         void ReleaseCachedNativeMesh();
@@ -192,7 +208,59 @@ namespace Physics
         MeshType m_type = MeshType::TriangleMesh;
         
         //! Cached native mesh object (e.g. PxConvexMesh or PxTriangleMesh). This data is not serialized.
-        mutable void* m_cachedNativeMesh = nullptr;
+        void* m_cachedNativeMesh = nullptr;
     };
 
+    class HeightfieldShapeConfiguration
+        : public ShapeConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+        HeightfieldShapeConfiguration() = default;
+        HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration&);
+        HeightfieldShapeConfiguration& operator=(const HeightfieldShapeConfiguration&);
+        ~HeightfieldShapeConfiguration();
+
+        ShapeType GetShapeType() const override
+        {
+            return ShapeType::Heightfield;
+        }
+
+        const void* GetCachedNativeHeightfield() const;
+        void* GetCachedNativeHeightfield();
+        void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
+        const AZ::Vector2& GetGridResolution() const;
+        void SetGridResolution(const AZ::Vector2& gridSpacing);
+        size_t GetNumColumnVertices() const;
+        size_t GetNumColumnSquares() const;
+        void SetNumColumnVertices(size_t numColumns);
+        size_t GetNumRowVertices() const;
+        size_t GetNumRowSquares() const;
+        void SetNumRowVertices(size_t numRows);
+        const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
+        void ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point);
+        void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
+        float GetMinHeightBounds() const;
+        void SetMinHeightBounds(float minBounds);
+        float GetMaxHeightBounds() const;
+        void SetMaxHeightBounds(float maxBounds);
+
+    private:
+        //! The number of meters between each heightfield sample in x and y.
+        AZ::Vector2 m_gridResolution{ 1.0f };
+        //! The number of columns in the heightfield sample grid.
+        uint32_t m_numColumns{ 0 };
+        //! The number of rows in the heightfield sample grid.
+        uint32_t m_numRows{ 0 };
+        //! The minimum and maximum heights that can be used by this heightfield.
+        //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
+        float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};
+        float m_maxHeightBounds{AZStd::numeric_limits<float>::max()};
+        //! The grid of sample points for the heightfield.
+        AZStd::vector<Physics::HeightMaterialPoint> m_samples;
+        //! An optional storage pointer for the physics system to cache its native heightfield representation.
+        void* m_cachedNativeHeightfield{ nullptr };
+    };
 } // namespace Physics

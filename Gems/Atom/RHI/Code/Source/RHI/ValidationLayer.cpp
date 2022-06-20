@@ -10,17 +10,37 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
-
+#include <AzCore/Console/Console.h>
 
 namespace AZ
 {
     namespace RHI
     {
+        AZ_CVAR(
+            bool,
+            r_debugBuildDeviceValidationOverride,
+            true,
+            nullptr,
+            ConsoleFunctorFlags::Null,
+            "Use this cvar to override device validation for debug builds.");
+
         static const char* ValidationCommandLineOption = "rhi-device-validation";
 
         AZStd::optional<ValidationMode> ReadValidationModeFromCommandArgs()
         {
             ValidationMode mode = ValidationMode::Disabled;
+            bool debugBuildDeviceValidationOverride = true;
+            if (auto* console = Interface<IConsole>::Get())
+            {
+                console->GetCvarValue("r_debugBuildDeviceValidationOverride", debugBuildDeviceValidationOverride);
+            }
+
+            bool isDebugBuild = AZ::RHI::BuildOptions::IsDebugBuild;
+            if (isDebugBuild && debugBuildDeviceValidationOverride)
+            {
+                mode = ValidationMode::Enabled;
+            }
+
             const AzFramework::CommandLine* commandLine = nullptr;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
             if (commandLine)

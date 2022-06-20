@@ -29,7 +29,7 @@ struct UiTextComponentOffsetsSelector
         , m_firstIndex(firstIndex)
         , m_lastIndex(lastIndex)
         , m_lastIndexLineNumber(lastIndexLineNumber)
-        , m_numLines(m_drawBatchLines.batchLines.size())
+        , m_numLines(static_cast<int>(m_drawBatchLines.batchLines.size()))
         , m_indexIter(0)
         , m_numCharsSelected(0)
         , m_lineCounter(0)

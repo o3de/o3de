@@ -826,7 +826,8 @@ AZ::Outcome<void, AZStd::string> UiDropdownComponent::ValidatePotentialExpandedP
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::FailureValue<AZStd::string> FailureMessage(string message) {
+AZ::FailureValue<AZStd::string> FailureMessage(AZStd::string message)
+{
     return AZ::Failure(AZStd::string(message));
 }
 

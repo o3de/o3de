@@ -137,11 +137,11 @@ namespace AZ
             return true;
         }
 
-        AZStd::array_view<IndirectCommandDescriptor> IndirectBufferLayout::GetCommands() const
+        AZStd::span<const IndirectCommandDescriptor> IndirectBufferLayout::GetCommands() const
         {
             if (!ValidateFinalizeState(ValidateFinalizeStateExpect::Finalized))
             {
-                return AZStd::array_view<IndirectCommandDescriptor>();
+                return AZStd::span<const IndirectCommandDescriptor>();
             }
             return m_commands;
         }

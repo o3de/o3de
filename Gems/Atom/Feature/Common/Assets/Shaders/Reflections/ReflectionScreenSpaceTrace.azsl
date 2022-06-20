@@ -10,7 +10,7 @@
 #include <viewsrg.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
@@ -20,6 +20,18 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DMS<float>  m_depth;
     Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+    Texture2DMS<float4> m_reflection;
+    Texture2D<float4>   m_previousFrame;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -49,6 +61,12 @@ VSOutput MainVS(VSInput input)
 }
 
 // Pixel Shader
+struct PSOutput
+{    
+    float4 m_color  : SV_Target0;
+    float m_depth   : SV_Depth;
+};
+
 PSOutput MainPS(VSOutput IN)
 {
     // compute screen coords based on a half-res render target
@@ -83,16 +101,83 @@ PSOutput MainPS(VSOutput IN)
     // reflect view ray around surface normal
     float3 reflectDirVS = normalize(reflect(cameraToPositionVS, normalVS));
  
+    // check to see if the reflected direction is approaching the camera
+    float rdotv = dot(reflectDirVS, -cameraToPositionVS);
+    bool fallbackEdge = false;
+    if (rdotv >= -0.05f)
+    {
+        if (rdotv >= 0.0f)
+        {
+            // ray points back to camera, fallback to cubemaps
+            discard;            
+        }
+
+        // ray is approaching the camera direction, but not there yet - trace the reflection and set this
+        // as a non-reflected pixel, which will prevent artifacts at the boundary
+        fallbackEdge = true;
+    }
+
     // trace screenspace rays against the depth buffer to find the screenspace intersection coordinates    
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float2 hitCoords = float2(0.0f, 0.0f);
     if (TraceRayScreenSpace(positionVS, reflectDirVS, dimensions, hitCoords))
     {
-        float rdotv = dot(reflectDirVS, cameraToPositionVS);
-        result = float4(hitCoords, 0.0f, rdotv);   
+        // reconstruct the world space position of the trace coordinates
+        float2 traceUV = saturate(hitCoords / dimensions);
+        float traceDepth = PassSrg::m_depth.Load(hitCoords, 0).r;
+        float2 traceNDC = float2(traceUV.x, 1.0f - traceUV.y) * 2.0f - 1.0f;
+        float4 traceProjectedPos = float4(traceNDC, traceDepth, 1.0f);
+        float4 tracePositionVS = mul(ViewSrg::m_projectionMatrixInverse, traceProjectedPos);
+        tracePositionVS /= tracePositionVS.w;
+        float4 tracePositionWS = mul(ViewSrg::m_viewMatrixInverse, tracePositionVS);
+        
+        // reproject to the previous frame image coordinates
+        float4 tracePrevNDC = mul(ViewSrg::m_viewProjectionPrevMatrix, tracePositionWS);
+        tracePrevNDC /= tracePrevNDC.w;
+        float2 tracePrevUV = float2(tracePrevNDC.x, -1.0f * tracePrevNDC.y) * 0.5f + 0.5f;
+
+        // sample the previous frame image
+        result.rgb = PassSrg::m_previousFrame.SampleLevel(PassSrg::LinearSampler, tracePrevUV, 0).rgb;
+
+        // apply surface specular
+        float3 specularF0 = PassSrg::m_specularF0.Load(screenCoords, 0).rgb;
+        result.rgb *= specularF0;
+
+        // fade rays close to screen edge
+        const float ScreenFadeDistance = 0.95f;
+        float2 fadeAmount = max(max(0.0f, traceUV - ScreenFadeDistance), max(0.0f, 1.0f - traceUV - ScreenFadeDistance));
+        fadeAmount /= (1.0f - ScreenFadeDistance);
+        result.a = fallbackEdge ? 0.0f : 1.0f - max(fadeAmount.x, fadeAmount.y);
+    }
+    else
+    {
+        // ray miss, add in the IBL/probe reflections from the specular pass
+        float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+        float3 cameraToPositionWS = normalize(positionWS - ViewSrg::m_worldPosition);  
+        float3 reflectDirWS = normalize(reflect(cameraToPositionWS, normalWS));
+        
+        result.rgb += PassSrg::m_reflection.Load(screenCoords, 0).rgb;
+        result.a = fallbackEdge ? 0.0f : 1.0f;
+    }
+
+    // downsample depth
+    float downsampledDepth = 0.0f;
+    for (int y = -2; y < 2; ++y)
+    {
+        for (int x = -2; x < 2; ++x)
+        {
+            float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), 0).r;
+
+            // take the closest depth sample (larger depth value due to reverse depth)
+            if (depth > downsampledDepth)
+            {
+                downsampledDepth = depth;
+            }
+        }
     }
 
     PSOutput OUT;
     OUT.m_color = result;
+    OUT.m_depth = downsampledDepth;
     return OUT;
 }

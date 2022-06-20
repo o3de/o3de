@@ -26,8 +26,11 @@
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -35,9 +38,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <QMessageBox>
-
 #include <QMenu>
+#include <QMessageBox>
 
 namespace AzToolsFramework
 {
@@ -193,6 +195,7 @@ namespace AzToolsFramework
             , m_suppressTransformChangedEvent(false)
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
+            , m_focusModeInterface(AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
         {
         }
 
@@ -282,7 +285,12 @@ namespace AzToolsFramework
                 const auto& localTM = GetLocalTM();
                 const auto worldTM = world * localTM;
 
-                UpdateCachedWorldTransform();
+                if (m_parentEntityId.IsValid())
+                {
+                    // If the parent entity is invalid, the world position of the entity shouldn't be cached as this can be later used in
+                    // calculating the local translation of the entity when activated under a different parent.
+                    UpdateCachedWorldTransform();
+                }
 
                 AZ::TransformNotificationBus::Event(
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);
@@ -662,7 +670,6 @@ namespace AzToolsFramework
                 return;
             }
 
-
             // Prevent this from parenting to its own child. Check if this entity is in the new parent's hierarchy.
             auto potentialParentTransformComponent = GetTransformComponent(parentId);
             if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(GetEntityId()))
@@ -860,18 +867,20 @@ namespace AzToolsFramework
                     return;
                 }
 
-                bool isDuringUndoRedo = false;
-                EBUS_EVENT_RESULT(isDuringUndoRedo, AzToolsFramework::ToolsApplicationRequests::Bus, IsDuringUndoRedo);
-                if (!isDuringUndoRedo)
+                bool suppressTransformChangedEvent = m_suppressTransformChangedEvent;
+                // temporarily disable calling OnTransformChanged, because CheckApplyCachedWorldTransform is not guaranteed
+                // to call it when m_cachedWorldTransform is identity. We send it manually later.
+                m_suppressTransformChangedEvent = false;
+                // When parent comes online, compute local TM from world TM.
+                CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
+                if (!m_initialized)
                 {
-                    // When parent comes online, compute local TM from world TM.
-                    CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
-                }
-                else
-                {
-                    // During undo operations, just apply our local TM.
+                    m_initialized = true;
+                    // If this is the first time this entity is being activated, manually compute OnTransformChanged
+                    // this can occur when either the entity first created or undo/redo command is performed
                     OnTransformChanged(AZ::Transform::Identity(), parentTransform->GetWorldTM());
                 }
+                m_suppressTransformChangedEvent = suppressTransformChangedEvent;
 
                 auto& parentChildIds = GetParentTransformComponent()->m_childrenEntityIds;
                 if (parentChildIds.end() == AZStd::find(parentChildIds.begin(), parentChildIds.end(), GetEntityId()))
@@ -919,24 +928,49 @@ namespace AzToolsFramework
             if (azrtti_typeid<AZ::EntityId>() != valueType)
             {
                 AZ_Assert(false, "Unexpected value type");
-                return AZ::Failure(AZStd::string("Trying to set an entity ID to something that isn't an entity ID!"));
+                return AZ::Failure(AZStd::string("Trying to set an entity ID to something that isn't an entity ID."));
             }
 
             AZ::EntityId actualValue = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
 
+            if (!actualValue.IsValid())
+            {
+                // Handled by the calling code.
+                return AZ::Success();
+            }
+
             // Prevent setting the parent to the entity itself.
             if (actualValue == GetEntityId())
             {
-                return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself!"));
+                return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself."));
             }
-            else
+
+            // Don't allow the change if it will result in a cycle hierarchy
+            auto potentialParentTransformComponent = GetTransformComponent(actualValue);
+            if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(GetEntityId()))
             {
-                // Don't allow the change if it will result in a cycle hierarchy
-                auto potentialParentTransformComponent = GetTransformComponent(actualValue);
-                if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(GetEntityId()))
-                {
-                    return AZ::Failure(AZStd::string("You cannot set an entity to be a child of one of its own children!"));
-                }
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of one of its own children."));
+            }
+
+            // Don't allow read-only entities to be re-parented at all.
+            // Also don't allow entities to be parented under read-only entities.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+                readOnlyEntityPublicInterface->IsReadOnly(GetEntityId()) || readOnlyEntityPublicInterface->IsReadOnly(actualValue))
+            {
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a read-only entity."));
+            }
+
+            // Don't allow entities to be parented under closed containers.
+            if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+                !containerEntityInterface->IsContainerOpen(actualValue))
+            {
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a closed container."));
+            }
+
+            // Don't allow entities to be parented outside their container.
+            if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(actualValue))
+            {
+                return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
             }
 
             return AZ::Success();
@@ -948,18 +982,22 @@ namespace AzToolsFramework
 
             if (!m_parentEntityId.IsValid())
             {
-                // If Prefabs are enabled, reroute the invalid id to the level root
+                // If Prefabs are enabled, reroute the invalid id to the focused prefab container entity id
                 bool isPrefabSystemEnabled = false;
                 AzFramework::ApplicationRequests::Bus::BroadcastResult(
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
                 if (isPrefabSystemEnabled)
                 {
-                    auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+                    auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
 
-                    if (prefabPublicInterface)
+                    if (prefabFocusPublicInterface)
                     {
-                        m_parentEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                        auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                        EditorEntityContextRequestBus::BroadcastResult(
+                            editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+                        m_parentEntityId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
                         refreshLevel = AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                     }
                 }
@@ -1151,6 +1189,12 @@ namespace AzToolsFramework
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
+        bool TransformComponent::ShowClearButtonHandler()
+        {
+            // Hide the clear button if the current entity is the focus root, which is the default value.
+            return(!m_focusModeInterface->IsFocusRoot(GetParentId()));
+        }
+
         void TransformComponent::Reflect(AZ::ReflectContext* context)
         {
             // reflect data for script, serialization, editing..
@@ -1167,7 +1211,6 @@ namespace AzToolsFramework
                 serializeContext->Class<Components::TransformComponent, EditorComponentBase>()->
                     Field("Parent Entity", &TransformComponent::m_parentEntityId)->
                     Field("Transform Data", &TransformComponent::m_editorTransform)->
-                    Field("AddNonUniformScaleButton", &TransformComponent::m_addNonUniformScaleButton)->
                     Field("Cached World Transform", &TransformComponent::m_cachedWorldTransform)->
                     Field("Cached World Transform Parent", &TransformComponent::m_cachedWorldTransformParent)->
                     Field("Parent Activation Transform Mode", &TransformComponent::m_parentActivationTransformMode)->
@@ -1183,15 +1226,17 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
+                            Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/transform/")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::ParentChangedInspector)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
+                            Attribute(AZ::Edit::Attributes::ShowClearButtonHandler, &TransformComponent::ShowClearButtonHandler)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Button, &TransformComponent::m_addNonUniformScaleButton, "", "")->
+                        UIElement(AZ::Edit::UIHandlers::Button, "", "")->
                             Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &TransformComponent::IsAddNonUniformScaleButtonReadOnly)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->
@@ -1243,6 +1288,15 @@ namespace AzToolsFramework
 
         void TransformComponent::AddContextMenuActions(QMenu* menu)
         {
+            bool parentEntityIsReadOnly = false;
+
+            // If the parent entity is marked as read-only, don't allow actions on this transform.
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
+                readOnlyEntityPublicInterface->IsReadOnly(GetEntityId()))
+            {
+                parentEntityIsReadOnly = true;
+            }
+
             if (menu)
             {
                 if (!menu->actions().empty())
@@ -1264,10 +1318,10 @@ namespace AzToolsFramework
 
                     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 });
-                resetAction->setEnabled(!m_editorTransform.m_locked);
+                resetAction->setEnabled(!m_editorTransform.m_locked && !parentEntityIsReadOnly);
 
                 QString lockString = m_editorTransform.m_locked ? "Unlock transform values" : "Lock transform values";
-                menu->addAction(lockString, [this, lockString]()
+                QAction* lockAction = menu->addAction(lockString, [this, lockString]()
                 {
                     {
                         AzToolsFramework::ScopedUndoBatch undo(lockString.toUtf8().data());
@@ -1276,6 +1330,7 @@ namespace AzToolsFramework
                     }
                     AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
                 });
+                lockAction->setEnabled(!parentEntityIsReadOnly);
             }
         }
     }

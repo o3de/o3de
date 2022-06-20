@@ -66,7 +66,7 @@ class Benchmark:
 class TestBenchmarkAssetLoads(object):
     @pytest.fixture
     def launcher_instance(self, request, workspace, level):
-        self.launcher = launcher_helper.create_launcher(workspace)
+        self.launcher = launcher_helper.create_game_launcher(workspace)
 
     @pytest.fixture
     def remote_console_instance(self, request):

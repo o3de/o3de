@@ -12,6 +12,8 @@
 #include <AZCrySystemInitLogSink.h>
 #include "DebugCallStack.h"
 
+#include <AzCore/Module/Environment.h> // for AZ_DECLARE_MODULE_INITIALIZATION
+
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
 #define DLLMAIN_CPP_SECTION_1 1
@@ -61,13 +63,16 @@ AZ_POP_DISABLE_WARNING
 
 extern "C"
 {
-CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
+#if !defined(AZ_MONOLITHIC_BUILD)
+CRYSYSTEM_API
+#endif
+ISystem* CreateSystemInterface(const SSystemInitParams& startupParams)
 {
     CSystem* pSystem = NULL;
 
     // We must attach to the environment prior to allocating CSystem, as opposed to waiting
     // for ModuleInitISystem(), because the log message sink uses buses.
-    // Environment should have been attached via InjectEnvironment
+    // Environment should have been attached via InitializeDynamicModule
     AZ_Assert(AZ::Environment::IsReady(), "Environment is not attached, must be attached before CreateSystemInterface can be called");
 
     pSystem = new CSystem(startupParams.pSharedEnvironment);
@@ -115,3 +120,5 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
 }
 };
 
+// declare the functions used by AZ::DynamicModule to [un]initialize the library here
+AZ_DECLARE_MODULE_INITIALIZATION

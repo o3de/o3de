@@ -1,5 +1,5 @@
 {
-    "Source": "ScreenSpaceSubsurfaceScatteringCS",
+    "Source": "ScreenSpaceSubsurfaceScatteringCS.azsl",
     
     "ProgramSettings":
     {

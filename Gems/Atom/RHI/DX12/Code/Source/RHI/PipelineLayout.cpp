@@ -139,8 +139,8 @@ namespace AZ
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
 
                 const uint32_t srgLayoutSlot = groupLayout.GetBindingSlot();
-                m_slotToIndexTable[srgLayoutSlot] = groupLayoutIndex;
-                m_indexToSlotTable[groupLayoutIndex] = srgLayoutSlot;
+                m_slotToIndexTable[srgLayoutSlot] = static_cast<uint8_t>(groupLayoutIndex);
+                m_indexToSlotTable[groupLayoutIndex] = static_cast<uint8_t>(srgLayoutSlot);
             }
 
             // Construct a list of indexes sorted by frequency.
@@ -417,7 +417,7 @@ namespace AZ
             }
 
             D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-            rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+            rootSignatureDesc.Flags = AZ_DX12_ROOT_SIGNATURE_FLAGS;
             rootSignatureDesc.NumParameters = static_cast<uint32_t>(parameters.size());
             rootSignatureDesc.pParameters = parameters.data();
             rootSignatureDesc.NumStaticSamplers = static_cast<uint32_t>(staticSamplers.size());

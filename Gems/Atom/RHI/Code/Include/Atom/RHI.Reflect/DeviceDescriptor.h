@@ -22,14 +22,14 @@ namespace AZ
         class DeviceDescriptor
         {
         public:
-            virtual ~DeviceDescriptor() = default;
             AZ_RTTI(DeviceDescriptor, "{8446A34C-A079-44B8-A20F-45D9CAB1FAFD}");
             static void Reflect(AZ::ReflectContext* context);
 
             DeviceDescriptor() = default;
+            virtual ~DeviceDescriptor();
 
             uint32_t m_frameCountMax = RHI::Limits::Device::FrameCountMax;
-            ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
+            Ptr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
         };
     }
 }

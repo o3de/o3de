@@ -8,8 +8,6 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <Mocks/IRendererMock.h>
-#include <Mocks/ITextureMock.h>
 #include <Sprite.h>
 
 namespace UnitTest
@@ -27,14 +25,14 @@ namespace UnitTest
             appDesc.m_stackRecordLevels = 20;
 
             AZ::ComponentApplication::StartupParameters appStartup;
-            // Module needs to be created this way to create CryString allocator for test
             appStartup.m_createStaticModulesCallback =
                 [](AZStd::vector<AZ::Module*>& modules)
             {
                 modules.emplace_back(new LyShine::LyShineModule);
             };
 
-            m_systemEntity = m_application.Create(appDesc, appStartup);
+            m_application = aznew AZ::ComponentApplication();
+            m_systemEntity = m_application->Create(appDesc, appStartup);
             m_systemEntity->Init();
             m_systemEntity->Activate();
         }
@@ -43,26 +41,16 @@ namespace UnitTest
         {
             LyShineTest::SetupEnvironment();
 
-            m_data = AZStd::make_unique<DataMembers>();
-            m_env->m_stubEnv.pRenderer = &m_data->m_renderer;
         }
 
         void TearDown() override
         {
-            m_data.reset();
-
             LyShineTest::TearDown();
         }
 
-        struct DataMembers
-        {
-            testing::NiceMock<IRendererMock> m_renderer;
-        };
-
-        AZStd::unique_ptr<DataMembers> m_data;
     };
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom
+#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
     TEST_F(LyShineSpriteTest, Sprite_CanAcquireRenderTarget)
     {
         // initialize to create the static sprite cache

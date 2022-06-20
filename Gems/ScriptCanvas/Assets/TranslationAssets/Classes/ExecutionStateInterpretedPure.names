@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ExecutionStateInterpretedPure",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ExecutionStateInterpretedPure"
+            }
+        }
+    ]
+}

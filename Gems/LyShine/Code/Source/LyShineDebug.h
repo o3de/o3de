@@ -12,9 +12,9 @@
 
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
+#endif
 
 #include <CryCommon/ISystem.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Class for drawing test displays for testing the LyShine functionality

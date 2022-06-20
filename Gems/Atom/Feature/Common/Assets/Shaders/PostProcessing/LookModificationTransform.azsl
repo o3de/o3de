@@ -12,6 +12,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/PostProcessing/Shapers.azsli>
 #include "EyeAdaptationUtil.azsli"
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
@@ -42,12 +43,111 @@ option bool o_enableExposureControlFeature = false;
 // Option shader variable to enable color grading LUT.
 option bool o_enableColorGradingLut = false;
 
+// Controls the sampling quality of the blended LUT. Setting this higher can improve the quality of particularly tricky luts.
+// 0 - linear
+// 1 - 7 tap b-spline
+// 2 - 19 tap b-spline
+[[range(0, 2)]]
+option uint o_lutSampleQuality = 0;
+
+// Sample a 3dtexture with a 7 or 19 tap B-Spline. Consider ripping this out and putting in a more general location.
+// This function samples a 4x4x4 neighborhood around the uv. Normally this would take 64 samples, but by taking
+// advantage of bilinear filtering this can be done with 27 taps on the edges between pixels. The cost is further
+// reduced by dropping either the 8 corners (19 total taps) or also dropping the 12 edges (7 total taps).
+float4 SampleBSpline3D(Texture3D<float4> texture, SamplerState linearSampler, float3 uv, float3 textureSize, float3 rcpTextureSize)
+{
+    // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
+    // a bottom right coordinate of 3,3.
+
+    // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
+    float3 texelPos = uv * textureSize;
+    float3 tc1= floor(texelPos - 0.5) + 0.5;
+
+    // Offset from center position to texel
+    float3 f = texelPos - tc1;
+
+    // Compute B-Spline weights based on the offset
+    float3 OneMinusF = (1.0 - f);
+    float3 OneMinusF2 = OneMinusF * OneMinusF;
+    float3 OneMinusF3 = OneMinusF2 * OneMinusF;
+    float3 w0 = OneMinusF3;
+    float3 w1 = 4.0 + 3.0 * f * f * f - 6.0 * f * f;
+    float3 w2 = 4.0 + 3.0 * OneMinusF3 - 6.0 * OneMinusF2;
+    float3 w3 = f * f * f;
+
+    float3 w12 = w1 + w2;
+
+    // Compute uv coordinates for sampling the texture
+    float3 tc0 = (tc1 - 1.0f) * rcpTextureSize;
+    float3 tc3 = (tc1 + 2.0f) * rcpTextureSize;
+    float3 tc12 = (tc1 + w2 / w12) * rcpTextureSize;
+
+    // Compute sample weights
+    float sw0 = w12.x * w0.y * w12.z;
+    float sw1 = w0.x  * w12.y * w12.z;
+    float sw2 = w12.x * w12.y * w12.z;
+    float sw3 = w3.x  * w12.y * w12.z;
+    float sw4 = w12.x * w3.y * w12.z;
+    float sw5 = w12.x * w12.y * w0.z;
+    float sw6 = w12.x * w12.y * w3.z;
+
+    // total weight of samples to normalize result.
+    float totalWeight = sw0 + sw1 + sw2 + sw3 + sw4 + sw5 + sw6;
+
+    float4 result = 0.0f;
+    result += texture.SampleLevel(linearSampler, float3(tc12.x,  tc0.y, tc12.z), 0.0) * sw0;
+    result += texture.SampleLevel(linearSampler, float3( tc0.x, tc12.y, tc12.z), 0.0) * sw1;
+    result += texture.SampleLevel(linearSampler, float3(tc12.x, tc12.y, tc12.z), 0.0) * sw2;
+    result += texture.SampleLevel(linearSampler, float3( tc3.x, tc12.y, tc12.z), 0.0) * sw3;
+    result += texture.SampleLevel(linearSampler, float3(tc12.x,  tc3.y, tc12.z), 0.0) * sw4;
+    result += texture.SampleLevel(linearSampler, float3(tc12.x,  tc12.y, tc0.z), 0.0) * sw5;
+    result += texture.SampleLevel(linearSampler, float3(tc12.x,  tc12.y, tc3.z), 0.0) * sw6;
+
+    if (o_lutSampleQuality == 2)
+    {
+        // Extra 12 taps for Diagonals to increase the quality further.
+
+        float sw7 = w0.x * w0.y * w12.z;
+        float sw8 = w0.x * w3.y * w12.z;
+        float sw9 = w3.x * w0.y * w12.z;
+        float sw10 = w3.x * w3.y * w12.z;
+
+        float sw11 = w12.x * w0.y * w0.z;
+        float sw12 = w12.x * w0.y * w3.z;
+        float sw13 = w12.x * w3.y * w0.z;
+        float sw14 = w12.x * w3.y * w3.z;
+
+        float sw15 = w0.x * w12.y * w0.z;
+        float sw16 = w0.x * w12.y * w3.z;
+        float sw17 = w3.x * w12.y * w0.z;
+        float sw18 = w3.x * w12.y * w3.z;
+
+        totalWeight += sw7 + sw8 + sw9 + sw10 + sw11 + sw12 + sw13 + sw14 + sw15 + sw16 + sw17 + sw18;
+
+        result += texture.SampleLevel(linearSampler, float3(tc0.x, tc0.y, tc12.z), 0.0) * sw7;
+        result += texture.SampleLevel(linearSampler, float3(tc0.x, tc3.y, tc12.z), 0.0) * sw8;
+        result += texture.SampleLevel(linearSampler, float3(tc3.x, tc0.y, tc12.z), 0.0) * sw9;
+        result += texture.SampleLevel(linearSampler, float3(tc3.x, tc3.y, tc12.z), 0.0) * sw10;
+
+        result += texture.SampleLevel(linearSampler, float3(tc12.x, tc0.y, tc0.z), 0.0) * sw11;
+        result += texture.SampleLevel(linearSampler, float3(tc12.x, tc0.y, tc3.z), 0.0) * sw12;
+        result += texture.SampleLevel(linearSampler, float3(tc12.x, tc3.y, tc0.z), 0.0) * sw13;
+        result += texture.SampleLevel(linearSampler, float3(tc12.x, tc3.y, tc3.z), 0.0) * sw14;
+
+        result += texture.SampleLevel(linearSampler, float3(tc0.x,  tc12.y, tc0.z), 0.0) * sw15;
+        result += texture.SampleLevel(linearSampler, float3(tc0.x,  tc12.y, tc3.z), 0.0) * sw16;
+        result += texture.SampleLevel(linearSampler, float3(tc3.x,  tc12.y, tc0.z), 0.0) * sw17;
+        result += texture.SampleLevel(linearSampler, float3(tc3.x,  tc12.y, tc3.z), 0.0) * sw18;
+    }
+    return result / totalWeight;
+}
+
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
     // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    float3 color = PassSrg::m_framebuffer.SampleLevel(PassSrg::LinearSampler, IN.m_texCoord, 0.0).rgb;
 
     if (o_enableExposureControlFeature)
     {
@@ -63,36 +163,28 @@ PSOutput MainPS(VSOutput IN)
     if (o_enableColorGradingLut)
     {
         // Convert from working color space to lut coordinates by applying the shaper function
-        float3 lutCoordinate = color;
-        if (shaperType == ShaperType::ShaperLinear)
-        {
-            lutCoordinate = color * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
-        }
-        else if (shaperType == ShaperType::ShaperLog2)
-        {
-            lutCoordinate = log2(color) * PassSrg::m_shaperScale + PassSrg::m_shaperBias;
-        }
+        float3 lutCoordinate = LinearToShaper(color, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
 
         // Adjust coordinate to the domain excluding the outer half texel in all directions
         uint3 outputDimensions;
         PassSrg::m_gradingLut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
         float3 coordBias = 0.5f / outputDimensions;
-        float3 coordScale = (outputDimensions-1.0)/outputDimensions;
+        float3 sizeMinusOne = outputDimensions - 1.0;
+        float3 coordScale = sizeMinusOne / outputDimensions;
         lutCoordinate = (lutCoordinate * coordScale) + coordBias;
 
-        float3 lutColor = PassSrg::m_gradingLut.Sample(PassSrg::LinearSampler, lutCoordinate).rgb;
+        float3 lutColor = float3(0.0, 0.0, 0.0);
+        if (o_lutSampleQuality == 0)
+        {
+            lutColor = PassSrg::m_gradingLut.SampleLevel(PassSrg::LinearSampler, lutCoordinate, 0.0).rgb;
+        }
+        else
+        {
+            lutColor = SampleBSpline3D(PassSrg::m_gradingLut, PassSrg::LinearSampler, lutCoordinate, float3(outputDimensions), 1.0 / float3(outputDimensions)).rgb;
+        }
 
         // Apply the inverse of the shaper function to give the color in the working color space
-        float3 finalColor = lutColor;
-        if (shaperType == ShaperType::ShaperLinear)
-        {
-            finalColor = (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale;
-        }
-        else if (shaperType == ShaperType::ShaperLog2)
-        {
-            finalColor = pow(2.0, (lutColor - PassSrg::m_shaperBias)/PassSrg::m_shaperScale);
-        }
-        color = finalColor;
+        color = ShaperToLinear(lutColor, shaperType, PassSrg::m_shaperBias, PassSrg::m_shaperScale);
     }
 
     OUT.m_color.rgb = color;

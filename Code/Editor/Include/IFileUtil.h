@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
+#include <CryCommon/LegacyAllocator.h>
+#include <set>
 
 class QWidget;
 
@@ -59,7 +60,6 @@ struct IFileUtil
         EFILE_TYPE_GEOMETRY,
         EFILE_TYPE_TEXTURE,
         EFILE_TYPE_SOUND,
-        EFILE_TYPE_GEOMCACHE,
         EFILE_TYPE_LAST,
     };
 
@@ -103,7 +103,7 @@ struct IFileUtil
         }
     };
 
-    typedef DynArray<FileDesc> FileArray;
+    using FileArray = AZStd::vector<FileDesc, AZ::StdLegacyAllocator>;
 
     typedef bool (* ScanDirectoryUpdateCallBack)(const QString& msg);
 
@@ -113,13 +113,8 @@ struct IFileUtil
 
     virtual void ShowInExplorer(const QString& path) = 0;
 
-    virtual bool CompileLuaFile(const char* luaFilename) = 0;
     virtual bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) = 0;
-    virtual void EditTextFile(const char* txtFile, int line = 0, ETextFileType fileType = FILE_TYPE_SCRIPT) = 0;
     virtual void EditTextureFile(const char* txtureFile, bool bUseGameFolder) = 0;
-
-    //! dcc filename calculation and extraction sub-routines
-    virtual bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename) = 0;
 
     //! Reformat filter string for (MFC) CFileDialog style file filtering
     virtual void FormatFilterString(QString& filter) = 0;
@@ -186,8 +181,15 @@ struct IFileUtil
     virtual ECopyTreeResult CopyTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false) = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
+    /**
+     * @brief CopyFile
+     * @param strSourceFile
+     * @param strTargetFile
+     * @param boConfirmOverwrite
+     * @param pfnProgress - called by the system to notify of file copy progress
+     * @param pbCancel - when the contents of this bool are set to true, the system cancels the copy operation
+     * @return
+     */
     virtual ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr) = 0;
 
     // As we don't have a FileUtil interface here, we have to duplicate some code :-( in order to keep

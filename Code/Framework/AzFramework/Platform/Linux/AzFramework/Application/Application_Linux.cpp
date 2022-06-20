@@ -6,101 +6,45 @@
  *
  */
 
-#include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <sys/resource.h>
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbApplication.h>
+#endif
+
+constexpr rlim_t g_minimumOpenFileHandles = 65536L;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-    class LinuxXcbConnectionManagerImpl
-        : public LinuxXcbConnectionManagerBus::Handler
-    {
-    public:
-        LinuxXcbConnectionManagerImpl()
-        {
-            m_xcbConnection = xcb_connect(nullptr, nullptr);
-            AZ_Error("ApplicationLinux", m_xcbConnection != nullptr, "Unable to connect to X11 Server.");
-            LinuxXcbConnectionManagerBus::Handler::BusConnect();
-        }
-
-        ~LinuxXcbConnectionManagerImpl()
-        {
-            LinuxXcbConnectionManagerBus::Handler::BusDisconnect();
-            xcb_disconnect(m_xcbConnection);   
-        }
-        xcb_connection_t* GetXcbConnection() const override
-        {
-            return m_xcbConnection;
-        }
-    private:
-        xcb_connection_t*   m_xcbConnection = nullptr;
-    };
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    class ApplicationLinux
-        : public Application::Implementation
-        , public LinuxLifecycleEvents::Bus::Handler
-    {
-    public:
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationLinux, AZ::SystemAllocator, 0);
-        ApplicationLinux();
-        ~ApplicationLinux() override;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // Application::Implementation
-        void PumpSystemEventLoopOnce() override;
-        void PumpSystemEventLoopUntilEmpty() override;
-    private:
-
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        AZStd::unique_ptr<LinuxXcbConnectionManager>    m_xcbConnectionManager;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
-    };
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     Application::Implementation* Application::Implementation::Create()
     {
-        return aznew ApplicationLinux();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    ApplicationLinux::ApplicationLinux()
-    {
-        LinuxLifecycleEvents::Bus::Handler::BusConnect();
-
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        m_xcbConnectionManager = AZStd::make_unique<LinuxXcbConnectionManagerImpl>();
-        if (LinuxXcbConnectionManagerInterface::Get() == nullptr)
+        // The default open file limit for processes may not be enough for O3DE applications. 
+        // We will need to increase to the recommended value if the current open file limit
+        // is not sufficient.
+        rlimit currentLimit;
+        int get_limit_result = getrlimit(RLIMIT_NOFILE, &currentLimit);
+        AZ_Warning("Application", get_limit_result == 0, "Unable to read current ulimit open file limits");
+        if ((get_limit_result == 0) && (currentLimit.rlim_cur < g_minimumOpenFileHandles || currentLimit.rlim_max < g_minimumOpenFileHandles))
         {
-            LinuxXcbConnectionManagerInterface::Register(m_xcbConnectionManager.get());
+            rlimit newLimit;
+            newLimit.rlim_cur = g_minimumOpenFileHandles; // Soft Limit
+            newLimit.rlim_max = g_minimumOpenFileHandles; // Hard Limit
+            [[maybe_unused]] int set_limit_result = setrlimit(RLIMIT_NOFILE, &newLimit);
+            AZ_Assert(set_limit_result == 0, "Unable to update open file limits");
         }
+        
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        return aznew XcbApplication();
+#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        #error "Linux Window Manager Wayland not supported."
+        return nullptr;
+#else
+        #error "Linux Window Manager not recognized."
+        return nullptr;
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    ApplicationLinux::~ApplicationLinux()
-    {
-#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        if (LinuxXcbConnectionManagerInterface::Get() == m_xcbConnectionManager.get())
-        {
-            LinuxXcbConnectionManagerInterface::Unregister(m_xcbConnectionManager.get());
-        }
-        m_xcbConnectionManager.reset();
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB        
-        LinuxLifecycleEvents::Bus::Handler::BusDisconnect();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void ApplicationLinux::PumpSystemEventLoopOnce()
-    {
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void ApplicationLinux::PumpSystemEventLoopUntilEmpty()
-    {
-    }
 } // namespace AzFramework

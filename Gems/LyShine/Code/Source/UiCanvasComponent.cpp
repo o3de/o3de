@@ -16,7 +16,6 @@
 #include "UiRenderer.h"
 #include "LyShine.h"
 
-#include <IRenderer.h>
 #include <Random.h>
 #include <CryFile.h>
 #include <CryPath.h>
@@ -28,7 +27,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
@@ -37,6 +36,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
@@ -49,6 +49,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 
 #include "Animation/UiAnimationSystem.h"
 
@@ -63,6 +65,8 @@
 #include <LyShine/Bus/UiMaskBus.h>
 #include <LyShine/Bus/UiFaderBus.h>
 #endif
+
+#include "LyShinePassDataBus.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasNotificationBus Behavior context handler class
@@ -177,11 +181,11 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // test if the given text file starts with the given text string
-    bool TestFileStartString(const string& pathname, const char* expectedStart)
+    bool TestFileStartString(const AZStd::string& pathname, const char* expectedStart)
     {
         // Open the file using CCryFile, this supports it being in the pak file or a standalone file
         CCryFile file;
-        if (!file.Open(pathname, "r"))
+        if (!file.Open(pathname.c_str(), "r"))
         {
             return false;
         }
@@ -208,7 +212,7 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Check if the given file was saved using AZ serialization
-    bool IsValidAzSerializedFile(const string& pathname)
+    bool IsValidAzSerializedFile(const AZStd::string& pathname)
     {
         return TestFileStartString(pathname, "<ObjectStream");
     }
@@ -251,14 +255,22 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRenderer() : nullptr;
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+            return lyShine->GetUiRenderer();
+        }
+        return nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
+            return lyShine->GetUiRendererForEditor();
+        }
+        return nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -281,6 +293,35 @@ namespace
         EBUS_EVENT_ID_RESULT(canHandleEvents, entityId, UiInteractableBus, IsHandlingEvents);
 
         return canHandleEvents;
+    }
+
+    bool IsAttachmentImageAssetCompatible(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
+    {
+        // Check that the attachment image asset's bind flags are compatible
+        // - Supports use as a color attachment on a scope
+        // - Supports read access through a ShaderResourceGroup
+        const AZ::RHI::ImageDescriptor& imageDescriptor = attachmentImageAsset->GetImageDescriptor();
+        bool isCompatible = AZ::RHI::CheckBitsAll(imageDescriptor.m_bindFlags,
+            AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderRead);
+        if (!isCompatible)
+        {
+            AZ_Error("UI", false, "Attachment image asset: %s has invalid bindings for rendering a UI Canvas. Please "
+                "ensure that its BindFlags property includes Color and ShaderRead.", attachmentImageAsset.GetHint().c_str());
+            return false;
+        }
+
+        // Check that the attachment image asset's pixel format is compatible
+        isCompatible = (imageDescriptor.m_format == AZ::RHI::Format::R8G8B8A8_UNORM)
+            || (imageDescriptor.m_format == AZ::RHI::Format::R8G8B8A8_UNORM_SRGB);
+        if (!isCompatible)
+        {
+            AZ_Error("UI", false, "Attachment image asset: %s has an invalid pixel format for rendering a "
+                "UI Canvas. Please ensure that it contains a Format property with a valid value of "
+                "19 (R8G8B8A8_UNORM) or 20 (R8G8B8A8_UNORM_SRGB).", attachmentImageAsset.GetHint().c_str());
+            return false;
+        }
+
+        return true;
     }
 }
 
@@ -573,7 +614,7 @@ AZ::EntityId UiCanvasComponent::FindInteractableToHandleEvent(AZ::Vector2 point)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname)
+bool UiCanvasComponent::SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname)
 {
     PrepareAnimationSystemForCanvasSave();
 
@@ -694,7 +735,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     if (includeChildren)
     {
-        children.push_back(*includeChildren);
+        children.insert(children.end(),includeChildren->begin(),includeChildren->end());
     }
 
     // First, check if base name is unique
@@ -705,7 +746,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     // Count trailing digits in base name
     int i;
-    for (i = baseName.length() - 1; i >= 0; i--)
+    for (i = static_cast<int>(baseName.length() - 1); i >= 0; i--)
     {
         if (!isdigit(baseName[i]))
         {
@@ -713,7 +754,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         }
     }
     int startDigitIndex = i + 1;
-    int numDigits = baseName.length() - startDigitIndex;
+    int numDigits = static_cast<int>(baseName.length() - startDigitIndex);
 
     int suffix = 1;
     if (numDigits > 0)
@@ -737,7 +778,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         AZStd::string suffixString = AZStd::string::format("%d", suffix);
 
         // Append leading zeros
-        int numLeadingZeros = (suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0;
+        int numLeadingZeros = static_cast<int>((suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0);
         for (int zeroes = 0; zeroes < numLeadingZeros; zeroes++)
         {
             proposedChildName.push_back('0');
@@ -868,8 +909,15 @@ void UiCanvasComponent::SetTargetCanvasSize(bool isInGame, const AZ::Vector2& ta
 {
     if (m_renderToTexture)
     {
-        // when a canvas is set to render to texture the target canvas size is always the authored canvas size
-        SetTargetCanvasSizeAndUniformScale(isInGame, m_canvasSize);
+        // When a canvas is set to render to texture the target canvas size is retrieved from the asset.
+        // This is typically the same size as the authored canvas size
+        AZ::Vector2 targetSize(m_canvasSize);
+        if (m_attachmentImageAsset)
+        {
+            AZ::RHI::Size imageSize = m_attachmentImageAsset->GetImageDescriptor().m_size;
+            targetSize = AZ::Vector2(aznumeric_cast<float>(imageSize.m_width), aznumeric_cast<float>(imageSize.m_height));
+        }
+        SetTargetCanvasSizeAndUniformScale(isInGame, targetSize);
     }
     else
     {
@@ -946,19 +994,19 @@ void UiCanvasComponent::SetIsRenderToTexture(bool isRenderToTexture)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::string UiCanvasComponent::GetRenderTargetName()
+const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& UiCanvasComponent::GetAttachmentImageAsset()
 {
-    return m_renderTargetName;
+    return m_attachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::SetRenderTargetName(const AZStd::string& name)
+void UiCanvasComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    if (name != m_renderTargetName && !name.empty())
+    if (m_attachmentImageAsset != attachmentImageAsset)
     {
         DestroyRenderTarget();
-        m_renderTargetName = name;
-        CreateRenderTarget();
+        m_attachmentImageAsset = attachmentImageAsset;
+        MarkRenderGraphDirty();
     }
 }
 
@@ -1104,7 +1152,7 @@ bool UiCanvasComponent::HandleInputEvent(const AzFramework::InputChannel::Snapsh
         }
     }
 
-    return m_isConsumingAllInputEvents;
+    return !m_renderToTexture && m_isConsumingAllInputEvents;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1561,12 +1609,6 @@ void UiCanvasComponent::ActiveChanged(AZ::EntityId m_newActiveInteractable, bool
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::OnPreRender()
-{
-    RenderCanvasToTexture();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence)
 {
     // Queue the event to prevent deletions during the canvas update
@@ -1830,6 +1872,78 @@ void UiCanvasComponent::MarkRenderGraphDirty()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size)
+{
+    // Create a render target that UI elements will render to
+    AZ::RPI::CreateAttachmentImageRequest createImageRequest;
+    AZ::RHI::ImageDescriptor& imageDesc = createImageRequest.m_imageDescriptor;
+    imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderReadWrite;
+    imageDesc.m_size = size;
+    imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
+
+    createImageRequest.m_imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool().get();
+    createImageRequest.m_imageName = renderTargetName;
+    createImageRequest.m_isUniqueName = false;  // Can't use an unique name since the previous render target's release is delayed
+
+    auto attachmentImage = AZ::RPI::AttachmentImage::Create(createImageRequest);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to create render target");
+        return AZ::RHI::AttachmentId();
+    }
+
+    m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+
+    return attachmentImage->GetAttachmentId();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
+{
+    AZ::RHI::AttachmentId attachmentId = AZ::RHI::AttachmentId{};
+
+    // Check that the attachment image asset's properties are compatible for rendering a UI canvas
+    if (IsAttachmentImageAssetCompatible(attachmentImageAsset))
+    {
+        // Instantiate or get an existing image instance for the specified asset
+        auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+        if (attachmentImage)
+        {
+            attachmentId = attachmentImage->GetAttachmentId();
+            m_attachmentImageMap[attachmentId] = attachmentImage;
+
+            // Notify LyShine render pass that it needs to rebuild
+            QueueRttPassRebuild();
+        }
+        else
+        {
+            AZ_Error("UI", false, "Failed to find or create render target from asset: %s",
+                attachmentImageAsset.GetHint().c_str());
+        }
+    }
+
+    return attachmentId;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    m_attachmentImageMap.erase(attachmentId);
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::AttachmentImage> UiCanvasComponent::GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    return m_attachmentImageMap[attachmentId];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::UpdateCanvas(float deltaTime, bool isInGame)
 {
     // Ignore update if we're not enabled
@@ -1864,6 +1978,8 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
         return;
     }
 
+    m_renderInEditor = uiRenderer ? true : false;
+
     if (!uiRenderer)
     {
         uiRenderer = GetUiRendererForGame();
@@ -1886,13 +2002,54 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
     if (m_renderGraph.GetDirtyFlag())
     {
         m_renderGraph.ResetGraph();
+
+        bool renderToTexture = !m_renderInEditor && GetIsRenderToTexture();
+        if (renderToTexture)
+        {
+            if (m_attachmentImageId.IsEmpty())
+            {
+                CreateRenderTarget();
+            }
+
+            // we always clear to transparent black - the accumulation of alpha in the render target requires it
+            AZ::Color clearColor = AZ::Color::CreateZero();
+
+            // Start building the render to texture node in the render graph
+            AZ::Vector2 viewportTopLeft = AZ::Vector2::CreateZero();
+            AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage;
+            LyShine::RenderToTextureRequestBus::EventResult(attachmentImage, GetEntityId(),
+                &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_attachmentImageId);
+            m_renderGraph.BeginRenderToTexture(attachmentImage, viewportTopLeft, viewportSize, clearColor);
+        }
+        else
+        {
+            if (!m_attachmentImageId.IsEmpty())
+            {
+                DestroyRenderTarget();
+            }
+        }
+
         EBUS_EVENT_ID(m_rootElement, UiElementBus, RenderElement, &m_renderGraph, isInGame);
+
+        if (renderToTexture)
+        {
+            // finish building the render to texture node in the render graph
+            m_renderGraph.EndRenderToTexture();
+        }
+
         m_renderGraph.SetDirtyFlag(false);
         m_renderGraph.FinalizeGraph();
     }
 
     if (!m_renderGraph.IsEmpty())
     {
+        if (!m_attachmentImageMap.empty())
+        {
+            // Process any queued pass changes to get rtt draw list tags in sync prior to adding draw calls
+            AZ::RPI::PassSystemInterface* passSystem = AZ::RPI::PassSystemInterface::Get();
+            passSystem->ProcessQueuedChanges();
+        }
+
         uiRenderer->BeginCanvasRender();
         m_renderGraph.Render(uiRenderer, viewportSize);
         uiRenderer->EndCanvasRender();
@@ -1949,6 +2106,12 @@ void UiCanvasComponent::ScheduleElementDestroy(AZ::EntityId entityId)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies)
+{
+    m_renderGraph.GetRenderTargetsAndDependencies(attachmentImagesAndDependencies);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::DestroyScheduledElements()
 {
     for (auto entityId : m_elementsScheduledForDestroy)
@@ -1957,6 +2120,20 @@ void UiCanvasComponent::DestroyScheduledElements()
     }
 
     m_elementsScheduledForDestroy.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::QueueRttPassRebuild()
+{
+    UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
+    {
+        if (const AZ::RPI::ScenePtr& scene = uiRenderer->GetViewportContext()->GetRenderScene())
+        {
+            AZ::RPI::SceneId sceneId = scene->GetId();
+            EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1978,7 +2155,7 @@ void UiCanvasComponent::GetDebugInfoNumElements(DebugInfoNumElements& info) cons
     info.m_numMaskElements = 0;
     info.m_numFaderElements = 0;
     info.m_numInteractableElements = 0;
-    info.m_numUpdateElements = UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId());
+    info.m_numUpdateElements = static_cast<int>(UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId()));
 
     DebugInfoCountChildren(m_rootElement, true, info);
 }
@@ -2052,13 +2229,13 @@ void UiCanvasComponent::DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LySh
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayElemBounds(CDraw2d* draw2d) const
+void UiCanvasComponent::DebugDisplayElemBounds(IDraw2d* draw2d) const
 {
     DebugDisplayChildElemBounds(draw2d, m_rootElement);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const
+void UiCanvasComponent::DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const
 {
     AZ::u64 time = AZStd::GetTimeUTCMilliSecond();
     uint32 fractionsOfOneSecond = time % 1000;
@@ -2108,7 +2285,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
         UiAnimationSystem::Reflect(serializeContext);
 
         serializeContext->Class<UiCanvasComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+            ->Version(4, &VersionConverter)
         // Not in properties pane
             ->Field("UniqueId", &UiCanvasComponent::m_uniqueId)
             ->Field("RootElement", &UiCanvasComponent::m_rootElement)
@@ -2120,7 +2297,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Field("IsPixelAligned", &UiCanvasComponent::m_isPixelAligned)
             ->Field("IsTextPixelAligned", &UiCanvasComponent::m_isTextPixelAligned)
             ->Field("RenderToTexture", &UiCanvasComponent::m_renderToTexture)
-            ->Field("RenderTargetName", &UiCanvasComponent::m_renderTargetName)
+            ->Field("AttachmentImageAsset", &UiCanvasComponent::m_attachmentImageAsset)
         // Input group
             ->Field("IsPosInputSupported", &UiCanvasComponent::m_isPositionalInputSupported)
             ->Field("IsConsumingAllInput", &UiCanvasComponent::m_isConsumingAllInputEvents)
@@ -2186,7 +2363,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCanvasComponent::OnTextPixelAlignmentChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_renderToTexture, "Render to texture", "When checked, the canvas is rendered to a texture instead of the full screen.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
-            editInfo->DataElement(0, &UiCanvasComponent::m_renderTargetName, "Render target", "The name of the texture that is created when this canvas renders to a texture.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_attachmentImageAsset, "Render Target", "The asset for the attachment image that this canvas renders to.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::m_renderToTexture);
 
             editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Input")
@@ -2251,8 +2428,8 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetEnabled", &UiCanvasBus::Events::SetEnabled)
             ->Event("GetIsRenderToTexture", &UiCanvasBus::Events::GetIsRenderToTexture)
             ->Event("SetIsRenderToTexture", &UiCanvasBus::Events::SetIsRenderToTexture)
-            ->Event("GetRenderTargetName", &UiCanvasBus::Events::GetRenderTargetName)
-            ->Event("SetRenderTargetName", &UiCanvasBus::Events::SetRenderTargetName)
+            ->Event("GetAttachmentImageAsset", &UiCanvasBus::Events::GetAttachmentImageAsset)
+            ->Event("SetAttachmentImageAsset", &UiCanvasBus::Events::SetAttachmentImageAsset)
             ->Event("GetIsPositionalInputSupported", &UiCanvasBus::Events::GetIsPositionalInputSupported)
             ->Event("SetIsPositionalInputSupported", &UiCanvasBus::Events::SetIsPositionalInputSupported)
             ->Event("GetIsConsumingAllInputEvents", &UiCanvasBus::Events::GetIsConsumingAllInputEvents)
@@ -2350,6 +2527,7 @@ void UiCanvasComponent::Activate()
     UiCanvasComponentImplementationBus::Handler::BusConnect(m_entity->GetId());
     UiEditorCanvasBus::Handler::BusConnect(m_entity->GetId());
     UiAnimationBus::Handler::BusConnect(m_entity->GetId());
+    LyShine::RenderToTextureRequestBus::Handler::BusConnect(m_entity->GetId());
 
     // Reconnect to buses that we connect to intermittently
     // This will only happen if we have been deactivated and reactivated at runtime
@@ -2360,14 +2538,6 @@ void UiCanvasComponent::Activate()
     if (m_activeInteractable.IsValid())
     {
         UiInteractableActiveNotificationBus::Handler::BusConnect(m_activeInteractable);
-    }
-
-    // Note: this will create a render target even when the canvas is being used in the editor which is
-    // unnecessary but harmless. It will not actually be used as a render target unless we are running in game.
-    // An alternative would be to create in on first use.
-    if (m_renderToTexture)
-    {
-        CreateRenderTarget();
     }
 
     LoadAtlases();
@@ -2382,6 +2552,7 @@ void UiCanvasComponent::Deactivate()
     UiCanvasComponentImplementationBus::Handler::BusDisconnect();
     UiEditorCanvasBus::Handler::BusDisconnect();
     UiAnimationBus::Handler::BusDisconnect();
+    LyShine::RenderToTextureRequestBus::Handler::BusDisconnect();
 
     // disconnect from any other buses we could be connected to
     if (m_hoverInteractable.IsValid() && AZ::EntityBus::Handler::BusIsConnectedId(m_hoverInteractable))
@@ -2399,6 +2570,12 @@ void UiCanvasComponent::Deactivate()
     {
         DestroyRenderTarget();
     }
+
+    // Destroy owned render targets
+    m_attachmentImageMap.clear();
+
+    //! Notify LyShine pass that it needs to rebuild
+    QueueRttPassRebuild();
 
     delete m_layoutManager;
     m_layoutManager = nullptr;
@@ -3527,81 +3704,25 @@ void UiCanvasComponent::CreateRenderTarget()
         return;
     }
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
-    // Create a render target that this canvas will be rendered to.
-    // The render target size is the canvas size.
-    m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
-            static_cast<int>(m_canvasSize.GetX()), static_cast<int>(m_canvasSize.GetY()), Clr_Empty, eTF_R8G8B8A8);
-
-    if (m_renderTargetHandle <= 0)
-    {
-        gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,
-            m_pathname.c_str(),
-            "Failed to create render target for UI canvas: %s",
-            m_pathname.c_str());
-    }
-    else
-    {
-        // Also create a depth surface to render the canvas to, we need depth for masking
-        // since that uses the stencil buffer
-        m_renderTargetDepthSurface = gEnv->pRenderer->CreateDepthSurface(
-                static_cast<int>(m_canvasSize.GetX()), static_cast<int>(m_canvasSize.GetY()));
-
-        ISystem::CrySystemNotificationBus::Handler::BusConnect();
-    }
-#endif
+    // Create a render target for the canvas
+    LyShine::RenderToTextureRequestBus::EventResult(m_attachmentImageId, GetEntityId(),
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTargetAsset, m_attachmentImageAsset);
+    AZ_Error("UI", !m_attachmentImageId.IsEmpty(), "Failed to acquire a render target for UI canvas: %s", m_pathname.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::DestroyRenderTarget()
 {
-    if (m_renderTargetHandle > 0)
+    if (!m_attachmentImageId.IsEmpty())
     {
-        ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-        m_renderTargetDepthSurface = nullptr;
-        gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
-        m_renderTargetHandle = -1;
+        LyShine::RenderToTextureRequestBus::Event(GetEntityId(),
+            &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_attachmentImageId);
+        m_attachmentImageId = AZ::RHI::AttachmentId{};
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::RenderCanvasToTexture()
-{
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
-    if (m_renderTargetHandle <= 0)
-    {
-        return;
-    }
-
-    ISystem* system = gEnv->pSystem;
-    if (system && !gEnv->IsDedicated())
-    {
-        GetUiRenderer()->BeginUiFrameRender();
-
-        gEnv->pRenderer->SetRenderTarget(m_renderTargetHandle, m_renderTargetDepthSurface);
-
-        // clear the render target before rendering to it
-        // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will have already set the render target
-        // In theory we could call this before setting the render target without the immediate flag
-        // but that doesn't work. Perhaps because FX_Commit is not called.
-        ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
-        gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
-
-        // we are writing to a linear texture
-        gEnv->pRenderer->SetSrgbWrite(false);
-
-        RenderCanvas(true, m_canvasSize);
-
-        gEnv->pRenderer->SetRenderTarget(0); // restore render target
-
-        GetUiRenderer()->EndUiFrameRender();
-    }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveCanvasToFile(const string& pathname, AZ::DataStream::StreamType streamType)
+bool UiCanvasComponent::SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType)
 {
     // Note: This is ok for saving in tools, but we should use the streamer to write objects directly (no memory store)
     AZStd::vector<AZ::u8> dstData;
@@ -3884,7 +4005,7 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const string& pathnameToOpen, bool forEditor, const string& assetIdPathname, UiEntityContext* entityContext,
+UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& pathnameToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
     const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     UiCanvasComponent* canvasComponent = nullptr;
@@ -4018,7 +4139,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
 
         canvasComponent->m_editorToGameEntityIdMap = *previousRemapTable;
         ReuseOrGenerateNewIdsAndFixRefs(&entityContainer, canvasComponent->m_editorToGameEntityIdMap, context);
-        
+
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
             canvasComponent->m_entityContext->GetContextId(),
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity, false, nullptr);
@@ -4138,6 +4259,16 @@ bool UiCanvasComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() < 3)
     {
         if (!LyShine::ConvertSubElementFromVec2ToVector2(context, classElement, "CanvasSize"))
+        {
+            return false;
+        }
+    }
+
+    // conversion from version 3 to 4:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() < 4)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }

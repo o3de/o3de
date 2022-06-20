@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import boto3
 from botocore.paginate import (PageIterator, Paginator)
 from botocore.client import BaseClient
-from botocore.exceptions import (ClientError, ConfigNotFound, NoCredentialsError, ProfileNotFound)
+from botocore.exceptions import (BotoCoreError, ClientError, ConfigNotFound, NoCredentialsError, ProfileNotFound)
 from typing import Dict, List
 
 from model import error_messages
@@ -50,10 +50,14 @@ def _close_client_connection(client: BaseClient) -> None:
 
 
 def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
-    if region:
-        boto3_client: BaseClient = default_session.client(service, region_name=region)
-    else:
-        boto3_client: BaseClient = default_session.client(service)
+    try:
+        if region:
+            boto3_client: BaseClient = default_session.client(service, region_name=region)
+        else:
+            boto3_client: BaseClient = default_session.client(service)
+    except BotoCoreError as error:
+        raise RuntimeError(error)
+
     boto3_client.meta.events.register(
         f"after-call.{service}.*", lambda **kwargs: _close_client_connection(boto3_client)
     )
@@ -103,7 +107,17 @@ def list_s3_buckets(region: str = "") -> List[str]:
     bucket_names: List[str] = []
     bucket: Dict[str, any]
     for bucket in response["Buckets"]:
-        bucket_names.append(bucket["Name"])
+        try:
+            bucket_name: str = bucket["Name"]
+            location_response: Dict[str, any] = s3_client.get_bucket_location(Bucket=bucket_name)
+            # Buckets in Region us-east-1 have a LocationConstraint of null .
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_bucket_location
+            if ((location_response["LocationConstraint"] == region) or
+                    (not location_response["LocationConstraint"] and region == "us-east-1")):
+                bucket_names.append(bucket_name)
+        except ClientError as error:
+            raise RuntimeError(error_messages.AWS_SERVICE_REQUEST_CLIENT_ERROR_MESSAGE.format(
+                "get_bucket_location", error.response['Error']['Code'], error.response['Error']['Message']))
     return bucket_names
 
 

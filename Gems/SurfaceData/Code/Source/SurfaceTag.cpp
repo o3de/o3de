@@ -88,7 +88,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::GetRegisteredTags()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         SurfaceTagNameSet labels;
         SurfaceDataTagProviderRequestBus::Broadcast(&SurfaceDataTagProviderRequestBus::Events::GetRegisteredSurfaceTagNames, labels);
@@ -134,7 +134,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::BuildSelectableTagList() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = GetRegisteredTags();
 
@@ -152,7 +152,7 @@ namespace SurfaceData
 
     AZStd::string SurfaceTag::GetDisplayName() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZStd::string name;
         FindDisplayName(GetRegisteredTags(), name);

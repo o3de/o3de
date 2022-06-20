@@ -9,14 +9,11 @@
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/LtcCommon.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -107,7 +104,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -119,7 +116,7 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -193,6 +190,22 @@ namespace AZ
             QuadLightData& data = m_quadLightData.GetData(handle.GetIndex());
             data.m_halfWidth = width * 0.5f;
             data.m_halfHeight = height * 0.5f;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGI().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 

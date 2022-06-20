@@ -1,0 +1,581 @@
+{
+    "entries": [
+        {
+            "base": "AZ::SceneAPI::Containers::SceneGraph",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene Graph",
+                "category": "Scene Graph"
+            },
+            "methods": [
+                {
+                    "base": "GetNodeChild",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Child is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Child"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FindWithPath",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find With Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find With Path is invoked"
+                    },
+                    "details": {
+                        "name": "Find With Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasNodeChild",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Node Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Node Child is invoked"
+                    },
+                    "details": {
+                        "name": "Has Node Child"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Node Child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasNodeParent",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Node Parent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Node Parent is invoked"
+                    },
+                    "details": {
+                        "name": "Has Node Parent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Node Parent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeSibling",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Sibling"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Sibling is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Sibling"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasNodeSibling",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Node Sibling"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Node Sibling is invoked"
+                    },
+                    "details": {
+                        "name": "Has Node Sibling"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Node Sibling"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNodeEndPoint",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Node End Point"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Node End Point is invoked"
+                    },
+                    "details": {
+                        "name": "Is Node End Point"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Node End Point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeCount",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Count"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Count is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Count"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Node Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasNodeContent",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Node Content"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Node Content is invoked"
+                    },
+                    "details": {
+                        "name": "Has Node Content"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Node Content"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeContent",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Content"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Content is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Content"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3EF0DDEC-C734-4804-BE99-82058FEBDA71}",
+                            "details": {
+                                "name": "Graph Object Proxy"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeName",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "Node Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRoot",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Root"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Root is invoked"
+                    },
+                    "details": {
+                        "name": "Get Root"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeSeperationCharacter",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Separation Character"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Separation Character is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Separation Character"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Separation Character"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNodeParent",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Node Parent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Node Parent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Node Parent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FindWithRootAndPath",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find With Root And Path"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find With Root And Path is invoked"
+                    },
+                    "details": {
+                        "name": "Find With Root And Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CAC6556D-D5FE-4D0E-BCCD-8940357C1D35}",
+                            "details": {
+                                "name": "Scene Graph"
+                            }
+                        },
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Path"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": "Node Index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValidName",
+                    "context": "AZ::SceneAPI::Containers::SceneGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid Name is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Valid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

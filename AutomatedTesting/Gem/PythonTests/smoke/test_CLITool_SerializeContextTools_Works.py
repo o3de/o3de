@@ -13,7 +13,10 @@ import os
 import pytest
 import subprocess
 
+import ly_test_tools
 
+
+@pytest.mark.SerializeContext
 @pytest.mark.SUITE_smoke
 class TestCLIToolSerializeContextToolsWorks(object):
     def test_CLITool_SerializeContextTools_Works(self, build_directory):

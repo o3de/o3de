@@ -13,7 +13,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/IdUtils.h>
 
 namespace AZ
@@ -444,7 +443,7 @@ namespace AZ
              * @return A pointer to the newly created slice instance. Returns nullptr on error or if the SliceComponent is not instantiated.
             */
             SliceInstance* CreateInstanceFromExistingEntities(AZStd::vector<AZ::Entity*>& entities,
-                const EntityIdToEntityIdMap assetToLiveIdMap,
+                const EntityIdToEntityIdMap& assetToLiveIdMap,
                 SliceInstanceId sliceInstanceId = SliceInstanceId::CreateRandom());
 
             /** 

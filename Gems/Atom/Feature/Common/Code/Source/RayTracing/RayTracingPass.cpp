@@ -115,9 +115,12 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup, "RayTracingPass [%s]: Failed to create RayTracingGlobalSrg", GetPathName().GetCStr());
             RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
 
-            // check to see if the shader requires the View and RayTracingMaterial Srgs
+            // check to see if the shader requires the View, Scene, or RayTracingMaterial Srgs
             const auto& viewSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::View);
             m_requiresViewSrg = (viewSrgLayout != nullptr);
+
+            const auto& sceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Scene);
+            m_requiresSceneSrg = (sceneSrgLayout != nullptr);
 
             const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
             m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
@@ -284,11 +287,11 @@ namespace AZ
 
                 if (GetOutputCount() > 0)
                 {
-                    outputAttachment = GetOutputBinding(0).m_attachment.get();
+                    outputAttachment = GetOutputBinding(0).GetAttachment().get();
                 }
                 else if (GetInputOutputCount() > 0)
                 {
-                    outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+                    outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
                 }
 
                 AZ_Assert(outputAttachment != nullptr, "[RayTracingPass '%s']: A fullscreen RayTracing pass must have a valid output or input/output.", GetPathName().GetCStr());
@@ -322,6 +325,11 @@ namespace AZ
                 {
                     shaderResourceGroups.push_back(views[0]->GetRHIShaderResourceGroup());
                 }
+            }
+
+            if (m_requiresSceneSrg)
+            {
+                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
             }
 
             if (m_requiresRayTracingMaterialSrg)

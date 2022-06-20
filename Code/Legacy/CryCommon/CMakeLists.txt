@@ -6,15 +6,21 @@
 #
 #
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+
 ly_add_target(
     NAME CryCommon STATIC
     NAMESPACE Legacy
     FILES_CMAKE
         crycommon_files.cmake
+        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake # Required for restricted platforms
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}.cmake # Required for restricted platforms
     INCLUDE_DIRECTORIES
         PUBLIC
             .         # Lots of code without CryCommon/
             ..        # Dangerous since exports Legacy's path (client code can do CrySystem/ without depending on that target)
+            ${pal_dir} # Required for restricted platforms
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore

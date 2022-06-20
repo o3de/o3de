@@ -27,6 +27,129 @@ using namespace AzToolsFramework;
 
 namespace UnitTest
 {
+    void MousePressAndMove(
+        QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, initialPositionWidget);
+
+        MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
+    }
+
+    // Note: There are a series of bugs in Qt that appear to be preventing mouseMove events
+    // firing when sent through the QTest framework. This is a work around for our version
+    // of Qt. In future this can hopefully be simplified. See ^1 for workaround.
+    // More info: Issues with mouse move in Qt
+    // - https://bugreports.qt.io/browse/QTBUG-5232
+    // - https://bugreports.qt.io/browse/QTBUG-69414
+    // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
+    void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        const QPoint nextLocalPosition = initialPositionWidget + mouseDelta;
+        const QPoint nextGlobalPosition = widget->mapToGlobal(nextLocalPosition);
+
+        // ^1 To ensure a mouse move event is fired we must call the test mouse move function
+        // and also send a mouse move event that matches. Each on their own do not appear to
+        // work - please see the links above for more context.
+        QTest::mouseMove(widget, nextLocalPosition);
+        QMouseEvent mouseMoveEvent(
+            QEvent::MouseMove, QPointF(nextLocalPosition), QPointF(nextGlobalPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+        QApplication::sendEvent(widget, &mouseMoveEvent);
+    }
+
+    void MouseScroll(QWidget* widget, QPoint localEventPosition, QPoint wheelDelta,
+        Qt::MouseButtons mouseButtons, Qt::KeyboardModifiers keyboardModifiers)
+    {
+        const QPoint globalEventPos = widget->mapToGlobal(localEventPosition);
+        const QPoint zero = QPoint();
+
+        QWheelEvent wheelEventBegin(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollBegin, false);
+        QApplication::sendEvent(widget, &wheelEventBegin);
+
+        QWheelEvent wheelEventUpdate(globalEventPos, zero, zero, wheelDelta, mouseButtons, keyboardModifiers, Qt::ScrollUpdate, false);
+        QApplication::sendEvent(widget, &wheelEventUpdate);
+
+        QWheelEvent wheelEventEnd(globalEventPos, zero, zero, zero, mouseButtons, keyboardModifiers, Qt::ScrollEnd, false);
+        QApplication::sendEvent(widget, &wheelEventEnd);
+    }
+
+    AZStd::string QtKeyToAzString(Qt::Key key, Qt::KeyboardModifiers modifiers)
+    {
+        QKeySequence keySequence = QKeySequence(key);
+        QString keyText = keySequence.toString();
+
+        // QKeySequence seems to uppercase alpha keys regardless of shift-modifier
+        if (modifiers == Qt::NoModifier && keyText.isUpper())
+        {
+            keyText = keyText.toLower();
+        }
+        else if (modifiers != Qt::ShiftModifier)
+        {
+            keyText = QString();
+        }
+
+        return AZStd::string(keyText.toUtf8().data());
+    }
+
+    bool ViewportSettingsTestImpl::GridSnappingEnabled() const
+    {
+        return m_gridSnapping;
+    }
+
+    float ViewportSettingsTestImpl::GridSize() const
+    {
+        return m_gridSize;
+    }
+
+    bool ViewportSettingsTestImpl::ShowGrid() const
+    {
+        return false;
+    }
+
+    bool ViewportSettingsTestImpl::AngleSnappingEnabled() const
+    {
+        return m_angularSnapping;
+    }
+
+    float ViewportSettingsTestImpl::AngleStep() const
+    {
+        return m_angularStep;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportSettingsTestImpl::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    bool ViewportSettingsTestImpl::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportSettingsTestImpl::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+
+    AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);
@@ -65,13 +188,59 @@ namespace UnitTest
         }
     }
 
+    bool FocusInteractionWidget::event(QEvent* event)
+    {
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+
+        auto eventType = event->type();
+
+        switch (eventType)
+        {
+        case QEvent::MouseButtonPress:
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
+            return true;
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+            {
+                bool handled = false;
+                AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+                EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+                    handled, AzToolsFramework::GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
+                    AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down, /*captured=*/false));
+                return handled;
+            }
+        }
+
+        return QWidget::event(event);
+    }
+
+    MouseMoveDetector::MouseMoveDetector(QWidget* parent)
+        : QObject(parent)
+    {
+    }
+
+    bool MouseMoveDetector::eventFilter(QObject* watched, QEvent* event)
+    {
+        if (const auto eventType = event->type(); eventType == QEvent::Type::MouseMove)
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+            m_mouseGlobalPosition = mouseEvent->globalPos();
+            m_mouseLocalPosition = mouseEvent->pos();
+        }
+
+        return QObject::eventFilter(watched, event);
+    }
+
     void TestEditorActions::Connect()
     {
         using AzToolsFramework::GetEntityContextId;
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
         AzToolsFramework::EditorActionRequestBus::Handler::BusConnect();
-        EditorComponentModeNotificationBus::Handler::BusConnect(GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         m_defaultWidget.setFocus();
     }
 
@@ -79,18 +248,26 @@ namespace UnitTest
     {
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
-        EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorActionRequestBus::Handler::BusDisconnect();
     }
 
-    void TestEditorActions::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_componentModeWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_componentModeWidget.setFocus();
+        }
     }
 
-    void TestEditorActions::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_defaultWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_defaultWidget.setFocus();
+        }
     }
 
     void TestEditorActions::AddActionViaBus(int id, QAction* action)
@@ -195,7 +372,6 @@ namespace UnitTest
 
     ToolsApplicationMessageHandler::ToolsApplicationMessageHandler()
     {
-        m_gridMateMessageHandler = AZStd::make_unique<ErrorHandler>("GridMate");
         m_enginePathMessageHandler = AZStd::make_unique<ErrorHandler>("Engine Path");
         m_skippingDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Skipping drive");
         m_storageDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Storage drive");
@@ -352,7 +528,19 @@ namespace UnitTest
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
 
+        if (!entityId.IsValid())
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
+            return AZ::EntityId();
+        }
+
         AZ::Entity* entity = GetEntityById(entityId);
+
+        if (!entity)
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
+            return AZ::EntityId();
+        }
 
         entity->Deactivate();
 
@@ -459,3 +647,5 @@ namespace UnitTest
         sliceAssets.clear();
     }
 } // namespace UnitTest
+
+#include <moc_AzToolsFrameworkTestHelpers.cpp>

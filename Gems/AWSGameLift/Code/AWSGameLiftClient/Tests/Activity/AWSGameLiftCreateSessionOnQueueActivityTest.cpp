@@ -9,6 +9,8 @@
 #include <AWSGameLiftClientFixture.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
 
+#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftCreateSessionOnQueueActivityTest = AWSGameLiftClientFixture;
@@ -33,14 +35,14 @@ TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, BuildAWSGameLiftCreateGameSe
 
 TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, ValidateCreateSessionOnQueueRequest_CallWithBaseType_GetFalseResult)
 {
-    auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(AzFramework::CreateSessionRequest());
+    auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(Multiplayer::CreateSessionRequest());
     EXPECT_FALSE(result);
 }
 
 TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, ValidateCreateSessionOnQueueRequest_CallWithNegativeMaxPlayer_GetFalseResult)
 {
     AWSGameLiftCreateSessionOnQueueRequest request;
-    request.m_maxPlayer = -1;
+    request.m_maxPlayer = std::numeric_limits<uint64_t>::max();
 
     auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(request);
     EXPECT_FALSE(result);

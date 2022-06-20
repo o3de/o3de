@@ -86,7 +86,7 @@ namespace ScriptCanvas
             return DataValidationIds::UnknownSourceEndpointCrc;
         }
 
-        AZStd::string_view GetTooltip() const
+        AZStd::string_view GetTooltip() const override
         {
             return "Unknown Source Endpoint";
         }

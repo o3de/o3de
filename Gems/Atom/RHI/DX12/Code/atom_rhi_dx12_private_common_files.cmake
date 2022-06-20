@@ -95,7 +95,6 @@ set(FILES
     Source/RHI/ShaderResourceGroup.h
     Source/RHI/ShaderResourceGroupPool.cpp
     Source/RHI/ShaderResourceGroupPool.h
-    Source/RHI/SwapChain.cpp
     Source/RHI/SwapChain.h
     Source/RHI/DX12.cpp
     Source/RHI/DX12.h

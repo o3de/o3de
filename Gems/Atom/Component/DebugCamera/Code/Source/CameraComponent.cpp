@@ -235,7 +235,7 @@ namespace AZ
             UpdateViewToClipMatrix();
         }
 
-        void CameraComponent::SetOrthographic(bool orthographic)
+        void CameraComponent::SetOrthographic([[maybe_unused]] bool orthographic)
         {
             AZ_Assert(!orthographic, "DebugCamera does not support orthographic projection");
         }
@@ -245,15 +245,44 @@ namespace AZ
             AZ_Assert(false, "DebugCamera does not support orthographic projection");
         }
 
-        void CameraComponent::MakeActiveView() 
+        void CameraComponent::MakeActiveView()
         {
             // do nothing
         }
 
+        bool CameraComponent::IsActiveView()
+        {
+            return false;
+        }
+
+        AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AZ::Vector2& screenPosition, [[maybe_unused]] float depth)
+        {
+            // not implemented
+            return AZ::Vector3::CreateZero();
+        }
+
+        AZ::Vector3 CameraComponent::ScreenNdcToWorld([[maybe_unused]] const AZ::Vector2& screenPosition, [[maybe_unused]] float depth)
+        {
+            // not implemented
+            return AZ::Vector3::CreateZero();
+        }
+
+        AZ::Vector2 CameraComponent::WorldToScreen([[maybe_unused]] const AZ::Vector3& worldPosition)
+        {
+            // not implemented
+            return AZ::Vector2::CreateZero();
+        }
+
+        AZ::Vector2 CameraComponent::WorldToScreenNdc([[maybe_unused]] const AZ::Vector3& worldPosition)
+        {
+            // not implemented
+            return AZ::Vector2::CreateZero();
+        }
+
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)
         {
-            AZ_UNUSED(width)
-            AZ_UNUSED(height)
+            AZ_UNUSED(width);
+            AZ_UNUSED(height);
             UpdateAspectRatio();
             UpdateViewToClipMatrix();
         }
@@ -267,7 +296,10 @@ namespace AZ
             else if (m_componentConfig.m_target)
             {
                 const auto& viewport = m_componentConfig.m_target->GetViewport();
-                m_aspectRatio = viewport.m_maxX / viewport.m_maxY;
+                if (viewport.m_maxX > 0.0f && viewport.m_maxY > 0.0f)
+                {
+                    m_aspectRatio = viewport.m_maxX / viewport.m_maxY;
+                }
             }
         }
 

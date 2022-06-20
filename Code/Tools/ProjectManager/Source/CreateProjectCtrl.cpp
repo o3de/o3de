@@ -13,7 +13,9 @@
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
+#include <GemRepo/GemRepoScreen.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
@@ -47,7 +49,14 @@ namespace O3DE::ProjectManager
 
         m_gemCatalogScreen = new GemCatalogScreen(this);
         m_stack->addWidget(m_gemCatalogScreen);
+
+        m_gemRepoScreen = new GemRepoScreen(this);
+        m_stack->addWidget(m_gemRepoScreen);
+
         vLayout->addWidget(m_stack);
+
+        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
@@ -87,6 +96,9 @@ namespace O3DE::ProjectManager
         buttons->setObjectName("footer");
         vLayout->addWidget(buttons);
 
+        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
+
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 
@@ -98,8 +110,6 @@ namespace O3DE::ProjectManager
         Update();
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
-        connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
 
         setLayout(vLayout);
     }
@@ -120,6 +130,9 @@ namespace O3DE::ProjectManager
 
         // Gather the enabled gems from the default project template when starting the create new project workflow.
         ReinitGemCatalogForSelectedTemplate();
+
+        // make sure the gem repo has the latest details
+        m_gemRepoScreen->Reinit();
     }
 
     void CreateProjectCtrl::HandleBackButton()
@@ -133,7 +146,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit GotoPreviousScreenRequest();
+            emit GoToPreviousScreenRequest();
         }
     }
 
@@ -158,12 +171,21 @@ namespace O3DE::ProjectManager
         {
             m_header->setSubTitle(tr("Configure project with Gems"));
             m_secondaryButton->setVisible(false);
+            m_primaryButton->setVisible(true);
+        }
+        else if (m_stack->currentWidget() == m_gemRepoScreen)
+        {
+            m_header->setSubTitle(tr("Gem Repositories"));
+            m_secondaryButton->setVisible(true);
+            m_secondaryButton->setText(tr("Back"));
+            m_primaryButton->setVisible(false);
         }
         else
         {
             m_header->setSubTitle(tr("Enter Project Details"));
             m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Configure Gems"));
+            m_primaryButton->setVisible(true);
         }
     }
 
@@ -172,6 +194,10 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemCatalog)
         {
             HandleSecondaryButton();
+        }
+        else if (screen == ProjectManagerScreen::GemRepos)
+        {
+            NextScreen();
         }
         else
         {
@@ -224,47 +250,54 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::CreateProject()
     {
-        if (ProjectUtils::FindSupportedCompiler(this))
+        if (m_newProjectSettingsScreen->Validate())
         {
-            if (m_newProjectSettingsScreen->Validate())
+            if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
-                ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
-                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                return;
+            }
 
-                auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
-                if (result.IsSuccess())
-                {
-                    // automatically register the project
-                    PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
+            ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
+            QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+
+            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
+            if (result.IsSuccess())
+            {
+                // automatically register the project
+                PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                    if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
-                    {
-                        QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
-                        return;
-                    }
+                const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+                if (gemResult == GemCatalogScreen::EnableDisableGemsResult::Failed)
+                {
+                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                }
+                if (gemResult != GemCatalogScreen::EnableDisableGemsResult::Success)
+                {
+                    return;
+                }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-                    projectInfo.m_needsBuild = true;
-                    emit NotifyBuildProject(projectInfo);
-                    emit ChangeScreenRequest(ProjectManagerScreen::Projects);
-                }
-                else
-                {
-                    QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
-                }
+                projectInfo.m_needsBuild = true;
+                emit NotifyBuildProject(projectInfo);
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {
-                QMessageBox::warning(
-                    this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
             }
+        }
+        else
+        {
+            QMessageBox::warning(
+                this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
         }
     }
 
     void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
     {
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
 } // namespace O3DE::ProjectManager

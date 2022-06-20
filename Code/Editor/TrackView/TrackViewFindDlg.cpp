@@ -24,13 +24,13 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 // CTrackViewFindDlg dialog
 
 
-CTrackViewFindDlg::CTrackViewFindDlg(const char* title, QWidget* pParent /*=NULL*/)
+CTrackViewFindDlg::CTrackViewFindDlg(const char* title, QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::TrackViewFindDlg)
 {
     setWindowTitle(title);
 
-    m_tvDlg = 0;
+    m_tvDlg = nullptr;
     m_numSeqs = 0;
 
     ui->setupUi(this);
@@ -61,7 +61,7 @@ void CTrackViewFindDlg::FillData()
             ObjName obj;
             obj.m_objName = pNode->GetName();
             obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            string fullname = seq->GetName();
+            AZStd::string fullname = seq->GetName();
             obj.m_seqName = fullname.c_str();
             m_objs.push_back(obj);
         }

@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import PySide2
 
-import editor_python_test_tools.pyside_utils
-
+import editor_python_test_tools.pyside_utils as pyside_utils
 
 def get_component_combobox_values(component_name, property_name, log_fn=None):
     """

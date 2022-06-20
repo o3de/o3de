@@ -250,7 +250,7 @@ namespace AZ::MeshBuilder
             AZ::JobContext* jobContext = nullptr;
             AZ::Job* job = AZ::CreateJobFunction([&subMesh]()
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
+                AZ_PROFILE_SCOPE(Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
                 subMesh->GenerateVertexOrder();
             }, true, jobContext);
 

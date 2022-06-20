@@ -28,7 +28,7 @@ namespace EMotionFX
         Q_OBJECT //AUTOMOC
 
     public:
-        enum
+        enum : uint32
         {
             CLASS_ID = 0x8efd2bee
         };
@@ -42,12 +42,11 @@ namespace EMotionFX
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override              { return new ClothJointInspectorPlugin(); }
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
 
-        void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         static bool IsJointInCloth(const QModelIndex& index);
 
     public slots:

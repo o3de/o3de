@@ -102,7 +102,8 @@ namespace AudioControls
 
             for (auto it = librariesToDelete.begin(); it != librariesToDelete.end(); ++it)
             {
-                DeleteLibraryFile((*it).c_str());
+                auto newPathOpt = fileIO->ResolvePath(AZ::IO::PathView{ *it });
+                DeleteLibraryFile(newPathOpt.value().Native());
             }
 
             previousLibraryPaths = m_foundLibraryPaths;
@@ -114,8 +115,7 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsWriter::WriteLibrary(const AZStd::string_view libraryName, QModelIndex root)
     {
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = AZ::Interface<Audio::IAudioSystem>::Get()->GetControlsPath();
 
         if (root.isValid() && controlsPath)
         {
@@ -356,8 +356,8 @@ namespace AudioControls
             {
                 if (!connectionNode.m_isValid)
                 {
-                    auto nodeCopy = SRawConnectionData::DeepCopyNode(connectionNode.m_xmlNode.get());
-                    node->append_node(nodeCopy.release());
+                    XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+                    node->append_node(xmlAlloc.clone_node(connectionNode.m_xmlNode));
                 }
             }
 
@@ -371,7 +371,7 @@ namespace AudioControls
                         childNode != nullptr)
                     {
                         node->append_node(childNode);
-                        control->m_connectionNodes.push_back(SRawConnectionData(childNode, true));
+                        control->m_connectionNodes.emplace_back(childNode, true);
                     }
                 }
             }

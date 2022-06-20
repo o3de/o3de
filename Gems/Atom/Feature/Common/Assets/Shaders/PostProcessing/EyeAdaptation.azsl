@@ -78,10 +78,12 @@ void MainCS(uint3 dispatch_id : SV_DispatchThreadID)
     const float speed = exposureDifference > 0.0 ? ViewSrg::m_exposureControl.m_speedUp : ViewSrg::m_exposureControl.m_speedDown;
 
     // Update the adjustment for this frame based on the frame deltaTime and speed
-    float exposureAdjustment = exposureDifference * SceneSrg::m_deltaTime * speed;
+    float deltaTime = clamp(SceneSrg::m_time - PassSrg::m_eyeAdaptationData[0].m_setValueTime, 0.0f, 1.0f);
+    float exposureAdjustment = exposureDifference * deltaTime * speed;
     float newExposureLog2 = previousFrameExposureLog2 + exposureAdjustment;
 
     // Store the linear exposure so it can be used by the look modification transform later.
     // newExposureLog2 is negated because m_exposureValue is used to correct for a given exposure.
     PassSrg::m_eyeAdaptationData[0].m_exposureValue = pow(2.0f, -newExposureLog2);
+    PassSrg::m_eyeAdaptationData[0].m_setValueTime = SceneSrg::m_time;
 }

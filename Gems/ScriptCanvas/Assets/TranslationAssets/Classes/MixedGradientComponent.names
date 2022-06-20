@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "MixedGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientComponent"
+            }
+        }
+    ]
+}

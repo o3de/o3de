@@ -35,11 +35,14 @@ namespace UnitTest
             LuaMaterialFunctorSourceData functorSourceData;
             functorSourceData.m_luaScript = script;
 
+            MaterialNameContext nameContext;
+
             MaterialFunctorSourceData::RuntimeContext createFunctorContext{
                 "Dummy.materialtype",
                 materialTypeCreator.GetMaterialPropertiesLayout(),
                 materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                materialTypeCreator.GetShaderCollection()
+                materialTypeCreator.GetShaderCollection(),
+                &nameContext
             };
 
             MaterialFunctorSourceData::FunctorResult result = functorSourceData.CreateFunctor(createFunctorContext);
@@ -70,18 +73,9 @@ namespace UnitTest
 
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> CreateCommonTestShaderOptionsLayout()
         {
-            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-            boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-            boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
-
-            AZStd::vector<RPI::ShaderOptionValuePair> intRangeOptionValues;
-            intRangeOptionValues.push_back({Name("0"),  RPI::ShaderOptionValue(0)});
-            intRangeOptionValues.push_back({Name("15"), RPI::ShaderOptionValue(15)});
-
-            AZStd::vector<RPI::ShaderOptionValuePair> qualityOptionValues;
-            qualityOptionValues.push_back({Name("Quality::Low"),    RPI::ShaderOptionValue(0)});
-            qualityOptionValues.push_back({Name("Quality::Medium"), RPI::ShaderOptionValue(1)});
-            qualityOptionValues.push_back({Name("Quality::High"),   RPI::ShaderOptionValue(2)});
+            AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
+            AZStd::vector<RPI::ShaderOptionValuePair> intRangeOptionValues = CreateIntRangeShaderOptionValues(0, 15);
+            AZStd::vector<RPI::ShaderOptionValuePair> qualityOptionValues = CreateEnumShaderOptionValues({"Quality::Low", "Quality::Medium", "Quality::High"});
 
             AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> shaderOptions = RPI::ShaderOptionGroupLayout::Create();
             shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_bool"}, ShaderOptionType::Boolean, 0, 0, boolOptionValues, Name{"False"}});
@@ -112,7 +106,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -138,7 +132,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(),m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -165,7 +159,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -194,7 +188,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -425,11 +419,7 @@ namespace UnitTest
         EXPECT_EQ(Vector4(1.0f, 2.0f, 3.0f, 4.0f) / 4.0f, testData.GetMaterial()->GetRHIShaderResourceGroup()->GetData().GetConstant<Vector4>(testData.GetSrgConstantIndex()));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
-    TEST_F(LuaMaterialFunctorTests, DISABLED_LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
-#else
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_GetMaterialProperty_SetShaderConstant_Color)
-#endif // AZ_TRAIT_DISABLE_FAILED_ATOM_RPI_TESTS
     {
         using namespace AZ::RPI;
 
@@ -1039,6 +1029,42 @@ namespace UnitTest
 
         drawListTagRegistry->ReleaseTag(tag);
     }
+    
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_PsoChangesNotAllowed_Error)
+    {
+        using namespace AZ::RPI;
+
+        const char* functorScript =
+            R"(
+                function GetMaterialPropertyDependencies()
+                    return {"general.MyBool"}
+                end
+
+                function GetShaderOptionDependencies()
+                    return {}
+                end
+
+                function Process(context)
+                    local boolValue = context:GetMaterialPropertyValue_bool("general.MyBool")
+                    if(boolValue) then
+                        context:GetShader(0):GetRenderStatesOverride():SetFillMode(FillMode_Wireframe)
+                    else
+                        context:GetShader(0):GetRenderStatesOverride():ClearFillMode()
+                    end
+                end
+            )";
+
+        TestMaterialData testData;
+        testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
+
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
+
+        ErrorMessageFinder errorMessageFinder;
+
+        errorMessageFinder.AddExpectedErrorMessage("not be changed at runtime because they impact Pipeline State Objects: general.MyBool");
+        EXPECT_TRUE(testData.GetMaterial()->Compile());
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_MultisampleCustomPositionCountIndex_Error)
     {
@@ -1067,6 +1093,7 @@ namespace UnitTest
         TestMaterialData testData;
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
 
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         ErrorMessageFinder errorMessageFinder;
@@ -1107,7 +1134,8 @@ namespace UnitTest
         errorMessageFinder.AddExpectedErrorMessage("ClearMultisampleCustomPosition(18,...) index is out of range. Must be less than 16.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
         errorMessageFinder.CheckExpectedErrorsFound();
-
+        
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         errorMessageFinder.AddExpectedErrorMessage("SetMultisampleCustomPosition(17,...) index is out of range. Must be less than 16.");
@@ -1146,7 +1174,8 @@ namespace UnitTest
         errorMessageFinder.AddExpectedErrorMessage("ClearBlendEnabled(10,...) index is out of range. Must be less than 8.");
         testData.Setup(MaterialPropertyDataType::Bool, "general.MyBool", functorScript);
         errorMessageFinder.CheckExpectedErrorsFound();
-
+        
+        testData.GetMaterial()->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
         testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{true});
 
         errorMessageFinder.AddExpectedErrorMessage("SetBlendEnabled(9,...) index is out of range. Must be less than 8.");

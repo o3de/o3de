@@ -5,16 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Memory/SystemAllocator.h>
-
-#include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
-#include <System/PhysXAllocator.h>
-#include <System/PhysXCpuDispatcher.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <Scene/PhysXScene.h>
+#include <System/PhysXAllocator.h>
+#include <System/PhysXCpuDispatcher.h>
+
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -33,46 +37,18 @@ namespace PhysX
         static int NumSamplesOverLimit = 0;
         static float LostTime = 0.0f;
     }
+
+    AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
-    PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback)
-        : m_onMaterialLibraryReloadedCallback(callback)
-    {
-
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::Connect(const AZ::Data::AssetId& materialLibraryId)
-    {
-        if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(materialLibraryId))
-        {
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-            AZ::Data::AssetBus::Handler::BusConnect(materialLibraryId);
-        }
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::Disconnect()
-    {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        m_onMaterialLibraryReloadedCallback(asset);
-    }
-    
-    PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
-        : m_registryManager(*registryManager)
-        , m_materialLibraryAssetHelper(
-            [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-            {
-                UpdateMaterialLibrary(materialLibrary);
-            })
+    PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
+        : m_registryManager(AZStd::move(registryManager))
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
         PhysXAllocator::Descriptor allocatorDescriptor;
         allocatorDescriptor.m_custom = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        AZ::AllocatorInstance<PhysXAllocator>::Create();
+        AZ::AllocatorInstance<PhysXAllocator>::Create(allocatorDescriptor);
 
         InitializePhysXSdk(cookingParams);
     }
@@ -97,8 +73,6 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
     }
@@ -118,19 +92,13 @@ namespace PhysX
 
         RemoveAllScenes();
 
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-        m_materialLibraryAssetHelper.Disconnect();
-        // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
-        // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
-        m_systemConfig.m_materialLibraryAsset.Reset();
-
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
     }
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {
@@ -162,7 +130,7 @@ namespace PhysX
         }
         else
         {
-            AZ_Warning("PhysXSystem", FrameTimeWarning::NumSamplesOverLimit <= 0,
+            AZ_Warning("PhysXSystem", !physx_reportTimestepWarnings || FrameTimeWarning::NumSamplesOverLimit <= 0,
                 "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Physx timestep was clamped on those frames, losing [%.6f] seconds.",
                 FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
             FrameTimeWarning::NumSamples = 0;
@@ -219,7 +187,7 @@ namespace PhysX
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
@@ -251,7 +219,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -312,7 +280,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(index);
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
                 }
             }
         }
@@ -362,40 +330,15 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
-    {
-        // now that assets can be resolved, lets load the default material library.
-        
-        if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
-        }
-
-        bool success = LoadMaterialLibrary();
-        if (!success)
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::ErrorLoading);
-        }
-    }
-
     void PhysXSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization /*= false*/)
     {
         if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(newConfig);
             m_systemConfig != (*physXConfig))
         {
-            const bool newMaterialLibrary = m_systemConfig.m_materialLibraryAsset != physXConfig->m_materialLibraryAsset;
             m_systemConfig = (*physXConfig);
             m_configChangeEvent.Signal(physXConfig);
 
             //LYN-1146 -- Restarting the simulation if required
-
-            if (newMaterialLibrary)
-            {
-                LoadMaterialLibrary();
-                m_onMaterialLibraryChangedEvent.Signal(m_systemConfig.m_materialLibraryAsset.GetId());
-            }
-            // This function is not called from reloading the material library asset,
-            // which means we don't need to check if the materials inside the library have been modified.
         }
     }
 
@@ -469,52 +412,7 @@ namespace PhysX
 
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
-        return m_registryManager;
-    }
-
-    void PhysXSystem::UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-    {
-        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
-        {
-            // Same library asset, check if its data has changed.
-            if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
-            {
-                m_systemConfig.m_materialLibraryAsset = materialLibrary;
-                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-            }
-        }
-        else
-        {
-            // New material library asset
-            m_systemConfig.m_materialLibraryAsset = materialLibrary;
-
-            LoadMaterialLibrary();
-            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-        }
-    }
-
-    bool PhysXSystem::LoadMaterialLibrary()
-    {
-        AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary = m_systemConfig.m_materialLibraryAsset;
-        const AZ::Data::AssetId& materialLibraryId = materialLibrary.GetId();
-        if (!materialLibraryId.IsValid())
-        {
-            AZ_Warning("PhysX", false,
-                "LoadDefaultMaterialLibrary: Default Material Library asset ID is invalid.");
-            return false;
-        }
-        // Listen for material library asset modification events
-        m_materialLibraryAssetHelper.Connect(materialLibraryId);
-
-        const AZ::Data::AssetFilterCB assetLoadFilterCB = nullptr;
-        materialLibrary = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialLibrary.GetId(), materialLibrary.GetAutoLoadBehavior(), AZ::Data::AssetLoadParameters{ assetLoadFilterCB });
-
-        materialLibrary.BlockUntilLoadComplete();
-
-        AZ_Warning("PhysX", (materialLibrary.GetData() != nullptr),
-            "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        
-        return materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+        return *m_registryManager;
     }
 
     //TEMP -- until these are fully moved over here

@@ -26,6 +26,7 @@
 #include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -38,8 +39,6 @@ namespace EMotionFX
             using ::testing::_;
 
             UIFixture::SetUp();
-
-            D6JointLimitConfiguration::Reflect(GetSerializeContext());
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
@@ -64,7 +63,9 @@ namespace EMotionFX
                                 { return AZStd::make_unique<D6JointLimitConfiguration>(); });
         }
 
-    private:
+    protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
+
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
         Physics::MockJointHelpersInterface m_jointHelpers;
@@ -76,7 +77,11 @@ namespace EMotionFX
     TEST_F(CopyPasteRagdollCollidersFixture, CanCopyCollider)
 #endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
-        AutoRegisteredActor actor{ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 4);
+        const Actor* actor = actorAsset->GetActor();
+
         const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
         const Physics::CharacterColliderConfiguration& simulatedObjectConfig = actor->GetPhysicsSetup()->GetSimulatedObjectColliderConfig();
 
@@ -101,15 +106,13 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(
-                "Select -actorId " + AZStd::to_string(actor->GetID()),
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorId " + AZStd::to_string(actor->GetID()),
                 result))
                 << result.c_str();
         }
 
         auto* ragdollPlugin = EMStudio::GetPluginManager()->FindActivePlugin<RagdollNodeInspectorPlugin>();
         ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-        ragdollPlugin->Init();
 
         auto* skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<SkeletonOutlinerPlugin>();
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";

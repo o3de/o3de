@@ -386,10 +386,10 @@ IUiAnimTrack* UiCompoundSplineTrack::GetSubTrack(int nIndex) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* UiCompoundSplineTrack::GetSubTrackName(int nIndex) const
+AZStd::string UiCompoundSplineTrack::GetSubTrackName(int nIndex) const
 {
     assert(nIndex >= 0 && nIndex < m_nDimensions);
-    return m_subTrackNames[nIndex].c_str();
+    return m_subTrackNames[nIndex];
 }
 
 

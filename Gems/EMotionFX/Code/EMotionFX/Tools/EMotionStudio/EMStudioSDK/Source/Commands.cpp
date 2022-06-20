@@ -11,6 +11,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Motion.h>
@@ -396,8 +397,8 @@ namespace EMStudio
     {
         motionSet->SetDirtyFlag(dirtyFlag);
 
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             EMotionFX::MotionSet* childSet = motionSet->GetChildSet(i);
             RecursiveSetDirtyFlag(childSet, dirtyFlag);
@@ -579,6 +580,11 @@ namespace EMStudio
             if (parameters.GetValueAsBool("updateFilename", this))
             {
                 animGraph->SetFileName(filename.c_str());
+            }
+
+            if (parameters.GetValueAsBool("updateDirtyFlag", this))
+            {
+                animGraph->SetDirtyFlag(false);
             }
 
             GetMainWindow()->GetFileManager()->SourceAssetChanged(filename);

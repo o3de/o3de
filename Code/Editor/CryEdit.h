@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
-#include "WipFeatureManager.h"
 #include "CryEditDoc.h"
 #include "ViewPane.h"
 
@@ -31,7 +30,6 @@ class CConsoleDialog;
 struct mg_connection;
 struct mg_request_info;
 struct mg_context;
-struct IEventLoopHook;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -85,6 +83,12 @@ public:
 
 using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 
+enum class COpenSameLevelOptions
+{
+    ReopenLevelIfSame,
+    NotReopenIfSame
+};
+
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
@@ -134,33 +138,25 @@ public:
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
     ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
-    static void InitDirectory();
-    BOOL FirstInstance(bool bForceNewInstance = false);
+    bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
-    BOOL CheckIfAlreadyRunning();
+    bool CheckIfAlreadyRunning();
     //! @return successful outcome if initialization succeeded. or failed outcome with error message.
     AZ::Outcome<void, AZStd::string> InitGameSystem(HWND hwndForInputSystem);
     void CreateSplashScreen();
     void InitPlugins();
     bool InitGame();
 
-    BOOL InitConsole();
+    bool InitConsole();
     int IdleProcessing(bool bBackground);
     bool IsWindowInForeground();
     void RunInitPythonScript(CEditCommandLineInfo& cmdInfo);
-    void RegisterEventLoopHook(IEventLoopHook* pHook);
-    void UnregisterEventLoopHook(IEventLoopHook* pHook);
 
     void DisableIdleProcessing() override;
     void EnableIdleProcessing() override;
 
     // Print to stdout even if there out has been redirected
     void PrintAlways(const AZStd::string& output);
-
-    //! Launches a detached process
-    //! \param process The path to the process to start
-    //! \param args Space separated list of arguments to pass to the process on start.
-    void StartProcessDetached(const char* process, const char* args);
 
     //! Launches the Lua Editor/Debugger
     //! \param files A space separated list of aliased paths
@@ -171,10 +167,12 @@ public:
     // Overrides
     // ClassWizard generated virtual function overrides
 public:
-    virtual BOOL InitInstance();
+    virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
-    virtual BOOL OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName);
+    virtual bool OnIdle(LONG lCount);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename,
+        bool addToMostRecentFileList=true,
+        COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -198,22 +196,16 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void SaveTagLocations();
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
+    void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
-    void OnEditmodeMove();
-    void OnEditmodeRotate();
-    void OnEditmodeScale();
-    void OnUpdateEditmodeMove(QAction* action);
-    void OnUpdateEditmodeRotate(QAction* action);
-    void OnUpdateEditmodeScale(QAction* action);
     void OnUndo();
     void OnOpenAssetImporter();
     void OnUpdateSelected(QAction* action);
@@ -234,7 +226,6 @@ public:
     void OnSyncPlayerUpdate(QAction* action);
     void OnResourcesReduceworkingset();
     void OnDummyCommand() {};
-    void OnShowHelpers();
     void OnFileSave();
     void OnUpdateDocumentReady(QAction* action);
     void OnUpdateFileOpen(QAction* action);
@@ -255,9 +246,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void TagLocation(int index);
-    void GotoTagLocation(int index);
-    void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
@@ -313,10 +301,6 @@ private:
 
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    Vec3 m_tagLocations[12];
-    Ang3 m_tagAngles[12];
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
@@ -343,7 +327,6 @@ private:
 
     QString m_lastOpenLevelPath;
     CQuickAccessBar* m_pQuickAccessBar = nullptr;
-    IEventLoopHook* m_pEventLoopHook = nullptr;
     QString m_rootEnginePath;
 
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
@@ -353,7 +336,7 @@ private:
 // Disable warning for dll export since this member won't be used outside this class
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
     static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
@@ -368,32 +351,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    // Tag Locations.
-    void OnTagLocation1();
-    void OnTagLocation2();
-    void OnTagLocation3();
-    void OnTagLocation4();
-    void OnTagLocation5();
-    void OnTagLocation6();
-    void OnTagLocation7();
-    void OnTagLocation8();
-    void OnTagLocation9();
-    void OnTagLocation10();
-    void OnTagLocation11();
-    void OnTagLocation12();
-
-    void OnGotoLocation1();
-    void OnGotoLocation2();
-    void OnGotoLocation3();
-    void OnGotoLocation4();
-    void OnGotoLocation5();
-    void OnGotoLocation6();
-    void OnGotoLocation7();
-    void OnGotoLocation8();
-    void OnGotoLocation9();
-    void OnGotoLocation10();
-    void OnGotoLocation11();
-    void OnGotoLocation12();
     void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();
@@ -402,7 +359,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnValidatelevel();
     void OnToolsPreferences();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
@@ -426,9 +382,10 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-class CCrySingleDocTemplate 
+class CCrySingleDocTemplate
     : public QObject
 {
+    Q_OBJECT
 private:
     explicit CCrySingleDocTemplate(const QMetaObject* pDocClass)
         : QObject()
@@ -454,9 +411,9 @@ public:
     ~CCrySingleDocTemplate() {};
     // avoid creating another CMainFrame
     // close other type docs before opening any things
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, BOOL bAddToMRU, BOOL bMakeVisible);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible = TRUE);
-    virtual Confidence MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
+    virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
 private:
     const QMetaObject* m_documentClass = nullptr;
@@ -468,12 +425,13 @@ class CCryDocManager
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
 public:
     CCryDocManager();
+    virtual ~CCryDocManager() = default;
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();
-    virtual BOOL DoPromptFileName(QString& fileName, UINT nIDSTitle,
-        DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU);
+    virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
+        DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };

@@ -22,11 +22,6 @@
 // used for std::pointer_traits \note do an AZStd version
 #include <memory>
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 6011 28198)
-#endif // AZ_COMPILER_MSVC
-
  #ifndef AZ_REGEX_MAX_COMPLEXITY_COUNT
   #define AZ_REGEX_MAX_COMPLEXITY_COUNT 10000000L   /* set to 0 to disable */
  #endif /* AZ_REGEX_MAX_COMPLEXITY_COUNT */
@@ -220,6 +215,7 @@ namespace AZStd
 
         struct ErrorSink
         {
+            virtual ~ErrorSink() = default;
             virtual void RegexError(regex_constants::error_type code) = 0;
         };
     }
@@ -1084,7 +1080,7 @@ namespace AZStd
         NodeBase* m_next;
         NodeBase* m_previous;
 
-        virtual ~NodeBase() { }
+        virtual ~NodeBase() = default;
     };
 
     inline void DestroyNode(NodeBase* node, NodeBase* end = nullptr)
@@ -1763,7 +1759,7 @@ namespace AZStd
             return (*this);
         }
 
-        ~basic_regex()
+        ~basic_regex() override
         {   // destroy the object
             Clear();
         }
@@ -2921,7 +2917,7 @@ namespace AZStd
     }
 
     template<class ForwardIterator, class Element, class RegExTraits>
-    inline NodeBase* Builder<ForwardIterator, Element, RegExTraits>::BeginGroup(void)
+    inline NodeBase* Builder<ForwardIterator, Element, RegExTraits>::BeginGroup()
     {   // add group node
         return (NewNode(NT_group));
     }
@@ -3031,7 +3027,7 @@ namespace AZStd
     }
 
     template<class ForwardIterator, class Element, class RegExTraits>
-    inline RootNode* Builder<ForwardIterator, Element, RegExTraits>::EndPattern(void)
+    inline RootNode* Builder<ForwardIterator, Element, RegExTraits>::EndPattern()
     {   // wrap up
         NewNode(NT_end);
         return m_root;
@@ -4766,7 +4762,3 @@ namespace AZStd
         Trans();
     }
 } // namespace AZStd
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC

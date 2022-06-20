@@ -6,13 +6,10 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Utils/Utils.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
-#include <Source/Mesh/EditorMeshSystemComponent.h>
-#include <Source/Mesh/MeshThumbnail.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <Mesh/EditorMeshSystemComponent.h>
 
 namespace AZ
 {
@@ -47,11 +44,6 @@ namespace AZ
             incompatible.push_back(AZ_CRC_CE("EditorMeshSystem"));
         }
 
-        void EditorMeshSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC_CE("ThumbnailerService"));
-        }
-
         void EditorMeshSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             AZ_UNUSED(dependent);
@@ -59,39 +51,10 @@ namespace AZ
         
         void EditorMeshSystemComponent::Activate()
         {
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
-            SetupThumbnails();
         }
 
         void EditorMeshSystemComponent::Deactivate()
         {
-            TeardownThumbnails();
-            AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-        }
-
-        void EditorMeshSystemComponent::OnApplicationAboutToStop()
-        {
-            TeardownThumbnails();
-        }
-
-        void EditorMeshSystemComponent::SetupThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-            
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider,
-                MAKE_TCACHE(Thumbnails::MeshThumbnailCache),
-                ThumbnailContext::DefaultContext);
-        }
-
-        void EditorMeshSystemComponent::TeardownThumbnails()
-        {
-            using namespace AzToolsFramework::Thumbnailer;
-            using namespace LyIntegration;
-
-            ThumbnailerRequestsBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider,
-                Thumbnails::MeshThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
         }
     } // namespace Render
 } // namespace AZ

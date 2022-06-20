@@ -40,7 +40,7 @@ namespace EMotionFX
             private:
 
                 bool m_hideUncheckableItem;
-                Data::LodNodeSelectionList m_LODSelectionList;
+                Data::LodNodeSelectionList m_lodSelectionList;
             };
         }
     }

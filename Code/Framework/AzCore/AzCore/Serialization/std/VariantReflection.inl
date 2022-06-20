@@ -32,7 +32,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
         }
 
         template<size_t Index, size_t... Digits>
@@ -429,13 +429,11 @@ namespace AZ
                 // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
                 // If a module which reflects a variant is unloaded, then the dll module allocator will properly unreflect the variant type from the serialize context
                 // for this particular module
-                AZStdFunctorAllocator dllAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); });
+                AZStdFunctorAllocator dllAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); });
                 m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
-                using ContainerType = AttributeData<AZStd::function<void(SerializeContext::EnumerateInstanceCallContext&,
-                    const void*, const SerializeContext::ClassData&, const SerializeContext::ClassElement*)>>;
-                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute<ContainerType>(&ObjectStreamWriter));
+                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute(&ObjectStreamWriter));
             }
 
             SerializeContext::ClassData* GetClassData() override
@@ -482,10 +480,10 @@ namespace AZ
                 }
             }
         private:
-            static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
-                const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
+            static ObjectStreamWriteOverrideResponse ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
+                [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
-                auto alternativeVisitor = [&callContext, &variantClassData, variantClassElement](auto&& elementAlt)
+                auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
                 {
                     using AltType = AZStd::remove_cvref_t<decltype(elementAlt)>;
                     const SerializeContext& context = *callContext.m_context;
@@ -505,6 +503,7 @@ namespace AZ
                 };
 
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
+                return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;

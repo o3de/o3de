@@ -9,7 +9,6 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -21,15 +20,14 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/View.h>
 
+#include <AzCore/Debug/Profiler.h>
+
 namespace AZ
 {
     namespace Render
     {
         namespace
         {
-            // the max size of a vertex buffer
-            static const size_t MaxUploadBufferSize = MaxDynamicVertexCount * sizeof(AuxGeomDynamicVertex);
-
             static const RHI::PrimitiveTopology PrimitiveTypeToTopology[PrimitiveType_Count] =
             {
                 RHI::PrimitiveTopology::PointList,
@@ -73,7 +71,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::PrepareFrame()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: PrepareFrame");
+            AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: PrepareFrame");
             m_drawPackets.clear();
             m_processSrgs.clear();
 
@@ -91,7 +89,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
+            AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
             RHI::DrawPacketBuilder drawPacketBuilder;
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
@@ -196,13 +194,13 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
             
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
-            }            
-            dynamicBuffer->Write(source.data(), sourceByteSize);
+            }
+            dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
             group.m_indexBufferView = dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32);
             return true;
         }
@@ -211,13 +209,13 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
 
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
-            }            
-            dynamicBuffer->Write(source.data(), sourceByteSize);
+            }
+            dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
             group.m_streamBufferViews[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
             return true;
         }
@@ -322,7 +320,7 @@ namespace AZ
         {
             const char* auxGeomWorldShaderFilePath = "Shaders/auxgeom/auxgeomworld.azshader";
 
-            m_shader = RPI::LoadShader(auxGeomWorldShaderFilePath);
+            m_shader = RPI::LoadCriticalShader(auxGeomWorldShaderFilePath);
             if (!m_shader)
             {
                 AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader");

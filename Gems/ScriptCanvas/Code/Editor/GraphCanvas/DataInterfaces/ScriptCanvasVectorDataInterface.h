@@ -103,7 +103,7 @@ namespace ScriptCanvasEditor
             return "???";
         }
 
-        AZStd::string GetStyle() const
+        AZStd::string GetStyle() const override
         {
             return "vectorized";
         }

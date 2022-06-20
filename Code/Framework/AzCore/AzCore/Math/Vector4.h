@@ -189,6 +189,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector4& rhs) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector4.
+        //! @{
+        Vector4 GetFloor() const;
+        Vector4 GetCeil() const;
+        Vector4 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector4.
         //! @{
         Vector4 GetMin(const Vector4& v) const;
@@ -283,11 +290,6 @@ namespace AZ
         Simd::Vec4::FloatType GetSimdValue() const;
 
     protected:
-
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable:4201) // anonymous union
-#endif
         union
         {
             Simd::Vec4::FloatType m_value;
@@ -301,9 +303,6 @@ namespace AZ
                 float m_w;
             };
         };
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
     };
 }
 

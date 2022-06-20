@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "PrefabLoaderScriptingBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Prefab Loader"
+            },
+            "methods": [
+                {
+                    "base": "SaveTemplateToString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Save Template To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Save Template To String is invoked"
+                    },
+                    "details": {
+                        "name": "Save Template To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Template Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{92FC6941-F5F5-5141-97A4-1965FC8B09CD}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

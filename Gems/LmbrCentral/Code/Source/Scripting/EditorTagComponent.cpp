@@ -33,11 +33,12 @@ namespace LmbrCentral
                 editContext->Class<EditorTagComponent>("Tag", "The Tag component allows you to apply one or more labels to an entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/tag/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/tag/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTagComponent::m_tags, "Tags", "The tags that will be on this entity by default")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTagComponent::OnTagChanged);
             }

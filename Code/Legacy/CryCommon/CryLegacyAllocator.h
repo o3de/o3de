@@ -10,8 +10,6 @@
 
 #include "LegacyAllocator.h"
 
-#include <AzCore/std/algorithm.h>
-
 //-----------------------------------------------------------------------------
 // CryModule allocation API
 //-----------------------------------------------------------------------------
@@ -25,19 +23,9 @@ inline void* CryModuleMallocImpl(size_t size, const char* file, const int line)
 #define CryModuleFree(ptr) CryModuleFreeImpl(ptr, __FILE__, __LINE__)
 #define CryModuleMemalignFree(ptr) CryModuleFreeImpl(ptr, __FILE__, __LINE__)
 
-inline void CryModuleFreeImpl(void* ptr, const char* file, const int line)
+inline void CryModuleFreeImpl(void* ptr, const char*, const int)
 {
-
-    AZ::IAllocator& allocator = AZ::AllocatorInstance<AZ::LegacyAllocator>::GetAllocator();
-
-    if (allocator.IsAllocationSourceChanged())
-    {
-        allocator.GetAllocationSource()->DeAllocate(ptr);
-    }
-    else
-    {
-        static_cast<AZ::LegacyAllocator&>(allocator).DeAllocate(ptr, file, line);
-    }
+    AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().DeAllocate(ptr, 0, 0);
 }
 
 #define CryModuleMemalign(size, alignment) CryModuleMemalignImpl(size, alignment, __FILE__, __LINE__)
@@ -81,142 +69,5 @@ inline void* CryModuleReallocAlignImpl(void* prev, size_t size, size_t alignment
     }
 #endif
 
-    AZ::IAllocator& allocator = AZ::AllocatorInstance<AZ::LegacyAllocator>::GetAllocator();
-    void *ptr;
-
-    if (allocator.IsAllocationSourceChanged())
-    {
-        ptr = allocator.GetAllocationSource()->ReAllocate(prev, size, 0);
-    }
-    else
-    {
-        ptr = static_cast<AZ::LegacyAllocator&>(allocator).ReAllocate(prev, size, 0, file, line);
-    }
-
-    return ptr;
-}
-
-//-----------------------------------------------------------------------------
-// CryCrt alloc API
-//-----------------------------------------------------------------------------
-inline size_t CryCrtSize(void* p)
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(p);
-}
-
-inline void* CryCrtMalloc(size_t size)
-{
-    return CryModuleMalloc(size);
-}
-
-inline size_t CryCrtFree(void* p)
-{
-    size_t size = CryCrtSize(p);
-    CryModuleFree(p);
-    return size;
-};
-
-//-----------------------------------------------------------------------------
-// CrySystemCrt alloc API
-//-----------------------------------------------------------------------------
-inline size_t CrySystemCrtSize(void* p)
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(p);
-}
-
-inline void* CrySystemCrtMalloc(size_t size)
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().Allocate(size, 0, 0, "AZ::LegacyAllocator");
-}
-
-inline void* CrySystemCrtRealloc(void* p, size_t size)
-{
-    // Use LegacyAllocator's special ReAllocate
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().ReAllocate(p, size, 0);
-}
-
-inline size_t CrySystemCrtFree(void* p)
-{
-    size_t size = CrySystemCrtSize(p);
-    CryModuleFree(p);
-    return size;
-}
-
-inline size_t CrySystemCrtGetUsedSpace()
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().NumAllocatedBytes();
-}
-
-//-----------------------------------------------------------------------------
-// CryMalloc API
-//-----------------------------------------------------------------------------
-inline void* CryMalloc(size_t size, size_t& allocated, size_t alignment)
-{
-    if (!size)
-    {
-        allocated = 0;
-        return nullptr;
-    }
-
-    // The original implementation guaranteed 16 byte min alignment
-    alignment = AZStd::GetMax<size_t>(alignment, 16);
-    void* ptr = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().Allocate(size, alignment, 0, "CryMalloc", __FILE__, __LINE__);
-    allocated = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(ptr);
-    return ptr;
-}
-
-inline void* CryRealloc(void* memblock, size_t size, size_t& allocated, size_t& oldsize, size_t alignment)
-{
-    oldsize = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(memblock);
-    void* ptr = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().ReAllocate(memblock, size, alignment);
-    allocated = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(ptr);
-    return ptr;
-}
-
-inline size_t CryFree(void* p, size_t /*alignment*/)
-{
-    size_t size = AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(p);
-    AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().DeAllocate(p, size);
-    return size;
-}
-
-inline size_t CryGetMemSize(void* memblock, size_t /*sourceSize*/)
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().AllocationSize(memblock);
-}
-
-inline int CryMemoryGetAllocatedSize()
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().NumAllocatedBytes();
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline int CryMemoryGetPoolSize()
-{
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline int CryStats([[maybe_unused]] char* buf)
-{
-    return 0;
-}
-
-inline int CryGetUsedHeapSize()
-{
-    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().NumAllocatedBytes();
-}
-
-inline int CryGetWastedHeapSize()
-{
-    return 0;
-}
-
-inline void CryCleanup()
-{
-    AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().GarbageCollect();
-}
-
-inline void CryResetStats(void)
-{
+    return AZ::AllocatorInstance<AZ::LegacyAllocator>::Get().ReAllocate(prev, size, 0);
 }

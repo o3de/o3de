@@ -17,7 +17,6 @@ set(FILES
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Mac.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     AzFramework/TargetManagement/TargetManagementComponent_Mac.cpp
     AzFramework/Windowing/NativeWindow_Mac.mm
@@ -31,8 +30,6 @@ set(FILES
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     ../Common/Unimplemented/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Unimplemented.cpp
-    AzFramework/Archive/ArchiveVars_Platform.h
-    AzFramework/Archive/ArchiveVars_Mac.h
     ../Common/Apple/AzFramework/Utils/SystemUtilsApple.h
     ../Common/Apple/AzFramework/Utils/SystemUtilsApple.mm
 )

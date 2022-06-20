@@ -1,6 +1,0 @@
-<download name="C6224408_ScriptCanvas_EntitySpawn" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39328" md5="08290ddfe583c60fa6751df128246803"/>
- </files>
-</download>

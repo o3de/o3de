@@ -89,7 +89,7 @@ namespace WhiteBox
             const auto screenLength = std::fabs(currentAction.ScreenOffset().Dot(screenAxis));
             if (screenLength > maxLength)
             {
-                axisIndex = actionIndex;
+                axisIndex = static_cast<int>(actionIndex);
                 maxLength = screenLength;
             }
         }
@@ -148,7 +148,7 @@ namespace WhiteBox
 
                 m_localPositionAtMouseDown = m_translationManipulator->GetLocalPosition();
 
-                for (const auto edgeHandle : Api::VertexUserEdgeHandles(*whiteBox, m_vertexHandle))
+                for (const auto& edgeHandle : Api::VertexUserEdgeHandles(*whiteBox, m_vertexHandle))
                 {
                     const auto edgeVertexPositions = Api::EdgeVertexPositions(*whiteBox, edgeHandle);
                     sharedState->m_edgeBeginEnds.push_back(

@@ -81,6 +81,5 @@ namespace PhysX
         bool m_queuedDisableSimulation = false;
 
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
-        static AZStd::mutex m_sceneEventMutex;
     };
 } // namespace PhysX

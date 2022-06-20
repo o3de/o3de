@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/stack.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/tuple.h>
 
@@ -47,19 +48,12 @@ namespace AZStd
     class intrusive_ptr;
     template<class T>
     class shared_ptr;
-
-    template<class T>
-    class optional;
 }
 
 namespace AZ
 {
-    //template<class T>
-    //class ScriptProperty;
-
     namespace Internal
     {
-
         template <class ValueType>
         void SetupClassElementFromType(SerializeContext::ClassElement& classElement)
         {
@@ -78,7 +72,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
             // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
             const bool isSpecializedEnum = AZStd::is_enum<ValueType>::value && !AzTypeInfo<ValueType>::Uuid().IsNull();
@@ -86,15 +80,14 @@ namespace AZ
             {
                 auto uuid = AzTypeInfo<ValueType>::Uuid();
 
-                using ContainerType = AttributeContainerType<AZ::TypeId>;
-                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute<ContainerType>(AZStd::move(uuid)));
+                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute(AZStd::move(uuid)));
             }
         }
 
         template <class T>
         AZStd::enable_if_t<std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
         {
-            t = {};
+            t = T{};
         }
 
         template <class T>
@@ -648,7 +641,6 @@ namespace AZ
 
                 // Register our key type within an lvalue to rvalue wrapper as an attribute
                 AZ::TypeId uuid = azrtti_typeid<WrappedKeyType>();
-                using ContainerType = AttributeContainerType<AZ::TypeId>;
 
                /**
                 * This should technically bind the reference value from the GetCurrentSerializeContextModule() call 
@@ -656,9 +648,9 @@ namespace AZ
                 * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
                 * created within then this will return this .dll/.exe module allocator
                 */
-                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
-                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute<ContainerType>(AZStd::move(uuid)));
+                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute(AZStd::move(uuid)));
             }
 
             // Reflect our wrapped key and value types to serializeContext so that may later be used
@@ -1320,7 +1312,7 @@ namespace AZ
                     (void)classElement;
                     void* reserveElement{};
                     using DummyArray = bool[];
-                    DummyArray{ true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
+                    [[maybe_unused]] DummyArray dummy = { true, (ReserveElementTuple<Indices>(tupleRef, classElement, reserveElement))... };
                     return reserveElement;
                 }
 
@@ -1791,7 +1783,7 @@ namespace AZ
             /// Returns true if the container is a smart pointer.
             bool IsSmartPointer() const override             { return true; }
 
-            /// Returns true if the container elements can be addressesd by index, otherwise false.
+            /// Returns true if the container elements can be addressed by index, otherwise false.
             bool CanAccessElementsByIndex() const override   { return false; }
 
             /// Reserve element
@@ -1804,6 +1796,7 @@ namespace AZ
             }
 
             /// Get an element's address by its index (called before the element is loaded).
+            /// Caller should ensure CanAccessElementsByIndex returns true for this to be valid.
             void* GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
                 (void)classElement;
@@ -1816,7 +1809,7 @@ namespace AZ
                     return false;
                 };
                 EnumElements(instance, captureValue);
-                typename T::value_type *valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
+                typename T::value_type* valuePtr = *reinterpret_cast<typename T::value_type**>(ptrToRawPtr);
                 return valuePtr;
             }
 
@@ -2881,6 +2874,11 @@ namespace AZ
         }
     };
 
+    AZ_INLINE const Uuid GetGenericClassTupleTypeId()
+    {
+        return Uuid("{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+    };
+
     /// Generic specialization for AZStd::tuple
     template<typename... Types>
     struct SerializeGenericTypeInfo< AZStd::tuple<Types...> >
@@ -2891,7 +2889,7 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassTuple, "{F98DF943-F870-4FE2-B6A9-3E8BC5861782}");
+            AZ_TYPE_INFO(GenericClassTuple, GetGenericClassTupleTypeId());
             GenericClassTuple()
                 : m_classData{ SerializeContext::ClassData::Create<TupleType>("AZStd::tuple", GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_tupleContainer) }
             {

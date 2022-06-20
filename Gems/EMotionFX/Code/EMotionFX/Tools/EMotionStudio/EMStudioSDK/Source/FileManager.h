@@ -21,7 +21,7 @@
 #include <QFileInfo>
 #include "EMStudioConfig.h"
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Actor.h>
@@ -82,8 +82,8 @@ namespace EMStudio
         // motion set file dialogs
         AZStd::string LoadMotionSetFileDialog(QWidget* parent);
         AZStd::string SaveMotionSetFileDialog(QWidget* parent);
-        void SaveMotionSet(QWidget* parent, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveMotionSet(const char* filename, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(QWidget* parent, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(const char* filename, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
 
         // motion file dialogs
         AZStd::string LoadMotionFileDialog(QWidget* parent);
@@ -97,6 +97,9 @@ namespace EMStudio
         // anim graph files
         AZStd::string LoadAnimGraphFileDialog(QWidget* parent);
         AZStd::string SaveAnimGraphFileDialog(QWidget* parent);
+        void SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveAnimGraph(QWidget* parent, EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveAnimGraphAs(QWidget* parent, EMotionFX::AnimGraph* animGraph, const EMotionFX::AnimGraph* focusedAnimGraph, MCore::CommandGroup* commandGroup = nullptr);
 
         // game controller preset files
         AZStd::string LoadControllerPresetFileDialog(QWidget* parent, const char* defaultFolder);
@@ -106,13 +109,11 @@ namespace EMStudio
 
     private:
         AZStd::vector<AZStd::string> m_savedSourceAssets;
-        QString mLastActorFolder;
-        QString mLastMotionSetFolder;
-        QString mLastAnimGraphFolder;
-        QString mLastWorkspaceFolder;
-        QString mLastNodeMapFolder;
-
-        bool mSkipFileChangedCheck;
+        QString m_lastActorFolder;
+        QString m_lastMotionSetFolder;
+        QString m_lastAnimGraphFolder;
+        QString m_lastWorkspaceFolder;
+        QString m_lastNodeMapFolder;
 
         void UpdateLastUsedFolder(const char* filename, QString& outLastFolder) const;
         QString GetLastUsedFolder(const QString& lastUsedFolder) const;

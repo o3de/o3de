@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- These are examples on how to create different kinds of nodes, by default they do not show 
+on the Script Canvas node palette, to show them, remove the following attribute from the desired 
+node:
+
+EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+-->
+
 <ScriptCanvas Include="Source/Nodes/Nodeables/ValuePointerReferenceExample.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Class Name="ReturnTypeExample"
             QualifiedName="ScriptCanvasTesting::Nodeables::ReturnTypeExample"
             PreferredClassName="Return Type Example"
             Base="ScriptCanvas::Nodeable"
             Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Tests"
+            Category="Examples"
             GeneratePropertyFriend="True"
             Namespace="None"
+            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
             Description="Example of returning by value, pointer and reference.">
     <Input Name="Return By Value"  >
       <Return Name="Value" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
@@ -24,9 +33,10 @@
             PreferredClassName="Branch Input Type Example"
             Base="ScriptCanvas::Nodeable"
             Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Tests"
+            Category="Examples"
             GeneratePropertyFriend="True"
             Namespace="None"
+            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
             Description="Example of branch passing as input by value, pointer and reference.">
     <Input Name="Get Internal Vector" Description="">
       <Return Name="Result" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
@@ -46,9 +56,10 @@
             PreferredClassName="Input Type Example"
             Base="ScriptCanvas::Nodeable"
             Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Tests"
+            Category="Examples"
             GeneratePropertyFriend="True"
             Namespace="None"
+            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
             Description="Example of passing as input by value, pointer and reference.">
     <Input Name="Clear By Value" Description="">
       <Parameter Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
@@ -65,9 +76,10 @@
             PreferredClassName="Property Example"
             Base="ScriptCanvas::Nodeable"
             Icon="Icons/ScriptCanvas/Placeholder.png"
-            Category="Tests"
+            Category="Examples"
             GeneratePropertyFriend="True"
             Namespace="None"
+            EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
             Description="Example of using properties.">
     <Input Name="In" Description=""/>
     <Property Name="Numbers" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>

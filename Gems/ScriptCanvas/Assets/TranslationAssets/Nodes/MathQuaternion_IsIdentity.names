@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{6D6D359A-BD00-5ADA-B634-C4F6B0949BFF}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Identity",
+                "category": "Math/Quaternion",
+                "tooltip": "returns true if Source is within Tolerance of the Identity rotation"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Tolerance_1",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

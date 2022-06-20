@@ -108,7 +108,7 @@ namespace EMotionFX
 
                 serializeContext->Class<IActorGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(3, IActorGroupVersionConverter);
 
-                serializeContext->Class<ActorGroup, IActorGroup>()->Version(6, ActorVersionConverter)
+                serializeContext->Class<ActorGroup, IActorGroup>()->Version(7, ActorVersionConverter)
                     ->Field("name", &ActorGroup::m_name)
                     ->Field("selectedRootBone", &ActorGroup::m_selectedRootBone)
                     ->Field("id", &ActorGroup::m_id)

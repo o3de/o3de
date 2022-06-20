@@ -44,6 +44,23 @@ class TestFileUtils(TestCase):
         mocked_path.exists.assert_called_once()
         assert not actual_result
 
+    def test_create_directory_return_true(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
+        assert actual_result
+
+    def test_create_directory_return_false_when_exception_raised(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.mkdir.side_effect = FileExistsError()
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
+        assert not actual_result
+
     def test_get_current_directory_path_return_expected_path_name(self) -> None:
         self._mock_path.cwd.return_value = TestFileUtils._expected_path_name
 
@@ -51,12 +68,65 @@ class TestFileUtils(TestCase):
         self._mock_path.cwd.assert_called_once()
         assert actual_path_name == TestFileUtils._expected_path_name
 
-    def test_get_parent_directory_path_return_expected_path_name(self) -> None:
-        self._mock_path.return_value.parent = TestFileUtils._expected_path_name
+    def test_get_parent_directory_path_return_empty_when_invalid_input(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.exists.return_value = False
 
         actual_path_name: str = file_utils.get_parent_directory_path("dummy")
         self._mock_path.assert_called_once()
-        assert actual_path_name == TestFileUtils._expected_path_name
+        assert actual_path_name == ""
+
+    def test_get_parent_directory_path_return_empty_when_parent_invalid(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.exists.return_value = True
+        mocked_parent_path: MagicMock = MagicMock()
+        mocked_path.parent = mocked_parent_path
+        mocked_parent_path.exists.return_value = False
+
+        actual_path_name: str = file_utils.get_parent_directory_path("dummy")
+        self._mock_path.assert_called()
+        assert actual_path_name == ""
+
+    def test_get_parent_directory_path_return_expected_path_when_parent_valid(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.exists.return_value = True
+        mocked_parent_path: MagicMock = MagicMock()
+        mocked_path.parent = mocked_parent_path
+        mocked_parent_path.exists.return_value = True
+        mocked_parent_path.resolve.return_value = TestFileUtils._expected_file_name
+
+        actual_path_name: str = file_utils.get_parent_directory_path("dummy")
+        self._mock_path.assert_called()
+        assert actual_path_name == TestFileUtils._expected_file_name
+
+    def test_get_parent_directory_path_return_empty_when_level_two_parent_invalid(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.exists.return_value = True
+        mocked_parent_path1: MagicMock = MagicMock()
+        mocked_path.parent = mocked_parent_path1
+        mocked_parent_path1.exists.return_value = True
+        mocked_parent_path2: MagicMock = MagicMock()
+        mocked_parent_path1.parent = mocked_parent_path2
+        mocked_parent_path2.exists.return_value = False
+
+        actual_path_name: str = file_utils.get_parent_directory_path("dummy", 2)
+        self._mock_path.assert_called()
+        assert actual_path_name == ""
+
+    def test_get_parent_directory_path_return_expected_path_when_level_two_parent_valid(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.exists.return_value = True
+        mocked_parent_path1: MagicMock = MagicMock()
+        mocked_path.parent = mocked_parent_path1
+        mocked_parent_path1.exists.return_value = True
+        mocked_parent_path2: MagicMock = MagicMock()
+        mocked_parent_path1.parent = mocked_parent_path2
+        mocked_parent_path2.exists.return_value = True
+        mocked_parent_path2.resolve.return_value = TestFileUtils._expected_file_name
+
+        actual_path_name: str = file_utils.get_parent_directory_path("dummy", 2)
+        self._mock_path.assert_called()
+        assert actual_path_name == TestFileUtils._expected_file_name
 
     def test_find_files_with_suffix_under_directory_return_expected_file_name(self) -> None:
         mocked_path: MagicMock = self._mock_path.return_value

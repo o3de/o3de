@@ -62,9 +62,6 @@ namespace AzToolsFramework::ViewportUi::Internal
             return;
         }
 
-        // set hover to true by default
-        action->setProperty("IconHasHoverEffect", true);
-
         // add the action
         addAction(action);
 

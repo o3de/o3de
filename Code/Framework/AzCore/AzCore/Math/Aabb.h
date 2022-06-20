@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
+#include <AzCore/std/containers/span.h>
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 
@@ -43,7 +43,10 @@ namespace AZ
         static Aabb CreateCenterRadius(const Vector3& center, float radius);
 
         //! Creates an AABB which contains the specified points.
-        static Aabb CreatePoints(const Vector3* pts, int numPts);
+        static Aabb CreatePoints(const Vector3* points, size_t pointCount);
+
+        //! Creates an AABB which contains the specified points.
+        static Aabb CreatePoints(AZStd::span<const Vector3> points);
 
         //! Creates an AABB which contains the specified OBB.
         static Aabb CreateFromObb(const Obb& obb);

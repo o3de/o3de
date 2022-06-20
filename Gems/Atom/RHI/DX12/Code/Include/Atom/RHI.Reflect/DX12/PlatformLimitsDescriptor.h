@@ -23,11 +23,11 @@ namespace AZ
             DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             DESCRIPTOR_HEAP_TYPE_SAMPLER,
             DESCRIPTOR_HEAP_TYPE_RTV,
-            DESCRIPTOR_HEAP_TYPE_DSV);     
+            DESCRIPTOR_HEAP_TYPE_DSV);
 
         struct FrameGraphExecuterData
         {
-            AZ_TYPE_INFO(FrameGraphExecuterData, "{C21547F6-DE48-4F82-B812-1A187101AB4E}");
+            AZ_TYPE_INFO(AZ::DX12::FrameGraphExecuterData, "{C21547F6-DE48-4F82-B812-1A187101AB4E}");
             static void Reflect(AZ::ReflectContext* context);
 
             //Cost per draw/dispatch item
@@ -40,7 +40,7 @@ namespace AZ
             uint32_t m_swapChainsPerCommandList = 8;
 
             // The maximum cost that can be associated with a single command list.
-            uint32_t m_commandListCostThresholdMin = 1000;
+            uint32_t m_commandListCostThresholdMin = 250;
 
             // The maximum number of command lists per scope.
             uint32_t m_commandListsPerScopeMax = 16;
@@ -52,19 +52,27 @@ namespace AZ
         {
             using Base = RHI::PlatformLimitsDescriptor;
         public:
-            AZ_RTTI(DX12::PlatformLimitsDescriptor, "{ADCC8071-FCE4-4FA1-A048-DF8982951A0D}", Base);
-            AZ_CLASS_ALLOCATOR(PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::DX12::PlatformLimitsDescriptor, "{ADCC8071-FCE4-4FA1-A048-DF8982951A0D}", Base);
+            AZ_CLASS_ALLOCATOR(AZ::DX12::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
             PlatformLimitsDescriptor() = default;
 
             static const uint32_t NumHeapFlags = 2;// D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE + 1;
 
-            //! string key: stringifed version of DESCRIPTOR_HEAP_TYPE.
+            //! string key: string version of DESCRIPTOR_HEAP_TYPE.
             //! int array: Max count for descriptors 
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
 
+            // Number of max static handles for shader visible srv/uav/cbv views
+            uint32_t m_numShaderVisibleCbvSrvUavStaticHandles = 2000;
+
+            //Bool to indicate allowing compaction of shader visible srv/uav/cbv heap in case of fragmentation
+            bool m_allowDescriptorHeapCompaction = false;
+
             FrameGraphExecuterData m_frameGraphExecuterData;
+
+            void LoadPlatformLimitsDescriptor(const char* rhiName) override;
         };
     }
 }

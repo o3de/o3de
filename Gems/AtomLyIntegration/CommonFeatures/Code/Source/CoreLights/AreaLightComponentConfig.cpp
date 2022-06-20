@@ -18,7 +18,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(7) // ATOM-16034
+                    ->Version(8) // Added AffectsGI
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -34,13 +34,14 @@ namespace AZ
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
                     ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
+                    ->Field("Normal Shadow Bias", &AreaLightComponentConfig::m_normalShadowBias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
-                    ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
-                    ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
+                    // Global Illumination
+                    ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
+                    ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
                     ;
             }
         }
@@ -113,6 +114,16 @@ namespace AZ
         {
             return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
         }
+
+        bool AreaLightComponentConfig::SupportsAffectsGI() const
+        {
+            return m_lightType == LightType::Sphere
+                || m_lightType == LightType::SpotDisk
+                || m_lightType == LightType::Capsule
+                || m_lightType == LightType::Quad
+                || m_lightType == LightType::SimplePoint
+                || m_lightType == LightType::SimpleSpot;
+        }
         
         bool AreaLightComponentConfig::ShadowsDisabled() const
         {
@@ -182,20 +193,9 @@ namespace AZ
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
-        bool AreaLightComponentConfig::IsPcfBoundarySearchDisabled() const
-        {
-            if (IsShadowPcfDisabled())
-            {
-                return true;
-            }
-
-            return m_pcfMethod != PcfMethod::BoundarySearch;
-        }
-
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
-
     }
 }

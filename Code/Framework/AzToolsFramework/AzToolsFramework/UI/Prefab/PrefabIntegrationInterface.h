@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -28,6 +29,13 @@ namespace AzToolsFramework
              * @return The id of the newly created entity.
              */
             virtual AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) = 0;
+
+            //! Handles the save on close behavior for the root prefab with the TemplateId provided.
+            //! @param templateId The id of the template the user chose to close.
+            virtual int HandleRootPrefabClosure(TemplateId templateId) = 0;
+
+            //! Saves the prefab currently focused in the main editor window and all its descendants.
+            virtual void SaveCurrentPrefab() = 0;
         };
 
     } // namespace Prefab

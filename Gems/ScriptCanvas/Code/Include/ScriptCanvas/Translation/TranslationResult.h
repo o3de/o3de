@@ -12,10 +12,11 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/std/any.h>
 #include <ScriptCanvas/Core/Core.h>
-#include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
-#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <ScriptCanvas/Data/Data.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
+#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 namespace AZ
 {
@@ -52,8 +53,9 @@ namespace ScriptCanvas
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
-
+            
             AZStd::vector<Nodeable*> m_nodeables;
+            // \todo Datum should be able to be cut by now, replaced by AZStd::any (and maybe TypedNullPointer if necessary)
             AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
 
             // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
@@ -85,7 +87,7 @@ namespace ScriptCanvas
             AZStd::sys_time_t m_duration;
         };
 
-        using ErrorList = AZStd::vector<AZStd::string>;
+        using ErrorList = AZStd::vector<ValidationConstPtr>;
         using Errors = AZStd::unordered_map<TargetFlags, ErrorList>;
         using Translations = AZStd::unordered_map<TargetFlags, TargetResult>;
 
@@ -102,7 +104,6 @@ namespace ScriptCanvas
             const AZStd::sys_time_t m_translationDuration;
 
             Result(AZStd::string invalidSourceInfo);
-            Result(Result&& source);
             Result(Grammar::AbstractCodeModelConstPtr model);
             Result(Grammar::AbstractCodeModelConstPtr model, Translations&& translations, Errors&& errors);
 

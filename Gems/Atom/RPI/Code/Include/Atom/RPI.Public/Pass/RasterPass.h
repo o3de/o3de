@@ -38,10 +38,12 @@ namespace AZ
 
             void SetDrawListTag(Name drawListName);
 
-            void SetPipelineStateDataIndex(u32 index);
+            void SetPipelineStateDataIndex(uint32_t index);
 
             //! Expose shader resource group.
             ShaderResourceGroup* GetShaderResourceGroup();
+
+            uint32_t GetDrawItemCount();
 
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
@@ -76,6 +78,7 @@ namespace AZ
             RHI::Viewport m_viewportState;
             bool m_overrideScissorSate = false;
             bool m_overrideViewportState = false;
+            uint32_t m_drawItemCount = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

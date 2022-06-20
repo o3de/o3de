@@ -45,11 +45,8 @@ namespace EMStudio
         ~NodeWindowPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Joint outliner"; }
         uint32 GetClassID() const override                  { return CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
@@ -57,8 +54,10 @@ namespace EMStudio
         // overloaded main init function
         void Reflect(AZ::ReflectContext* context) override;
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new NodeWindowPlugin(); }
         void ReInit();
+
+        void ProcessFrame(float timePassedInSeconds) override;
 
     public slots:
         void OnNodeChanged();
@@ -76,16 +75,19 @@ namespace EMStudio
 
         AZStd::vector<UpdateCallback*> m_callbacks;
 
-        MysticQt::DialogStack*              mDialogStack;
-        NodeHierarchyWidget*                mHierarchyWidget;
+        MysticQt::DialogStack*              m_dialogStack;
+        NodeHierarchyWidget*                m_hierarchyWidget;
         AzToolsFramework::ReflectedPropertyEditor* m_propertyWidget;
 
-        AZStd::string                       mString;
-        AZStd::string                       mTempGroupName;
-        AZStd::unordered_set<AZ::u32> m_visibleNodeIndices;
-        AZStd::unordered_set<AZ::u32> m_selectedNodeIndices;
+        AZStd::string                       m_string;
+        AZStd::string                       m_tempGroupName;
+        AZStd::unordered_set<size_t> m_visibleNodeIndices;
+        AZStd::unordered_set<size_t> m_selectedNodeIndices;
 
         AZStd::unique_ptr<ActorInfo>        m_actorInfo;
         AZStd::unique_ptr<NodeInfo>         m_nodeInfo;
+
+        // Use this flag to defer the reinit function to main thread.
+        bool m_reinitRequested = false;
     };
 } // namespace EMStudio

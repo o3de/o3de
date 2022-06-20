@@ -19,7 +19,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Script/ScriptAsset.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -101,13 +100,6 @@ namespace AZ
             materialFunctorRegistration->RegisterMaterialFunctor("ConvertEmissiveUnit",      azrtti_typeid<ConvertEmissiveUnitFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("HandleSubsurfaceScatteringParameters", azrtti_typeid<SubsurfaceTransmissionParameterFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("Lua", azrtti_typeid<RPI::LuaMaterialFunctorSourceData>());
-
-            // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-            auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-            if (assetCatalog)
-            {
-                assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            }
         }
 
         void EditorCommonSystemComponent::Deactivate()

@@ -25,11 +25,11 @@ namespace AZ
         {
             static constexpr uint32_t SubProductTypeBitPosition = 17;
             static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
-            static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
+            [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
             static constexpr uint32_t StableIdBitPosition = 0;
             static constexpr uint32_t StableIdNumBits = SubProductTypeBitPosition - StableIdBitPosition;
-            static constexpr uint32_t StableIdMaxValue = (1 << StableIdNumBits) - 1;
+            [[maybe_unused]] static constexpr uint32_t StableIdMaxValue = (1 << StableIdNumBits) - 1;
 
             static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
 
@@ -60,9 +60,14 @@ namespace AZ
             }
         }
 
-        AZStd::sys_time_t ShaderVariantAsset::GetBuildTimestamp() const
+        AZ::u64 ShaderVariantAsset::GetBuildTimestamp() const
         {
             return m_buildTimestamp;
+        }
+
+        uint32_t ShaderVariantAsset::GetSupervariantIndex() const
+        {
+            return (m_assetId.m_subId >> SupervariantIndexBitPosition) & SupervariantIndexMaxValue;
         }
 
         const RHI::ShaderStageFunction* ShaderVariantAsset::GetShaderStageFunction(RHI::ShaderStage shaderStage) const

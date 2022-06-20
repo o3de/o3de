@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {

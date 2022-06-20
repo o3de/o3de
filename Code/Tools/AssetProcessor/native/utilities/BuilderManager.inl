@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/StringFunc/StringFunc.h>
+
 namespace AssetProcessor
 {
     //! Sends the job over to the builder and blocks until the response is received or the builder crashes/times out
@@ -17,7 +19,30 @@ namespace AssetProcessor
         TNetResponse netResponse;
         netRequest.m_request = request;
 
-        AZ::u32 type;
+        struct BuildTracker final
+        {
+            BuildTracker(const Builder& builder, const AZStd::string& sourceFile, const AZStd::string& task)
+                : m_builder(builder)
+                , m_sourceFile(sourceFile)
+                , m_task(task)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request started builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            ~BuildTracker()
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request stopped builder [%s] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+            }
+
+            const Builder& m_builder;
+            const AZStd::string& m_sourceFile;
+            const AZStd::string& m_task;
+        };
+        BuildTracker tracker(*this, request.m_sourceFile, task);
+
+        [[maybe_unused]] AZ::u32 type;
         QByteArray data;
         AZStd::binary_semaphore wait;
 
@@ -48,7 +73,7 @@ namespace AssetProcessor
 
         if (!netResponse.m_response.Succeeded() || s_createRequestFileForSuccessfulJob)
         {
-            // we write the request out to disk for failure or debugging 
+            // we write the request out to disk for failure or debugging
             if (!DebugWriteRequestFile(tempFolderPath.c_str(), request, task, modulePath))
             {
                 return BuilderRunJobOutcome::FailedToWriteDebugRequest;
@@ -81,11 +106,13 @@ namespace AssetProcessor
             return false;
         }
 
-        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile);
+        auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile, false);
+        AZStd::string paramString;
+        AZ::StringFunc::Join(paramString, params.begin(), params.end(), " ");
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Job request written to %s\n", jobRequestFile.c_str());
         AZ_TracePrintf(AssetProcessor::DebugChannel, "To re-run this request manually, run AssetBuilder with the following parameters:\n");
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "%s\n", params.c_str());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "%s\n", paramString.c_str());
 
         return true;
     }

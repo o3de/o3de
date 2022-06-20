@@ -1,6 +1,0 @@
-<download name="C5689517_Verify_Terrain_Component" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39329" md5="c62334f51dbb77ac53d1a370deecf4bd"/>
- </files>
-</download>

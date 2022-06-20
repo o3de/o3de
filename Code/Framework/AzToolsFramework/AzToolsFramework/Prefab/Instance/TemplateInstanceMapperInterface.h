@@ -24,7 +24,7 @@ namespace AzToolsFramework
             AZ_RTTI(TemplateInstanceMapperInterface, "{5DCCCDAA-3441-4266-9670-B349386E0129}");
 
             virtual ~TemplateInstanceMapperInterface() = default;
-            virtual InstanceSetConstReference FindInstancesOwnedByTemplate(const TemplateId& templateId) const = 0;
+            virtual InstanceSetConstReference FindInstancesOwnedByTemplate(TemplateId templateId) const = 0;
 
         protected:
             // Only the Instance class is allowed to register and unregister Instances.

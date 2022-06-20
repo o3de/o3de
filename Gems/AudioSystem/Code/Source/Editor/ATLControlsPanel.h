@@ -73,11 +73,11 @@ namespace AudioControls
         void HandleExternalDropEvent(QDropEvent* pDropEvent);
 
         // ------------- IATLControlModelListener ----------------
-        virtual void OnControlAdded(CATLControl* pControl) override;
+        void OnControlAdded(CATLControl* pControl) override;
         // -------------------------------------------------------
 
         // ------------------ QWidget ----------------------------
-        bool eventFilter(QObject* pObject, QEvent* pEvent);
+        bool eventFilter(QObject* pObject, QEvent* pEvent) override;
         // -------------------------------------------------------
 
     private slots:

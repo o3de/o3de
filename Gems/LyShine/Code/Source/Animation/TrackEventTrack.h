@@ -9,6 +9,7 @@
 #pragma once
 
 #include <LyShine/Animation/IUiAnimation.h>
+#include "CryCommon/StlUtils.h"
 #include "AnimTrack.h"
 #include "AnimKey.h"
 
@@ -65,9 +66,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides of IAnimTrack.
     //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void SetKey(int index, IKey* key);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+    void SetKey(int index, IKey* key) override;
     void InitPostLoad(IUiAnimSequence* sequence) override;
 
     static void Reflect(AZ::SerializeContext* serializeContext);

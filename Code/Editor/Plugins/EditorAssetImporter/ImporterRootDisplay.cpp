@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
@@ -43,16 +44,21 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
     return m_manifestWidget.data();
 }
 
+void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
+{
+    ui->m_filePathText->setText(headerText);
+}
+
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     if (!scene)
     {
         AZ_Assert(scene, "No scene provided to display.");
         return;
     }
 
-    ui->m_filePathText->setText(headerText);
+    SetSceneHeaderText(headerText);
 
     HandleSceneWasReset(scene);
 
@@ -62,7 +68,7 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
 
 void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     // Don't accept updates while the widget is being filled in.
     BusDisconnect();
     m_manifestWidget->BuildFromScene(scene);

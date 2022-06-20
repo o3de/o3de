@@ -26,11 +26,13 @@ class BatchProcessing:
     """
     def __init__(self,
                  stack: core.Construct,
+                 application_name: str,
                  input_stream_arn: str,
                  analytics_bucket_arn: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._input_stream_arn = input_stream_arn
         self._analytics_bucket_arn = analytics_bucket_arn
         self._events_database_name = events_database_name
@@ -60,6 +62,12 @@ class BatchProcessing:
                     os.path.join(os.path.dirname(__file__), 'lambdas', 'events_processing_lambda')),
             role=self._events_processing_lambda_role
         )
+        core.CfnOutput(
+            self._stack,
+            id='EventProcessingLambdaName',
+            description='Lambda function for processing metrics events data.',
+            export_name=f"{self._application_name}:EventProcessingLambda",
+            value=self._events_processing_lambda.function_name)
 
     def _create_events_processing_lambda_role(self, function_name: str) -> None:
         """

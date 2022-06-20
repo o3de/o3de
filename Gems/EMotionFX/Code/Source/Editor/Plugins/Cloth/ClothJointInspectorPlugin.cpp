@@ -11,13 +11,12 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
 #include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
 #include <Editor/Plugins/Cloth/ClothJointWidget.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <QScrollArea>
 
 
@@ -32,12 +31,6 @@ namespace EMotionFX
     ClothJointInspectorPlugin::~ClothJointInspectorPlugin()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
-    }
-
-    EMStudio::EMStudioPlugin* ClothJointInspectorPlugin::Clone()
-    {
-        ClothJointInspectorPlugin* newPlugin = new ClothJointInspectorPlugin();
-        return newPlugin;
     }
 
     bool ClothJointInspectorPlugin::IsNvClothGemAvailable() const
@@ -65,13 +58,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_jointWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
         }
 
         return true;
@@ -170,28 +163,5 @@ namespace EMotionFX
         }
 
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Cloth);
-    }
-
-    void ClothJointInspectorPlugin::Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_CLOTH_COLLIDERS);
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth,
-            renderOptions->GetClothColliderColor(),
-            renderOptions->GetSelectedClothColliderColor(),
-            renderPlugin,
-            renderInfo);
     }
 } // namespace EMotionFX

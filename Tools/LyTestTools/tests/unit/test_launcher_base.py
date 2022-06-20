@@ -52,7 +52,7 @@ class TestBaseLauncher:
     def test_Kill_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
         with pytest.raises(NotImplementedError):
-            launcher.kill()
+            launcher.stop()
 
     def test_Launch_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
@@ -111,7 +111,7 @@ class TestBaseLauncher:
         with pytest.raises(NotImplementedError):
             launcher.stop()
 
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.kill')
+    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._kill')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.ensure_stopped')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.teardown')
     def test_Stop_MockImplementedLauncher_KillTeardown(self, mock_teardown, mock_ensure, mock_kill):
@@ -145,15 +145,6 @@ class TestBaseLauncher:
         under_test.teardown()
 
         mock_stop_ap.assert_called_once()
-
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.save_project_log_files')
-    def test_Teardown_TeardownCalled_CallsSaveProjectLogFiles(self, under_test):
-        mock_workspace = mock.MagicMock()
-        mock_args = ['foo']
-        mock_launcher = ly_test_tools.launchers.Launcher(mock_workspace, mock_args)
-
-        mock_launcher.teardown()
-        under_test.assert_called_once()
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager.save_artifact')
@@ -204,21 +195,27 @@ class TestLauncherBuilder(object):
     """
     def test_CreateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows'
-        under_test = ly_test_tools.launchers.launcher_helper.create_launcher(
-            dummy_workspace, launcher_platform)
+        under_test = ly_test_tools.launchers.launcher_helper.create_game_launcher(
+            dummy_workspace, ly_test_tools.HOST_OS_EDITOR)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
     def test_CreateDedicateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows_dedicated'
-        under_test = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
-            dummy_workspace, launcher_platform)
+        under_test = ly_test_tools.launchers.launcher_helper.create_server_launcher(
+            dummy_workspace, ly_test_tools.HOST_OS_DEDICATED_SERVER)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_CreateEditor_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows_editor'
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
         under_test = ly_test_tools.launchers.launcher_helper.create_editor(
-            dummy_workspace, launcher_platform)
+            dummy_workspace, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
+        assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+
+    def test_CreateEditor_InvalidPlatform_ValidLauncherStillReturned(self):
+        dummy_workspace = mock.MagicMock()
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
+        under_test = ly_test_tools.launchers.launcher_helper.create_editor(
+            dummy_workspace, 'does not exist')
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)

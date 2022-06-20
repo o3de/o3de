@@ -19,7 +19,7 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(AttachmentNode, AttachmentAllocator, 0)
 
-    AttachmentNode::AttachmentNode(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
+    AttachmentNode::AttachmentNode(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
         : Attachment(attachToActorInstance, attachment)
         , m_attachedToNode(attachToNodeIndex)
         , m_isManagedExternally(managedExternally)
@@ -33,7 +33,7 @@ namespace EMotionFX
     }
 
 
-    AttachmentNode* AttachmentNode::Create(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
+    AttachmentNode* AttachmentNode::Create(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
     {
         return aznew AttachmentNode(attachToActorInstance, attachToNodeIndex, attachment, managedExternally);
     }
@@ -55,7 +55,7 @@ namespace EMotionFX
     }
 
 
-    uint32 AttachmentNode::GetAttachToNodeIndex() const
+    size_t AttachmentNode::GetAttachToNodeIndex() const
     {
         return m_attachedToNode;
     }

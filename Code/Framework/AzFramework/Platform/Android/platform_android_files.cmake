@@ -14,7 +14,6 @@ set(FILES
     AzFramework/Application/Application_Android.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     AzFramework/IO/LocalFileIO_Android.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_Android.cpp
@@ -28,8 +27,6 @@ set(FILES
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Android.cpp
-    AzFramework/Archive/ArchiveVars_Platform.h
-    AzFramework/Archive/ArchiveVars_Android.h
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessWatcher_Android.cpp
     AzFramework/Process/ProcessCommunicator_Android.cpp

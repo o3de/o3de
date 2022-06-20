@@ -16,18 +16,6 @@
 
 namespace UnitTest
 {
-    MockComponentApplication::MockComponentApplication()
-    {
-        AZ::ComponentApplicationBus::Handler::BusConnect();
-        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
-    }
-
-    MockComponentApplication::~MockComponentApplication()
-    {
-        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
-        AZ::ComponentApplicationBus::Handler::BusDisconnect();
-    }
-
     class MockAssetCatalogRequestBusHandler final
         : public AZ::Data::AssetCatalogRequestBus::Handler
     {
@@ -88,20 +76,6 @@ namespace UnitTest
         AZStd::unique_ptr<UnitTest::MockComponentApplication> m_mockComponentApplicationBusHandler;
         AZStd::unique_ptr<MockAssetCatalogRequestBusHandler> m_mockAssetCatalogRequestBusHandler;
         AZStd::unique_ptr<MockAssetManager> m_mockAssetManager;
-        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
-
-        void SetUpChunkComponents()
-        {
-            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-
-            AZ::Entity::Reflect(m_serializeContext.get());
-            AzToolsFramework::Components::EditorComponentBase::Reflect(m_serializeContext.get());
-        }
-
-        void TearDownChunkComponents()
-        {
-            m_serializeContext.reset();
-        }
 
         void SetUp() override final
         {
@@ -127,15 +101,6 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             AllocatorsTestFixture::TearDown();
-        }
-
-        void SaveChunkAssetToStream(AZ::Entity* chunkAssetEntity, AZStd::vector<char>& buffer)
-        {
-            buffer.clear();
-            AZ::IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
-            AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&stream, *m_serializeContext.get(), AZ::ObjectStream::ST_XML);
-            objStream->WriteClass(chunkAssetEntity);
-            EXPECT_TRUE(objStream->Finalize());
         }
     };
 

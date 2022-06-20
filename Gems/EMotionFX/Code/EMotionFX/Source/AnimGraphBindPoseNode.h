@@ -28,12 +28,12 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
         //
-        enum
+        enum : uint16
         {
             OUTPUTPORT_RESULT   = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_OUTPUT_POSE = 0
         };

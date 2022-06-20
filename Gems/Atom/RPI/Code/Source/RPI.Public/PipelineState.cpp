@@ -172,7 +172,7 @@ namespace AZ
                     }
 
                     m_pipelineState = m_shader->AcquirePipelineState(descriptor);
-                }                
+                }
                 m_dirty = false;
             }
             return m_pipelineState;

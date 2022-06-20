@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
@@ -19,6 +20,8 @@
 #include <ScriptEvents/ScriptEventsAsset.h>
 #include <ScriptEvents/ScriptEventDefinition.h>
 #include <ScriptEvents/ScriptEventSystem.h>
+
+AZ_DECLARE_BUDGET(ScriptCanvas);
 
 namespace ScriptEvents
 {

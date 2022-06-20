@@ -1,0 +1,14 @@
+{
+    "entries": [
+        {
+            "base": "{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Function Call Node",
+                "category": "Core",
+                "tooltip": "Displays a node that represents a call to a function in a user graph"
+            }
+        }
+    ]
+}

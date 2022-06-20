@@ -31,23 +31,23 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default sample rate for raw mouse movement events that aims to strike a balance between
         //! responsiveness and performance.
-        static const AZ::u32 MovementSampleRateDefault;
+        static constexpr inline AZ::u32 MovementSampleRateDefault{60};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Sample rate for raw mouse movement that will cause all events received in the same frame
         //! to be queued and dispatched as individual events. This results in maximum responsiveness
         //! but may potentially impact performance depending how many events happen over each frame.
-        static const AZ::u32 MovementSampleRateQueueAll;
+        static constexpr inline AZ::u32 MovementSampleRateQueueAll{std::numeric_limits<AZ::u32>::max()};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Sample rate for raw mouse movement that will cause all events received in the same frame
         //! to be accumulated and dispatched as a single event. Optimal for performance, but results
         //! in sluggish/unresponsive mouse movement, especially when running at low frame rates.
-        static const AZ::u32 MovementSampleRateAccumulateAll;
+        static constexpr inline AZ::u32 MovementSampleRateAccumulateAll{0};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary mouse input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"mouse"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a mouse (regardless of index)
@@ -66,14 +66,21 @@ namespace AzFramework
         //! been implemented for windows simply to provide for backwards compatibility with CryInput.
         struct Button
         {
-            static const InputChannelId Left;   //!< The left mouse button
-            static const InputChannelId Right;  //!< The right mouse button
-            static const InputChannelId Middle; //!< The middle mouse button
-            static const InputChannelId Other1; //!< DEPRECATED: the x1 mouse button
-            static const InputChannelId Other2; //!< DEPRECATED: the x2 mouse button
+            static constexpr inline InputChannelId Left{"mouse_button_left"}; //!< The left mouse button
+            static constexpr inline InputChannelId Right{"mouse_button_right"}; //!< The right mouse button
+            static constexpr inline InputChannelId Middle{"mouse_button_middle"}; //!< The middle mouse button
+            static constexpr inline InputChannelId Other1{"mouse_button_other1"}; //!< DEPRECATED: the x1 mouse button
+            static constexpr inline InputChannelId Other2{"mouse_button_other2"}; //!< DEPRECATED: the x2 mouse button
 
             //!< All mouse button ids
-            static const AZStd::array<InputChannelId, 5> All;
+            static constexpr inline AZStd::array All
+            {
+                Left,
+                Right,
+                Middle,
+                Other1,
+                Other2
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,12 +89,17 @@ namespace AzFramework
         //! directly correlate to the mouse position (which is queried directly from the system).
         struct Movement
         {
-            static const InputChannelId X; //!< Raw horizontal mouse movement over the last frame
-            static const InputChannelId Y; //!< Raw vertical mouse movement over the last frame
-            static const InputChannelId Z; //!< Raw mouse wheel movement over the last frame
+            static constexpr inline InputChannelId X{"mouse_delta_x"}; //!< Raw horizontal mouse movement over the last frame
+            static constexpr inline InputChannelId Y{"mouse_delta_y"}; //!< Raw vertical mouse movement over the last frame
+            static constexpr inline InputChannelId Z{"mouse_delta_z"}; //!< Raw mouse wheel movement over the last frame
 
             //!< All mouse movement ids
-            static const AZStd::array<InputChannelId, 3> All;
+            static constexpr inline AZStd::array All
+            {
+                X,
+                Y,
+                Z
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +108,7 @@ namespace AzFramework
         //! the system cursor is hidden or visible. When the system cursor has been constrained to
         //! the active window values will be in the [0.0, 1.0] range, but not when unconstrained.
         //! See also InputSystemCursorRequests::SetSystemCursorState and GetSystemCursorState.
-        static const InputChannelId SystemCursorPosition;
+        static constexpr inline InputChannelId SystemCursorPosition{"mouse_system_cursor_position"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
@@ -111,8 +123,19 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Foward declare the internal Implementation class so it can be passed into the constructor
+        class Implementation;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for the function type used to create a custom implementation for this input device
+        using ImplementationFactory = Implementation*(InputDeviceMouse&);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
-        explicit InputDeviceMouse(AzFramework::InputDeviceId id = Id);
+        //! \param[in] inputDeviceId Optional override of the default input device id
+        //! \param[in] implementationFactory Optional override of the default Implementation::Create
+        explicit InputDeviceMouse(const InputDeviceId& inputDeviceId = Id,
+                                  ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

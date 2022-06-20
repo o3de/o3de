@@ -1,20 +1,16 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "uv": {
-            "center": [
-                0.5,
-                0.5
-            ],
-            "offsetU": 0.10000000149011612,
-            "offsetV": 0.15000000596046449,
-            "rotateDegrees": 38.181819915771487,
-            "scale": 1.5,
-            "tileU": 0.5,
-            "tileV": 2.0
-        }
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "uv.center": [
+            0.5,
+            0.5
+        ],
+        "uv.offsetU": 0.10000000149011612,
+        "uv.offsetV": 0.15000000596046448,
+        "uv.rotateDegrees": 38.181819915771484,
+        "uv.scale": 1.5,
+        "uv.tileU": 0.5,
+        "uv.tileV": 2.0
     }
 }

@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    AzToolsFramework/Archive/ArchiveComponent_Mac.cpp
+    ../Common/Default/AzToolsFramework/API/PythonLoader_Default.cpp
 )

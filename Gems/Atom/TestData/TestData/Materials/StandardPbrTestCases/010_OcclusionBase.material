@@ -1,25 +1,15 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.06784161180257797,
-                0.2073090672492981,
-                0.29570457339286806,
-                1.0
-            ]
-        },
-        "clearCoat": {
-            "enable": true
-        },
-        "normal": {
-            "textureMap": "TestData/Textures/cc0/Tiles009_1K_Normal.jpg"
-        },
-        "roughness": {
-            "factor": 0.0
-        }
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.color": [
+            0.06784161180257797,
+            0.2073090672492981,
+            0.29570457339286804,
+            1.0
+        ],
+        "clearCoat.enable": true,
+        "normal.textureMap": "TestData/Textures/cc0/Tiles009_1K_Normal.jpg",
+        "roughness.factor": 0.0
     }
 }

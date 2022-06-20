@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "outofrange1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{6B28C886-471C-5506-AD03-DF19025F6DA1}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 29.299814224243164,
+                                                "endTime": 33.83555221557617
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

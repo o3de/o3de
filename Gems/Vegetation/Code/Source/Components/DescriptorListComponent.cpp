@@ -8,6 +8,7 @@
 
 #include "DescriptorListComponent.h"
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -55,6 +56,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsEmbeddedSource)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, &Descriptor::GetDescriptorName)
                     ->ElementAttribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

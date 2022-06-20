@@ -11,9 +11,7 @@
 
 #include "Plugin.h"
 
-// Editor
-#include "Include/IViewPane.h"
-
+#include <QMessageBox>
 
 CClassFactory* CClassFactory::s_pInstance = nullptr;
 CAutoRegisterClassHelper* CAutoRegisterClassHelper::s_pFirst = nullptr;
@@ -79,7 +77,7 @@ void CClassFactory::RegisterClass(IClassDesc* pClassDesc)
             existingUUIDString,
             findByGuid->second->ClassName().toUtf8().data());
 
-        CryMessageBox(errorMessageBuffer, "Invalid class registration - Duplicate UUID", MB_OK);
+        QMessageBox::critical(nullptr,"Invalid class registration - Duplicate UUID",QString::fromLatin1(errorMessageBuffer));
         return;
     }
 
@@ -107,7 +105,7 @@ void CClassFactory::RegisterClass(IClassDesc* pClassDesc)
             newUUIDString,
             existingUUIDString);
 
-        CryMessageBox(errorMessageBuffer, "Invalid class registration - Duplicate Class Name", MB_OK);
+        QMessageBox::critical(nullptr, "Invalid class registration - Duplicate Class Name", QString::fromLatin1(errorMessageBuffer));
         return;
     }
 
@@ -133,10 +131,10 @@ IClassDesc* CClassFactory::FindClass(const char* pClassName) const
 
     if (!pSubClassName)
     {
-        return NULL;
+        return nullptr;
     }
 
-    QString name = QString(pClassName).left(pSubClassName - pClassName);
+    QString name = QString(pClassName).left(static_cast<int>(pSubClassName - pClassName));
 
     return stl::find_in_map(m_nameToClass, name, (IClassDesc*)nullptr);
 }
@@ -148,28 +146,11 @@ IClassDesc* CClassFactory::FindClass(const GUID& rClassID) const
     return pClassDesc;
 }
 
-IViewPaneClass* CClassFactory::FindViewPaneClassByTitle(const char* pPaneTitle) const
-{
-    for (size_t i = 0; i < m_classes.size(); i++)
-    {
-        IViewPaneClass* viewPane = nullptr;
-        IClassDesc* desc = m_classes[i];
-        if (SUCCEEDED(desc->QueryInterface(__uuidof(IViewPaneClass), (void**)&viewPane)))
-        {
-            if (QString::compare(viewPane->GetPaneTitle(), pPaneTitle) == 0)
-            {
-                return viewPane;
-            }
-        }
-    }
-    return nullptr;
-}
-
 void CClassFactory::UnregisterClass(const char* pClassName)
 {
     IClassDesc* pClassDesc = FindClass(pClassName);
 
-    if (pClassDesc == NULL)
+    if (pClassDesc == nullptr)
     {
         return;
     }

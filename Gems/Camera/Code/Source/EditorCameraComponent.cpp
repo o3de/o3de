@@ -12,13 +12,13 @@
 #include "EditorCameraComponent.h"
 #include "ViewportCameraSelectorWindow.h"
 
-#include <MathConversion.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace Camera
 {
@@ -33,45 +33,47 @@ namespace Camera
         CameraComponentConfig controllerConfig = m_controller.GetConfiguration();
         controllerConfig.m_editorEntityId = GetEntityId().operator AZ::u64();
         m_controller.SetConfiguration(controllerConfig);
+        // Only allow our camera to activate with the component if we're currently in game mode.
+        m_controller.SetShouldActivateFunction([]()
+            {
+                bool isInGameMode = true;
+                AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                    isInGameMode, &AzToolsFramework::EditorEntityContextRequestBus::Events::IsEditorRunningGame);
+                return isInGameMode;
+            });
+
+        // Only allow our camera to move when the transform is not locked.
+        m_controller.SetIsLockedFunction([this]()
+            {
+                bool locked = false;
+                AzToolsFramework::Components::TransformComponentMessages::Bus::EventResult(
+                    locked, GetEntityId(), &AzToolsFramework::Components::TransformComponentMessages::IsTransformLocked);
+
+                return locked;
+            });
 
         // Call base class activate, which in turn calls Activate on our controller.
         EditorCameraComponentBase::Activate();
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
-        EditorCameraNotificationBus::Handler::BusConnect();
         EditorCameraViewRequestBus::Handler::BusConnect(GetEntityId());
-
-        AZ::EntityId currentViewEntity;
-        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
-        if (currentViewEntity == GetEntityId())
-        {
-            m_controller.ActivateAtomView();
-            m_isActiveEditorCamera = true;
-        }
     }
 
     void EditorCameraComponent::Deactivate()
     {
-        if (m_isActiveEditorCamera)
-        {
-            m_controller.DeactivateAtomView();
-            m_isActiveEditorCamera = false;
-        }
-
         EditorCameraViewRequestBus::Handler::BusDisconnect(GetEntityId());
-        EditorCameraNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         EditorCameraComponentBase::Deactivate();
     }
 
     AZ::u32 EditorCameraComponent::OnConfigurationChanged()
     {
-        bool isActiveEditorCamera = m_isActiveEditorCamera;
+        bool isActiveEditorCamera = m_controller.IsActiveView();
         AZ::u32 configurationHash = EditorCameraComponentBase::OnConfigurationChanged();
         // If we were the active editor camera before, ensure we get reactivated after our controller gets disabled then re-enabled
         if (isActiveEditorCamera)
         {
-            EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, GetEntityId());
+            m_controller.MakeActiveView();
         }
         return configurationHash;
     }
@@ -111,7 +113,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Camera.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera/")
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
@@ -139,25 +141,6 @@ namespace Camera
         }
     }
 
-    void EditorCameraComponent::OnViewportViewEntityChanged([[maybe_unused]] const AZ::EntityId& newViewId)
-    {
-        if (newViewId == GetEntityId())
-        {
-            if (!m_isActiveEditorCamera)
-            {
-                m_controller.ActivateAtomView();
-                m_isActiveEditorCamera = true;
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-            }
-        }
-        else if (m_isActiveEditorCamera)
-        {
-            m_controller.DeactivateAtomView();
-            m_isActiveEditorCamera = false;
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-        }
-    }
-
     bool EditorCameraComponent::GetCameraState(AzFramework::CameraState& cameraState)
     {
         const CameraComponentConfig& config = m_controller.GetConfiguration();
@@ -173,13 +156,12 @@ namespace Camera
 
         {
             const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-            cameraState.m_viewportSize =
-                AZ::Vector2{aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)};
+            cameraState.m_viewportSize = AzFramework::ScreenSize(viewportSize.m_width, viewportSize.m_height);
         }
 
         if (config.m_orthographic)
         {
-            cameraState.m_fovOrZoom = cameraState.m_viewportSize.GetX() / (config.m_orthographicHalfWidth * 2.0f);
+            cameraState.m_fovOrZoom = aznumeric_cast<float>(cameraState.m_viewportSize.m_width) / (config.m_orthographicHalfWidth * 2.0f);
             cameraState.m_orthographic = true;
         }
         else

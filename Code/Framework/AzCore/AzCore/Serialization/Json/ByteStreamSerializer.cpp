@@ -71,7 +71,7 @@ namespace AZ
         if (context.ShouldKeepDefaults() || !defaultValue || (valAsByteStream != *static_cast<const JsonByteStream*>(defaultValue)))
         {
             const auto base64ByteStream = AZ::StringFunc::Base64::Encode(valAsByteStream.data(), valAsByteStream.size());
-            outputValue.SetString(base64ByteStream.c_str(), base64ByteStream.size(), context.GetJsonAllocator());
+            outputValue.SetString(base64ByteStream.c_str(), static_cast<rapidjson::SizeType>(base64ByteStream.size()), context.GetJsonAllocator());
             return context.Report(Tasks::WriteValue, Outcomes::Success, "ByteStream successfully stored.");
         }
 

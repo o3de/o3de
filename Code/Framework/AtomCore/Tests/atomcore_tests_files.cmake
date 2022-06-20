@@ -7,11 +7,10 @@
 #
 
 set(FILES
-    ArrayView.cpp
     ConcurrencyCheckerTests.cpp
     InstanceDatabase.cpp
-    JsonSerializationUtilsTests.cpp
     lru_cache.cpp
     Main.cpp
+    ScopedValueTest.cpp
     vector_set.cpp
 )

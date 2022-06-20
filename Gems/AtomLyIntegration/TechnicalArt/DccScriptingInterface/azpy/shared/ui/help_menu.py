@@ -27,7 +27,7 @@ import PySide2.QtWidgets as QtWidgets
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = os.getenv('DCCSI_GDEBUG', False)
+_DCCSI_GDEBUG = os.getenv('DCCSI_GDEBUG', False)
 
 #  global space developer mode flag
 _DCCSI_DEV_MODE = os.getenv('DCCSI_DEV_MODE', False)

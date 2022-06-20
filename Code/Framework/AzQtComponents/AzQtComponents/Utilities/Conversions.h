@@ -22,7 +22,7 @@ namespace AzQtComponents
 
     AZ_QT_COMPONENTS_API AZ::Color fromQColor(const QColor& color);
 
-    AZ_QT_COMPONENTS_API QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator = false);
+    AZ_QT_COMPONENTS_API QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator = false, bool round = false);
 
     // Maintained for backwards compile compatibility
     inline QColor ToQColor(const AZ::Color& color)

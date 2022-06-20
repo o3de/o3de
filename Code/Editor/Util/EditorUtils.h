@@ -18,9 +18,7 @@
 #include <IXml.h>
 #include "Util/FileUtil.h"
 #include <Cry_Color.h>
-
-//! Typedef for quaternion.
-//typedef CryQuat Quat;
+#include <CryCommon/ISystem.h>
 
 #include <QColor>
 #include <QDataStream>
@@ -215,22 +213,6 @@ namespace XmlHelpers
 
 
 //////////////////////////////////////////////////////////////////////////
-// Drag Drop helper functions
-//////////////////////////////////////////////////////////////////////////
-namespace EditorDragDropHelpers
-{
-    inline QString GetAnimationNameClipboardFormat()
-    {
-        return QStringLiteral("application/x-animation-browser-copy");
-    }
-
-    inline QString GetFragmentClipboardFormat()
-    {
-        return QStringLiteral("application/x-preview-fragment-properties");
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 /*!
  * StdMap Wraps std::map to provide easier to use interface.
@@ -294,116 +276,6 @@ public:
     }
 };
 
-
-//////////////////////////////////////////////////////////////////////////
-//
-// Convert String representation of color to RGB integer value.
-//
-//////////////////////////////////////////////////////////////////////////
-inline QColor String2Color(const QString& val)
-{
-    unsigned int r = 0, g = 0, b = 0;
-    int res = 0;
-    res = azsscanf(val.toUtf8().data(), "R:%d,G:%d,B:%d", &r, &g, &b);
-    if (res != 3)
-    {
-        res = azsscanf(val.toUtf8().data(), "R:%d G:%d B:%d", &r, &g, &b);
-    }
-    if (res != 3)
-    {
-        res = azsscanf(val.toUtf8().data(), "%d,%d,%d", &r, &g, &b);
-    }
-    if (res != 3)
-    {
-        res = azsscanf(val.toUtf8().data(), "%d %d %d", &r, &g, &b);
-    }
-    if (res != 3)
-    {
-        azsscanf(val.toUtf8().data(), "%x", &r);
-        return r;
-    }
-
-    return QColor(r, g, b);
-}
-
-// Converts QColor to Vector.
-inline Vec3 Rgb2Vec(const QColor& color)
-{
-    return Vec3(aznumeric_cast<float>(color.redF()), aznumeric_cast<float>(color.greenF()), aznumeric_cast<float>(color.blueF()));
-}
-
-// Converts QColor to ColorF.
-inline ColorF Rgb2ColorF(const QColor& color)
-{
-    return ColorF(aznumeric_cast<float>(color.redF()), aznumeric_cast<float>(color.greenF()), aznumeric_cast<float>(color.blueF()), 1.0f);
-}
-
-// Converts QColor to Vector.
-inline QColor Vec2Rgb(const Vec3& color)
-{
-    return QColor(aznumeric_cast<int>(color.x * 255), aznumeric_cast<int>(color.y * 255), aznumeric_cast<int>(color.z * 255));
-}
-
-// Converts ColorF to QColor.
-inline QColor ColorF2Rgb(const ColorF& color)
-{
-    return QColor(aznumeric_cast<int>(color.r * 255), aznumeric_cast<int>(color.g * 255), aznumeric_cast<int>(color.b * 255));
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Tokenize string.
-//////////////////////////////////////////////////////////////////////////
-inline QString TokenizeString(const QString& s, LPCSTR pszTokens, int& iStart)
-{
-    assert(iStart >= 0);
-
-    QByteArray str = s.toUtf8();
-
-    if (pszTokens == NULL)
-    {
-        return str;
-    }
-
-    auto pszPlace = str.begin() + iStart;
-    auto pszEnd = str.end();
-    if (pszPlace < pszEnd)
-    {
-        int nIncluding = (int)strspn(pszPlace, pszTokens);
-        ;
-
-        if ((pszPlace + nIncluding) < pszEnd)
-        {
-            pszPlace += nIncluding;
-            int nExcluding = (int)strcspn(pszPlace, pszTokens);
-
-            int iFrom = iStart + nIncluding;
-            int nUntil = nExcluding;
-            iStart = iFrom + nUntil + 1;
-
-            return (str.mid(iFrom, nUntil));
-        }
-    }
-
-    // return empty string, done tokenizing
-    iStart = -1;
-    return "";
-}
-
-// This template function will join strings from a vector into a single string, using a separator char
-template<class T>
-inline void JoinStrings(const QList<T>& rStrings, QString& rDestStr, char aSeparator = ',')
-{
-    for (size_t i = 0, iCount = rStrings.size(); i < iCount; ++i)
-    {
-        rDestStr += rStrings[i];
-
-        if (i < iCount - 1)
-        {
-            rDestStr += aSeparator;
-        }
-    }
-}
-
 // This function will split a string containing separated strings, into a vector of strings
 // better version of TokenizeString
 inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char aSeparator = ',')
@@ -436,45 +308,6 @@ inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char 
         lastPos = crtPos + 1;
     }
 }
-
-// Format unsigned number to string with 1000s separator
-inline QString FormatWithThousandsSeperator(const unsigned int number)
-{
-    QString string;
-
-    string = QString::number(number);
-
-    for (int p = string.length() - 3; p > 0; p -= 3)
-    {
-        string.insert(p, ',');
-    }
-
-    return string;
-}
-
-
-void FormatFloatForUI(QString& str, int significantDigits, double value);
-
-//////////////////////////////////////////////////////////////////////////
-// Simply sub string searching case insensitive.
-//////////////////////////////////////////////////////////////////////////
-inline const char* strstri(const char* pString, const char* pSubstring)
-{
-    int i, j, k;
-    for (i = 0; pString[i]; i++)
-    {
-        for (j = i, k = 0; tolower(pString[j]) == tolower(pSubstring[k]); j++, k++)
-        {
-            if (!pSubstring[k + 1])
-            {
-                return (pString + i);
-            }
-        }
-    }
-
-    return NULL;
-}
-
 
 inline bool CheckVirtualKey(Qt::MouseButton button)
 {
@@ -542,7 +375,7 @@ public:
         // There is a bug in QT with writing files larger than 32MB. It separates
         // the write into 32MB blocks, but doesn't write the last block correctly.
         // To deal with this, we'll separate into blocks here so QT doesn't have to.
-        
+
         // QT bug in qfileengine_win.cpp line 434. Block size is calculated once and always
         // used as the amount of data to write, but for the last block, unless there is exactly
         // block size left to write, the actual remaining amount needs to be written, not the
@@ -658,14 +491,14 @@ inline CArchive& operator>>(CArchive& ar, QString& str)
             str = QString::fromUtf16(reinterpret_cast<ushort*>(raw), aznumeric_cast<int>(length));
         }
     }
-    
+
     return ar;
 }
 
 inline CArchive& operator<<(CArchive& ar, const QString& str)
 {
     // This is written to mimic how MFC archiving worked, which was to
-    // write markers to indicate the size of the length - 
+    // write markers to indicate the size of the length -
     // so a length that will fit into 8 bits takes 8 bits.
     // A length that requires more than 8 bits, puts an 8 bit marker (0xff)
     // to indicate that the length is greater, then 16 bits for the length.
@@ -693,7 +526,7 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
         ar << static_cast<quint16>(0xffff);
         ar << static_cast<quint32>(length);
     }
-   
+
     ar.device()->write(data);
 
     return ar;

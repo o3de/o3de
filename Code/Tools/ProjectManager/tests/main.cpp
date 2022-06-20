@@ -18,6 +18,9 @@ int runDefaultRunner(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    AZ::Debug::Trace::HandleExceptions(true);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
+
     if (argc == 1)
     {
         // if no parameters are provided, add the --unittests parameter

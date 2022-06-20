@@ -10,9 +10,10 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/AssetManager/FileStateCache.h"
-#include "native/AssetDatabase/AssetDatabase.h"
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/utilities/StatsCapture.h>
+#include <native/AssetManager/FileStateCache.h>
+#include <native/AssetDatabase/AssetDatabase.h>
 #include <utilities/ThreadHelper.h>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -57,9 +58,6 @@
 
 #include <sstream>
 
-// windows headers bring in a macro which conflicts GetCommandLine
-#undef GetCommandLine
-
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
@@ -72,11 +70,6 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
-        if (waitTimeInSeconds < 0)
-        {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
-            waitTimeInSeconds = 0;
-        }
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
@@ -138,7 +131,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -172,7 +165,10 @@ namespace AssetUtilsInternal
 
         AZ::SettingsRegistryMergeUtils::DumperSettings apDumperSettings;
         apDumperSettings.m_prettifyOutput = true;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        AZ_POP_DISABLE_WARNING
         {
             // The AssetUtils only updates the following keys in the registry
             // Dump them all out to the setreg file
@@ -241,6 +237,7 @@ namespace AssetUtilities
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
+    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
@@ -555,37 +552,75 @@ namespace AssetUtilities
 
     bool InServerMode()
     {
-        static bool s_serverMode = CheckServerMode();
-        return s_serverMode;
+        if (s_serverMode.has_value())
+        {
+            return s_serverMode.value();
+        }
+        s_serverMode = AZStd::make_optional<bool>(CheckServerMode());
+        return s_serverMode.value();
+    }
+
+    void ResetServerMode()
+    {
+        if (s_serverMode.has_value())
+        {
+            s_serverMode.reset();
+        }
     }
 
     bool CheckServerMode()
     {
-        QStringList args = QCoreApplication::arguments();
-        for (const QString& arg : args)
+        bool inServerMode = false;
+        if (QCoreApplication::instance())
         {
-            if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
+            QStringList args = QCoreApplication::arguments();
+            for (const QString& arg : args)
             {
-                bool isValid = false;
-                AssetProcessor::AssetServerBus::BroadcastResult(isValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-                if (isValid)
+                if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                    return true;
+                    inServerMode = true;
+                    break;
                 }
-                else
-                {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-                }
-
-                break;
             }
         }
 
+        if (!inServerMode)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                bool enableAssetCacheServerMode = false;
+                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+                {
+                    inServerMode = enableAssetCacheServerMode;
+                }
+            }
+        }
+
+        if (inServerMode)
+        {
+            bool isServerAddressValid = false;
+            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
+            if (isServerAddressValid)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
+                return true;
+            }
+            else
+            {
+                AZ_Warning(AssetProcessor::ConsoleChannel, false,
+                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
+            }
+        }
         return false;
     }
 
+    void ResetServerAddress()
+    {
+        s_assetServerAddress.clear();
+    }
 
     QString ServerAddress()
     {
@@ -621,10 +656,9 @@ namespace AssetUtilities
                 + "/Server/cacheServerAddress"))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+                s_assetServerAddress = address;
+                return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
             }
-            s_assetServerAddress = address;
-
-            return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
         }
 
         return QString();
@@ -664,8 +698,7 @@ namespace AssetUtilities
 
     QString ReadAllowedlistFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/allowed_list");
-        AZStd::fixed_string<BufferSize> allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString allowedListKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         allowedListKey += "/allowed_list";
 
         AZ::SettingsRegistryInterface::FixedValueString allowedListIp;
@@ -679,8 +712,7 @@ namespace AssetUtilities
 
     QString ReadRemoteIpFromSettingsRegistry([[maybe_unused]] QString initialFolder)
     {
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_ip");
-        AZStd::fixed_string<BufferSize> remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remoteIpKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remoteIpKey += "/remote_ip";
 
         AZ::SettingsRegistryInterface::FixedValueString remoteIp;
@@ -745,8 +777,7 @@ namespace AssetUtilities
             initialFolder = engineRoot.absolutePath();
         }
 
-        constexpr size_t BufferSize = AZ_ARRAY_SIZE(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + AZStd::char_traits<char>::length("/remote_port");
-        AZStd::fixed_string<BufferSize> remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
+        AZ::SettingsRegistryInterface::FixedValueString remotePortKey{ AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey };
         remotePortKey += "/remote_port";
 
         AZ::s64 portNumber;
@@ -874,23 +905,27 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
+
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
         {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
-            {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
-            }
+            return relativeProductPath;
         }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        return originalPath;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)
@@ -1026,7 +1061,7 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AzToolsFramework::AssetSystem::JobInfo& jobInfo)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
+        return AZStd::string::format("%s-%u-%llu.log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
     }
 
     AZStd::string ComputeJobLogFileName(const AssetBuilderSDK::CreateJobsRequest& createJobsRequest)
@@ -1166,7 +1201,7 @@ namespace AssetUtilities
     {
 #ifndef AZ_TESTS_ENABLED
         // Only used for unit tests, speed is critical for GetFileHash.
-        AZ_UNUSED(hashMsDelay);
+        hashMsDelay = 0;
 #endif
         bool useFileHashing = ShouldUseFileHashing();
 
@@ -1175,10 +1210,10 @@ namespace AssetUtilities
             return 0;
         }
 
+        AZ::u64 hash = 0;
         if(!force)
         {
             auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-            AZ::u64 hash = 0;
 
             if (fileStateInterface && fileStateInterface->GetHash(filePath, &hash))
             {
@@ -1186,64 +1221,12 @@ namespace AssetUtilities
             }
         }
 
-        char buffer[FileHashBufferSize];
-
-        constexpr bool ErrorOnReadFailure = true;
-        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
-
-        if(readStream.IsOpen() && readStream.CanRead())
-        {
-            AZ::IO::SizeType bytesRead;
-
-            auto* state = XXH64_createState();
-
-            if(state == nullptr)
-            {
-                AZ_Assert(false, "Failed to create hash state");
-                return 0;
-            }
-
-            if (XXH64_reset(state, 0) == XXH_ERROR)
-            {
-                AZ_Assert(false, "Failed to reset hash state");
-                return 0;
-            }
-
-            do
-            {
-                // In edge cases where another process is writing to this file while this hashing is occuring and that file wasn't locked,
-                // the following read check can fail because it performs an end of file check, and asserts and shuts down if the read size
-                // was smaller than the buffer and the read is not at the end of the file. The logic used to check end of file internal to read
-                // will be out of date in the edge cases where another process is actively writing to this file while this hash is running.
-                // The stream's length ends up more accurate in this case, preventing this assert and shut down.
-                // One area this occurs is the navigation mesh file (mnmnavmission0.bai) that's temporarily created when exporting a level,
-                // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
-                AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
-                bytesRead = readStream.Read(remainingToRead, buffer);
-
-                if(bytesReadOut)
-                {
-                    *bytesReadOut += bytesRead;
-                }
-
-                XXH64_update(state, buffer, bytesRead);
-#ifdef AZ_TESTS_ENABLED
-                // Used by unit tests to force the race condition mentioned above, to verify the crash fix.
-                if(hashMsDelay > 0)
-                {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(hashMsDelay));
-                }
-#endif
-
-            } while (bytesRead > 0);
-
-            auto hash = XXH64_digest(state);
-
-            XXH64_freeState(state);
-
-            return hash;
-        }
-        return 0;
+        // keep track of how much time we spend actually hashing files.
+        AZStd::string statName = AZStd::string::format("HashFile,%s", filePath);
+        AssetProcessor::StatsCapture::BeginCaptureStat(statName.c_str());
+        hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
+        AssetProcessor::StatsCapture::EndCaptureStat(statName.c_str());
+        return hash;
     }
 
     AZ::u64 AdjustTimestamp(QDateTime timestamp)
@@ -1295,13 +1278,13 @@ namespace AssetUtilities
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
             // but with a different name.  So we add that too.
-            return AZStd::string::format("%" PRIX64 ":%" PRIu64 ":%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
+            return AZStd::string::format("%llX:%llu:%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
         }
     }
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1404,7 +1387,6 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
-        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 
@@ -1639,8 +1621,12 @@ namespace AssetUtilities
             {
                 std::string dummy;
                 std::istringstream stream(message);
+                AZ::s64 errorCount, warningCount;
 
-                stream >> dummy >> m_errorCount >> dummy >> m_warningCount;
+                stream >> dummy >> errorCount >> dummy >> warningCount;
+
+                m_errorCount += errorCount;
+                m_warningCount += warningCount;
             }
 
             if (azstrnicmp(window, "debug", 5) == 0)

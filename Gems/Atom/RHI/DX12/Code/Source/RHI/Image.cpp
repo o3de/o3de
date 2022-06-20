@@ -72,7 +72,7 @@ namespace AZ
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
 
-            size_t byteOffset = 0;
+            uint32_t byteOffset = 0;
 
             if (subresourceLayouts)
             {

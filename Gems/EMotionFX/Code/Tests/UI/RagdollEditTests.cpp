@@ -20,6 +20,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 #include <Editor/ReselectingTreeView.h>
@@ -30,17 +31,12 @@ namespace EMotionFX
 {
     class RagdollEditTestsFixture : public UIFixture
     {
-      public:
+    public:
         void SetUp() override
         {
+            UIFixture::SetUp();
+
             using ::testing::_;
-
-            SetupQtAndFixtureBase();
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            D6JointLimitConfiguration::Reflect(serializeContext);
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
@@ -65,7 +61,6 @@ namespace EMotionFX
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
 
-            SetupPluginWindows();
         }
 
         void TearDown() override
@@ -93,6 +88,8 @@ namespace EMotionFX
         }
 
     protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
+
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
@@ -109,7 +106,9 @@ namespace EMotionFX
         const int numJoints = 6;
         RecordProperty("test_case_id", "C3122249");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(numJoints, "RagdollEditTestsActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "RagdollEditTestsActor");
 
         CreateSkeletonAndModelIndices();
 
@@ -137,7 +136,9 @@ namespace EMotionFX
         const int numJoints = 8;
         RecordProperty("test_case_id", "C3122248");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(numJoints, "RagdollEditTestsActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "RagdollEditTestsActor");
 
         CreateSkeletonAndModelIndices();
         EXPECT_EQ(m_indexList.size(), numJoints);

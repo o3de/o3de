@@ -226,7 +226,6 @@ namespace ScriptCanvasEditor
             auto dataTypeIter = m_containerDataTypeSets.find(workingCrc);
             if (dataTypeIter == m_containerDataTypeSets.end())
             {
-                // No idea wtf do here we've managed to put ourselves into an invalid state
                 AZ_Error("ScriptCanvas", false, "Unknown partial type found in Container Creation. Aborting.");
                 close();
                 break;

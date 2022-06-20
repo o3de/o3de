@@ -17,13 +17,13 @@
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Math/MathUtils.h>
 
 namespace AzNetworking
 {
 #if AZ_TRAIT_USE_OPENSSL
     AZ_CVAR(bool, net_UdpUseEncryption, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enable encryption on Udp based connections");
     AZ_CVAR(uint32_t, net_SslInflationOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A SSL fudge overhead value to take out of fragmented packet payloads");
-
 #else
     static const bool net_UdpUseEncryption = false;
     static const uint32_t net_SslInflationOverhead = 0;
@@ -31,12 +31,13 @@ namespace AzNetworking
 
     AZ_CVAR(bool, net_UdpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Udp connections");
     AZ_CVAR(AZ::TimeMs, net_UdpPacketTimeSliceMs, AZ::TimeMs{ 8 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The number of milliseconds to allow for packet processing");
-    AZ_CVAR(AZ::TimeMs, net_UdpHearthbeatTimeMs, AZ::TimeMs{ 2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Udp connection heartbeat frequency");
-    AZ_CVAR(AZ::TimeMs, net_UdpTimeoutTimeMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
+    AZ_CVAR(uint32_t, net_UdpUnackedHeartbeats, 5, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of heartbeats to attempt to send to keep a connection alive before giving up");
+    AZ_CVAR(AZ::TimeMs, net_UdpDefaultTimeoutMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
     AZ_CVAR(AZ::TimeMs, net_MinPacketTimeoutMs, AZ::TimeMs{ 200 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Minimum time to wait before timing out an unacked packet");
     AZ_CVAR(int32_t, net_MaxTimeoutsPerFrame, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of packet timeouts to allow to process in a single frame");
     AZ_CVAR(float, net_RttFudgeScalar, 2.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scalar value to multiply computed Rtt by to determine an optimal packet timeout threshold");
     AZ_CVAR(uint32_t, net_FragmentedHeaderOverhead, 32, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "A fudge overhead value to take out of fragmented packet payloads");
+    AZ_CVAR(bool, net_FragmentsAlwaysReliable, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether fragmented packets should be reliable by default or use their source packet's reliability type");
     AZ_CVAR(AZ::CVarFixedString, net_UdpCompressor, "MultiplayerCompressor", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "UDP compressor to use."); // WARN: similar to encryption this needs to be set once and only once before creating the network interface
 
     static uint64_t ConstructTimeoutId(ConnectionId connectionId, PacketId packetId, ReliabilityType reliability)
@@ -55,16 +56,16 @@ namespace AzNetworking
         outReliability = ((timeoutId & 0x8000000000000000) > 0) ? ReliabilityType::Reliable : ReliabilityType::Unreliable;
     }
 
-    UdpNetworkInterface::UdpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
+    UdpNetworkInterface::UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
         , m_socket(net_UdpUseEncryption ? new DtlsSocket() : new UdpSocket())
         , m_readerThread(readerThread)
+        , m_timeoutMs(net_UdpDefaultTimeoutMs)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_UdpCompressor);
-        const AZ::Name compressorName = AZ::Name(compressor);
-        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
     }
 
     UdpNetworkInterface::~UdpNetworkInterface()
@@ -138,7 +139,8 @@ namespace AzNetworking
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
-        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), net_UdpHearthbeatTimeMs);
+        const AZ::TimeMs timeoutTimeMs = m_timeoutMs / static_cast<AZ::TimeMs>(static_cast<int32_t>(net_UdpUnackedHeartbeats));
+        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), timeoutTimeMs);
 
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, remoteAddress, *this, ConnectionRole::Connector);
         UdpPacketEncodingBuffer dtlsData;
@@ -159,7 +161,7 @@ namespace AzNetworking
         return connectionId;
     }
 
-    void UdpNetworkInterface::Update([[maybe_unused]] AZ::TimeMs deltaTimeMs)
+    void UdpNetworkInterface::Update()
     {
         if (!m_socket->IsOpen())
         {
@@ -249,7 +251,7 @@ namespace AzNetworking
                     continue;
                 }
                 decodedPacketData = m_decompressBuffer.GetBuffer();
-                decodedPacketSize = m_decompressBuffer.GetSize();
+                decodedPacketSize = static_cast<int32_t>(m_decompressBuffer.GetSize());
             }
             GetMetrics().m_recvBytesUncompressed += decodedPacketSize;
 
@@ -276,8 +278,9 @@ namespace AzNetworking
                 }
 
                 timeoutItem->UpdateTimeoutTime(startTimeMs);
+                connection->m_timeoutCounter = 0;
 
-                bool handledPacket = false;
+                PacketDispatchResult handledPacket = PacketDispatchResult::Failure;
                 if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
                 {
                     handledPacket = connection->HandleCorePacket(m_connectionListener, header, packetSerializer);
@@ -287,7 +290,7 @@ namespace AzNetworking
                     handledPacket = m_connectionListener.OnPacketReceived(connection, header, packetSerializer);
                 }
 
-                if (handledPacket)
+                if (handledPacket == PacketDispatchResult::Success)
                 {
                     connection->UpdateHeartbeat(currentTimeMs);
                     if (connection->GetConnectionState() == ConnectionState::Connecting && !connection->GetDtlsEndpoint().IsConnecting())
@@ -299,8 +302,14 @@ namespace AzNetworking
                 else if (m_socket->IsEncrypted() && connection->GetDtlsEndpoint().IsConnecting() &&
                     !IsHandshakePacket(connection->GetDtlsEndpoint(), header.GetPacketType()))
                 {
-                    // It's possible for one side to finish its half of the handshake and start sending encrypted data
+                    // It's possible for one side to finish its half of the encryption handshake and start sending encrypted data
+                    // This will appear as a SerializationError due to the incomplete encryption handshake
                     // If it's not an expected unencrypted type then skip it for now
+                    continue;
+                }
+                else if (handledPacket == PacketDispatchResult::Skipped)
+                {
+                    // If the result is marked as skipped then do so (i.e. if a handshake is not yet complete)
                     continue;
                 }
                 else if (connection->GetConnectionState() != ConnectionState::Disconnecting)
@@ -312,16 +321,10 @@ namespace AzNetworking
         const AZ::TimeMs receiveTimeMs = AZ::GetElapsedTimeMs() - startTimeMs;
 
         // Time out any stale client connections
-        {
-            ConnectionTimeoutFunctor functor(*this);
-            m_connectionTimeoutQueue.UpdateTimeouts(functor);
-        }
+        m_connectionTimeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item) { return HandleConnectionTimeout(item); });
 
         // Time out any packets that haven't been acked within our timeout window
-        {
-            PacketTimeoutFunctor functor(*this);
-            m_packetTimeoutQueue.UpdateTimeouts(functor, static_cast<int32_t>(net_MaxTimeoutsPerFrame));
-        }
+        m_packetTimeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item) { return HandlePacketTimeout(item); }, static_cast<int32_t>(net_MaxTimeoutsPerFrame));
 
         // Delete any connections we've disconnected
         for (RemovedConnection& removedConnection : m_removedConnections)
@@ -397,6 +400,16 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
+    void UdpNetworkInterface::SetTimeoutMs(AZ::TimeMs timeoutMs)
+    {
+        m_timeoutMs = timeoutMs;
+    }
+
+    AZ::TimeMs UdpNetworkInterface::GetTimeoutMs() const
+    {
+        return m_timeoutMs;
+    }
+
     bool UdpNetworkInterface::IsEncrypted() const
     {
         return m_socket->IsEncrypted();
@@ -433,7 +446,7 @@ namespace AzNetworking
 
         if (compErr != CompressorError::Ok)
         {
-            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", compErr);
+            AZLOG_ERROR("Decompress failed with error %d this will lead to data read errors!", aznumeric_cast<int32_t>(compErr));
             return false;
         }
 
@@ -494,7 +507,7 @@ namespace AzNetworking
         {
             buffer.Resize(buffer.GetCapacity());
 
-            NetworkInputSerializer networkSerializer(buffer.GetBuffer(), buffer.GetCapacity());
+            NetworkInputSerializer networkSerializer(buffer.GetBuffer(), static_cast<uint32_t>(buffer.GetCapacity()));
             ISerializer& serializer = networkSerializer; // To get the default typeinfo parameters in ISerializer
 
             if (!header.SerializePacketFlags(serializer))
@@ -517,7 +530,7 @@ namespace AzNetworking
 
             buffer.Resize(serializer.GetSize());
         }
-        uint32_t packetSize = buffer.GetSize();
+        uint32_t packetSize = static_cast<uint32_t>(buffer.GetSize());
         uint8_t* packetData = buffer.GetBuffer();
 
         // If the packet doesn't fit within our MTU (minus potential SSL encryption overhead), break it up
@@ -526,7 +539,7 @@ namespace AzNetworking
             // Each fragmented packet we send adds an extra fragmented packet header, need to deduct that from our chunk size, otherwise we infinitely loop
             // SSL encryption can also inflate our payload so we pre-emptively deduct an estimated tax
             const uint32_t chunkSize = connection.GetConnectionMtu() - net_FragmentedHeaderOverhead - net_SslInflationOverhead;
-            const uint32_t numChunks = (packetSize + chunkSize - 1) / chunkSize; // We want to round up on the remainder
+            const uint32_t numChunks = AZ::DivideAndRoundUp(packetSize, chunkSize); // We want to round up on the remainder
             const uint8_t* chunkStart = packetData;
             const SequenceId fragmentedSequence = connection.m_fragmentQueue.GetNextFragmentedSequenceId();
             uint32_t bytesRemaining = packetSize;
@@ -536,7 +549,9 @@ namespace AzNetworking
                 const uint32_t nextChunkSize = AZStd::min(bytesRemaining, chunkSize);
                 chunkBuffer.CopyValues(chunkStart, nextChunkSize);
                 CorePackets::FragmentedPacket fragmentedPacket(ToSequenceId(localPacketId), fragmentedSequence, aznumeric_cast<uint8_t>(chunkIndex), aznumeric_cast<uint8_t>(numChunks), chunkBuffer);
-                const SequenceId chunkReliableId = (reliabilityType == ReliabilityType::Reliable) ? connection.m_reliableQueue.GetNextSequenceId() : InvalidSequenceId;
+                const SequenceId chunkReliableId = (net_FragmentsAlwaysReliable || reliabilityType == ReliabilityType::Reliable)
+                    ? connection.m_reliableQueue.GetNextSequenceId()
+                    : InvalidSequenceId;
                 SendPacket(connection, fragmentedPacket, chunkReliableId);
                 bytesRemaining -= nextChunkSize;
                 chunkStart += nextChunkSize;
@@ -549,7 +564,7 @@ namespace AzNetworking
         UdpPacketEncodingBuffer writeBuffer;
         if (m_compressor && shouldCompress)
         {
-            NetworkInputSerializer flagSerializer(writeBuffer.GetBuffer(), writeBuffer.GetCapacity());
+            NetworkInputSerializer flagSerializer(writeBuffer.GetBuffer(), static_cast<uint32_t>(writeBuffer.GetCapacity()));
             ISerializer& serializer = flagSerializer; // To get the default typeinfo parameters in ISerializer
 
             header.SetPacketFlag(PacketFlag::Compressed, true);
@@ -562,7 +577,7 @@ namespace AzNetworking
             AZ_Assert(flagSize == 1, "Flag bitfield should serialize to one byte");
 
             // Compress the packet, make sure to offset by the size of the flag which is now serialized
-            const uint32_t payloadSize = buffer.GetSize() - flagSize;
+            const uint32_t payloadSize = static_cast<uint32_t>(buffer.GetSize() - flagSize);
             uint8_t* payload = buffer.GetBuffer() + flagSize;
             const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadSize);
             AZStd::size_t compressionMemBytesUsed = 0;
@@ -578,7 +593,7 @@ namespace AzNetworking
             if (compressionMemBytesUsed < payloadSize)
             {
                 writeBuffer.Resize(aznumeric_cast<int32_t>(flagSize + compressionMemBytesUsed));
-                packetSize = writeBuffer.GetSize();
+                packetSize = static_cast<uint32_t>(writeBuffer.GetSize());
                 packetData = writeBuffer.GetBuffer();
                 // Track byte delta caused by compression
                 GetMetrics().m_sendBytesCompressedDelta += (packetSize - compressionMemBytesUsed);
@@ -665,7 +680,7 @@ namespace AzNetworking
 
         // How long should we sit in the timeout queue before heartbeating or disconnecting
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
-        const TimeoutId    timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), net_UdpTimeoutTimeMs);
+        const TimeoutId    timeoutId = m_connectionTimeoutQueue.RegisterItem(aznumeric_cast<uint64_t>(connectionId), m_timeoutMs);
 
         AZLOG(Debug_UdpConnect, "Accepted new Udp Connection");
         AZStd::unique_ptr<UdpConnection> connection = AZStd::make_unique<UdpConnection>(connectionId, connectPacket.m_address, *this, ConnectionRole::Acceptor);
@@ -692,21 +707,14 @@ namespace AzNetworking
     {
         // Packets involved in handshake are InitiateConnection, ConnectionHandshake and FragmentedPackets of ConnectionHandshake
         return packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket) ||
-            packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket) ||
-            (packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::FragmentedPacket) && endpoint.IsConnecting());
+               packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::ConnectionHandshakePacket) ||
+              (packetType == aznumeric_cast<PacketType>(CorePackets::PacketType::FragmentedPacket) && endpoint.IsConnecting());
     }
 
-
-    UdpNetworkInterface::ConnectionTimeoutFunctor::ConnectionTimeoutFunctor(UdpNetworkInterface& networkInterface)
-        : m_networkInterface(networkInterface)
-    {
-        ;
-    }
-
-    TimeoutResult UdpNetworkInterface::ConnectionTimeoutFunctor::HandleTimeout(TimeoutQueue::TimeoutItem& item)
+    TimeoutResult UdpNetworkInterface::HandleConnectionTimeout(TimeoutQueue::TimeoutItem& item)
     {
         const ConnectionId connectionId = ConnectionId(aznumeric_cast<uint32_t>(item.m_userData));
-        UdpConnection* udpConnection = static_cast<UdpConnection*>(m_networkInterface.m_connectionSet.GetConnection(connectionId));
+        UdpConnection* udpConnection = static_cast<UdpConnection*>(m_connectionSet.GetConnection(connectionId));
 
         if (udpConnection == nullptr)
         {
@@ -714,22 +722,23 @@ namespace AzNetworking
             return TimeoutResult::Delete;
         }
 
-        if (udpConnection->GetConnectionState() == ConnectionState::Connecting)
+        if ((udpConnection->GetConnectionState() == ConnectionState::Connecting)
+         && udpConnection->GetDtlsEndpoint().IsConnecting())
         {
-            if (udpConnection->GetDtlsEndpoint().IsConnecting())
-            {
-                // DTLS prefers we resend data lost over the wire with fresh SSL IDs so account for that here
-                UdpPacketEncodingBuffer dtlsData;
-                udpConnection->ProcessHandshakeData(dtlsData);
-                return TimeoutResult::Refresh;
-            }
+            // DTLS prefers we resend data lost over the wire with fresh SSL IDs so account for that here
+            UdpPacketEncodingBuffer dtlsData;
+            udpConnection->ProcessHandshakeData(dtlsData);
+            return TimeoutResult::Refresh;
         }
 
-        if (udpConnection->GetConnectionRole() == ConnectionRole::Connector)
+        if ((udpConnection->GetConnectionRole() == ConnectionRole::Connector)
+         && (udpConnection->m_timeoutCounter < net_UdpUnackedHeartbeats))
         {
-            udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket());
+            // Set the request response flag to true since we want a response to keep the connection alive
+            udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket(true));
+            ++udpConnection->m_timeoutCounter;
         }
-        else if (net_UdpTimeoutConnections)
+        else if (net_UdpTimeoutConnections && (GetTimeoutMs() > AZ::Time::ZeroTimeMs))
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;
@@ -738,19 +747,13 @@ namespace AzNetworking
         return TimeoutResult::Refresh;
     }
 
-    UdpNetworkInterface::PacketTimeoutFunctor::PacketTimeoutFunctor(UdpNetworkInterface& networkInterface)
-        : m_networkInterface(networkInterface)
-    {
-        ;
-    }
-
-    TimeoutResult UdpNetworkInterface::PacketTimeoutFunctor::HandleTimeout(TimeoutQueue::TimeoutItem& item)
+    TimeoutResult UdpNetworkInterface::HandlePacketTimeout(TimeoutQueue::TimeoutItem& item)
     {
         ConnectionId    connectionId;
         PacketId        packetId;
         ReliabilityType reliability;
         DecodeTimeoutId(item.m_userData, connectionId, packetId, reliability);
-        UdpConnection* connection = static_cast<UdpConnection*>(m_networkInterface.m_connectionSet.GetConnection(connectionId));
+        UdpConnection* connection = static_cast<UdpConnection*>(m_connectionSet.GetConnection(connectionId));
 
         if (connection == nullptr)
         {
@@ -765,16 +768,14 @@ namespace AzNetworking
         case PacketTimeoutResult::Acked:
             // Packet was already acked, just discard this timeout entry
             return TimeoutResult::Delete;
-
         case PacketTimeoutResult::Pending:
             // Packet timed out before we received any info about it's sequence from the remote endpoint
             // The connection latency may have increased, and our Rtt metrics may still be adjusting..
             // Just throw it back into the timeout queue
             return TimeoutResult::Refresh;
-
         case PacketTimeoutResult::Lost:
             // Packet timed out and was not acked, so we consider it lost
-            m_networkInterface.m_connectionListener.OnPacketLost(connection, packetId);
+            m_connectionListener.OnPacketLost(connection, packetId);
             break;
         }
 

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <LyShine/Bus/UiNavigationBus.h>
-#include <CryCommon/LyShine/UiBase.h>
+#include <LyShine/UiBase.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class UiNavigationSettings

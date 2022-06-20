@@ -32,6 +32,8 @@
 #include "TextureAtlas/TextureAtlasBus.h"
 #include "TextureAtlas/TextureAtlasNotificationBus.h"
 
+#include "RenderToTextureBus.h"
+
 namespace AZ
 {
     class SerializeContext;
@@ -47,10 +49,10 @@ class UiCanvasComponent
     , public AZ::EntityBus::Handler
     , public UiAnimationBus::Handler
     , public UiInteractableActiveNotificationBus::Handler
-    , public ISystem::CrySystemNotificationBus::Handler
     , public IUiAnimationListener
     , public UiEditorCanvasBus::Handler
     , public UiCanvasComponentImplementationBus::Handler
+    , public LyShine::RenderToTextureRequestBus::Handler
 {
 public: // constants
     static const AZ::Vector2 s_defaultCanvasSize;
@@ -99,7 +101,7 @@ public: // member functions
     LyShine::EntityArray PickElements(const AZ::Vector2& bound0, const AZ::Vector2& bound1) override;
     AZ::EntityId FindInteractableToHandleEvent(AZ::Vector2 point) override;
 
-    bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) override;
+    bool SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname) override;
     void FixupCreatedEntities(LyShine::EntityArray topLevelEntities, bool makeUniqueNamesAndIds, AZ::Entity* optionalInsertionPoint) override;
     void AddElement(AZ::Entity* element, AZ::Entity* parent, AZ::Entity* insertBefore) override;
     void ReinitializeElements() override;
@@ -125,8 +127,8 @@ public: // member functions
 
     bool GetIsRenderToTexture() override;
     void SetIsRenderToTexture(bool isRenderToTexture) override;
-    AZStd::string GetRenderTargetName() override;
-    void SetRenderTargetName(const AZStd::string& name) override;
+    const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& GetAttachmentImageAsset() override;
+    void SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
 
     bool GetIsPositionalInputSupported() override;
     void SetIsPositionalInputSupported(bool isSupported) override;
@@ -190,10 +192,6 @@ public: // member functions
     void ActiveChanged(AZ::EntityId m_newActiveInteractable, bool shouldStayActive) override;
     // ~UiInteractableActiveNotifications
 
-    // ISystem::CrySystemNotifications
-    void OnPreRender() override;
-    //ISystem::CrySystemNotifications
-
     // IUiAnimationListener
     void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) override;
     void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, IUiAnimSequence* pAnimSequence) override;
@@ -232,6 +230,13 @@ public: // member functions
     void MarkRenderGraphDirty() override;
     // ~UiCanvasComponentImplementationInterface
 
+    // RenderToTextureRequests
+    AZ::RHI::AttachmentId UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size) override;
+    AZ::RHI::AttachmentId UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
+    void ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
+    AZ::Data::Instance<AZ::RPI::AttachmentImage> GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
+    // ~RenderToTextureRequests
+
     void UpdateCanvas(float deltaTime, bool isInGame);
     void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer = nullptr);
 
@@ -257,6 +262,10 @@ public: // member functions
     //! Queue an element to be destroyed at end of frame
     void ScheduleElementDestroy(AZ::EntityId entityId);
 
+    bool IsRenderGraphDirty() { return m_renderGraph.GetDirtyFlag(); }
+
+    void GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies);
+
 #ifndef _RELEASE
     struct DebugInfoNumElements
     {
@@ -279,8 +288,8 @@ public: // member functions
 
     void DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LyShineDebug::DebugInfoDrawCallReport& reportInfo, void* context) const;
 
-    void DebugDisplayElemBounds(CDraw2d* draw2d) const;
-    void DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const;
+    void DebugDisplayElemBounds(IDraw2d* draw2d) const;
+    void DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const;
 #endif
 
 public: // static member functions
@@ -307,7 +316,7 @@ public: // static member functions
     static void Shutdown();
 
     static UiCanvasComponent* CreateCanvasInternal(UiEntityContext* entityContext, bool forEditor);
-    static UiCanvasComponent* LoadCanvasInternal(const string& pathToOpen, bool forEditor, const string& assetIdPathname, UiEntityContext* entityContext,
+    static UiCanvasComponent* LoadCanvasInternal(const AZStd::string& pathToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
         const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
     static UiCanvasComponent* FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
         AZ::Entity* rootSliceEntity, UiEntityContext* entityContext,
@@ -401,9 +410,8 @@ private: // member functions
 
     void CreateRenderTarget();
     void DestroyRenderTarget();
-    void RenderCanvasToTexture();
 
-    bool SaveCanvasToFile(const string& pathname, AZ::DataStream::StreamType streamType);
+    bool SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType);
     bool SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType);
 
     //! Notify elements that their canvas space rect has changed since the last update, and recompute invalid layouts
@@ -426,6 +434,9 @@ private: // member functions
     void GetOrphanedElements(AZ::SliceComponent::EntityList& orphanedEntities);
 
     void DestroyScheduledElements();
+
+    //! Notify LyShine pass that it needs to rebuild its Rtt child passes
+    void QueueRttPassRebuild();
 
 private: // static member functions
 
@@ -549,14 +560,11 @@ private: // data
     //! If true the canvas is not rendered to the screen but is instead rendered to a texture
     bool m_renderToTexture;
 
-    //! The user-specified name for the render target taht we render to if m_renderToTexture is true
-    AZStd::string m_renderTargetName;
+    //! The user-specified asset for the attachment image that we render to if m_renderToTexture is true
+    AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_attachmentImageAsset;
 
-    //! When rendering to a texture this is the texture ID of the render target
-    int m_renderTargetHandle = -1;
-
-    //! When rendering to a texture this is our depth surface
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_attachmentImageId;
 
     //! Each canvas has a layout manager to track and recompute layouts
     UiLayoutManager* m_layoutManager = nullptr;
@@ -597,4 +605,8 @@ private: // static data
 
     LyShine::RenderGraph m_renderGraph; //!< the render graph for rendering the canvas, can be cached between frames
     bool m_isRendering = false;
+    bool m_renderInEditor = false; //!< indicates whether this canvas will render in the Editor viewport or the Game viewport
+
+    //! Map of attachments used by this canvas's elements
+    AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::Data::Instance<AZ::RPI::AttachmentImage>> m_attachmentImageMap;
 };

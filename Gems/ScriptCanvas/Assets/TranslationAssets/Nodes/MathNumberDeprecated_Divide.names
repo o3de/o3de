@@ -1,0 +1,48 @@
+{
+    "entries": [
+        {
+            "base": "{7379D5B4-787B-4C46-9394-288F16E5BF3A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Divide",
+                "category": "Math/Number/Deprecated",
+                "tooltip": "Divide"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the arithmetic operation is done."
+                    }
+                },
+                {
+                    "base": "DataInput_Value A_0",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "base": "DataInput_Value B_1",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

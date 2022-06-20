@@ -8,8 +8,6 @@
 
 
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_EDITORDEFS_H
-#define CRYINCLUDE_EDITOR_EDITORDEFS_H
 
 #include <AzCore/PlatformDef.h>
 
@@ -32,19 +30,6 @@
 
 #include <Include/SandboxAPI.h>
 #include <Include/EditorCoreAPI.h>
-
-// Warnings in STL
-#pragma warning (disable : 4786) // identifier was truncated to 'number' characters in the debug information.
-#pragma warning (disable : 4244) // conversion from 'long' to 'float', possible loss of data
-#pragma warning (disable : 4018) // signed/unsigned mismatch
-#pragma warning (disable : 4800) // BOOL bool conversion
-
-// Disable warning when a function returns a value inside an __asm block
-#pragma warning (disable : 4035)
-
-//////////////////////////////////////////////////////////////////////////
-// 64-bits related warnings.
-#pragma warning (disable : 4267) // conversion from 'size_t' to 'int', possible loss of data
 
 //////////////////////////////////////////////////////////////////////////
 // Simple type definitions.
@@ -85,17 +70,17 @@
 #endif
 
 #ifndef SAFE_DELETE
-#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = NULL; } \
+#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = NULL; } \
+#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = nullptr; } \
 }
 #endif
 
 #ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = NULL; } \
+#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = nullptr; } \
 }
 #endif
 
@@ -120,7 +105,6 @@
 #include <CryFile.h>
 #include <ISystem.h>
 #include <IIndexedMesh.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include <IMovieSystem.h>
 
@@ -139,9 +123,7 @@
 #include "Util/XmlTemplate.h"
 
 // Utility classes.
-#include "Util/bitarray.h"
 #include "Util/RefCountBase.h"
-#include "Util/TRefCountBase.h"
 #include "Util/MemoryBlock.h"
 #include "Util/PathUtil.h"
 
@@ -184,20 +166,3 @@
 #ifdef LoadCursor
 #undef LoadCursor
 #endif
-
-
-#ifdef _DEBUG
-#if !defined(AZ_PLATFORM_LINUX)
-#ifdef assert
-#undef assert
-#if defined(USE_AZ_ASSERT)
-#define assert(condition) AZ_Assert(condition, "")
-#else
-#define assert CRY_ASSERT
-#endif
-#endif // !defined(AZ_PLATFORM_LINUX)
-#endif
-#endif
-
-
-#endif // CRYINCLUDE_EDITOR_EDITORDEFS_H

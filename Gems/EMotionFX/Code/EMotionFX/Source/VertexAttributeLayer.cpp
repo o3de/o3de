@@ -21,9 +21,9 @@ namespace EMotionFX
     VertexAttributeLayer::VertexAttributeLayer(uint32 numAttributes, bool keepOriginals)
         : BaseObject()
     {
-        mNumAttributes  = numAttributes;
-        mKeepOriginals  = keepOriginals;
-        mNameID         = MCore::GetStringIdPool().GenerateIdForString("");
+        m_numAttributes  = numAttributes;
+        m_keepOriginals  = keepOriginals;
+        m_nameId         = MCore::GetStringIdPool().GenerateIdForString("");
     }
 
 
@@ -44,27 +44,27 @@ namespace EMotionFX
     // set the name
     void VertexAttributeLayer::SetName(const char* name)
     {
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // get the name
     const char* VertexAttributeLayer::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     // get the name string
     const AZStd::string& VertexAttributeLayer::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 
     // get the name ID
     uint32 VertexAttributeLayer::GetNameID() const
     {
-        return mNameID;
+        return m_nameId;
     }
 } // namespace EMotionFX

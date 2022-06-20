@@ -52,7 +52,7 @@ namespace PhysX
             // AZ::AssetTypeInfoBus
             AZ::Data::AssetType GetAssetType() const override;
             void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
-            const char* GetAssetTypeDisplayName() const;
+            const char* GetAssetTypeDisplayName() const override;
             const char* GetBrowserIcon() const override;
             const char* GetGroup() const override;
             AZ::Uuid GetComponentTypeId() const override;

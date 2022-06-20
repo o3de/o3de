@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME AtomLyIntegration_CommonFeatures.Public HEADERONLY
@@ -77,8 +77,7 @@ ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AtomLyIntegration_CommonFeatures.Editor GEM_MODULE
-
+        NAME AtomLyIntegration_CommonFeatures.Editor.Static STATIC
         NAMESPACE Gem
         AUTOUIC
         AUTOMOC
@@ -86,6 +85,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atomlyintegration_commonfeatures_editor_files.cmake
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -96,7 +97,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 Gem::AtomLyIntegration_CommonFeatures.Static
                 Gem::Atom_RPI.Edit
                 Gem::AtomToolsFramework.Static
@@ -107,14 +108,38 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCommon
                 Legacy::CryCommon
         RUNTIME_DEPENDENCIES
+            3rdParty::OpenImageIO::Tools::Binaries
+            3rdParty::OpenImageIO::Tools::PythonPlugins
+    )
+
+    ly_add_target(
+        NAME AtomLyIntegration_CommonFeatures.Editor GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomlyintegration_commonfeatures_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+            PUBLIC
+                Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+        RUNTIME_DEPENDENCIES
             Gem::Atom_RPI.Editor
             Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
+            Legacy::EditorCommon
     )
 
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Builders NAMESPACE Gem
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::Atom_Feature_Common.Builders
             Gem::Atom_RPI.Builders
             Gem::GradientSignal.Builders
     )
@@ -124,26 +149,36 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::GradientSignal.Tools
     )
 
-    # AtomLyIntergration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
-    # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
-    # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
-    # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Tools
-        TARGETS Editor)
-    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Builders
-        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
+    ################################################################################
+    # Tests
+    ################################################################################
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_target(
+            NAME AtomLyIntegration_CommonFeatures.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                atomlyintegration_commonfeatures_editor_test_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    AZ::AzTestShared
+                    AZ::AzToolsFramework
+                    AZ::AzToolsFrameworkTestCommon
+                    Gem::AtomLyIntegration_CommonFeatures.Static
+                    Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+        )
+        ly_add_googletest(
+            NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
+        )
+    endif()
 endif()
 
-
-# Added dependencies to the Client and Server Launchers
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
-foreach(project_name IN LISTS LY_PROJECTS_TARGET_NAME)
-    # Add gem as a dependency of the Clients Launcher
-    ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Clients
-        TARGETS ${project_name}.GameLauncher)
-    # Add gem as a dependency of the Servers Launcher
-    if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-        ly_enable_gems(PROJECT_NAME ${project_name} GEMS AtomLyIntegration_CommonFeatures VARIANTS Servers
-            TARGETS ${project_name}.ServerLauncher)
-    endif()
-endforeach()
+# AtomLyIntegration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
+# due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
+# AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
+# AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
+ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

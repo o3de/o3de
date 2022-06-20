@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -42,9 +43,7 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void SetColor(float r, float g, float b, float a = 1.f) { (void)r; (void)g; (void)b; (void)a; }
         virtual void SetColor(const AZ::Color& color) { (void)color; }
-        virtual void SetColor(const AZ::Vector4& color) { (void)color; }
         virtual void SetAlpha(float a) { (void)a; }
         virtual void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
         virtual void DrawQuad(float width, float height) { (void)width; (void)height; }
@@ -75,9 +74,12 @@ namespace AzFramework
         virtual void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded = true) { (void)pos; (void)dir; (void)radius; (void)height; (void)drawShaded; }
         virtual void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) { (void)center; (void)axis; (void)radius; (void)height; }
         virtual void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded = true) { (void)center; (void)axis; (void)radius; (void)height; (void)drawShaded; }
+        virtual void DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) { (void)center; (void)axis; (void)radius; (void)height; }
+        virtual void DrawSolidCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded = true) { (void)center; (void)axis; (void)radius; (void)height; (void)drawShaded; }
         virtual void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) { (void)center; (void)axis; (void)radius; (void)heightStraightSection; }
         virtual void DrawWireSphere(const AZ::Vector3& pos, float radius) { (void)pos; (void)radius; }
         virtual void DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius) { (void)pos; (void)radius; }
+        virtual void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) { (void)pos; (void)axis; (void)radius; }
         virtual void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
         virtual void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded = true) { (void)pos; (void)radius; (void)drawShaded; }
         virtual void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
@@ -100,9 +102,11 @@ namespace AzFramework
         virtual AZ::u32 SetState(AZ::u32 state) { (void)state; return 0; }
         virtual void PushMatrix(const AZ::Transform& tm) { (void)tm; }
         virtual void PopMatrix() {}
+        virtual void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) { (void)matrix; }
+        virtual AZ::Matrix3x4 PopPremultipliedMatrix() { return AZ::Matrix3x4::CreateIdentity(); }
 
     protected:
-        ~DebugDisplayRequests() = default;
+        virtual ~DebugDisplayRequests() = default;
     };
 
     /// Inherit from DebugDisplayRequestBus::Handler to implement the DebugDisplayRequests interface.

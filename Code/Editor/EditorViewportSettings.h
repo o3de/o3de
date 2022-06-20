@@ -12,6 +12,8 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
 namespace SandboxEditor
@@ -32,6 +34,9 @@ namespace SandboxEditor
     //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
+    SANDBOX_API AZ::u64 MaxItemsShownInAssetBrowserSearch();
+    SANDBOX_API void SetMaxItemsShownInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
+
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
 
@@ -46,6 +51,18 @@ namespace SandboxEditor
 
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
+
+    SANDBOX_API bool ManipulatorMouseWrap();
+    SANDBOX_API void SetManipulatorMouseWrap(bool enabled);
+
+    SANDBOX_API bool StickySelectEnabled();
+    SANDBOX_API void SetStickySelectEnabled(bool enabled);
+
+    SANDBOX_API float ManipulatorLineBoundWidth();
+    SANDBOX_API void SetManipulatorLineBoundWidth(float lineBoundWidth);
+
+    SANDBOX_API float ManipulatorCircleBoundWidth();
+    SANDBOX_API void SetManipulatorCircleBoundWidth(float circleBoundWidth);
 
     SANDBOX_API float CameraTranslateSpeed();
     SANDBOX_API void SetCameraTranslateSpeed(float speed);
@@ -80,6 +97,26 @@ namespace SandboxEditor
     SANDBOX_API float CameraTranslateSmoothness();
     SANDBOX_API void SetCameraTranslateSmoothness(float smoothness);
 
+    SANDBOX_API bool CameraRotateSmoothingEnabled();
+    SANDBOX_API void SetCameraRotateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraTranslateSmoothingEnabled();
+    SANDBOX_API void SetCameraTranslateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraCaptureCursorForLook();
+    SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
+    SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
+    SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    //! @return pitch/yaw value in x/y Vector2 component in degrees.
+    SANDBOX_API AZ::Vector2 CameraDefaultEditorOrientation();
+    //! @param pitchYaw pitch/yaw value in x/y Vector2 component in degrees.
+    SANDBOX_API void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw);
+
+    SANDBOX_API float CameraDefaultOrbitDistance();
+    SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -102,7 +139,7 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitChannelId();
-    SANDBOX_API void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId);
+    SANDBOX_API void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreeLookChannelId();
     SANDBOX_API void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId);
@@ -119,7 +156,6 @@ namespace SandboxEditor
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
     SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
 
-    //! Return if the new editor camera system is enabled or not.
-    //! @note This is implemented in EditorViewportWidget.cpp
-    SANDBOX_API bool UsingNewCameraSystem();
+    SANDBOX_API AzFramework::InputChannelId CameraFocusChannelId();
+    SANDBOX_API void SetCameraFocusChannelId(AZStd::string_view cameraFocusId);
 } // namespace SandboxEditor

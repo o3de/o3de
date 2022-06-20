@@ -34,7 +34,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy,
             New_EmptyElement(hierarchy, selectedItems, menu, (showMask & Show::kNew_EmptyElementAtRoot), optionalPos);
         }
 
-        if (showMask & Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot)
+        if (showMask & (Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot))
         {
             New_ElementFromSlice(hierarchy, selectedItems, menu, (showMask & Show::kNew_InstantiateSliceAtRoot), optionalPos);
         }
@@ -236,14 +236,14 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
         if (showMask & Show::kNewSlice)
         {
             QAction* action = addAction("Make Cascaded Slice from Selected Slices && Entities...");
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, true);
                 }
             );
 
             action = addAction(QObject::tr("Make Detached Slice from Selected Entities..."));
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, false);
                 }
@@ -330,7 +330,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
                                 slicesAddedToMenu.push_back(sliceAsset.GetId());
 
                                 QAction* action = menu->addAction(assetPath.c_str());
-                                QObject::connect(action, &QAction::triggered, [this, hierarchy, sliceAsset]
+                                QObject::connect(action, &QAction::triggered, [hierarchy, sliceAsset]
                                     {
                                         hierarchy->GetEditorWindow()->EditSliceInNewTab(sliceAsset.GetId());
                                     }
@@ -387,7 +387,9 @@ void HierarchyMenu::New_ElementFromSlice(HierarchyWidget* hierarchy,
     AZ::Vector2 viewportPosition(-1.0f,-1.0f); // indicates no viewport position specified
     if (optionalPos)
     {
-        viewportPosition = QtHelpers::QPointFToVector2(*optionalPos);
+        // Convert position to render viewport coords
+        QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+        viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
     }
 
     SliceMenuHelpers::CreateInstantiateSliceMenu(hierarchy,
@@ -405,7 +407,9 @@ void HierarchyMenu::New_ElementFromSlice(HierarchyWidget* hierarchy,
             AZ::Vector2 viewportPosition(-1.0f,-1.0f); // indicates no viewport position specified
             if (optionalPos)
             {
-                viewportPosition = QtHelpers::QPointFToVector2(*optionalPos);
+                // Convert position to render viewport coords
+                QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+                viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
             }
             hierarchy->GetEditorWindow()->GetSliceManager()->InstantiateSliceUsingBrowser(hierarchy, viewportPosition);
         }

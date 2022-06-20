@@ -68,7 +68,7 @@ namespace GraphCanvas
         ////
 
         // NodeNotifications
-        void OnNodeActivated();
+        void OnNodeActivated() override;
 
         void OnNodeWrapped(const AZ::EntityId& wrappingNode) override;
         void OnNodeUnwrapped(const AZ::EntityId& wrappingNode) override;

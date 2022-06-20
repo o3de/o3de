@@ -8,17 +8,11 @@
 
 
 // Description : The game engine for editor
-
-
-#ifndef CRYINCLUDE_EDITOR_GAMEENGINE_H
-#define CRYINCLUDE_EDITOR_GAMEENGINE_H
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Outcome/Outcome.h>
 #include "LogFile.h"
-#include "CryListenerSet.h"
 #include "Util/ModalWindowDismisser.h"
 #endif
 
@@ -27,6 +21,8 @@ struct IInitializeUIInfo;
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
+
+#include <AzCore/Module/DynamicModuleHandle.h>
 
 class ThreadedOnErrorHandler : public QObject
 {
@@ -116,17 +112,12 @@ public:
 
     //! mutex used by other threads to lock up the PAK modification,
     //! so only one thread can modify the PAK at once
-    static CryMutex& GetPakModifyMutex()
+    static AZStd::recursive_mutex& GetPakModifyMutex()
     {
         //! mutex used to halt copy process while the export to game
         //! or other pak operation is done in the main thread
-        static CryMutex s_pakModifyMutex;
+        static AZStd::recursive_mutex s_pakModifyMutex;
         return s_pakModifyMutex;
-    }
-
-    inline HMODULE GetGameModule() const
-    {
-        return m_gameDll;
     }
 
 private:
@@ -150,8 +141,7 @@ private:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
-    HMODULE m_hSystemHandle;
-    HMODULE m_gameDll;
+    AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
     enum EPendingGameMode
     {
         ePGM_NotPending,
@@ -163,5 +153,3 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
-
-#endif // CRYINCLUDE_EDITOR_GAMEENGINE_H

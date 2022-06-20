@@ -32,13 +32,13 @@ namespace EMotionFX
 
     void BlendTreeSetTransformNode::UniqueData::Update()
     {
-        BlendTreeSetTransformNode* transformNode = azdynamic_cast<BlendTreeSetTransformNode*>(mObject);
+        BlendTreeSetTransformNode* transformNode = azdynamic_cast<BlendTreeSetTransformNode*>(m_object);
         AZ_Assert(transformNode, "Unique data linked to incorrect node type.");
 
-        ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
+        ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
         Actor* actor = actorInstance->GetActor();
 
-        m_nodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
 
         const AZStd::string& jointName = transformNode->GetJointName();
         if (!jointName.empty())
@@ -106,13 +106,13 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            SetHasError(uniqueData, uniqueData->m_nodeIndex == MCORE_INVALIDINDEX32);
+            SetHasError(uniqueData, uniqueData->m_nodeIndex == InvalidIndex);
         }
 
         OutputAllIncomingNodes(animGraphInstance);
 
         // make sure we have at least an input pose, otherwise output the bind pose
-        if (GetInputPort(INPUTPORT_POSE).mConnection)
+        if (GetInputPort(INPUTPORT_POSE).m_connection)
         {
             const AnimGraphPose* inputPose = GetInputPose(animGraphInstance, INPUTPORT_POSE)->GetValue();
             RequestPoses(animGraphInstance);
@@ -129,7 +129,7 @@ namespace EMotionFX
         if (GetIsEnabled())
         {
             // get the local transform from our node
-            if (uniqueData->m_nodeIndex != MCORE_INVALIDINDEX32)
+            if (uniqueData->m_nodeIndex != InvalidIndex)
             {
                 Transform outputTransform;
 
@@ -154,14 +154,14 @@ namespace EMotionFX
                 AZ::Vector3 translation;
                 if (TryGetInputVector3(animGraphInstance, INPUTPORT_TRANSLATION, translation))
                 {
-                    outputTransform.mPosition = translation;
+                    outputTransform.m_position = translation;
                 }
 
                 // process the rotation
-                if (GetInputPort(INPUTPORT_ROTATION).mConnection)
+                if (GetInputPort(INPUTPORT_ROTATION).m_connection)
                 {
                     const AZ::Quaternion& rotation = GetInputQuaternion(animGraphInstance, INPUTPORT_ROTATION)->GetValue();
-                    outputTransform.mRotation = rotation;
+                    outputTransform.m_rotation = rotation;
                 }
 
                 // process the scale
@@ -170,7 +170,7 @@ namespace EMotionFX
                     AZ::Vector3 scale;
                     if (TryGetInputVector3(animGraphInstance, INPUTPORT_SCALE, scale))
                     {
-                        outputTransform.mScale = scale;
+                        outputTransform.m_scale = scale;
                     }
                 )
 
@@ -197,7 +197,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 

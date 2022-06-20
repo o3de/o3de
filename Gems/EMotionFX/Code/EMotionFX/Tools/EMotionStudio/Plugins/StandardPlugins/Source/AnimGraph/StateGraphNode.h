@@ -54,11 +54,11 @@ namespace EMStudio
         bool CheckIfIsCloseToHead(const QPoint& point) const override;
         bool CheckIfIsCloseToTail(const QPoint& point) const override;
 
-        uint32 GetType() override                           { return TYPE_ID; }
+        uint32 GetType() const override                     { return TYPE_ID; }
 
         EMotionFX::AnimGraphTransitionCondition* FindCondition(const QPoint& mousePos);
 
-        bool GetIsWildcardTransition() const override       { return mIsWildcardConnection; }
+        bool GetIsWildcardTransition() const override       { return m_isWildcardConnection; }
 
         static void RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
             QPoint start, QPoint end,
@@ -70,7 +70,7 @@ namespace EMStudio
     private:
         void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end);
 
-        bool mIsWildcardConnection;
+        bool m_isWildcardConnection;
     };
 
 
@@ -98,8 +98,8 @@ namespace EMStudio
         int32 CalcRequiredHeight() const override;
         int32 CalcRequiredWidth() override;
 
-        QRect CalcInputPortRect(uint32 portNr) override;
-        QRect CalcOutputPortRect(uint32 portNr) override;
+        QRect CalcInputPortRect(AZ::u16 portNr) override;
+        QRect CalcOutputPortRect(AZ::u16 portNr) override;
 
         void UpdateTextPixmap() override;
 

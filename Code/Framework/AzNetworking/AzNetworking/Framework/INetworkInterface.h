@@ -71,8 +71,7 @@ namespace AzNetworking
         virtual ConnectionId Connect(const IpAddress& remoteAddress) = 0;
 
         //! Updates the INetworkInterface.
-        //! @param deltaTimeMs milliseconds since update was last invoked
-        virtual void Update(AZ::TimeMs deltaTimeMs) = 0;
+        virtual void Update() = 0;
 
         //! A helper function that transmits a packet on this connection reliably.
         //! Note that a packetId is not returned here, since retransmits may cause the packetId to change
@@ -103,6 +102,14 @@ namespace AzNetworking
         //! @return boolean true on success
         virtual bool Disconnect(ConnectionId connectionId, DisconnectReason reason) = 0;
 
+        //! Sets the timeout time in milliseconds, 0 ms means timeouts are disabled.
+        //! @param timeoutMs the number of milliseconds with no traffic before we timeout and close a connection
+        virtual void SetTimeoutMs(AZ::TimeMs timeoutMs) = 0;
+
+        //! Retrieves the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled.
+        //! @return the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled
+        virtual AZ::TimeMs GetTimeoutMs() const = 0;
+
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface
         const NetworkInterfaceMetrics& GetMetrics() const;
@@ -110,6 +117,14 @@ namespace AzNetworking
         //! Non-const access to the metrics tracked by this network interface.
         //! @return reference to the metrics tracked by this network interface
         NetworkInterfaceMetrics& GetMetrics();
+
+        //! Returns true if communications on this network interface are encrypted, false if not.
+        //! @return boolean true if communciations are encrypted, false if not
+        virtual bool IsEncrypted() const = 0;
+
+        //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
+        //! @return boolean true if this connection instance is in an open state
+        virtual bool IsOpen() const = 0;
 
     private:
 

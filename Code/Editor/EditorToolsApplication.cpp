@@ -34,10 +34,14 @@ namespace EditorInternal
         : ToolsApplication(argc, argv)
     {
         EditorToolsApplicationRequests::Bus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusConnect();
     }
 
     EditorToolsApplication::~EditorToolsApplication()
     {
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
         EditorToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -47,7 +51,6 @@ namespace EditorInternal
     {
         return m_StartupAborted;
     }
-
 
     void EditorToolsApplication::RegisterCoreComponents()
     {
@@ -274,5 +277,14 @@ namespace EditorInternal
         Exit();
     }
 
-}
+    AzToolsFramework::ViewportInteraction::KeyboardModifiers EditorToolsApplication::QueryKeyboardModifiers()
+    {
+        return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+    }
 
+    AZStd::chrono::milliseconds EditorToolsApplication::EditorViewportInputTimeNow()
+    {
+        const auto now = AZStd::chrono::high_resolution_clock::now();
+        return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
+    }
+} // namespace EditorInternal

@@ -21,13 +21,14 @@ namespace AZ
             AZ_RTTI(AssImpSceneWrapper, "{43A61F62-DCD4-4132-B80B-F2FBC80740BC}", SDKScene::SceneWrapperBase);
             AssImpSceneWrapper();
             AssImpSceneWrapper(aiScene* aiScene);
-            ~AssImpSceneWrapper();
+            ~AssImpSceneWrapper() override = default;
 
             bool LoadSceneFromFile(const char* fileName) override;
             bool LoadSceneFromFile(const AZStd::string& fileName) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
+            virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
 
             enum class AxisVector
@@ -43,8 +44,8 @@ namespace AZ
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
         protected:
-
-            Assimp::Importer m_importer;
+            const aiScene* m_assImpScene = nullptr;
+            AZStd::unique_ptr<Assimp::Importer> m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
             // AssImp does not, so it needs to be specifically handled.

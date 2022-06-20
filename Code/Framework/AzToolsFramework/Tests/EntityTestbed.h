@@ -163,7 +163,6 @@ namespace UnitTest
         void SetupComponentApplication()
         {
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_enableDrilling = true;
             desc.m_allocationRecords = true;
             desc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
             desc.m_stackRecordLevels = 10;
@@ -181,8 +180,8 @@ namespace UnitTest
 
             const char* dir = m_componentApplication->GetExecutableFolder();
 
-            m_localFileIO.SetAlias("@assets@", dir);
-            m_localFileIO.SetAlias("@devassets@", dir);
+            m_localFileIO.SetAlias("@products@", dir);
+            m_localFileIO.SetAlias("@projectroot@", dir);
         }
 
         void Destroy()

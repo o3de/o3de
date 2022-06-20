@@ -13,7 +13,7 @@
 namespace MCore
 {
     // the color table
-    uint32 RGBAColor::mColorTable[128] =
+    uint32 RGBAColor::s_colorTable[128] =
     {
         0xFF000080,
         0xFF00008B,

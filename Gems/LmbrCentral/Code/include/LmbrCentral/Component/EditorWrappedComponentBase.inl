@@ -177,6 +177,7 @@ namespace LmbrCentral
     void EditorWrappedComponentBase<TComponent, TConfiguration>::Init()
     {
         AzToolsFramework::Components::EditorComponentBase::Init();
+        m_runtimeComponentActive = false;
         m_component.ReadInConfig(&m_configuration);
         m_component.Init();
     }
@@ -196,6 +197,7 @@ namespace LmbrCentral
         if (m_visible)
         {
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
     }
 
@@ -205,26 +207,37 @@ namespace LmbrCentral
         AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
+        m_runtimeComponentActive = false;
         m_component.Deactivate();
-        m_component.SetEntity(nullptr); // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+        m_component.SetEntity(nullptr); 
     }
 
     template <typename TComponent, typename TConfiguration>
     void EditorWrappedComponentBase<TComponent, TConfiguration>::OnEntityVisibilityChanged(bool visibility)
     {
-        m_visible = visibility;
-        ConfigurationChanged();
+        if (m_visible != visibility)
+        {
+            m_visible = visibility;
+            ConfigurationChanged();
+        }
     }
 
     template <typename TComponent, typename TConfiguration>
     AZ::u32 EditorWrappedComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
-        m_component.Deactivate();
+        if (m_runtimeComponentActive)
+        {
+            m_runtimeComponentActive = false;
+            m_component.Deactivate();
+        }
+
         m_component.ReadInConfig(&m_configuration);
 
-        if (m_visible && m_component.GetEntity())
+        if (m_visible && !m_runtimeComponentActive)
         {
             m_component.Activate();
+            m_runtimeComponentActive = true;
         }
 
         return AZ::Edit::PropertyRefreshLevels::None;

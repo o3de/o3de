@@ -233,10 +233,8 @@ namespace EMotionFX
         }
         
         AzPhysics::ShapeColliderPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
-        if (pair.first->m_materialSelection.GetMaterialIdsAssignedToSlots().empty())
-        {
-            pair.first->m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
-        }
+        AZ_Assert(pair.first->m_materialSlots.GetSlotsCount() > 0, "Material slots is empty.");
+
         return AZ::Success(pair);
     }
 
@@ -273,7 +271,7 @@ namespace EMotionFX
         {
             AZ::Vector3 boneCenter = nodeTransform.GetTranslation() + 0.5f * boneDirection;
             float sumDistanceFromAxisSq = 0.0f;
-            float boneLengthSqReciprocal = 1.0f / boneDirection.GetLengthSq();
+            float boneLengthSqReciprocal = 1.0f / (boneLength * boneLength);
             for (int i = 0; i < numMeshPoints; i++)
             {
                 meshPoints[i] -= boneCenter;
@@ -299,7 +297,7 @@ namespace EMotionFX
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
             capsule->m_height = boneDirection.GetLength();
-            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            if (!localBoneDirection.IsZero())
             {
                 collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
             }
@@ -309,7 +307,7 @@ namespace EMotionFX
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
-            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            if (!localBoneDirection.IsZero())
             {
                 collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
             }
@@ -496,7 +494,7 @@ namespace EMotionFX
             : Transform::CreateIdentity();
 
         // if there are child nodes, point the bone direction to the average of their positions
-        const uint32 numChildNodes = node->GetNumChildNodes();
+        const size_t numChildNodes = node->GetNumChildNodes();
         if (numChildNodes > 0)
         {
             AZ::Vector3 meanChildPosition = AZ::Vector3::CreateZero();
@@ -504,21 +502,21 @@ namespace EMotionFX
             // weight by the number of descendants of each child node, so that things like jiggle bones and twist bones
             // have little influence on the bone direction.
             float totalSubChildren = 0.0f;
-            for (uint32 childNumber = 0; childNumber < numChildNodes; childNumber++)
+            for (size_t childNumber = 0; childNumber < numChildNodes; childNumber++)
             {
-                const uint32 childIndex = node->GetChildIndex(childNumber);
+                const size_t childIndex = node->GetChildIndex(childNumber);
                 const Node* childNode = skeleton->GetNode(childIndex);
                 const float numSubChildren = static_cast<float>(1 + childNode->GetNumChildNodesRecursive());
                 totalSubChildren += numSubChildren;
-                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).mPosition);
+                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).m_position);
             }
 
-            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.mPosition;
+            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.m_position;
         }
         // otherwise, point the bone direction away from the parent
         else
         {
-            boneDirection = nodeBindTransform.mPosition - parentBindTransform.mPosition;
+            boneDirection = nodeBindTransform.m_position - parentBindTransform.m_position;
         }
 
         return boneDirection;

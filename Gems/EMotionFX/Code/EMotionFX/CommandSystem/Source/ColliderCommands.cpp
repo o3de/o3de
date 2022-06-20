@@ -448,7 +448,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<CommandAdjustCollider, MCore::Command, ParameterMixinActorId, ParameterMixinJointName>()
-            ->Version(1)
+            ->Version(2)
             ->Field("configType", &CommandAdjustCollider::m_configType)
             ->Field("index", &CommandAdjustCollider::m_index)
             ->Field("collisionLayer", &CommandAdjustCollider::m_collisionLayer)
@@ -456,7 +456,7 @@ namespace EMotionFX
             ->Field("isTrigger", &CommandAdjustCollider::m_isTrigger)
             ->Field("position", &CommandAdjustCollider::m_position)
             ->Field("rotation", &CommandAdjustCollider::m_rotation)
-            ->Field("material", &CommandAdjustCollider::m_material)
+            ->Field("materialSlots", &CommandAdjustCollider::m_materialSlots)
             ->Field("tag", &CommandAdjustCollider::m_tag)
             ->Field("radius", &CommandAdjustCollider::m_radius)
             ->Field("height", &CommandAdjustCollider::m_height)
@@ -485,7 +485,7 @@ namespace EMotionFX
         ExecuteParameter<bool>(m_oldIsTrigger, m_isTrigger, colliderConfig->m_isTrigger);
         ExecuteParameter<AZ::Vector3>(m_oldPosition, m_position, colliderConfig->m_position);
         ExecuteParameter<AZ::Quaternion>(m_oldRotation, m_rotation, colliderConfig->m_rotation);
-        ExecuteParameter<Physics::MaterialSelection>(m_oldMaterial, m_material, colliderConfig->m_materialSelection);
+        ExecuteParameter<Physics::MaterialSlots>(m_oldMaterialSlots, m_materialSlots, colliderConfig->m_materialSlots);
         ExecuteParameter<AZStd::string>(m_oldTag, m_tag, colliderConfig->m_tag);
 
         // ShapeConfiguration
@@ -550,9 +550,9 @@ namespace EMotionFX
         {
             colliderConfig->m_rotation = m_oldRotation.value();
         }
-        if (m_oldMaterial.has_value())
+        if (m_oldMaterialSlots.has_value())
         {
-            colliderConfig->m_materialSelection = m_oldMaterial.value();
+            colliderConfig->m_materialSlots = m_oldMaterialSlots.value();
         }
         if (m_oldTag.has_value())
         {

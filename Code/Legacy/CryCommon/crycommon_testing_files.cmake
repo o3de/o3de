@@ -7,14 +7,8 @@
 #
 
 set(FILES
-    Mocks/IAudioSystemMock.h
     Mocks/IConsoleMock.h
     Mocks/ICryPakMock.h
-    Mocks/ILogMock.h
     Mocks/ISystemMock.h
-    Mocks/ITimerMock.h
     Mocks/ICVarMock.h
-    Mocks/IRendererMock.h
-    Mocks/ITextureMock.h
-    Mocks/IRemoteConsoleMock.h
 )
