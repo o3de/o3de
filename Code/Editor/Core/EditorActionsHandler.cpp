@@ -60,7 +60,7 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     InitializeMenus();
     InitializeToolBars();
 
-    // Ensure the tools menu is refreshed when the viewpanes change.
+    // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
     QObject::connect(
         m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
         [&]()
@@ -432,13 +432,13 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     return containerWidget;
 }
 
-void EditorActionsHandler::OnViewPaneOpened([[maybe_unused]] const char* viewPaneName)
+void EditorActionsHandler::OnViewPaneOpened(const char* viewPaneName)
 {
     AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewPaneName);
     m_actionManagerInterface->UpdateAction(toolActionIdentifier);
 }
 
-void EditorActionsHandler::OnViewPaneClosed([[maybe_unused]] const char* viewPaneName)
+void EditorActionsHandler::OnViewPaneClosed(const char* viewPaneName)
 {
     AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewPaneName);
     m_actionManagerInterface->UpdateAction(toolActionIdentifier);
