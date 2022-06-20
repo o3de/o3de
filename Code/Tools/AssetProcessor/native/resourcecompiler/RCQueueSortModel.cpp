@@ -198,6 +198,12 @@ namespace AssetProcessor
             return priorityLeft > priorityRight;
         }
         
+        if (leftJob->GetJobEntry().m_databaseSourceName == rightJob->GetJobEntry().m_databaseSourceName)
+        {
+            // If there are two jobs for the same source, then sort by job run key.
+            return leftJob->GetJobEntry().m_jobRunKey < rightJob->GetJobEntry().m_jobRunKey;
+        }
+
         // if we get all the way down here it means we're dealing with two assets which are not
         // in any compile groups, not a priority platform, not a priority type, priority platform, etc.
         // we can arrange these any way we want, but must pick at least a stable order.
