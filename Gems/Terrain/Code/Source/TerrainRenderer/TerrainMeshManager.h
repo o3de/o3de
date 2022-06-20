@@ -136,10 +136,12 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-            int32_t m_worldX = AZStd::numeric_limits<int32_t>::max();
-            int32_t m_worldY = AZStd::numeric_limits<int32_t>::max();
+            AZStd::array<AZ::Aabb, 4> m_quadrantAabbs;
+            Vector2i m_worldCoord = AZStd::numeric_limits<int32_t>::max();
 
-            AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
+            AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacketClod;
+            AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
+
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
             AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
@@ -156,8 +158,7 @@ namespace Terrain
             AZStd::vector<StackSectorData> m_sectors;
 
             // The world space sector coord of the top most left item
-            int32_t m_startCoordX = AZStd::numeric_limits<int32_t>::max();
-            int32_t m_startCoordY = AZStd::numeric_limits<int32_t>::max();
+            Vector2i m_startCoord = AZStd::numeric_limits<int32_t>::max();
         };
 
         struct ShaderObjectData // Must align with struct in object srg
@@ -251,7 +252,6 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
-        AZ::Data::Instance<AZ::RPI::Buffer> m_lowerLodIndexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
 
