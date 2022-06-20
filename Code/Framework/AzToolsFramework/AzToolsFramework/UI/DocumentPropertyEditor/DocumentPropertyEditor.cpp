@@ -13,11 +13,22 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
+#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
+
+AZ_CVAR(
+    bool,
+    ed_showDPEDebugView,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "If set, instances of the DPE also spawn a DPE debug view window, which allows users inspect the hierarchy and the DOM in pseudo XML "
+    "format");
 
 namespace AzToolsFramework
 {
@@ -596,14 +607,23 @@ namespace AzToolsFramework
         m_handlerCleanupTimer->setSingleShot(true);
         m_handlerCleanupTimer->setInterval(0);
         connect(m_handlerCleanupTimer, &QTimer::timeout, this, &DocumentPropertyEditor::CleanupReleasedHandlers);
+
+        m_spawnDebugView = ed_showDPEDebugView;
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
     {
     }
 
-    void DocumentPropertyEditor::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
+    void DocumentPropertyEditor::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
+        if (m_spawnDebugView)
+        {
+            QPointer<AzToolsFramework::DPEDebugWindow> theWindow = new AzToolsFramework::DPEDebugWindow(nullptr);
+            theWindow->SetAdapter(theAdapter);
+            theWindow->show();
+        }
+
         m_adapter = theAdapter;
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
@@ -746,6 +766,11 @@ namespace AzToolsFramework
     {
         m_unusedHandlers.emplace_back(AZStd::move(handler));
         m_handlerCleanupTimer->start();
+    }
+
+    void DocumentPropertyEditor::SetSpawnDebugView(bool shouldSpawn)
+    {
+        m_spawnDebugView = shouldSpawn;
     }
 
     QVBoxLayout* DocumentPropertyEditor::GetVerticalLayout()
