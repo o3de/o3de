@@ -160,7 +160,7 @@ namespace AZ
                 }
             }
             return true;
-        }        
+        }
 
 
         AZ_MATH_INLINE bool Overlaps(const Frustum& frustum, const Obb& obb)

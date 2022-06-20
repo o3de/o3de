@@ -15,38 +15,6 @@
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/DebugDraw/CharacterPhysicsDebugDraw.h>
 
-namespace AZ::ShapeIntersection
-{
-    bool Overlaps([[maybe_unused]] AZStd::monostate monostate1, [[maybe_unused]] AZStd::monostate monostate2)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] AZStd::monostate monostate, [[maybe_unused]] const AZ::Capsule& capsule)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] AZStd::monostate monostate, [[maybe_unused]] const AZ::Obb& obb)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] AZStd::monostate monostate, [[maybe_unused]] const AZ::Sphere& sphere)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] const AZ::Capsule& capsule, [[maybe_unused]] AZStd::monostate monostate)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] const AZ::Obb& obb, [[maybe_unused]] AZStd::monostate monostate)
-    {
-        return false;
-    }
-    bool Overlaps([[maybe_unused]] const AZ::Sphere& sphere, [[maybe_unused]] AZStd::monostate monostate)
-    {
-        return false;
-    }
-}
-
 namespace Physics
 {
     void CharacterPhysicsDebugDraw::JointLimitRenderBuffers::Clear()
@@ -114,7 +82,7 @@ namespace Physics
         CharacterPhysicsDebugDraw::NodeDebugDrawDataFunction nodeDebugDrawDataFunction)
     {
         const size_t numNodes = colliderConfig->m_nodes.size();
-        AZStd::vector<uint32_t> invalidColliderBitArrays(numNodes);
+        AZStd::vector<uint32_t> invalidColliderBitArrays(numNodes, 0u);
         if (numNodes < 2)
         {
             return invalidColliderBitArrays;
@@ -192,7 +160,16 @@ namespace Physics
                         bool overlaps = AZStd::visit(
                             [](auto&& arg1, auto&& arg2)
                             {
-                                return AZ::ShapeIntersection::Overlaps(arg1, arg2);
+                                using Arg1Type = AZStd::decay_t<decltype(arg1)>;
+                                using Arg2Type = AZStd::decay_t<decltype(arg2)>;
+                                if constexpr (AZStd::is_same_v<Arg1Type, AZStd::monostate> || AZStd::is_same_v<Arg2Type, AZStd::monostate>)
+                                {
+                                    return false;
+                                }
+                                else
+                                {
+                                    return AZ::ShapeIntersection::Overlaps(arg1, arg2);
+                                }
                             },
                             shapeVariant1, shapeVariant2);
                         if (overlaps)
