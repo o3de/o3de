@@ -30,7 +30,7 @@ namespace Terrain
     AZ_CVAR(
         uint32_t,
         r_terrainClipmapDebugClipmapId,
-        0,
+        2,
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "The clipmap index to be rendered on the screen.\n"
@@ -140,6 +140,29 @@ namespace Terrain
         InitializeClipmapData();
         InitializeClipmapImages();
 
+        {
+            AZ::Render::GpuBufferHandler::Descriptor desc;
+            desc.m_bufferName = "Macro Clipmap Update Regions";
+            desc.m_bufferSrgName = "m_macroClipmapUpdateRegions";
+            desc.m_elementSize = sizeof(ClipmapUpdateRegion);
+            desc.m_srgLayout = terrainSrg->GetLayout();
+            m_macroClipmapUpdateRegionsBuffer = AZ::Render::GpuBufferHandler(desc);
+
+            // Reserve the max possible size.
+            m_macroClipmapUpdateRegions.reserve(ClipmapBounds::MaxUpdateRegions * m_macroClipmapStackSize);
+        }
+        {
+            AZ::Render::GpuBufferHandler::Descriptor desc;
+            desc.m_bufferName = "Detail Clipmap Update Regions";
+            desc.m_bufferSrgName = "m_detailClipmapUpdateRegions";
+            desc.m_elementSize = sizeof(ClipmapUpdateRegion);
+            desc.m_srgLayout = terrainSrg->GetLayout();
+            m_detailClipmapUpdateRegionsBuffer = AZ::Render::GpuBufferHandler(desc);
+
+            // Reserve the max possible size.
+            m_detailClipmapUpdateRegions.reserve(ClipmapBounds::MaxUpdateRegions * m_detailClipmapStackSize);
+        }
+
         m_isInitialized = UpdateSrgIndices(terrainSrg);
     }
     
@@ -165,7 +188,7 @@ namespace Terrain
 
     void TerrainClipmapManager::Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        UpdateClipmapData(cameraPosition, scene);
+        UpdateClipmapData(cameraPosition, scene, terrainSrg);
         terrainSrg->SetConstant(m_terrainSrgClipmapDataIndex, m_clipmapData);
     }
 
@@ -189,53 +212,38 @@ namespace Terrain
     void TerrainClipmapManager::InitializeClipmapBounds(const AZ::Vector2& center)
     {
         m_macroClipmapBounds.resize(m_macroClipmapStackSize);
-        float clipToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             ClipmapBoundsDescriptor desc;
             desc.m_size = m_config.m_clipmapSize;
             desc.m_worldSpaceCenter = center;
-            desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = clipToWorldScale;
+            desc.m_clipmapUpdateMultiple = m_config.m_macroClipmapMarginSize;
+            desc.m_clipmapToWorldScale = clipmapToWorldScale;
 
             m_macroClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
 
-            clipToWorldScale /= m_config.m_macroClipmapScaleBase;
+            clipmapToWorldScale /= m_config.m_macroClipmapScaleBase;
         }
 
         m_detailClipmapBounds.resize(m_detailClipmapStackSize);
-        clipToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
+        clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
             ClipmapBoundsDescriptor desc;
             desc.m_size = m_config.m_clipmapSize;
             desc.m_worldSpaceCenter = center;
-            desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = clipToWorldScale;
+            desc.m_clipmapUpdateMultiple = m_config.m_detailClipmapMarginSize;
+            desc.m_clipmapToWorldScale = clipmapToWorldScale;
 
             m_detailClipmapBounds[clipmapIndex] = ClipmapBounds(desc);
 
-            clipToWorldScale /= m_config.m_detailClipmapScaleBase;
+            clipmapToWorldScale /= m_config.m_detailClipmapScaleBase;
         }
     }
 
     void TerrainClipmapManager::InitializeClipmapData()
     {
-        const AZStd::array<uint32_t, 4> zeroUint = { 0, 0, 0, 0 };
-        const AZStd::array<float, 4> zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_previousViewPosition.data());
-        AZ::Vector2::CreateZero().StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
-
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-
-        m_clipmapData.m_worldBoundsMin[0] = worldBounds.GetMin().GetX();
-        m_clipmapData.m_worldBoundsMin[1] = worldBounds.GetMin().GetY();
-        m_clipmapData.m_worldBoundsMax[0] = worldBounds.GetMax().GetX();
-        m_clipmapData.m_worldBoundsMax[1] = worldBounds.GetMax().GetY();
-
         m_clipmapData.m_macroClipmapMaxRenderRadius = m_config.m_macroClipmapMaxRenderRadius;
         m_clipmapData.m_detailClipmapMaxRenderRadius = m_config.m_detailClipmapMaxRenderRadius;
 
@@ -245,28 +253,40 @@ namespace Terrain
         m_clipmapData.m_macroClipmapStackSize = m_macroClipmapStackSize;
         m_clipmapData.m_detailClipmapStackSize = m_detailClipmapStackSize;
 
+        m_clipmapData.m_macroClipmapMarginSize = aznumeric_cast<float>(m_config.m_macroClipmapMarginSize);
+        m_clipmapData.m_detailClipmapMarginSize = aznumeric_cast<float>(m_config.m_detailClipmapMarginSize);
+        m_clipmapData.m_extendedClipmapMarginSize = aznumeric_cast<float>(m_config.m_extendedClipmapMarginSize);
+
         m_clipmapData.m_clipmapSizeFloat = aznumeric_cast<float>(m_config.m_clipmapSize);
         m_clipmapData.m_clipmapSizeUint = m_config.m_clipmapSize;
 
-        m_clipmapData.m_clipmapScaleInv.fill(zeroFloat);
+        m_clipmapData.m_validMacroClipmapRadius =
+            m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_macroClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
+        m_clipmapData.m_validDetailClipmapRadius =
+            m_clipmapData.m_clipmapSizeFloat / 2.0f - m_clipmapData.m_detailClipmapMarginSize - m_clipmapData.m_extendedClipmapMarginSize;
 
-        float clipmapScaleInv = 1.0f;
+        m_clipmapData.m_clipmapBlendSize = aznumeric_cast<float>(m_config.m_clipmapBlendSize);
+
+        RawVector4f zeroFloat = { 0.0f, 0.0f, 0.0f, 0.0f };
+        m_clipmapData.m_clipmapToWorldScale.fill(zeroFloat);
+
+        float clipmapToWorldScale = m_config.m_macroClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
         for (int32_t clipmapIndex = m_macroClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            m_clipmapData.m_clipmapScaleInv[clipmapIndex][0] = clipmapScaleInv;
-            clipmapScaleInv /= m_config.m_macroClipmapScaleBase;
+            m_clipmapData.m_clipmapToWorldScale[clipmapIndex][0] = clipmapToWorldScale;
+            clipmapToWorldScale /= m_config.m_macroClipmapScaleBase;
         }
-        clipmapScaleInv = 1.0f;
+        clipmapToWorldScale = m_config.m_detailClipmapMaxRenderRadius * 2.0f / m_config.m_clipmapSize;
         for (int32_t clipmapIndex = m_detailClipmapStackSize - 1; clipmapIndex >= 0; --clipmapIndex)
         {
-            m_clipmapData.m_clipmapScaleInv[clipmapIndex][1] = clipmapScaleInv;
-            clipmapScaleInv /= m_config.m_detailClipmapScaleBase;
+            m_clipmapData.m_clipmapToWorldScale[clipmapIndex][1] = clipmapToWorldScale;
+            clipmapToWorldScale /= m_config.m_detailClipmapScaleBase;
         }
 
-        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
-        m_clipmapData.m_macroClipmapCenters.fill(zeroUint);
-        m_clipmapData.m_macroClipmapBoundsRegions.fill(zeroUint);
-        m_clipmapData.m_detailClipmapBoundsRegions.fill(zeroUint);
+        ClipmapData::ClipmapCenter clipmapCenter{ {0u, 0u}, {0u, 0u} };
+        m_clipmapData.m_clipmapCenters.fill(clipmapCenter);
+        ClipmapData::ClipmapWorldCenter clipmapWorldCenter{ { 0.0f, 0.0f }, { 0.f, 0.0f } };
+        m_clipmapData.m_clipmapWorldCenters.fill(clipmapWorldCenter);
     }
 
     void TerrainClipmapManager::InitializeClipmapImages()
@@ -331,17 +351,10 @@ namespace Terrain
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailOcclusionClipmapName, nullptr, nullptr);
     }
 
-    void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene)
+    void TerrainClipmapManager::UpdateClipmapData(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        const AZStd::array<uint32_t, 4> zero = { 0, 0, 0, 0 };
-
-        // pass current to previous
-        m_clipmapData.m_previousViewPosition[0] = m_clipmapData.m_currentViewPosition[0];
-        m_clipmapData.m_previousViewPosition[1] = m_clipmapData.m_currentViewPosition[1];
-
-        // set new current
+        // set new view position
         AZ::Vector2 currentViewPosition = AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY());
-        currentViewPosition.StoreToFloat2(m_clipmapData.m_currentViewPosition.data());
 
         // Update debug data
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -372,21 +385,8 @@ namespace Terrain
         }
 
         // Update clipmap center
-        auto UpdateCenter = [&](ClipmapBounds& clipmapBounds, AZStd::array<uint32_t, 4>& shaderData) -> ClipmapBoundsRegionList
-        {
-            ClipmapBoundsRegionList updateRegionList = clipmapBounds.UpdateCenter(currentViewPosition);
-
-            // copy current to previous slot
-            shaderData[0] = shaderData[2];
-            shaderData[1] = shaderData[3];
-
-            // write current center
-            Vector2i center = clipmapBounds.GetModCenter();
-            shaderData[2] = center.m_x;
-            shaderData[3] = center.m_y;
-
-            return updateRegionList;
-        };
+        m_macroClipmapUpdateRegions.clear();
+        m_detailClipmapUpdateRegions.clear();
 
         // First time update will run through the whole clipmap
         if (m_firstTimeUpdate)
@@ -399,35 +399,34 @@ namespace Terrain
 
             for (uint32_t clipmapIndex = 0; clipmapIndex < m_macroClipmapStackSize; ++clipmapIndex)
             {
-                m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex] = aabb;
-
-                for (uint32_t i = 1; i < ClipmapBounds::MaxUpdateRegions; ++i)
-                {
-                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = zero;
-                }
+                m_macroClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
 
                 Vector2i center = m_macroClipmapBounds[clipmapIndex].GetModCenter();
-                m_clipmapData.m_macroClipmapCenters[clipmapIndex][0] = center.m_x;
-                m_clipmapData.m_macroClipmapCenters[clipmapIndex][1] = center.m_y;
-                m_clipmapData.m_macroClipmapCenters[clipmapIndex][2] = center.m_x;
-                m_clipmapData.m_macroClipmapCenters[clipmapIndex][3] = center.m_y;
+                AZ::Vector2 centerWorld = m_macroClipmapBounds[clipmapIndex].GetCenterInWorldSpace();
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[0] = center.m_x;
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[1] = center.m_y;
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[0] = centerWorld.GetX();
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[1] = centerWorld.GetY();
             }
 
             for (uint32_t clipmapIndex = 0; clipmapIndex < m_detailClipmapStackSize; ++clipmapIndex)
             {
-                m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex] = aabb;
-
-                for (uint32_t i = 1; i < ClipmapBounds::MaxUpdateRegions; ++i)
-                {
-                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = zero;
-                }
+                m_detailClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
 
                 Vector2i center = m_detailClipmapBounds[clipmapIndex].GetModCenter();
-                m_clipmapData.m_detailClipmapCenters[clipmapIndex][0] = center.m_x;
-                m_clipmapData.m_detailClipmapCenters[clipmapIndex][1] = center.m_y;
-                m_clipmapData.m_detailClipmapCenters[clipmapIndex][2] = center.m_x;
-                m_clipmapData.m_detailClipmapCenters[clipmapIndex][3] = center.m_y;
+                AZ::Vector2 centerWorld = m_detailClipmapBounds[clipmapIndex].GetCenterInWorldSpace();
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[0] = center.m_x;
+                m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[1] = center.m_y;
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[0] = centerWorld.GetX();
+                m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[1] = centerWorld.GetY();
             }
+
+            m_clipmapData.m_macroClipmapUpdateRegionCount = aznumeric_cast<uint32_t>(m_macroClipmapUpdateRegions.size());
+            m_clipmapData.m_detailClipmapUpdateRegionCount = aznumeric_cast<uint32_t>(m_detailClipmapUpdateRegions.size());
+            m_macroClipmapUpdateRegionsBuffer.UpdateBuffer(m_macroClipmapUpdateRegions.data(), m_clipmapData.m_macroClipmapUpdateRegionCount);
+            m_detailClipmapUpdateRegionsBuffer.UpdateBuffer(m_detailClipmapUpdateRegions.data(), m_clipmapData.m_detailClipmapUpdateRegionCount);
+            m_macroClipmapUpdateRegionsBuffer.UpdateSrg(terrainSrg.get());
+            m_detailClipmapUpdateRegionsBuffer.UpdateSrg(terrainSrg.get());
 
             m_macroTotalDispatchThreadX = 1024;
             m_macroTotalDispatchThreadY = 1024;
@@ -444,36 +443,42 @@ namespace Terrain
         }
 
         // macro clipmap data:
-        bool hasUpdate = false;
         for (uint32_t clipmapIndex = 0; clipmapIndex < m_macroClipmapStackSize; ++clipmapIndex)
         {
-            ClipmapBoundsRegionList updateRegionList = UpdateCenter(m_macroClipmapBounds[clipmapIndex], m_clipmapData.m_macroClipmapCenters[clipmapIndex]);
+            ClipmapBounds& clipmapBounds = m_macroClipmapBounds[clipmapIndex];
 
-            for (uint32_t i = 0; i < ClipmapBounds::MaxUpdateRegions; ++i)
+            ClipmapBoundsRegionList updateRegionList = clipmapBounds.UpdateCenter(currentViewPosition);
+
+            // write updated center
+            Vector2i center = clipmapBounds.GetModCenter();
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[0] = aznumeric_cast<uint32_t>(center.m_x);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_macro[1] = aznumeric_cast<uint32_t>(center.m_y);
+
+            AZ::Vector2 centerWorld = clipmapBounds.GetCenterInWorldSpace();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[0] = centerWorld.GetX();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_macro[1] = centerWorld.GetY();
+
+            for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {
-                if (updateRegionList.size() > i)
-                {
-                    AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
-                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = aabb;
-                }
-                else
-                {
-                    m_clipmapData.m_macroClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::MacroClipmapStackSizeMax * i] = zero;
-                }
+                AZStd::array<uint32_t, 4> aabb = { aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_y),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_y) };
+                m_macroClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
             }
-
-            hasUpdate = hasUpdate || updateRegionList.size() > 0;
         }
 
-        if (hasUpdate)
+        uint32_t updateRegionCount = aznumeric_cast<uint32_t>(m_macroClipmapUpdateRegions.size());
+        if (updateRegionCount)
         {
             m_macroTotalDispatchThreadX = 64;
             m_macroTotalDispatchThreadY = 64;
             m_clipmapData.m_macroDispatchGroupCountX = m_macroTotalDispatchThreadX / MacroGroupThreadX;
             m_clipmapData.m_macroDispatchGroupCountY = m_macroTotalDispatchThreadY / MacroGroupThreadY;
+
+            m_clipmapData.m_macroClipmapUpdateRegionCount = updateRegionCount;
+            m_macroClipmapUpdateRegionsBuffer.UpdateBuffer(m_macroClipmapUpdateRegions.data(), updateRegionCount);
+            m_macroClipmapUpdateRegionsBuffer.UpdateSrg(terrainSrg.get());
         }
         else
         {
@@ -484,36 +489,42 @@ namespace Terrain
         }
 
         // detail clipmap data:
-        hasUpdate = false;
         for (uint32_t clipmapIndex = 0; clipmapIndex < m_detailClipmapStackSize; ++clipmapIndex)
         {
-            ClipmapBoundsRegionList updateRegionList = UpdateCenter(m_detailClipmapBounds[clipmapIndex], m_clipmapData.m_detailClipmapCenters[clipmapIndex]);
+            ClipmapBounds& clipmapBounds = m_detailClipmapBounds[clipmapIndex];
 
-            for (uint32_t i = 0; i < ClipmapBounds::MaxUpdateRegions; ++i)
+            ClipmapBoundsRegionList updateRegionList = clipmapBounds.UpdateCenter(currentViewPosition);
+
+            // write updated center
+            Vector2i center = clipmapBounds.GetModCenter();
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[0] = aznumeric_cast<uint32_t>(center.m_x);
+            m_clipmapData.m_clipmapCenters[clipmapIndex].m_detail[1] = aznumeric_cast<uint32_t>(center.m_y);
+
+            AZ::Vector2 centerWorld = clipmapBounds.GetCenterInWorldSpace();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[0] = centerWorld.GetX();
+            m_clipmapData.m_clipmapWorldCenters[clipmapIndex].m_detail[1] = centerWorld.GetY();
+
+            for (uint32_t i = 0; i < updateRegionList.size(); ++i)
             {
-                if (updateRegionList.size() > i)
-                {
-                    AZStd::array<uint32_t, 4> aabb = { (uint32_t)updateRegionList[i].m_localAabb.m_min.m_x,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_min.m_y,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_x,
-                                                       (uint32_t)updateRegionList[i].m_localAabb.m_max.m_y };
-                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = aabb;
-                }
-                else
-                {
-                    m_clipmapData.m_detailClipmapBoundsRegions[clipmapIndex + ClipmapConfiguration::DetailClipmapStackSizeMax * i] = zero;
-                }
+                AZStd::array<uint32_t, 4> aabb = { aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_min.m_y),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_x),
+                                                   aznumeric_cast<uint32_t>(updateRegionList[i].m_localAabb.m_max.m_y) };
+                m_detailClipmapUpdateRegions.push_back(ClipmapUpdateRegion(clipmapIndex, aabb));
             }
-
-            hasUpdate = hasUpdate || updateRegionList.size() > 0;
         }
 
-        if (hasUpdate)
+        updateRegionCount = aznumeric_cast<uint32_t>(m_detailClipmapUpdateRegions.size());
+        if (updateRegionCount)
         {
             m_detailTotalDispatchThreadX = 64;
             m_detailTotalDispatchThreadY = 64;
             m_clipmapData.m_detailDispatchGroupCountX = m_detailTotalDispatchThreadX / DetailGroupThreadX;
             m_clipmapData.m_detailDispatchGroupCountY = m_detailTotalDispatchThreadY / DetailGroupThreadY;
+
+            m_clipmapData.m_detailClipmapUpdateRegionCount = updateRegionCount;
+            m_detailClipmapUpdateRegionsBuffer.UpdateBuffer(m_detailClipmapUpdateRegions.data(), updateRegionCount);
+            m_detailClipmapUpdateRegionsBuffer.UpdateSrg(terrainSrg.get());
         }
         else
         {

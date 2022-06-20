@@ -326,6 +326,73 @@ namespace AzToolsFramework
         actionIterator->second.Update();
         return AZ::Success();
     }
+    
+    ActionManagerOperationResult ActionManager::RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier)
+    {
+        if (m_actionUpdaters.contains(actionUpdaterIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action updater \"%s\" twice.",
+                actionUpdaterIdentifier.c_str()
+            ));
+        }
+
+        m_actionUpdaters.insert({ actionUpdaterIdentifier, {} });
+        return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier)
+    {
+        auto actionUpdaterIterator = m_actionUpdaters.find(actionUpdaterIdentifier);
+        if (actionUpdaterIterator == m_actionUpdaters.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not add action \"%s\" to action updater \"%s\" - action updater has not been registered.",
+                actionIdentifier.c_str(),
+                actionUpdaterIdentifier.c_str()
+            ));
+        }
+        
+        if (!m_actions.contains(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to action updater \"%s\" - action could not be found.",
+                actionIdentifier.c_str(),
+                actionUpdaterIdentifier.c_str()
+            ));
+        }
+
+        if (actionUpdaterIterator->second.contains(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not add action \"%s\" to action updater \"%s\" twice.",
+                actionIdentifier.c_str(),
+                actionUpdaterIdentifier.c_str()
+            ));
+        }
+
+        actionUpdaterIterator->second.insert(actionIdentifier);
+        return AZ::Success();
+    }
+
+    ActionManagerOperationResult ActionManager::TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier)
+    {
+        auto actionUpdaterIterator = m_actionUpdaters.find(actionUpdaterIdentifier);
+        if (actionUpdaterIterator == m_actionUpdaters.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not trigger updates for action updater \"%s\" - action updater has not been registered.",
+                actionUpdaterIdentifier.c_str()
+            ));
+        }
+
+        for (const AZStd::string& actionIdentifier : actionUpdaterIterator->second)
+        {
+            UpdateAction(actionIdentifier);
+        }
+
+        return AZ::Success();
+    }
 
     void ActionManager::ClearActionContextMap()
     {
