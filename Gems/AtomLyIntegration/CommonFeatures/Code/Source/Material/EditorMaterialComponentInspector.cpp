@@ -218,7 +218,7 @@ namespace AZ
 
                 AZStd::string slotName;
                 MaterialComponentRequestBus::EventResult(
-                    slotName, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialSlotLabel, m_materialAssignmentId);
+                    slotName, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialLabel, m_materialAssignmentId);
 
                 QString materialInfo;
                 materialInfo += tr("<table>");
@@ -431,7 +431,7 @@ namespace AZ
 
                 m_editData.m_materialPropertyOverrideMap.clear();
                 MaterialComponentRequestBus::EventResult(
-                    m_editData.m_materialPropertyOverrideMap, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    m_editData.m_materialPropertyOverrideMap, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetPropertyValues,
                     m_materialAssignmentId);
 
                 // Apply any automatic property renames so that the material inspector will be properly initialized with the right values
@@ -497,7 +497,7 @@ namespace AZ
                 for (const AZ::EntityId& entityId : m_entityIdsToEdit)
                 {
                     MaterialComponentRequestBus::Event(
-                        entityId, &MaterialComponentRequestBus::Events::SetPropertyOverride, m_materialAssignmentId,
+                        entityId, &MaterialComponentRequestBus::Events::SetPropertyValue, m_materialAssignmentId,
                         property.GetId().GetStringView(), property.GetValue());
                 }
 
@@ -751,7 +751,7 @@ namespace AZ
                         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
                             &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
                         MaterialComponentRequestBus::Event(
-                            entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_materialAssignmentId,
+                            entityId, &MaterialComponentRequestBus::Events::SetPropertyValues, m_materialAssignmentId,
                             m_editData.m_materialPropertyOverrideMap);
                         MaterialComponentNotificationBus::Event(entityId, &MaterialComponentNotifications::OnMaterialsEdited);
                     }
@@ -771,7 +771,7 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, m_materialAssignmentId);
+                    materialAssetId, m_primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_materialAssignmentId);
                 return materialAssetId;
             }
 

@@ -12,9 +12,8 @@ from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 from PySide2.QtCore import Qt
 import scripting_utils.scripting_tools as scripting_tools
-from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_MANAGER_QT,
-                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 RESTORE_DEFAULT_LAYOUT)
+from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT,
+                                                 VARIABLE_TYPES, RESTORE_DEFAULT_LAYOUT)
 
 
 # fmt: off
@@ -44,8 +43,7 @@ class VariableManager_UnpinVariableType_Works:
      7) Close and Reopen Create Variable menu and make sure Boolean is unpinned after reopening Create Variable menu
      8) Restore default layout and close SC window
     Note:
-     - This test file must be called from the Open 3D Engine Editor command terminal
-     - Any passed and failed tests are written to the Editor.log file.
+       - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
     :return: None
     """
@@ -55,10 +53,6 @@ class VariableManager_UnpinVariableType_Works:
         self.sc_editor = None
         self.sc_editor_main_window = None
         self.variable_manager = None
-
-    def click_menu_option(self, window, option_text):
-        action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
-        action.trigger()
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -110,7 +104,7 @@ class VariableManager_UnpinVariableType_Works:
         boolean_variable_object = pyside_utils.find_child_by_pattern(variable_table_view, BOOLEAN_STRING)
         pinned_toggle = boolean_variable_object.siblingAtColumn(0)
         pyside_utils.item_view_index_mouse_click(variable_table_view, pinned_toggle)
-        self.click_menu_option(self.sc_editor, RESTORE_DEFAULT_LAYOUT)
+        scripting_tools.click_menu_option(self.sc_editor, RESTORE_DEFAULT_LAYOUT)
         general.close_pane(SCRIPT_CANVAS_UI)
 
 

@@ -245,7 +245,7 @@ namespace AZ
             {
                 if (dataClassInfo->m_editData)
                 {
-                    for (auto element : dataClassInfo->m_editData->m_elements)
+                    for (auto& element : dataClassInfo->m_editData->m_elements)
                     {
                         const SerializeContext::ClassElement* ed = element.m_serializeClassElement;
                         if (ed)
@@ -272,6 +272,7 @@ namespace AZ
                             if (callContext->m_beginElemCB)
                             {
                                 SerializeContext::ClassElement syntheticClassElement;
+                                syntheticClassElement.m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                 syntheticClassElement.m_editData = &element;
                                 callContext->m_beginElemCB(ptr, dataClassInfo, &syntheticClassElement);
                             }

@@ -59,8 +59,8 @@ namespace AZ
 
             // --- Children related functions ---
 
-            //! Adds pass to list of children
-            void AddChild(const Ptr<Pass>& child);
+            //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise
+            void AddChild(const Ptr<Pass>& child, bool skipStateCheckWhenRunningTests = false);
 
             //! Inserts a pass at specified position
             //! If the position is invalid, the child pass won't be added, and the function returns false
@@ -126,7 +126,7 @@ namespace AZ
             void RemoveChild(Ptr<Pass> pass);
 
             // Orphans all children by clearing m_children.
-            void RemoveChildren();
+            void RemoveChildren(bool calledFromDestructor = false);
 
         private:
             // RPI::Pass overrides...

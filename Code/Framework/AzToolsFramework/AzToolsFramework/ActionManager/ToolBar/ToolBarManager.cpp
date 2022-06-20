@@ -64,6 +64,13 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
+        if (toolBarIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar already contains action.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
         toolBarIterator->second.AddAction(sortIndex, actionIdentifier);
         return AZ::Success();
     }
@@ -91,6 +98,25 @@ namespace AzToolsFramework
         }
 
         return toolBarIterator->second.GetToolBar();
+    }
+    
+    ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of action \"%s\" in toolbar \"%s\" - toolbar has not been registered.", actionIdentifier.c_str(), toolBarIdentifier.c_str()));
+        }
+
+        auto sortKey = toolBarIterator->second.GetActionSortKey(actionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of action \"%s\" in toolbar \"%s\" - action was not found in toolbar.", actionIdentifier.c_str(), toolBarIdentifier.c_str()));
+        }
+
+        return AZ::Success(sortKey.value());
     }
 
 } // namespace AzToolsFramework
