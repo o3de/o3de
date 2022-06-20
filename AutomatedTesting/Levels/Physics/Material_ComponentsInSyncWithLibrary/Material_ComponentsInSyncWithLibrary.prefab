@@ -113,6 +113,13 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 4434530361734934283,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -276,6 +283,13 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 4434530361734934283,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -506,10 +520,17 @@
                     "Id": 2223745084206416722,
                     "Configuration": {
                         "entityId": "",
-                        "Material": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{A68F207B-4082-4CC7-B574-72881BCA16E9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{F3DDE5D6-00C4-5766-A2E2-3141386AE294}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarycrudoperationsreflectonragdollbones/modified.physicsmaterial"
+                                    }
                                 }
                             ]
                         },
@@ -613,10 +634,17 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 4434530361734934283,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{A68F207B-4082-4CC7-B574-72881BCA16E9}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{F3DDE5D6-00C4-5766-A2E2-3141386AE294}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarycrudoperationsreflectonragdollbones/modified.physicsmaterial"
+                                    }
                                 }
                             ]
                         }

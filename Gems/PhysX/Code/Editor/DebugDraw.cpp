@@ -13,12 +13,12 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
+#include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <PhysX/MathConversion.h>
 
@@ -446,16 +446,13 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+                const auto materialAsset = colliderConfig.m_materialSlots.GetMaterialAsset(elementDebugInfo.m_materialSlotIndex);
 
-                AZStd::shared_ptr<Physics::Material> physicsMaterial;
-                Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                    physicsMaterial,
-                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-                    materialId);
-                if (physicsMaterial)
+                AZStd::shared_ptr<Material> material = Material::FindOrCreateMaterial(materialAsset);
+
+                if (material)
                 {
-                    debugColor = physicsMaterial->GetDebugColor();
+                    debugColor = material->GetDebugColor();
                 }
                 break;
             }
@@ -708,12 +705,29 @@ namespace PhysX
 
             if (!vertices.empty())
             {
+                // Each heightfield quad consists of 6 vertices, or 2 triangles.
+                // If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
+                // and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
+                // that we're drawing a per-quad pattern like this:
+                // 2 --- 3
+                //   |\
+                // 0 | \ 1
+                //  
+                // To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
+                // sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
+                // directly to DrawLines().
+                // We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
+                // are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
+                // every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                for (size_t vertex = 0; vertex < vertices.size(); vertex += 6)
+                {
+                    vertices[vertex + 1] = vertices[vertex + 2];
+                }
+
                 // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
                 const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
                 debugDisplay.PushMatrix(shapeOffsetTransform);
-
                 debugDisplay.DrawLines(vertices, AZ::Colors::White);
-
                 debugDisplay.PopMatrix();
             }
         }

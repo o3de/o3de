@@ -42,6 +42,7 @@ namespace AssetProcessor
     class JobsModel;
     class ProductAssetTreeModel;
     class SourceAssetTreeModel;
+    class ProductDependencyTreeItem;
     class JobEntry;
 }
 
@@ -191,6 +192,10 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    // Helper function that retrieves the item selected in outgoing/incoming dependency TreeView
+    AssetProcessor::ProductDependencyTreeItem* GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos);
+    void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
+    void ShowIncomingProductDependenciesContextMenu(const QPoint& pos);
 
     void ResetTimers();
     void CheckStartAnalysisTimers();

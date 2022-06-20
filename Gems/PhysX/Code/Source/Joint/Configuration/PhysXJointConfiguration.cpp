@@ -83,6 +83,92 @@ namespace PhysX
         }
     }
 
+    AZStd::optional<float> D6JointLimitConfiguration::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName)
+    {
+        if (propertyName == AZ::Name("SwingLimitY"))
+        {
+            return m_swingLimitY;
+        }
+        else if (propertyName == AZ::Name("SwingLimitZ"))
+        {
+            return m_swingLimitZ;
+        }
+        else if (propertyName == AZ::Name("TwistLimitLower"))
+        {
+            return m_twistLimitLower;
+        }
+        else if (propertyName == AZ::Name("TwistLimitUpper"))
+        {
+            return m_twistLimitUpper;
+        }
+        else
+        {
+            AZ_ErrorOnce("PhysX Joint Configuration", false, "Property %s not recognized.", propertyName.GetCStr());
+            return AZStd::nullopt;
+        }
+    }
+
+    void D6JointLimitConfiguration::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value)
+    {
+        if (propertyName == AZ::Name("SwingLimitY"))
+        {
+            m_swingLimitY = value;
+            ValidateSwingLimitY();
+        }
+        else if (propertyName == AZ::Name("SwingLimitZ"))
+        {
+            m_swingLimitZ = value;
+            ValidateSwingLimitZ();
+        }
+        else if (propertyName == AZ::Name("TwistLimitLower"))
+        {
+            m_twistLimitLower = value;
+            ValidateTwistLimits();
+        }
+        else if (propertyName == AZ::Name("TwistLimitUpper"))
+        {
+            m_twistLimitUpper = value;
+            ValidateTwistLimits();
+        }
+        else
+        {
+            AZ_ErrorOnce("PhysX Joint Configuration", false, "Property %s not recognized.", propertyName.GetCStr());
+        }
+    }
+
+    void D6JointLimitConfiguration::ValidateSwingLimitY()
+    {
+        m_swingLimitY = AZ::GetClamp(m_swingLimitY, JointConstants::MinSwingLimitDegrees, 180.0f - JointConstants::MinSwingLimitDegrees);
+    }
+
+    void D6JointLimitConfiguration::ValidateSwingLimitZ()
+    {
+        m_swingLimitZ = AZ::GetClamp(m_swingLimitZ, JointConstants::MinSwingLimitDegrees, 180.0f - JointConstants::MinSwingLimitDegrees);
+    }
+
+    void D6JointLimitConfiguration::ValidateTwistLimits()
+    {
+        m_twistLimitLower = AZ::GetClamp(m_twistLimitLower, -180.0f, 180.0f);
+        m_twistLimitUpper = AZ::GetClamp(m_twistLimitUpper, -180.0f, 180.0f);
+        // make sure lower limit is less than upper limit
+        if (m_twistLimitLower > m_twistLimitUpper)
+        {
+            AZStd::swap(m_twistLimitLower, m_twistLimitUpper);
+        }
+        // make sure the range between the lower and upper limits exceeds the minimum range
+        if (m_twistLimitUpper < m_twistLimitLower + JointConstants::MinTwistLimitRangeDegrees)
+        {
+            if (m_twistLimitLower > 0.0f)
+            {
+                m_twistLimitLower = m_twistLimitUpper - JointConstants::MinTwistLimitRangeDegrees;
+            }
+            else
+            {
+                m_twistLimitUpper = m_twistLimitLower + JointConstants::MinTwistLimitRangeDegrees;
+            }
+        }
+    }
+
     void JointGenericProperties::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

@@ -58,6 +58,7 @@ namespace AZ
     {
         class Pass;
         class PassTemplate;
+        class PassTree;
         struct PassRequest;
         struct PassValidationResults;
         class AttachmentReadback;
@@ -170,7 +171,13 @@ namespace AZ
             const ParentPass* AsParent() const;
 
             // --- Utility functions ---
-            
+
+            //! Returns whether the pass is the root pass
+            bool IsRootPass() const { return m_flags.m_partOfHierarchy && (m_treeDepth == 0); }
+
+            //! Returns the PassTree from the pass's RenderPipeline (or nullptr if there isn't one)
+            PassTree* GetPassTree() const;
+
             //! Queues the pass to have Build() and Initialize() called by the PassSystem on frame update 
             void QueueForBuildAndInitialization();
 

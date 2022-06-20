@@ -32,17 +32,62 @@ namespace AzToolsFramework
     
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, actionIdentifier) });
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshMenu();
     }
 
     void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
     {
-        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, menuIdentifier) });
+        m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
+        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
         RefreshMenu();
     }
 
+    void EditorMenu::AddWidget(int sortKey, QWidget* widget)
+    {
+        m_menuItems.insert({ sortKey, MenuItem(widget) });
+        RefreshMenu();
+    }
+    
+    bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
+    {
+        return m_actionToSortKeyMap.contains(actionIdentifier);
+    }
+
+    bool EditorMenu::ContainsSubMenu(const AZStd::string& menuIdentifier) const
+    {
+        return m_subMenuToSortKeyMap.contains(menuIdentifier);
+    }
+
+    AZStd::optional<int> EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
+        if (actionIterator == m_actionToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return actionIterator->second;
+    }
+
+    AZStd::optional<int> EditorMenu::GetSubMenuSortKey(const AZStd::string& menuIdentifier) const
+    {
+        auto menuIterator = m_subMenuToSortKeyMap.find(menuIdentifier);
+        if (menuIterator == m_subMenuToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return menuIterator->second;
+    }
+
     QMenu* EditorMenu::GetMenu()
+    {
+        return m_menu;
+    }
+
+    const QMenu* EditorMenu::GetMenu() const
     {
         return m_menu;
     }
@@ -57,9 +102,7 @@ namespace AzToolsFramework
             {
             case MenuItemType::Action:
                 {
-                    QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier);
-
-                    if(action)
+                    if(QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier))
                     {
                         m_menu->addAction(action);
                     }
@@ -67,9 +110,7 @@ namespace AzToolsFramework
                 }
             case MenuItemType::SubMenu:
                 {
-                    QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier);
-
-                    if(menu)
+                    if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
                     {
                         m_menu->addMenu(menu);
                     }
@@ -78,6 +119,11 @@ namespace AzToolsFramework
             case MenuItemType::Separator:
                 {
                     m_menu->addSeparator();
+                    break;
+                }
+            case MenuItemType::Widget:
+                {
+                    m_menu->addAction(elem.second.m_widgetAction);
                     break;
                 }
             default:
@@ -95,13 +141,20 @@ namespace AzToolsFramework
         }
     }
 
+    EditorMenu::MenuItem::MenuItem(QWidget* widget)
+        : m_type(MenuItemType::Widget)
+    {
+        m_widgetAction = new QWidgetAction(widget->parent());
+        m_widgetAction->setDefaultWidget(widget);
+    }
+
     void EditorMenu::Initialize()
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-        AZ_Assert(m_actionManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of ActionManagerInterface");
+        AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
 
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-        AZ_Assert(m_menuManagerInterface, "EditorMenu::StaticInterfaces - Could not retrieve instance of MenuManagerInterface");
+        AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
     }
 
 } // namespace AzToolsFramework

@@ -170,7 +170,7 @@ namespace Blast
                 GetEntityId(), &AZ::Render::MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(),
                 model);
             AZ::Render::MaterialReceiverNotificationBus::Event(
-                GetEntityId(), &AZ::Render::MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                GetEntityId(), &AZ::Render::MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
         }
     }
 
@@ -180,7 +180,7 @@ namespace Blast
         {
             AZ::Render::MaterialAssignmentMap materials;
             AZ::Render::MaterialComponentRequestBus::EventResult(
-                materials, GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialOverrides);
+                materials, GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialMap);
 
             m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_meshAssets[0] }, materials);

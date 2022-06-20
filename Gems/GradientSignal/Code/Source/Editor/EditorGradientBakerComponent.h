@@ -8,6 +8,13 @@
 
 #pragma once
 
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Jobs/Job.h>
+#include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/mutex.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -21,11 +28,16 @@
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 
-
 namespace GradientSignal
 {
-    class GradientBakerConfig
-        : public AZ::ComponentConfig
+    enum class OutputFormat : AZ::u8
+    {
+        R8,
+        R16,
+        R32
+    };
+
+    class GradientBakerConfig : public AZ::ComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(GradientBakerConfig, AZ::SystemAllocator, 0);
@@ -34,6 +46,39 @@ namespace GradientSignal
 
         GradientSampler m_gradientSampler;
         AZ::EntityId m_inputBounds;
+        AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
+        OutputFormat m_outputFormat = OutputFormat::R32;
+        AZ::IO::Path m_outputImagePath;
+    };
+
+    class BakeImageJob
+        : public AZ::Job
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(BakeImageJob, AZ::ThreadPoolAllocator, 0);
+
+        BakeImageJob(
+            const GradientBakerConfig& configuration,
+            const AZ::IO::Path& fullPath,
+            AZ::Aabb inputBounds,
+            AZ::EntityId boundsEntityId);
+
+        virtual ~BakeImageJob();
+
+        void Process() override;
+        void CancelAndWait();
+        bool IsFinished() const;
+
+    private:
+        GradientBakerConfig m_configuration;
+        AZ::IO::Path m_outputImageAbsolutePath;
+        AZ::Aabb m_inputBounds;
+        AZ::EntityId m_boundsEntityId;
+
+        AZStd::mutex m_bakeImageMutex;
+        AZStd::atomic_bool m_shouldCancel = false;
+        AZStd::atomic_bool m_isFinished = false;
+        AZStd::condition_variable m_finishedNotify;
     };
 
     class EditorGradientBakerComponent
@@ -43,9 +88,11 @@ namespace GradientSignal
         , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private SectorDataNotificationBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorGradientBakerComponent, EditorGradientBakerComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT(
+            EditorGradientBakerComponent, EditorGradientBakerComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
         EditorGradientBakerComponent() = default;
@@ -81,6 +128,9 @@ namespace GradientSignal
         AZ::EntityId GetPreviewEntity() const override;
         AZ::Aabb GetPreviewBounds() const override;
 
+        //! AZ::TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
         void OnConfigurationChanged();
 
         // This is used by the preview so we can pass an invalid entity Id if our component is disabled
@@ -89,9 +139,14 @@ namespace GradientSignal
         void UpdatePreviewSettings() const;
         AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
+        void BakeImage();
+        void StartBakeImageJob();
+        bool IsBakeDisabled() const;
+
     private:
         GradientBakerConfig m_configuration;
         AZ::EntityId m_gradientEntityId;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        BakeImageJob* m_bakeImageJob = nullptr;
     };
-}
+} // namespace GradientSignal

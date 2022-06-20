@@ -8,13 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+
+namespace AZ
+{
+    class Capsule;
+    class Obb;
+    class Sphere;
+} // namespace AZ
 
 namespace Physics
 {
@@ -63,6 +70,7 @@ namespace Physics
         explicit SphereShapeConfiguration(float radius = ShapeConstants::DefaultSphereRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
+        AZ::Sphere ToSphere(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         float m_radius = ShapeConstants::DefaultSphereRadius;
     };
@@ -76,6 +84,7 @@ namespace Physics
         explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
+        AZ::Obb ToObb(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
@@ -90,8 +99,9 @@ namespace Physics
             float height = ShapeConstants::DefaultCapsuleHeight, float radius = ShapeConstants::DefaultCapsuleRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
+        AZ::Capsule ToCapsule(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
-        float m_height = ShapeConstants::DefaultCapsuleHeight;
+        float m_height = ShapeConstants::DefaultCapsuleHeight; //!< Total height, including hemispherical caps, oriented along z-axis.
         float m_radius = ShapeConstants::DefaultCapsuleRadius;
 
     private:
@@ -233,14 +243,14 @@ namespace Physics
         void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
         const AZ::Vector2& GetGridResolution() const;
         void SetGridResolution(const AZ::Vector2& gridSpacing);
-        int32_t GetNumColumnVertices() const;
-        int32_t GetNumColumnSquares() const;
-        void SetNumColumnVertices(int32_t numColumns);
-        int32_t GetNumRowVertices() const;
-        int32_t GetNumRowSquares() const;
-        void SetNumRowVertices(int32_t numRows);
+        size_t GetNumColumnVertices() const;
+        size_t GetNumColumnSquares() const;
+        void SetNumColumnVertices(size_t numColumns);
+        size_t GetNumRowVertices() const;
+        size_t GetNumRowSquares() const;
+        void SetNumRowVertices(size_t numRows);
         const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
-        void ModifySample(int32_t row, int32_t column, const Physics::HeightMaterialPoint& point);
+        void ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point);
         void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
         float GetMinHeightBounds() const;
         void SetMinHeightBounds(float minBounds);
@@ -251,9 +261,9 @@ namespace Physics
         //! The number of meters between each heightfield sample in x and y.
         AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.
-        int32_t m_numColumns{ 0 };
+        uint32_t m_numColumns{ 0 };
         //! The number of rows in the heightfield sample grid.
-        int32_t m_numRows{ 0 };
+        uint32_t m_numRows{ 0 };
         //! The minimum and maximum heights that can be used by this heightfield.
         //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
         float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};

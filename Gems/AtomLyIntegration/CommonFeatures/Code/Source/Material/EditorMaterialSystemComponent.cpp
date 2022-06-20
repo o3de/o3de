@@ -100,7 +100,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusConnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
-            MaterialReceiverNotificationBus::Router::BusRouterConnect();
+            MaterialComponentNotificationBus::Router::BusRouterConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -113,7 +113,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
-            MaterialReceiverNotificationBus::Router::BusRouterDisconnect();
+            MaterialComponentNotificationBus::Router::BusRouterDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
@@ -176,7 +176,7 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, materialAssignmentId);
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
                 if (!materialAssetId.IsValid())
                 {
                     return;
@@ -184,7 +184,7 @@ namespace AZ
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
                 AZ::Render::MaterialComponentRequestBus::EventResult(
-                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyValues,
                     materialAssignmentId);
 
                 AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -251,10 +251,10 @@ namespace AZ
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
         }
 
-        void EditorMaterialSystemComponent::OnMaterialAssignmentsChanged()
+        void EditorMaterialSystemComponent::OnMaterialSlotLayoutChanged()
         {
             // Deleting any preview saved for an entity whose material configuration is about to be invalidated
-            const AZ::EntityId entityId = *MaterialReceiverNotificationBus::GetCurrentBusId();
+            const AZ::EntityId entityId = *MaterialComponentNotificationBus::GetCurrentBusId();
             m_materialPreviews.erase(entityId);
         }
 
@@ -293,7 +293,7 @@ namespace AZ
             AzToolsFramework::ViewPaneOptions inspectorOptions;
             inspectorOptions.canHaveMultipleInstances = true;
             inspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
-            inspectorOptions.paneRect = QRect(50, 50, 400, 700);
+            inspectorOptions.paneRect = QRect(50, 50, 600, 1000);
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(

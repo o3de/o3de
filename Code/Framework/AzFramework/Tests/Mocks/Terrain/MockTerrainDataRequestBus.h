@@ -55,6 +55,7 @@ namespace UnitTest
         MOCK_METHOD1(SetTerrainSurfaceDataQueryResolution, void(float));
         MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
         MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
+        MOCK_CONST_METHOD1(TerrainAreaExistsInBounds, bool(const AZ::Aabb&));
         MOCK_CONST_METHOD3(GetHeight, float(const AZ::Vector3&, Sampler, bool*));
         MOCK_CONST_METHOD3(GetHeightFromVector2, float(const AZ::Vector2&, Sampler, bool*));
         MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));

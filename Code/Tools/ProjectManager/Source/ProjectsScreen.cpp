@@ -245,9 +245,9 @@ namespace O3DE::ProjectManager
 
                 if (!keepProject.contains(projectButtonsIter.key()))
                 {
+                    m_fileSystemWatcher->removePath(QDir::toNativeSeparators(projectButtonsIter.value()->GetProjectInfo().m_path + "/project.json"));
                     projectButtonsIter.value()->deleteLater();
                     projectButtonsIter = m_projectButtons.erase(projectButtonsIter);
-                    m_fileSystemWatcher->removePath(QDir::toNativeSeparators(projectButtonsIter.value()->GetProjectInfo().m_path + "/project.json"));
                 }
                 else
                 {
@@ -368,7 +368,11 @@ namespace O3DE::ProjectManager
             }
         }
 
-        m_stack->setCurrentWidget(m_projectsContent);
+        if (m_projectsContent)
+        {
+            m_stack->setCurrentWidget(m_projectsContent);
+        }
+
         m_projectsFlowLayout->update();
     }
 
@@ -584,7 +588,7 @@ namespace O3DE::ProjectManager
         if (showMessage)
         {
             QMessageBox::information(this,
-                tr("Project Should be rebuilt."),
+                tr("Project should be rebuilt."),
                 projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }
