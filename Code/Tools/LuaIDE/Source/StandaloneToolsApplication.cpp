@@ -74,14 +74,24 @@ namespace StandaloneTools
             }
         }
 
-        /*
+/*
+        // Check Application Entity
+        for (const auto& component : m_applicationEntity->GetComponents())
+        {
+            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+            {
+                targetManagement->SetTargetAsHost(true);
+            }
+        }
+
+        // Check Module Entities
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
             [](const AZ::ModuleData& moduleData)
             {
                 AZ::Entity* moduleEntity = moduleData.GetEntity();
                 for (const auto& component : moduleEntity->GetComponents())
-                {                    
+                {
                     if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
                     {
                         targetManagement->SetTargetAsHost(true);
@@ -89,7 +99,7 @@ namespace StandaloneTools
                 }
                 return true;
             });
-            */
+*/
 
         // For each provider not already added, add it.
         for (AZ::u32 providerId = 0; providerId < userSettingsAdded.size(); ++providerId)

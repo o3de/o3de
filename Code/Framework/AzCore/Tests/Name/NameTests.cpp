@@ -61,10 +61,13 @@ namespace UnitTest
             AZ::Name* head = &AZ::NameDictionary::Instance().m_deferredHead;
             size_t staticNameCount = 0;
             AZ::Name* current = head;
+            AZStd::set<AZ::Name::Hash> recordedNames;
             while (current != nullptr)
             {
-                if (current->m_data != nullptr)
+                // Add one entry to the count for every unique literal in the dictionary, compare by hash (which the name dictionary has guaranteed deduplicated for us)
+                if (current->m_data != nullptr && !recordedNames.contains(current->m_data->GetHash()))
                 {
+                    recordedNames.insert(current->m_data->GetHash());
                     ++staticNameCount;
                 }
                 current = current->m_nextName;
