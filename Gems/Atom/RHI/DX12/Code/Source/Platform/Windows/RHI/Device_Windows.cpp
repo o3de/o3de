@@ -634,6 +634,7 @@ namespace AZ
                         if (errorOccurred)
                         {
                             line = "===ERROR END===\n";
+                            dredLog.Write(line.data(), line.size());
                         }
 
                         currentNode = currentNode->pNext;
