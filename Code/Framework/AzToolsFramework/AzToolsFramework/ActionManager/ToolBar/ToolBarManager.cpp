@@ -175,7 +175,7 @@ namespace AzToolsFramework
                 continue;
             }
 
-            if (toolBarIterator->second.ContainsAction(actionIdentifier))
+            if (!toolBarIterator->second.ContainsAction(actionIdentifier))
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
                 couldNotRemoveAction = true;
@@ -206,6 +206,7 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
+        toolBarIterator->second.RefreshToolBar();
         return AZ::Success();
     }
 

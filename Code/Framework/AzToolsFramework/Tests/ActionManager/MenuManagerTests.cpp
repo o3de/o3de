@@ -69,6 +69,72 @@ namespace UnitTest
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
+    
+    TEST_F(ActionManagerFixture, AddActionsToMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        auto outcome = m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        auto outcome = m_menuManagerInterface->RemoveActionFromMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionFromMenu)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        auto outcome = m_menuManagerInterface->RemoveActionFromMenu("o3de.menu.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveActionsFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+        m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+
+        auto outcome = m_menuManagerInterface->RemoveActionsFromMenu("o3de.menu.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveMissingActionsFromMenu)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        m_menuManagerInterface->AddActionsToMenu("o3de.menu.test", actions);
+
+        auto outcome = m_menuManagerInterface->RemoveActionsFromMenu("o3de.menu.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
 
     TEST_F(ActionManagerFixture, GetUnregisteredMenu)
     {

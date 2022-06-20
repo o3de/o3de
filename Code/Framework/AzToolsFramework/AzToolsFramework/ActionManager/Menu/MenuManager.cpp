@@ -194,7 +194,7 @@ namespace AzToolsFramework
                 continue;
             }
 
-            if (menuIterator->second.ContainsAction(actionIdentifier))
+            if (!menuIterator->second.ContainsAction(actionIdentifier))
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
                 couldNotRemoveAction = true;
@@ -283,6 +283,7 @@ namespace AzToolsFramework
         }
 
         menuBarIterator->second.AddMenu(sortIndex, menuIdentifier);
+        menuBarIterator->second.RefreshMenuBar();
         return AZ::Success();
     }
     
@@ -303,6 +304,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddWidget(sortIndex, widget);
+        menuIterator->second.RefreshMenu();
 
         return AZ::Success();
     }
