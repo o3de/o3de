@@ -6,7 +6,7 @@
             "variant": "",
             "details": {
                 "name": "Repeater",
-                "category": "Nodeables",
+                "category": "Timing",
                 "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out."
             },
             "slots": [
