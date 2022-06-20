@@ -92,6 +92,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();
+        system->RegisterNodeAttribute<ComboBox>(ComboBox::StringList);
+
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
