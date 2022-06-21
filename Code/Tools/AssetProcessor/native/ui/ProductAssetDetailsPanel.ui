@@ -253,101 +253,8 @@
        </property>
        <layout class="QVBoxLayout" name="scrollableVerticalLayout">
         <item>
-         <layout class="QHBoxLayout" name="productAssetIdLayout">
-          <item>
-           <widget class="QLabel" name="productAssetIdTitleLabel">
-            <property name="styleSheet">
-             <string notr="true">font: bold;</string>
-            </property>
-            <property name="text">
-             <string>Product Asset ID:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="productAssetIdValueLabel">
-            <property name="text">
-             <string>Product asset ID here</string>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="productAssetIdSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="lastTimeProcessedLayout">
-          <item>
-           <widget class="QLabel" name="lastTimeProcessedTitleLabel">
-            <property name="styleSheet">
-             <string notr="true">font: bold;</string>
-            </property>
-            <property name="text">
-             <string>Last Time Processed:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lastTimeProcessedValueLabel">
-            <property name="text">
-             <string>lastTimeProcessed Here</string>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="lastTimeProcessedSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="jobKeyLayout">
-          <item>
-           <widget class="QLabel" name="jobKeyTitleLabel">
-            <property name="styleSheet">
-             <string notr="true">font: bold;</string>
-            </property>
-            <property name="text">
-             <string>Job Key:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
+         <layout class="QGridLayout" name="headerGrid" columnstretch="1,4">
+          <item row="2" column="1">
            <widget class="QLabel" name="jobKeyValueLabel">
             <property name="text">
              <string>jobKey Here</string>
@@ -357,37 +264,79 @@
             </property>
            </widget>
           </item>
-          <item>
-           <spacer name="jobKeySpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="platformLayout">
-          <item>
+          <item row="3" column="0">
            <widget class="QLabel" name="platformTitleLabel">
             <property name="styleSheet">
              <string notr="true">font: bold;</string>
             </property>
             <property name="text">
-             <string>Platform:</string>
+             <string>Platform</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="productAssetIdTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">font: bold;</string>
+            </property>
+            <property name="text">
+             <string>Product Asset ID</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="productAssetIdValueLabel">
+            <property name="text">
+             <string>Product asset ID here</string>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="sourceAssetTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">font: bold;</string>
+            </property>
+            <property name="text">
+             <string>Source Asset</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="lastTimeProcessedValueLabel">
+            <property name="text">
+             <string>lastTimeProcessed Here</string>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lastTimeProcessedTitleLabel">
+            <property name="styleSheet">
+             <string notr="true">font: bold;</string>
+            </property>
+            <property name="text">
+             <string>Last Time Processed</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <widget class="QLabel" name="platformValueLabel">
             <property name="text">
              <string>platform Here</string>
@@ -397,74 +346,48 @@
             </property>
            </widget>
           </item>
-          <item>
-           <spacer name="platformSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="sourceAssetLayout">
-          <item>
-           <widget class="QLabel" name="sourceAssetTitleLabel">
+          <item row="2" column="0">
+           <widget class="QLabel" name="jobKeyTitleLabel">
             <property name="styleSheet">
              <string notr="true">font: bold;</string>
             </property>
             <property name="text">
-             <string>Source Asset:</string>
+             <string>Job Key</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignVCenter">
-           <widget class="AssetProcessor::GoToButton" name="gotoAssetButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="sourceAssetValueLabel">
-            <property name="text">
-             <string>sourceAsset Here</string>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="sourceAssetSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="sourceAsset">
+            <item>
+             <widget class="AssetProcessor::GoToButton" name="gotoAssetButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="sourceAssetValueLabel">
+              <property name="text">
+               <string>sourceAsset Here</string>
+              </property>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
