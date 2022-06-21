@@ -21,11 +21,13 @@ namespace ScriptCanvasEditor
         // Simplifies the conversion of an AssetId to a string to avoid overly verbose trace calls
         inline AZStd::string AssetIdToString(AZ::Data::AssetId assetId) { return assetId.ToString<AZStd::string>(); }
 
-        // Given the full path to the asset, attempt to get the AssetInfo
+        // Given the full path to the source file, attempt to get the AssetInfo
         bool GetSourceInfo(AZStd::string_view fullPath, AZ::Data::AssetInfo& outAssetInfo);
         
+        // Given the full path to the source file, attempt to get the AssetInfo and watch folder
         AZ::Data::AssetInfo GetSourceInfo(const AZStd::string& sourceFilePath, AZStd::string& watchFolder);
 
+        // Given the full path to the source file, attempt to get the AssetInfo and assetType
         AZ::Data::AssetInfo GetSourceInfoByProductId(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType);
 
         void DumpAssetInfo(AZ::Data::AssetId assetId, const char* extra);

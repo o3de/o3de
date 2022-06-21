@@ -1256,7 +1256,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RemoveScriptCanvasAsset(const SourceHandle& assetId)
     {
-        AZ_TracePrintf("ScriptCanvas", "RemoveScriptCanvasAsset : %s", assetId.ToString().c_str());
+        AZ_TracePrintf("ScriptCanvas", "RemoveScriptCanvasAsset : %s\n", assetId.ToString().c_str());
         m_assetCreationRequests.erase(assetId);
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
@@ -1687,7 +1687,7 @@ namespace ScriptCanvasEditor
         {
             isValidFileName = true;
             suggestedFileFilter = SourceDescription::GetFileExtension();
-            suggestedFilename = sourceHandle.Path().c_str();
+            suggestedFilename = sourceHandle.Path().Native();
         }
         else
         {
@@ -1699,7 +1699,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                suggestedFilename = sourceHandle.Path().c_str();
+                suggestedFilename = sourceHandle.Path().Native();
             }
         }
         
@@ -1870,7 +1870,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SaveAs(AZStd::string_view path, SourceHandle sourceHandle)
     {
-        // clear the AZ::Uuid because it willS change
+        // clear the AZ::Uuid because it will change
         if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(sourceHandle, AZ::Uuid::CreateNull()), path))
         {
             sourceHandle = *relativeOption;
@@ -2427,7 +2427,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        AZ_TracePrintf("ScriptCanvas", "SetActiveAsset : from: %s to %s", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
+        AZ_TracePrintf("ScriptCanvas", "SetActiveAsset : from: %s to %s\n", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
 
         if (fileAssetId.IsGraphValid())
         {
@@ -2475,7 +2475,7 @@ namespace ScriptCanvasEditor
     {
         if (m_activeGraph.IsGraphValid())
         {
-            AZ_TracePrintf("ScriptCanvas", "RefreshActiveAsset : m_activeGraph (%s)", m_activeGraph.ToString().c_str());
+            AZ_TracePrintf("ScriptCanvas", "RefreshActiveAsset : m_activeGraph (%s)\n", m_activeGraph.ToString().c_str());
             if (auto view = m_tabBar->ModOrCreateTabView(m_tabBar->FindTab(m_activeGraph)))
             {
                 view->ShowScene(m_activeGraph.Get()->GetScriptCanvasId());
