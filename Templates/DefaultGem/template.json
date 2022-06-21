@@ -193,26 +193,6 @@
             "isTemplated": true
         },
         {
-            "file": "Platform/Android/android_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Linux/linux_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Mac/mac_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Windows/windows_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/iOS/ios_gem.cmake",
-            "isTemplated": true
-        },
-        {
             "file": "Registry/assetprocessor_settings.setreg",
             "isTemplated": true
         },
@@ -273,24 +253,6 @@
         },
         {
             "dir": "Code/Tests/Tools"
-        },
-        {
-            "dir": "Platform"
-        },
-        {
-            "dir": "Platform/Android"
-        },
-        {
-            "dir": "Platform/Linux"
-        },
-        {
-            "dir": "Platform/Mac"
-        },
-        {
-            "dir": "Platform/Windows"
-        },
-        {
-            "dir": "Platform/iOS"
         },
         {
             "dir": "Registry"
