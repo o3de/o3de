@@ -12,23 +12,40 @@
 
 namespace AzNetworking
 {
-    //! @class NetworkInputSerializer
-    //! @brief Input serializer for writing an object model into a bytestream.
-    class NetworkInputSerializer
-        : public ISerializer
+    enum class ValidateSerializeType : uint8_t
+    {
+        Bool,
+        Char,
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+        Uint8,
+        Uint16,
+        Uint32,
+        Uint64,
+        Float,
+        Double,
+        ByteArray,
+        ObjectStart,
+        ObjectEnd
+    };
+
+    const char* GetEnumString(ValidateSerializeType value);
+
+    //! @class SerializerTypeValidator
+    //! @brief A helper that can be used by any serializer to inject type information into the serialized data.
+    template <typename BASE_TYPE>
+    class TypeValidatingSerializer final
+        : public BASE_TYPE
     {
     public:
 
         //! Constructor.
-        //! @param buffer         input buffer to write to
+        //! @param buffer         output buffer to read from
         //! @param bufferCapacity capacity of the buffer in bytes
-        NetworkInputSerializer(uint8_t* buffer, uint32_t bufferCapacity);
-
-        //! Copies the provided bytes into the serialization output buffer.
-        //! @param data     pointer to the data buffer to copy
-        //! @param dataSize size of the data in bytes
-        //! @return boolean true on success, false if there was insufficient space to store all the data
-        bool CopyToBuffer(const uint8_t* data, uint32_t dataSize);
+        TypeValidatingSerializer(uint8_t* buffer, uint32_t bufferCapacity);
+        TypeValidatingSerializer(const uint8_t* buffer, uint32_t bufferCapacity);
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -51,25 +68,17 @@ namespace AzNetworking
         const uint8_t* GetBuffer() const override;
         uint32_t GetCapacity() const override;
         uint32_t GetSize() const override;
-        void ClearTrackedChangesFlag() override {}
-        bool GetTrackedChangesFlag() const override { return false; }
+        void ClearTrackedChangesFlag() override;
+        bool GetTrackedChangesFlag() const override;
         // ISerializer interfaces
 
     private:
 
-         //! Private copy operator, do not allow copying instances
-        NetworkInputSerializer& operator=(const NetworkInputSerializer&) = delete;
+        bool Validate(const char* name, ValidateSerializeType type);
 
-        template <typename ORIGINAL_TYPE>
-        bool SerializeBoundedValue(ORIGINAL_TYPE minValue, ORIGINAL_TYPE maxValue, ORIGINAL_TYPE inputValue);
-
-        template <typename SERIALIZE_TYPE>
-        bool SerializeBoundedValueHelper(SERIALIZE_TYPE serializeValue);
-
-        bool SerializeBytes(const uint8_t* data, uint32_t count);
-
-        uint32_t       m_bufferSize = 0;
-        const uint32_t m_bufferCapacity;
-        const uint8_t* m_buffer;
+        bool m_enabled = false;
+        bool m_validating = false;
     };
 }
+
+#include <AzNetworking/Serialization/TypeValidatingSerializer.inl>
