@@ -10,6 +10,7 @@ import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
+import scripting_utils.scripting_tools as scripting_tools
 from scripting_utils.scripting_constants import WAIT_TIME_3, SCRIPT_CANVAS_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,\
     TREE_VIEW_QT, NODE_CATEGORY_MATH
 
@@ -55,6 +56,11 @@ class NodeCategory_ExpandOnClick:
     :return: None
     """
 
+    def __init__(self):
+        self.editor_main_window = None
+        self.sc_editor = None
+        self.sc_editor_main_window = None
+
 
     def left_click_expander_button(self, node_palette_node_tree, category_index):
         rect_left_x = 1 # 1 pixel from the left side of the widget looks like where the expand button begins
@@ -90,14 +96,14 @@ class NodeCategory_ExpandOnClick:
         Report.critical_result(Tests.pane_open, general.is_pane_visible(SCRIPT_CANVAS_UI))
 
         # 2) Get the SC window objects
-        editor_window = pyside_utils.get_editor_main_window()
-        script_canvas_window = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-        if script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
-            action = pyside_utils.find_child_by_pattern(script_canvas_window, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        scripting_tools.initialize_editor_object(self)
+        scripting_tools.initialize_sc_editor_objects(self)
+        if self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
+            action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
             action.trigger()
         #wait for the node palette and other SC elements to render
-        helper.wait_for_condition(lambda: script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is not None, WAIT_TIME_3)
-        node_palette_widget = script_canvas_window.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+        helper.wait_for_condition(lambda: self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is not None, WAIT_TIME_3)
+        node_palette_widget = self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
         node_palette_node_tree = node_palette_widget.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
         node_palette_math_category = pyside_utils.find_child_by_pattern(node_palette_node_tree, NODE_CATEGORY_MATH)
 
