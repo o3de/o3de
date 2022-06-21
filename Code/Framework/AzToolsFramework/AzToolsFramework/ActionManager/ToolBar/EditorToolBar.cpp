@@ -32,6 +32,7 @@ namespace AzToolsFramework
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
         RefreshToolBar();
     }
@@ -40,6 +41,22 @@ namespace AzToolsFramework
     {
         m_toolBarItems.insert({ sortKey, ToolBarItem(widget) });
         RefreshToolBar();
+    }
+
+    bool EditorToolBar::ContainsAction(const AZStd::string& actionIdentifier) const
+    {
+        return m_actionToSortKeyMap.contains(actionIdentifier);
+    }
+
+    AZStd::optional<int> EditorToolBar::GetActionSortKey(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
+        if (actionIterator == m_actionToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return actionIterator->second;
     }
 
     QToolBar* EditorToolBar::GetToolBar()

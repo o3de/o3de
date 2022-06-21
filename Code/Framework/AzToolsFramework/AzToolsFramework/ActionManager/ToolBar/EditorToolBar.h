@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
 #include <QWidgetAction>
@@ -36,6 +37,12 @@ namespace AzToolsFramework
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
         
+        // Returns whether the action queried is contained in this toolbar.
+        bool ContainsAction(const AZStd::string& actionIdentifier) const;
+        
+        // Returns the sort key for the queried action, or 0 if it's not found.
+        AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
+
         // Returns the pointer to the ToolBar.
         QToolBar* GetToolBar();
         const QToolBar* GetToolBar() const;
@@ -63,6 +70,7 @@ namespace AzToolsFramework
 
         QToolBar* m_toolBar = nullptr;
         AZStd::multimap<int, ToolBarItem> m_toolBarItems;
+        AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
