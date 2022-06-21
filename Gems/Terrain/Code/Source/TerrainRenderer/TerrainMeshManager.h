@@ -126,12 +126,6 @@ namespace Terrain
             Count,
         };
 
-        struct VertexPosition
-        {
-            float m_posx;
-            float m_posy;
-        };
-
         struct StackSectorData
         {
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
@@ -208,7 +202,7 @@ namespace Terrain
             const AZ::RHI::DrawPacket* m_rhiDrawPacket;
         };
 
-        static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
+        static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R8G8_UNORM;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
         static constexpr uint32_t RayTracingQuads1D = 200;

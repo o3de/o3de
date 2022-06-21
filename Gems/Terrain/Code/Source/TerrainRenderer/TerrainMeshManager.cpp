@@ -687,14 +687,20 @@ namespace Terrain
 
         // Create x/y positions. These are the same for all sectors since they're in local space.
 
+        struct VertexPosition
+        {
+            uint8_t m_posx;
+            uint8_t m_posy;
+        };
+
         AZStd::vector<VertexPosition> m_xyPositions;
         m_xyPositions.resize_no_construct(GridVerts2D);
-        for (uint16_t y = 0; y < GridVerts1D; ++y)
+        for (uint8_t y = 0; y < GridVerts1D; ++y)
         {
-            for (uint16_t x = 0; x < GridVerts1D; ++x)
+            for (uint8_t x = 0; x < GridVerts1D; ++x)
             {
                 uint16_t zOrderCoord = m_vertexOrder.at(y * GridVerts1D + x);
-                m_xyPositions.at(zOrderCoord) = { aznumeric_cast<float>(x) / GridSize, aznumeric_cast<float>(y) / GridSize };
+                m_xyPositions.at(zOrderCoord) = { x, y };
             }
         }
 
@@ -1057,7 +1063,7 @@ namespace Terrain
 
                 ShaderObjectData objectSrgData;
                 objectSrgData.m_xyTranslation = { sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters };
-                objectSrgData.m_xyScale = gridMeters;
+                objectSrgData.m_xyScale = gridMeters * (256.0f / GridSize);
                 objectSrgData.m_lodLevel = lodLevel;
                 objectSrgData.m_rcpLodLevel = 1.0f / (lodLevel + 1);
                 sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
