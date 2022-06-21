@@ -42,13 +42,34 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) = 0;
 
-        //! Bind an Action to a ToolBar.
+        //! Add an Action to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the ToolBar.
         //! @param sortIndex An integer defining the position the action should appear in the ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
+
+        //! Add multiple Actions to a ToolBar. Saves time as it only updates the toolbar once at the end.
+        //! @param toolBarIdentifier The identifier for the ToolBar the actions are being added to.
+        //! @param actions A vector of pairs of identifiers for the actions to add to the toolbar and their sort position.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddActionsToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) = 0;
+
+        //! Removes an Action from a ToolBar.
+        //! @param toolBarIdentifier The identifier for the ToolBar the action is being removed from.
+        //! @param actionIdentifier The identifier for the action to remove from the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RemoveActionFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Removes multiple Actions from a Menu.
+        //! @param toolBarIdentifier The identifier for the ToolBar the actions are being removed from.
+        //! @param actionIdentifiers A vector of identifiers for the actions to remove from the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RemoveActionsFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) = 0;
 
         //! Add a Separator to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the separator is being added to.

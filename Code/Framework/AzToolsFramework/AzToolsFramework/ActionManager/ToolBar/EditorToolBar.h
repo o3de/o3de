@@ -32,10 +32,14 @@ namespace AzToolsFramework
         explicit EditorToolBar(const AZStd::string& name);
 
         static void Initialize();
-
+        
+        // Add Menu Items
         void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
+
+        // Remove Menu Items
+        void RemoveAction(AZStd::string actionIdentifier);
         
         // Returns whether the action queried is contained in this toolbar.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
@@ -47,9 +51,10 @@ namespace AzToolsFramework
         QToolBar* GetToolBar();
         const QToolBar* GetToolBar() const;
 
-    private:
+        // Clears the menu and creates a new one from the EditorMenu information.
         void RefreshToolBar();
 
+    private:
         enum class ToolBarItemType
         {
             Action = 0,

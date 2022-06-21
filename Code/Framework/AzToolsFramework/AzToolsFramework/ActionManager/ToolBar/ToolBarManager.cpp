@@ -72,6 +72,126 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddAction(sortIndex, actionIdentifier);
+        toolBarIterator->second.RefreshToolBar();
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::AddActionsToToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add actions to toolbar \"%s\" - toolbar has not been registered.", toolBarIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "ToolBar Manager - Errors on AddActionsToToolBar for toolbar \"%s\" - some actions were not added:", toolBarIdentifier.c_str());
+        bool couldNotAddAction = false;
+
+        for (const auto& pair : actions)
+        {
+            QAction* action = m_actionManagerInterface->GetAction(pair.first);
+            if (!action)
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddAction = true;
+                continue;
+            }
+
+            if (toolBarIterator->second.ContainsAction(pair.first))
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddAction = true;
+                continue;
+            }
+
+            toolBarIterator->second.AddAction(pair.second, pair.first);
+        }
+
+        toolBarIterator->second.RefreshToolBar();
+
+        if (couldNotAddAction)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
+        return AZ::Success();
+    }
+    
+    ToolBarManagerOperationResult ToolBarManager::RemoveActionFromToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not remove action \"%s\" from toolbar \"%s\" - toolbar has not been registered.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        if (!action)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not remove action \"%s\" from toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        if (!toolBarIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not remove action \"%s\" from toolbar \"%s\" - toolbar does not contain action.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.RemoveAction(actionIdentifier);
+        toolBarIterator->second.RefreshToolBar();
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::RemoveActionsFromToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not remove actions from toolbar \"%s\" - toolbar has not been registered.", toolBarIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "ToolBar Manager - Errors on RemoveActionsFromMenu for toolbar \"%s\" - some actions were not removed:", toolBarIdentifier.c_str());
+        bool couldNotRemoveAction = false;
+
+        for (const AZStd::string& actionIdentifier : actionIdentifiers)
+        {
+            QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+            if (!action)
+            {
+                errorMessage += AZStd::string(" ") + actionIdentifier;
+                couldNotRemoveAction = true;
+                continue;
+            }
+
+            if (!toolBarIterator->second.ContainsAction(actionIdentifier))
+            {
+                errorMessage += AZStd::string(" ") + actionIdentifier;
+                couldNotRemoveAction = true;
+                continue;
+            }
+
+            toolBarIterator->second.RemoveAction(actionIdentifier);
+        }
+
+        toolBarIterator->second.RefreshToolBar();
+
+        if (couldNotRemoveAction)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
         return AZ::Success();
     }
 
@@ -86,6 +206,7 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
+        toolBarIterator->second.RefreshToolBar();
         return AZ::Success();
     }
 
