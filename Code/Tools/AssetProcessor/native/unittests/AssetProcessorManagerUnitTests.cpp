@@ -2200,8 +2200,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc");
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[0].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[1].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name)) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name)) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name.c_str())) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name.c_str())) == 0);
         Q_EMIT UnitTestPassed();
 
         // Stop file watching, disconnect everything and process all events so nothing gets called after the method finishes

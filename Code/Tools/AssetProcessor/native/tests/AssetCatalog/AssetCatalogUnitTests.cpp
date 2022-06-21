@@ -266,8 +266,8 @@ namespace AssetProcessor
             AssetRecognizer ignore_rec;
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            ignore_rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-            ignore_rec.m_platformSpecs.insert("android", AssetInternalSpec::Skip);
+            ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;

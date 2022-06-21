@@ -18,6 +18,7 @@
 
 #include <native/resourcecompiler/RCBuilder.h>
 #include <native/utilities/StatsCapture.h>
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QLocale>
 #include <QTranslator>
@@ -487,6 +488,10 @@ bool ApplicationManager::StartAZFramework()
 
     //Registering all the Components
     m_frameworkApp.RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
+
+    AZ::SerializeContext* serializeContext{};
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+    AssetProcessor::PlatformConfiguration::Reflect(serializeContext);
 
     Reflect();
 
