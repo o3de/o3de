@@ -245,7 +245,7 @@ namespace Multiplayer
     {
         InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
-        return m_networkInterface->Connect(address) != InvalidConnectionId;
+        return m_networkInterface->Connect(address, cl_clientport) != InvalidConnectionId;
     }
 
     void MultiplayerSystemComponent::Terminate(AzNetworking::DisconnectReason reason)
@@ -716,20 +716,31 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::EntityRpcs& packet
     )
     {
-        bool handledAll = true;
         if (connection->GetUserData() == nullptr)
         {
             AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing, entity updates size %u", aznumeric_cast<uint32_t>(packet.GetEntityRpcs().size()));
-            return handledAll;
+            return true;
         }
 
         EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
-        for (AZStd::size_t i = 0; i < packet.GetEntityRpcs().size(); ++i)
+        return replicationManager.HandleEntityRpcMessages(connection, packet.ModifyEntityRpcs());
+    }
+
+    bool MultiplayerSystemComponent::HandleRequest
+    (
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerPackets::RequestReplicatorReset& packet
+    )
+    {
+        if (connection->GetUserData() == nullptr)
         {
-            handledAll &= replicationManager.HandleEntityRpcMessage(connection, packet.ModifyEntityRpcs()[i]);
+            AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing");
+            return true;
         }
 
-        return handledAll;
+        EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
+        return replicationManager.HandleEntityResetMessages(connection, packet.GetEntityIds());
     }
 
     bool MultiplayerSystemComponent::HandleRequest

@@ -365,10 +365,11 @@ namespace AssetProcessor
         }
     }
 
-    AZ::SettingsRegistryInterface::VisitResponse RCVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+    AZ::SettingsRegistryInterface::VisitResponse SimpleJobVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
         AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
     {
-        constexpr AZStd::string_view RCNamePrefix = "RC ";
+        constexpr AZStd::string_view RCNamePrefix = "RC "; // RC = Resource Compiler
+        constexpr AZStd::string_view SJNamePrefix = "SJ "; // SJ = Simple Job
         switch (action)
         {
         case AZ::SettingsRegistryInterface::VisitAction::Begin:
@@ -377,24 +378,24 @@ namespace AssetProcessor
             {
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
-            if (valueName.starts_with(RCNamePrefix))
+            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
             {
                 // Extract the substr that is part of the valueName "Exclude *"
-                AZStd::string rcName = valueName.substr(RCNamePrefix.size());
-                m_rcNameStack.push(rcName);
+                AZStd::string rcName = valueName.substr(SJNamePrefix.size());
+                m_simpleJobNameStack.push(rcName);
 
-                RCAssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
+                auto& assetRecognizer = m_assetRecognizers.emplace_back();
                 assetRecognizer.m_recognizer.m_name = QString::fromUtf8(rcName.c_str(), aznumeric_cast<int>(rcName.size()));
             }
         }
         break;
         case AZ::SettingsRegistryInterface::VisitAction::End:
         {
-            if (valueName.starts_with(RCNamePrefix))
+            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
             {
-                AZ_Assert(!m_rcNameStack.empty(), "RC name stack should not be empty. More stack pops, than pushes");
+                AZ_Assert(!m_simpleJobNameStack.empty(), "SimpleJob name stack should not be empty. More stack pops, than pushes");
                 ApplyParamsOverrides(jsonPath);
-                m_rcNameStack.pop();
+                m_simpleJobNameStack.pop();
             }
         }
         break;
@@ -403,32 +404,32 @@ namespace AssetProcessor
             break;
         }
 
-        return !m_rcNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
+        return !m_simpleJobNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
             : AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == rcName;
-        });
+            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            {
+                return assetRecognizer.m_recognizer.m_name == sjName;
+            });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "ignore")
         {
             assetRecognizer.m_ignore = value;
@@ -455,56 +456,56 @@ namespace AssetProcessor
         }
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == rcName;
-        });
+            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            {
+                return assetRecognizer.m_recognizer.m_name == sjName;
+            });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
             assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        // Find AssetRecognizer identified by the top entry in the name stack
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
+        // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == rcName;
-        });
+            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            {
+                return assetRecognizer.m_recognizer.m_name == sjName;
+            });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
 
         // The "pattern" and "glob" entries were previously parsed by QSettings which un-escapes the values
         // To compensate for it the AssetProcessorPlatformConfig.ini was escaping the
@@ -572,28 +573,28 @@ namespace AssetProcessor
         }
     }
 
-    void RCVisitor::ApplyParamsOverrides(AZStd::string_view path)
+    void SimpleJobVisitor::ApplyParamsOverrides(AZStd::string_view path)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
+            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
         {
-            return assetRecognizer.m_recognizer.m_name == rcName;
+            return assetRecognizer.m_recognizer.m_name == sjName;
         });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
 
         /* so in this particular case we want to end up with an AssetPlatformSpec struct that
             has only got the platforms that 'matter' in it
@@ -606,7 +607,7 @@ namespace AssetProcessor
             tags=mobile
 
             and you encounter a recognizer like:
-            [RC blahblah]
+            [SJ blahblah]
             pattern=whatever
             params=abc
             mac=skip
@@ -631,17 +632,17 @@ namespace AssetProcessor
         */
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
-            AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
-            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
+            AZStd::string_view currentParams = assetRecognizer.m_defaultParams;
+            // The "/Amazon/AssetProcessor/Settings/SJ */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
             overrideParamsKey /= path;
             overrideParamsKey /= platform.m_identifier;
 
             AZ::SettingsRegistryInterface::FixedValueString overrideParamsValue;
-            // Check if the enabled platform identifier matches a key within the "RC *" object
+            // Check if the enabled platform identifier matches a key within the "SJ *" object
             if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
             {
-                currentRCParams = overrideParamsValue;
+                currentParams = overrideParamsValue;
             }
             else
             {
@@ -652,33 +653,18 @@ namespace AssetProcessor
                     if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
                     {
                         // if we get here it means we found a tag that applies to this platform
-                        currentRCParams = overrideParamsValue;
+                        currentParams = overrideParamsValue;
                         break;
                     }
                 }
             }
 
             // now generate a platform spec as long as we're not skipping
-            if (!AZ::StringFunc::Equal(currentRCParams, "skip"))
+            if (!AZ::StringFunc::Equal(currentParams, "skip"))
             {
                 auto platformIdentifier = QString::fromUtf8(platform.m_identifier.data(),
                     aznumeric_cast<int>(platform.m_identifier.size()));
-                AssetPlatformSpec spec;
-                // a special case exists where this is "overriding" an underlying version.
-                // in this case, unless some string was specified for the overrider, we use the underlying one
-                if (!currentRCParams.empty())
-                {
-                    spec.m_extraRCParams = QString::fromUtf8(currentRCParams.data(), aznumeric_cast<int>(currentRCParams.size()));
-                }
-                else
-                {
-                    if (assetRecognizer.m_recognizer.m_platformSpecs.contains(platformIdentifier))
-                    {
-                        // carry over the prior
-                        spec.m_extraRCParams = assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier].m_extraRCParams;
-                    }
-                }
-                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = spec;
+                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = AssetInternalSpec::Copy;
             }
         }
     }
@@ -1332,17 +1318,17 @@ namespace AssetProcessor
             m_excludeAssetRecognizers[excludeRecognizer.m_name] = AZStd::move(excludeRecognizer);
         }
 
-        RCVisitor rcVisitor(*settingsRegistry, m_enabledPlatforms);
-        settingsRegistry->Visit(rcVisitor, AssetProcessorSettingsKey);
-        for (auto&& rcRecognizer : rcVisitor.m_assetRecognizers)
+        SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
+        settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
+        for (auto&& simpleJobRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
-            if (rcRecognizer.m_ignore)
+            if (simpleJobRecognizer.m_ignore)
             {
-                m_assetRecognizers.remove(rcRecognizer.m_recognizer.m_name);
+                m_assetRecognizers.remove(simpleJobRecognizer.m_recognizer.m_name);
             }
-            else if (!rcRecognizer.m_recognizer.m_platformSpecs.empty())
+            else if (!simpleJobRecognizer.m_recognizer.m_platformSpecs.empty())
             {
-                m_assetRecognizers[rcRecognizer.m_recognizer.m_name] = rcRecognizer.m_recognizer;
+                m_assetRecognizers[simpleJobRecognizer.m_recognizer.m_name] = simpleJobRecognizer.m_recognizer;
             }
         }
 
