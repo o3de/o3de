@@ -6,23 +6,19 @@
  *
  */
 
-
+#define THREADS 16
 
 #include <Atom/Features/SrgSemantics.azsli>
-
-#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
-#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
-#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
-#include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
-#include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
-#include <Atom/Features/Shadow/Shadow.azsli>
-#include <Atom/RPI/Math.azsli>
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
 
+#include <Atom/RPI/Math.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
+#include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
+#include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
+#include <Atom/Features/Shadow/Shadow.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Sampler PointSampler
     {
@@ -60,17 +56,17 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DArray<float> m_directionalShadowmapsESM;
     Texture2DMS<float> m_depth;
     Texture2D<float> m_depthLinear;
+    RWTexture2D<float> m_fullscreenShadowOutput;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#define USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT 1
 #include <Atom/Features/Shadow/DirectionalLightShadowCalculator.azsli>
 
-void ComputeWorldNormalAndPosition(VSOutput IN, out float3 outPositionWS, out float3 outNormalWS)
+void ComputeWorldNormalAndPosition(const uint2 screenPos, out float3 outPositionWS, out float3 outNormalWS)
 {
-    const int2   screenPos = IN.m_position.xy;          // The coordinates of the screen pixel being shaded
-    const float2 screenUV  = IN.m_texCoord.xy;          // The UV value [0, 1] of the screen pixel
     const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
     const float2 halfPixel = pixelSize * 0.5f;
+    const float2 screenUV  = screenPos * pixelSize + halfPixel;             // The UV value [0, 1] of the screen pixel
 
     // Do 2 depth gather ops to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
     //  W Z
@@ -106,14 +102,13 @@ void ComputeWorldNormalAndPosition(VSOutput IN, out float3 outPositionWS, out fl
     outNormalWS   = mul(ViewSrg::m_viewMatrixInverse, float4(normalVS, 0) ).xyz;
 }
 
-PSOutput MainPS(VSOutput IN)
+[numthreads(THREADS, THREADS, 1)]
+void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uint3 dispatch_id: SV_DispatchThreadID, uint linear_id : SV_GroupIndex)
 {
     float3 positionWS;
     float3 normalWS;
-    ComputeWorldNormalAndPosition(IN, positionWS, normalWS);
+    ComputeWorldNormalAndPosition(dispatch_id.xy, positionWS, normalWS);
    
-    PSOutput OUT;
-
     DirectionalShadowCalculator calc;
     calc.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
     calc.SetWorldNormal(normalWS);
@@ -123,10 +118,5 @@ PSOutput MainPS(VSOutput IN)
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
     calc.SetWorldPos(positionWS);
 
-    float vis = calc.GetVisibility();
-    OUT.m_color = saturate(vis.xxxx);
-   
-    return OUT; 
+   PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
 }
-
-
