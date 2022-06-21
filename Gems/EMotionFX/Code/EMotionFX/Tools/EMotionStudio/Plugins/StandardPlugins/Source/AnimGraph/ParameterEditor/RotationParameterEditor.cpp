@@ -13,10 +13,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Parameter/RotationParameter.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/AttributeQuaternion.h>
 
 #include <QPushButton>
@@ -25,7 +25,10 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(RotationParameterEditor, EMStudio::UIAllocator, 0)
 
-    RotationParameterEditor::RotationParameterEditor(EMotionFX::AnimGraph* animGraph, const EMotionFX::ValueParameter* valueParameter, const AZStd::vector<MCore::Attribute*>& attributes)
+    RotationParameterEditor::RotationParameterEditor(
+        EMotionFX::AnimGraph* animGraph,
+        const EMotionFX::ValueParameter* valueParameter,
+        const AZStd::vector<MCore::Attribute*>& attributes)
         : ValueParameterEditor(animGraph, valueParameter, attributes)
         , m_currentValue(AZ::Quaternion::CreateIdentity())
         , m_gizmoButton(nullptr)
@@ -36,7 +39,8 @@ namespace EMStudio
 
     RotationParameterEditor::~RotationParameterEditor()
     {
-        if(m_rotationManipulator.Registered()) {
+        if (m_rotationManipulator.Registered())
+        {
             m_rotationManipulator.Unregister();
             AZ::TickBus::Handler::BusDisconnect();
         }
@@ -50,10 +54,8 @@ namespace EMStudio
             return;
         }
 
-        serializeContext->Class<RotationParameterEditor, ValueParameterEditor>()
-            ->Version(1)
-            ->Field("value", &RotationParameterEditor::m_currentValue)
-        ;
+        serializeContext->Class<RotationParameterEditor, ValueParameterEditor>()->Version(1)->Field(
+            "value", &RotationParameterEditor::m_currentValue);
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)
@@ -63,15 +65,14 @@ namespace EMStudio
 
         editContext->Class<RotationParameterEditor>("Rotation parameter editor", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RotationParameterEditor::m_currentValue, "", "")
-                ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ValueParameterEditor::GetDescription)
-                ->Attribute(AZ::Edit::Attributes::Min, &RotationParameterEditor::GetMinValue)
-                ->Attribute(AZ::Edit::Attributes::Max, &RotationParameterEditor::GetMaxValue)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RotationParameterEditor::OnValueChanged)
-                ->Attribute(AZ::Edit::Attributes::ReadOnly, &ValueParameterEditor::IsReadOnly)
-        ;
+            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ValueParameterEditor::GetDescription)
+            ->Attribute(AZ::Edit::Attributes::Min, &RotationParameterEditor::GetMinValue)
+            ->Attribute(AZ::Edit::Attributes::Max, &RotationParameterEditor::GetMaxValue)
+            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RotationParameterEditor::OnValueChanged)
+            ->Attribute(AZ::Edit::Attributes::ReadOnly, &ValueParameterEditor::IsReadOnly);
     }
 
     void RotationParameterEditor::UpdateValue()
@@ -102,8 +103,15 @@ namespace EMStudio
     QWidget* RotationParameterEditor::CreateGizmoWidget(const AZStd::function<void()>& manipulatorCallback)
     {
         m_gizmoButton = new QPushButton();
-        EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
-        QObject::connect(m_gizmoButton, &QPushButton::clicked, [this]() { ToggleTranslationGizmo(); });
+        EMStudioManager::MakeTransparentButton(
+            m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
+        QObject::connect(
+            m_gizmoButton,
+            &QPushButton::clicked,
+            [this]()
+            {
+                ToggleTranslationGizmo();
+            });
         m_gizmoButton->setCheckable(true);
         m_gizmoButton->setEnabled(!IsReadOnly());
         m_manipulatorCallback = manipulatorCallback;
@@ -111,16 +119,19 @@ namespace EMStudio
         m_rotationManipulator.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
         m_rotationManipulator.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         m_rotationManipulator.ConfigureView(
-            AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+            AzToolsFramework::RotationManipulatorRadius(),
+            AzFramework::ViewportColors::XAxisColor,
+            AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
-        m_rotationManipulator.InstallMouseMoveCallback([this](
-             const AzToolsFramework::AngularManipulator::Action& action
-        ) {
-            SetValue(action.LocalOrientation());
-            if(m_manipulatorCallback) {
-                m_manipulatorCallback();
-            }
-        });
+        m_rotationManipulator.InstallMouseMoveCallback(
+            [this](const AzToolsFramework::AngularManipulator::Action& action)
+            {
+                SetValue(action.LocalOrientation());
+                if (m_manipulatorCallback)
+                {
+                    m_manipulatorCallback();
+                }
+            });
 
         return m_gizmoButton;
     }
@@ -172,11 +183,13 @@ namespace EMStudio
     {
         if (m_gizmoButton->isChecked())
         {
-            EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3Gizmo.svg", "Show/Hide translation gizmo for visual manipulation");
+            EMStudioManager::MakeTransparentButton(
+                m_gizmoButton, "Images/Icons/Vector3Gizmo.svg", "Show/Hide translation gizmo for visual manipulation");
         }
         else
         {
-            EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
+            EMStudioManager::MakeTransparentButton(
+                m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
         }
 
         if (m_rotationManipulator.Registered())
@@ -190,4 +203,4 @@ namespace EMStudio
             m_rotationManipulator.Register(g_animManipulatorManagerId);
         }
     }
-}
+} // namespace EMStudio
