@@ -33,6 +33,12 @@ namespace AzToolsFramework
         MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) override;
         MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddActionsToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) override;
+        MenuManagerOperationResult RemoveActionFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) override;
+        MenuManagerOperationResult RemoveActionsFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) override;
         MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;

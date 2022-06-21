@@ -123,12 +123,12 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool HashSerializer::BeginObject([[maybe_unused]] const char* name)
     {
         return true;
     }
 
-    bool HashSerializer::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool HashSerializer::EndObject([[maybe_unused]] const char* name)
     {
         return true;
     }

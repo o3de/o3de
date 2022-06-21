@@ -27,20 +27,45 @@ namespace AzToolsFramework
     void EditorToolBar::AddSeparator(int sortKey)
     {
         m_toolBarItems.insert({ sortKey, ToolBarItem() });
-        RefreshToolBar();
     }
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
-        RefreshToolBar();
+    }
+
+    void EditorToolBar::RemoveAction(AZStd::string actionIdentifier)
+    {
+        auto sortKeyIterator = m_actionToSortKeyMap.find(actionIdentifier);
+        if (sortKeyIterator == m_actionToSortKeyMap.end())
+        {
+            return;
+        }
+
+        int sortKey = sortKeyIterator->second;
+
+        auto multimapIterator = m_toolBarItems.find(sortKey);
+        if (multimapIterator == m_toolBarItems.end())
+        {
+            return;
+        }
+
+        while (multimapIterator->first == sortKey)
+        {
+            if (multimapIterator->second.m_identifier == actionIdentifier)
+            {
+                m_toolBarItems.erase(multimapIterator);
+                return;
+            }
+
+            ++multimapIterator;
+        }
     }
 
     void EditorToolBar::AddWidget(int sortKey, QWidget* widget)
     {
         m_toolBarItems.insert({ sortKey, ToolBarItem(widget) });
-        RefreshToolBar();
     }
 
     bool EditorToolBar::ContainsAction(const AZStd::string& actionIdentifier) const
