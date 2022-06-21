@@ -54,23 +54,23 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Agent Configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(nullptr, &Config::m_agentHeight, "Agent Height",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_agentHeight, "Agent Height",
                         "Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable.")
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 3.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_agentMaxClimb, "Agent Max Climb",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_agentMaxClimb, "Agent Max Climb",
                         "Maximum ledge height that is considered to still be traversable.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_agentMaxSlope, "Agent Max Slope",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_agentMaxSlope, "Agent Max Slope",
                         "The maximum slope that is considered walkable.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Max, 90.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
 
-                    ->DataElement(nullptr, &Config::m_agentRadius, "Agent Radius",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_agentRadius, "Agent Radius",
                         "The distance to erode/shrink the walkable area of the heightfield away from obstructions.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
@@ -79,84 +79,84 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Editor-only Configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(nullptr, &RecastNavigationMeshConfig::m_enableEditorPreview,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationMeshConfig::m_enableEditorPreview,
                         "Editor Preview", "If enabled, frequently calculates navigation mesh and draws in the Editor viewport."
                         "Does not affect game mode.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
 
                     // Debug configuration
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Debug Configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(nullptr, &RecastNavigationMeshConfig::m_enableDebugDraw,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationMeshConfig::m_enableDebugDraw,
                         "Debug Draw", "If enabled, draw the navigation mesh in game mode. Does not affect Editor preview.")
 
                     // Advanced configuration
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced Configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
-                    ->DataElement(nullptr, &Config::m_tileSize, "Tile Size",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_tileSize, "Tile Size",
                         "The width/height size of tile's on the xy-plane.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_borderSize, "Border Size",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_borderSize, "Border Size",
                         "The additional dimension around the tile to collect additional geometry in order to connect to adjacent tiles.")
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 10)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " voxels")
 
-                    ->DataElement(nullptr, &Config::m_cellHeight, "Voxel Height",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_cellHeight, "Voxel Height",
                         "The y-axis cell size to use for fields.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_cellSize, "Voxel Size",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_cellSize, "Voxel Size",
                         "The xz-plane cell size to use for fields. This defines the voxel sizes for other configuration attributes.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_detailSampleDist, "Detail Sample Distance",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_detailSampleDist, "Detail Sample Distance",
                         "Sets the sampling distance to use when generating the detail mesh. (For height detail only.)")
                     ->Attribute(AZ::Edit::Attributes::SoftMin, 0.9f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
 
-                    ->DataElement(nullptr, &Config::m_detailSampleMaxError, "Detail Sample Max Error",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_detailSampleMaxError, "Detail Sample Max Error",
                         "The maximum distance the detail mesh surface should deviate from heightfield data. (For height detail only.)")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_edgeMaxError, "Edge Max Error",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_edgeMaxError, "Edge Max Error",
                         "The maximum distance a simplified contour's border edges should deviate the original raw contour.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_edgeMaxLen, "Edge Max Length",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_edgeMaxLen, "Edge Max Length",
                         "The maximum allowed length for contour edges along the border of the mesh.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " world units")
 
-                    ->DataElement(nullptr, &Config::m_filterLedgeSpans, "Filter Ledge Spans",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_filterLedgeSpans, "Filter Ledge Spans",
                         "A ledge is a span with one or more neighbors whose maximum is further away than walkableClimb "
                         " from the current span's maximum."
                         " This method removes the impact of the overestimation of conservative voxelization"
                         " so the resulting mesh will not have regions hanging in the air over ledges.")
-                    ->DataElement(nullptr, &Config::m_filterLowHangingObstacles, "Filter Low Hanging Obstacles",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_filterLowHangingObstacles, "Filter Low Hanging Obstacles",
                         "Allows the formation of walkable regions that will flow over low lying objects such as curbs, and up structures such as stairways. ")
-                    ->DataElement(nullptr, &Config::m_filterWalkableLowHeightSpans, "Filter Walkable Low Height Spans",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_filterWalkableLowHeightSpans, "Filter Walkable Low Height Spans",
                         "For this filter, the clearance above the span is the distance from the span's maximum to the next higher span's minimum. (Same grid column.)")
 
-                    ->DataElement(nullptr, &Config::m_maxVerticesPerPoly, "Max Vertices Per Poly",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_maxVerticesPerPoly, "Max Vertices Per Poly",
                         "The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.")
                     ->Attribute(AZ::Edit::Attributes::Min, 3)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " vertices")
 
-                    ->DataElement(nullptr, &Config::m_regionMergeSize, "Region Merge Size",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_regionMergeSize, "Region Merge Size",
                         "Any regions with a span count smaller than this value will, if possible, be merged with larger regions. [Limit: >=0]")
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " voxels")
 
-                    ->DataElement(nullptr, &Config::m_regionMinSize, "Region Min Size",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_regionMinSize, "Region Min Size",
                         "The minimum number of cells allowed to form isolated island areas.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " voxels")

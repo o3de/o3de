@@ -30,9 +30,9 @@ namespace RecastNavigation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(nullptr, &EditorDetourNavigationComponent::m_navQueryEntityId,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_navQueryEntityId,
                         "Navigation Mesh", "Entity with Recast Navigation Mesh component")
-                    ->DataElement(nullptr, &EditorDetourNavigationComponent::m_nearestDistance,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_nearestDistance,
                         "Nearest Distance", "If FindPath APIs are given points that are outside the navigation mesh, then "
                         "look for the nearest point on the navigation mesh within this distance from the specified positions.")
                     ;
