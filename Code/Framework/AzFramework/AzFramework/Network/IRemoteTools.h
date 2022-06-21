@@ -188,11 +188,17 @@ namespace AzFramework
     public:
         AZ_RTTI(IRemoteTools, "{1446BADE-E6F7-4E3C-8D37-669A544DB964}");
 
-        //! Registers a Remote Tools service with a pre-defined key, name and target port
+        //! Registers the application as a client of a Remote Tools service with a pre-defined key, name and target port
         //! @param key A Crc32 key used to identify this service
         //! @param name The string name of this service
         //! @param port The port on which this service connects
-        virtual void RegisterToolingService(AZ::Crc32 key, AZ::Name name, uint16_t port) = 0;
+        virtual void RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port) = 0;
+
+        //! Registers the application as a host of a Remote Tools service with a pre-defined key, name and target port
+        //! @param key A Crc32 key used to identify this service
+        //! @param name The string name of this service
+        //! @param port The port on which this service starts listening on registration
+        virtual void RegisterToolingServiceHost(AZ::Crc32 key, AZ::Name name, uint16_t port) = 0;
 
         //! Gets pending received messages for a given Remote Tools Service
         //! @param key The key of the service to retrieve messages for

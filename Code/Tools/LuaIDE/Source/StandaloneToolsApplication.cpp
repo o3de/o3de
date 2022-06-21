@@ -8,12 +8,15 @@
 
 #include "StandaloneToolsApplication.h"
 
+#include <Source/Utils/LuaIDEConstants.h>
+
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -60,7 +63,6 @@ namespace StandaloneTools
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
         EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
-        //EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor
@@ -73,33 +75,6 @@ namespace StandaloneTools
                 userSettingsAdded[userSettings->GetProviderId()] = true;
             }
         }
-
-/*
-        // Check Application Entity
-        for (const auto& component : m_applicationEntity->GetComponents())
-        {
-            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
-            {
-                targetManagement->SetTargetAsHost(true);
-            }
-        }
-
-        // Check Module Entities
-        AZ::ModuleManagerRequestBus::Broadcast(
-            &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [](const AZ::ModuleData& moduleData)
-            {
-                AZ::Entity* moduleEntity = moduleData.GetEntity();
-                for (const auto& component : moduleEntity->GetComponents())
-                {
-                    if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
-                    {
-                        targetManagement->SetTargetAsHost(true);
-                    }
-                }
-                return true;
-            });
-*/
 
         // For each provider not already added, add it.
         for (AZ::u32 providerId = 0; providerId < userSettingsAdded.size(); ++providerId)
@@ -114,21 +89,14 @@ namespace StandaloneTools
 
     bool BaseApplication::StartDebugService()
     {
-        AzNetworking::INetworkInterface* networkInterface =
-            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("LuaRemoteTools"));
-        if (networkInterface)
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
         {
-            const auto console = AZ::Interface<AZ::IConsole>::Get();
-            uint16_t target_port = 0;//AzFramework::DefaultTargetPort;
-
-            if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
-            {
-                AZ_Assert(false, "TargetManagement port could not be found");
-            }
-
-            networkInterface->Listen(target_port);
+            remoteToolsInterface->RegisterToolingServiceHost(
+                LUADebugger::LuaToolsKey, LUADebugger::LuaToolsName, LUADebugger::LuaToolsPort);
             return true;
         }
+
         return false;
     }
 

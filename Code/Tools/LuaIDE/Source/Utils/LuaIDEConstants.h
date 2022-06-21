@@ -13,4 +13,5 @@ namespace LUADebugger
 {
     static const AZ::Name LuaToolsName = AZ::Name("LuaRemoteTools");
     static const AZ::Crc32 LuaToolsKey = AZ_CRC(LuaToolsName.GetCStr());
+    static const uint16_t LuaToolsPort = 6777;
 }

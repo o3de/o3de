@@ -36,7 +36,9 @@ namespace RemoteTools
         message.netInterface = netInterface;
         message.connectionId = connectionId;
         message.datum = datum;
+        m_outboxMutex.lock();
         m_outbox.push_back(message);
+        m_outboxMutex.unlock();
     }
 
     void RemoteToolsOutboxThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
@@ -56,9 +58,9 @@ namespace RemoteTools
                 const size_t totalSize = outBoxDatum.size();
                 size_t outSize = outBoxDatum.size();
 
-                while (outSize > 0)
+                while (outSize > 0 && outBoxElem.netInterface != nullptr)
                 {
-                    // Fragment the message into NeighborMessageBuffer packet sized chunks and send
+                    // Fragment the message into RemoteToolsMessageBuffer packet sized chunks and send
                     size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(RemoteToolsBufferSize));
                     RemoteToolsPackets::RemoteToolsMessage tmPacket;
                     tmPacket.SetPersistentId(outBoxElem.datum.first);

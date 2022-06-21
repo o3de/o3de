@@ -15,7 +15,11 @@
 
 namespace RemoteTools
 {
-    static const AzNetworking::CidrAddress ToolingCidrFilter = AzNetworking::CidrAddress();
+    static constexpr const char* RemoteServerAddress = "127.0.0.1";
+
+    AZ_CVAR(uint16_t, remote_outbox_interval, 50, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to process outbound messages.");
+    AZ_CVAR(uint16_t, remote_join_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
+    
 
     void RemoteToolsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -78,27 +82,43 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::Activate()
     {
-        AZ::SystemTickBus::Handler::BusConnect();
+        m_outboxThread = AZStd::make_unique<RemoteToolsOutboxThread>(remote_outbox_interval);
+        m_joinThread = AZStd::make_unique<RemoteToolsJoinThread>(remote_join_interval, this);
     }
 
     void RemoteToolsSystemComponent::Deactivate()
     {
-        AZ::SystemTickBus::Handler::BusDisconnect();
+        m_joinThread = nullptr;
+        m_outboxThread = nullptr;
+        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+        {
+            AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(registryIt->second.m_name);
+        }
+        m_entryRegistry.clear();
     }
 
-    void RemoteToolsSystemComponent::OnSystemTick()
-    {
-#if !defined(AZ_RELEASE_BUILD)
-        // If we're not the host and not connected to one, attempt to connect on a fixed interval
-
-#endif
-    }
-
-    void RemoteToolsSystemComponent::RegisterToolingService(AZ::Crc32 key, AZ::Name name, uint16_t port)
+    void RemoteToolsSystemComponent::RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
         m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        m_entryRegistry[key].m_isHost = false;
         m_entryRegistry[key].m_name = name;
-        m_entryRegistry[key].m_port = port;
+        m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
+
+        AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
+            name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+        netInterface->SetTimeoutMs(AZ::TimeMs(0));
+    }
+
+    void RemoteToolsSystemComponent::RegisterToolingServiceHost(AZ::Crc32 key, AZ::Name name, uint16_t port)
+    {
+        m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        m_entryRegistry[key].m_isHost = true;
+        m_entryRegistry[key].m_name = name;
+
+        AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
+            name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+        netInterface->SetTimeoutMs(AZ::TimeMs(0));
+        netInterface->Listen(port);
     }
 
     const AzFramework::ReceivedRemoteToolsMessages* RemoteToolsSystemComponent::GetReceivedMessages(AZ::Crc32 key) const
@@ -457,6 +477,8 @@ namespace RemoteTools
                 }
             }
         }
+
+        m_joinThread->UpdateStatus();
     }
 
 } // namespace RemoteTools

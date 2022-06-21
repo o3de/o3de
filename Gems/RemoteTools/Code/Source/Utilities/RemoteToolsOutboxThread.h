@@ -29,7 +29,6 @@ namespace RemoteTools
     };
     typedef AZStd::deque<OutboundRemoteToolsMessage, AZ::OSStdAllocator> ToolingOutbox;
 
-
     //! @class ToolingJoinThread
     //! @brief A class for polling a connection to the host target
     class RemoteToolsOutboxThread final : public AzNetworking::TimedThread
@@ -37,8 +36,6 @@ namespace RemoteTools
     public:
         RemoteToolsOutboxThread(int updateRate);
         ~RemoteToolsOutboxThread() override;
-
-        
 
         void PushOutboxMessage(AzNetworking::INetworkInterface* netInterface,
             AzNetworking::ConnectionId connectionId, OutboundToolingDatum&& datum);

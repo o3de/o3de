@@ -25,8 +25,9 @@ namespace RemoteTools
 
     struct RemoteToolsRegistryEntry
     {
+        bool m_isHost;
         AZ::Name m_name;
-        uint16_t m_port;
+        AzNetworking::IpAddress m_ip;
 
         AzFramework::RemoteToolsEndpointContainer m_availableTargets;
         AzFramework::RemoteToolsEndpointInfo m_lastTarget;
@@ -43,8 +44,9 @@ namespace RemoteTools
         : public AZ::Component
         , public AzFramework::IRemoteTools
         , public AzNetworking::IConnectionListener
-        , private AZ::SystemTickBus::Handler
     {
+        friend class RemoteToolsJoinThread;
+
     public:
         AZ_COMPONENT(RemoteToolsSystemComponent, "{ca110b7c-795e-4fa5-baa9-a115d7e3d86e}");
 
@@ -68,11 +70,6 @@ namespace RemoteTools
             const RemoteToolsPackets::RemoteToolsMessage& packet);
 
     protected:
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::SystemTickBus
-        void OnSystemTick() override;
-        //////////////////////////////////////////////////////////////////////////
-
         ////////////////////////////////////////////////////////////////////////
         // IConnectionListener interface
         AzNetworking::ConnectResult ValidateConnect(
@@ -105,8 +102,9 @@ namespace RemoteTools
 
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::IRemoteTools interface implementation
+        void RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port) override;
 
-        void RegisterToolingService(AZ::Crc32 key, AZ::Name name, uint16_t port) override;
+        void RegisterToolingServiceHost(AZ::Crc32 key, AZ::Name name, uint16_t port) override;
 
         const AzFramework::ReceivedRemoteToolsMessages* GetReceivedMessages(AZ::Crc32 key) const override;
 

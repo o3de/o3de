@@ -10,15 +10,25 @@
 
 #include <AzNetworking/Utilities/TimedThread.h>
 
+namespace AZ
+{
+    class Name;
+}
+
 namespace RemoteTools
 {
+    class RemoteToolsSystemComponent;
+
     //! @class ToolingJoinThread
     //! @brief A class for polling a connection to the host target
     class RemoteToolsJoinThread final : public AzNetworking::TimedThread
     {
     public:
-        RemoteToolsJoinThread(int updateRate);
+        RemoteToolsJoinThread(int updateRate, RemoteToolsSystemComponent* component);
         ~RemoteToolsJoinThread() override;
+
+        //! Checks network status on all registered services and updates thread state if polling is required
+        void UpdateStatus();
 
     private:
         AZ_DISABLE_COPY_MOVE(RemoteToolsJoinThread);
@@ -32,5 +42,7 @@ namespace RemoteTools
         //! Invoked on thread update to poll for a Target host to join
         //! @param updateRateMs The amount of time the thread can spend in OnUpdate in ms
         void OnUpdate(AZ::TimeMs updateRateMs) override;
+
+        RemoteToolsSystemComponent* m_remoteToolsComponent;
     };
 } // namespace RemoteTools
