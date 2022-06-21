@@ -6,6 +6,7 @@
  *
  */
 
+#include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
 #include <EMotionFX/Source/MotionInstance.h>
@@ -275,6 +276,26 @@ namespace EMotionFX
         m_flags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY;
     }
 
+    void Pose::GetLocalSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const
+    {
+        EMotionFX::Transform result;
+        GetLocalSpaceTransform(nodeIndex, &result);
+        (*outResult) = result.ToAZTransform();
+    }
+
+    void Pose::GetModelSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const
+    {
+        EMotionFX::Transform result;
+        GetModelSpaceTransform(nodeIndex, &result);
+        (*outResult) = result.ToAZTransform();
+    }
+    
+    void Pose::GetWorldSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const
+    {
+        EMotionFX::Transform result;
+        GetWorldSpaceTransform(nodeIndex, &result);
+        (*outResult) = result.ToAZTransform();
+    }
 
     // get the local transform
     const Transform& Pose::GetLocalSpaceTransform(size_t nodeIndex) const
@@ -283,13 +304,11 @@ namespace EMotionFX
         return m_localSpaceTransforms[nodeIndex];
     }
 
-
     const Transform& Pose::GetModelSpaceTransform(size_t nodeIndex) const
     {
         UpdateModelSpaceTransform(nodeIndex);
         return m_modelSpaceTransforms[nodeIndex];
     }
-
 
     Transform Pose::GetWorldSpaceTransform(size_t nodeIndex) const
     {
@@ -324,9 +343,23 @@ namespace EMotionFX
         *outResult = m_modelSpaceTransforms[nodeIndex];
     }
 
+    void Pose::SetLocalSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateGlobalTransforms)
+    {
+        SetLocalSpaceTransform(nodeIndex, EMotionFX::Transform(newTransform), invalidateGlobalTransforms);
+    }
+
+    void Pose::SetModelSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateChildModelSpaceTransforms) 
+    {
+        SetModelSpaceTransform(nodeIndex, EMotionFX::Transform(newTransform), invalidateChildModelSpaceTransforms);
+    }
+
+    void Pose::SetWorldSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateChildModelSpaceTransforms)
+    {
+        SetWorldSpaceTransform(nodeIndex, EMotionFX::Transform(newTransform), invalidateChildModelSpaceTransforms);
+    }
 
     // set the local transform
-    void Pose::SetLocalSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateGlobalTransforms)
+    void Pose::SetLocalSpaceTransform(size_t nodeIndex, const EMotionFX::Transform& newTransform, bool invalidateGlobalTransforms)
     {
         m_localSpaceTransforms[nodeIndex] = newTransform;
         m_flags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY;

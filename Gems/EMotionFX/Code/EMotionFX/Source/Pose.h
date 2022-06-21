@@ -63,13 +63,34 @@ namespace EMotionFX
         const Transform& GetModelSpaceTransform(size_t nodeIndex) const;
         Transform GetWorldSpaceTransform(size_t nodeIndex) const;
 
-        void GetLocalSpaceTransform(size_t nodeIndex, Transform* outResult) const;
-        void GetModelSpaceTransform(size_t nodeIndex, Transform* outResult) const;
-        void GetWorldSpaceTransform(size_t nodeIndex, Transform* outResult) const;
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void GetLocalSpaceTransform(size_t nodeIndex, EMotionFX::Transform* outResult) const;
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void GetModelSpaceTransform(size_t nodeIndex, EMotionFX::Transform* outResult) const;
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void GetWorldSpaceTransform(size_t nodeIndex, EMotionFX::Transform* outResult) const;
 
-        void SetLocalSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateModelSpaceTransforms = true);
-        void SetModelSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
-        void SetWorldSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+        void GetLocalSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const;
+        void GetModelSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const;
+        void GetWorldSpaceTransform(size_t nodeIndex, AZ::Transform* outResult) const;
+
+
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void SetLocalSpaceTransform(size_t nodeIndex, const EMotionFX::Transform& newTransform, bool invalidateModelSpaceTransforms = true);
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void SetModelSpaceTransform(size_t nodeIndex, const EMotionFX::Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+        // O3DE_DEPRECATION_NOTICE(GHI-XX)  
+        //! @deprecated use GetLocalSpaceTransform with AZ::Transform
+        void SetWorldSpaceTransform(size_t nodeIndex, const EMotionFX::Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+
+        void SetLocalSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateModelSpaceTransforms = true);
+        void SetModelSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+        void SetWorldSpaceTransform(size_t nodeIndex, const AZ::Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
 
         void UpdateModelSpaceTransform(size_t nodeIndex) const;
         void UpdateLocalSpaceTransform(size_t nodeIndex) const;
