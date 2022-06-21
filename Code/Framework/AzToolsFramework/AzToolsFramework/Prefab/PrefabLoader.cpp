@@ -129,9 +129,6 @@ namespace AzToolsFramework
 
             SanitizeLoadedTemplate(prefabDom);
 
-            // Mark the file as being in progress.
-            progressedFilePathsSet.emplace(relativePath);
-
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(relativePath);
 

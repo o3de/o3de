@@ -195,8 +195,6 @@ namespace AzToolsFramework
                 AZ_Assert(prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface unavailable");
                 TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
                 PropagateTemplateChanges(rootTemplateId);
-
-                m_prefabLoader.RemoveTemplateFromEditor();
             }
         }
 
@@ -207,7 +205,6 @@ namespace AzToolsFramework
             {
                 auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
                 if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
-
                 {
                     // We need to initialize a queue here because once all linked instances of a template are updated,
                     // we will find all the linkIds corresponding to the updated template and add them to this queue again.
