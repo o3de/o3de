@@ -23,8 +23,6 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 
-#pragma optimize("", off)
-
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -190,6 +188,14 @@ namespace AzToolsFramework
             if (found != m_templateFilePathToIdMap.end())
             {
                 RemoveTemplate(found->second);
+
+                 PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+                AZ_Assert(prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface unavailable");
+                TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                PropagateTemplateChanges(rootTemplateId);
+
                 m_prefabLoader.RemoveTemplateFromEditor();
             }
         }
@@ -1172,4 +1178,3 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)

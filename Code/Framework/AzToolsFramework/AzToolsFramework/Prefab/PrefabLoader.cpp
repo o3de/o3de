@@ -140,20 +140,6 @@ namespace AzToolsFramework
             m_prefabSystemComponentInterface->UpdatePrefabTemplate(loadedTemplateId, prefabDom);
         }
 
-        void PrefabLoader::RemoveTemplateFromEditor()
-        {
-            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-            if (!prefabEditorEntityOwnershipInterface)
-            {
-                AZ::Failure(AZStd::string("Could not focus on root prefab instance - internal error "
-                                          "(PrefabEditorEntityOwnershipInterface unavailable)."));
-            }
-            TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(rootTemplateId);
-        }
-
         TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
         {
             if (!IsValidPrefabPath(filePath))
