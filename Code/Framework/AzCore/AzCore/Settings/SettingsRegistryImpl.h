@@ -84,8 +84,8 @@ namespace AZ
         bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
-        void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
-        void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
+        void SetNotifyForMergeOperations(bool notify) override;
+        bool GetNotifyForMergeOperations() const override;
 
         void SetUseFileIO(bool useFileIo) override;
 
@@ -137,7 +137,7 @@ namespace AZ
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
-        JsonApplyPatchSettings m_applyPatchSettings;
+        bool m_mergeOperationNotify{};
 
         bool m_useFileIo{};
     };

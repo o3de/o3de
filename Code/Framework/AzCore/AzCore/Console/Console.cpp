@@ -645,8 +645,6 @@ namespace AZ
             IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
-        JsonApplyPatchSettings applyPatchSettings;
-        applyPatchSettings.m_reporting = ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this };
-        settingsRegistry.SetApplyPatchSettings(applyPatchSettings);
+        settingsRegistry.SetNotifyForMergeOperations(true);
     }
 }

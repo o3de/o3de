@@ -374,13 +374,12 @@ namespace AZ
         virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
-        //! Stores the settings structure which is used when merging settings to the Settings Registry
-        //! using JSON Merge Patch or JSON Merge Patch.
-        //! The settings contain an issue reporting callback which can be used to track patching process.
-        //! Potential application of the reporting callback could be to update a UI whenever a key receives an updated value
-        //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
-        virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
-        virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+        //! Indicates whether the Merge functions should send notification events for individual operations
+        //! using JSON Patch or JSON Merge Patch.
+        //! @param notify If true, the patching operations are forwarded through the NotifyEvent
+        virtual void SetNotifyForMergeOperations(bool notify) = 0;
+        //! @return returns true if merge operations signals the notification events
+        virtual bool GetNotifyForMergeOperations() const = 0;
 
         //! Stores option to indicate whether the FileIOBase instance should be used for file operations
         //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
