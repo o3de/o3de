@@ -112,6 +112,19 @@ def expand_qt_container_rows(self, object_name):
             QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
 
 
+def open_node_palette(self):
+    """
+    function for checking if node palette is on and if not turn it on
+
+    param self: the script calling this function
+
+    returns none
+    """
+    if self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
+        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        action.trigger()
+
+
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
     function for searching the script canvas node palette for user defined nodes. function takes a number of retries as
@@ -131,6 +144,31 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
         if pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None:
             break
 
+def get_node_palette_node_tree_qt_object (self):
+    """
+    function for retrieving the tree view qt object for the node palette
+
+    params self: the script calling this function
+
+    returns: a tree view qt object
+    """
+    node_palette_widget = self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+    node_palette_node_tree = node_palette_widget.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+    return node_palette_node_tree
+
+
+def get_node_palette_category_qt_object(self, category_name):
+    """
+    function for retrieving the qt object for a node palette category
+
+    param self: the script calling this function
+    param category_name: string for the category label you are searching node palette for
+
+    returns: the qt object for the node palette category
+    """
+    node_palette_node_tree = get_node_palette_node_tree_qt_object(self)
+    node_palette_category = pyside_utils.find_child_by_pattern(node_palette_node_tree, category_name)
+    return node_palette_category
 
 def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
@@ -199,3 +237,4 @@ def get_sc_editor_node_inspector(sc_editor):
         action.trigger()
 
     return node_inspector_widget
+
