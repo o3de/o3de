@@ -48,7 +48,7 @@ namespace MaterialEditor
         void OpenSettings() override;
         void OpenHelp() override;
 
-        AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};

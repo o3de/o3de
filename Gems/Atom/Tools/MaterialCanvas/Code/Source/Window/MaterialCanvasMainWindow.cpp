@@ -27,9 +27,9 @@ namespace MaterialCanvas
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
         addToolBar(m_toolBar);
 
-        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
-        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/MaterialInspector");
-        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
+        m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
+        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
         // Set up the dockable viewport widget
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
@@ -98,19 +98,19 @@ namespace MaterialCanvas
     void MaterialCanvasMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialCanvasMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
     {
         Base::OnDocumentCleared(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialCanvasMainWindow::OnDocumentError(const AZ::Uuid& documentId)
     {
         Base::OnDocumentError(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialCanvasMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)

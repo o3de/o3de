@@ -65,6 +65,7 @@ namespace AzToolsFramework
     void EditorAction::SetName(AZStd::string name)
     {
         m_name = AZStd::move(name);
+        m_action->setText(m_name.c_str());
     }
 
     const AZStd::string& EditorAction::GetDescription() const
@@ -75,6 +76,7 @@ namespace AzToolsFramework
     void EditorAction::SetDescription(AZStd::string description)
     {
         m_description = AZStd::move(description);
+        m_action->setToolTip(m_description.c_str());
     }
 
     const AZStd::string& EditorAction::GetCategory() const
@@ -105,18 +107,40 @@ namespace AzToolsFramework
 
     QAction* EditorAction::GetAction()
     {
-        // Update the action to ensure it is visualized correctly.
-        Update();
-
         return m_action;
+    }
+    
+    void EditorAction::SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
+    {
+        if (enabledStateCallback)
+        {
+            m_enabledStateCallback = AZStd::move(enabledStateCallback);
+            m_action->setEnabled(m_enabledStateCallback());
+        }
+    }
+
+    bool EditorAction::HasEnabledStateCallback() const
+    {
+        return m_checkStateCallback != nullptr;
+    }
+
+    bool EditorAction::IsEnabled() const
+    {
+        return m_action->isEnabled();
     }
 
     void EditorAction::Update()
     {
         if (m_checkStateCallback)
         {
-            // Refresh checkable action value.
+            // Refresh checkable state.
             m_action->setChecked(m_checkStateCallback());
+        }
+
+        if (m_enabledStateCallback)
+        {
+            // Refresh enabled state.
+            m_action->setEnabled(m_enabledStateCallback());
         }
     }
 

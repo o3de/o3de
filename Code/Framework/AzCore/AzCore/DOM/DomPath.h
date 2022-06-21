@@ -62,15 +62,6 @@ namespace AZ::Dom
     };
 } // namespace AZ::Dom
 
-namespace AZStd
-{
-    template<>
-    struct hash<AZ::Dom::PathEntry>
-    {
-        size_t operator()(const AZ::Dom::PathEntry& entry) const;
-    };
-} // namespace AZStd
-
 namespace AZ::Dom
 {
     //! Represents a path, represented as a series of PathEntry values, to a position in a Value.
@@ -165,3 +156,21 @@ namespace AZ::Dom
         ContainerType m_entries;
     };
 } // namespace AZ::Dom
+
+namespace AZStd
+{
+    template<>
+    struct hash<AZ::Dom::PathEntry>
+    {
+        size_t operator()(const AZ::Dom::PathEntry& entry) const;
+    };
+
+    template<>
+    struct hash<AZ::Dom::Path>
+    {
+        size_t operator()(const AZ::Dom::Path& path) const
+        {
+            return AZStd::hash_range(path.begin(), path.end());
+        }
+    };
+} // namespace AZStd

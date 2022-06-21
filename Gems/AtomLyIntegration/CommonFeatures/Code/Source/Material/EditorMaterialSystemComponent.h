@@ -30,7 +30,7 @@ namespace AZ
             , public AZ::EntitySystemBus::Handler
             , public EditorMaterialSystemComponentNotificationBus::Handler
             , public EditorMaterialSystemComponentRequestBus::Handler
-            , public MaterialReceiverNotificationBus::Router
+            , public MaterialComponentNotificationBus::Router
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
@@ -69,8 +69,8 @@ namespace AZ
             void OnRenderMaterialPreviewComplete(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
 
-            //! MaterialReceiverNotificationBus::Router overrides...
-            void OnMaterialAssignmentsChanged() override;
+            //! MaterialComponentNotificationBus::Router overrides...
+            void OnMaterialSlotLayoutChanged() override;
 
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
