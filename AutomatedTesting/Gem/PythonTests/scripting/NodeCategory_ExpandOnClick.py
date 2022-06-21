@@ -63,7 +63,7 @@ class NodeCategory_ExpandOnClick:
         rect_left_x = 1 # 1 pixel from the left side of the widget looks like where the expand button begins
         rect_center_y = node_palette_node_tree.visualRect(category_index).center().y()
         click_position = QtCore.QPoint(rect_left_x, rect_center_y)
-        #click position relative to node palette tree view and not screen space xy
+        # click position relative to node palette tree view and not screen space xy
         QtTest.QTest.mouseClick(node_palette_node_tree.viewport(),
                                 QtCore.Qt.LeftButton,
                                 QtCore.Qt.NoModifier,
@@ -79,6 +79,16 @@ class NodeCategory_ExpandOnClick:
                                  QtCore.Qt.LeftButton,
                                  QtCore.Qt.NoModifier,
                                  item_index_center)
+
+    def wait_and_verify_category_expanded(self, test_case, node_palette_node_tree, node_palette_math_category):
+        category_has_expanded = helper.wait_for_condition(
+            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(test_case, category_has_expanded)
+
+    def wait_and_verify_category_collapsed(self, test_case, node_palette_node_tree, node_palette_math_category):
+        category_has_expanded = helper.wait_for_condition(
+            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
+        Report.result(test_case, not category_has_expanded)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -96,7 +106,9 @@ class NodeCategory_ExpandOnClick:
         scripting_tools.initialize_editor_object(self)
         scripting_tools.initialize_sc_editor_objects(self)
         scripting_tools.open_node_palette(self)
-        #wait for the node palette and other SC elements to render
+
+        # wait for the node palette and other SC elements to render
+
         helper.wait_for_condition(lambda: self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is not None, WAIT_TIME_3)
         node_palette_node_tree = scripting_tools.get_node_palette_node_tree_qt_object(self)
         node_palette_math_category = scripting_tools.get_node_palette_category_qt_object(self, NODE_CATEGORY_MATH)
@@ -106,27 +118,19 @@ class NodeCategory_ExpandOnClick:
 
         # 4) Left-Click on a node category arrow to expand it and verify it's expanded
         self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
-        category_has_expanded = helper.wait_for_condition(
-            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(Tests.click_expand, category_has_expanded)
+        self.wait_and_verify_category_expanded(Tests.click_expand, node_palette_node_tree, node_palette_math_category)
 
         # 5) Left-Click on a node category arrow to collapse it and verify it's collapsed
         self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
-        category_has_expanded = helper.wait_for_condition(
-            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(Tests.click_collapse, not category_has_expanded)
+        self.wait_and_verify_category_collapsed(Tests.click_collapse, node_palette_node_tree, node_palette_math_category)
 
         # 6) Double-Click on a node category to expand it then verify it's expanded
         self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
-        category_has_expanded = helper.wait_for_condition(
-            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(Tests.dClick_expand, category_has_expanded)
+        self.wait_and_verify_category_expanded(Tests.dClick_expand, node_palette_node_tree, node_palette_math_category)
 
         # 7) Double-Click on a node category to collapse it and verify it's collapsed
         self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
-        category_has_expanded = helper.wait_for_condition(
-            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(Tests.dClick_collapse, not category_has_expanded)
+        self.wait_and_verify_category_collapsed(Tests.dClick_collapse, node_palette_node_tree, node_palette_math_category)
 
 
 test = NodeCategory_ExpandOnClick()
