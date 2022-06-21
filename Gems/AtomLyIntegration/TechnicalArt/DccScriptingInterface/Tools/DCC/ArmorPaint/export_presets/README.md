@@ -8,3 +8,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # -------------------------------------------------------------------------
 
 This folder contains the AmrorPaint Texture Export Presets for O3DE.
+
+To install:
+
+Inside of the ArmorPaint software, the top menu bar under File > Export Textures...
+
+Use the Presets tab.
+
+Press the Import button and find the o3de.json export preset file found in this repositoy. 
+
+Now, under the Export Textures Tab, Preset menu dropdown now should have an o3de option to select.
