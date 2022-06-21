@@ -31,6 +31,7 @@ static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.me
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
+static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
 static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
 static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
 static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
@@ -137,6 +138,29 @@ void EditorActionsHandler::InitializeActions()
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnFileSave();
+            }
+        );
+    }
+
+    // --- Game Actions
+
+    // Play Game
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Play Game";
+        actionProperties.m_description = "Activate the game input mode";
+        actionProperties.m_category = "Game";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.game.play", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnViewSwitchToGame();
+            },
+            [cryEdit = m_cryEditApp]()
+            {
+                return !cryEdit->IsExportingLegacyData() && GetIEditor()->IsLevelLoaded();
             }
         );
     }
@@ -301,6 +325,11 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&Game";
         m_menuManagerInterface->RegisterMenu(GameMenuIdentifier, menuProperties);
     }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Play Game";
+            m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
+        }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Tools";
@@ -316,16 +345,16 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&Help";
         m_menuManagerInterface->RegisterMenu(HelpMenuIdentifier, menuProperties);
     }
-    {
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Documentation";
-        m_menuManagerInterface->RegisterMenu(HelpDocumentationMenuIdentifier, menuProperties);
-    }
-    {
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "GameDev Resources";
-        m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
-    }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Documentation";
+            m_menuManagerInterface->RegisterMenu(HelpDocumentationMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "GameDev Resources";
+            m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
+        }
 
     // Add Menus to MenuBar
     // We space the sortkeys by 100 to allow external systems to add menus in-between.
@@ -346,6 +375,14 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 100);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 200);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 300);
+    }
+
+    // Game
+    {
+        m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, PlayGameMenuIdentifier, 100);
+        {
+            m_menuManagerInterface->AddActionToMenu(PlayGameMenuIdentifier, "o3de.action.game.play", 100);
+        }
     }
 
     // Help - Search Documentation Widget
@@ -392,6 +429,13 @@ void EditorActionsHandler::InitializeToolBars()
     // Set the toolbars
     m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(ToolsToolBarIdentifier));
     m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(PlayControlsToolBarIdentifier));
+    
+    // Add actions to each toolbar
+
+    // Play Controls
+    {
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.play", PlayGameMenuIdentifier, 100);
+    }
 }
 
 QWidget* EditorActionsHandler::CreateDocsSearchWidget()
