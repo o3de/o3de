@@ -177,7 +177,7 @@ namespace AzToolsFramework
             auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
             if (found != m_templateFilePathToIdMap.end())
             {
-               m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
+                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
             }
         }
 
@@ -189,14 +189,14 @@ namespace AzToolsFramework
             {
                 RemoveTemplate(found->second);
 
-                 PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                     AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
 
-                 if (prefabEditorEntityOwnershipInterface != nullptr)
-                 {
+                if (prefabEditorEntityOwnershipInterface != nullptr)
+                {
                      TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
                      PropagateTemplateChanges(rootTemplateId);
-                 }
+                }
                 
             }
         }
