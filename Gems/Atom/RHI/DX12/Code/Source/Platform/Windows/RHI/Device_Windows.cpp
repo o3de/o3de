@@ -195,13 +195,19 @@ namespace AZ
                 }
             }
 
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
             Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+#else
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+#endif
             if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
             {
                 // Turn on auto-breadcrumbs and page fault reporting.
                 pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
                 pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                 pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+#endif
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;
@@ -304,10 +310,12 @@ namespace AZ
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_VECTOR_HEAP";
             case D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND:
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND";
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
             case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER:
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER";
             case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP:
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP";
+#endif
             case D3D12_DRED_ALLOCATION_TYPE_INVALID:
                 return "D3D12_DRED_ALLOCATION_TYPE_INVALID";
             default:
@@ -499,12 +507,21 @@ namespace AZ
             }
            
             // Perform app-specific device removed operation, such as logging or inspecting DRED output
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
             Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData1> pDred;
+#else
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
+#endif
 
             if (SUCCEEDED(removedDevice->QueryInterface(IID_PPV_ARGS(&pDred))))
             {
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                 D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT1 dredAutoBreadcrumbsOutput;
                 HRESULT hr = pDred->GetAutoBreadcrumbsOutput1(&dredAutoBreadcrumbsOutput);
+#else
+                D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT dredAutoBreadcrumbsOutput;
+                HRESULT hr = pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput);
+#endif
 
                 if (SUCCEEDED(hr))
                 {
@@ -580,11 +597,15 @@ namespace AZ
                         // Create lookup table for breadcrumb context entries
                         AZStd::unordered_map<AZ::u32, const wchar_t*> contextEntries;
 
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                        contextEntries.reserve(currentNode->BreadcrumbContextsCount);
+
                         for (AZ::u32 i = 0; i != currentNode->BreadcrumbContextsCount; ++i)
                         {
                             D3D12_DRED_BREADCRUMB_CONTEXT& context = currentNode->pBreadcrumbContexts[i];
                             contextEntries[context.BreadcrumbIndex] = context.pContextString;
                         }
+#endif
 
                         // Display all the breadcrumbs in this node, marking the region where the error
                         // may have occurred
@@ -641,21 +662,31 @@ namespace AZ
                         ++index;
                     }
 
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                     D3D12_DRED_PAGE_FAULT_OUTPUT1 pageFaultOutput;
                     if (SUCCEEDED(pDred->GetPageFaultAllocationOutput1(&pageFaultOutput)))
                     {
-                        line = AZStd::string::format("Page fault occurred on address 0x%zx\n\n"
+#else
+                    D3D12_DRED_PAGE_FAULT_OUTPUT pageFaultOutput;
+                    if (SUCCEEDED(pDred->GetPageFaultAllocationOutput(&pageFaultOutput)))
+                    {
+#endif
+                        line = AZStd::string::format("Page fault occurred on address %zx\n\n"
                             "Dumping resident objects\n",
                             pageFaultOutput.PageFaultVA);
 
                         dredLog.Write(line.data(), line.size());
 
                         // Dump objects and their addresses
-                        const D3D12_DRED_ALLOCATION_NODE1* node = pageFaultOutput.pHeadExistingAllocationNode;
+                        const auto* node = pageFaultOutput.pHeadExistingAllocationNode;
                         while (node)
                         {
                             line = AZStd::string::format("    0x%zx (%S) %s\n",
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
+#else
+                                0,
+#endif
                                 node->ObjectNameW ? node->ObjectNameW : L"Unknown",
                                 GetAllocationTypeString(node->AllocationType));
                             dredLog.Write(line.data(), line.size());
@@ -667,7 +698,11 @@ namespace AZ
                         while (node)
                         {
                             line = AZStd::string::format("    0x%zx (%S) %s\n",
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
                                 node->pObject,
+#else
+                                0,
+#endif
                                 node->ObjectNameW ? node->ObjectNameW : L"Unknown",
                                 GetAllocationTypeString(node->AllocationType));
                             dredLog.Write(line.data(), line.size());
