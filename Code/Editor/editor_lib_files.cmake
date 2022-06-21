@@ -257,6 +257,8 @@ set(FILES
     MainWindow.cpp
     MainWindow.h
     MainWindow.qrc
+    Core/EditorActionsHandler.cpp
+    Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
     Core/LevelEditorMenuHandler.cpp

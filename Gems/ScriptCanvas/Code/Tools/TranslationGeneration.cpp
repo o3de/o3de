@@ -609,10 +609,8 @@ namespace ScriptCanvasEditorTools
                 details.m_category = "Uncategorized";
             }
 
-            AZStd::string prefix = GraphCanvas::TranslationKey::Sanitize(details.m_category);
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(details.m_name);
-
-            AZStd::string targetFile = AZStd::string::format("Nodes/%s_%s", prefix.c_str(), filename.c_str());
+            AZStd::string fileName = ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(details.m_name, classData->m_typeId);
+            AZStd::string targetFile = AZStd::string::format("Nodes/%s", fileName.c_str());
 
             SaveJSONData(targetFile, translationRoot);
 
