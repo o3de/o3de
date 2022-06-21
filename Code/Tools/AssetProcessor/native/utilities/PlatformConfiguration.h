@@ -58,10 +58,10 @@ namespace AssetProcessor
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
-    class AssetPlatformSpec
+    enum class AssetInternalSpec
     {
-    public:
-        QString m_extraRCParams;
+        Copy,
+        Skip
     };
 
     //! The data about a particular recognizer, including all platform specs.
@@ -90,8 +90,8 @@ namespace AssetProcessor
         QString m_version = QString();
 
         // the QString is the Platform Identifier ("pc")
-        // the AssetPlatformSpec is the details for processing that asset on that platform.
-        QHash<QString, AssetPlatformSpec> m_platformSpecs;
+        // the AssetInternalSpec specifies the type of internal job to process
+        QHash<QString, AssetInternalSpec> m_platformSpecs;
 
         // an optional parameter which is a UUID of types to assign to the output asset(s)
         // if you don't specify one, then a heuristic will be used
@@ -165,10 +165,10 @@ namespace AssetProcessor
         AZStd::stack<AZStd::string> m_excludeNameStack;
     };
 
-    struct RCVisitor
+    struct SimpleJobVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
-        RCVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
+        SimpleJobVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
             : m_registry(settingsRegistry)
             , m_enabledPlatforms(enabledPlatforms)
         {
@@ -181,17 +181,17 @@ namespace AssetProcessor
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
-        struct RCAssetRecognizer
+        struct SimpleJobAssetRecognizer
         {
             AssetRecognizer m_recognizer;
             AZStd::string m_defaultParams;
             bool m_ignore{};
         };
-        AZStd::vector<RCAssetRecognizer> m_assetRecognizers;
+        AZStd::vector<SimpleJobAssetRecognizer> m_assetRecognizers;
     private:
         void ApplyParamsOverrides(AZStd::string_view path);
 
-        AZStd::stack<AZStd::string> m_rcNameStack;
+        AZStd::stack<AZStd::string> m_simpleJobNameStack;
         const AZ::SettingsRegistryInterface& m_registry;
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
     };

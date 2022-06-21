@@ -264,13 +264,47 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
     } \
 } \
 \
-template< typename T > struct AzEnumTraits; \
-\
-template<> \
-struct AzEnumTraits< AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName > \
-{ \
-    using MembersArrayType                              = decltype( AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members) ); \
-    inline static constexpr MembersArrayType& Members   = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members); \
-    inline static constexpr size_t Count                = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Count); \
-    inline static constexpr AZStd::string_view EnumName = AZ_STRINGIZE(EnumTypeName); \
-}; 
+    struct AZ_JOIN(EnumTypeName, EnumTraits)                                                                                               \
+    {                                                                                                                                      \
+        using MembersArrayType = decltype(AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members));                               \
+        inline static constexpr MembersArrayType& Members = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members);              \
+        inline static constexpr size_t Count = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Count);                             \
+        inline static constexpr AZStd::string_view EnumName = AZ_STRINGIZE(EnumTypeName);                                                  \
+        /* Visitor must accept a type convertible from EnumTypeName as the first parameter and an AZStd::string_view as the second */      \
+        template<class Visitor>                                                                                                            \
+        static constexpr void Visit(Visitor&& enumVisitor)                                                                                 \
+        {                                                                                                                                  \
+            for (const auto& member : Members)                                                                                             \
+            {                                                                                                                              \
+                enumVisitor(member.m_value, member.m_string);                                                                              \
+            }                                                                                                                              \
+        }                                                                                                                                  \
+    };                                                                                                                                     \
+                                                                                                                                           \
+    inline auto GetAzEnumTraits(AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName)                                                            \
+    {                                                                                                                                      \
+        return AZ_JOIN(EnumTypeName, EnumTraits){};                                                                                        \
+    };
+
+namespace AZ::Internal
+{
+    // Deleted function to provide the AZ::Internal namespace with the GetAzEnumTraits symbol
+    // This is to make an overload which the AzEnumTraitsImpl would use with its
+    // template parameter to use Argument Dependent Lookup to find the GetAzEnumTraits
+    // function for the Enum Type in the correct namespace.
+    template<typename T>
+    void GetAzEnumTraits(T&&) = delete;
+    template<typename T>
+    struct AzEnumTraitsImpl
+    {
+        // The AZ_ENUM macros contrive a function which returns a struct
+        // with the enum traits within it
+        // We use decltype here to get the type of that function
+        using type = decltype(GetAzEnumTraits(AZStd::declval<T>()));
+    };
+} // namespace AZ::Internal
+namespace AZ
+{
+    template<typename T>
+    using AzEnumTraits = typename Internal::AzEnumTraitsImpl<T>::type;
+}

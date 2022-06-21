@@ -16,7 +16,6 @@
 namespace AssetProcessor
 {
     extern const BuilderIdAndName BUILDER_ID_COPY;
-    extern const BuilderIdAndName BUILDER_ID_RC;
     extern const BuilderIdAndName BUILDER_ID_SKIP;
 
     struct MockRecognizerConfiguration
@@ -110,11 +109,11 @@ namespace AssetProcessor
 
     bool MockApplicationManager::RegisterAssetRecognizerAsBuilder(const AssetProcessor::AssetRecognizer& rec)
     {
-        QString newBuilderId = BUILDER_ID_RC.GetId();
+        QString newBuilderId = BUILDER_ID_COPY.GetId();
         QString newBuilderName = rec.m_name;
         QHash<QString, BuilderIdAndName> inputBuilderNameByIdMap =
         {
-            { newBuilderId, BUILDER_ID_RC }
+            { newBuilderId, BUILDER_ID_COPY }
         };
 
         AZStd::shared_ptr<InternalMockBuilder>   builder =
@@ -122,8 +121,8 @@ namespace AssetProcessor
 
         if (m_internalBuilderRegistrationCount++ > 0)
         {
-            // After the first initialization, the builder with id BUILDER_ID_RC will have already been registered to the builder bus.  
-            // After the initial registration, make sure to unregister based on the fixed internal rc uuid so we can register it again
+            // After the first initialization, the builder with id BUILDER_ID_COPY will have already been registered to the builder bus.  
+            // After the initial registration, make sure to unregister based on the fixed internal uuid so we can register it again
             AZ::Uuid uuid = AZ::Uuid::CreateString(newBuilderId.toUtf8().data());
             EBUS_EVENT(AssetBuilderRegistrationBus, UnRegisterBuilderDescriptor, uuid);
         }
@@ -147,7 +146,7 @@ namespace AssetProcessor
         AssetBuilderSDK::AssetBuilderDesc   builderDesc = builder->CreateBuilderDesc(rec.m_name, newBuilderId, patterns);
 
 
-        AZ::Uuid        internalUuid = AZ::Uuid::CreateRandom();
+        AZ::Uuid internalUuid = AZ::Uuid::CreateRandom();
         m_internalBuilderUUIDByName[buildAZName] = internalUuid;
 
         BuilderFilePatternMatcherAndBuilderDesc matcherAndbuilderDesc;
