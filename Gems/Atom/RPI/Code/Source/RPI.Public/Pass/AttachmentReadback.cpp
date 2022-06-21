@@ -118,7 +118,9 @@ namespace AZ
             // Create fence
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_fence = RHI::Factory::Get().CreateFence();
-            m_fence->Init(*device, RHI::FenceState::Reset);
+            AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
+            AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
             const char* ShaderPath = "shaders/decomposemsimage.azshader";
@@ -432,13 +434,16 @@ namespace AZ
             m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
             m_dataBuffer = nullptr;
-            m_fence->Reset();
             m_copyAttachmentId = RHI::AttachmentId{};
             m_decomposeScopeProducer = nullptr;
             if (m_decomposeSrg)
             {
                 m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, nullptr);
                 m_decomposeSrg->SetImageView(m_decomposeOutputImageIndex, nullptr);
+            }
+            if (m_fence)
+            {
+                m_fence->Reset();
             }
         }
 
