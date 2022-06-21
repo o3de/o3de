@@ -16,6 +16,7 @@
 #include <EMotionFX/Source/Parameter/RotationParameter.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/AttributeQuaternion.h>
 
 #include <QPushButton>
@@ -37,6 +38,7 @@ namespace EMStudio
     {
         if(m_rotationManipulator.Registered()) {
             m_rotationManipulator.Unregister();
+            AZ::TickBus::Handler::BusDisconnect();
         }
     }
 
@@ -85,6 +87,7 @@ namespace EMStudio
             const EMotionFX::RotationParameter* parameter = static_cast<const EMotionFX::RotationParameter*>(m_valueParameter);
             m_currentValue = parameter->GetDefaultValue();
         }
+        m_rotationManipulator.SetLocalOrientation(m_currentValue);
     }
 
     void RotationParameterEditor::setIsReadOnly(bool isReadOnly)
@@ -140,6 +143,21 @@ namespace EMStudio
         return parameter->GetMaxValue();
     }
 
+    void RotationParameterEditor::OnTick(float delta, AZ::ScriptTimePoint timePoint)
+    {
+        EMotionFX::ActorInstance* selectedActorInstance = EMotionFX::GetActorManager().GetFirstEditorActorInstance();
+        if (selectedActorInstance)
+        {
+            AZ::Transform transform = AZ::Transform::CreateIdentity();
+            transform.SetTranslation(selectedActorInstance->GetAabb().GetCenter());
+            m_rotationManipulator.SetSpace(transform);
+        }
+        else
+        {
+            m_rotationManipulator.SetSpace(AZ::Transform::CreateIdentity());
+        }
+    }
+
     void RotationParameterEditor::OnValueChanged()
     {
         for (MCore::Attribute* attribute : m_attributes)
@@ -163,10 +181,12 @@ namespace EMStudio
 
         if (m_rotationManipulator.Registered())
         {
+            AZ::TickBus::Handler::BusDisconnect();
             m_rotationManipulator.Unregister();
         }
         else
         {
+            AZ::TickBus::Handler::BusConnect();
             m_rotationManipulator.Register(g_animManipulatorManagerId);
         }
     }
