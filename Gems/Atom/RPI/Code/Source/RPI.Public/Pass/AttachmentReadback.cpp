@@ -28,9 +28,6 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     namespace RPI
@@ -397,7 +394,6 @@ namespace AZ
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
                 desc.m_bufferName = m_readbackName.GetStringView();
                 desc.m_byteCount = imageSubresourceLayout.m_bytesPerImage;
-                desc.m_isUniqueName = true;
 
                 m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
@@ -552,7 +548,6 @@ namespace AZ
                     {
                         void* dest = m_dataBuffer->data() + row * imageLayout.m_bytesPerRow;
                         void* source = static_cast<uint8_t*>(buf) + row * m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
-                        //AZ_Assert(*(uint32_t*)source != 0, "Invalid source pixel detected");
                         memcpy(dest, source, imageLayout.m_bytesPerRow);
                     }
                 }
@@ -568,4 +563,3 @@ namespace AZ
         }
     }   // namespace RPI
 }   // namespace AZ
-#pragma optimize("", on)

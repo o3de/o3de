@@ -25,8 +25,7 @@
 #include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Entity/EntityContext.h>
-#pragma optimize("", off)
-#pragma inline_depth(0)
+
 
 namespace AZ
 {
@@ -911,40 +910,6 @@ namespace AZ
                     RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->GetName(drawListTag).GetCStr(),
                     pipelineStateList.size()
                 );
-                if (pipelineStateList.size() > 1)
-                {
-                    AZ_Error("RPI", false, "Scene::ConfigurePipelineState called for drawListTag [%s] which has [%zu] different pipeline states."
-                        "Using first pipeline state by default.",
-                        RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->GetName(drawListTag).GetCStr(),
-                        pipelineStateList.size()
-                    );
-
-                    AZ_TracePrintf("RPI", " \n"); // emit a newline to separate the pipeline states
-
-                    for (size_t index = 0; index < pipelineStateList.size(); ++index)
-                    {
-                        const PipelineStateData& psData = pipelineStateList[index];
-                        const RHI::MultisampleState& msaaState = psData.m_multisampleState;
-                        AZ_TracePrintf("RPI", " PipelineState[%d] MSAA state\n", static_cast<uint32_t>(index));
-                        AZ_TracePrintf("RPI", "    position count = %d\n", msaaState.m_customPositionsCount);
-                        AZ_TracePrintf("RPI", "    sample count = %d\n", msaaState.m_samples);
-                        AZ_TracePrintf("RPI", "    quality = %d\n", msaaState.m_quality);
-
-                        const RHI::RenderAttachmentConfiguration& config = psData.m_renderAttachmentConfiguration;
-                        AZ_TracePrintf("RPI", " PipelineState[%d] Attachments\n", static_cast<uint32_t>(index));
-                        for (uint32_t attachmentIdx = 0; attachmentIdx < config.GetRenderTargetCount(); ++attachmentIdx)
-                        {
-                            AZ_TracePrintf("RPI", "    render target[%d] format = %s\n", attachmentIdx, ToString(config.GetRenderTargetFormat(attachmentIdx)));
-                        }
-                        for (uint32_t subpassIdx = 0; subpassIdx < config.GetSubpassInputCount(); ++subpassIdx)
-                        {
-                            AZ_TracePrintf("RPI", "    subpass input[%d] format = %s\n", subpassIdx, ToString(config.GetSubpassInputFormat(subpassIdx)));
-                        }
-                        AZ_TracePrintf("RPI", "   depth render target format = %s\n", ToString(config.GetDepthStencilFormat()));
-                        AZ_TracePrintf("RPI", " PipelineState[%d] subpass index = %d\n\n", static_cast<uint32_t>(index), config.m_subpassIndex); // emit a double newline so there is whitespace between each pipeline state
-
-                    }
-                }
 
                 AZ_Assert(pipelineStateList.size() > 0, "Scene::ConfigurePipelineState called for drawListTag [%s] which has [%zu] pipeline states.",
                     RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->GetName(drawListTag).GetCStr(),
@@ -1051,7 +1016,6 @@ namespace AZ
                                 else
                                 {
                                     // No match found, add new pipeline state data
-                                    AZ_Assert(size == 0, "Adding a 2nd pipeline state for rasterPass");
                                     pipelineStateList.push_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
@@ -1078,5 +1042,3 @@ namespace AZ
         }
     }
 }
-#pragma optimize("", on)
-

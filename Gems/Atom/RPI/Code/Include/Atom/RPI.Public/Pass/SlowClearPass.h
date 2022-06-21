@@ -30,8 +30,6 @@ namespace AZ
             //! Creates a SlowClearPass
             static Ptr<SlowClearPass> Create(const PassDescriptor& descriptor);
 
-            void SetClearValue(float red, float green, float blue, float alpha);
-
         protected:
             SlowClearPass(const PassDescriptor& descriptor);
             void InitializeInternal() override;
