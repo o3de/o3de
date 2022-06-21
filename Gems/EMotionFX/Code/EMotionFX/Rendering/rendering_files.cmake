@@ -28,34 +28,4 @@ set(FILES
     Common/TransformationManipulator.h
     Common/TranslateManipulator.cpp
     Common/TranslateManipulator.h
-    OpenGL2/Source/GBuffer.cpp
-    OpenGL2/Source/GBuffer.h
-    OpenGL2/Source/GLActor.cpp
-    OpenGL2/Source/glactor.h
-    OpenGL2/Source/GLExtensions.h
-    OpenGL2/Source/GLExtensions.cpp
-    OpenGL2/Source/GLRenderUtil.cpp
-    OpenGL2/Source/GLRenderUtil.h
-    OpenGL2/Source/GLSLShader.cpp
-    OpenGL2/Source/GLSLShader.h
-    OpenGL2/Source/GraphicsManager.cpp
-    OpenGL2/Source/GraphicsManager.h
-    OpenGL2/Source/IndexBuffer.cpp
-    OpenGL2/Source/IndexBuffer.h
-    OpenGL2/Source/Material.cpp
-    OpenGL2/Source/Material.h
-    OpenGL2/Source/PostProcessShader.cpp
-    OpenGL2/Source/PostProcessShader.h
-    OpenGL2/Source/RenderGLConfig.h
-    OpenGL2/Source/RenderTexture.cpp
-    OpenGL2/Source/RenderTexture.h
-    OpenGL2/Source/Shader.h
-    OpenGL2/Source/ShaderCache.cpp
-    OpenGL2/Source/shadercache.h
-    OpenGL2/Source/StandardMaterial.cpp
-    OpenGL2/Source/StandardMaterial.h
-    OpenGL2/Source/TextureCache.cpp
-    OpenGL2/Source/TextureCache.h
-    OpenGL2/Source/VertexBuffer.cpp
-    OpenGL2/Source/VertexBuffer.h
 )

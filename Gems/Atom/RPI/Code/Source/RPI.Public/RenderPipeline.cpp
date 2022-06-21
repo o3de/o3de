@@ -90,8 +90,9 @@ namespace AZ
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
-            Name tempalteName = Name(desc.m_rootPassTemplate.c_str());
-            swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(tempalteName);
+            Name templateName = Name(desc.m_rootPassTemplate.c_str());
+            swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
+            AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
             pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();

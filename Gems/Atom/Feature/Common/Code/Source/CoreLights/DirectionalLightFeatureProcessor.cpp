@@ -969,7 +969,7 @@ namespace AZ
             {
                 for (CascadedShadowmapsPass* pass : it.second)
                 {
-                    pass->QueueForUpdateShadowmapImageSize(ShadowmapSize::None, 1);
+                    pass->SetShadowmapSize(ShadowmapSize::None, 1);
                 }
             }
             for (const auto& it : m_esmShadowmapsPasses)
@@ -1139,7 +1139,7 @@ namespace AZ
             for (const auto& segmentIt : property.m_segments)
             {
                 DirectionalLightShadowData& shadowData = m_shadowData.at(segmentIt.first).GetData(handle.GetIndex());
-                const uint16_t numCascades = aznumeric_cast<uint16_t>(segmentIt.second.size());
+                const u16 numCascades = aznumeric_cast<u16>(segmentIt.second.size());
 
                 // [GFX TODO][ATOM-2012] shadow for multiple directional lights
                 if (handle == m_shadowingLightHandle && numCascades > 0)
@@ -1149,7 +1149,7 @@ namespace AZ
                     {
                         for (CascadedShadowmapsPass* pass : it.second)
                         {
-                            pass->QueueForUpdateShadowmapImageSize(shadowmapSize, numCascades);
+                            pass->SetShadowmapSize(shadowmapSize, numCascades);
                         }
                     }
                     for (const auto& it : m_esmShadowmapsPasses)

@@ -277,7 +277,7 @@ namespace Terrain
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
-        desc.m_clipToWorldScale = m_detailTextureScale;
+        desc.m_clipmapToWorldScale = m_detailTextureScale;
         desc.m_size = m_detailTextureSize;
 
         // Initialize world space to a value that won't match the initial camera position.

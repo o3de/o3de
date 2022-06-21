@@ -340,7 +340,12 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RPI);
 
-            if (NeedsCompile() && CanCompile())
+            if (!NeedsCompile())
+            {
+                return true;
+            }
+
+            if (CanCompile())
             {
                 // On some platforms, PipelineStateObjects must be pre-compiled and shipped with the game; they cannot be compiled at runtime. So at some
                 // point the material system needs to be smart about when it allows PSO changes and when it doesn't. There is a task scheduled to
