@@ -639,7 +639,7 @@ namespace AZ
                             }
                         }
 
-#if !defined(_RELEASE)
+#if defined(AZ_ENABLE_TRACING)
                         // Enable unused target blend state tracking
                         for (const auto& targetBlendState : targetBlendStates)
                         {
@@ -649,7 +649,7 @@ namespace AZ
                                 "Invalid target blend state index detected, setting index %d out of %d possible color attachements. Ignoring this target blend state definition.",
                                 targetBlendState.first, colorAttachmentCount);
                         }
-#endif // !defined(_RELEASE)
+#endif // defined(AZ_ENABLE_TRACING)
 
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
