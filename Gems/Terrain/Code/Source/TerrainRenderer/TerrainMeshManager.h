@@ -203,6 +203,12 @@ namespace Terrain
             NormalDataType m_normal;
         };
 
+        struct SectorToDraw
+        {
+            AZ::Aabb m_aabb;
+            const AZ::RHI::DrawPacket* m_rhiDrawPacket;
+        };
+
         static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R32G32_FLOAT;
         static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
         static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
@@ -262,6 +268,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<StackData> m_sectorStack;
+        AZStd::vector<SectorToDraw> m_sectorsToDraw;
         uint32_t m_1dSectorCount = 0;
 
         AZ::Vector3 m_previousCameraPosition = AZ::Vector3::CreateZero();
