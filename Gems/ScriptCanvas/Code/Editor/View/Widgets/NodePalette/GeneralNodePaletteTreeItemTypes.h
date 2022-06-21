@@ -137,7 +137,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
-        AZ::Uuid m_typeId;
+        AZ::Uuid m_typeId = AZ::Uuid::CreateNull();
         AZStd::string m_styleOverride;
         AZStd::string m_titlePalette;
     };
@@ -163,6 +163,50 @@ namespace ScriptCanvasEditor
     private:
         AZ::Uuid m_typeId;
         ScriptCanvasEditor::CustomNodeModelInformation m_info;
+    };
+
+    // </CustomNode>
+
+    // <DataDrivenNode>
+    class CreateDataDrivenNodeMimeEvent : public CreateNodeMimeEvent
+    {
+    public:
+        AZ_RTTI(CreateDataDrivenNodeMimeEvent, "{AD78B758-2F30-4379-B1fD-7AD17F16975F}", CreateNodeMimeEvent);
+        AZ_CLASS_ALLOCATOR(CreateDataDrivenNodeMimeEvent, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        CreateDataDrivenNodeMimeEvent() = default;
+        CreateDataDrivenNodeMimeEvent(const AZ::Crc32& mimeId, const AZStd::any& nodeData);
+        ~CreateDataDrivenNodeMimeEvent() = default;
+
+    protected:
+        ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
+
+    private:
+        const AZ::Crc32 m_nodeId;
+        const AZStd::any m_userData;
+    };
+
+    class DataDrivenNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(DataDrivenNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_RTTI(DataDrivenNodePaletteTreeItem, "{0A9BC500-D4A9-4B86-8804-96F576CDF0FC}", GraphCanvas::DraggableNodePaletteTreeItem);
+
+        explicit DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation&);
+        ~DataDrivenNodePaletteTreeItem() = default;
+
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
+
+        const ScriptCanvasEditor::DataDrivenNodeModelInformation& GetInfo() const
+        {
+            return m_info;
+        }
+
+    private:
+        ScriptCanvasEditor::DataDrivenNodeModelInformation m_info;
+
     };
 
     // </CustomNode>

@@ -470,7 +470,7 @@ namespace GraphCanvas
         {
             m_titleWidget->SetAlignment(Qt::AlignCenter);
         }
-            
+
         UpdateStyles();
         RefreshDisplay();
     }

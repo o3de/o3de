@@ -28,12 +28,16 @@ namespace ScriptEvents
 
 namespace ScriptCanvasEditor::Nodes
 {
-    struct SmallOperatorNodeData
+    struct SmallOperatorCreationData
     {
-        ScriptCanvas::ScriptCanvasId m_scriptCanvasId;
-        AZStd::string m_name;
-        AZStd::string m_tooltip;
-        ScriptCanvas::Data::Type m_dataType;
+        AZ_RTTI(SmallOperatorCreationData, "{A7DE9ECF-81F9-4A03-B3E4-3510591A50BB}");
+        AZ_CLASS_ALLOCATOR(SmallOperatorCreationData, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        virtual ~SmallOperatorCreationData() = default;
+
+        AZStd::string m_title;  // Right now only stores title, will make it store other stuff in the future
     };
 
     // Specific create methods which will also handle displaying the node.
@@ -44,8 +48,9 @@ namespace ScriptCanvasEditor::Nodes
     NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, bool isProperty, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
     NodeIdPair CreateEbusWrapperNode(AZStd::string_view busName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
-    // Create method for a small operator node
-    NodeIdPair CreateSmallOperatorNode(const SmallOperatorNodeData& smallOperatorNodeData);
+    // Create methods for data driven nodes
+    NodeIdPair CreateDataDrivenNode(const AZStd::any& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
+    NodeIdPair CreateSmallOperatorNode(const SmallOperatorCreationData& smallOperatorNodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
     // Script Events
     NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId);

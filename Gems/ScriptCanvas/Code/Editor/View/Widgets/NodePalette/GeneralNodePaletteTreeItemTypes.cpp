@@ -279,17 +279,6 @@ namespace ScriptCanvasEditor
         styleConfiguration.m_nodeSubStyle = m_styleOverride;
         styleConfiguration.m_titlePalette = m_titlePalette;
 
-        // TODO: Make created node dependant on data given rather than type id
-        if (m_typeId.IsNull())
-        {
-            Nodes::SmallOperatorNodeData nodeData;
-            nodeData.m_scriptCanvasId = scriptCanvasId;
-            nodeData.m_name = "++";
-            nodeData.m_tooltip = "Increments a node";
-            nodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-
-            return Nodes::CreateSmallOperatorNode(nodeData);
-        }
         return Nodes::CreateNode(m_typeId, scriptCanvasId, styleConfiguration);
     }
 
@@ -325,5 +314,50 @@ namespace ScriptCanvasEditor
     {
         ScriptCanvasEditorTools::TranslationGeneration translation;
         translation.TranslateNode(m_typeId);
+    }
+
+    //////////////////////////////
+    // CreateDataDrivenNodeMimeEvent
+    //////////////////////////////
+
+    void CreateDataDrivenNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        ScriptCanvasEditor::Nodes::SmallOperatorCreationData::Reflect(reflectContext);
+
+
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateDataDrivenNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ->Field("MimeId", &CreateDataDrivenNodeMimeEvent::m_nodeId)
+                ->Field("NodeData", &CreateDataDrivenNodeMimeEvent::m_userData);
+        }
+    }
+
+    CreateDataDrivenNodeMimeEvent::CreateDataDrivenNodeMimeEvent(const AZ::Crc32& mimeId, const AZStd::any& nodeData)
+        : m_nodeId(mimeId)
+        , m_userData(nodeData)
+    {
+    }
+
+    ScriptCanvasEditor::NodeIdPair CreateDataDrivenNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
+    {
+        return Nodes::CreateDataDrivenNode(m_userData, scriptCanvasId);
+    }
+
+    //////////////////////////////
+    // DataDrivenNodePaletteTreeItem
+    //////////////////////////////
+
+    DataDrivenNodePaletteTreeItem::DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation& info)
+        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_info(info)
+    {
+    }
+
+    GraphCanvas::GraphCanvasMimeEvent* DataDrivenNodePaletteTreeItem::CreateMimeEvent() const
+    {
+        return aznew CreateDataDrivenNodeMimeEvent(m_info.m_nodeId, m_info.m_userData);
     }
 }

@@ -792,10 +792,18 @@ namespace
     void PopulateDataDrivenNodes(
         ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
     {
-        // For now, we just populate the palette with an increment node
-        ScriptCanvasEditor::RegisterNodeInformation nodeInformation = GetIncrementNodeInformation();
+        ScriptCanvasEditor::DataDrivenNodeModelInformation* increment = aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+        increment->m_displayName = "++";
+        increment->m_categoryPath = "Math/Small Operators";
+        increment->m_toolTip = "Increments a value";
+        increment->m_nodeId = AZ_CRC_CE("++");
 
-        nodePaletteModel.RegisterNode(nodeInformation);
+        ScriptCanvasEditor::Nodes::SmallOperatorCreationData data;
+        data.m_title = "++";    // Right now the title is enough info to ensure data gets passed along properly. Later I will add data types too
+
+        increment->m_userData = data;   // This can be aaaaanything (that can be serialized)
+
+        nodePaletteModel.RegisterNode(increment, increment->m_nodeId);
     }
 
     // Helper function for populating the node palette model.
@@ -945,17 +953,9 @@ namespace ScriptCanvasEditor
     }
 
     // Register a node given its specific attributes
-    void NodePaletteModel::RegisterNode(const RegisterNodeInformation& nodeInformation)
+    void NodePaletteModel::RegisterNode(NodePaletteModelInformation* nodeInformation, const ScriptCanvas::NodeTypeIdentifier& id)
     {
-        CustomNodeModelInformation* customNodeInformation = aznew CustomNodeModelInformation();
-        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier("");
-
-        customNodeInformation->m_nodeIdentifier = nodeIdentifier;
-        customNodeInformation->m_displayName = nodeInformation.m_displayName;
-        customNodeInformation->m_categoryPath = nodeInformation.m_categoryPath;
-        customNodeInformation->m_toolTip = nodeInformation.m_toolTip;
-
-        m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, customNodeInformation));
+        m_registeredNodes.emplace(AZStd::make_pair(id, nodeInformation));
     }
 
     void NodePaletteModel::RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath)

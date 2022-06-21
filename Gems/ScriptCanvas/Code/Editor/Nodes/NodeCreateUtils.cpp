@@ -31,6 +31,16 @@
 
 namespace ScriptCanvasEditor::Nodes
 {
+
+    void SmallOperatorCreationData::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        if (serializeContext)
+        {
+            serializeContext->Class<SmallOperatorCreationData>()->Version(0)->Field("Title", &SmallOperatorCreationData::m_title);
+        }
+    }
+
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
@@ -239,7 +249,13 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
-    NodeIdPair CreateSmallOperatorNode(const SmallOperatorNodeData& nodeData)
+    NodeIdPair CreateDataDrivenNode(const AZStd::any& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    {
+        // TODO: Make this check what types nodeData can be cast to and decide what create function to run based on that
+        return CreateSmallOperatorNode(AZStd::any_cast<SmallOperatorCreationData>(nodeData), scriptCanvasId);
+    }
+
+    NodeIdPair CreateSmallOperatorNode(const SmallOperatorCreationData& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         NodeIdPair nodeIdPair;
 
@@ -252,7 +268,7 @@ namespace ScriptCanvasEditor::Nodes
         AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
 
         node = aznew ScriptCanvas::Node();
-        node->SetNodeName(nodeData.m_name);
+        node->SetNodeName(nodeData.m_title);
 
         ScriptCanvas::DynamicDataSlotConfiguration inputPin;
 
@@ -260,7 +276,7 @@ namespace ScriptCanvasEditor::Nodes
         inputPin.m_toolTip = "Input";
         inputPin.m_canHaveInputField = false;
         inputPin.SetConnectionType(ScriptCanvas::ConnectionType::Input);
-        inputPin.m_displayType = nodeData.m_dataType;
+        inputPin.m_displayType = ScriptCanvas::Data::Type::Number();
 
         node->AddSlot(inputPin, true);
 
@@ -269,7 +285,7 @@ namespace ScriptCanvasEditor::Nodes
         outputPin.m_name = " ";
         outputPin.m_toolTip = "Output";
         outputPin.SetConnectionType(ScriptCanvas::ConnectionType::Output);
-        outputPin.m_displayType = nodeData.m_dataType;
+        outputPin.m_displayType = ScriptCanvas::Data::Type::Number(); 
 
         node->AddSlot(outputPin, true);
 
@@ -279,10 +295,10 @@ namespace ScriptCanvasEditor::Nodes
             nodeEntity->AddComponent(node);
         }
 
-        ScriptCanvas::GraphRequestBus::Event(nodeData.m_scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
+        ScriptCanvas::GraphRequestBus::Event(scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
 
         AZ::EntityId graphCanvasGraphId;
-        EditorGraphRequestBus::EventResult(graphCanvasGraphId, nodeData.m_scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
+        EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
         NodeReplacementConfiguration nodeConfiguration;
         nodeConfiguration.m_nodeSubStyle = GraphCanvas::Styling::Elements::Small;

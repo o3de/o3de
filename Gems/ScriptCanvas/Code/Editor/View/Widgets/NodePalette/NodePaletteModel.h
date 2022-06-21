@@ -21,6 +21,8 @@
 
 #include <ScriptEvents/ScriptEventsAsset.h>
 
+#include <Editor/Nodes/NodeCreateUtils.h>
+
 #include <Editor/View/Widgets/NodePalette/NodePaletteModelBus.h>
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
@@ -59,13 +61,6 @@ namespace ScriptCanvasEditor
         AZStd::string m_tooltip;
     };
 
-    struct RegisterNodeInformation
-    {
-        AZStd::string m_displayName;
-        AZStd::string m_toolTip;
-        AZStd::string m_categoryPath;
-    };
-
     class NodePaletteModel
         : public GraphCanvas::CategorizerInterface
         , UpgradeNotificationsBus::Handler
@@ -84,7 +79,7 @@ namespace ScriptCanvasEditor
 
         void RepopulateModel();
 
-        void RegisterNode(const RegisterNodeInformation& nodeInformation);
+        void RegisterNode(NodePaletteModelInformation* nodeInformation, const ScriptCanvas::NodeTypeIdentifier& id);
 
         void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
@@ -206,6 +201,16 @@ namespace ScriptCanvasEditor
         ScriptCanvas::EBusBusId m_busId;
         ScriptCanvas::EBusEventId m_eventId;
         ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
+    };
+
+    struct DataDrivenNodeModelInformation
+        : public NodePaletteModelInformation
+    {
+        AZ_RTTI(DataDrivenNodeModelInformation, "{D44D697D-7462-456B-B305-E9931FC02E6B}", NodePaletteModelInformation);
+        AZ_CLASS_ALLOCATOR(DataDrivenNodeModelInformation, AZ::SystemAllocator, 0);
+
+        AZ::Crc32 m_nodeId;
+        AZStd::any m_userData;
     };
 
     struct ScriptEventHandlerNodeModelInformation

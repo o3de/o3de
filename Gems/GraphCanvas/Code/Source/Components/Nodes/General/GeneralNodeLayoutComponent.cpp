@@ -44,6 +44,7 @@ namespace GraphCanvas
 
     AZ::Entity* GeneralNodeLayoutComponent::CreateGeneralNodeEntity(const char* nodeType, const NodeConfiguration& configuration)
     {
+        
         // Create this Node's entity.
         AZ::Entity* entity = NodeComponent::CreateCoreNodeEntity(configuration);
 
@@ -87,10 +88,10 @@ namespace GraphCanvas
         }
         else
         {
-            m_inputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
+            m_inputSlots = new QGraphicsLinearLayout(Qt::Vertical);
             m_inputSlots->setInstantInvalidatePropagation(true);
 
-            m_outputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
+            m_outputSlots = new QGraphicsLinearLayout(Qt::Vertical);
             m_outputSlots->setInstantInvalidatePropagation(true);
         }
     }
