@@ -192,9 +192,12 @@ namespace AzToolsFramework
                  PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
                     AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
 
-                AZ_Assert(prefabEditorEntityOwnershipInterface, "PrefabEditorEntityOwnershipInterface unavailable");
-                TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                PropagateTemplateChanges(rootTemplateId);
+                 if (prefabEditorEntityOwnershipInterface != nullptr)
+                 {
+                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                     PropagateTemplateChanges(rootTemplateId);
+                 }
+                
             }
         }
 
