@@ -332,6 +332,16 @@ bool DockWidget::event(QEvent* qtEvent)
 
     if (qtEvent->type() == QEvent::Close)
     {
+        // Wait one frame so that the pane's state is propagated correctly.
+        QTimer::singleShot(0, this, [pane = m_pane]()
+            {
+                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
+            }
+        );
+    }
+
+    if (qtEvent->type() == QEvent::Close)
+    {
         QTimer::singleShot(0, this, [pane = m_pane]()
             {
                 AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());

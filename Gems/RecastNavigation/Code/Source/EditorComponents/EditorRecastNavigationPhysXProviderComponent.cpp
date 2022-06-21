@@ -16,12 +16,12 @@ namespace RecastNavigation
     {
         BaseClass::Reflect(context);
 
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<EditorRecastNavigationPhysXProviderComponent, BaseClass>()
+            serializeContext->Class<EditorRecastNavigationPhysXProviderComponent, BaseClass>()
                 ->Version(1);
 
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorRecastNavigationPhysXProviderComponent>("Recast Navigation PhysX Provider",
                     "[Collects triangle geometry from PhysX scene for navigation mesh within the area defined by a shape component.]")
@@ -35,5 +35,24 @@ namespace RecastNavigation
     EditorRecastNavigationPhysXProviderComponent::EditorRecastNavigationPhysXProviderComponent(const RecastNavigationPhysXProviderConfig& config)
         : BaseClass(config)
     {
+    }
+
+    void EditorRecastNavigationPhysXProviderComponent::Activate()
+    {
+        m_controller.m_config.m_useEditorScene = true;
+        BaseClass::Activate();
+    }
+
+    void EditorRecastNavigationPhysXProviderComponent::Deactivate()
+    {
+        BaseClass::Deactivate();
+    }
+
+    void EditorRecastNavigationPhysXProviderComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        m_controller.m_config.m_useEditorScene = false;
+        // The game entity must query the regular game PhysX scene, while the Editor component must query the Editor PhysX scene.
+        BaseClass::BuildGameEntity(gameEntity);
+        m_controller.m_config.m_useEditorScene = true;
     }
 } // namespace RecastNavigation
