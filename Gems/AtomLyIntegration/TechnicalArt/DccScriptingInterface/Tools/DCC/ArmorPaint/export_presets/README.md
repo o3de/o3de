@@ -15,6 +15,6 @@ Inside of the ArmorPaint software, the top menu bar under File > Export Textures
 
 Use the Presets tab.
 
-Press the Import button and find the o3de.json export preset file found in this repositoy. 
+Press the Import button and find the o3de.json export preset file found in this repository. 
 
 Now, under the Export Textures Tab, Preset menu dropdown now should have an o3de option to select.
