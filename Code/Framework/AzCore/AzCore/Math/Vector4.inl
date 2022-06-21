@@ -39,6 +39,7 @@ namespace AZ
     AZ_MATH_INLINE Vector4::Vector4(const Vector2& source)
     : m_value(Simd::Vec4::FromVec2(source.GetSimdValue()))
     {
+        m_z = 0.0f;
         m_w = 1.0f;
     }
 

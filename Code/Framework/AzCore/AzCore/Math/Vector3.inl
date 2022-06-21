@@ -35,6 +35,7 @@ namespace AZ
     AZ_MATH_INLINE Vector3::Vector3(const Vector2& source)
         : m_value(Simd::Vec3::FromVec2(source.GetSimdValue()))
     {
+        m_z = 0.0f;
     }
 
     AZ_MATH_INLINE Vector3::Vector3(const Vector2& source, float z)
