@@ -14,8 +14,21 @@ import azlmbr.bus as bus
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 NODE_INSPECTOR_QT, NODE_INSPECTOR_UI)
+                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI)
 
+
+def click_menu_option(window, option_text):
+    """
+    function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
+    if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
+
+    param window: the qt window object where the menu option is located
+    param option_text: the label string used in the menu option that you want to click
+
+    returns none
+    """
+    action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
+    action.trigger()
 
 def save_script_event_file(self, file_path):
     """
@@ -44,6 +57,10 @@ def initialize_sc_editor_objects(self):
     self.sc_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
     self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
+def initialize_variable_manager_object(self):
+    self.variable_manager = self.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
+    if not self.variable_manager.isVisible():
+        self.click_menu_option(self.sc_editor, VARIABLE_MANAGER_QT)
 
 #deprecate these two functions and break them into smaller functions like the one above for qt object model prep
 def initialize_asset_editor_qt_objects(self):
