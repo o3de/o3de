@@ -223,7 +223,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         modPos = input.m_worldPosition.xy % ObjectSrg::m_patchData.m_xyScale;
         if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > ObjectSrg::m_patchData.m_xyScale - quadSpacing * 0.5))
         {
-            output.m_diffuseColor.g += 1.0;
+            output.m_diffuseColor.b += 1.0;
         }
     }
 

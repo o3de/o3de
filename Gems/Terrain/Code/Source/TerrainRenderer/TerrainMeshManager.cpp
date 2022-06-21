@@ -271,7 +271,9 @@ namespace Terrain
         AZ::RHI::DrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
         sector.m_rhiDrawPacketClod = drawPacketBuilder.End();
 
-        // Generate draw packets for each of the quads individually.
+        // Generate draw packets for each of the quadrants so they can be used to fill in places where the previous LOD didn't draw.
+        // Due to z-ordered index buffer, no additional data is needed, just a different index offset and index count. Each quarter of
+        // the index buffer perfectly corresponds to a quadrant of the sector in Z order (TL, TR, BL, BR).
         uint32_t lowerLodIndexCount = indexCount / 4;
         for (uint32_t i = 0; i < 4; ++i)
         {
@@ -339,8 +341,6 @@ namespace Terrain
                     sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(m_dummyLodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
 
-                sector.m_lodLevel = lodLevel;
-
                 BuildDrawPacket(sector);
             }
         }
@@ -353,7 +353,8 @@ namespace Terrain
 
         // First pass - gather a list of all sectors that could render based on their status and lod, disregarding camera frustums.
 
-        if (m_previousCameraPosition != mainCameraPosition)
+        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; // This could probably be relaxed further, but is a good starting point.
+        if (m_previousCameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
         {
             m_previousCameraPosition = mainCameraPosition;
 
@@ -369,7 +370,7 @@ namespace Terrain
 
                 // Construct a grid of bools that covers the entire space of the next LOD at the scale of the current LOD, and
                 // mark everything to false. As sectors in this LOD are drawn, mark appropriate locations in the grid as true.
-                // The next LOD can use this data to figure out where it shouldn't draw because a higher lod has already drawn.
+                // The next LOD will use this data to figure out where it shouldn't draw because a higher lod has already drawn.
 
                 AZStd::vector<bool> selectedSectors;
                 selectedSectors.resize_no_construct(nextLodSectorCount * nextLodSectorCount);
@@ -383,6 +384,7 @@ namespace Terrain
                 }
                 else
                 {
+                    // This is the start coord of the next LOD in the current LOD's scale.
                     drawnStartCoord = m_sectorStack.at(stackIndex + 1).m_startCoord * 2;
                 }
 
@@ -394,7 +396,7 @@ namespace Terrain
 
                     if (!sector.m_hasData)
                     {
-                        selectedSectors.at(selectedIndex) = true; // There's no terrain here, so mark as "selected" so another LOD doesn't try to draw here.
+                        selectedSectors.at(selectedIndex) = true; // Terrain just doesn't exist here, so mark as "selected" so another LOD doesn't try to draw here.
                         continue;
                     }
 
@@ -413,24 +415,25 @@ namespace Terrain
                         Vector2i previousCoord = (sector.m_worldCoord - sectorStack.m_startCoord) * 2;
                         uint32_t previousDrawnIndex = previousCoord.m_y * nextLodSectorCount + previousCoord.m_x;
 
+                        // Check the 4 sectors in the previous LOD that are covered by this sector.
                         uint8_t coveredByHigherLod =
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex)) << 0) |
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + 1)) << 1) |
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount)) << 2) |
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount + 1)) << 3);
+                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex))                          << 0) | // Top left
+                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + 1))                      << 1) | // Top right
+                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount))     << 2) | // Bottom left
+                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount + 1)) << 3);  // Bottom right
 
                         if (coveredByHigherLod == 0b1111)
                         {
-                            continue; // totally covered by previous LOD
+                            continue; // Completely covered by previous LOD, so do nothing
                         }
                         if (coveredByHigherLod == 0b0000)
                         {
-                            // not covered at all by previous LOD
+                            // Not covered at all by previous LOD, so the draw entire sector
                             m_sectorsToDraw.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
                         }
                         else
                         {
-                            // partially covered by previous LOD. Check each quadrant.
+                            // Partially covered by previous LOD. Draw only missing quadrants
                             for (uint8_t i = 0; i < 4; ++i)
                             {
                                 if ((coveredByHigherLod & 0b0001) == 0b0000)
@@ -638,22 +641,20 @@ namespace Terrain
         {
             for (uint16_t x = 0; x < GridSize; ++x)
             {
-                {
-                    uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
-                    quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
+                uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
+                quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
 
-                    const uint16_t topLeft = y * GridVerts1D + x;
-                    const uint16_t topRight = topLeft + 1;
-                    const uint16_t bottomLeft = topLeft + GridVerts1D;
-                    const uint16_t bottomRight = bottomLeft + 1;
+                const uint16_t topLeft = y * GridVerts1D + x;
+                const uint16_t topRight = topLeft + 1;
+                const uint16_t bottomLeft = topLeft + GridVerts1D;
+                const uint16_t bottomRight = bottomLeft + 1;
 
-                    m_indices.at(quadOrder + 0) = topLeft;
-                    m_indices.at(quadOrder + 1) = topRight;
-                    m_indices.at(quadOrder + 2) = bottomLeft;
-                    m_indices.at(quadOrder + 3) = bottomLeft;
-                    m_indices.at(quadOrder + 4) = topRight;
-                    m_indices.at(quadOrder + 5) = bottomRight;
-                }
+                m_indices.at(quadOrder + 0) = topLeft;
+                m_indices.at(quadOrder + 1) = topRight;
+                m_indices.at(quadOrder + 2) = bottomLeft;
+                m_indices.at(quadOrder + 3) = bottomLeft;
+                m_indices.at(quadOrder + 4) = topRight;
+                m_indices.at(quadOrder + 5) = bottomRight;
             }
         }
 
@@ -963,6 +964,8 @@ namespace Terrain
 
     void TerrainMeshManager::ProcessSectorUpdates(AZStd::vector<AZStd::vector<StackSectorData*>>& sectorUpdates)
     {
+        AZ::JobCompletion jobCompletion;
+
         for (uint32_t lodLevel = 0; lodLevel < sectorUpdates.size(); ++lodLevel)
         {
             auto& sectors = sectorUpdates.at(lodLevel);
@@ -971,7 +974,6 @@ namespace Terrain
                 continue;
             }
 
-            AZ::JobCompletion jobCompletion;
             for (StackSectorData* sector : sectors)
             {
                 const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
@@ -1076,8 +1078,8 @@ namespace Terrain
                     executeGroupJob->Start();
                 }
             }
-            jobCompletion.StartAndWaitForCompletion();
         }
+        jobCompletion.StartAndWaitForCompletion();
 
     }
 

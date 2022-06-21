@@ -149,7 +149,6 @@ namespace Terrain
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
-            uint8_t m_lodLevel = 0xFF;
             bool m_hasData = false;
         };
 

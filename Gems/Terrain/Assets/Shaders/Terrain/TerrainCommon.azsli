@@ -86,8 +86,6 @@ struct VertexInput
     float2 m_xyNormal : NORMAL0;
     float1 m_lodZPosition : POSITION2;
     float2 m_lodXYNormal : NORMAL1;
-
-    uint m_vertexId : SV_VertexID; // Used for continuous lod
 };
 
 float2 GetWorldXYPosition(in ObjectSrg::PatchData patchData, in float2 vertexPosition)
