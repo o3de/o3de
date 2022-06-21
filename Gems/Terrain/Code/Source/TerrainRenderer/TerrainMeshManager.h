@@ -196,7 +196,7 @@ namespace Terrain
             NormalDataType m_normal;
         };
 
-        struct SectorToDraw
+        struct CandidateSector
         {
             AZ::Aabb m_aabb;
             const AZ::RHI::DrawPacket* m_rhiDrawPacket;
@@ -261,7 +261,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<StackData> m_sectorStack;
-        AZStd::vector<SectorToDraw> m_sectorsToDraw;
+        AZStd::vector<CandidateSector> m_candidateSectors;
         uint32_t m_1dSectorCount = 0;
 
         AZ::Vector3 m_previousCameraPosition = AZ::Vector3::CreateZero();

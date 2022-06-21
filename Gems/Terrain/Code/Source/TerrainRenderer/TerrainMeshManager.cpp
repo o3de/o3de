@@ -362,7 +362,7 @@ namespace Terrain
             uint32_t nextLodSectorCount = m_1dSectorCount * 2; // The number of this lod's sectors that would fit into the next lod's space.
             AZStd::vector<bool> previousSelectedSectors;
 
-            m_sectorsToDraw.clear();
+            m_candidateSectors.clear();
 
             for (uint32_t stackIndex = 0; stackIndex < m_sectorStack.size(); ++stackIndex)
             {
@@ -408,7 +408,7 @@ namespace Terrain
                         if (stackIndex == 0)
                         {
                             // Since this is the first stack, no previous stack to check, so just draw.
-                            m_sectorsToDraw.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
+                            m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
                             continue;
                         }
 
@@ -429,7 +429,7 @@ namespace Terrain
                         if (coveredByHigherLod == 0b0000)
                         {
                             // Not covered at all by previous LOD, so the draw entire sector
-                            m_sectorsToDraw.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
+                            m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
                         }
                         else
                         {
@@ -438,7 +438,7 @@ namespace Terrain
                             {
                                 if ((coveredByHigherLod & 0b0001) == 0b0000)
                                 {
-                                    m_sectorsToDraw.push_back({ sector.m_quadrantAabbs.at(i), sector.m_rhiDrawPacketQuadrant.at(i).get() });
+                                    m_candidateSectors.push_back({ sector.m_quadrantAabbs.at(i), sector.m_rhiDrawPacketQuadrant.at(i).get() });
                                 }
                                 coveredByHigherLod >>= 1;
                             }
@@ -459,16 +459,16 @@ namespace Terrain
             const AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
             const AZ::Vector3 viewPosition = view->GetCameraTransform().GetTranslation();
 
-            for (SectorToDraw& sectorToDraw : m_sectorsToDraw)
+            for (CandidateSector& candidateSector : m_candidateSectors)
             {
                 float radius = 0.0f;
                 [[maybe_unused]] AZ::Vector3 center;
-                sectorToDraw.m_aabb.GetAsSphere(center, radius);
+                candidateSector.m_aabb.GetAsSphere(center, radius);
 
-                if (viewVector.Dot(viewPosition - sectorToDraw.m_aabb.GetCenter()) >= -radius || // Cheap check to eliminate sectors behind camera
-                    viewFrustum.IntersectAabb(sectorToDraw.m_aabb) == AZ::IntersectResult::Overlaps) // Check against frustum
+                if (viewVector.Dot(viewPosition - candidateSector.m_aabb.GetCenter()) >= -radius || // Cheap check to eliminate sectors behind camera
+                    viewFrustum.IntersectAabb(candidateSector.m_aabb) == AZ::IntersectResult::Overlaps) // Check against frustum
                 {
-                    view->AddDrawPacket(sectorToDraw.m_rhiDrawPacket);
+                    view->AddDrawPacket(candidateSector.m_rhiDrawPacket);
                 }
             }
         }
@@ -1063,7 +1063,7 @@ namespace Terrain
 
                 ShaderObjectData objectSrgData;
                 objectSrgData.m_xyTranslation = { sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters };
-                objectSrgData.m_xyScale = gridMeters * (256.0f / GridSize);
+                objectSrgData.m_xyScale = gridMeters * (aznumeric_cast<float>(AZStd::numeric_limits<uint8_t>::max()) / GridSize);
                 objectSrgData.m_lodLevel = lodLevel;
                 objectSrgData.m_rcpLodLevel = 1.0f / (lodLevel + 1);
                 sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
