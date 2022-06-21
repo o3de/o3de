@@ -506,6 +506,7 @@ class AndroidProjectGenerator(object):
         :param extra_cmake_configure_args Additional arguments to supply cmake when configuring a project
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
+        :param unity_build_enabled:     Flag to enable unity build.
         """
         self.env = {}
 

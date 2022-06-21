@@ -271,7 +271,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
+                        AZ::AzToolsFramework
                         Gem::RecastNavigation.Private.Object
+                        Gem::RecastNavigation.Editor.Private.Object
+                        Gem::RecastNavigation.API
+                        Gem::LmbrCentral.API
                         Gem::PhysX.Mocks
             )
 

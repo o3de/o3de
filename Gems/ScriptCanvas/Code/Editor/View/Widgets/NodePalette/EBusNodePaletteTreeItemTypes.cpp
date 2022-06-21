@@ -147,8 +147,7 @@ namespace ScriptCanvasEditor
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
-        const char* ebusName = m_busName.toUtf8().data();
-        auto behaviorEbus = behaviorContext->m_ebuses.find(ebusName);
+        auto behaviorEbus = behaviorContext->m_ebuses.find(m_busName.toUtf8().data());
 
         ScriptCanvasEditorTools::TranslationGeneration translation;
         translation.TranslateEBus(behaviorEbus->second);

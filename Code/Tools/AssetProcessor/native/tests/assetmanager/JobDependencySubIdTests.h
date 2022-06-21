@@ -42,7 +42,7 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
-    struct JobDependencySubIdTest : UnitTest::ScopedAllocatorSetupFixture
+    struct JobDependencySubIdTest : ::UnitTest::ScopedAllocatorSetupFixture
     {
         void SetUp() override;
         void TearDown() override;

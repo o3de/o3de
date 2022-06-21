@@ -24,6 +24,6 @@ namespace RecastNavigation
         static void Reflect(AZ::ReflectContext* context);
 
         //! Either use Editor PhysX world or game PhysX world.
-        float m_useEditorScene = false;
+        bool m_useEditorScene = false;
     };
 } // namespace RecastNavigation
