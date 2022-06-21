@@ -50,6 +50,9 @@ namespace AzToolsFramework
         virtual ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
+        virtual ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
+
         //! Add multiple Actions to a ToolBar. Saves time as it only updates the toolbar once at the end.
         //! @param toolBarIdentifier The identifier for the ToolBar the actions are being added to.
         //! @param actions A vector of pairs of identifiers for the actions to add to the toolbar and their sort position.

@@ -21,6 +21,7 @@ class QWidget;
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class MenuManagerInterface;
     class ToolBarManagerInterface;
 
     //! Editor ToolBar class definitions.
@@ -36,6 +37,7 @@ namespace AzToolsFramework
         // Add Menu Items
         void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
+        void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, AZStd::string subMenuIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
 
         // Remove Menu Items
@@ -64,12 +66,13 @@ namespace AzToolsFramework
 
         struct ToolBarItem
         {
-            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = "");
+            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = "", AZStd::string subMenuIdentifier = "");
             explicit ToolBarItem(QWidget* widget);
 
             ToolBarItemType m_type;
 
             AZStd::string m_identifier;
+            AZStd::string m_subMenuIdentifier;
             QWidgetAction* m_widgetAction = nullptr;
         };
 
@@ -78,6 +81,7 @@ namespace AzToolsFramework
         AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
+        inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
         inline static ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
     };
 

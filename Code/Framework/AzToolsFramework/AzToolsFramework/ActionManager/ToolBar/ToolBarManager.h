@@ -31,6 +31,8 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) override;
         ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
         ToolBarManagerOperationResult AddActionsToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) override;
         ToolBarManagerOperationResult RemoveActionFromToolBar(

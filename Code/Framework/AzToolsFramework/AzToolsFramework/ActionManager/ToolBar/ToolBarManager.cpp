@@ -75,6 +75,37 @@ namespace AzToolsFramework
         toolBarIterator->second.RefreshToolBar();
         return AZ::Success();
     }
+    
+    ToolBarManagerOperationResult ToolBarManager::AddActionWithSubMenuToToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar has not been registered.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        if (!action)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        if (toolBarIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar already contains action.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.AddActionWithSubMenu(sortIndex, actionIdentifier, subMenuIdentifier);
+        toolBarIterator->second.RefreshToolBar();
+        return AZ::Success();
+    }
 
     ToolBarManagerOperationResult ToolBarManager::AddActionsToToolBar(
         const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions)
