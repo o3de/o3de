@@ -453,7 +453,11 @@ void EditorActionsHandler::RefreshToolActions()
 
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsMenuItems;
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsToolBarItems;
-    int sortKey = 10;
+
+    // Place all actions in the same sort index in the menu and toolbar.
+    // This will display them in order of addition (alphabetical) and ensure no external tool
+    // can add items in-between tools without passing through the QtViewPanes system.
+    const int sortKey = 0;
 
     // Get the tools list and refresh the menu.
     const QtViewPanes& viewpanes = m_qtViewPaneManager->GetRegisteredPanes();
@@ -503,8 +507,6 @@ void EditorActionsHandler::RefreshToolActions()
         {
             toolsToolBarItems.push_back({ toolActionIdentifier, sortKey });
         }
-
-        sortKey += 10;
     }
 
     m_menuManagerInterface->AddActionsToMenu(ToolsMenuIdentifier, toolsMenuItems);
