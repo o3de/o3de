@@ -158,35 +158,40 @@ class TestsPythonAssetProcessing_APBatch(object):
         # This test validates that the correct meshes are included and excluded in the default mesh groups
         # of a scene containing mesh nodes that have a common parent transform node
 
-        assetinfo_dbg = 'meshgroups/blender_with_common_parent.assetinfo.dbg'
-        asset_folder_name = 'MeshGroups'
-        assetinfo_dbg_file = self.compute_asset_debug_file(workspace, asset_processor, assetinfo_dbg, asset_folder_name, ap_setup_fixture)
-        assert assetinfo_dbg_file, "The debug assetinfo file is missing"
-
-        with open(assetinfo_dbg_file, 'r') as file :
-            filedata = file.read()
-
-        dgb_dict = json.loads(filedata)
-
-        expected_mesh_nodes = {
-            "RootNode.AstroVAC v10.CPU:1.CPU.CUPCase",
-            "RootNode.AstroVAC v10.CPU:1.CPU.CPUUserDoor",
-            "RootNode.AstroVAC v10.CPU:1.CPU.CPUCover"
+        assetinfo_dbg_list = {
+            "meshgroups/blender_with_common_parent.assetinfo.dbg",
+            "meshgroups/maya_with_common_parent.assetinfo.dbg"
         }
 
-        found_mesh_nodes = set()
+        expected_mesh_nodes = {
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CUPCase",
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CPUUserDoor",
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CPUCover"
+        }
 
-        # Check that each default mesh group contains one of the expected mesh nodes in its selected
-        # node list and has the rest of the expected mesh nodes in its unselected node list
-        groups = dgb_dict['values']
-        for group in groups:
-            if 'MeshGroup' in group.get('$type', str()) and group.get('name', str()).startswith('default_'):
-                selection_lists = group.get('nodeSelectionList')
-                selected_node_list = selection_lists.get('selectedNodes', [])
-                assert len(selected_node_list) == 1, "Selected node list does not contain exactly one mesh"
-                current_set = expected_mesh_nodes.copy()
-                current_set.remove(selected_node_list[0])
-                unselected_node_list = selection_lists.get('unselectedNodes', [])
-                assert current_set == set(unselected_node_list), "Unselected node list does not contain the correct meshes"
-                found_mesh_nodes.add(selected_node_list[0])
-        assert found_mesh_nodes == expected_mesh_nodes, "Not all expected mesh groups found"
+        for assetinfo_dbg in assetinfo_dbg_list:
+            asset_folder_name = 'MeshGroups'
+            assetinfo_dbg_file = self.compute_asset_debug_file(workspace, asset_processor, assetinfo_dbg, asset_folder_name, ap_setup_fixture)
+            assert assetinfo_dbg_file, "The debug assetinfo file is missing"
+
+            with open(assetinfo_dbg_file, 'r') as file :
+                filedata = file.read()
+
+            dgb_dict = json.loads(filedata)
+
+            found_mesh_nodes = set()
+
+            # Check that each default mesh group contains one of the expected mesh nodes in its selected
+            # node list and has the rest of the expected mesh nodes in its unselected node list
+            groups = dgb_dict['values']
+            for group in groups:
+                if 'MeshGroup' in group.get('$type', str()) and group.get('name', str()).startswith('default_'):
+                    selection_lists = group.get('nodeSelectionList')
+                    selected_node_list = selection_lists.get('selectedNodes', [])
+                    assert len(selected_node_list) == 1, "Selected node list does not contain exactly one mesh"
+                    current_set = expected_mesh_nodes.copy()
+                    current_set.remove(selected_node_list[0])
+                    unselected_node_list = selection_lists.get('unselectedNodes', [])
+                    assert current_set == set(unselected_node_list), "Unselected node list does not contain the correct meshes"
+                    found_mesh_nodes.add(selected_node_list[0])
+            assert found_mesh_nodes == expected_mesh_nodes, "Not all expected mesh groups found"
