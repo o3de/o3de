@@ -21,6 +21,23 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI((GraphScopedIdentifier, "{1B01849B-57BA-4926-8DF6-252966E2BF8F}", T));
+
+        static constexpr void DeprecatedTypeNameVisitor(
+            const AZ::DeprecatedTypeNameCallback& visitCallback)
+        {
+            // GraphScopedIdentifier previously restricted the typename to 128 bytes
+            AZStd::array<char, 128> deprecatedName{};
+
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "GraphScopedIdentifier<");
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), AZ::AzTypeInfo<T>::Name());
+            // The old AZ::Internal::AggregateTypes implementations placed a space after each argument
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), " >");
+
+            if (visitCallback)
+            {
+                visitCallback(deprecatedName.data());
+            }
+        }
         
         GraphScopedIdentifier() = default;
         GraphScopedIdentifier(const ScriptCanvasId& scriptCanvasId, const T& identifier)
