@@ -25,12 +25,14 @@ namespace AZ
     namespace Render
     {
         class FullscreenShadowPass final
-            : public RPI::ComputePass
+            : public RPI::FullscreenTrianglePass
         {
             AZ_RPI_PASS(FullscreenShadowPass);
 
+            using Base = RPI::FullscreenTrianglePass;
+
         public:
-            AZ_RTTI(AZ::Render::FullscreenShadowPass, "{A7D3076A-DD01-4B79-AF34-4BB72DAD35E2}", RPI::ComputePass);
+            AZ_RTTI(AZ::Render::FullscreenShadowPass, "{A7D3076A-DD01-4B79-AF34-4BB72DAD35E2}", RPI::FullscreenTrianglePass);
             AZ_CLASS_ALLOCATOR(FullscreenShadowPass, SystemAllocator, 0);
             virtual ~FullscreenShadowPass() = default;
 

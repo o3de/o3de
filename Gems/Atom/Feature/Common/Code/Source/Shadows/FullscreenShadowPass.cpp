@@ -28,7 +28,7 @@ namespace AZ
         }
 
         FullscreenShadowPass::FullscreenShadowPass(const RPI::PassDescriptor& descriptor)
-            : RPI::ComputePass(descriptor)
+            : Base(descriptor)
             , m_outputName("Output")
             , m_depthInputName("Depth")
         {
@@ -37,7 +37,7 @@ namespace AZ
         void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             SetConstantData();
-            RPI::ComputePass::CompileResources(context);
+            Base::CompileResources(context);
         }
 
         RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
