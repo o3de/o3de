@@ -47,4 +47,27 @@ namespace RecastNavigation
                 ->Handler<RecastNavigationNotificationHandler>();
         }
     }
+
+    void RecastNavigationMeshComponent::Activate()
+    {
+        BaseClass::Activate();
+        if (m_controller.GetConfiguration().m_calculateOnLevelLoad)
+        {
+            AzFramework::GameEntityContextEventBus::Handler::BusConnect();
+        }
+    }
+
+    void RecastNavigationMeshComponent::Deactivate()
+    {
+        if (m_controller.GetConfiguration().m_calculateOnLevelLoad)
+        {
+            AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
+        }
+        BaseClass::Deactivate();
+    }
+
+    void RecastNavigationMeshComponent::OnGameEntitiesStarted()
+    {
+        m_controller.UpdateNavigationMeshAsync();
+    }
 } // namespace RecastNavigation

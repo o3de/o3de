@@ -90,6 +90,8 @@ namespace RecastNavigation
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationMeshConfig::m_enableDebugDraw,
                         "Debug Draw", "If enabled, draw the navigation mesh in game mode. Does not affect Editor preview.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationMeshConfig::m_calculateOnLevelLoad,
+                        "Calculate on Level Load", "If enabled, calculates the mesh when the level is loaded.")
 
                     // Advanced configuration
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced Configuration")

@@ -37,7 +37,8 @@ namespace RecastNavigation
                 ->Field("Border Size", &Self::m_borderSize)
                 ->Field("Debug Draw", &Self::m_enableDebugDraw)
                 ->Field("Editor Preview", &Self::m_enableEditorPreview)
-                ->Version(1)
+                ->Field("Calculate on Level Load", &Self::m_calculateOnLevelLoad)
+                ->Version(2)
                 ;
         }
     }

@@ -57,6 +57,9 @@ namespace RecastNavigation
 
         //! If enabled, previews the navigation mesh in the Editor's viewport.
         bool m_enableEditorPreview = false;
+
+        //! If enabled, calculates the mesh when the level is loaded.
+        bool m_calculateOnLevelLoad = false;
     };
 
 } // namespace RecastNavigation
