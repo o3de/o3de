@@ -7,7 +7,6 @@
  */
 
 #include <TerrainRenderer/TerrainMeshManager.h>
-#include <TerrainRenderer/Vector2i.h>
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/Frustum.h>
@@ -113,6 +112,7 @@ namespace Terrain
     void TerrainMeshManager::Reset()
     {
         m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
         m_sectorLods.clear();
         m_rebuildSectors = true;
     }
@@ -152,9 +152,8 @@ namespace Terrain
 
     void TerrainMeshManager::CheckLodGridsForUpdate(AZ::Vector3 newPosition)
     {
-        // lots of sectors that need updating, separated by LOD level.
-        AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate;
-        sectorsToUpdate.resize(m_sectorLods.size());
+        // lods of sectors that need updating, separated by LOD level.
+        AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate(m_sectorLods.size());
 
         for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
@@ -307,6 +306,7 @@ namespace Terrain
 
         m_sectorLods.clear();
         m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
 
         const uint8_t lodCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
@@ -357,6 +357,13 @@ namespace Terrain
     {
         AZ::Vector3 mainCameraPosition = mainView->GetCameraTransform().GetTranslation();
         CheckLodGridsForUpdate(mainCameraPosition);
+
+        for (Sector* sector : m_sectorsThatNeedSrgCompiled)
+        {
+            sector->m_srg->Compile();
+            sector->m_isQueuedForSrgCompile = false;
+        }
+        m_sectorsThatNeedSrgCompiled.clear();
 
         // Only update candidate sectors if the camera has moved. This could probably be relaxed further, but is a good starting point.
         const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; 
@@ -481,6 +488,7 @@ namespace Terrain
     {
         m_sectorLods.clear();
         m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
         m_rebuildSectors = true;
     }
 
@@ -508,8 +516,7 @@ namespace Terrain
                 if (!m_rebuildSectors)
                 {
                     // Rebuild any sectors in the dirty region if they aren't all being rebuilt
-                    AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate;
-                    sectorsToUpdate.resize(m_sectorLods.size());
+                    AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate(m_sectorLods.size());
                     ForOverlappingSectors(clampedDirtyRegion,
                         [&sectorsToUpdate](Sector& sectorData, uint32_t lodLevel)
                         {
@@ -687,10 +694,10 @@ namespace Terrain
                     clodHeightNormals[zOrderIndex] =
                     {
                         HeightDataType((lodHeightsNormals[lodIndex1].m_height + lodHeightsNormals[lodIndex2].m_height) / 2),
-                        NormalDataType(
+                        NormalXYDataType(
                         {
-                            int16_t((lodHeightsNormals[lodIndex1].m_normal.first + lodHeightsNormals[lodIndex2].m_normal.first) / 2),
-                            int16_t((lodHeightsNormals[lodIndex1].m_normal.second + lodHeightsNormals[lodIndex2].m_normal.second) / 2)
+                            int8_t((lodHeightsNormals[lodIndex1].m_normal.first + lodHeightsNormals[lodIndex2].m_normal.first) / 2),
+                            int8_t((lodHeightsNormals[lodIndex1].m_normal.second + lodHeightsNormals[lodIndex2].m_normal.second) / 2)
                         })
                     };
                 }
@@ -782,8 +789,8 @@ namespace Terrain
         float maxHeight = 0.0f;
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
-        constexpr float maxUint15 = float(AZStd::numeric_limits<uint16_t>::max() / 2);
-        constexpr float maxInt16 = AZStd::numeric_limits<int16_t>::max();
+        constexpr float MaxHeightHalf = float(AZStd::numeric_limits<HeightDataType>::max() / 2);
+        constexpr float MaxNormal = AZStd::numeric_limits<NormalDataType>::max();
 
         for (uint16_t y = 0; y < request.m_samplesY; ++y)
         {
@@ -809,10 +816,10 @@ namespace Terrain
 
                 const float clampedHeight = AZ::GetClamp(height * rcpWorldZ, 0.0f, 1.0f);
 
-                // For continuous LOD, it needs to be possible to create a height that's exactly in between any other height, so scale to 15 bits
-                // instead of 16, then multiply by 2, ensuring there's always an in-between value available.
-                const uint16_t uint16Height = aznumeric_cast<uint16_t>(clampedHeight * maxUint15 + 0.5f); // always positive, so just add 0.5 to round.
-                meshHeightsNormals.at(coord).m_height = uint16Height * 2;
+                // For continuous LOD, it needs to be possible to create a height that's exactly in between any other height, so scale
+                // and quantize to half the height, then multiply by 2, ensuring there's always an in-between value available.
+                const HeightDataType quantizedHeight = aznumeric_cast<HeightDataType>(clampedHeight * MaxHeightHalf + 0.5f); // always positive, so just add 0.5 to round.
+                meshHeightsNormals.at(coord).m_height = quantizedHeight * 2;
 
                 if (minHeight > height)
                 {
@@ -862,8 +869,8 @@ namespace Terrain
 
                 meshHeightsNormals.at(coord).m_normal =
                 {
-                    aznumeric_cast<int16_t>(AZStd::lround(normalX * maxInt16)),
-                    aznumeric_cast<int16_t>(AZStd::lround(normalY * maxInt16)),
+                    aznumeric_cast<NormalDataType>(AZStd::lround(normalX * MaxNormal)),
+                    aznumeric_cast<NormalDataType>(AZStd::lround(normalY * MaxNormal)),
                 };
             }
         }
@@ -938,7 +945,7 @@ namespace Terrain
                         {
                             // It's unlikely but possible for the higher lod to have data and the lower lod to not. In that case 
                             // meshLodHeights will be empty, so fill it with values that represent "no data".
-                            HeightNormalVertex defaultValue = { NoTerrainVertexHeight, NormalDataType(int16_t(0), int16_t(0)) };
+                            HeightNormalVertex defaultValue = { NoTerrainVertexHeight, NormalXYDataType(NormalDataType(0), NormalDataType(0)) };
                             AZStd::fill(meshLodHeightsNormals.begin(), meshLodHeightsNormals.end(), defaultValue);
                         }
                         UpdateSectorLodBuffers(*sector, meshHeightsNormals, meshLodHeightsNormals);
@@ -951,7 +958,10 @@ namespace Terrain
                 objectSrgData.m_lodLevel = lodLevel;
                 objectSrgData.m_rcpLodLevel = 1.0f / (lodLevel + 1);
                 sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
-                sector->m_srg->Compile();
+                if (!sector->m_isQueuedForSrgCompile)
+                {
+                    m_sectorsThatNeedSrgCompiled.push_back(sector);
+                }
                 sector->m_hasData = false; // mark the terrain as not having data for now. Once a job runs if it actually has data it'll flip to true.
 
                 // Check against the area of terrain that could appear in this sector for any terrain areas. If none exist then skip updating the mesh.

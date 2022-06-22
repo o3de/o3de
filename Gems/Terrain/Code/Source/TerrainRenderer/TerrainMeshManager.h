@@ -23,6 +23,8 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
+#include <TerrainRenderer/Vector2i.h>
+
 namespace AZ::RPI
 {
     class Scene;
@@ -113,7 +115,14 @@ namespace Terrain
     private:
 
         using HeightDataType = uint16_t;
-        using NormalDataType = AZStd::pair<int16_t, int16_t>;
+        using NormalDataType = int8_t;
+        using NormalXYDataType = AZStd::pair<NormalDataType, NormalDataType>;
+
+        static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R8G8_UNORM;
+        static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
+        static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R8G8_SNORM;
+        static constexpr uint32_t RayTracingQuads1D = 200;
+        static constexpr HeightDataType NoTerrainVertexHeight = AZStd::numeric_limits<HeightDataType>::max();
 
         enum StreamIndex : uint32_t
         {
@@ -145,6 +154,7 @@ namespace Terrain
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 
             bool m_hasData = false;
+            bool m_isQueuedForSrgCompile = false;
         };
 
         struct SectorLodGrid
@@ -194,7 +204,7 @@ namespace Terrain
         struct HeightNormalVertex
         {
             HeightDataType m_height;
-            NormalDataType m_normal;
+            NormalXYDataType m_normal;
         };
 
         struct CandidateSector
@@ -202,12 +212,6 @@ namespace Terrain
             AZ::Aabb m_aabb;
             const AZ::RHI::DrawPacket* m_rhiDrawPacket;
         };
-
-        static constexpr AZ::RHI::Format XYPositionFormat = AZ::RHI::Format::R8G8_UNORM;
-        static constexpr AZ::RHI::Format HeightFormat = AZ::RHI::Format::R16_UNORM;
-        static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R16G16_SNORM;
-        static constexpr uint32_t RayTracingQuads1D = 200;
-        static constexpr HeightDataType NoTerrainVertexHeight = AZStd::numeric_limits<HeightDataType>::max();
 
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
@@ -265,6 +269,7 @@ namespace Terrain
 
         AZStd::vector<SectorLodGrid> m_sectorLods;
         AZStd::vector<CandidateSector> m_candidateSectors;
+        AZStd::vector<Sector*> m_sectorsThatNeedSrgCompiled;
         uint32_t m_1dSectorCount = 0;
 
         // Set up the initial camera position impossible to force an update.
@@ -279,6 +284,5 @@ namespace Terrain
         bool m_rebuildDrawPackets{ false };
 
         AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
-
     };
 }
