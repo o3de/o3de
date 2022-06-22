@@ -37,7 +37,7 @@ ly_add_target(
 # 1.compression_private_files.cmake
 # 2.${pal_dir}/compression_private_files.cmake
 ly_add_target(
-    NAME Compression.Private.Object OBJECT
+    NAME Compression.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         compression_private_files.cmake
@@ -102,7 +102,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # which is only to be used by this Gem's CMakeLists.txt and any Subdirectories
     # Other Gems should not use this target
     ly_add_target(
-        NAME Compression.Editor.Private.Object OBJECT
+        NAME Compression.Editor.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
             compression_editor_private_files.cmake
