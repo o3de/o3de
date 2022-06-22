@@ -1204,6 +1204,44 @@ namespace EMotionFX
     }
 #endif
 
+    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex)
+    {
+        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex);
+
+        if (sampleJointDataIndex == rootJointDataIndex)
+        {
+            return;
+        }
+
+        if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
+        {
+            m_jointData[rootJointDataIndex] = m_jointData[sampleJointDataIndex];
+            for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
+            {
+                // Zero out the vertical movement.
+                m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetX(0);
+                m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetZ(0);
+
+                // Compensation in samples.
+                const float x = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX();
+                // const float y = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY();
+                const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
+
+                m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, 0, z);
+            }
+        }
+
+        if (m_morphData.size() > sampleJointDataIndex && m_morphData.size() > rootJointDataIndex)
+        {
+            m_morphData[rootJointDataIndex] = m_morphData[sampleJointDataIndex];
+        }
+
+        if (m_floatData.size() > sampleJointDataIndex && m_floatData.size() > rootJointDataIndex)
+        {
+            m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
+        }
+    }
+
     Transform NonUniformMotionData::SampleJointTransform(float sampleTime, size_t jointDataIndex) const
     {
         return Transform
