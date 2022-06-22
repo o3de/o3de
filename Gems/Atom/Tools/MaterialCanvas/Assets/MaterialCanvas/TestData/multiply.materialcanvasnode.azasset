@@ -3,18 +3,22 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Color Operations",
-        "title": "Divide Color",
+        "category": "Math Operations",
+        "title": "Multiply",
         "inputSlots": [
             {
-                "name": "inColor1",
-                "displayName": "Color1",
-                "description": "Color1",
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
                 "supportedDataTypes": [
-                    "Color"
+                    "float",
+                    "float2",
+                    "float3",
+                    "float4",
+                    "color"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
                         1.0,
                         1.0,
@@ -24,14 +28,18 @@
                 }
             },
             {
-                "name": "inColor2",
-                "displayName": "Color2",
-                "description": "Color2",
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
                 "supportedDataTypes": [
-                    "Color"
+                    "float",
+                    "float2",
+                    "float3",
+                    "float4",
+                    "color"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
                         1.0,
                         1.0,
@@ -43,14 +51,14 @@
         ],
         "outputSlots": [
             {
-                "name": "outColor",
-                "displayName": "Color",
-                "description": "Color",
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
-                    "Color"
+                    "float4"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
                         1.0,
                         1.0,

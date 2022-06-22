@@ -3,65 +3,65 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Color Operations",
-        "title": "Combine Color Channels",
+        "category": "Math Operations",
+        "title": "Combine",
         "inputSlots": [
             {
-                "name": "inR",
-                "displayName": "R",
-                "description": "Red color channel",
+                "name": "inX",
+                "displayName": "X",
+                "description": "X",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "inG",
-                "displayName": "G",
-                "description": "Green color channel",
+                "name": "inY",
+                "displayName": "Y",
+                "description": "Y",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "inB",
-                "displayName": "B",
-                "description": "Blue color channel",
+                "name": "inZ",
+                "displayName": "Z",
+                "description": "Z",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "inA",
-                "displayName": "A",
-                "description": "Alpha color channel",
+                "name": "inW",
+                "displayName": "W",
+                "description": "W",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             }
         ],
         "outputSlots": [
             {
-                "name": "outColor",
-                "displayName": "Color",
-                "description": "Color",
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
-                    "Color"
+                    "float4"
                 ]
             }
         ]

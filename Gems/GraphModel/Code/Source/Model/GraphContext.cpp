@@ -78,7 +78,7 @@ namespace GraphModel
         return {};
     }
 
-    DataTypePtr GraphContext::GetDataType(AZ::Uuid typeId) const
+    DataTypePtr GraphContext::GetDataType(const AZ::Uuid& typeId) const
     {
         for (DataTypePtr dataType : m_dataTypes)
         {

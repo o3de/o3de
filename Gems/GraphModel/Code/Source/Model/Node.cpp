@@ -276,6 +276,7 @@ namespace GraphModel
         SlotId slotId(name);
         return GetSlot(slotId);
     }
+
     ConstSlotPtr Node::GetSlot(const SlotName& name) const
     {
         SlotId slotId(name);
@@ -305,24 +306,6 @@ namespace GraphModel
         }
 
         return InvalidExtendableSlot;
-    }
-
-    DataTypePtr Node::GetDataType(ConstSlotPtr slot) const
-    {
-        if (slot)
-        {
-            // TODO: This method allows Nodes to introduce extra logic when slots
-            // ask what their data type should be depending on existing connections.
-            // This has been partially implemented, so for now just return the first
-            // possible data type.
-            auto possibleDataTypes = slot->GetPossibleDataTypes();
-            if (possibleDataTypes.size())
-            {
-                return possibleDataTypes[0];
-            }
-        }
-
-        return nullptr;
     }
 
     void Node::DeleteSlot(SlotPtr slot)

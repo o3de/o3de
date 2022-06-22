@@ -248,10 +248,8 @@ namespace GraphModel
         //! If valid, this will return the full list of all data types this slot could support.
         const DataTypeList& GetSupportedDataTypes() const;
 
-        //! Valid for Data and Property slots. Otherwise returns an empty DataTypeList.
-        //! If valid, this will return the subset of data types that this slot can currently accept
-        //! based on the configuration of the node this slot belongs to and/or connections to other slots on the node.
-        const DataTypeList& GetPossibleDataTypes() const;
+        //! Return true if the input data type is supported by this slot.
+        bool IsSupportedDataType(DataTypePtr dataType) const;
 
         //! Convenience functions that wrap SlotDefinition accessors (specific to definitions that support extendable slots)
         const int GetMinimumSlots() const;
@@ -284,7 +282,6 @@ namespace GraphModel
         //! AZStd::any type must match the slot's data type.
         //! Valid for Input Data and Property slots.
         void SetValue(const AZStd::any& value);
-
 
         // CJS TODO: More functions to add a bit later...
         // CJS TODO: Also cache connection information here so Slot doesn't have to search the Graph for connections
@@ -321,6 +318,7 @@ namespace GraphModel
 #endif
 
     private:
+        DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
         mutable AZStd::weak_ptr<Node> m_parentNode; //!< This is a mutable because it is just-in-time initialized in a const accessor function. This is okay because it's just a cache.
         SlotDefinitionPtr m_slotDefinition;         //!< Pointer to the SlotDefinition in the parent Node, that defines this slot.
@@ -336,7 +334,7 @@ namespace GraphModel
         const T* pValue = AZStd::any_cast<T>(&m_value);
 
         #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetGraphContext()->GetDataType<T>();
+            DataTypePtr dataTypeUsed = GetDataTypeForValue(m_value);
             AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support Value");
             AssertTypeMatch(dataTypeUsed, "Slot::GetValue used with the wrong type");
             AssertWithTypeInfo(nullptr != pValue, dataTypeUsed, "m_value does not hold data of the appropriate type");
@@ -350,7 +348,7 @@ namespace GraphModel
     void Slot::SetValue(const T& value)
     {
         #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetGraphContext()->GetDataType<T>();
+            DataTypePtr dataTypeUsed = GetDataTypeForValue(AZStd::any(value));
             AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support Value");
             AssertTypeMatch(dataTypeUsed, "Slot::SetValue used with the wrong type");
         #endif

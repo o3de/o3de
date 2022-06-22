@@ -153,9 +153,6 @@ namespace GraphModel
         //! Will return -1 if the specified slot is not extendable.
         int GetExtendableSlotCount(const SlotName& name);
 
-        //! Returns the DataType for the given slot, which can be overriden for individual nodes to extend
-        virtual DataTypePtr GetDataType(ConstSlotPtr slot) const;
-
         //! Delete the specified slot, which is only allowed on extendable slots.
         //! This method does nothing if the slot is not extendable.
         void DeleteSlot(SlotPtr slot);

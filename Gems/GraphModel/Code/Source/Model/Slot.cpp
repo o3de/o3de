@@ -494,22 +494,15 @@ namespace GraphModel
             // multiple supported types, Slot::GetDataType() will call GetParentNode()
             // to try and resolve its type, which will be a nullptr at this point
             // because the parent won't be valid yet
-            [[maybe_unused]] bool valueTypeSupported = false;
-            DataTypePtr valueDataType = GetGraphContext()->GetDataTypeForValue(m_value);
-            for (DataTypePtr dataType : GetSupportedDataTypes())
-            {
-                if (valueDataType == dataType)
-                {
-                    valueTypeSupported = true;
-                    break;
-                }
-            }
+            [[maybe_unused]] const DataTypePtr valueDataType1 = GetGraphContext()->GetDataTypeForValue(m_value);
+            [[maybe_unused]] const DataTypePtr valueDataType2 = GetDataTypeForValue(m_value);
+            [[maybe_unused]] const bool valueTypeSupported = valueDataType1 && valueDataType2 && valueDataType1 == valueDataType2;
 
-            AZ_Error(GetGraph()->GetSystemName(),
+            AZ_Error(
+                GetGraph()->GetSystemName(),
                 valueTypeSupported,
-                "Possible data corruption. Slot [%s] data type [%s] does not match any supported data type.",
-                GetDisplayName().c_str(),
-                valueDataType->GetDisplayName().c_str());
+                "Possible data corruption. Slot [%s] does not match any supported data type.",
+                GetDisplayName().c_str());
         }
     }
 
@@ -579,7 +572,23 @@ namespace GraphModel
     const AZStd::string& Slot::GetDisplayName()        const { return m_slotDefinition->GetDisplayName(); }
     const AZStd::string& Slot::GetDescription()        const { return m_slotDefinition->GetDescription(); }
     AZStd::any           Slot::GetDefaultValue()       const { return m_slotDefinition->GetDefaultValue(); }
-    const DataTypeList&  Slot::GetSupportedDataTypes() const { return m_slotDefinition->GetSupportedDataTypes(); }
+    const DataTypeList& Slot::GetSupportedDataTypes() const
+    {
+        return m_slotDefinition->GetSupportedDataTypes();
+    }
+
+    bool Slot::IsSupportedDataType(DataTypePtr dataType) const
+    {
+        for (DataTypePtr supportedDataType : GetSupportedDataTypes())
+        {
+            if (supportedDataType == dataType)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     const int Slot::GetMinimumSlots() const
     {
@@ -601,30 +610,10 @@ namespace GraphModel
         return m_subId;
     }
 
-    const DataTypeList& Slot::GetPossibleDataTypes() const
-    {
-        // TODO: For now this will just return all the supported types, but eventually
-        // it return the subset of possible data types given the current configuration
-        // of the node.
-        return GetSupportedDataTypes();
-    }
-
     DataTypePtr Slot::GetDataType() const
     {
-        // If the slot definition only has a single data type, then that is returned.
-        // Otherwise, we can ask our parent node to find out what the active type is.
-        DataTypeList possibleDataTypes = GetPossibleDataTypes();
-        size_t numPossibleDataTypes = possibleDataTypes.size();
-        if (numPossibleDataTypes == 1)
-        {
-            return possibleDataTypes[0];
-        }
-        else if (numPossibleDataTypes > 1)
-        {
-            return GetParentNode()->GetDataType(shared_from_this());
-        }
-
-        return nullptr;
+        // Search for the data type corresponding to the current value because some nodes support multiple types
+        return GetDataTypeForValue(m_value);
     }
 
     void Slot::SetValue(const AZStd::any& value)
@@ -632,7 +621,7 @@ namespace GraphModel
         if (SupportsValue())
         {
 #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataType = GetGraphContext()->GetDataTypeForValue(value);
+            DataTypePtr dataType = GetDataTypeForValue(value);
             AssertTypeMatch(dataType, "Slot::SetValue used with the wrong type");
 #endif
 
@@ -659,11 +648,27 @@ namespace GraphModel
     {
         // Check if any of the possible data types for this slot match
         bool expression = false;
-        for (auto iter : GetPossibleDataTypes())
+        for (auto iter : GetSupportedDataTypes())
         {
             expression |= (*dataTypeUsed == *iter);
         }
         AssertWithTypeInfo(expression, dataTypeUsed, message);
+    }
+
+    DataTypePtr Slot::GetDataTypeForValue(const AZStd::any& value) const
+    {
+        // Determine of the data type of a value by searching through this slots list of supported data types.
+        const AZ::Uuid& valueTypeId = value.type();
+        for (DataTypePtr dataType : GetSupportedDataTypes())
+        {
+            // If there is no value or the data types match return immediately.
+            if (valueTypeId.IsNull() || valueTypeId == dataType->GetTypeUuid())
+            {
+                return dataType;
+            }
+        }
+
+        return {};
     }
 #endif // AZ_ENABLE_TRACING
 
