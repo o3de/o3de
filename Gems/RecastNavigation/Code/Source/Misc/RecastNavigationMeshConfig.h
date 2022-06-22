@@ -54,6 +54,9 @@ namespace RecastNavigation
 
         //! If enabled, draw the navigation mesh in the game.
         bool m_enableDebugDraw = false;
+
+        //! If enabled, previews the navigation mesh in the Editor's viewport.
+        bool m_enableEditorPreview = false;
     };
 
 } // namespace RecastNavigation

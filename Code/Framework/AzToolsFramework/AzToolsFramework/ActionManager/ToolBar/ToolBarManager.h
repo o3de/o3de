@@ -31,6 +31,12 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) override;
         ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        ToolBarManagerOperationResult AddActionsToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) override;
+        ToolBarManagerOperationResult RemoveActionFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) override;
+        ToolBarManagerOperationResult RemoveActionsFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) override;
         ToolBarManagerOperationResult AddSeparatorToToolBar(
             const AZStd::string& toolBarIdentifier, int sortIndex) override;
         QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;

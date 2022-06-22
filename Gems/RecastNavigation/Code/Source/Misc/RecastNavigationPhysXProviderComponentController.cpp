@@ -76,6 +76,7 @@ namespace RecastNavigation
     {
         m_entityComponentIdPair = entityComponentIdPair;
         m_shouldProcessTiles = true;
+        m_updateInProgress = false;
         RecastNavigationProviderRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
@@ -91,14 +92,20 @@ namespace RecastNavigation
 
     void RecastNavigationPhysXProviderComponentController::Deactivate()
     {
-        m_shouldProcessTiles = false;
-        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+        if (m_updateInProgress)
         {
-            // If the tasks are still in progress, wait until the task graph is finished.
-            m_taskGraphEvent->Wait();
+            m_shouldProcessTiles = false;
+            if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+            {
+                // If the tasks are still in progress, wait until the task graph is finished.
+                m_taskGraphEvent->Wait();
+            }
         }
 
+        m_updateInProgress = false;
         RecastNavigationProviderRequestBus::Handler::BusDisconnect();
+        // The event is used to detect if tasks are already in progress.
+        m_taskGraphEvent.reset();
     }
 
     AZStd::vector<AZStd::shared_ptr<TileGeometry>> RecastNavigationPhysXProviderComponentController::CollectGeometry(
@@ -108,12 +115,12 @@ namespace RecastNavigation
         return CollectGeometryImpl(tileSize, borderSize, GetWorldBounds());
     }
 
-    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsync(
+    bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsync(
         float tileSize,
         float borderSize,
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
-        CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
+        return CollectGeometryAsyncImpl(tileSize, borderSize, GetWorldBounds(), AZStd::move(tileCallback));
     }
 
     AZ::Aabb RecastNavigationPhysXProviderComponentController::GetWorldBounds() const
@@ -253,6 +260,12 @@ namespace RecastNavigation
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometry");
 
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return {};
+        }
+
         if (tileSize <= 0.f)
         {
             return {};
@@ -303,15 +316,22 @@ namespace RecastNavigation
             }
         }
 
+        m_updateInProgress = false;
         return tiles;
     }
 
-    void RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
+    bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
         float tileSize,
         float borderSize,
         const AZ::Aabb& worldVolume,
         AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback)
     {
+        bool notInProgress = false;
+        if (!m_updateInProgress.compare_exchange_strong(notInProgress, true))
+        {
+            return false;
+        }
+
         if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
@@ -376,9 +396,10 @@ namespace RecastNavigation
             }
 
             AZ::TaskToken finishToken = m_taskGraph.AddTask(
-                m_taskDescriptor, [tileCallback]()
+                m_taskDescriptor, [this, tileCallback]()
                 {
                     tileCallback({}); // Notifies the caller that the operation is done.
+                    m_updateInProgress = false;
                 });
 
             for (AZ::TaskToken& task : tileTaskTokens)
@@ -386,7 +407,11 @@ namespace RecastNavigation
                 task.Precedes(finishToken);
             }
 
+            AZ_Assert(m_taskGraphEvent->IsSignaled() == false, "RecastNavigationPhysXProviderComponentController might be runtime two async gather operations, which is not supported.");
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+            return true;
         }
+
+        return false;
     }
 } // namespace RecastNavigation

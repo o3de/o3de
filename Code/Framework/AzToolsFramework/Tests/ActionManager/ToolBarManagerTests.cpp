@@ -56,6 +56,74 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, AddActionsToToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        auto outcome = m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+        
+        auto outcome = m_toolBarManagerInterface->RemoveActionFromToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionFromToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        auto outcome = m_toolBarManagerInterface->RemoveActionFromToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionsFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+
+        auto outcome = m_toolBarManagerInterface->RemoveActionsFromToolBar("o3de.toolbar.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionsFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+
+        m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+
+        auto outcome = m_toolBarManagerInterface->RemoveActionsFromToolBar("o3de.toolbar.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetUnregisteredToolBar)
     {
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
