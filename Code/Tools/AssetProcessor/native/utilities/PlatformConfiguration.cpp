@@ -389,7 +389,7 @@ namespace AssetProcessor
                 m_simpleJobNameStack.push(rcName);
 
                 auto& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_recognizer.m_name = QString::fromUtf8(rcName.c_str(), aznumeric_cast<int>(rcName.size()));
+                assetRecognizer.m_recognizer.m_name = rcName;
             }
         }
         break;
@@ -423,7 +423,7 @@ namespace AssetProcessor
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const RCAssetRecognizer& assetRecognizer)
+            [&sjNameView](const auto& assetRecognizer)
         {
             return assetRecognizer.m_recognizer.m_name == sjNameView;
         });
@@ -468,10 +468,9 @@ namespace AssetProcessor
 
         AZStd::string_view sjNameView = m_simpleJobNameStack.top();
 
-
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjNameView](const RCAssetRecognizer& assetRecognizer)
+            [&sjNameView](const auto& assetRecognizer)
             {
             return assetRecognizer.m_recognizer.m_name == sjNameView;
             });
@@ -665,9 +664,7 @@ namespace AssetProcessor
             // now generate a platform spec as long as we're not skipping
             if (!AZ::StringFunc::Equal(currentParams, "skip"))
             {
-                auto platformIdentifier = QString::fromUtf8(platform.m_identifier.data(),
-                    aznumeric_cast<int>(platform.m_identifier.size()));
-                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = AssetInternalSpec::Copy;
+                assetRecognizer.m_recognizer.m_platformSpecs[platform.m_identifier] = AssetInternalSpec::Copy;
             }
         }
     }
@@ -1194,11 +1191,9 @@ namespace AssetProcessor
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AssetBuilderSDK::FilePatternMatcher>()->Version(0)
-                ->Field("extraRCParams", &AssetPlatformSpec::m_extraRCParams);
+            serializeContext->Class<AssetBuilderSDK::FilePatternMatcher>()->Version(0);
 
-            serializeContext->Class<AssetPlatformSpec>()->Version(0)
-                ->Field("extraRCParams", &AssetPlatformSpec::m_extraRCParams);
+            serializeContext->Class<AssetInternalSpec>()->Version(0);                
 
             serializeContext->Class<AssetRecognizer>()->Version(0)
                 ->Field("checkServer", &AssetRecognizer::m_checkServer)
@@ -1214,7 +1209,7 @@ namespace AssetProcessor
                 ->Field("version", &AssetRecognizer::m_version);
 
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetRecognizer>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetPlatformSpec>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetInternalSpec>>();
         }
     }
 
@@ -1365,19 +1360,19 @@ namespace AssetProcessor
             m_excludeAssetRecognizers[excludeRecognizer.m_name] = AZStd::move(excludeRecognizer);
         }
 
-        RCVisitor rcVisitor(*settingsRegistry, m_enabledPlatforms);
-        settingsRegistry->Visit(rcVisitor, AssetProcessorSettingsKey);
+        SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
+        settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
         // remove asset recognizers flagged to be ignored
-        rcVisitor.m_assetRecognizers.erase(
+        simpleJobVisitor.m_assetRecognizers.erase(
             AZStd::remove_if(
-                rcVisitor.m_assetRecognizers.begin(),
-                rcVisitor.m_assetRecognizers.end(),
-                [](const auto& rcRecognizer)
+                simpleJobVisitor.m_assetRecognizers.begin(),
+                simpleJobVisitor.m_assetRecognizers.end(),
+                [](const auto& recognizer)
                 {
-                    return rcRecognizer.m_ignore;
+                    return recognizer.m_ignore;
                 })
         );
-        for (auto&& rcRecognizer : rcVisitor.m_assetRecognizers)
+        for (auto&& rcRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
             if (!rcRecognizer.m_recognizer.m_platformSpecs.empty())
             {

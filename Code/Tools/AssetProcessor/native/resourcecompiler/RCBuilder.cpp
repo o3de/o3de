@@ -53,7 +53,7 @@ namespace AssetProcessor
 
     namespace Internal
     {
-        void PopulateCommonDescriptorParams(AssetBuilderSDK::JobDescriptor& descriptor, const QString& platformIdentifier, const AssetPlatformSpec& platformSpec, const InternalAssetRecognizer* const recognizer)
+        void PopulateCommonDescriptorParams(AssetBuilderSDK::JobDescriptor& descriptor, const QString& platformIdentifier, const AssetInternalSpec& platformSpec, const InternalAssetRecognizer* const recognizer)
         {
             descriptor.m_jobKey = recognizer->m_name;
             descriptor.SetPlatformIdentifier(platformIdentifier.toUtf8().constData());
@@ -61,7 +61,7 @@ namespace AssetProcessor
             descriptor.m_checkExclusiveLock = recognizer->m_testLockSource;
 
             AZStd::string extraInformationForFingerprinting;
-            extraInformationForFingerprinting.append(platformSpec.m_extraRCParams);
+            extraInformationForFingerprinting.append(platformSpec == AssetInternalSpec::Copy ? "copy" : "skip");
             extraInformationForFingerprinting.append(recognizer->m_version);
 
             // if we have specified the product asset type, changing it should cause
@@ -99,11 +99,11 @@ namespace AssetProcessor
         void RegisterInternalAssetRecognizerToMap(
             const AssetRecognizer& assetRecognizer,
             const AZStd::string& builderId,
-            AZStd::unordered_map<AZStd::string, AssetPlatformSpec>& sourceAssetPlatformSpecs,
+            AZStd::unordered_map<AZStd::string, AssetInternalSpec>& sourceAssetInternalSpecs,
             AZStd::unordered_map<AZStd::string, InternalAssetRecognizerList>& internalRecognizerListByType)
         {
             // this is called to say that the internal builder with builderID is to handle assets recognized by the given recognizer.
-            InternalAssetRecognizer* newAssetRecognizer = new InternalAssetRecognizer(assetRecognizer, builderId, sourceAssetPlatformSpecs);
+            InternalAssetRecognizer* newAssetRecognizer = new InternalAssetRecognizer(assetRecognizer, builderId, sourceAssetInternalSpecs);
             // the list is keyed off the builderID.
             internalRecognizerListByType[builderId].push_back(newAssetRecognizer);
         }
@@ -118,55 +118,42 @@ namespace AssetProcessor
                 // these hashes are keyed on the same key as the incoming asset recognizers list, which is
                 // [ name in ini file ] --> [regognizer details]
                 // so like "rc png" --> [details].  Specifically, the QString key is the name of the entry in the INI file and NOT a platform name.
-                AZStd::unordered_map<AZStd::string, AssetPlatformSpec> copyAssetPlatformSpecs;
-                AZStd::unordered_map<AZStd::string, AssetPlatformSpec> skipAssetPlatformSpecs;
-                AZStd::unordered_map<AZStd::string, AssetPlatformSpec> rcAssetPlatformSpecs;
+                AZStd::unordered_map<AZStd::string, AssetInternalSpec> copyAssetInternalSpecs;
+                AZStd::unordered_map<AZStd::string, AssetInternalSpec> skipAssetInternalSpecs;
 
                 // Go through the global asset recognizers and split them by operation keywords if they exist or by the main rc param
                 for (auto iterSrcPlatformSpec = assetRecognizer.second.m_platformSpecs.begin();
                     iterSrcPlatformSpec != assetRecognizer.second.m_platformSpecs.end();
                     iterSrcPlatformSpec++)
                 {
-                    auto& platformSpec = (*iterSrcPlatformSpec).second;
+                    auto platformSpec = (*iterSrcPlatformSpec).second;
                     auto& platformId = (*iterSrcPlatformSpec).first;
 
-                    if (BUILDER_ID_COPY.GetRcParam().compare(platformSpec.m_extraRCParams.c_str()) == 0)
+                    if (platformSpec == AssetInternalSpec::Copy)
                     {
-                        copyAssetPlatformSpecs[platformId] = platformSpec;
+                        copyAssetInternalSpecs[platformId] = platformSpec;
                     }
-                    else if (BUILDER_ID_SKIP.GetRcParam().compare(platformSpec.m_extraRCParams.c_str()) == 0)
+                    else if (platformSpec == AssetInternalSpec::Skip)
                     {
-                        skipAssetPlatformSpecs[platformId] = platformSpec;
-                    }
-                    else
-                    {
-                        rcAssetPlatformSpecs[platformId] = platformSpec;
+                        skipAssetInternalSpecs[platformId] = platformSpec;
                     }
                 }
 
                 // Create separate internal asset recognizers based on whether or not they were detected
-                if (copyAssetPlatformSpecs.size() > 0)
+                if (copyAssetInternalSpecs.size() > 0)
                 {
                     RegisterInternalAssetRecognizerToMap(
                         assetRecognizer.second,
                         BUILDER_ID_COPY.GetId().toUtf8().data(),
-                        copyAssetPlatformSpecs,
+                        copyAssetInternalSpecs,
                         internalRecognizerListByType);
                 }
-                if (skipAssetPlatformSpecs.size() > 0)
+                if (skipAssetInternalSpecs.size() > 0)
                 {
                     RegisterInternalAssetRecognizerToMap(
                         assetRecognizer.second,
                         BUILDER_ID_SKIP.GetId().toUtf8().data(),
-                        skipAssetPlatformSpecs,
-                        internalRecognizerListByType);
-                }
-                if (rcAssetPlatformSpecs.size() > 0)
-                {
-                    RegisterInternalAssetRecognizerToMap(
-                        assetRecognizer.second,
-                        BUILDER_ID_RC.GetId().toUtf8().data(),
-                        rcAssetPlatformSpecs,
+                        skipAssetInternalSpecs,
                         internalRecognizerListByType);
                 }
             }
@@ -232,15 +219,15 @@ namespace AssetProcessor
         { BUILDER_ID_SKIP.GetId(), BUILDER_ID_SKIP }
     };
 
-    InternalAssetRecognizer::InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetPlatformSpec>& assetPlatformSpecByPlatform)
+    InternalAssetRecognizer::InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetInternalSpec>& AssetInternalSpecByPlatform)
         : AssetRecognizer(src.m_name, src.m_testLockSource, src.m_priority, src.m_isCritical, src.m_supportsCreateJobs, src.m_patternMatcher, src.m_version, src.m_productAssetType, src.m_outputProductDependencies, src.m_checkServer)
         , m_builderId(builderId)
     {
-        // assetPlatformSpecByPlatform is a hash table like
+        // AssetInternalSpecByPlatform is a hash table like
         // "pc" --> (settings to compile on pc)
         // "ios" --> settings to compile on ios)
         // and so is m_platformSpecsByPlatform
-        m_platformSpecsByPlatform = assetPlatformSpecByPlatform;
+        m_platformSpecsByPlatform = AssetInternalSpecByPlatform;
         m_paramID = CalculateCRC();
     }
 
@@ -397,7 +384,11 @@ namespace AssetProcessor
 
                 for (const auto& iteratorValue : internalAssetRecognizer->m_platformSpecsByPlatform)
                 {
-                    fingerprintRelevantParameters.insert(AZStd::string::format("%s-%s", iteratorValue.first.c_str(), iteratorValue.second.m_extraRCParams.c_str()));
+                    fingerprintRelevantParameters.insert(
+                        AZStd::string::format(
+                            "%s-%s",
+                            iteratorValue.first.c_str(),
+                            iteratorValue.second == AssetInternalSpec::Copy ? "copy" : "skip"));
                 }
 
                 // note that the version number must be included here, despite the builder dirty-check function taking version into account
@@ -533,10 +524,8 @@ namespace AssetProcessor
             {
                 if (request.HasPlatform(platformSpec.first.c_str()))
                 {
-                    QString rcParam = platformSpec.second.m_extraRCParams.c_str();
-
                     // Check if this is the 'skip' parameter
-                    if (internalJobType == AssetInternalSpec::Skip)
+                    if (platformSpec.second == AssetInternalSpec::Skip)
                     {
                         skippedByPlatform = true;
                     }
@@ -554,10 +543,11 @@ namespace AssetProcessor
                     }
                 }
 
-            // Adjust response if we did not get any jobs, but one or more platforms were marked as skipped
-            if ((response.m_result == AssetBuilderSDK::CreateJobsResultCode::Failed) && (skippedByPlatform))
-            {
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
+                // Adjust response if we did not get any jobs, but one or more platforms were marked as skipped
+                if ((response.m_result == AssetBuilderSDK::CreateJobsResultCode::Failed) && (skippedByPlatform))
+                {
+                    response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
+                }
             }
         }
     }

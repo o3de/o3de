@@ -102,7 +102,7 @@ namespace AssetProcessor
 
         // the QString is the Platform Identifier ("pc")
         // the AssetInternalSpec specifies the type of internal job to process
-        QHash<QString, AssetInternalSpec> m_platformSpecs;
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecs;
 
         // an optional parameter which is a UUID of types to assign to the output asset(s)
         // if you don't specify one, then a heuristic will be used

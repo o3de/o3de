@@ -51,13 +51,13 @@ namespace AssetProcessor
     struct InternalAssetRecognizer
         : public AssetRecognizer
     {
-        InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetPlatformSpec>& assetPlatformSpecByPlatform);
+        InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetInternalSpec>& assetPlatformSpecByPlatform);
         InternalAssetRecognizer(const InternalAssetRecognizer& src) = default;
 
         AZ::u32 CalculateCRC() const;
 
         //! Map of platform specs based on the identifier of the platform
-        AZStd::unordered_map<AZStd::string, AssetPlatformSpec> m_platformSpecsByPlatform;
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecsByPlatform;
 
         //! unique id that is generated for each unique internal asset recognizer
         //! which can be used as the key for the job parameter map (see AssetBuilderSDK::JobParameterMap)
