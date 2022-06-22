@@ -68,6 +68,21 @@ namespace AZ::Utils
                 azstrcpy(absolutePath, maxLength, absolutePathBuffer);
                 return true;
             }
+            else if (errno == ENOENT)
+            {
+                // realpath will fail if the source path doesn't refer to an existing file
+                // and set errno to [ENOENT]
+                // > A component of file_name does not name an existing file or file_name points to an empty string.
+
+                // Attempt to create an absolute path by appending path to current working
+                // directory and normalizing it
+                if (AZ::IO::FixedMaxPath normalizedPath; getcwd(absolutePathBuffer, UnixMaxPathLength) != nullptr)
+                {
+                    normalizedPath = (AZ::IO::FixedMaxPath(absolutePathBuffer) / path).LexicallyNormal();
+                    azstrcpy(absolutePath, maxLength, normalizedPath.c_str());
+                    return true;
+                }
+            }
         }
         azstrcpy(absolutePath, maxLength, path);
         return AZ::IO::PathView(absolutePath).IsAbsolute();
