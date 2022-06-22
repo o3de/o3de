@@ -158,14 +158,14 @@ namespace AZ
             // swapchains will use the images created internally (i.e RHI::Vulkan)
             if (GetDescriptor().m_isXrSwapChain)
             {
-                RHI::Ptr<XRSwapChainDescriptor> xrSwapChainDescriptor = aznew XRSwapChainDescriptor();
-                xrSwapChainDescriptor->m_inputData.m_swapChainIndex = GetDescriptor().m_xrSwapChainIndex;
-                xrSwapChainDescriptor->m_inputData.m_swapChainImageIndex = request.m_imageIndex;
-                
-                result = GetXRSystem()->GetSwapChainImage(xrSwapChainDescriptor.get());
+                XRSwapChainDescriptor xrSwapChainDescriptor;
+                xrSwapChainDescriptor.m_inputData.m_swapChainIndex = GetDescriptor().m_xrSwapChainIndex;
+                xrSwapChainDescriptor.m_inputData.m_swapChainImageIndex = request.m_imageIndex;
+
+                result = GetXRSystem()->GetSwapChainImage(&xrSwapChainDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
 
-                result = image->Init(device, xrSwapChainDescriptor->m_outputData.m_nativeImage, imageDesc);
+                result = image->Init(device, xrSwapChainDescriptor.m_outputData.m_nativeImage, imageDesc);
             }
             else
             {

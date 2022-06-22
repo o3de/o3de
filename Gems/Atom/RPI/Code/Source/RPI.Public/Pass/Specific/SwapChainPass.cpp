@@ -128,7 +128,8 @@ namespace AZ
                     }
                 default:
                     {
-                        //No need to do anything for non-xr swapchain
+                        // No need to do anything for non-xr swapchain
+                        break;
                     }
                 } 
             }

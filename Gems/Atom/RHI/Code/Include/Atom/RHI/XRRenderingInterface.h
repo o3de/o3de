@@ -107,7 +107,7 @@ namespace AZ::RHI
         virtual void EndFrame() = 0;
 
         //! Rendering api to get the native swapchain image to write into.
-        virtual AZ::RHI::ResultCode GetSwapChainImage(AZ::RHI::XRSwapChainDescriptor* swapchainDescriptor) = 0;
+        virtual AZ::RHI::ResultCode GetSwapChainImage(AZ::RHI::XRSwapChainDescriptor* swapchainDescriptor) const = 0;
 
         //! Rendering api to get the active swapchain image index associated with the swapchain of the provided view index.
         virtual AZ::u32 GetCurrentImageIndex(AZ::u32 viewIndex) const = 0;

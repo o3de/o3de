@@ -84,7 +84,8 @@ namespace AZ
             AZStd::vector<uint32_t> m_numCreatedQueuesPerFamily;
 
             // Index to the presentation queue
-            uint32_t m_presentationQueueIndex = aznumeric_cast<uint32_t>(-1);
+            const uint32_t InvalidIndex = aznumeric_cast<uint32_t>(-1);
+            uint32_t m_presentationQueueIndex = InvalidIndex;
         };
     }
 }

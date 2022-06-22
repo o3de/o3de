@@ -248,11 +248,11 @@ namespace AZ
             if (xrSystem)
             {
                 //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
-                RHI::Ptr<XRDeviceDescriptor> xrDevicDescriptor = aznew XRDeviceDescriptor();
-                xrDevicDescriptor->m_inputData.m_deviceCreateInfo = &deviceInfo;
-                AZ::RHI::ResultCode result = xrSystem->CreateDevice(xrDevicDescriptor.get());
+                XRDeviceDescriptor xrDevicDescriptor;
+                xrDevicDescriptor.m_inputData.m_deviceCreateInfo = &deviceInfo;
+                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
-                m_nativeDevice = xrDevicDescriptor->m_outputData.m_xrVkDevice;
+                m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
                 m_isXrNativeDevice = true;
             }
@@ -334,13 +334,12 @@ namespace AZ
             RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             if (xrSystem)
             {
-                RHI::Ptr<XRSessionDescriptor> xrSessionDescriptor = aznew XRSessionDescriptor();
-                // Assuming that we will be using the Graphics queue for presentation.
-                xrSessionDescriptor->m_inputData.m_graphicsBinding.m_queueFamilyIndex =
+                XRSessionDescriptor xrSessionDescriptor;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
                     m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
-                xrSessionDescriptor->m_inputData.m_graphicsBinding.m_queueIndex =
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
                     m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
-                result = xrSystem->CreateSession(xrSessionDescriptor.get());
+                result = xrSystem->CreateSession(&xrSessionDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
 
                 result = xrSystem->CreateSwapChain();
