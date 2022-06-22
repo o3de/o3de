@@ -126,14 +126,15 @@ namespace Terrain
             Count,
         };
 
-        struct StackSectorData
+        struct Sector
         {
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
             AZStd::array<AZ::Aabb, 4> m_quadrantAabbs;
             Vector2i m_worldCoord = AZStd::numeric_limits<int32_t>::max();
 
-            AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacketClod;
+            // When drawing, either the m_rhiDrawPacket will be used, or some number of the m_rhiDrawPacketQuadrants
+            AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_rhiDrawPacket;
             AZStd::array<AZ::RHI::ConstPtr<AZ::RHI::DrawPacket>, 4> m_rhiDrawPacketQuadrant;
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
@@ -146,9 +147,9 @@ namespace Terrain
             bool m_hasData = false;
         };
 
-        struct StackData
+        struct SectorLodGrid
         {
-            AZStd::vector<StackSectorData> m_sectors;
+            AZStd::vector<Sector> m_sectors;
 
             // The world space sector coord of the top most left item
             Vector2i m_startCoord = AZStd::numeric_limits<int32_t>::max();
@@ -217,7 +218,7 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
-        void BuildDrawPacket(StackSectorData& sector);
+        void BuildDrawPacket(Sector& sector);
         void RebuildSectors();
         void RebuildDrawPackets();
         AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
@@ -225,15 +226,17 @@ namespace Terrain
         void CreateCommonBuffers();
         void InitializeCommonSectorData();
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(uint32_t elementSize, uint32_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
-        void UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
-        void UpdateSectorLodBuffers(StackSectorData& sector,
+        void UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
+        void UpdateSectorLodBuffers(Sector& sector,
             const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
             const AZStd::span<const HeightNormalVertex> lodHeightsNormals);
         void GatherMeshData(SectorDataRequest request, AZStd::vector<HeightNormalVertex>& meshHeightsNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere);
 
-        void CheckStacksForUpdate(AZ::Vector3 newPosition);
-        void ProcessSectorUpdates(AZStd::vector<AZStd::vector<StackSectorData*>>& sectorUpdates);
+        void CheckLodGridsForUpdate(AZ::Vector3 newPosition);
+        void ProcessSectorUpdates(AZStd::vector<AZStd::vector<Sector*>>& sectorUpdates);
         void UpdateRaytracingData(const AZ::Aabb& bounds);
+        void UpdateCandidateSectors();
+        void CreateAabbQuadrants(const AZ::Aabb& aabb, AZStd::span<AZ::Aabb, 4> quadrantAabb);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
@@ -260,11 +263,12 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
-        AZStd::vector<StackData> m_sectorStack;
+        AZStd::vector<SectorLodGrid> m_sectorLods;
         AZStd::vector<CandidateSector> m_candidateSectors;
         uint32_t m_1dSectorCount = 0;
 
-        AZ::Vector3 m_previousCameraPosition = AZ::Vector3::CreateZero();
+        // Set up the initial camera position impossible to force an update.
+        AZ::Vector3 m_cameraPosition = AZ::Vector3::CreateAxisX(AZStd::numeric_limits<float>::max());
 
         AZ::Aabb m_worldBounds{ AZ::Aabb::CreateNull() };
         float m_sampleSpacing = 1.0f;

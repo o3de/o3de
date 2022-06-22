@@ -112,7 +112,8 @@ namespace Terrain
 
     void TerrainMeshManager::Reset()
     {
-        m_sectorStack.clear();
+        m_candidateSectors.clear();
+        m_sectorLods.clear();
         m_rebuildSectors = true;
     }
 
@@ -149,36 +150,41 @@ namespace Terrain
         terrainSrg->SetConstant(m_srgMeshDataIndex, meshData);
     }
 
-    void TerrainMeshManager::CheckStacksForUpdate(AZ::Vector3 newPosition)
+    void TerrainMeshManager::CheckLodGridsForUpdate(AZ::Vector3 newPosition)
     {
-        AZStd::vector<AZStd::vector<StackSectorData*>> sectorsToUpdate;
-        sectorsToUpdate.resize(m_sectorStack.size());
+        // lots of sectors that need updating, separated by LOD level.
+        AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate;
+        sectorsToUpdate.resize(m_sectorLods.size());
 
-        for (uint32_t i = 0; i < m_sectorStack.size(); ++i)
+        for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
-            StackData& stackData = m_sectorStack.at(i);
+            SectorLodGrid& lodGrid = m_sectorLods.at(lodLevel);
 
+            // Figure out what the start coordinate should be for this lod level.
             const Vector2i newStartCoord = [&]()
             {
-                const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << i);
-                const float gridMeters = (GridSize * m_sampleSpacing) * (1 << i);
+                const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << lodLevel);
+                const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
                 const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
                 const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
 
-                // If the start coord for the stack is different, then some of the sectors will need to be updated.
+                // If the start coord for the lod level is different, then some of the sectors will need to be updated.
                 // There's 1 sector of wiggle room, so make sure we've moving the lod's start coord by as little as possible.
 
-                return Vector2i(
-                    startCoordX > stackData.m_startCoord.m_x + 1 ? startCoordX - 1 :
-                        (startCoordX < stackData.m_startCoord.m_x ? startCoordX : stackData.m_startCoord.m_x),
-                    startCoordY > stackData.m_startCoord.m_y + 1 ? startCoordY - 1 :
-                        (startCoordY < stackData.m_startCoord.m_y ? startCoordY : stackData.m_startCoord.m_y)
-                );
+                auto coordCheck = [&](int32_t newStartCoord, int32_t lodStartCoord) -> int32_t
+                {
+                    return
+                        newStartCoord > lodStartCoord + 1 ? newStartCoord - 1 :
+                        newStartCoord < lodStartCoord ? newStartCoord :
+                        lodStartCoord;
+                };
+
+                return Vector2i(coordCheck(startCoordX, lodGrid.m_startCoord.m_x), coordCheck(startCoordY, lodGrid.m_startCoord.m_y));
             }();
 
-            if (stackData.m_startCoord != newStartCoord)
+            if (lodGrid.m_startCoord != newStartCoord)
             {
-                stackData.m_startCoord = newStartCoord;
+                lodGrid.m_startCoord = newStartCoord;
 
                 const uint32_t firstSectorIndexX = (m_1dSectorCount + (newStartCoord.m_x % m_1dSectorCount)) % m_1dSectorCount;
                 const uint32_t firstSectorIndexY = (m_1dSectorCount + (newStartCoord.m_y % m_1dSectorCount)) % m_1dSectorCount;
@@ -195,12 +201,12 @@ namespace Terrain
 
                         const Vector2i worldCoord = newStartCoord + Vector2i(xOffset, yOffset);
 
-                        StackSectorData& sector = stackData.m_sectors.at(sectorIndex);
+                        Sector& sector = lodGrid.m_sectors.at(sectorIndex);
 
                         if (sector.m_worldCoord != worldCoord)
                         {
                             sector.m_worldCoord = worldCoord;
-                            sectorsToUpdate.at(i).push_back(&sector);
+                            sectorsToUpdate.at(lodLevel).push_back(&sector);
                         }
                     }
                 }
@@ -226,7 +232,7 @@ namespace Terrain
         };
     }
 
-    void TerrainMeshManager::BuildDrawPacket(StackSectorData& sector)
+    void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
@@ -269,7 +275,7 @@ namespace Terrain
         }
 
         AZ::RHI::DrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
-        sector.m_rhiDrawPacketClod = drawPacketBuilder.End();
+        sector.m_rhiDrawPacket = drawPacketBuilder.End();
 
         // Generate draw packets for each of the quadrants so they can be used to fill in places where the previous LOD didn't draw.
         // Due to z-ordered index buffer, no additional data is needed, just a different index offset and index count. Each quarter of
@@ -290,7 +296,7 @@ namespace Terrain
         const auto& materialAsset = m_materialInstance->GetAsset();
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 
-        // Calculate the largest potential number of sectors needed per dimension at any stack level.
+        // Calculate the largest potential number of sectors needed per dimension at any lod level.
         const float firstLodDiameter = m_config.m_firstLodDistance * 2.0f;
         m_1dSectorCount = aznumeric_cast<uint32_t>(AZStd::ceilf(firstLodDiameter / gridMeters));
         // If the sector grid doesn't line up perfectly with the camera, it will cover part of a sector
@@ -299,12 +305,13 @@ namespace Terrain
         // Add one sector of wiggle room so to avoid thrashing updates when going back and forth over a boundary.
         m_1dSectorCount += 1;
 
-        m_sectorStack.clear();
+        m_sectorLods.clear();
+        m_candidateSectors.clear();
 
-        const uint8_t stackCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
-        m_sectorStack.reserve(stackCount);
-
-        // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckStacksForUpdate().
+        const uint8_t lodCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        m_sectorLods.reserve(lodCount);
+        
+        // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckLodGridsForUpdate().
         m_indexBufferView =
         {
             *m_indexBuffer->GetRHIBuffer(),
@@ -313,14 +320,14 @@ namespace Terrain
             AZ::RHI::IndexFormat::Uint16
         };
 
-        for (uint8_t lodLevel = 0; lodLevel < stackCount; ++lodLevel)
+        for (uint8_t lodLevel = 0; lodLevel < lodCount; ++lodLevel)
         {
-            m_sectorStack.push_back({});
-            StackData& stackData = m_sectorStack.back();
+            m_sectorLods.push_back({});
+            SectorLodGrid& lodGrid = m_sectorLods.back();
 
-            stackData.m_sectors.resize(m_1dSectorCount * m_1dSectorCount);
+            lodGrid.m_sectors.resize(m_1dSectorCount * m_1dSectorCount);
 
-            for (StackSectorData& sector : stackData.m_sectors)
+            for (Sector& sector : lodGrid.m_sectors)
             {
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
@@ -349,110 +356,17 @@ namespace Terrain
     void TerrainMeshManager::DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView)
     {
         AZ::Vector3 mainCameraPosition = mainView->GetCameraTransform().GetTranslation();
-        CheckStacksForUpdate(mainCameraPosition);
+        CheckLodGridsForUpdate(mainCameraPosition);
 
-        // First pass - gather a list of all sectors that could render based on their status and lod, disregarding camera frustums.
-
-        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; // This could probably be relaxed further, but is a good starting point.
-        if (m_previousCameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
+        // Only update candidate sectors if the camera has moved. This could probably be relaxed further, but is a good starting point.
+        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; 
+        if (m_candidateSectors.empty() || m_cameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
         {
-            m_previousCameraPosition = mainCameraPosition;
-
-            float maxDistanceSq = m_config.m_firstLodDistance * m_config.m_firstLodDistance;
-            uint32_t nextLodSectorCount = m_1dSectorCount * 2; // The number of this lod's sectors that would fit into the next lod's space.
-            AZStd::vector<bool> previousSelectedSectors;
-
-            m_candidateSectors.clear();
-
-            for (uint32_t stackIndex = 0; stackIndex < m_sectorStack.size(); ++stackIndex)
-            {
-                auto& sectorStack = m_sectorStack.at(stackIndex);
-
-                // Construct a grid of bools that covers the entire space of the next LOD at the scale of the current LOD, and
-                // mark everything to false. As sectors in this LOD are drawn, mark appropriate locations in the grid as true.
-                // The next LOD will use this data to figure out where it shouldn't draw because a higher lod has already drawn.
-
-                AZStd::vector<bool> selectedSectors;
-                selectedSectors.resize_no_construct(nextLodSectorCount * nextLodSectorCount);
-                AZStd::fill(selectedSectors.begin(), selectedSectors.end(), false);
-
-                Vector2i drawnStartCoord{ 0, 0 };
-                if (stackIndex == m_sectorStack.size() - 1)
-                {
-                    // There is no next lod, so just use this one's start coord to avoid lots of checks in the for loop.
-                    drawnStartCoord = m_sectorStack.at(stackIndex).m_startCoord;
-                }
-                else
-                {
-                    // This is the start coord of the next LOD in the current LOD's scale.
-                    drawnStartCoord = m_sectorStack.at(stackIndex + 1).m_startCoord * 2;
-                }
-
-                for (uint32_t sectorIndex = 0; sectorIndex < sectorStack.m_sectors.size(); ++sectorIndex)
-                {
-                    StackSectorData& sector = sectorStack.m_sectors.at(sectorIndex);
-                    Vector2i selectedCoord = sector.m_worldCoord - drawnStartCoord;
-                    uint32_t selectedIndex = selectedCoord.m_y * nextLodSectorCount + selectedCoord.m_x;
-
-                    if (!sector.m_hasData)
-                    {
-                        selectedSectors.at(selectedIndex) = true; // Terrain just doesn't exist here, so mark as "selected" so another LOD doesn't try to draw here.
-                        continue;
-                    }
-
-                    const float aabbMinDistanceSq = sector.m_aabb.GetDistanceSq(mainCameraPosition);
-                    if (aabbMinDistanceSq < maxDistanceSq)
-                    {
-                        selectedSectors.at(selectedIndex) = true;
-
-                        if (stackIndex == 0)
-                        {
-                            // Since this is the first stack, no previous stack to check, so just draw.
-                            m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
-                            continue;
-                        }
-
-                        Vector2i previousCoord = (sector.m_worldCoord - sectorStack.m_startCoord) * 2;
-                        uint32_t previousDrawnIndex = previousCoord.m_y * nextLodSectorCount + previousCoord.m_x;
-
-                        // Check the 4 sectors in the previous LOD that are covered by this sector.
-                        uint8_t coveredByHigherLod =
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex))                          << 0) | // Top left
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + 1))                      << 1) | // Top right
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount))     << 2) | // Bottom left
-                            (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount + 1)) << 3);  // Bottom right
-
-                        if (coveredByHigherLod == 0b1111)
-                        {
-                            continue; // Completely covered by previous LOD, so do nothing
-                        }
-                        if (coveredByHigherLod == 0b0000)
-                        {
-                            // Not covered at all by previous LOD, so the draw entire sector
-                            m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacketClod.get() });
-                        }
-                        else
-                        {
-                            // Partially covered by previous LOD. Draw only missing quadrants
-                            for (uint8_t i = 0; i < 4; ++i)
-                            {
-                                if ((coveredByHigherLod & 0b0001) == 0b0000)
-                                {
-                                    m_candidateSectors.push_back({ sector.m_quadrantAabbs.at(i), sector.m_rhiDrawPacketQuadrant.at(i).get() });
-                                }
-                                coveredByHigherLod >>= 1;
-                            }
-                        }
-                    }
-                }
-
-                maxDistanceSq = maxDistanceSq * 4.0f; // Double the distance with squared distances is * 2^2.
-                previousSelectedSectors = AZStd::move(selectedSectors);
-            }
+            m_cameraPosition = mainCameraPosition;
+            UpdateCandidateSectors();
         }
 
-        // Second pass - compare views against the list of selected sectors.
-
+        // Compare view frustums against the list of candidate sectors and submit those sectors to draw.
         for (auto& view : process.m_views)
         {
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
@@ -549,9 +463,9 @@ namespace Terrain
         }
 
         // Rebuild the draw packets themselves
-        for (auto& stackData : m_sectorStack)
+        for (auto& lodGrid : m_sectorLods)
         {
-            for (auto& sector : stackData.m_sectors)
+            for (auto& sector : lodGrid.m_sectors)
             {
                 BuildDrawPacket(sector);
             }
@@ -565,7 +479,8 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
     {
-        m_sectorStack.clear();
+        m_sectorLods.clear();
+        m_candidateSectors.clear();
         m_rebuildSectors = true;
     }
 
@@ -593,10 +508,10 @@ namespace Terrain
                 if (!m_rebuildSectors)
                 {
                     // Rebuild any sectors in the dirty region if they aren't all being rebuilt
-                    AZStd::vector<AZStd::vector<StackSectorData*>> sectorsToUpdate;
-                    sectorsToUpdate.resize(m_sectorStack.size());
+                    AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate;
+                    sectorsToUpdate.resize(m_sectorLods.size());
                     ForOverlappingSectors(clampedDirtyRegion,
-                        [&sectorsToUpdate](StackSectorData& sectorData, uint32_t lodLevel)
+                        [&sectorsToUpdate](Sector& sectorData, uint32_t lodLevel)
                         {
                             sectorsToUpdate.at(lodLevel).push_back(&sectorData);
                         }
@@ -726,12 +641,12 @@ namespace Terrain
         return AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
     }
 
-    void TerrainMeshManager::UpdateSectorBuffers(StackSectorData& sector, const AZStd::span<const HeightNormalVertex> heightsNormals)
+    void TerrainMeshManager::UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals)
     {
         sector.m_heightsNormalsBuffer->UpdateData(heightsNormals.data(), heightsNormals.size_bytes());
     }
 
-    void TerrainMeshManager::UpdateSectorLodBuffers(StackSectorData& sector,
+    void TerrainMeshManager::UpdateSectorLodBuffers(Sector& sector,
         const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
         const AZStd::span<const HeightNormalVertex> lodHeightsNormals)
     {
@@ -968,7 +883,7 @@ namespace Terrain
         }
     }
 
-    void TerrainMeshManager::ProcessSectorUpdates(AZStd::vector<AZStd::vector<StackSectorData*>>& sectorUpdates)
+    void TerrainMeshManager::ProcessSectorUpdates(AZStd::vector<AZStd::vector<Sector*>>& sectorUpdates)
     {
         AZ::JobCompletion jobCompletion;
 
@@ -980,7 +895,7 @@ namespace Terrain
                 continue;
             }
 
-            for (StackSectorData* sector : sectors)
+            for (Sector* sector : sectors)
             {
                 const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
 
@@ -1003,38 +918,7 @@ namespace Terrain
                         }
 
                         // Create AABBs for each quadrant for cases where this LOD needs to fill in a gap in a lower LOD.
-                        if (sector->m_aabb.IsValid())
-                        {
-                            float minX = sector->m_aabb.GetMin().GetX();
-                            float minY = sector->m_aabb.GetMin().GetY();
-                            float minZ = sector->m_aabb.GetMin().GetZ();
-                            float centerX = sector->m_aabb.GetCenter().GetX();
-                            float centerY = sector->m_aabb.GetCenter().GetY();
-                            float maxX = sector->m_aabb.GetMax().GetX();
-                            float maxY = sector->m_aabb.GetMax().GetY();
-                            float maxZ = sector->m_aabb.GetMax().GetZ();
-
-                            sector->m_quadrantAabbs.at(0) = AZ::Aabb::CreateFromMinMax(
-                                sector->m_aabb.GetMin(),
-                                AZ::Vector3(centerX, centerY, maxZ)
-                            );
-                            sector->m_quadrantAabbs.at(1) = AZ::Aabb::CreateFromMinMax(
-                                AZ::Vector3(centerX, minY, minZ),
-                                AZ::Vector3(maxX, centerY, maxZ)
-                            );
-                            sector->m_quadrantAabbs.at(2) = AZ::Aabb::CreateFromMinMax(
-                                AZ::Vector3(minX, centerY, minZ),
-                                AZ::Vector3(centerX, maxY, maxZ)
-                            );
-                            sector->m_quadrantAabbs.at(3) = AZ::Aabb::CreateFromMinMax(
-                                AZ::Vector3(centerX, centerY, minZ),
-                                sector->m_aabb.GetMax()
-                            );
-                        }
-                        else
-                        {
-                            AZStd::fill(sector->m_quadrantAabbs.begin(), sector->m_quadrantAabbs.end(), AZ::Aabb::CreateNull());
-                        }
+                        CreateAabbQuadrants(sector->m_aabb, sector->m_quadrantAabbs);
                     }
 
                     if (m_config.m_clodEnabled && sector->m_hasData)
@@ -1149,13 +1033,137 @@ namespace Terrain
         m_raytracingNormalsBuffer->Unmap();
     }
 
+    void TerrainMeshManager::UpdateCandidateSectors()
+    {
+        // Gather a list of all sectors that could render based on their status, lod, and camera position.
+
+        float maxDistanceSq = m_config.m_firstLodDistance * m_config.m_firstLodDistance;
+        uint32_t nextLodSectorCount = m_1dSectorCount * 2; // The number of this lod's sectors that would fit into the next lod's space.
+        AZStd::vector<bool> previousSelectedSectors;
+
+        m_candidateSectors.clear();
+
+        for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
+        {
+            auto& lodGrid = m_sectorLods.at(lodLevel);
+
+            // Each sector in an LOD is half the size of a sector in the next LOD in each direction, so 4 sectors
+            // in this LOD equal one sector in the next LOD. Construct a grid of bools for each sector in this
+            // LOD that covers the entire space of the next LOD, and mark everything to false. As sectors in
+            // this LOD are drawn, mark appropriate locations in the grid as true. When processing the next
+            // LOD, each of the next LOD's sectors will look up the 4 entries in this that represent quadrants
+            // of that sector to determine whether to draw nothing, specific quadrants, or the entire sector.
+
+            AZStd::vector<bool> selectedSectors(nextLodSectorCount * nextLodSectorCount, false);
+
+            Vector2i selectedSectorStartCoord{ 0, 0 };
+            if (lodLevel == m_sectorLods.size() - 1)
+            {
+                // There is no next lod, so just use this one's start coord to avoid lots of checks in the for loop.
+                selectedSectorStartCoord = m_sectorLods.at(lodLevel).m_startCoord;
+            }
+            else
+            {
+                // This is the start coord of the next LOD in the current LOD's scale.
+                selectedSectorStartCoord = m_sectorLods.at(lodLevel + 1).m_startCoord * 2;
+            }
+
+            for (uint32_t sectorIndex = 0; sectorIndex < lodGrid.m_sectors.size(); ++sectorIndex)
+            {
+                Sector& sector = lodGrid.m_sectors.at(sectorIndex);
+                Vector2i selectedCoord = sector.m_worldCoord - selectedSectorStartCoord;
+                uint32_t selectedIndex = selectedCoord.m_y * nextLodSectorCount + selectedCoord.m_x;
+
+                if (!sector.m_hasData)
+                {
+                    selectedSectors.at(selectedIndex) = true; // Terrain just doesn't exist here, so mark as "selected" so another LOD doesn't try to draw here.
+                    continue;
+                }
+
+                const float aabbMinDistanceSq = sector.m_aabb.GetDistanceSq(m_cameraPosition);
+                if (aabbMinDistanceSq < maxDistanceSq)
+                {
+                    selectedSectors.at(selectedIndex) = true;
+
+                    if (lodLevel == 0)
+                    {
+                        // Since this is the first lod, no previous lod to check, so just draw.
+                        m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacket.get() });
+                        continue;
+                    }
+
+                    Vector2i previousCoord = (sector.m_worldCoord - lodGrid.m_startCoord) * 2;
+                    uint32_t previousDrawnIndex = previousCoord.m_y * nextLodSectorCount + previousCoord.m_x;
+
+                    // Check the 4 sectors in the previous LOD that are covered by this sector.
+                    uint8_t coveredByHigherLod =
+                        (uint8_t(previousSelectedSectors.at(previousDrawnIndex)) << 0) | // Top left
+                        (uint8_t(previousSelectedSectors.at(previousDrawnIndex + 1)) << 1) | // Top right
+                        (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount)) << 2) | // Bottom left
+                        (uint8_t(previousSelectedSectors.at(previousDrawnIndex + nextLodSectorCount + 1)) << 3);  // Bottom right
+
+                    if (coveredByHigherLod == 0b1111)
+                    {
+                        continue; // Completely covered by previous LOD, so do nothing
+                    }
+                    if (coveredByHigherLod == 0b0000)
+                    {
+                        // Not covered at all by previous LOD, so the draw entire sector
+                        m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacket.get() });
+                    }
+                    else
+                    {
+                        // Partially covered by previous LOD. Draw only missing quadrants
+                        for (uint8_t i = 0; i < 4; ++i)
+                        {
+                            if ((coveredByHigherLod & 0b0001) == 0b0000)
+                            {
+                                m_candidateSectors.push_back({ sector.m_quadrantAabbs.at(i), sector.m_rhiDrawPacketQuadrant.at(i).get() });
+                            }
+                            coveredByHigherLod >>= 1;
+                        }
+                    }
+                }
+            }
+
+            maxDistanceSq = maxDistanceSq * 4.0f; // Double the distance with squared distances is * 2^2.
+            previousSelectedSectors = AZStd::move(selectedSectors);
+        }
+    }
+
+    void TerrainMeshManager::CreateAabbQuadrants(const AZ::Aabb& aabb, AZStd::span<AZ::Aabb, 4> quadrantAabb)
+    {
+        // Create 4 AABBs for each quadrant on the xy plane.
+        if (aabb.IsValid())
+        {
+            float centerX = aabb.GetCenter().GetX();
+            float centerY = aabb.GetCenter().GetY();
+
+            quadrantAabb[0] = AZ::Aabb::CreateFromMinMax(
+                aabb.GetMin(),
+                AZ::Vector3(centerX, centerY, aabb.GetMax().GetZ())
+            );
+
+            float halfExtentX = aabb.GetXExtent() * 0.5f;
+            float halfExtentY = aabb.GetYExtent() * 0.5f;
+
+            quadrantAabb[1] = quadrantAabb[0].GetTranslated(AZ::Vector3(halfExtentX, 0.0f, 0.0f));
+            quadrantAabb[2] = quadrantAabb[0].GetTranslated(AZ::Vector3(0.0f, halfExtentY, 0.0f));
+            quadrantAabb[3] = quadrantAabb[0].GetTranslated(AZ::Vector3(halfExtentX, halfExtentY, 0.0f));
+        }
+        else
+        {
+            AZStd::fill(quadrantAabb.begin(), quadrantAabb.end(), AZ::Aabb::CreateNull());
+        }
+    }
+
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {
         const AZ::Vector2 boundsMin2d = AZ::Vector2(bounds.GetMin());
         const AZ::Vector2 boundsMax2d = AZ::Vector2(bounds.GetMax());
 
-        for (uint32_t lodLevel = 0; lodLevel < m_sectorStack.size(); ++lodLevel)
+        for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
             // Expand the bounds by the spacing of the lod since vertex normals are affected by neighbors.
             // The bounds needs to be 2x what's expected because clod also encodes information about the normals
@@ -1164,15 +1172,15 @@ namespace Terrain
             const AZ::Vector2 lodBoundsMin2d = boundsMin2d - lodSpacing;
             const AZ::Vector2 lodBoundsMax2d = boundsMax2d + lodSpacing;
 
-            auto& stackData = m_sectorStack.at(lodLevel);
-            for (StackSectorData& sectorData : stackData.m_sectors)
+            auto& lodGrid = m_sectorLods.at(lodLevel);
+            for (Sector& sector : lodGrid.m_sectors)
             {
-                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sectorData.m_aabb.GetMin());
-                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sectorData.m_aabb.GetMax());
+                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sector.m_aabb.GetMin());
+                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sector.m_aabb.GetMax());
                 const bool overlaps = sectorAabbMin2D.IsLessEqualThan(lodBoundsMax2d) && sectorAabbMax2D.IsGreaterEqualThan(lodBoundsMin2d);
                 if (overlaps)
                 {
-                    callback(sectorData, lodLevel);
+                    callback(sector, lodLevel);
                 }
             }
         }
