@@ -16,6 +16,10 @@
 #include <AzFramework/Physics/Shape.h>
 
 #include <Source/HeightfieldCollider.h>
+#include <PhysX/HeightFieldAsset.h>
+#include <PhysX/EditorHeightfieldColliderBus.h>
+#include <AzCore/Jobs/Job.h>
+#include <AzCore/Jobs/JobCompletion.h>
 
 namespace PhysX
 {
@@ -24,6 +28,7 @@ namespace PhysX
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , protected DebugDraw::DisplayCallback
+        , private EditorHeightfieldColliderBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -58,6 +63,20 @@ namespace PhysX
 
     private:
         AZ::u32 OnConfigurationChanged();
+        AZ::u32 OnToggleBakedHeightfield();
+        AZ::u32 GetBakedHeightfieldVisibilitySetting();
+
+        void RequestHeightfieldBaking() override;
+
+        // Utility functions for heightfield baking
+        void StartHeightfieldBakingJob();
+        void FinishHeightfieldBakingJob();
+        bool CheckHeightfieldPathExists();
+        void GenerateHeightfieldAsset();
+        bool CheckoutHeightfieldAsset() const;
+
+        // Note: This function is called from a Job thread.
+        AZ::u32 SaveHeightfieldAssetToDisk();
 
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
 
@@ -69,6 +88,22 @@ namespace PhysX
         AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
         //! Contains all of the runtime logic for creating / updating / destroying the heightfield collider.
         AZStd::unique_ptr<HeightfieldCollider> m_heightfieldCollider;
+
+        bool m_useBakedHeightfield = false;
+        AZStd::string m_bakedHeightfieldRelativePath;
+        AZ::Data::Asset<Pipeline::HeightFieldAsset> m_bakedHeightfieldAsset;
+        AZStd::recursive_mutex m_bakedHeightfieldMutex;
+
+        class HeightfieldBakingJob : public AZ::Job
+        {
+        public:
+            explicit HeightfieldBakingJob(EditorHeightfieldColliderComponent* owner);
+            void Process() override;
+            EditorHeightfieldColliderComponent* m_owner;
+        };
+
+        HeightfieldBakingJob m_heightfieldAssetBakingJob;
+        AZ::JobCompletion m_bakingCompletion;
     };
 
 } // namespace PhysX

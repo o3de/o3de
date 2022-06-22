@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Source/HeightfieldColliderComponent.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
@@ -16,7 +17,6 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Utils.h>
 
-#include <Source/HeightfieldColliderComponent.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/SystemComponent.h>
 #include <Source/Utils.h>
@@ -34,6 +34,7 @@ namespace PhysX
             serializeContext->Class<HeightfieldColliderComponent, AZ::Component>()
                 ->Version(2)
                 ->Field("ColliderConfiguration", &HeightfieldColliderComponent::m_colliderConfig)
+                ->Field("BakedHeightfieldAsset", &HeightfieldColliderComponent::m_bakedHeightfieldAsset)
                 ;
         }
     }
@@ -62,22 +63,79 @@ namespace PhysX
     {
     }
 
+
+    void HeightfieldColliderComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_bakedHeightfieldAsset)
+        {
+            m_bakedHeightfieldAsset = asset;
+
+            Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig);
+            configuration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
+
+            // Update material selection from the mapping
+            Physics::ColliderConfiguration* colliderConfig = m_colliderConfig.get();
+            Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSlots);
+
+            Pipeline::HeightFieldAsset* heightfieldAsset = m_bakedHeightfieldAsset.Get();
+
+            bool minMaxHeightsMatch = AZ::IsClose(configuration.GetMinHeightBounds(), heightfieldAsset->GetMinHeight()) &&
+                AZ::IsClose(configuration.GetMaxHeightBounds(), heightfieldAsset->GetMaxHeight());
+
+            if (!minMaxHeightsMatch)
+            {
+                AZ_Warning(
+                    "PhysX",
+                    false,
+                    "MinMax heights mismatch between baked heightfield and terrain. Entity [%s]. "
+                    "Terrain [%0.2f, %0.2f], Asset [%0.2f, %0.2f]",
+                    GetEntity()->GetName().c_str(),
+                    configuration.GetMinHeightBounds(),
+                    configuration.GetMaxHeightBounds(),
+                    heightfieldAsset->GetMinHeight(),
+                    heightfieldAsset->GetMaxHeight());
+            }
+
+            physx::PxHeightField* pxHeightfield = heightfieldAsset->GetHeightField();
+
+            // Since PxHeightfield will have shared ownership in both HeightfieldAsset and HeightfieldShapeConfiguration,
+            // we need to increment the reference counter here. Both of these places call release() in destructors,
+            // so we need to avoid double deletion this way.
+            pxHeightfield->acquireReference();
+            configuration.SetCachedNativeHeightfield(pxHeightfield);
+
+            InitHeightfieldCollider();
+        }
+    }
+
+    void HeightfieldColliderComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        InitHeightfieldCollider();
+    }
+
     void HeightfieldColliderComponent::Activate()
     {
-        const AZ::EntityId entityId = GetEntityId();
+        AZ::Data::AssetId assetId = m_bakedHeightfieldAsset.GetId();
+        AZ::Data::AssetData::AssetStatus assetStatus = m_bakedHeightfieldAsset.GetStatus();
 
-        AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
-        Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (assetId.IsValid() && assetStatus != AZ::Data::AssetData::AssetStatus::Error)
+        {
+            if (m_bakedHeightfieldAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+            {
+                m_bakedHeightfieldAsset.QueueLoad();
+            }
 
-        m_heightfieldCollider =
-            AZStd::make_unique<HeightfieldCollider>(GetEntityId(), GetEntity()->GetName(), sceneHandle, m_colliderConfig, m_shapeConfig);
-
-        ColliderComponentRequestBus::Handler::BusConnect(entityId);
-        Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
+            AZ::Data::AssetBus::Handler::BusConnect(assetId);
+        }
+        else
+        {
+            InitHeightfieldCollider();
+        }
     }
 
     void HeightfieldColliderComponent::Deactivate()
     {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         ColliderComponentRequestBus::Handler::BusDisconnect();
 
@@ -102,6 +160,11 @@ namespace PhysX
             return;
         }
         *m_colliderConfig = colliderConfig;
+    }
+
+    void HeightfieldColliderComponent::SetBakedHeightfieldAsset(const AZ::Data::Asset<Pipeline::HeightFieldAsset>& heightfieldAsset)
+    {
+        m_bakedHeightfieldAsset = heightfieldAsset;
     }
 
     // ColliderComponentRequestBus
@@ -204,6 +267,20 @@ namespace PhysX
                 }
             }
         }
+    }
+
+    void HeightfieldColliderComponent::InitHeightfieldCollider()
+    {
+        const AZ::EntityId entityId = GetEntityId();
+
+        AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
+        Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+
+        m_heightfieldCollider =
+            AZStd::make_unique<HeightfieldCollider>(entityId, GetEntity()->GetName(), sceneHandle, m_colliderConfig, m_shapeConfig);
+
+        ColliderComponentRequestBus::Handler::BusConnect(entityId);
+        Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
     }
 
 } // namespace PhysX
