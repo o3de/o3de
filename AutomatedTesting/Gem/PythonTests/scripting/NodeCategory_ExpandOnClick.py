@@ -80,15 +80,11 @@ class NodeCategory_ExpandOnClick:
                                  QtCore.Qt.NoModifier,
                                  item_index_center)
 
-    def wait_and_verify_category_expanded(self, test_case, node_palette_node_tree, node_palette_math_category):
-        category_has_expanded = helper.wait_for_condition(
-            lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(test_case, category_has_expanded)
 
-    def wait_and_verify_category_collapsed(self, test_case, node_palette_node_tree, node_palette_math_category):
+    def wait_and_verify_category_expanded_state(self, test_case, node_palette_node_tree, node_palette_math_category, expanded = True):
         category_has_expanded = helper.wait_for_condition(
             lambda: node_palette_node_tree.isExpanded(node_palette_math_category), WAIT_TIME_3)
-        Report.result(test_case, not category_has_expanded)
+        Report.result(test_case, expanded == category_has_expanded)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -118,19 +114,19 @@ class NodeCategory_ExpandOnClick:
 
         # 4) Left-Click on a node category arrow to expand it and verify it's expanded
         self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
-        self.wait_and_verify_category_expanded(Tests.click_expand, node_palette_node_tree, node_palette_math_category)
+        self.wait_and_verify_category_expanded_state(Tests.click_expand, node_palette_node_tree, node_palette_math_category)
 
         # 5) Left-Click on a node category arrow to collapse it and verify it's collapsed
         self.left_click_expander_button(node_palette_node_tree, node_palette_math_category)
-        self.wait_and_verify_category_collapsed(Tests.click_collapse, node_palette_node_tree, node_palette_math_category)
+        self.wait_and_verify_category_expanded_state(Tests.click_collapse, node_palette_node_tree, node_palette_math_category, False)
 
         # 6) Double-Click on a node category to expand it then verify it's expanded
         self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
-        self.wait_and_verify_category_expanded(Tests.dClick_expand, node_palette_node_tree, node_palette_math_category)
+        self.wait_and_verify_category_expanded_state(Tests.dClick_expand, node_palette_node_tree, node_palette_math_category)
 
         # 7) Double-Click on a node category to collapse it and verify it's collapsed
         self.double_click_node_category(node_palette_node_tree, node_palette_math_category)
-        self.wait_and_verify_category_collapsed(Tests.dClick_collapse, node_palette_node_tree, node_palette_math_category)
+        self.wait_and_verify_category_expanded_state(Tests.dClick_collapse, node_palette_node_tree, node_palette_math_category, False)
 
 
 test = NodeCategory_ExpandOnClick()
