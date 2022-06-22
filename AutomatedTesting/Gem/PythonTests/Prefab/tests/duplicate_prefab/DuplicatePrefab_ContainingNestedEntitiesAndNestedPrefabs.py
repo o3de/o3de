@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
+def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     """
     Test description:
     - Creates linear nested entities.
@@ -20,11 +20,9 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     from pathlib import Path
 
     import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
-    import azlmbr.entity as entity
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, get_all_entity_ids, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
@@ -65,11 +63,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
         FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS)
     new_prefab_container_entity = new_prefab.container_entity
 
-    nested_entities_root_on_instance = new_prefab.get_direct_child_entities()[0]
-    nested_prefabs_root_container_entity_on_instance = new_prefab.get_direct_child_entities()[1]
-    if nested_entities_root_on_instance.get_name() != nested_entities_root_name:
-        nested_entities_root_on_instance, nested_prefabs_root_container_entity_on_instance = \
-            nested_prefabs_root_container_entity_on_instance, nested_entities_root_on_instance
+    nested_entities_root_on_instance = new_prefab.get_direct_child_entity_by_name(nested_entities_root_name)
 
     assert nested_entities_root_on_instance.get_name() == nested_entities_root_name \
            and nested_entities_root_on_instance.get_parent_id() == new_prefab_container_entity.id, \
@@ -79,31 +73,35 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS,
                                                       CREATION_POSITION)
 
+    # Gather information on prefab structure to validate against Undo/Redo
+    common_parent = EditorEntity(new_prefab.container_entity.get_parent_id())
+    common_parent_children_ids_before_duplicate = set([child_id.ToString() for child_id in
+                                                       common_parent.get_children_ids()])
+
     # Duplicates the prefab instance and asserts if duplication doesn't succeed
-    Prefab.duplicate_prefabs([new_prefab])
+    duplicated_instance = Prefab.duplicate_prefabs([new_prefab])
+
+    # Gather more information on prefab structure after duplication to validate against Undo/Redo
+    common_parent_children_ids_after_duplicate = set([child_id.ToString() for child_id in
+                                                      common_parent.get_children_ids()])
+    duplicate_container_entity_ids = [duplicated_instance[0].container_entity.id]
 
     # Test undo/redo on prefab duplication
     general.undo()
     wait_for_propagation()
-    search_filter = entity.SearchFilter()
-    search_filter.names = [FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS]
-    prefab_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
-    assert prefab_entities_found == 1, "Undo failed: Found duplicated prefab entities"
-    search_filter.names = ["Entity_2"]
-    child_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
-    assert child_entities_found == 1, "Undo failed: Found duplicated child entities"
+    common_parent_children_ids_after_duplicate_undo = set([child_id.ToString() for child_id in
+                                                           common_parent.get_children_ids()])
+    assert common_parent_children_ids_before_duplicate == common_parent_children_ids_after_duplicate_undo, \
+        "Undo Failed: Found unexpected children of common parent after Undo"
 
     general.redo()
     wait_for_propagation()
-    search_filter.names = [FILE_NAME_OF_PREFAB_WITH_NESTED_ENTITIES_AND_NESTED_PREFABS]
-    prefab_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
-    assert prefab_entities_found == 2, "Redo failed: Failed to find duplicated prefab entities"
-    search_filter.names = ["Entity_2"]
-    child_entities_found = len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter))
-    assert child_entities_found == 2, "Redo failed: Failed to find duplicated child entities"
+    Prefab.validate_duplicated_prefab([new_prefab], common_parent_children_ids_before_duplicate,
+                                      common_parent_children_ids_after_duplicate, duplicate_container_entity_ids,
+                                      common_parent)
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
 
-    Report.start_test(DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs)
+    Report.start_test(DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs)
