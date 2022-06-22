@@ -150,7 +150,7 @@ namespace UnitTest
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
-        // Verify the action is now in the menu.
+        // Verify the action is now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 1);
     }
 
@@ -168,7 +168,7 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 1);
 
-        // Verify the actions are now in the menu.
+        // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct.
@@ -194,7 +194,7 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 42);
 
-        // Verify the actions are now in the menu.
+        // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct (when a collision happens, items should be in order of addition).
@@ -213,14 +213,44 @@ namespace UnitTest
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
-        // Add a separator to the menu.
+        // Add a separator to the toolbar.
         m_toolBarManagerInterface->AddSeparatorToToolBar("o3de.toolbar.test", 42);
 
-        // Verify the separator is now in the menu.
+        // Verify the separator is now in the toolbar.
         const auto& actions = toolBar->actions();
 
         EXPECT_EQ(actions.size(), 1);
         EXPECT_TRUE(actions[0]->isSeparator());
+    }
+
+    TEST_F(ActionManagerFixture, AddNullWidgetInToolBar)
+    {
+        // Register toolbar.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Try to add a nullptr widget.
+        auto outcome = m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", nullptr, 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyWidgetInToolBar)
+    {
+        // Register toolbar and create a QWidget.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QWidget* widget = new QWidget();
+
+        // Add the widget to the toolbar.
+        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", widget, 42);
+
+        // Verify the separator is now in the menu.
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        const auto& actions = toolBar->actions();
+
+        EXPECT_EQ(actions.size(), 1);
+
+        QWidgetAction* widgetAction = qobject_cast<QWidgetAction*>(actions[0]);
+        EXPECT_TRUE(widgetAction != nullptr);
+        EXPECT_TRUE(widgetAction->defaultWidget() == widget);
     }
 
     TEST_F(ActionManagerFixture, VerifyComplexToolBar)
