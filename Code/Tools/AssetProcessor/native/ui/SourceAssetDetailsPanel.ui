@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>743</width>
-    <height>860</height>
+    <width>735</width>
+    <height>837</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -31,8 +31,10 @@
      <property name="font">
       <font>
        <family>16pt</family>
-       <weight>75</weight>
+       <pointsize>12</pointsize>
+       <weight>50</weight>
        <italic>false</italic>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -211,8 +213,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>721</width>
-          <height>791</height>
+          <width>713</width>
+          <height>760</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -227,26 +229,26 @@
            <x>10</x>
            <y>10</y>
            <width>833</width>
-           <height>551</height>
+           <height>425</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="scrollableVerticalLayout">
           <item>
-           <layout class="QHBoxLayout" name="ScanFolderLayout">
-            <item>
+           <layout class="QGridLayout" name="headerGrid" columnstretch="1,4">
+            <item row="0" column="0">
              <widget class="QLabel" name="scanFolderTitleLabel">
               <property name="styleSheet">
                <string notr="true">font: bold;</string>
               </property>
               <property name="text">
-               <string>Scan Folder:</string>
+               <string>Scan Folder</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item>
+            <item row="0" column="1">
              <widget class="QLabel" name="scanFolderValueLabel">
               <property name="text">
                <string>Scan folder name here</string>
@@ -256,37 +258,7 @@
               </property>
              </widget>
             </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="sourceGuidLayout">
-            <item>
-             <widget class="QLabel" name="sourceGuidTitleLabel">
-              <property name="styleSheet">
-               <string notr="true">font: bold;</string>
-              </property>
-              <property name="text">
-               <string>Source Guid:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
+            <item row="1" column="1">
              <widget class="QLabel" name="sourceGuidValueLabel">
               <property name="text">
                <string>Source guid here</string>
@@ -296,18 +268,18 @@
               </property>
              </widget>
             </item>
-            <item>
-             <spacer name="horizontalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="1" column="0">
+             <widget class="QLabel" name="sourceGuidTitleLabel">
+              <property name="styleSheet">
+               <string notr="true">font: bold;</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
+              <property name="text">
+               <string>Source Guid</string>
               </property>
-             </spacer>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -440,10 +412,10 @@
               <attribute name="horizontalHeaderVisible">
                <bool>false</bool>
               </attribute>
-              <attribute name="horizontalHeaderDefaultSectionSize">
+              <attribute name="horizontalHeaderMinimumSectionSize">
                <number>24</number>
               </attribute>
-              <attribute name="horizontalHeaderMinimumSectionSize">
+              <attribute name="horizontalHeaderDefaultSectionSize">
                <number>24</number>
               </attribute>
               <attribute name="horizontalHeaderStretchLastSection">
@@ -575,10 +547,10 @@
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
-            <attribute name="horizontalHeaderDefaultSectionSize">
+            <attribute name="horizontalHeaderMinimumSectionSize">
              <number>24</number>
             </attribute>
-            <attribute name="horizontalHeaderMinimumSectionSize">
+            <attribute name="horizontalHeaderDefaultSectionSize">
              <number>24</number>
             </attribute>
             <attribute name="horizontalHeaderStretchLastSection">
@@ -708,10 +680,10 @@
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
-            <attribute name="horizontalHeaderDefaultSectionSize">
+            <attribute name="horizontalHeaderMinimumSectionSize">
              <number>24</number>
             </attribute>
-            <attribute name="horizontalHeaderMinimumSectionSize">
+            <attribute name="horizontalHeaderDefaultSectionSize">
              <number>24</number>
             </attribute>
             <attribute name="horizontalHeaderStretchLastSection">
