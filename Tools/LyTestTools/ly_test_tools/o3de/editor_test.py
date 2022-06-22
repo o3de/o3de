@@ -55,7 +55,9 @@ logger = logging.getLogger(__name__)
 def _split_batched_editor_log_file(workspace, starting_path, destination_file, log_file_to_split):
     """
     Splits a batched editor log file into separate log files for each test case in the log
-    :param path: the path to the logs to split
+    :param workspace: The LyTestTools Workspace object
+    :param starting_path: the original path for the logs
+    :param destination_file: the destination path for the logs
     :param log_file_to_split: the log file to split
     """
     # text that designates the start of logging for a new test
@@ -64,11 +66,15 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
 
     # the current log we are writing to
     current_new_log = None
+
+    # Using this to make sure we don't impact other log names that have already been created
     index = 1
     while not current_new_log:
         current_new_log_path = os.path.join(dir_name, f"SetUp" + str(index) + ".log")
-        current_new_log = open(current_new_log_path, "a+")
-        index += 1
+        if not os.path.exists(current_new_log_path):
+            current_new_log = open(current_new_log_path, "a+")
+        else:
+            index += 1
 
     # loop through the log to split, and write to the split logs
     with open(destination_file) as log_file:
@@ -77,7 +83,7 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
             if len(split_line) > 1:
                 # found a new test case, we need to split the log, line below is an example of what we're splitting
                 # <13:22:34> (python) - Running automated test: C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts\\LayerSpawner_InstancesPlantInAllSupportedShapes'
-                new_log_name = split_line[0].split("\\")[-1] + ".log"
+                new_log_name = split_line[0].split(os.sep)[-1] + ".log"
                 # resulting in LayerSpawner_InstancesPlantInAllSupportedShapes.log
                 current_new_log.close()
                 workspace.artifact_manager.save_artifact(current_new_log.name)
@@ -86,6 +92,7 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
             else:
                 current_new_log.write(line)
         # make sure to save the last log
+        current_new_log.close()
         workspace.artifact_manager.save_artifact(current_new_log.name)
 
 class EditorTest(abc.ABC):
