@@ -1,3 +1,10 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 
 # Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
@@ -22,10 +29,11 @@ ly_add_target(
         remotetools_files.cmake
         remotetools_autogen_files.cmake
         ${pal_dir}/remotetools_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    TARGET_PROPERTIES
+        O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
         PRIVATE
+            Include
             Source
     BUILD_DEPENDENCIES
         PUBLIC
@@ -40,7 +48,7 @@ ly_add_target(
         *.AutoPackets.xml,AutoPacketDispatcher_Inline.jinja,$path/$fileprefix.AutoPacketDispatcher.inl
 )
 
-# Here add RemoteTools target, it depends on the RemoteTools.Static
+# Here add RemoteTools target, it depends on the RemoteTools.Private.Static
 ly_add_target(
     NAME RemoteTools ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
@@ -68,9 +76,9 @@ ly_create_alias(NAME RemoteTools.Servers NAMESPACE Gem TARGETS Gem::RemoteTools)
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for RemoteTools.Static
-    if(PAL_TRAIT_TOOLINGCONNECTION_TEST_SUPPORTED)
-        # We support RemoteTools.Tests on this platform, add RemoteTools.Tests target which depends on RemoteTools.Static
+    # We globally support tests, see if we support tests on this platform for RemoteTools.Tests
+    if(PAL_TRAIT_REMOTETOOLS_TEST_SUPPORTED)
+        # We support RemoteTools.Tests on this platform, add RemoteTools.Tests target which depends on RemoteTools.Private.Static
         ly_add_target(
             NAME RemoteTools.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem

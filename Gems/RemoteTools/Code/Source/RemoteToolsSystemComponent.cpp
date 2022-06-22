@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <RemoteToolsSystemComponent.h>
 
@@ -440,12 +447,6 @@ namespace RemoteTools
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         [[maybe_unused]] AzNetworking::ISerializer& serializer)
     {
-        if (!ToolingCidrFilter.IsMatch(connection->GetRemoteAddress()))
-        {
-            // Only IPs within the Cidr filter is valid
-            return AzNetworking::PacketDispatchResult::Skipped;
-        }
-
         return RemoteToolsPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
 
