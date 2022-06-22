@@ -154,7 +154,7 @@ namespace EMStudio
         return parameter->GetMaxValue();
     }
 
-    void RotationParameterEditor::OnTick(float delta, AZ::ScriptTimePoint timePoint)
+    void RotationParameterEditor::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
         EMotionFX::ActorInstance* selectedActorInstance = EMotionFX::GetActorManager().GetFirstEditorActorInstance();
         if (selectedActorInstance)
