@@ -20,11 +20,13 @@ namespace AzToolsFramework
     EditorToolBar::EditorToolBar()
         : m_toolBar(new QToolBar(""))
     {
+        m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
         : m_toolBar(new QToolBar(name.c_str()))
     {
+        m_toolBar->setMovable(false);
     }
 
     void EditorToolBar::AddSeparator(int sortKey)
