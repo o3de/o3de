@@ -700,11 +700,17 @@ namespace PhysX
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
-        // GHI #9780
         // By refreshing the entire tree the component's properties reflected on edit context
         // will get updated correctly and show the right material slots list.
         // Unfortunately, the level prefab did its check against the dirty entity before
         // this and it will save old data to file (the previous material slots list).
+        // To workaround this issue we mark the entity as dirty again so the prefab
+        // will save the most current data.
+        // There is a side effect to this fix though, the undo stack needs to be amended and there is
+        // no good way to do that at the moment. This means a user will have to hit Ctrl+Z twice
+        // to revert its last change, which is not good, but not as bad as losing data.
+        AzToolsFramework::ScopedUndoBatch undoBatch("PhysX editor collider component material slots updated");
+        undoBatch.MarkEntityDirty(GetEntityId());
 
         ValidateAssetMaterials();
     }
