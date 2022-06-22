@@ -8,38 +8,40 @@
  */
 // {END_LICENSE}
 
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Module/Module.h>
-#include <Clients/${Name}SystemComponent.h>
+#include <${Name}ModuleInterface.h>
+#include "${Name}EditorSystemComponent.h"
 
 namespace ${SanitizedCppName}
 {
-    class ${SanitizedCppName}ModuleInterface
-        : public AZ::Module
+    class ${SanitizedCppName}EditorModule
+        : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${SanitizedCppName}ModuleInterface, "{${Random_Uuid}}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}ModuleInterface, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}EditorModule, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator, 0);
 
-        ${SanitizedCppName}ModuleInterface()
+        ${SanitizedCppName}EditorModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
-                ${SanitizedCppName}SystemComponent::CreateDescriptor(),
-                });
+                ${SanitizedCppName}EditorSystemComponent::CreateDescriptor(),
+            });
         }
 
         /**
          * Add required SystemComponents to the SystemEntity.
+         * Non-SystemComponents should not be added here
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList{
-                azrtti_typeid<${SanitizedCppName}SystemComponent>(),
+            return AZ::ComponentTypeList {
+                azrtti_typeid<${SanitizedCppName}EditorSystemComponent>(),
             };
         }
     };
 }// namespace ${SanitizedCppName}
+
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
