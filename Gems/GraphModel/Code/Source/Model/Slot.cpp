@@ -654,6 +654,7 @@ namespace GraphModel
         }
         AssertWithTypeInfo(expression, dataTypeUsed, message);
     }
+#endif // AZ_ENABLE_TRACING
 
     DataTypePtr Slot::GetDataTypeForValue(const AZStd::any& value) const
     {
@@ -670,7 +671,4 @@ namespace GraphModel
 
         return {};
     }
-#endif // AZ_ENABLE_TRACING
-
-
 } // namespace GraphModel
