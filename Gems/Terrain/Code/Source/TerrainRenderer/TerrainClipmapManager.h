@@ -165,7 +165,7 @@ namespace Terrain
         //! Data to be passed to shaders
         struct ClipmapData
         {
-            // Current viewport size.
+            //! Current viewport size.
             RawVector2f m_viewportSize;
 
             //! The max range that the clipmap is covering.
