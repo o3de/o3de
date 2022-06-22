@@ -118,8 +118,11 @@ namespace AzToolsFramework
                 "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
 
             // Register an updater that will refresh actions when a level is loaded.
-            m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
-
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+            }
+            
             EditorContextMenuBus::Handler::BusConnect();
             EditorEventsBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
@@ -1031,7 +1034,10 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnRootPrefabInstanceLoaded()
         {
-            m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
+            }
         }
 
     } // namespace Prefab

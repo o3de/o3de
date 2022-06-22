@@ -29,6 +29,7 @@ namespace AzToolsFramework
 class EditorActionsHandler
     : private AzToolsFramework::EditorEventsBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
@@ -41,16 +42,22 @@ private:
     void InitializeMenus();
     void InitializeToolBars();
 
+    QWidget* CreateExpander();
+    QWidget* CreateLabel(const AZStd::string& text);
     QWidget* CreateDocsSearchWidget();
     
     // EditorEventsBus overrides ...
     void OnViewPaneOpened(const char* viewPaneName) override;
     void OnViewPaneClosed(const char* viewPaneName) override;
 
-    // EditorEntityContextNotificationBus
+    // EditorEntityContextNotificationBus overrides ...
     void OnStartPlayInEditor() override;
     void OnStopPlayInEditor() override;
     void OnEntityStreamLoadSuccess() override;
+
+    // ToolsApplicationNotificationBus overrides ...
+    void AfterEntitySelectionChanged(
+        const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities);
 
     void RefreshToolActions();
 
