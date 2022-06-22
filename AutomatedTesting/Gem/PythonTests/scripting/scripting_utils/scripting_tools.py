@@ -14,7 +14,8 @@ import azlmbr.bus as bus
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT)
+                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT,
+                                                 ADD_BUTTON_QT)
 
 
 def click_menu_option(window, option_text):
@@ -192,7 +193,7 @@ def create_new_variable(self, variable_type):
     param variable_type: The variable data type to create as a string. i.e "Boolean"
     returns: none
     """
-    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, "addButton")
+    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
     add_new_variable_button.click()  # Click on Create Variable button
     helper.wait_for_condition((
         lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
