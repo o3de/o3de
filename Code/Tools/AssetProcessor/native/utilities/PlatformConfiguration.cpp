@@ -1362,21 +1362,11 @@ namespace AssetProcessor
 
         SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
         settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
-        // remove asset recognizers flagged to be ignored
-        simpleJobVisitor.m_assetRecognizers.erase(
-            AZStd::remove_if(
-                simpleJobVisitor.m_assetRecognizers.begin(),
-                simpleJobVisitor.m_assetRecognizers.end(),
-                [](const auto& recognizer)
-                {
-                    return recognizer.m_ignore;
-                })
-        );
-        for (auto&& rcRecognizer : simpleJobVisitor.m_assetRecognizers)
+        for (auto&& sjRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
-            if (!rcRecognizer.m_recognizer.m_platformSpecs.empty())
+            if (!sjRecognizer.m_recognizer.m_platformSpecs.empty() && !sjRecognizer.m_ignore)
             {
-                m_assetRecognizers[rcRecognizer.m_recognizer.m_name] = AZStd::move(rcRecognizer.m_recognizer);
+                m_assetRecognizers[sjRecognizer.m_recognizer.m_name] = AZStd::move(sjRecognizer.m_recognizer);
             }
         }
 
