@@ -153,7 +153,7 @@ void AssetProcessorManagerTest::SetUp()
     AssetRecognizer rec;
     rec.m_name = "txt files";
     rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-    rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+    rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
     rec.m_supportsCreateJobs = false;
     rec.m_supportsCreateJobs = false;
     ASSERT_TRUE(m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec));
@@ -1249,7 +1249,7 @@ void PathDependencyTest::SetUp()
     AssetRecognizer rec;
     rec.m_name = "txt files2";
     rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-    rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+    rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
     rec.m_supportsCreateJobs = false;
     m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec);
 
@@ -1490,7 +1490,7 @@ TEST_F(PathDependencyTest, NoLongerProcessedFile_IsRemoved)
     AssetRecognizer rec;
     rec.m_name = "txt files2";
     rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-    rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+    rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
     rec.m_supportsCreateJobs = false;
     m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec);
 
@@ -2525,8 +2525,8 @@ void MultiplatformPathDependencyTest::SetUp()
 
     rec.m_name = "multiplatform txt files";
     rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-    rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-    rec.m_platformSpecs.insert("provo", AssetInternalSpec::Copy);
+    rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+    rec.m_platformSpecs.insert({"provo", AssetInternalSpec::Copy});
     rec.m_supportsCreateJobs = false;
     m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec);
 
@@ -2534,7 +2534,7 @@ void MultiplatformPathDependencyTest::SetUp()
 
     rec2.m_name = "single platform ini files";
     rec2.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ini", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-    rec2.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+    rec2.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
     rec2.m_supportsCreateJobs = false;
     m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec2);
 }

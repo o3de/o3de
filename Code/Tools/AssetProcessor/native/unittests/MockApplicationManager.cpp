@@ -115,7 +115,7 @@ namespace AssetProcessor
     bool MockApplicationManager::RegisterAssetRecognizerAsBuilder(const AssetProcessor::AssetRecognizer& rec)
     {
         QString newBuilderId = BUILDER_ID_COPY.GetId();
-        QString newBuilderName = rec.m_name;
+        QString newBuilderName = rec.m_name.c_str();
         QHash<QString, BuilderIdAndName> inputBuilderNameByIdMap =
         {
             { newBuilderId, BUILDER_ID_COPY }
