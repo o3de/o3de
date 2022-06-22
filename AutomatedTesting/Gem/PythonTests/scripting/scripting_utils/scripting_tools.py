@@ -14,7 +14,7 @@ import azlmbr.bus as bus
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI)
+                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT)
 
 
 def click_menu_option(window, option_text):
@@ -182,6 +182,25 @@ def create_new_sc_graph(sc_editor_main_window):
         sc_editor_main_window, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
     create_new_graph_action.trigger()
+
+
+def create_new_variable(self, variable_type):
+    """
+    function for creating a new SC variable through variable manager
+
+    param self: the script objecting calling this function
+    param variable_type: The variable data type to create as a string. i.e "Boolean"
+    returns: none
+    """
+    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, "addButton")
+    add_new_variable_button.click()  # Click on Create Variable button
+    helper.wait_for_condition((
+        lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+    # Select variable type
+    table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+    model_index = pyside_utils.find_child_by_pattern(table_view, variable_type)
+    # Click on it to create variable
+    pyside_utils.item_view_index_mouse_click(table_view, model_index)
 
 
 def get_sc_editor_node_inspector(sc_editor):
