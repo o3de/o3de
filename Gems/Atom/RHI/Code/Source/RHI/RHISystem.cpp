@@ -176,9 +176,7 @@ namespace AZ
 
         void RHISystem::Shutdown()
         {
-            Interface<RHISystemInterface>::Unregister(this);
             m_frameScheduler.Shutdown();
-
             m_pipelineStateCache = nullptr;
             if (m_device)
             {
@@ -186,6 +184,7 @@ namespace AZ
                 AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
                 m_device = nullptr;
             }
+            Interface<RHISystemInterface>::Unregister(this);
         }
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)

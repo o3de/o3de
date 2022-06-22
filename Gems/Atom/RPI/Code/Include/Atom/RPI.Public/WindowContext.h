@@ -40,9 +40,9 @@ namespace AZ
             //! Enum to describe swapchain type
             enum class SwapChainMode : uint32_t
             {
-                XrLeft = 0,
+                Default = 0,
+                XrLeft,
                 XrRight,
-                Default,
                 Count
             };
 
@@ -76,6 +76,8 @@ namespace AZ
             //! Get the window ID for the WindowContext
             AzFramework::NativeWindowHandle GetWindowHandle() const { return m_windowHandle; }
 
+            //! Get the number of active swapchains
+            uint32_t GetSwapChainsSize() const;
         private:
 
             // WindowNotificationBus::Handler overrides ...
@@ -103,24 +105,20 @@ namespace AZ
             // The handle of the window that this is context describes
             AzFramework::NativeWindowHandle m_windowHandle;
 
-            // The swapChain that this context has created for the given window
-            RHI::Ptr<RHI::SwapChain> m_swapChain;
+            // The swapChain that this context has created for the
+            // given window as well as xr swapchains
+            AZStd::vector<RHI::Ptr<RHI::SwapChain>> m_swapChains;
 
-            // The default viewport that covers the entire surface described by the SwapChain
-            RHI::Viewport m_viewportDefault;
+            // The default viewport that covers the entire surface described
+            // by the default and XR SwapChains. 
+            AZStd::vector<RHI::Viewport> m_defaultViewports;
 
-            // The default scissor that covers the entire surface described by the SwapChain
-            RHI::Scissor m_scissorDefault;
+            // The default scissor that covers the entire surface described
+            // by the default and XR SwapChains
+            AZStd::vector<RHI::Scissor> m_defaultScissors;
 
             // Non-owning reference to associated ViewportContexts (if any)
             AZStd::vector<AZStd::weak_ptr<ViewportContext>> m_viewportContexts;
-
-            // Xr swapchain per view
-            AZStd::vector<RHI::Ptr<RHI::SwapChain>> m_xrSwapChains;
-            // Xr viewport data per view
-            AZStd::vector<RHI::Viewport> m_xrDefaultViewports;
-            // Xr scissor data per view
-            AZStd::vector<RHI::Scissor> m_xrDefaultScissors;
         };
 
         using WindowContextSharedPtr = AZStd::shared_ptr<WindowContext>;

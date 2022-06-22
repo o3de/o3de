@@ -383,6 +383,7 @@ namespace AZ
 
         CommandQueue& CommandQueueContext::GetPresentationCommandQueue() const
         {
+            AZ_Assert(m_presentationQueueIndex < aznumeric_cast<uint32_t>(-1), "Invalid presentation queue index");
             return *m_commandQueues[m_presentationQueueIndex];
         }
     }

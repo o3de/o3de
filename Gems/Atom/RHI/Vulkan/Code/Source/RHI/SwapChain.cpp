@@ -142,7 +142,7 @@ namespace AZ
             InvalidateNativeSwapChainImmediately();
             InvalidateSurface();
             m_presentationQueue = nullptr;
-                
+
             m_swapchainNativeImages.clear();
             m_currentFrameContext = {};
         }
@@ -155,7 +155,7 @@ namespace AZ
             RHI::ResultCode result = RHI::ResultCode::Success;
 
             // XR swapchains will retrieve the native swapchain image from xr system where as non-xr
-            // swapcahins will create the images internally
+            // swapchains will use the images created internally (i.e RHI::Vulkan)
             if (GetDescriptor().m_isXrSwapChain)
             {
                 RHI::Ptr<XRSwapChainDescriptor> xrSwapChainDescriptor = aznew XRSwapChainDescriptor();
@@ -170,7 +170,7 @@ namespace AZ
             else
             {
                 imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-                result =image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
             }
 
             if (result != RHI::ResultCode::Success)

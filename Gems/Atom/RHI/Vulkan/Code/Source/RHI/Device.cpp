@@ -592,7 +592,7 @@ namespace AZ
                 // Begin Frame can make XR related calls which we need to make sure happens
                 // from the thread related to the presentation queue or drivers will complain
                 auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
-                auto presentCommand = [=](void*)
+                auto presentCommand = [xrSystem](void*)
                 {
                     xrSystem->BeginFrame();
                 };
@@ -611,7 +611,7 @@ namespace AZ
                 // End Frame can make XR related calls which we need to make sure happens
                 // from the thread related to the presentation queue or drivers will complain
                 auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
-                auto presentCommand = [=](void*)
+                auto presentCommand = [xrSystem](void*)
                 {
                     xrSystem->EndFrame();
                 };

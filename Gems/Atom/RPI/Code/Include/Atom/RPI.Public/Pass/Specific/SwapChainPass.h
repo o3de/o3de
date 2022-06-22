@@ -35,7 +35,7 @@ namespace AZ
             AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
             AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
 
-            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapchainMode);
+            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapChainMode);
             ~SwapChainPass();
 
             Ptr<ParentPass> Recreate() const override;
@@ -71,7 +71,7 @@ namespace AZ
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
-            WindowContext::SwapChainMode m_swapchainMode = WindowContext::SwapChainMode::Default;
+            WindowContext::SwapChainMode m_swapChainMode = WindowContext::SwapChainMode::Default;
         };
 
     }   // namespace RPI

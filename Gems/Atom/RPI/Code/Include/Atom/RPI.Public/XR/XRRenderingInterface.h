@@ -14,13 +14,17 @@
 
 namespace AZ::RPI
 {
-    //! XR View specific Fov data
+    //! XR View specific Fov data (in radians).
     struct FovData
     {
-        float m_angleLeft = 0;
-        float m_angleRight = 0;
-        float m_angleUp = 0;
-        float m_angleDown = 0;
+        //! angleLeft is the angle of the left side of the field of view. For a symmetric field of view this value is negative.
+        float m_angleLeft = 0.0f;
+        //! angleRight is the angle of the right side of the field of view.
+        float m_angleRight = 0.0f;
+        //! angleUp is the angle of the top part of the field of view.
+        float m_angleUp = 0.0f;
+        //! angleDown is the angle of the bottom part of the field of view. For a symmetric field of view this value is negative.
+        float m_angleDown = 0.0f;
     };
 
     //! XR pose specific data 
@@ -47,18 +51,18 @@ namespace AZ::RPI
         virtual void AcquireSwapChainImage(AZ::u32 viewIndex) = 0;
 
         //! Return the number of views associated with the device.
-        virtual AZ::u32 GetNumViews() = 0;
+        virtual AZ::u32 GetNumViews() const  = 0;
 
         //! Returns true if rendering data is valid for the current frame.
         virtual bool ShouldRender() const = 0;
 
-        //! Return the swapchain width associated with the view index
+        //! Return the swapChain width (in pixels) associated with the view index
         virtual AZ::u32 GetSwapChainWidth(AZ::u32 viewIndex) const = 0;
 
-        //! Return the swapchain width associated with the view index
+        //! Return the swapChain height (in pixels) associated with the view index
         virtual AZ::u32 GetSwapChainHeight(AZ::u32 viewIndex) const = 0;
 
-        //! Return the Fov data associated with provided view index.
+        //! Return the Fov data (in radians) associated with provided view index.
         virtual FovData GetViewFov(AZ::u32 viewIndex) const = 0;
 
         //! Return the Pose data associated with provided view index.
@@ -67,13 +71,13 @@ namespace AZ::RPI
         //! Return the controller Pose data associated with provided hand Index.
         virtual PoseData GetControllerPose(AZ::u32 handIndex) const = 0;
 
-        //! Return the Pose Pose data associated with front view.
+        //! Return the Pose data associated with front view.
         virtual PoseData GetViewFrontPose() const = 0;
 
         //! Return the controller scale data associated with provided hand Index.
         virtual float GetControllerScale(AZ::u32 handIndex) const = 0;
 
-        //! Creates an off-center projection matrix suitable for VR.
+        //! Creates an off-center projection matrix suitable for VR. Angles are in radians and distance is in meters
         virtual AZ::Matrix4x4 CreateProjectionOffset(
             float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist) = 0;
 

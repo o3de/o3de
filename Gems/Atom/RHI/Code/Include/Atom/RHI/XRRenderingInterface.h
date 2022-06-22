@@ -97,7 +97,7 @@ namespace AZ::RHI
         virtual AZ::RHI::ResultCode CreateSession(AZ::RHI::XRSessionDescriptor* sessionDescriptor) = 0;
 
         //! Rendering api to create a XR SwapChain which should internally create a xr swapchain per view as 
-		//! well as multiple swapchain images per xr swapchain
+        //! well as multiple swapchain images per xr swapchain
         virtual AZ::RHI::ResultCode CreateSwapChain() = 0;
 
         //! Rendering api to signal the beginning of a frame.
