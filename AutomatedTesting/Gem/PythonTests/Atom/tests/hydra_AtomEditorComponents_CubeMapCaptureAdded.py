@@ -58,7 +58,6 @@ def AtomEditorComponents_CubeMapCapture_AddedToEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    import editor_python_test_tools.prefab_utils as PrefabUtils
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties
 
@@ -79,28 +78,28 @@ def AtomEditorComponents_CubeMapCapture_AddedToEntity():
 
         # 3. Remove the Cubemap_Capture component.
         cubemap_capture_component.remove()
-        PrefabUtils.wait_for_propagation()
+        general.idle_wait_frames(1)
         Report.critical_result(Tests.cubemap_capture_component_removal,
                                not cubemap_capture_entity.has_component(AtomComponentProperties.cube_map_capture()))
 
         # 4. Undo Cubemap_Capture component removal.
         general.undo()
-        PrefabUtils.wait_for_propagation()
+        general.idle_wait_frames(1)
         Report.result(Tests.removal_undo, cubemap_capture_entity.has_component(AtomComponentProperties.cube_map_capture()))
 
         # 5. Delete Cubemap_Capture entity.
         cubemap_capture_entity.delete()
-        PrefabUtils.wait_for_propagation()
+        general.idle_wait_frames(1)
         Report.result(Tests.entity_deleted, not cubemap_capture_entity.exists())
 
         # 17. UNDO deletion.
         general.undo()
-        PrefabUtils.wait_for_propagation()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, cubemap_capture_entity.exists())
 
         # 18. REDO deletion.
         general.redo()
-        PrefabUtils.wait_for_propagation()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not cubemap_capture_entity.exists())
 
         # 19. Look for errors and asserts.
