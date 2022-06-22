@@ -15,7 +15,7 @@ pytestmark = pytest.mark.SUITE_smoke
 
 class TestEditorTest(unittest.TestCase):
 
-    def test_SplitBatchedEditorLogFile_FoundLine_SavesTwoLogs(self):
+    def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
         mock_workspace = mock.MagicMock()
         starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
         destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
@@ -28,7 +28,7 @@ class TestEditorTest(unittest.TestCase):
 
         assert mock_workspace.artifact_manager.save_artifact.call_count == 2
 
-    def test_SplitBatchedEditorLogFile_FoundLine_SavesOneLog(self):
+    def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
         mock_workspace = mock.MagicMock()
         starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
         destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
