@@ -128,11 +128,6 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleEntities as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    def test_EditMenu_Default_UndoRedo(self, request, workspace, editor, launcher_platform, project):
-        from . import EditMenu_Default_UndoRedo as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Pane_Undocked_ClosesSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_Undocked_ClosesSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -196,6 +191,23 @@ class TestAutomation(TestAutomationBase):
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestScriptCanvasTests(object):
+
+    def test_EditMenu_Default_UndoRedo(self, request, editor, launcher_platform):
+        expected_lines = [
+            "New variable created",
+            "Undo action working",
+            "Redo action working",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "EditMenu_Default_UndoRedo.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
