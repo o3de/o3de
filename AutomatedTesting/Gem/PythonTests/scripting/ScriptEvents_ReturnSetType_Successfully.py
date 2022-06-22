@@ -7,6 +7,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Test Case Title: Event can return a value of set type successfully
 """
 
+from PySide2 import QtWidgets, QtTest, QtCore
+import editor_python_test_tools.pyside_utils as pyside_utils
+from editor_python_test_tools.utils import TestHelper as helper
+from editor_python_test_tools.utils import Report, Tracer
+import azlmbr.legacy.general as general
+import scripting_utils.scripting_tools as scripting_tools
+from scripting_utils.scripting_constants import WAIT_TIME_3, SCRIPT_CANVAS_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,\
+    TREE_VIEW_QT, NODE_CATEGORY_MATH
 
 # fmt: off
 class Tests():
@@ -17,8 +25,11 @@ class Tests():
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
 # fmt: on
 
+LEVEL_NAME = "tmp_level"
+EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"]
+SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
 
-def ScriptEvents_ReturnSetType_Successfully():
+class ScriptEvents_ReturnSetType_Successfully:
     """
     Summary: A temporary level is created with an Entity having ScriptCanvas component.
      ScriptEvent(T92569006_ScriptEvent.scriptevents) is created with one Method that has a return value.
@@ -46,21 +57,13 @@ def ScriptEvents_ReturnSetType_Successfully():
 
     :return: None
     """
-    import os
-    from editor_entity_utils import EditorEntity as Entity
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
 
-    import azlmbr.legacy.general as general
-    import azlmbr.asset as asset
-    import azlmbr.math as math
-    import azlmbr.bus as bus
 
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
-    EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"]
-    SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
+
+    def __init__(self):
+        self.editor_main_window = None
+        self.sc_editor = None
+        self.sc_editor_main_window = None
 
     def create_editor_entity(name, sc_asset):
         entity = Entity.create_editor_entity(name)
@@ -74,34 +77,32 @@ def ScriptEvents_ReturnSetType_Successfully():
 
         return all(line in found_lines for line in line_list)
 
-    # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    # 2) Create test entity
-    create_editor_entity("TestEntity", SC_ASSET_PATH)
+        # 1) Create temp level
+        general.idle_enable(True)
+        result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
+        Report.critical_result(Tests.level_created, result == 0)
+        helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME_3)
+        general.close_pane("Error Report")
 
-    # 3) Start Tracer
-    with Tracer() as section_tracer:
+        # 2) Create test entity
+        self.create_editor_entity("TestEntity", SC_ASSET_PATH)
+
+        # 3) Start Tracer
+        with Tracer() as section_tracer:
 
         # 4) Enter Game Mode
         helper.enter_game_mode(Tests.enter_game_mode)
 
         # 5) Read for line
-        lines_located = helper.wait_for_condition(lambda: locate_expected_lines(EXPECTED_LINES), WAIT_TIME)
+        lines_located = helper.wait_for_condition(lambda: self.locate_expected_lines(EXPECTED_LINES), WAIT_TIME_3)
         Report.result(Tests.lines_found, lines_located)
 
-    # 6) Exit Game Mode
-    helper.exit_game_mode(Tests.exit_game_mode)
+        # 6) Exit Game Mode
+        helper.exit_game_mode(Tests.exit_game_mode)
 
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(ScriptEvents_ReturnSetType_Successfully)
+test = ScriptEvents_ReturnSetType_Successfully()
+test.run_test()
