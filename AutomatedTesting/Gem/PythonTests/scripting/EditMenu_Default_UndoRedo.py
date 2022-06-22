@@ -35,14 +35,12 @@ class EditMenu_Default_UndoRedo:
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
-     2) Get the SC window object
-     3) Open Variable Manager if not opened already
-     4) Create Graph
-     5) Create new variable
-     6) Verify if the variable is created initially
-     7) Trigger Undo action and verify if variable is removed in Variable Manager
-     8) Trigger Redo action and verify if variable is re-added in Variable Manager
-     9) Close SC window
+     2) Open Variable Manager if not opened already
+     3) Create Graph
+     4) Create and verify the new variable exists in variable manager
+     5) Trigger Undo action and verify if variable is removed in Variable Manager
+     6) Trigger Redo action and verify if variable is re-added in Variable Manager
+     7) Close SC window
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -68,43 +66,42 @@ class EditMenu_Default_UndoRedo:
         general.idle_enable(True)
         scripting_tools.initialize_editor_object(self)
 
-        # 1) Open Script Canvas window
+        # 1) Open Script Canvas window and initialize the qt SC objects
         general.open_pane(SCRIPT_CANVAS_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-
-        # 2) Get the SC window object
         scripting_tools.initialize_sc_editor_objects(self)
 
-        # 3) Open Variable Manager if not opened already
+        # 2) Open Variable Manager if not opened already
         scripting_tools.initialize_variable_manager_object(self)
 
-        # 4) Create Graph
+        # 3) Create Graph
         scripting_tools.create_new_sc_graph(self.sc_editor_main_window)
 
-        # 5) Create new variable
+        # 4) Create and verify the new variable exists in variable manager
         scripting_tools.create_new_variable(self, VARIABLE_TYPES[0])
-
-        # 6) Verify if the variable is created initially
         graph_variables = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
         # since we added 1 variable, rowcount=1
+        row_count = 1
         Report.result(Tests.variable_created, helper.wait_for_condition(
-            lambda: self.get_graph_variables_row_count(graph_variables) == 1, WAIT_TIME_3))
+            lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
 
-        # 7) Trigger Undo action and verify if variable is removed in Variable Manager
+        # 5) Trigger Undo action and verify if variable is removed in Variable Manager
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
         undo_redo_action.trigger()
         # since we triggered undo, rowcount=0
+        row_count = 0
         Report.result(Tests.undo_worked, helper.wait_for_condition(
-            lambda: self.get_graph_variables_row_count(graph_variables) == 0, WAIT_TIME_3))
+            lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
 
-        # 8) Trigger Redo action and verify if variable is re-added in Variable Manager
+        # 6) Trigger Redo action and verify if variable is re-added in Variable Manager
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
         undo_redo_action.trigger()
         # since action is redone 1 variable is re-added, rowcount=1
+        row_count = 1
         Report.result(Tests.redo_worked, helper.wait_for_condition(
-            lambda: self.get_graph_variables_row_count(graph_variables) == 1, WAIT_TIME_3))
+            lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
 
-        # 9) Close SC window
+        # 7) Close SC window
         general.close_pane(SCRIPT_CANVAS_UI)
 
 
