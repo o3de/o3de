@@ -16,7 +16,7 @@ namespace Compression
 {
     void CompressionSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<CompressionSystemComponent, AZ::Component>()
                 ->Version(0)

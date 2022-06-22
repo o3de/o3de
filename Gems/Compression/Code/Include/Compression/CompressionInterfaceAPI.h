@@ -18,31 +18,22 @@ namespace Compression
 {
     enum class CompressionResult : AZ::u8
     {
+        PendingStart,
         Started,
         Complete,
-        NotStarted,
         Failed,
     };
 
     struct CompressionResultData
     {
-        //! Returns a boolean true if decompression has completed
-        explicit constexpr operator bool() const
-        {
-            return m_result == CompressionResult::Complete;
-        }
+        //! Returns a boolean true if compression has completed
+        explicit constexpr operator bool() const;
 
-        //! Retrieves the compressed data size
-        AZ::u64 GetBytesCompressed() const
-        {
-            return m_compressedBuffer.size();
-        }
+        //! Retrieves the compressed byte size
+        AZ::u64 GetCompressedByteCount() const;
 
         //! Retrieves the memory address of the compressed data
-        AZStd::byte* GetAddress() const
-        {
-            return m_compressedBuffer.data();
-        }
+        AZStd::byte* GetCompressedByteData() const;
 
         //! Will be set to the memory address of the compressed buffer
         //! supplied to the compression interface CompressBlock command
@@ -50,7 +41,7 @@ namespace Compression
         AZStd::span<AZStd::byte> m_compressedBuffer;
 
         //! Stores result code of whether the operation succeeded
-        CompressionResult m_result{ CompressionResult::NotStarted };
+        CompressionResult m_result{ CompressionResult::PendingStart };
     };
 
     struct ICompressionInterface
@@ -59,7 +50,7 @@ namespace Compression
 
         //! Retrieves the 32-bit compression algorithm ID associated with this interface
         virtual CompressionAlgorithmId GetCompressionAlgorithmId() const = 0;
-        //! Compresses the input uncompressed data into the compressed buffer supplied as both spans
+        //! Compresses the uncompressed data into the compressed buffer
         //! @return a CompressionResultData instance to indicate if compression operation has succeeded
         [[nodiscard]] virtual CompressionResultData CompressBlock(
             AZStd::span<AZStd::byte> compressedBuffer, const AZStd::span<const AZStd::byte>& uncompressedData) = 0;
@@ -72,8 +63,8 @@ namespace Compression
         virtual ~CompressionFactoryInterface() = default;
 
         //! Returns a span containing all registered Compression Interfaces
-        //! @return span off registered Compression Interfaces.
-        virtual AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() = 0;
+        //! @return view of registered Compression Interfaces.
+        virtual AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() const = 0;
 
         //! Registers a compression interface with the compression factory.
         //! If a compression interface with a CompressionAlgorithmId is registered that
@@ -99,3 +90,6 @@ namespace Compression
     using CompressionFactory = AZ::Interface<CompressionFactoryInterface>;
 
 } // namespace Compression
+
+// Provides implementations of the CompressionResultData struct
+#include "CompressionInterfaceAPI.inl"

@@ -7,6 +7,8 @@
 set(FILES
     Include/Compression/CompressionBus.h
     Include/Compression/CompressionInterfaceAPI.h
+    Include/Compression/CompressionInterfaceAPI.inl
     Include/Compression/CompressionInterfaceStructs.h
     Include/Compression/DecompressionInterfaceAPI.h
+    Include/Compression/DecompressionInterfaceAPI.inl
 )

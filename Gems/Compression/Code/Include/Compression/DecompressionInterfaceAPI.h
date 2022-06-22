@@ -18,41 +18,31 @@ namespace Compression
 {
     enum class DecompressionResult : AZ::u8
     {
+        PendingStart,
         Started,
         Complete,
-        NotStarted,
         Failed,
     };
 
     struct DecompressionResultData
     {
         //! Returns a boolean true if decompression has succeeded
-        explicit constexpr operator bool() const
-        {
-            return m_result == DecompressionResult::Complete;
-        }
+        explicit constexpr operator bool() const;
 
         //! Retrieves the uncompressed size of the decompression data
         //! from the span
-        AZ::u64 GetBytesUncompressed() const
-        {
-            return m_uncompressedBuffer.size();
-        }
+        AZ::u64 GetUncompressedByteCount() const;
 
         //! Retrieves the memory address where the uncompressed data
         //! is stored
-        AZStd::byte* GetAddress() const
-        {
-            return m_uncompressedBuffer.data();
-        }
+        AZStd::byte* GetUncompressedByteData() const;
 
         //! Will be set to the memory address of the uncompressed buffer
-        //! supplied to DecompressBlock
         //! The size of the span will be set to actual uncompressed size
         AZStd::span<AZStd::byte> m_uncompressedBuffer;
 
         //! Stores result code of whether the operation succeeded
-        DecompressionResult m_result{ DecompressionResult::NotStarted };
+        DecompressionResult m_result{ DecompressionResult::PendingStart };
     };
 
     struct IDecompressionInterface
@@ -74,8 +64,8 @@ namespace Compression
         virtual ~DecompressionFactoryInterface() = default;
 
         //! Returns a span containing all registered Decompression Interfaces
-        //! @return span off registered Decompression Interfaces.
-        virtual AZStd::span<IDecompressionInterface* const> GetDecompressionInterfaces() = 0;
+        //! @return view of registered Decompression Interfaces.
+        virtual AZStd::span<IDecompressionInterface* const> GetDecompressionInterfaces() const= 0;
 
         //! Registers a decompression interface with the decompression factory.
         //! If a decompression interface with a CompressionAlgorithmId is registered that
@@ -101,3 +91,6 @@ namespace Compression
     using DecompressionFactory = AZ::Interface<DecompressionFactoryInterface>;
 
 } // namespace Compression
+
+// Provides implemenation of the DecompressionResultData struct
+#include "DecompressionInterfaceAPI.inl"

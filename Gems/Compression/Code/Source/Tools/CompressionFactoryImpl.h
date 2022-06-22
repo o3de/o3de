@@ -12,7 +12,7 @@
 
 namespace Compression
 {
-    class CompressionFactoryImpl
+    class CompressionFactoryImpl final
         : public CompressionFactoryInterface
     {
     public:
@@ -21,12 +21,20 @@ namespace Compression
 
         ~CompressionFactoryImpl();
 
-        AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() override;
+        AZStd::span<ICompressionInterface* const> GetCompressionInterfaces() const override;
         bool RegisterCompressionInterface(AZStd::unique_ptr<ICompressionInterface>&&) override;
         bool UnregisterCompressionInterface(CompressionAlgorithmId) override;
         ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId) const override;
 
     private:
+        size_t FindCompressionIndex(CompressionAlgorithmId) const;
+        struct CompressionIdIndexEntry
+        {
+            CompressionAlgorithmId m_id;
+            size_t m_index;
+        };
+        //! Index into the Compression Interfaces vector
+        AZStd::vector<CompressionIdIndexEntry> m_compressionIdIndexSet;
         AZStd::vector<ICompressionInterface*> m_compressionInterfaces;
     };
 }// namespace Compression
