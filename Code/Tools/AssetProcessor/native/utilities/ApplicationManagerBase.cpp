@@ -1602,6 +1602,15 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
                                 retryCount+1,
                                 delay);
             }
+            else
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s and no further builders are available. Job will not retry.\n",
+                               oldBuilderId.c_str());
+                // if we failed to get a builder ref, it means we're probably
+                // shutting down, in which case we do not want to do an exponential
+                // backoff delay and need to return immediately.
+                return;
+            }
         }
         else
         {
@@ -1656,6 +1665,13 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
                 do
                 {
+                    if (jobCancelListener.IsCancelled())
+                    {
+                        // do not attempt to continue to retry or spawn
+                        // new builders during shut down.
+                        break;
+                    }
+                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
