@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 class CCryEditApp;
 class QMainWindow;
@@ -27,6 +28,7 @@ namespace AzToolsFramework
 
 class EditorActionsHandler
     : private AzToolsFramework::EditorEventsBus::Handler
+    , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
@@ -34,6 +36,7 @@ public:
 
 private:
     void InitializeActionContext();
+    void InitializeActionUpdaters();
     void InitializeActions();
     void InitializeMenus();
     void InitializeToolBars();
@@ -43,6 +46,11 @@ private:
     // EditorEventsBus overrides ...
     void OnViewPaneOpened(const char* viewPaneName) override;
     void OnViewPaneClosed(const char* viewPaneName) override;
+
+    // EditorEntityContextNotificationBus
+    void OnStartPlayInEditor() override;
+    void OnStopPlayInEditor() override;
+    void OnEntityStreamLoadSuccess() override;
 
     void RefreshToolActions();
 
@@ -58,4 +66,6 @@ private:
     QtViewPaneManager* m_qtViewPaneManager;
 
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
+
+    bool m_isPrefabSystemEnabled = false;
 };

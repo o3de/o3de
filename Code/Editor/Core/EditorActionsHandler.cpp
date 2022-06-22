@@ -8,6 +8,8 @@
 
 #include <Core/EditorActionsHandler.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
@@ -20,11 +22,15 @@
 #include <QDesktopServices>
 #include <QMainWindow>
 #include <QMenu>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QWidget>
 
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+
+static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
+static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
@@ -57,6 +63,7 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
     InitializeActionContext();
+    InitializeActionUpdaters();
     InitializeActions();
     InitializeMenus();
     InitializeToolBars();
@@ -71,6 +78,7 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     );
 
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     m_initialized = true;
 }
 
@@ -88,6 +96,20 @@ void EditorActionsHandler::InitializeActionContext()
     contextProperties.m_name = "O3DE Editor";
 
     m_actionManagerInterface->RegisterActionContext("", EditorMainWindowActionContextIdentifier, contextProperties, m_mainWindow);
+}
+
+void EditorActionsHandler::InitializeActionUpdaters()
+{
+    m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
+
+    // If the Prefab system is not enable, have a backup to update actions based on level loading.
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        m_isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (!m_isPrefabSystemEnabled)
+    {
+        m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+    }
 }
 
 void EditorActionsHandler::InitializeActions()
@@ -158,11 +180,55 @@ void EditorActionsHandler::InitializeActions()
             {
                 cryEdit->OnViewSwitchToGame();
             },
+            []()
+            {
+                return GetIEditor()->IsInGameMode();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.game.play",
+            [cryEdit = m_cryEditApp]() -> bool
+            {
+                bool result = !cryEdit->IsExportingLegacyData() && GetIEditor()->IsLevelLoaded();
+                return result;
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.play");
+        m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.play");
+    }
+
+    // Play Game (Maximized)
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Play Game (Maximized)";
+        actionProperties.m_description = "Activate the game input mode (maximized)";
+        actionProperties.m_category = "Game";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.game.playMaximized", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnViewSwitchToGameFullScreen();
+            },
+            []()
+            {
+                return GetIEditor()->IsInGameMode();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.game.playMaximized",
             [cryEdit = m_cryEditApp]()
             {
                 return !cryEdit->IsExportingLegacyData() && GetIEditor()->IsLevelLoaded();
             }
         );
+
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.playMaximized");
+        m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.playMaximized");
     }
 
     // --- Help Actions
@@ -382,6 +448,7 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, PlayGameMenuIdentifier, 100);
         {
             m_menuManagerInterface->AddActionToMenu(PlayGameMenuIdentifier, "o3de.action.game.play", 100);
+            m_menuManagerInterface->AddActionToMenu(PlayGameMenuIdentifier, "o3de.action.game.playMaximized", 200);
         }
     }
 
@@ -486,6 +553,32 @@ void EditorActionsHandler::OnViewPaneClosed(const char* viewPaneName)
 {
     AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewPaneName);
     m_actionManagerInterface->UpdateAction(toolActionIdentifier);
+}
+
+void EditorActionsHandler::OnStartPlayInEditor()
+{
+    m_actionManagerInterface->TriggerActionUpdater(GameModeStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnStopPlayInEditor()
+{
+    // Wait one frame for the game mode to actually be shut off.
+    QTimer::singleShot(
+        0,
+        nullptr,
+        [actionManagerInterface = m_actionManagerInterface]()
+        {
+            actionManagerInterface->TriggerActionUpdater(GameModeStateChangedUpdaterIdentifier);
+        }
+    );
+}
+
+void EditorActionsHandler::OnEntityStreamLoadSuccess()
+{
+    if (!m_isPrefabSystemEnabled)
+    {
+        m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
+    }
 }
 
 void EditorActionsHandler::RefreshToolActions()

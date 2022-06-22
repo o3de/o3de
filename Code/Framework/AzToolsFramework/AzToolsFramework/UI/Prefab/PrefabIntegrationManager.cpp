@@ -16,6 +16,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -39,6 +40,8 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
+
+static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 
 namespace AzToolsFramework
 {
@@ -109,11 +112,20 @@ namespace AzToolsFramework
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             prefabFocusInterface->InitializeEditorInterfaces();
 
+            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+            AZ_Assert(
+                m_actionManagerInterface,
+                "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
+
+            // Register an updater that will refresh actions when a level is loaded.
+            m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+
             EditorContextMenuBus::Handler::BusConnect();
             EditorEventsBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             EditorEntityContextNotificationBus::Handler::BusConnect();
+            PrefabPublicNotificationBus::Handler::BusConnect();
 
             InitializeShortcuts();
         }
@@ -122,6 +134,7 @@ namespace AzToolsFramework
         {
             UninitializeShortcuts();
 
+            PrefabPublicNotificationBus::Handler::BusDisconnect();
             EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
@@ -1014,6 +1027,11 @@ namespace AzToolsFramework
                 TemplateId currentTemplateId = s_prefabFocusInterface->GetFocusedPrefabTemplateId(s_editorEntityContextId);
                 m_prefabSaveHandler.ExecuteSavePrefabDialog(currentTemplateId, true);
             }
+        }
+
+        void PrefabIntegrationManager::OnRootPrefabInstanceLoaded()
+        {
+            m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
         }
 
     } // namespace Prefab
