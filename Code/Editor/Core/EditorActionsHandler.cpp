@@ -64,15 +64,6 @@ bool IsEntitySelected()
     bool result = false;
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
         result, &AzToolsFramework::ToolsApplicationRequestBus::Handler::AreAnyEntitiesSelected);
-
-    if (result)
-    {
-        AZ_TracePrintf("", "SELECTION ISN'T EMPTY");
-    }
-    else
-    {
-        AZ_TracePrintf("", "SELECTION IS EMPTY");
-    }
     return result;
 }
 
@@ -773,7 +764,6 @@ void EditorActionsHandler::OnEntityStreamLoadSuccess()
         m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
     }
 }
-
 
 void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlySelectedEntities,

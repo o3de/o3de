@@ -340,15 +340,6 @@ bool DockWidget::event(QEvent* qtEvent)
         );
     }
 
-    if (qtEvent->type() == QEvent::Close)
-    {
-        QTimer::singleShot(0, this, [pane = m_pane]()
-            {
-                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
-            }
-        );
-    }
-
     return AzQtComponents::StyledDockWidget::event(qtEvent);
 }
 
