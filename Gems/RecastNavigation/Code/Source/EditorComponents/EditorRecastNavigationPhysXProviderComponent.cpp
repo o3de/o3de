@@ -47,7 +47,6 @@ namespace RecastNavigation
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RecastNavigationPhysXProviderConfig::m_collisionGroupId, "Collision Group",
                         "If set, only colliders from the specified collision group will be considered.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                     ;
             }
         }
