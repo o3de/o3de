@@ -597,7 +597,10 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     }
 }
 
-void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+void AzAssetBrowserRequestHandler::AddSourceFileOpeners(
+    [[maybe_unused]] const char* fullSourceFileName,
+    const AZ::Uuid& sourceUUID,
+    AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
 {
     using namespace AzToolsFramework;
 
@@ -608,32 +611,8 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
     {
         return;
     }
-    QString assetGroup;
-    AZ::AssetTypeInfoBus::EventResult(assetGroup, fullDetails->GetPrimaryAssetType(), &AZ::AssetTypeInfo::GetGroup);
 
-    if (AZStd::wildcard_match("*.lua", fullSourceFileName))
-    {
-        AZStd::string fullName(fullSourceFileName);
-        // LUA files can be opened with the O3DE LUA editor.
-        openers.push_back(
-            {
-                "O3DE_LUA_Editor",
-                "Open in Open 3D Engine LUA Editor...",
-                QIcon(),
-                [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
-                {
-                    // we know how to handle LUA files (open with the lua Editor.
-                    EditorRequestBus::Broadcast(&EditorRequests::LaunchLuaEditor, fullSourceFileNameInCallback);
-                }
-            });
-    }
-
-    if (!openers.empty())
-    {
-        return; // we found one
-    }
-    
-    // if we still havent found one, check to see if it is a default "generic" serializable asset
+    // check to see if it is a default "generic" serializable asset
     // and open the asset editor if so. Check whether the Generic Asset handler handles this kind of asset.
     // to do so we need the actual type of that asset, which requires an asset type, not a source type.
     AZ::Data::AssetManager& manager = AZ::Data::AssetManager::Instance();
