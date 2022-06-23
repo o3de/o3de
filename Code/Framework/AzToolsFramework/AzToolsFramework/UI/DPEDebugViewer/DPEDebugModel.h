@@ -85,8 +85,8 @@ namespace AzToolsFramework
 
     public:
         DPEDebugModel(QObject* parent);
-        void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
-        auto* GetAdapter()
+        void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
+        auto GetAdapter()
         {
             return m_adapter;
         }
@@ -129,7 +129,7 @@ namespace AzToolsFramework
         void HandleDomChange(const AZ::Dom::Patch& patch);
 
     private:
-        AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
+        AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         DPEModelNode* m_rootNode = nullptr;
         int m_maxColumns = 1;
 

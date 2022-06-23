@@ -91,6 +91,126 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddAction(sortIndex, actionIdentifier);
+        menuIterator->second.RefreshMenu();
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::AddActionsToMenu(
+        const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add actions to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "Menu Manager - Errors on AddActionsToMenu for menu \"%s\" - some actions were not added:", menuIdentifier.c_str());
+        bool couldNotAddAction = false;
+
+        for (const auto& pair : actions)
+        {
+            QAction* action = m_actionManagerInterface->GetAction(pair.first);
+            if (!action)
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddAction = true;
+                continue;
+            }
+
+            if (menuIterator->second.ContainsAction(pair.first))
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddAction = true;
+                continue;
+            }
+
+            menuIterator->second.AddAction(pair.second, pair.first);
+        }
+
+        menuIterator->second.RefreshMenu();
+
+        if (couldNotAddAction)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::RemoveActionFromMenu(
+        const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove action \"%s\" from menu \"%s\" - menu has not been registered.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        if (!action)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove action \"%s\" from menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        if (!menuIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove action \"%s\" from menu \"%s\" - menu does not contain action.", actionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        menuIterator->second.RemoveAction(actionIdentifier);
+        menuIterator->second.RefreshMenu();
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::RemoveActionsFromMenu(
+        const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove actions from menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "Menu Manager - Errors on RemoveActionsFromMenu for menu \"%s\" - some actions were not removed:", menuIdentifier.c_str());
+        bool couldNotRemoveAction = false;
+
+        for (const AZStd::string& actionIdentifier : actionIdentifiers)
+        {
+            QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+            if (!action)
+            {
+                errorMessage += AZStd::string(" ") + actionIdentifier;
+                couldNotRemoveAction = true;
+                continue;
+            }
+
+            if (!menuIterator->second.ContainsAction(actionIdentifier))
+            {
+                errorMessage += AZStd::string(" ") + actionIdentifier;
+                couldNotRemoveAction = true;
+                continue;
+            }
+
+            menuIterator->second.RemoveAction(actionIdentifier);
+        }
+
+        menuIterator->second.RefreshMenu();
+
+        if (couldNotRemoveAction)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
         return AZ::Success();
     }
 
@@ -104,6 +224,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddSeparator(sortIndex);
+        menuIterator->second.RefreshMenu();
         return AZ::Success();
     }
 
@@ -133,6 +254,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
+        menuIterator->second.RefreshMenu();
         return AZ::Success();
     }
 
@@ -161,6 +283,7 @@ namespace AzToolsFramework
         }
 
         menuBarIterator->second.AddMenu(sortIndex, menuIdentifier);
+        menuBarIterator->second.RefreshMenuBar();
         return AZ::Success();
     }
     
@@ -181,6 +304,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddWidget(sortIndex, widget);
+        menuIterator->second.RefreshMenu();
 
         return AZ::Success();
     }

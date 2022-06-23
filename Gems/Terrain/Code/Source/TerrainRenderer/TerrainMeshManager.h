@@ -229,7 +229,6 @@ namespace Terrain
 
         void CreateCommonBuffers();
         void InitializeCommonSectorData();
-        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(uint32_t elementSize, uint32_t elementCount, const void* initialData = nullptr, const char* name = nullptr);
         void UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
         void UpdateSectorLodBuffers(Sector& sector,
             const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
@@ -239,6 +238,19 @@ namespace Terrain
         void CheckLodGridsForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::vector<AZStd::vector<Sector*>>& sectorUpdates);
         void UpdateRaytracingData(const AZ::Aabb& bounds);
+		
+        AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(
+            uint32_t elementSize,
+            uint32_t elementCount,
+            const void* initialData = nullptr,
+            const char* name = nullptr);
+
+        AZ::Data::Instance<AZ::RPI::Buffer> CreateRayTracingMeshBufferInstance(
+            AZ::RHI::Format elementFormat,
+            uint32_t elementCount,
+            const void* initialData = nullptr,
+            const char* name = nullptr);
+
         void UpdateCandidateSectors();
         void CreateAabbQuadrants(const AZ::Aabb& aabb, AZStd::span<AZ::Aabb, 4> quadrantAabb);
 
@@ -263,6 +275,7 @@ namespace Terrain
 
         // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
         // combine them in the future to support terrain lods in ray tracing.
+        AZ::Uuid m_rayTracingMeshUuid = AZ::Uuid::CreateNull();
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;

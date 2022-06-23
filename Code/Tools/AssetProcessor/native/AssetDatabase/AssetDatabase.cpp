@@ -94,6 +94,7 @@ namespace AssetProcessor
             "    AssetType      BLOB NOT NULL, "
             "    LegacyGuid     BLOB NOT NULL, "
             "    Hash           INTEGER NOT NULL, "
+            "    Flags          INTEGER NOT NULL DEFAULT 1, "
             "    FOREIGN KEY (JobPK) REFERENCES "
             "       Jobs(JobID) ON DELETE CASCADE);";
 
@@ -396,8 +397,8 @@ namespace AssetProcessor
 
         static const char* INSERT_PRODUCT = "AssetProcessor::InsertProduct";
         static const char* INSERT_PRODUCT_STATEMENT =
-            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid, Hash) "
-            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid, :hash);";
+            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid, Hash, Flags) "
+            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid, :hash, :flags);";
 
         static const auto s_InsertProductQuery = MakeSqlQuery(INSERT_PRODUCT, INSERT_PRODUCT_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":jobid"),
@@ -405,7 +406,8 @@ namespace AssetProcessor
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
             SqlParam<AZ::Uuid>(":legacyguid"),
-            SqlParam<AZ::u64>(":hash"));
+            SqlParam<AZ::u64>(":hash"),
+            SqlParam<AZ::u64>(":flags"));
 
         static const char* UPDATE_PRODUCT = "AssetProcessor::UpdateProduct";
         static const char* UPDATE_PRODUCT_STATEMENT =
@@ -415,7 +417,8 @@ namespace AssetProcessor
             "ProductName = :productname, "
             "AssetType = :assettype, "
             "LegacyGuid = :legacyguid, "
-            "Hash = :hash "
+            "Hash = :hash, "
+            "Flags = :flags "
             "WHERE ProductID = :productid;";
 
         static const auto s_UpdateProductQuery = MakeSqlQuery(UPDATE_PRODUCT, UPDATE_PRODUCT_STATEMENT, LOG_NAME,
@@ -424,6 +427,7 @@ namespace AssetProcessor
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
             SqlParam<AZ::Uuid>(":legacyguid"),
+            SqlParam<AZ::u64>(":flags"),
             SqlParam<AZ::s64>(":productid"),
             SqlParam<AZ::u64>(":hash"));
 
@@ -782,6 +786,12 @@ namespace AssetProcessor
         static const char* INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS_STATEMENT =
             "ALTER TABLE SourceDependency "
             "ADD SubIds TEXT NOT NULL collate nocase default('');";
+
+        static const char* INSERT_COLUMN_PRODUCTS_FLAGS = "AssetProcessor::InsertColumnProductsFlags";
+        static const char* INSERT_COLUMN_PRODUCTS_FLAGS_STATEMENT =
+            "ALTER TABLE Products "
+            "ADD Flags INTEGER NOT NULL DEFAULT 1;";
+
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1075,6 +1085,15 @@ namespace AssetProcessor
             }
         }
 
+        if(foundVersion == AssetDatabase::DatabaseVersion::AddedSourceDependencySubIdsAndProductHashes)
+        {
+            if(m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_PRODUCTS_FLAGS))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedFlagsColumnToProductTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedFlagsColumnToProductTable)\n", foundVersion);
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1218,6 +1237,7 @@ namespace AssetProcessor
         // ---------------------------------------------------------------------------------------------
         m_databaseConnection->AddStatement(CREATE_PRODUCT_TABLE, CREATE_PRODUCT_TABLE_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_PRODUCT_HASH, INSERT_COLUMN_PRODUCT_HASH_STATEMENT);
+        m_databaseConnection->AddStatement(INSERT_COLUMN_PRODUCTS_FLAGS, INSERT_COLUMN_PRODUCTS_FLAGS_STATEMENT);
         m_createStatements.push_back(CREATE_PRODUCT_TABLE);
 
         AddStatement(m_databaseConnection, s_InsertProductQuery);
@@ -1620,6 +1640,30 @@ namespace AssetProcessor
                 return true;  // return true to continue iterating over additional results, we are populating a container
             });
         return  found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetSourcesLikeSourceNameScanFolderId(
+        QString likeSourceName,
+        AZ::s64 scanFolderID,
+        LikeType likeType,
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& container)
+    {
+        if (likeSourceName.isEmpty())
+        {
+            return false;
+        }
+
+        bool found = false;
+        bool succeeded = QuerySourceLikeSourceNameScanFolderID(
+            likeSourceName.toUtf8().constData(), scanFolderID, likeType,
+            [&](SourceDatabaseEntry& source)
+            {
+                found = true;
+                container.push_back();
+                container.back() = AZStd::move(source);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
     }
 
     bool AssetDatabaseConnection::GetSourceByJobID(AZ::s64 jobID, SourceDatabaseEntry& entry)
@@ -2297,7 +2341,7 @@ namespace AssetProcessor
             if (wasAlreadyInDatabase)
             {
                 // it was already in the database, so use the "UPDATE" version
-                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_productID, entry.m_hash))
+                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_flags.to_ullong(), entry.m_productID, entry.m_hash))
                 {
                     return false;
                 }
@@ -2305,7 +2349,7 @@ namespace AssetProcessor
             else
             {
                 // it wasn't in the database, so use the "INSERT" version
-                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_hash))
+                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_hash, entry.m_flags.to_ullong()))
                 {
                     return false;
                 }
@@ -3103,10 +3147,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetFilesLikeFileName(QString likeFileName, LikeType likeType, FileDatabaseEntryContainer& container)
+    bool AssetDatabaseConnection::GetFilesLikeFileNameScanFolderId(QString likeFileName, LikeType likeType, AZ::s64 scanFolderId, FileDatabaseEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryFilesLikeFileName(likeFileName.toUtf8().constData(), likeType,
+        bool succeeded = QueryFilesLikeFileNameAndScanFolderID(likeFileName.toUtf8().constData(), likeType, scanFolderId,
             [&](FileDatabaseEntry& file)
         {
             found = true;
