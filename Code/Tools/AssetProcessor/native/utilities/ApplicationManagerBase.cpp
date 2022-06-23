@@ -1653,7 +1653,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
         // inside the AP
         modifiedBuilderDesc.m_createJobFunction =
-            [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+            [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             AssetProcessor::BuilderRef builderRef;
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::CreateJobs);
@@ -1663,15 +1663,13 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
 
+                if (this->InitiatedShutdown())
+                {
+                    return; // exit early if you're shutting down!
+                }
+
                 do
                 {
-                    if (jobCancelListener.IsCancelled())
-                    {
-                        // do not attempt to continue to retry or spawn
-                        // new builders during shut down.
-                        break;
-                    }
-                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
@@ -1691,7 +1689,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [this, debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -1718,6 +1716,12 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                         // new builders during shut down.
                         break;
                     }
+
+                    if (this->InitiatedShutdown())
+                    {
+                        return; // exit early if you're shutting down!
+                    }
+                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
