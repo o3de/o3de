@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import pytest
 import logging
 import os
+import json
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -91,9 +92,13 @@ class TestsPythonAssetProcessing_APBatch(object):
         return False
 
     def compute_udp_asset_debug_file(self, workspace, asset_processor, debug_filename, ap_setup_fixture):
+        asset_folder_name = 'UserDefinedProperties'
+        return self.compute_asset_debug_file(workspace, asset_processor, debug_filename, asset_folder_name, ap_setup_fixture)
+
+    def compute_asset_debug_file(self, workspace, asset_processor, debug_filename, folder_name, ap_setup_fixture):
         # computes the file name of the debug file for a UserDefinedProperties test file
 
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "UserDefinedProperties")        
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], folder_name)        
         result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
         assert result, "AP Batch failed"
 
@@ -133,7 +138,7 @@ class TestsPythonAssetProcessing_APBatch(object):
         assert self.find_user_defined_property(dbgsg_file, 'o3de_default_material: gem/sponza/assets/objects/sponza_mat_bricks.azmaterial'), "Malformed o3de_default_material value"
 
     def test_ProcessSceneWithMetadata_SupportedBlenderDataTypes_Work(self, workspace, ap_setup_fixture, asset_processor):
-        # This test loads the debug output file for an FBX exported by Max that has a few user defined properties
+        # This test loads the debug output file for an FBX exported by Blender that has a few user defined properties
 
         asset_dbgsg = 'userdefinedproperties/blender_with_attributes.dbgsg'
         dbgsg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, asset_dbgsg, ap_setup_fixture)
@@ -148,3 +153,45 @@ class TestsPythonAssetProcessing_APBatch(object):
         assetinfo_dbg = 'userdefinedproperties/blender_with_attributes.assetinfo.dbg'
         assetinfo_dbg_file = self.compute_udp_asset_debug_file(workspace, asset_processor, assetinfo_dbg, ap_setup_fixture)
         assert assetinfo_dbg_file, "The debug assetinfo file is missing"
+
+    def test_ProcessSceneWithCommonParent_DefaultMeshGroups_Work(self, workspace, ap_setup_fixture, asset_processor):
+        # This test validates that the correct meshes are included and excluded in the default mesh groups
+        # of a scene containing mesh nodes that have a common parent transform node
+
+        assetinfo_dbg_list = {
+            "meshgroups/blender_with_common_parent.assetinfo.dbg",
+            "meshgroups/maya_with_common_parent.assetinfo.dbg"
+        }
+
+        expected_mesh_nodes = {
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CUPCase",
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CPUUserDoor",
+            "RootNode.AstroVAC v10.CPU:1.CPU1.CPUCover"
+        }
+
+        for assetinfo_dbg in assetinfo_dbg_list:
+            asset_folder_name = 'MeshGroups'
+            assetinfo_dbg_file = self.compute_asset_debug_file(workspace, asset_processor, assetinfo_dbg, asset_folder_name, ap_setup_fixture)
+            assert assetinfo_dbg_file, "The debug assetinfo file is missing"
+
+            with open(assetinfo_dbg_file, 'r') as file :
+                filedata = file.read()
+
+            dgb_dict = json.loads(filedata)
+
+            found_mesh_nodes = set()
+
+            # Check that each default mesh group contains one of the expected mesh nodes in its selected
+            # node list and has the rest of the expected mesh nodes in its unselected node list
+            groups = dgb_dict['values']
+            for group in groups:
+                if 'MeshGroup' in group.get('$type', str()) and group.get('name', str()).startswith('default_'):
+                    selection_lists = group.get('nodeSelectionList')
+                    selected_node_list = selection_lists.get('selectedNodes', [])
+                    assert len(selected_node_list) == 1, "Selected node list does not contain exactly one mesh"
+                    current_set = expected_mesh_nodes.copy()
+                    current_set.remove(selected_node_list[0])
+                    unselected_node_list = selection_lists.get('unselectedNodes', [])
+                    assert current_set == set(unselected_node_list), "Unselected node list does not contain the correct meshes"
+                    found_mesh_nodes.add(selected_node_list[0])
+            assert found_mesh_nodes == expected_mesh_nodes, "Not all expected mesh groups found"

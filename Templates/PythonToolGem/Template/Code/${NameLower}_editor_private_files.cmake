@@ -8,7 +8,7 @@
 
 set(FILES
     Source/${Name}ModuleInterface.h
-    Source/${Name}EditorSystemComponent.cpp
-    Source/${Name}EditorSystemComponent.h
-    Source/${Name}.qrc
+    Source/Tools/${Name}EditorSystemComponent.cpp
+    Source/Tools/${Name}EditorSystemComponent.h
+    Source/Tools/${Name}.qrc
 )

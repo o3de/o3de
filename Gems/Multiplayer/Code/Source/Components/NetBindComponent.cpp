@@ -233,6 +233,16 @@ namespace Multiplayer
         return (m_netEntityRole == NetEntityRole::Client);
     }
 
+    void NetBindComponent::SetAllowEntityMigration(EntityMigration value)
+    {
+        m_netEntityMigration = value;
+    }
+
+    EntityMigration NetBindComponent::GetAllowEntityMigration() const
+    {
+        return m_netEntityMigration;
+    }
+
     bool NetBindComponent::HasController() const
     {
         return (m_netEntityRole == NetEntityRole::Authority)
@@ -496,13 +506,13 @@ namespace Multiplayer
         stats.RecordEntitySerializeStart(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         bool success = true;
+        serializer.BeginObject(GetEntity()->GetName().c_str());
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
             success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer);
-
             stats.RecordComponentSerializeEnd(serializer.GetSerializerMode(), (*iter)->GetNetComponentId());
         }
-
+        serializer.EndObject(GetEntity()->GetName().c_str());
         stats.RecordEntitySerializeStop(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         return success;

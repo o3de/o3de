@@ -285,7 +285,7 @@ namespace RecastNavigationTests
         /*
          * Verify the notification EBus is called when a navigation mesh is updated.
          */
-        EXPECT_EQ(wait.m_calls, 1);
+        EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
     TEST_F(NavigationTest, BlockingTestWithDebugDraw)
@@ -743,7 +743,7 @@ namespace RecastNavigationTests
         RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshAsync);
         wait.BlockUntilCalled();
 
-        EXPECT_EQ(wait.m_calls, 1);
+        EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
     TEST_F(NavigationTest, AsyncManyUpdatesWhileFirstIsInProgressStressTest)
@@ -768,7 +768,7 @@ namespace RecastNavigationTests
         wait.BlockUntilCalled();
 
         // Only one of those updates was done.
-        EXPECT_EQ(wait.m_calls, 1);
+        EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
     TEST_F(NavigationTest, BlockingCallAfterAsync)
@@ -791,7 +791,7 @@ namespace RecastNavigationTests
         wait.BlockUntilCalled();
 
         // Only one of those updates was done.
-        EXPECT_EQ(wait.m_calls, 1);
+        EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
     TEST_F(NavigationTest, BlockingCallAfterAsyncReturnsFalse)

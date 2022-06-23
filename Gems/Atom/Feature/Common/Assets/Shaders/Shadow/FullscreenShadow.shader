@@ -38,4 +38,17 @@
             }
         }
     ]
+
+    // Todo: test Compute Shader version with async compute and LDS optimizations
+    // "ProgramSettings" :
+    // {
+    //     "EntryPoints":
+    //     [
+    //         {
+    //             "name" : "MainCS",
+    //             "type" : "Compute"
+    //         }
+    //     ]
+    // }
+
 }
