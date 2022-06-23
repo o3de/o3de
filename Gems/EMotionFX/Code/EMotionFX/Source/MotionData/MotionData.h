@@ -270,7 +270,7 @@ namespace EMotionFX
         void SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale);
 #endif
 
-        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex);
+        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis);
 
         static AZStd::string ReadStringFromStream(MCore::Stream* stream, MCore::Endian::EEndianType sourceEndianType);
 

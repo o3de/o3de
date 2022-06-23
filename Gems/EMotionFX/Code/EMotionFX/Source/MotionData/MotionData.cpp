@@ -687,7 +687,7 @@ namespace EMotionFX
         return result;
     }
 
-    void MotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex)
+    void MotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, [[maybe_unused]]bool transitionZeroXAxis, [[maybe_unused]] bool transitionZeroYAxis)
     {
         if (sampleJointDataIndex == rootJointDataIndex)
         {
@@ -696,7 +696,7 @@ namespace EMotionFX
 
         if (m_staticJointData.size() > sampleJointDataIndex && m_staticJointData.size() > rootJointDataIndex)
         {
-            m_staticJointData[rootJointDataIndex].m_staticTransform = m_staticJointData[sampleJointDataIndex].m_staticTransform;
+            m_staticJointData[rootJointDataIndex].m_staticTransform.m_position = m_staticJointData[sampleJointDataIndex].m_staticTransform.m_position;
         }
 
         if (m_staticMorphData.size() > sampleJointDataIndex && m_staticMorphData.size() > rootJointDataIndex)

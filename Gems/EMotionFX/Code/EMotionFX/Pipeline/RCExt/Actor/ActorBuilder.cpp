@@ -336,7 +336,7 @@ namespace EMotionFX
 
             // The search begin from the rootBoneNodeIndex.
             auto graphDownwardsRootBoneView = SceneViews::MakeSceneGraphDownwardsView<SceneViews::BreadthFirst>(graph, rootBoneNodeIndex, nameContentView.begin(), true);
-            for (auto it = graphDownwardsRootBoneView.begin();; it != graphDownwardsRootBoneView.end(); ++it)
+            for (auto it = graphDownwardsRootBoneView.begin(); it != graphDownwardsRootBoneView.end(); ++it)
             {
                 const SceneContainers::SceneGraph::NodeIndex& nodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
 

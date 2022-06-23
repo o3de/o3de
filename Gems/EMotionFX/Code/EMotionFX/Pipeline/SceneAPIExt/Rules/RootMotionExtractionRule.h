@@ -25,11 +25,15 @@ namespace EMotionFX::Pipeline::Rule
         virtual ~RootMotionExtractionData() = default;
 
         const AZStd::string& GetSampleJoint() const { return m_sampleJoint; }
+        bool GetTransitionZeroXAxis() const { return m_transitionZeroXAxis; }
+        bool GetTransitionZeroYAxis() const { return m_transitionZeroYAxis; }
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        AZStd::string m_sampleJoint;
+        bool m_transitionZeroXAxis = false;
+        bool m_transitionZeroYAxis = false;
+        AZStd::string m_sampleJoint = "Hip";
     };
 
     class RootMotionExtractionRule final
