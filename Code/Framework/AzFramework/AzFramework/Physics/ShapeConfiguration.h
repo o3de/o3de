@@ -8,13 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
+
+namespace AZ
+{
+    class Capsule;
+    class Obb;
+    class Sphere;
+} // namespace AZ
 
 namespace Physics
 {
@@ -63,6 +70,7 @@ namespace Physics
         explicit SphereShapeConfiguration(float radius = ShapeConstants::DefaultSphereRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Sphere; }
+        AZ::Sphere ToSphere(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         float m_radius = ShapeConstants::DefaultSphereRadius;
     };
@@ -76,6 +84,7 @@ namespace Physics
         explicit BoxShapeConfiguration(const AZ::Vector3& boxDimensions = ShapeConstants::DefaultBoxDimensions);
 
         ShapeType GetShapeType() const override { return ShapeType::Box; }
+        AZ::Obb ToObb(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
         AZ::Vector3 m_dimensions = ShapeConstants::DefaultBoxDimensions;
     };
@@ -90,8 +99,9 @@ namespace Physics
             float height = ShapeConstants::DefaultCapsuleHeight, float radius = ShapeConstants::DefaultCapsuleRadius);
 
         ShapeType GetShapeType() const override { return ShapeType::Capsule; }
+        AZ::Capsule ToCapsule(const AZ::Transform& transform = AZ::Transform::CreateIdentity()) const;
 
-        float m_height = ShapeConstants::DefaultCapsuleHeight;
+        float m_height = ShapeConstants::DefaultCapsuleHeight; //!< Total height, including hemispherical caps, oriented along z-axis.
         float m_radius = ShapeConstants::DefaultCapsuleRadius;
 
     private:

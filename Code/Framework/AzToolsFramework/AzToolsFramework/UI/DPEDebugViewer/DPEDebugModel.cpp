@@ -320,7 +320,7 @@ namespace AzToolsFramework
     {
     }
 
-    void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
+    void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
         m_adapter = theAdapter;
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(

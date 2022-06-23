@@ -109,18 +109,11 @@ namespace AZ
         {
             // This will cause scene files to be reprocessed whenever the global MaterialConverter settings change.
 
-            bool conversionEnabled = false;
-            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
-            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
+            AZStd::string conversionInfo = "[Material conversion info missing]";
+            RPI::MaterialConverterBus::BroadcastResult(conversionInfo, &RPI::MaterialConverterBus::Events::GetFingerprintInfo);
+            fingerprintInfo.insert(conversionInfo);
              
             fingerprintInfo.insert(AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets()));
-
-            if (!conversionEnabled)
-            {
-                AZStd::string defaultMaterialPath;
-                RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
-                fingerprintInfo.insert(AZStd::string::format("[MaterialConverter defaultMaterial=%s]", defaultMaterialPath.c_str()));
-            }
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
