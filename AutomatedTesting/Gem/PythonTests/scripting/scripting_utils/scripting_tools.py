@@ -57,13 +57,14 @@ def initialize_sc_editor_objects(self):
     self.sc_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
     self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
+
 def initialize_variable_manager_object(self):
     self.variable_manager = self.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
     if not self.variable_manager.isVisible():
         self.click_menu_option(self.sc_editor, VARIABLE_MANAGER_QT)
 
-#deprecate these two functions and break them into smaller functions like the one above for qt object model prep
-def initialize_asset_editor_qt_objects(self):
+
+def initialize_asset_editor_object(self):
     """
     function for initializing qt objects needed for testing around asset editor
 
@@ -71,14 +72,13 @@ def initialize_asset_editor_qt_objects(self):
 
     returns: None
     """
-    self.editor_window = pyside_utils.get_editor_main_window()
-    self.asset_editor = self.editor_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
+    self.asset_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
     self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
     self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
     self.asset_editor_menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
 
-def initialize_sc_qt_objects(self):
+def initialize_node_palette_object(self):
     """
     function for initializing qt objects needed for testing around the script canvas editor
 
@@ -86,11 +86,7 @@ def initialize_sc_qt_objects(self):
 
     returns: None
     """
-    self.script_canvas = self.editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    if self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
-        action = pyside_utils.find_child_by_pattern(self.script_canvas, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
-        action.trigger()
-    self.node_palette = self.script_canvas.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+    self.node_palette = self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
     self.node_tree_view = self.node_palette.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
     self.node_tree_search_frame = self.node_palette.findChild(QtWidgets.QFrame, SEARCH_FRAME_QT)
     self.node_tree_search_box = self.node_tree_search_frame.findChild(QtWidgets.QLineEdit, SEARCH_FILTER_QT)
@@ -122,6 +118,12 @@ def open_node_palette(self):
     """
     if self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
         action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        action.trigger()
+
+
+def open_script_canvas(self):
+    if self.sc_editor.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI) is None:
+        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": SCRIPT_CANVAS_UI, "type": QtWidgets.QAction})
         action.trigger()
 
 

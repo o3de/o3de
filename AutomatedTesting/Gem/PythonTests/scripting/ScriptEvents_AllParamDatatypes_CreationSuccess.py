@@ -66,16 +66,17 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
     def __init__(self):
 
-        editor_window = None
-        asset_editor = None
-        asset_editor_widget = None
-        asset_editor_row_container = None
-        asset_editor_menu_bar = None
-        script_canvas = None
-        node_palette = None
-        node_tree_view = None
-        node_tree_search_frame = None
-        node_tree_search_box = None
+        self.editor_main_window = None
+        self.asset_editor = None
+        self.asset_editor_widget = None
+        self.asset_editor_row_container = None
+        self.asset_editor_menu_bar = None
+        self.sc_editor = None
+        self.sc_editor_main_window = None
+        self.node_palette = None
+        self.node_tree_view = None
+        self.node_tree_search_frame = None
+        self.node_tree_search_box = None
 
     def verify_added_params(self):
         for index in range(N_VAR_TYPES):
@@ -94,9 +95,12 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         general.close_pane(ASSET_EDITOR_UI) # this doesn't close a file that was previously open if you had just run a test that created an asset
         general.open_pane(ASSET_EDITOR_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+        tools.initialize_editor_object(self)
 
         # 2) Initially create new Script Event file with one method
-        tools.initialize_asset_editor_qt_objects(self)
+        tools.initialize_asset_editor_object(self)
+        tools.open_script_canvas(self)
+        tools.initialize_sc_editor_objects(self)
         action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
         result = helper.wait_for_condition(
@@ -158,7 +162,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         Report.result(Tests.file_saved, tools.save_script_event_file(self, FILE_PATH))
         general.open_pane(SCRIPT_CANVAS_UI)
         helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
-        tools.initialize_sc_qt_objects(self)
+        tools.open_node_palette(self)
+        tools.initialize_node_palette_object(self)
         tools.canvas_node_palette_search(self, TEST_METHOD_NAME, SEARCH_RETRY_ATTEMPTS)
         result = helper.wait_for_condition(lambda:
                                            pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": TEST_METHOD_NAME}) is not None, WAIT_TIME_3)
