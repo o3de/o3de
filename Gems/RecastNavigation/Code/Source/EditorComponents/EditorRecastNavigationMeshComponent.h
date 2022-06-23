@@ -9,37 +9,42 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/EBus/ScheduledEvent.h>
-#include <AzCore/Task/TaskGraph.h>
-#include <Misc/RecastNavigationMeshCommon.h>
+#include <Components/RecastNavigationMeshComponent.h>
+#include <Misc/RecastNavigationConstants.h>
+#include <Misc/RecastNavigationMeshComponentController.h>
 #include <Misc/RecastNavigationMeshConfig.h>
+#include <ToolsComponents/EditorComponentAdapter.h>
 #include <ToolsComponents/EditorComponentBase.h>
 
 namespace RecastNavigation
 {
     //! Editor version of @RecastNavigationMeshComponent.
     class EditorRecastNavigationMeshComponent final
-        : public AzToolsFramework::Components::EditorComponentBase
+        : public AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController,
+        RecastNavigationMeshComponent, RecastNavigationMeshConfig>
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, "{22D516D4-C98D-4783-85A4-1ABE23CAB4D4}", AzToolsFramework::Components::EditorComponentBase);
+        using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController, RecastNavigationMeshComponent, RecastNavigationMeshConfig>;
+        AZ_EDITOR_COMPONENT(EditorRecastNavigationMeshComponent, EditorRecastNavigationMeshComponentTypeId, BaseClass);
         static void Reflect(AZ::ReflectContext* context);
 
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        EditorRecastNavigationMeshComponent() = default;
+        explicit EditorRecastNavigationMeshComponent(const RecastNavigationMeshConfig& config);
 
-        //! EditorComponentBase overrides ...
-        //! @{
         void Activate() override;
         void Deactivate() override;
+
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        //! @}
+
+        //! Enables or disables in-Editor preview of navigation mesh without entering game mode.
+        //! @param enable if true, the preview will be enabled
+        void SetEditorPreview(bool enable);
+
+        void OnEditorUpdateTick();
+
+        AZ::u32 OnConfigurationChanged() override;
 
     private:
-        //! Navigation mesh configuration to be passed to the game component, @RecastNavigationMeshComponent.
-        RecastNavigationMeshConfig m_meshConfig;
-        //! If enabled, draw the navigation mesh in the game.
-        bool m_enableDebugDraw = false;
+        AZ::ScheduledEvent m_inEditorUpdateTick{ [this]() {OnEditorUpdateTick(); }, AZ::Name("EditorRecastNavigationMeshTick") };
     };
 } // namespace RecastNavigation

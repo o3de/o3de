@@ -307,7 +307,7 @@ struct FingerprintTest
     void RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult);
 
     QString m_absolutePath;
-    UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
+    UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
     AZStd::vector<AssetProcessor::JobDetails> m_jobResults;
 };
 
@@ -319,37 +319,12 @@ struct JobDependencyTest
 
     struct StaticData
     {
-        UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler::AssetBuilderExtraInfo m_assetBuilderConfig;
         AZ::Uuid m_builderUuid;
     };
 
     AZStd::unique_ptr<StaticData> m_data;
-};
-
-struct MockMultiBuilderInfoHandler
-    : public AssetProcessor::AssetBuilderInfoBus::Handler
-{
-    ~MockMultiBuilderInfoHandler();
-
-    struct AssetBuilderExtraInfo
-    {
-        QString m_jobDependencyFilePath;
-    };
-
-    //! AssetProcessor::AssetBuilderInfoBus Interface
-    void GetMatchingBuildersInfo(const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList) override;
-    void GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList) override;
-
-    void CreateJobs(AssetBuilderExtraInfo extraInfo, const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
-    void ProcessJob(AssetBuilderExtraInfo extraInfo, const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
-
-    void CreateBuilderDesc(const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns, AssetBuilderExtraInfo extraInfo);
-
-    AZStd::vector<AssetBuilderSDK::AssetBuilderDesc> m_builderDesc;
-    AZStd::vector<AssetUtilities::BuilderFilePatternMatcher> m_matcherBuilderPatterns;
-    AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
-
-    int m_createJobsCount = 0;
 };
 
 struct ChainJobDependencyTest
@@ -360,7 +335,7 @@ struct ChainJobDependencyTest
 
     struct StaticData
     {
-        MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
+        UnitTests::MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
         AZStd::unique_ptr<AssetProcessor::RCController> m_rcController;
     };
 

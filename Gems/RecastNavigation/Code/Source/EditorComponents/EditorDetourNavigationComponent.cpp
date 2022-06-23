@@ -15,24 +15,24 @@ namespace RecastNavigation
 {
     void EditorDetourNavigationComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<EditorDetourNavigationComponent, AZ::Component>()
+            serializeContext->Class<EditorDetourNavigationComponent, AZ::Component>()
                 ->Field("Navigation Mesh", &EditorDetourNavigationComponent::m_navQueryEntityId)
                 ->Field("Nearest Distance", &EditorDetourNavigationComponent::m_nearestDistance)
                 ->Version(1)
                 ;
 
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorDetourNavigationComponent>("Detour Navigation Component",
                     "[Calculates paths within an associated navigation mesh.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(nullptr, &EditorDetourNavigationComponent::m_navQueryEntityId,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_navQueryEntityId,
                         "Navigation Mesh", "Entity with Recast Navigation Mesh component")
-                    ->DataElement(nullptr, &EditorDetourNavigationComponent::m_nearestDistance,
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDetourNavigationComponent::m_nearestDistance,
                         "Nearest Distance", "If FindPath APIs are given points that are outside the navigation mesh, then "
                         "look for the nearest point on the navigation mesh within this distance from the specified positions.")
                     ;

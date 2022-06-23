@@ -37,9 +37,19 @@
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
             },
+            "Component_[532627723887461938]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 532627723887461938,
+                "LocalBookmarkFileName": "NavigationSample_7832416189.setreg"
+            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
+            },
+            "Component_[6504454174989211950]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 6504454174989211950,
+                "LocalBookmarkFileName": "NavigationSample_16046976285.setreg"
             },
             "Component_[6545738857812235305]": {
                 "$type": "SelectionComponent",
@@ -91,18 +101,19 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 150648677486490270
                 },
-                "Component_[2589933865646691481]": {
-                    "$type": "EditorRecastNavigationPhysXProviderComponent",
-                    "Id": 2589933865646691481
-                },
-                "Component_[2681084637176744288]": {
+                "Component_[15323900898074703000]": {
                     "$type": "EditorRecastNavigationMeshComponent",
-                    "Id": 2681084637176744288,
-                    "Configuration": {
-                        "Agent Radius": 0.5,
-                        "Voxel Size": 0.20000000298023224
-                    },
-                    "Debug Draw": true
+                    "Id": 15323900898074703000,
+                    "Controller": {
+                        "Configuration": {
+                            "Agent Radius": 0.5,
+                            "Editor Preview": true
+                        }
+                    }
+                },
+                "Component_[15394602174106695453]": {
+                    "$type": "EditorRecastNavigationPhysXProviderComponent",
+                    "Id": 15394602174106695453
                 },
                 "Component_[490606516712228268]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",

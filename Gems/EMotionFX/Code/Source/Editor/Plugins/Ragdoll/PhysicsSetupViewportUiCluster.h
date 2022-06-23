@@ -33,6 +33,8 @@ namespace EMotionFX
             ColliderDimensions,
             JointLimitParentRotation,
             JointLimitChildRotation,
+            JointSwingLimits,
+            JointTwistLimits,
             NumModes
         };
 

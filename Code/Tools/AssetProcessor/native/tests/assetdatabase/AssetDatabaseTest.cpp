@@ -248,8 +248,11 @@ namespace UnitTests
         ASSERT_NE(jobEntry.m_jobID, AzToolsFramework::AssetDatabase::InvalidEntryId);
 
         // --- set up complete --- perform the test!
+        AZStd::bitset<64> flags;
+        flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset | AssetBuilderSDK::ProductOutputFlags::ProductAsset));
 
-        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1 };
+        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
+            AZ::Uuid::CreateNull(), 0, flags};
 
         m_errorAbsorber->Clear();
         EXPECT_TRUE(m_data->m_connection.SetProduct(product));
@@ -286,7 +289,10 @@ namespace UnitTests
         ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry));
         ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry2));
 
-        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1 };
+        AZStd::bitset<64> flags;
+        flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset));
+        ProductDatabaseEntry product{ AzToolsFramework::AssetDatabase::InvalidEntryId, jobEntry.m_jobID, 1, "SomeProduct1.dds", validAssetType1,
+            AZ::Uuid::CreateNull(), 0, flags};
         ASSERT_TRUE(m_data->m_connection.SetProduct(product));
 
         // --- set up complete --- perform the test!
@@ -297,6 +303,7 @@ namespace UnitTests
         newProductData.m_productName = "different name.dds";
         newProductData.m_subID = 2;
         newProductData.m_jobPK = jobEntry2.m_jobID; // move it to the other job, too!
+        newProductData.m_flags.set(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset));
 
         // update the product
         EXPECT_TRUE(m_data->m_connection.SetProduct(newProductData));

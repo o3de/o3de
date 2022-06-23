@@ -45,6 +45,12 @@ set(FILES
     native/ui/ProductAssetTreeItemData.cpp
     native/ui/ProductAssetTreeModel.h
     native/ui/ProductAssetTreeModel.cpp
+    native/ui/ProductDependencyTreeItemData.h
+    native/ui/ProductDependencyTreeItemData.cpp
+    native/ui/ProductDependencyTreeModel.h
+    native/ui/ProductDependencyTreeModel.cpp
+    native/ui/ProductDependencyTreeDelegate.h
+    native/ui/ProductDependencyTreeDelegate.cpp
     native/ui/SourceAssetDetailsPanel.h
     native/ui/SourceAssetDetailsPanel.cpp
     native/ui/SourceAssetDetailsPanel.ui

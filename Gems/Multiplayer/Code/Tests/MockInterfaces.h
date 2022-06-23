@@ -170,8 +170,8 @@ namespace UnitTest
         MOCK_METHOD4(Serialize, bool (float&, const char*, float, float));
         MOCK_METHOD4(Serialize, bool (double&, const char*, double, double));
         MOCK_METHOD5(SerializeBytes, bool (uint8_t*, uint32_t, bool, uint32_t&, const char*));
-        MOCK_METHOD2(BeginObject, bool (const char*, const char*));
-        MOCK_METHOD2(EndObject, bool (const char*, const char*));
+        MOCK_METHOD1(BeginObject, bool (const char*));
+        MOCK_METHOD1(EndObject, bool (const char*));
         MOCK_CONST_METHOD0(GetBuffer, const uint8_t* ());
         MOCK_CONST_METHOD0(GetCapacity, uint32_t ());
         MOCK_CONST_METHOD0(GetSize, uint32_t ());
