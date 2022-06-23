@@ -35,7 +35,7 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
 
     Test Steps:
      1) Open Asset Editor
-     2) Get Asset Editor Qt object
+     2) Initialize the editor and asset editor qt objects
      3) Create new Script Event Asset
      4) Add Parameter to Event
      5) Remove Parameter from Event
@@ -102,12 +102,12 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         general.idle_enable(True)
         general.close_pane(ASSET_EDITOR_UI)
 
-        # 1) Initialize the editor and asset editor qt objects
+        # 1) Open the asset editor
+        tools.open_asset_editor()
+
+        # 2) Initialize the editor and asset editor qt objects
         tools.initialize_editor_object(self)
         tools.initialize_asset_editor_object(self)
-
-        # 2) Open the asset editor
-        tools.open_asset_editor()
 
         # 3) Create new Script Event Asset
         self.create_script_event()
