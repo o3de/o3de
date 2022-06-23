@@ -6,3 +6,9 @@
 #
 #
 
+# Turn off warnings for RecastNavigation::Detour library
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY COMPILE_OPTIONS -Wno-everything
+)
