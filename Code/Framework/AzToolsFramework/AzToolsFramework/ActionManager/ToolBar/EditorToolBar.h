@@ -37,7 +37,7 @@ namespace AzToolsFramework
         // Add Menu Items
         void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
-        void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, AZStd::string subMenuIdentifier);
+        void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier);
         void AddWidget(int sortKey, QWidget* widget);
 
         // Remove Menu Items
@@ -66,13 +66,12 @@ namespace AzToolsFramework
 
         struct ToolBarItem
         {
-            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = "", AZStd::string subMenuIdentifier = "");
+            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = AZStd::string());
             explicit ToolBarItem(QWidget* widget);
 
             ToolBarItemType m_type;
 
             AZStd::string m_identifier;
-            AZStd::string m_subMenuIdentifier;
             QWidgetAction* m_widgetAction = nullptr;
         };
 

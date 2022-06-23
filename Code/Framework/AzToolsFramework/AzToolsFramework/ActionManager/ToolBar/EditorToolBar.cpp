@@ -40,7 +40,7 @@ namespace AzToolsFramework
         m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
     }
 
-    void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, AZStd::string subMenuIdentifier)
+    void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
     {
         if (QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
             QMenu* subMenu = m_menuManagerInterface->GetMenu(subMenuIdentifier))
@@ -52,7 +52,7 @@ namespace AzToolsFramework
             toolButton->setMenu(subMenu);
             toolButton->setDefaultAction(action);
 
-            m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+            m_actionToSortKeyMap.insert(AZStd::make_pair(AZStd::move(actionIdentifier), sortKey));
             m_toolBarItems.insert({ sortKey, ToolBarItem(static_cast<QWidget*>(toolButton)) });
         }
     }
@@ -148,7 +148,7 @@ namespace AzToolsFramework
         }
     }
 
-    EditorToolBar::ToolBarItem::ToolBarItem(ToolBarItemType type, AZStd::string identifier, AZStd::string subMenuIdentifier)
+    EditorToolBar::ToolBarItem::ToolBarItem(ToolBarItemType type, AZStd::string identifier)
         : m_type(type)
     {
         if (type != ToolBarItemType::Separator)
