@@ -1237,25 +1237,16 @@ namespace AssetProcessor
             // we need to delete these product files from the disk as they no longer exist and inform everyone we did so
             for (const auto& priorProduct : priorProducts)
             {
-                // product name will be in the form "platform/relativeProductPath"
-                // and will always already be a lowercase string, because its relative to the cache.
-                QString productName = priorProduct.m_productName.c_str();
-
-                // the full file path is gotten by adding the product name to the cache root.
-                // this is case sensitive since it refers to a real location on disk.
-                QString fullProductPath = m_cacheRootDir.absoluteFilePath(productName);
-
-                // Strip the <asset_platform> from the front of a relative product path
-                AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(priorProduct.m_productName);
+                auto productPath = AssetUtilities::ProductPath::FromDatabasePath(priorProduct.m_productName);
+                auto productWrapper = ProductAssetWrapper(priorProduct, productPath);
 
                 AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
 
                 // also compute the legacy ids that used to refer to this asset
-
                 AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
                 AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), priorProduct.m_subID);
 
-                AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 message.m_assetId = assetId;
 
                 if (legacyAssetId != assetId)
@@ -1285,34 +1276,25 @@ namespace AssetProcessor
                 //delete the full file path
                 if (shouldDeleteFile)
                 {
-                    if (!QFile::exists(fullProductPath))
+                    if (!productWrapper.ExistOnDisk(true))
                     {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Was expecting to delete %s ... but it already appears to be gone. \n", fullProductPath.toUtf8().constData());
-
-                        // we still need to tell everyone that its gone!
-
-                        Q_EMIT AssetMessage(message); // we notify that we are aware of a missing product either way.
+                        Q_EMIT AssetMessage(message);
                     }
                     else
                     {
-                        AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, fullProductPath.toUtf8().data());
-                        bool wasRemoved = QFile::remove(fullProductPath);
-                        AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, fullProductPath.toUtf8().data(), false);
-                        if (!wasRemoved)
+                        if (productWrapper.DeleteFiles(true))
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Was unable to delete file %s will retry next time...\n", fullProductPath.toUtf8().constData());
-                            continue; // do not update database
+                            Q_EMIT AssetMessage(message);
                         }
                         else
                         {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Deleting file %s because the recompiled input file no longer emitted that product.\n", fullProductPath.toUtf8().constData());
-                            Q_EMIT AssetMessage(message); // we notify that we are aware of a missing product either way.
+                            continue;
                         }
                     }
                 }
                 else
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File %s was replaced with a new, but different file.\n", fullProductPath.toUtf8().constData());
+                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File %s was replaced with a new, but different file.\n", productPath.GetCachePath().c_str());
                     // Don't report that the file has been removed as it's still there, but as a different kind of file (different sub id, type, etc.).
                 }
 
@@ -1339,9 +1321,6 @@ namespace AssetProcessor
 
                     m_stateData->QueryProductDependencyByProductId(priorProduct.m_productID, queryFunc);
                 }
-
-                QString parentFolderName = QFileInfo(fullProductPath).absolutePath();
-                m_checkFoldersToRemove.insert(parentFolderName);
             }
 
             //trace that we are about to update the products in the database
