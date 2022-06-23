@@ -228,6 +228,9 @@ class AnimationOptionsListDropDown(bpy.types.Operator):
         elif context.scene.animation_options_list == '2':
             bpy.types.Scene.animation_export = constants.MESH_AND_RIG
             utils.valid_animation_selection()
+        elif context.scene.animation_options_list == '3':
+            bpy.types.Scene.animation_export = constants.SKIN_ATTACHMENT
+            utils.valid_animation_selection()
         return {'FINISHED'}
 
 def file_export_menu_add(self, context):
@@ -242,7 +245,7 @@ class O3deTools(Panel):
     bl_idname = "O3DE_Tools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_label = 'O3DE Tools'
+    bl_label = f'O3DE Tools v{constants.PLUGIN_VERSION}'
     bl_context = 'objectmode'
     bl_category = 'O3DE'
 

@@ -41,5 +41,10 @@ def build_projects_list():
     if engine_is_installed:
         # Make a list of projects to select from
         for project_full_path in o3de_projects:
-            list_o3de_projects.append((project_full_path, Path(project_full_path).name, project_full_path))
+            # Check to see if the project name might be 1 level up in this path if ending with project.
+            if Path(project_full_path).name == 'Project':
+                p = Path(project_full_path)
+                list_o3de_projects.append((project_full_path, p.parts[-2], project_full_path))
+            else:
+                list_o3de_projects.append((project_full_path, Path(project_full_path).name, project_full_path))
     return list_o3de_projects

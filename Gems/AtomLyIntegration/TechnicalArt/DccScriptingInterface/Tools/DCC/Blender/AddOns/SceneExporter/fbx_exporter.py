@@ -54,6 +54,15 @@ def amimation_export_options():
         bake_anim_force_startend_keying_option = False
         bpy.types.Scene.file_menu_animation_export = False
         return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    elif bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
+        # Set Animation Options
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        bpy.types.Scene.file_menu_animation_export = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
 
     if bpy.types.Scene.file_menu_animation_export:
         bake_anim_option = True

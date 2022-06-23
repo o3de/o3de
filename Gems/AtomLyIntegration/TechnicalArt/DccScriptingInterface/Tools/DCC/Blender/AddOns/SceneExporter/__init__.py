@@ -33,12 +33,10 @@
 # @section Launcher Notes
 # - Comments are Doxygen compatible
 
-# To DO: Check for invalid Bone.oo1 names. Fix the not selected bug. No we need Bone Ends?
-
 bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
-    "version": (1, 3),
+    "version": (1, 4),
 
     "blender": (3, 00, 0),
     "location": "",

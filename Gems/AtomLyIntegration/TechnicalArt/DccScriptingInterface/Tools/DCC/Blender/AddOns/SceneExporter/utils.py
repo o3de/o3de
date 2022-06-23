@@ -38,16 +38,15 @@ def check_selected_bone_names():
         if selected_obj is not []:
             if selected_obj.type == "ARMATURE":
                 for pb in ob.pose.bones:
-                    print(pb.name)
                     # Validate all chars in string.
                     check_re =  re.compile(r"^[^<>/{}[\]~.`]*$");
                     if not check_re.match(pb.name):
                         # If any in the ARMATURE are named invalid return will fail.
                         return False
-                      
+
 def selected_hierarchy_and_rig_animation():
     """!
-    This function will check to see if an animation armature rig has been selected.
+    This function will select the attached animation armature rig and all of its children.
     """
     ob = bpy.ops.object
     
@@ -56,6 +55,16 @@ def selected_hierarchy_and_rig_animation():
             ob.select_grouped(extend=True, type='SIBLINGS')
             ob.select_grouped(extend=True, type='PARENT')
             ob.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
+            ob.select_grouped(extend=True, type='PARENT')
+
+def selected_attachment_and_rig_animation():
+    """!
+    This function will select the selected attachments armature rig.
+    """
+    ob = bpy.ops.object
+    
+    for selected_obj in bpy.context.selected_objects:
+        if selected_obj is not []:
             ob.select_grouped(extend=True, type='PARENT')
 
 def valid_animation_selection():
@@ -74,7 +83,10 @@ def valid_animation_selection():
         ui.message_box("You need to select base mesh level.", "O3DE Tools", "ERROR")
     else:
         bpy.types.Scene.export_good_o3de = True
-        selected_hierarchy_and_rig_animation()
+        if bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
+            selected_attachment_and_rig_animation()
+        else:
+            selected_hierarchy_and_rig_animation()
 
 def check_if_valid_path(file_path):
     """!
