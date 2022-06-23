@@ -115,7 +115,7 @@ namespace Terrain
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
         m_sectorLods.clear();
-		
+
         AZ::Render::RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
         if (rayTracingFeatureProcessor)
         {

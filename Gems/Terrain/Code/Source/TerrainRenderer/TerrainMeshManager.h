@@ -238,7 +238,7 @@ namespace Terrain
         void CheckLodGridsForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::vector<AZStd::vector<Sector*>>& sectorUpdates);
         void UpdateRaytracingData(const AZ::Aabb& bounds);
-		
+
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(
             uint32_t elementSize,
             uint32_t elementCount,
