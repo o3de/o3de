@@ -10,11 +10,9 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientTypeIds.h>
 
 #include <OpenImageIO/imageio.h>
 
@@ -523,7 +521,7 @@ namespace GradientSignal
             // After a successful bake, if the Entity that contains this gradient baker component also
             // has an image gradient component, then update the image gradient's image asset with the
             // output path that we baked to
-            if (AzToolsFramework::EntityHasComponentOfType(GetEntityId(), GradientSignal::EditorImageGradientComponentTypeId))
+            if (GradientSignal::ImageGradientRequestBus::HasHandlers(GetEntityId()))
             {
                 AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
 
