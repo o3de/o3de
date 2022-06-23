@@ -1051,7 +1051,8 @@ namespace AssetUtilities
 
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer)
     {
-        return recognizer->m_name.toLower();
+        QString jobDescription{ recognizer->m_name.c_str() };
+        return jobDescription.toLower();
     }
 
     AZStd::string ComputeJobLogFolder()

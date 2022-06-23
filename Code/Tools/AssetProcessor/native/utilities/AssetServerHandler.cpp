@@ -8,7 +8,9 @@
 
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
+#include <AzCore/JSON/pointer.h>
 #include <QDir>
 
 namespace AssetProcessor
@@ -75,6 +77,85 @@ namespace AssetProcessor
         return isValid;
     }
 
+    void AssetServerHandler::HandleRemoteConfiguration()
+    {
+        // the logic uses the server address to fetch and store the Asset Cache Server configuration
+        if (!IsServerAddressValid())
+        {
+            return;
+        }
+        AZ::IO::Path settingsFilePath{ AssetUtilities::ServerAddress().toUtf8().data() };
+        settingsFilePath /= "settings.json";
+
+        auto* recognizerConfiguration = AZ::Interface<AssetProcessor::RecognizerConfiguration>::Get();
+        if (!recognizerConfiguration)
+        {
+            return;
+        }
+
+        if (AssetUtilities::InServerMode())
+        {
+            AZStd::string jsonBuffer;
+            const auto& assetCacheRecognizerContainer = recognizerConfiguration->GetAssetCacheRecognizerContainer();
+            AssetProcessor::PlatformConfiguration::ConvertToJson(assetCacheRecognizerContainer, jsonBuffer);
+            if (jsonBuffer.empty())
+            {
+                // no configuration to save
+                return;
+            }
+
+            // save the configuration
+            rapidjson::Document recognizerDoc;
+            recognizerDoc.Parse(jsonBuffer.c_str());
+
+            rapidjson::Value amazon(rapidjson::Type::kObjectType);
+            rapidjson::Value asssetProcessor(rapidjson::Type::kObjectType);
+            rapidjson::Value settings(rapidjson::Type::kObjectType);
+            rapidjson::Value server(rapidjson::Type::kObjectType);
+
+            rapidjson::Document assetServerCacheDoc;
+            assetServerCacheDoc.SetObject();
+
+            settings.AddMember("Server", recognizerDoc.GetObject(), assetServerCacheDoc.GetAllocator());
+            asssetProcessor.AddMember("Settings", settings, assetServerCacheDoc.GetAllocator());
+            amazon.AddMember("AssetProcessor", asssetProcessor, assetServerCacheDoc.GetAllocator());
+            assetServerCacheDoc.AddMember("Amazon", amazon, assetServerCacheDoc.GetAllocator());
+
+            AZ::JsonSerializationUtils::WriteJsonFile(assetServerCacheDoc, settingsFilePath.LexicallyNormal().c_str());
+        }
+        else
+        {
+            // load the configuration
+            if (!AZ::IO::SystemFile::Exists(settingsFilePath.c_str()))
+            {
+                return;
+            }
+
+            auto result = AZ::JsonSerializationUtils::ReadJsonFile(settingsFilePath.LexicallyNormal().c_str());
+            if (!result.IsSuccess())
+            {
+                return;
+            }
+
+            rapidjson::Document& configDoc = result.GetValue();
+            auto* serverSettings = rapidjson::Pointer("/Amazon/AssetProcessor/Settings/Server").Get(configDoc);
+            if (!serverSettings)
+            {
+                return;
+            }
+
+            RecognizerContainer recognizerContainer;
+            AZ::JsonDeserializerSettings settings;
+            auto jsonResult = AZ::JsonSerialization::Load(recognizerContainer, *serverSettings, settings);
+            if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+            {
+                return;
+            }
+
+            recognizerConfiguration->AddAssetCacheRecognizerContainer(recognizerContainer);
+        }
+    }
+
     bool AssetServerHandler::RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams)
     {
         AssetBuilderSDK::JobCancelListener jobCancelListener(builderParams.m_rcJob->GetJobEntry().m_jobRunKey);
@@ -91,13 +172,13 @@ namespace AssetProcessor
         if (!QFile::exists(archiveAbsFilePath))
         {
             // file does not exist on the server 
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive operation cancelled. Archive does not exist on server. \n");
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive operation canceled. Archive does not exist on server. \n");
             return false;
         }
 
         if (listener.WasQuitRequested() || jobCancelListener.IsCancelled())
         {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive operation cancelled. \n");
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive operation canceled. \n");
             return false;
         }
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive for job (%s, %s, %s) with fingerprint (%u).\n",
@@ -128,13 +209,13 @@ namespace AssetProcessor
         if (QFile::exists(archiveAbsFilePath))
         {
             // file already exists on the server 
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation cancelled. An archive of this asset already exists on server. \n");
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation canceled. An archive of this asset already exists on server. \n");
             return true;
         }
         
         if (listener.WasQuitRequested() || jobCancelListener.IsCancelled())
         {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation cancelled. \n");
+            AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation canceled. \n");
             return false;
         }
 

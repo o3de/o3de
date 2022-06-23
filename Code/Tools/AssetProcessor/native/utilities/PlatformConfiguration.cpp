@@ -10,12 +10,16 @@
 
 #include <QDirIterator>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace
 {
@@ -385,7 +389,7 @@ namespace AssetProcessor
                 m_simpleJobNameStack.push(rcName);
 
                 auto& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_recognizer.m_name = QString::fromUtf8(rcName.c_str(), aznumeric_cast<int>(rcName.size()));
+                assetRecognizer.m_recognizer.m_name = rcName;
             }
         }
         break;
@@ -416,14 +420,13 @@ namespace AssetProcessor
         }
 
         AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
-            {
-                return assetRecognizer.m_recognizer.m_name == sjName;
-            });
+            [&sjNameView](const auto& assetRecognizer)
+        {
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
+        });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
@@ -464,13 +467,12 @@ namespace AssetProcessor
         }
 
         AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            [&sjNameView](const auto& assetRecognizer)
             {
-                return assetRecognizer.m_recognizer.m_name == sjName;
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
             });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
@@ -492,13 +494,13 @@ namespace AssetProcessor
         }
 
         AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
+        
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
             {
-                return assetRecognizer.m_recognizer.m_name == sjName;
+                return assetRecognizer.m_recognizer.m_name == sjNameView;
             });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
@@ -554,7 +556,7 @@ namespace AssetProcessor
         }
         else if (valueName == "version")
         {
-            assetRecognizer.m_recognizer.m_version = QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size()));
+            assetRecognizer.m_recognizer.m_version = value;
         }
         else if (valueName == "productAssetType")
         {
@@ -581,13 +583,13 @@ namespace AssetProcessor
         }
 
         AZStd::string_view sjNameView = m_simpleJobNameStack.top();
-        auto sjName = QString::fromUtf8(sjNameView.data(), aznumeric_cast<int>(sjNameView.size()));
+
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&sjName](const SimpleJobAssetRecognizer& assetRecognizer)
+            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
         {
-            return assetRecognizer.m_recognizer.m_name == sjName;
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
         });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
@@ -662,9 +664,7 @@ namespace AssetProcessor
             // now generate a platform spec as long as we're not skipping
             if (!AZ::StringFunc::Equal(currentParams, "skip"))
             {
-                auto platformIdentifier = QString::fromUtf8(platform.m_identifier.data(),
-                    aznumeric_cast<int>(platform.m_identifier.size()));
-                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = AssetInternalSpec::Copy;
+                assetRecognizer.m_recognizer.m_platformSpecs[platform.m_identifier] = AssetInternalSpec::Copy;
             }
         }
     }
@@ -677,13 +677,12 @@ namespace AssetProcessor
             return nullptr;
         }
 
-        AZStd::string_view nameView = m_nameStack.top();
-        auto rcName = QString::fromUtf8(nameView.data(), aznumeric_cast<int>(nameView.size()));
+        auto& nameView = m_nameStack.top();
 
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const AssetRecognizer& assetRecognizer)
+            [&nameView](const AssetRecognizer& assetRecognizer)
             {
-                return assetRecognizer.m_name == rcName;
+                return assetRecognizer.m_name == nameView;
             });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
@@ -711,7 +710,7 @@ namespace AssetProcessor
                 m_nameStack.push(name);
 
                 AssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_name = QString::fromUtf8(name.c_str(), aznumeric_cast<int>(name.size()));
+                assetRecognizer.m_name = name;
             }
         }
         break;
@@ -829,7 +828,7 @@ namespace AssetProcessor
         }
         else if (valueName == "version")
         {
-            assetRecognizer->m_version = QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size()));
+            assetRecognizer->m_version = value;
         }
         else if (valueName == "productAssetType")
         {
@@ -1171,6 +1170,49 @@ namespace AssetProcessor
         }
     }
 
+    bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
+    {
+        AZ::JsonSerializerSettings settings;
+        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        settings.m_registrationContext = nullptr;
+
+        rapidjson::Document jsonDocument;
+        auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), recognizerContainer, settings);
+        if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            return false;
+        }
+
+        auto saveToFileOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDocument, jsonText);
+        return saveToFileOutcome.IsSuccess();
+    }
+
+    void PlatformConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<AssetBuilderSDK::FilePatternMatcher>()->Version(0);
+
+            serializeContext->Class<AssetInternalSpec>()->Version(0);                
+
+            serializeContext->Class<AssetRecognizer>()->Version(0)
+                ->Field("checkServer", &AssetRecognizer::m_checkServer)
+                ->Field("isCritical", &AssetRecognizer::m_isCritical)
+                ->Field("name", &AssetRecognizer::m_name)
+                ->Field("outputProductDependencies", &AssetRecognizer::m_outputProductDependencies)
+                ->Field("patternMatcher", &AssetRecognizer::m_patternMatcher)
+                ->Field("platformSpecs", &AssetRecognizer::m_platformSpecs)
+                ->Field("priority", &AssetRecognizer::m_priority)
+                ->Field("productAssetType", &AssetRecognizer::m_productAssetType)
+                ->Field("supportsCreateJobs", &AssetRecognizer::m_supportsCreateJobs)
+                ->Field("testLockSource", &AssetRecognizer::m_testLockSource)
+                ->Field("version", &AssetRecognizer::m_version);
+
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetRecognizer>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetInternalSpec>>();
+        }
+    }
+
     bool PlatformConfiguration::ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders, QStringList scanFolderPatterns)
     {
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -1320,15 +1362,11 @@ namespace AssetProcessor
 
         SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
         settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
-        for (auto&& simpleJobRecognizer : simpleJobVisitor.m_assetRecognizers)
+        for (auto&& sjRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
-            if (simpleJobRecognizer.m_ignore)
+            if (!sjRecognizer.m_recognizer.m_platformSpecs.empty() && !sjRecognizer.m_ignore)
             {
-                m_assetRecognizers.remove(simpleJobRecognizer.m_recognizer.m_name);
-            }
-            else if (!simpleJobRecognizer.m_recognizer.m_platformSpecs.empty())
-            {
-                m_assetRecognizers[simpleJobRecognizer.m_recognizer.m_name] = simpleJobRecognizer.m_recognizer;
+                m_assetRecognizers[sjRecognizer.m_recognizer.m_name] = AZStd::move(sjRecognizer.m_recognizer);
             }
         }
 
@@ -1467,8 +1505,9 @@ namespace AssetProcessor
             //if the file is excluded than return false;
             return false;
         }
-        for (const AssetRecognizer& recognizer : m_assetRecognizers)
+        for (const auto& assetRecognizer : m_assetRecognizers)
         {
+            const AssetRecognizer& recognizer = assetRecognizer.second;
             if (recognizer.m_patternMatcher.MatchesPath(fileName.toUtf8().constData()))
             {
                 // found a match
@@ -1533,12 +1572,12 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddRecognizer(const AssetRecognizer& source)
     {
-        m_assetRecognizers.insert(source.m_name, source);
+        m_assetRecognizers.insert({source.m_name, source});
     }
 
     void PlatformConfiguration::RemoveRecognizer(QString name)
     {
-        auto found = m_assetRecognizers.find(name);
+        auto found = m_assetRecognizers.find(name.toUtf8().data());
         m_assetRecognizers.erase(found);
     }
 
@@ -1903,6 +1942,14 @@ namespace AssetProcessor
     {
         return m_excludeAssetRecognizers;
     }
+
+    bool PlatformConfiguration::AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer)
+    {
+        m_assetCacheServerRecognizers.insert(recognizerContainer.begin(), recognizerContainer.end());
+        return true;
+    }
+
+    // AssetProcessor
 
     void AssetProcessor::PlatformConfiguration::AddExcludeRecognizer(const ExcludeAssetRecognizer& recogniser)
     {
