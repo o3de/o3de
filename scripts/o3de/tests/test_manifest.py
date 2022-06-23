@@ -6,9 +6,6 @@
 #
 #
 
-import argparse
-import json
-import logging
 import pytest
 import pathlib
 from unittest.mock import patch
@@ -147,3 +144,9 @@ class TestGetTemplatesForCreation:
 
             # make sure the o3de manifest isn't attempted to be loaded
             load_o3de_manifest_patch.assert_not_called()
+
+class TestGetAllGems:
+    def test_get_all_gems_returns_unique_paths(self):
+        all_gems = manifest.get_all_gems()
+        unique_gems =  list(dict.fromkeys(all_gems))
+        assert len(all_gems) == len(unique_gems)
