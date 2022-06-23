@@ -48,6 +48,7 @@ namespace AZ
         {
             if (result.GetOutcome() == JsonSerializationResult::Outcomes::Skipped)
             {
+                m_warningsReported = true;
                 AZ_Warning("JSON", false, "Skipped unrecognized field '%.*s'", AZ_STRING_ARG(path));
             }
             else if (result.GetProcessing() != JsonSerializationResult::Processing::Completed ||
