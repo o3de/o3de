@@ -224,7 +224,6 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
-
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {
@@ -238,25 +237,21 @@ namespace O3DE::ProjectManager
 
     void PythonBindings::OnStdOut(const char* msg)
     {
-        AZStd::string message{ msg };
-        // escape % characters by using %% in the format string to avoid crashing
-        AZ::StringFunc::Replace(message, "%", "%%", true /* case sensitive since it is faster */);
-        AZ_TracePrintf("Python", message.c_str());
+        AZ::Debug::Trace::Output("Python", msg);
     }
 
     void PythonBindings::OnStdError(const char* msg)
     {
-        AZStd::string lastPythonError = msg;
-        constexpr const char* pythonErrorPrefix = "ERROR:root:";
-        constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
-        auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
-        if (errorPrefix != AZStd::string::npos)
+        AZStd::string_view lastPythonError{ msg };
+        if (constexpr AZStd::string_view pythonErrorPrefix = "ERROR:root:";
+            lastPythonError.starts_with(pythonErrorPrefix))
         {
-            lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
+            lastPythonError = lastPythonError.substr(pythonErrorPrefix.size());
         }
-        O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
-        OnStdOut(msg);
+        PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+
+        AZ::Debug::Trace::Output("Python", msg);
     }
 
     bool PythonBindings::PythonStarted()
@@ -346,10 +341,7 @@ namespace O3DE::ProjectManager
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
-        else
-        {
-            AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
-        }
+
         return !PyErr_Occurred();
     }
 
@@ -733,16 +725,19 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
     {
+        using namespace pybind11::literals;
+
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
             auto projectPath = QString_To_Py_Path(projectInfo.m_path);
 
             auto createProjectResult = m_engineTemplate.attr("create_project")(
-                projectPath,
-                QString_To_Py_String(projectInfo.m_projectName), // project_path
-                QString_To_Py_Path(projectTemplatePath)          // template_path
+                "project_path"_a = projectPath,
+                "project_name"_a = QString_To_Py_String(projectInfo.m_projectName),
+                "template_path"_a = QString_To_Py_Path(projectTemplatePath),
+                "no_register"_a = !registerProject
             );
             if (createProjectResult.cast<int>() == 0)
             {

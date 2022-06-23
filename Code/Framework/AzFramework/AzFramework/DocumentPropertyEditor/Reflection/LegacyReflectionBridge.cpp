@@ -53,6 +53,7 @@ namespace AZ::Reflection
             struct StackEntry
             {
                 void* m_instance;
+                void* m_parentInstance = nullptr;
                 AZ::TypeId m_typeId;
                 const SerializeContext::ClassData* m_classData = nullptr;
                 const SerializeContext::ClassElement* m_classElement = nullptr;
@@ -76,7 +77,7 @@ namespace AZ::Reflection
                 : m_visitor(visitor)
                 , m_serializeContext(serializeContext)
             {
-                m_stack.push_back({ instance, typeId });
+                m_stack.push_back({ instance, nullptr, typeId });
                 RegisterPrimitiveHandlers<bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
@@ -144,7 +145,7 @@ namespace AZ::Reflection
                         path.append(elementName);
                     }
                 }
-                m_stack.push_back({ instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
+                m_stack.push_back({ instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
                 StackEntry* nodeData = &m_stack.back();
                 nodeData->m_path = AZStd::move(path);
 
@@ -285,7 +286,7 @@ namespace AZ::Reflection
 
                 AZ::Name handlerName;
 
-                auto checkAttribute = [&](const AZ::AttributePair* it, StackEntry& nodeData, bool shouldDescribeChildren)
+                auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
@@ -307,7 +308,7 @@ namespace AZ::Reflection
                         {
                             visibility =
                                 PropertyEditor::Visibility
-                                    .DomToValue(PropertyEditor::Visibility.LegacyAttributeToDomValue(nodeData.m_instance, it->second))
+                                    .DomToValue(PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second))
                                     .value_or(visibility);
                         }
 
@@ -319,14 +320,14 @@ namespace AZ::Reflection
                             {
                                 if (attributeValue.IsNull())
                                 {
-                                    attributeValue = attributeReader.LegacyAttributeToDomValue(nodeData.m_instance, it->second);
+                                    attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                                 }
                             });
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
                         {
-                            attributeValue = ReadGenericAttributeToDomValue(nodeData.m_instance, it->second).value_or(Dom::Value());
+                            attributeValue = ReadGenericAttributeToDomValue(instance, it->second).value_or(Dom::Value());
                         }
 
                         // If we got a valid DOM value, store it.
@@ -372,7 +373,7 @@ namespace AZ::Reflection
 
                             for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
                             {
-                                checkAttribute(it, nodeData, isParentAttribute);
+                                checkAttribute(it, nodeData.m_parentInstance, isParentAttribute);
                             }
                         }
 
@@ -387,7 +388,7 @@ namespace AZ::Reflection
                             AZ::AttributePair pair;
                             pair.first = it->first;
                             pair.second = it->second.get();
-                            checkAttribute(&pair, nodeData, isParentAttribute);
+                            checkAttribute(&pair, nodeData.m_parentInstance, isParentAttribute);
                         }
                     }
 
@@ -408,7 +409,7 @@ namespace AZ::Reflection
                             AZ::AttributePair pair;
                             pair.first = it->first;
                             pair.second = it->second.get();
-                            checkAttribute(&pair, nodeData, isParentAttribute);
+                            checkAttribute(&pair, nodeData.m_instance, isParentAttribute);
                         }
                     }
                 };

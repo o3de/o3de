@@ -28,30 +28,8 @@ namespace AZStd
 #define AZ_TYPE_SAFE_INTEGRAL(TYPE_NAME, BASE_TYPE)                                                                                                 \
     static_assert(AZStd::is_integral<BASE_TYPE>::value, "Underlying type must be an integral");                                                     \
     enum class TYPE_NAME : BASE_TYPE {};                                                                                                            \
-    inline constexpr TYPE_NAME operator+(TYPE_NAME lhs, TYPE_NAME rhs) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs + (BASE_TYPE)rhs) }; }          \
-    inline constexpr TYPE_NAME operator-(TYPE_NAME lhs, TYPE_NAME rhs) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs - (BASE_TYPE)rhs) }; }          \
-    inline constexpr TYPE_NAME operator*(TYPE_NAME lhs, TYPE_NAME rhs) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs * (BASE_TYPE)rhs) }; }          \
-    inline constexpr TYPE_NAME operator/(TYPE_NAME lhs, TYPE_NAME rhs) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs / (BASE_TYPE)rhs) }; }          \
-    inline constexpr TYPE_NAME operator%(TYPE_NAME lhs, TYPE_NAME rhs) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs % (BASE_TYPE)rhs) }; }          \
-    inline constexpr TYPE_NAME operator>>(TYPE_NAME value, int32_t shift) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)value >> shift) }; }             \
-    inline constexpr TYPE_NAME operator<<(TYPE_NAME value, int32_t shift) { return TYPE_NAME{ BASE_TYPE((BASE_TYPE)value << shift) }; }             \
-    inline constexpr TYPE_NAME& operator+=(TYPE_NAME& lhs, TYPE_NAME rhs) { return lhs = TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs + (BASE_TYPE)rhs) }; } \
-    inline constexpr TYPE_NAME& operator-=(TYPE_NAME& lhs, TYPE_NAME rhs) { return lhs = TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs - (BASE_TYPE)rhs) }; } \
-    inline constexpr TYPE_NAME& operator*=(TYPE_NAME& lhs, TYPE_NAME rhs) { return lhs = TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs * (BASE_TYPE)rhs) }; } \
-    inline constexpr TYPE_NAME& operator/=(TYPE_NAME& lhs, TYPE_NAME rhs) { return lhs = TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs / (BASE_TYPE)rhs) }; } \
-    inline constexpr TYPE_NAME& operator%=(TYPE_NAME& lhs, TYPE_NAME rhs) { return lhs = TYPE_NAME{ BASE_TYPE((BASE_TYPE)lhs % (BASE_TYPE)rhs) }; } \
-    inline constexpr TYPE_NAME& operator>>=(TYPE_NAME& value, int32_t shift) { return value = TYPE_NAME{ BASE_TYPE((BASE_TYPE)value >> shift) }; }  \
-    inline constexpr TYPE_NAME& operator<<=(TYPE_NAME& value, int32_t shift) { return value = TYPE_NAME{ BASE_TYPE((BASE_TYPE)value << shift) }; }  \
-    inline constexpr TYPE_NAME& operator++(TYPE_NAME& value) { return value = TYPE_NAME{ BASE_TYPE((BASE_TYPE)value + 1) }; }                       \
-    inline constexpr TYPE_NAME& operator--(TYPE_NAME& value) { return value = TYPE_NAME{ BASE_TYPE((BASE_TYPE)value - 1) }; }                       \
-    inline constexpr TYPE_NAME operator++(TYPE_NAME& value, int) { const TYPE_NAME result = value; ++value; return result; }                        \
-    inline constexpr TYPE_NAME operator--(TYPE_NAME& value, int) { const TYPE_NAME result = value; --value; return result; }                        \
-    inline constexpr bool operator>(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs > (BASE_TYPE)rhs; }                                       \
-    inline constexpr bool operator<(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs < (BASE_TYPE)rhs; }                                       \
-    inline constexpr bool operator>=(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs >= (BASE_TYPE)rhs; }                                     \
-    inline constexpr bool operator<=(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs <= (BASE_TYPE)rhs; }                                     \
-    inline constexpr bool operator==(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs == (BASE_TYPE)rhs; }                                     \
-    inline constexpr bool operator!=(TYPE_NAME lhs, TYPE_NAME rhs) { return (BASE_TYPE)lhs != (BASE_TYPE)rhs; }                                     \
+    AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(TYPE_NAME)                                                                                                  \
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(TYPE_NAME)                                                                                                  \
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(TYPE_NAME)
 
 //! This implements cvar binding methods for a type safe integral alias.
