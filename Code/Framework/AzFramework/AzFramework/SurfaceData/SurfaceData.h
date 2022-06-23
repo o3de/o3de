@@ -17,6 +17,7 @@ namespace AzFramework::SurfaceData
     namespace Constants
     {
         static constexpr const char* s_unassignedTagName = "(unassigned)";
+        static constexpr AZ::Crc32 s_unassignedTagCrc = AZ::Crc32(Constants::s_unassignedTagName);
 
         //! The maximum number of surface weights that we can store.
         //! For performance reasons, we want to limit this so that we can preallocate the max size in advance.
@@ -48,7 +49,7 @@ namespace AzFramework::SurfaceData
         }
 
 
-        AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
+        AZ::Crc32 m_surfaceType = Constants::s_unassignedTagCrc;
         float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
 
         static void Reflect(AZ::ReflectContext* context);
