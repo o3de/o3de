@@ -119,9 +119,10 @@ namespace UnitTest
         EXPECT_TRUE(testPassB->GetDrawListTag() == drawListTag1);
         EXPECT_TRUE(testPassC->GetDrawListTag() == drawListTag2);
 
-        rootPass->AddChild(testPassA);
-        testPassA->AddChild(testPassB);
-        testPassA->AddChild(testPassC);
+        bool skipStateCheckWhenRunningTests = true;
+        rootPass->AddChild(testPassA, skipStateCheckWhenRunningTests);
+        testPassA->AddChild(testPassB, skipStateCheckWhenRunningTests);
+        testPassA->AddChild(testPassC, skipStateCheckWhenRunningTests);
 
         pipeline->OnPassModified();
 

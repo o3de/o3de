@@ -9,4 +9,6 @@
 set(FILES
     Source/Builder/TestAssetBuilderComponent.h
     Source/Builder/TestAssetBuilderComponent.cpp
+    Source/Builder/TestIntermediateAssetBuilderComponent.h
+    Source/Builder/TestIntermediateAssetBuilderComponent.cpp
 )

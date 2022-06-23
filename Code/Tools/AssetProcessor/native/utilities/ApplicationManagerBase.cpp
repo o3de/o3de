@@ -369,6 +369,7 @@ void ApplicationManagerBase::InitAssetScanner()
     // asset processor manager
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::AssessFilesFromScanner);
+    QObject::connect(m_assetScanner, &AssetScanner::FoldersFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFoldersFromScanner);
 
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
     QObject::connect(m_assetScanner, &AssetScanner::FoldersFound, [this](QSet<AssetFileInfo> files) { m_fileStateCache->AddInfoSet(files); });
@@ -451,7 +452,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileAdded = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, [this, path]()
@@ -483,7 +484,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileModified = [this, cachePath](QString path)
         {
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 m_fileStateCache->UpdateFile(path);
@@ -494,7 +495,8 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
                 [this, path]
                 {
                     m_assetProcessorManager->AssessModifiedFile(path);
-                }, Qt::QueuedConnection);
+                },
+                Qt::QueuedConnection);
 
             AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
         };
@@ -502,7 +504,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
             [[maybe_unused]] bool result = false;
-            const bool isCacheRoot = path.startsWith(cachePath);
+            const bool isCacheRoot = AssetUtilities::IsInCacheFolder(path.toUtf8().constData(), cachePath.toUtf8().constData());
             if (!isCacheRoot)
             {
                 result = QMetaObject::invokeMethod(m_fileProcessor.get(), [this, path]()
@@ -1854,14 +1856,36 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
 
 bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient)
 {
+    bool createdDirectory = false;
+
     if (!QDir(savePath).exists())
     {
+        // GetFreeDiskSpace will fail if the path does not exist
         QDir dir;
-        dir.mkpath(savePath);
+        createdDirectory = dir.mkpath(savePath);
     }
 
     qint64 bytesFree = 0;
     [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
+
+    if (createdDirectory)
+    {
+        // Clean up the folder so we're not leaving empty folders all over the place
+        // We need to walk up the path and try to delete each folder along the way since savePath might have created a series of folders
+        // Just deleting savePath would only delete the last folder created
+        AZ::IO::Path path(savePath.toUtf8().constData());
+        while(AZ::IO::SystemFile::DeleteDir(path.c_str())) // DeleteDir should fail if the directory is not empty
+        {
+            if (path.HasParentPath())
+            {
+                path = path.ParentPath();
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
 

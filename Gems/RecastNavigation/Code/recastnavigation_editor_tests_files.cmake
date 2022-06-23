@@ -7,5 +7,6 @@
 #
 
 set(FILES
+    Tests/EditorNavigationMeshTest.cpp
     Tests/RecastNavigationEditorTest.cpp
 )

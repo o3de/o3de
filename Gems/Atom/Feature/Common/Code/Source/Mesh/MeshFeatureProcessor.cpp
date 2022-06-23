@@ -183,6 +183,7 @@ namespace AZ
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
+            meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
@@ -315,7 +316,7 @@ namespace AZ
                 // ray tracing data needs to be updated with the new transform
                 if (m_rayTracingFeatureProcessor)
                 {
-                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_objectId, transform, nonUniformScale);
+                    m_rayTracingFeatureProcessor->SetMeshTransform(meshHandle->m_rayTracingUuid, transform, nonUniformScale);
                 }
             }
         }
@@ -443,7 +444,7 @@ namespace AZ
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
                     {
-                        m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+                        m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
                     }
                 }
 
@@ -474,7 +475,7 @@ namespace AZ
                 if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // always remove from ray tracing first
-                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_rayTracingUuid);
 
                     // now add if it's visible
                     if (visible)
@@ -1045,7 +1046,11 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            rayTracingFeatureProcessor->SetMesh(m_objectId, m_model->GetModelAsset()->GetId(), subMeshes);
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
+            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+            AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+
+            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
         }
 
         void ModelDataInstance::SetIrradianceData(
@@ -1183,7 +1188,7 @@ namespace AZ
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             if (rayTracingFeatureProcessor)
             {
-                rayTracingFeatureProcessor->RemoveMesh(m_objectId);
+                rayTracingFeatureProcessor->RemoveMesh(m_rayTracingUuid);
             }
         }
 

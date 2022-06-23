@@ -15,8 +15,9 @@ namespace RecastNavigation
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RecastNavigationPhysXProviderConfig>()
+                ->Version(2)
                 ->Field("Use Editor Scene", &RecastNavigationPhysXProviderConfig::m_useEditorScene)
-                ->Version(1)
+                ->Field("Collision Group", &RecastNavigationPhysXProviderConfig::m_collisionGroupId)
                 ;
         }
     }

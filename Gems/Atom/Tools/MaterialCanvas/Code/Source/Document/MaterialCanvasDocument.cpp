@@ -10,13 +10,12 @@
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialCanvasDocument.h>
-#include <Document/MaterialCanvasGraphDataTypes.h>
-
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 
@@ -88,9 +87,13 @@ namespace MaterialCanvas
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
-            // Creating a graph context per document by default but this can and probably should be overridden in the application to provide
-            // a shared context.
-            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", CreateAllDataTypes());
+            // A list of all registered data types is needed to create a graph context
+            GraphModel::DataTypeList registeredDataTypes;
+            AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+                registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
+
+            // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", registeredDataTypes);
             graphContext->CreateModuleGraphManager();
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
         };
