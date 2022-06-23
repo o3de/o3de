@@ -136,4 +136,19 @@ namespace AzPhysics
             AZStd::vector<AZ::Vector3>& lineBufferOut,
             AZStd::vector<bool>& lineValidityBufferOut) = 0;
     };
+
+    //! Interface to access editor-only Joint utilities and helper functions
+    class EditorJointHelpersInterface
+    {
+    public:
+        AZ_RTTI(AzPhysics::EditorJointHelpersInterface, "{79B0CE51-E7DA-4CA9-BAE0-8441E09B4713}");
+
+        EditorJointHelpersInterface() = default;
+        virtual ~EditorJointHelpersInterface() = default;
+        AZ_DISABLE_COPY_MOVE(EditorJointHelpersInterface);
+
+        virtual AZStd::unique_ptr<AzPhysics::JointConfiguration> ComputeOptimalJointLimit(
+            const AzPhysics::JointConfiguration* currentConfiguration,
+            const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) = 0;
+    };
 }

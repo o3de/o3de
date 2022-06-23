@@ -76,6 +76,8 @@ namespace EMotionFX
         size_t GetColliderIndex() const { return m_colliderIndex; }
         PhysicsSetup::ColliderConfigType GetColliderType() const { return m_colliderType; }
 
+        void InvalidateEditorValues();
+
     signals:
         void CopyCollider(size_t index);
         void PasteCollider(size_t index);

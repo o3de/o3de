@@ -23,17 +23,6 @@ namespace EMotionFX
     static const float ManipulatorWidth = 0.05f;
     static const float ManipulatorQuadWidth = 0.1f;
 
-    JointTwistLimitManipulators::JointTwistLimitManipulators()
-    {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
-    }
-
-    JointTwistLimitManipulators::~JointTwistLimitManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
-    }
-
     float GetAngleDeltaDegrees(const AzToolsFramework::AngularManipulator::Action& action)
     {
         float angleDeltaRadians = 0.0f;
@@ -140,6 +129,8 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointTwistLimitManipulators::Refresh()
@@ -155,10 +146,18 @@ namespace EMotionFX
 
     void JointTwistLimitManipulators::Teardown()
     {
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        m_twistLimitLowerManipulator->Unregister();
-        m_twistLimitUpperManipulator->Unregister();
+        if (m_twistLimitLowerManipulator)
+        {
+            m_twistLimitLowerManipulator->Unregister();
+        }
+        if (m_twistLimitUpperManipulator)
+        {
+            m_twistLimitUpperManipulator->Unregister();
+        }
         m_twistLimitLowerManipulator.reset();
         m_twistLimitUpperManipulator.reset();
         m_debugDisplay = nullptr;

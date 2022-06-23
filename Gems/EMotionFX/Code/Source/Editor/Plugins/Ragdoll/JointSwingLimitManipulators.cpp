@@ -23,17 +23,6 @@ namespace EMotionFX
     static constexpr float ManipulatorScale = 400.0f; // scaling factor between linear position of manipulator and swing limit in degrees
     static constexpr float ManipulatorInverseScale = 1.0f / ManipulatorScale;
 
-    JointSwingLimitManipulators::JointSwingLimitManipulators()
-    {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
-    }
-
-    JointSwingLimitManipulators::~JointSwingLimitManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
-    }
-
     void JointSwingLimitManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
@@ -131,6 +120,8 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointSwingLimitManipulators::Refresh()
@@ -159,10 +150,23 @@ namespace EMotionFX
 
     void JointSwingLimitManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasJointLimit())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        m_swingYManipulator->Unregister();
-        m_swingZManipulator->Unregister();
+        if (m_swingYManipulator)
+        {
+            m_swingYManipulator->Unregister();
+        }
+        if (m_swingZManipulator)
+        {
+            m_swingZManipulator->Unregister();
+        }
         m_swingYManipulator.reset();
         m_swingZManipulator.reset();
         m_debugDisplay = nullptr;
