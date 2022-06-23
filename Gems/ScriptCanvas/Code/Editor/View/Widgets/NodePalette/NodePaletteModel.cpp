@@ -35,7 +35,6 @@ AZ_DEFINE_BUDGET(NodePaletteModel);
 
 namespace
 {
-    static constexpr char DefaultNodeCategory[] = "Nodes";
     static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
     static constexpr char DefaultGlobalMethodCategory[] = "Global Methods";
     static constexpr char DefaultClassMethodCategory[] = "Class Methods";
@@ -251,7 +250,7 @@ namespace
 
         nodePaletteModel.RegisterDefaultCateogryInformation();
 
-        ScriptCanvas::NodeRegistry* registry = ScriptCanvas::GetNodeRegistry();
+        ScriptCanvas::NodeRegistry* registry = ScriptCanvas::NodeRegistry::GetInstance();
         for (auto nodeId : registry->m_nodes)
         {
             if (HasExcludeFromNodeListAttribute(&serializeContext, nodeId))
@@ -281,6 +280,91 @@ namespace
                 nodePaletteModel.RegisterCustomNode(nodeClassData);
             }
         }
+    }
+
+    void PopulateScriptCanvasDerivedNodesDeprecated(
+        ScriptCanvasEditor::NodePaletteModel& nodePaletteModel, const AZ::SerializeContext& serializeContext)
+    {
+        AZ_PROFILE_SCOPE(NodePaletteModel, "PopulateScriptCanvasDerivedNodes");
+
+        // Get all the types.
+        auto EnumerateLibraryDefintionNodes = [&nodePaletteModel,
+                                               &serializeContext](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
+        {
+            ScriptCanvasEditor::CategoryInformation categoryInfo;
+
+            AZStd::string categoryPath = classData->m_editData ? classData->m_editData->m_name : classData->m_name;
+
+            if (classData->m_editData)
+            {
+                auto editorElementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                if (editorElementData)
+                {
+                    if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Category))
+                    {
+                        if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryAttribute))
+                        {
+                            categoryPath = categoryAttributeData->Get(nullptr);
+                        }
+                    }
+
+                    if (auto categoryStyleAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::CategoryStyle))
+                    {
+                        if (auto categoryAttributeData =
+                                azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryStyleAttribute))
+                        {
+                            categoryInfo.m_styleOverride = categoryAttributeData->Get(nullptr);
+                        }
+                    }
+
+                    if (auto titlePaletteAttribute = editorElementData->FindAttribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride))
+                    {
+                        if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(titlePaletteAttribute))
+                        {
+                            categoryInfo.m_paletteOverride = categoryAttributeData->Get(nullptr);
+                        }
+                    }
+                }
+            }
+
+            nodePaletteModel.RegisterCategoryInformation(categoryPath, categoryInfo);
+
+            // Children
+            for (auto& node : ScriptCanvas::Library::LibraryDefinition::GetNodes(classData->m_typeId))
+            {
+                if (HasExcludeFromNodeListAttribute(&serializeContext, node.first))
+                {
+                    continue;
+                }
+
+                // Pass in the associated class data so we can do more intensive lookups?
+                const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
+
+                if (nodeClassData == nullptr)
+                {
+                    continue;
+                }
+
+                // Skip over some of our more dynamic nodes that we want to populate using different means
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
+                {
+                    continue;
+                }
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
+                {
+                    continue;
+                }
+                else
+                {
+                    nodePaletteModel.RegisterCustomNode(nodeClassData, categoryPath);
+                }
+            }
+
+            return true;
+        };
+
+        const AZ::TypeId& libraryDefTypeId = azrtti_typeid<ScriptCanvas::Library::LibraryDefinition>();
+        serializeContext.EnumerateDerived(EnumerateLibraryDefintionNodes, libraryDefTypeId, libraryDefTypeId);
     }
 
     void PopulateVariablePalette()
@@ -720,6 +804,9 @@ namespace
         // Populates the NodePalette in ScriptCanvas NodeRegistry
         PopulateScriptCanvasDerivedNodes(nodePaletteModel, *serializeContext);
 
+        // Deprecated, populates the NodePalette in deprecated ScriptCanvas NodeRegistry
+        PopulateScriptCanvasDerivedNodesDeprecated(nodePaletteModel, *serializeContext);
+
         // Populates the VariablePalette with type registered with the ScriptCanvas DataRegistry
         PopulateVariablePalette();
 
@@ -836,7 +923,7 @@ namespace ScriptCanvasEditor
         NodePaletteModelNotificationBus::Event(m_paletteId, &NodePaletteModelNotifications::OnAssetModelRepopulated);
     }
 
-    void NodePaletteModel::RegisterCustomNode(const AZ::SerializeContext::ClassData* classData)
+    void NodePaletteModel::RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath)
     {
         AZ_PROFILE_SCOPE(NodePaletteModel, "NodePaletteModel::RegisterCustomNode");
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = ScriptCanvas::NodeUtils::ConstructCustomNodeIdentifier(classData->m_typeId);
@@ -850,7 +937,7 @@ namespace ScriptCanvasEditor
             customNodeInformation->m_nodeIdentifier = nodeIdentifier;
             customNodeInformation->m_typeId = classData->m_typeId;
             customNodeInformation->m_displayName = classData->m_name;
-            customNodeInformation->m_categoryPath = DefaultNodeCategory;
+            customNodeInformation->m_categoryPath = categoryPath;
 
             bool isDeprecated(false);
 

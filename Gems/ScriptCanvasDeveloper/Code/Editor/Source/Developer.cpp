@@ -15,7 +15,7 @@ namespace ScriptCanvas::Developer
 {
     void InitNodeRegistry()
     {
-        NodeRegistry* registry = GetNodeRegistry();
+        NodeRegistry* registry = NodeRegistry::GetInstance();
         registry->m_nodes.push_back(AZ::AzTypeInfo<ScriptCanvas::Developer::Nodes::Mock>::Uuid());
         registry->m_nodes.push_back(AZ::AzTypeInfo<ScriptCanvas::Developer::Nodes::WrapperMock>::Uuid());
     }

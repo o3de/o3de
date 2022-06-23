@@ -46,7 +46,7 @@ namespace ScriptCanvas
     void AutoGenRegistryManager::Init()
     {
         auto registry = GetInstance();
-        auto nodeRegistry = GetNodeRegistry();
+        auto nodeRegistry = NodeRegistry::GetInstance();
         if (registry && nodeRegistry)
         {
             for (auto& iter : registry->m_registries)
@@ -62,7 +62,7 @@ namespace ScriptCanvas
     void AutoGenRegistryManager::Init(const char* registryName)
     {
         auto registry = GetInstance();
-        auto nodeRegistry = GetNodeRegistry();
+        auto nodeRegistry = NodeRegistry::GetInstance();
         if (registry && nodeRegistry)
         {
             auto registryNames = registry->GetRegistryNames(registryName);

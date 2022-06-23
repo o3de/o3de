@@ -16,7 +16,7 @@ namespace ScriptCanvas
 {
     static AZ::EnvironmentVariable<NodeRegistry> g_nodeRegistry;
 
-    NodeRegistry* GetNodeRegistry()
+    NodeRegistry* NodeRegistry::GetInstance()
     {
         // Look up variable in AZ::Environment first
         // This is need if the Environment variable was already created in a different module memory space
@@ -34,7 +34,7 @@ namespace ScriptCanvas
         return &(g_nodeRegistry.Get());
     }
 
-    void ResetNodeRegistry()
+    void NodeRegistry::ResetInstance()
     {
         g_nodeRegistry.Reset();
     }

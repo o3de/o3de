@@ -25,13 +25,16 @@ namespace ScriptCanvas
     {
         AZ_TYPE_INFO(NodeRegistry, "{C1613BD5-3104-44E4-98FE-A917A90B2014}");
 
+        static NodeRegistry* GetInstance();
+        static void ResetInstance();
+
         //! Collection to store ScriptCanvas derived node uuid
         AZStd::vector<AZ::Uuid> m_nodes;
+
+        //! Deprecated field, keep it for backward compatible
+        using NodeList = AZStd::vector<AZStd::pair<AZ::Uuid, AZStd::string>>;
+        AZStd::unordered_map<AZ::Uuid, NodeList> m_nodeMap;
     };
-
-    NodeRegistry* GetNodeRegistry();
-
-    void ResetNodeRegistry();
 
     static const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
 } // namespace ScriptCanvas

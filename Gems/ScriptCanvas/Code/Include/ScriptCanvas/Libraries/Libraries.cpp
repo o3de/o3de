@@ -20,7 +20,7 @@ namespace ScriptCanvas
 {
     void InitLibraries()
     {
-        auto nodeRegistry = GetNodeRegistry();
+        auto nodeRegistry = NodeRegistry::GetInstance();
         ComparisonLibrary::InitNodeRegistry(nodeRegistry);
         CoreLibrary::InitNodeRegistry(nodeRegistry);
         LogicLibrary::InitNodeRegistry(nodeRegistry);
@@ -29,7 +29,7 @@ namespace ScriptCanvas
 
     void ResetLibraries()
     {
-        ResetNodeRegistry();
+        NodeRegistry::ResetInstance();
     }
 
     void ReflectLibraries(AZ::ReflectContext* reflectContext)
@@ -62,5 +62,10 @@ namespace ScriptCanvas
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         return libraryDescriptors;
+    }
+
+    AZ::EnvironmentVariable<NodeRegistry> GetNodeRegistry()
+    {
+        return AZ::Environment::FindVariable<NodeRegistry>(s_nodeRegistryName);
     }
 }

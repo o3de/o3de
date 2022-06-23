@@ -77,7 +77,7 @@ namespace ScriptCanvasEditor
 
         void RepopulateModel();
 
-        void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData);
+        void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
         void RegisterGlobalMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
         void RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod);
