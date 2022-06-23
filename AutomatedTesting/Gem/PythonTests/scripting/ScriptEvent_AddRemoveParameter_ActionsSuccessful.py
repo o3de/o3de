@@ -49,11 +49,11 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
     """
 
     def __init__(self):
-        editor_window = None
-        asset_editor = None
-        asset_editor_widget = None
-        asset_editor_row_container = None
-        asset_editor_menu_bar = None
+        self.editor_main_window = None
+        self.asset_editor = None
+        self.asset_editor_widget = None
+        self.asset_editor_row_container = None
+        self.asset_editor_menu_bar = None
 
     def create_script_event(self) -> None:
         action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
@@ -102,13 +102,12 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         general.idle_enable(True)
         general.close_pane(ASSET_EDITOR_UI)
 
-        # 1) Open Asset Editor
-        # Initially close the Asset Editor and then reopen to ensure we don't have any existing assets open
-        general.open_pane(ASSET_EDITOR_UI)
-        helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+        # 1) Initialize the editor and asset editor qt objects
+        tools.initialize_editor_object(self)
+        tools.initialize_asset_editor_object(self)
 
-        # 2) Get Asset Editor Qt object
-        tools.initialize_asset_editor_qt_objects(self)
+        # 2) Open the asset editor
+        tools.open_asset_editor()
 
         # 3) Create new Script Event Asset
         self.create_script_event()

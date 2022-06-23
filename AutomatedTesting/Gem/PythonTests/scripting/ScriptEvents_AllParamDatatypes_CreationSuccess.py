@@ -91,8 +91,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         # 1) Open Asset Editor
         # Initially close the Asset Editor and then reopen to ensure we don't have any existing assets open
         general.close_pane(ASSET_EDITOR_UI) # this doesn't close a file that was previously open if you had just run a test that created an asset
-        general.open_pane(ASSET_EDITOR_UI)
-        helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+        tools.open_asset_editor()
         tools.initialize_editor_object(self)
 
         # 2) Initialize asset editor, script canvas and create new Script Event file with one method
