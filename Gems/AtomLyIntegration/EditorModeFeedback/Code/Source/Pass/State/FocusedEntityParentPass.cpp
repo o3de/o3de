@@ -58,9 +58,9 @@ namespace AZ::Render
     // void SetUnfocusBlur(float intensity);
 
     // EditorModeStateParentPass overrides ...
-    void FocusedEntityParentPass::InitPassData([[maybe_unused]] RPI::ParentPass* parentPass)
+    void FocusedEntityParentPass::InitPassData(RPI::ParentPass* parentPass)
     {
-
+        parentPass->SetEnabled(false);
     }
 
     bool FocusedEntityParentPass::IsEnabled() const

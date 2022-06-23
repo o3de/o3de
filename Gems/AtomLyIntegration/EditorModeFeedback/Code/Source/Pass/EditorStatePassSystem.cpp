@@ -7,7 +7,9 @@
  */
 
 #include <Pass/EditorStatePassSystem.h>
-#include <Pass/Child/EditorModeFeedbackParentPass.h>
+#include <Pass/EditorModeFeedbackParentPass.h>
+#include <Pass/State/EditorStateParentPassData.h>
+#include <Pass/State/EditorStateParentPass.h>
 #include <Pass/Child/EditorModeDesaturationPass.h>
 #include <Pass/Child/EditorModeTintPass.h>
 #include <Pass/Child/EditorModeBlurPass.h>
@@ -20,6 +22,11 @@
 
 namespace AZ::Render
 {
+    static constexpr const char* const MainPassParentTemplateName = "EditorModeFeedbackParentTemplate";
+    static constexpr const char* const MainPassParentTemplatePassClassName = "EditorModeFeedbackParentPass";
+    static constexpr const char* const MainPassParentPassName = "EditorModeFeedbackPassParent";
+    static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
+
     static Name GetMaskPassTemplateNameForDrawList(const Name& drawList)
     {
         return Name(AZStd::string(drawList.GetStringView()) + "_EditorModeMaskTemplate");
@@ -28,16 +35,6 @@ namespace AZ::Render
     static Name GetMaskPassNameForDrawList(const Name& drawList)
     {
         return Name(AZStd::string(drawList.GetStringView()) + "_EntityMaskPass");
-    }
-
-    static Name GetPassTemplateNameForState(const EditorStateParentPassBase& state)
-    {
-        return Name(state.GetStateName() + "Template");
-    }
-
-    static Name GetPassNameForState(const EditorStateParentPassBase& state)
-    {
-        return Name(state.GetStateName() + "Pass");
     }
     
     static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
@@ -48,8 +45,8 @@ namespace AZ::Render
     void CreateAndAddStateParentPassTemplate(const EditorStateParentPassBase& state)
     {
         auto stateParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        stateParentPassTemplate->m_name = GetPassTemplateNameForState(state);
-        stateParentPassTemplate->m_passClass = Name("ParentPass");
+        stateParentPassTemplate->m_name = state.GetPassTemplateName();
+        stateParentPassTemplate->m_passClass = StatePassTemplatePassClassName;
 
          // Input depth slot
         {
@@ -89,6 +86,13 @@ namespace AZ::Render
             fallbackConnection.m_inputSlotName = Name("InputColor");
             fallbackConnection.m_outputSlotName = Name("OutputColor");
             stateParentPassTemplate->m_fallbackConnections.push_back(fallbackConnection);
+        }
+
+        // Pass data
+        {
+            auto passData = AZStd::make_shared<RPI::EditorStateParentPassData>();
+            passData->editorStatePass = &state;
+            stateParentPassTemplate->m_passData = passData;
         }
 
         // Child passes
@@ -284,7 +288,8 @@ namespace AZ::Render
     {
         auto* passSystem = RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
-        passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
+        passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
+        passSystem->AddPassCreator(Name(StatePassTemplatePassClassName), &EditorStateParentPass::Create);
         passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
         passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
         passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
@@ -300,8 +305,8 @@ namespace AZ::Render
     void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline)
     {
         auto mainParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        mainParentPassTemplate->m_name = Name("EditorModeFeedbackParentTemplate");
-        mainParentPassTemplate->m_passClass = Name("EditorModeFeedbackParentPass");
+        mainParentPassTemplate->m_name = Name(MainPassParentTemplateName);
+        mainParentPassTemplate->m_passClass = Name(MainPassParentTemplatePassClassName);
         
         // Input depth slot
         {
@@ -346,8 +351,8 @@ namespace AZ::Render
         {
             CreateAndAddStateParentPassTemplate(*state);
             RPI::PassRequest pass;
-            pass.m_passName = GetPassNameForState(*state);
-            pass.m_templateName = GetPassTemplateNameForState(*state);
+            pass.m_passName = state->GetPassName();
+            pass.m_templateName = state->GetPassTemplateName();
         
             // Input depth
             {
@@ -396,7 +401,7 @@ namespace AZ::Render
 
         RPI::PassSystemInterface::Get()->AddPassTemplate(mainParentPassTemplate->m_name, mainParentPassTemplate);
         AZ::RPI::PassRequest passRequest;
-        passRequest.m_passName = Name("EditorModeFeedbackPassParent");
+        passRequest.m_passName = Name(MainPassParentPassName);
         passRequest.m_templateName = mainParentPassTemplate->m_name;
         passRequest.AddInputConnection(
             RPI::PassConnection{ Name("ColorInputOutput"), RPI::PassAttachmentRef{ Name("PostProcessPass"), Name("Output") } });
@@ -437,5 +442,20 @@ namespace AZ::Render
         }
 
         return entityMaskMap;
+    }
+
+    void EditorStatePassSystem::InitPasses(RPI::RenderPipeline* renderPipeline)
+    {
+        RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
+        RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);
+        if (mainPass)
+        {
+            auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
+            for (auto& state : m_editorStateParentPasses)
+            {
+                auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
+                state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
+            }
+        }
     }
 } // namespace AZ::Render

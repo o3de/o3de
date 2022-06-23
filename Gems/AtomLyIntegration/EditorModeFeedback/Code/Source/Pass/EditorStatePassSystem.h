@@ -36,9 +36,19 @@ namespace AZ::Render
         //! 
         EntityMaskMap GetEntitiesForEditorStatePasses() const;
 
+        void InitPasses(RPI::RenderPipeline* renderPipeline);
+
         const AZStd::unordered_set<Name>& GetMasks() const
         {
             return m_masks;
+        }
+
+        void Update()
+        {
+            for (auto& state : m_editorStateParentPasses)
+            {
+                state->UpdateParentPasses();
+            }
         }
 
     private:

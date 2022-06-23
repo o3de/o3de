@@ -56,14 +56,34 @@ namespace AZ::Render
         //! child passes state and routing).
         const PassDescriptorList& GetChildPassDescriptorList() const;
 
-        //! Opportunity for the editor mode state to initialize any child pass object state.
-        virtual void InitPassData([[maybe_unused]] RPI::ParentPass* parentPass) {};
-
         //! Returns true of this editor mode state is to be enabled, otherwise false.
         virtual bool IsEnabled() const { return true; }
 
         //! Returns the entities that should be rendered to the entity mask for this editor state.
         [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
+
+        Name GetPassTemplateName() const
+        {
+            return Name(GetStateName() + "Template");
+        }
+
+        Name GetPassName() const
+        {
+            return Name(GetStateName() + "Pass");
+        }
+
+        void AddParentPassForPipeline(const Name& pipelineName, RPI::Ptr<RPI::Pass> parentPass)
+        {
+            m_parentPasses[pipelineName] = parentPass;
+        }
+
+        void UpdateParentPasses()
+        {
+            for (auto& [pipelineName, parentPass] : m_parentPasses)
+            {
+                InitPassData(azdynamic_cast<RPI::ParentPass*>(parentPass.get()));
+            }
+        }
 
     protected:
         //!
@@ -84,10 +104,14 @@ namespace AZ::Render
 
             return dynamic_cast<ChildPass*>(childPass);
         }
+
+        //! Opportunity for the editor mode state to initialize any child pass object state.
+        virtual void InitPassData(RPI::ParentPass*){}
     private:
 
         AZStd::string m_stateName;
         PassDescriptorList m_childPassDescriptorList;
         Name m_entityMaskDrawList;
+        AZStd::unordered_map<Name, RPI::Ptr<RPI::Pass>> m_parentPasses;
     };
 } // namespace AZ::Render

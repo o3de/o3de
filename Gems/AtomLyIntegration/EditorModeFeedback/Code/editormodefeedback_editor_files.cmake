@@ -8,8 +8,8 @@
 
 set(FILES
     Include/EditorModeFeedback/EditorModeFeedbackInterface.h
-    Source/Pass/Child/EditorModeFeedbackParentPass.cpp
-    Source/Pass/Child/EditorModeFeedbackParentPass.h
+    Source/Pass/EditorModeFeedbackParentPass.cpp
+    Source/Pass/EditorModeFeedbackParentPass.h
     Source/Pass/Child/EditorModeFeedbackChildPassBase.cpp
     Source/Pass/Child/EditorModeFeedbackChildPassBase.h
     Source/Pass/Child/EditorModeDesaturationPass.cpp
@@ -22,6 +22,9 @@ set(FILES
     Source/Pass/Child/EditorModeOutlinePass.h
     Source/Pass/EditorStatePassSystem.cpp
     Source/Pass/EditorStatePassSystem.h
+    Source/Pass/State/EditorStateParentPass.cpp
+    Source/Pass/State/EditorStateParentPass.h
+    Source/Pass/State/EditorStateParentPassData.h
     Source/Pass/State/EditorStateParentPassBase.cpp
     Source/Pass/State/EditorStateParentPassBase.h
     Source/Pass/State/FocusedEntityParentPass.cpp

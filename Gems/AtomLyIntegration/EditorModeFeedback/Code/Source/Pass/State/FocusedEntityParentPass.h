@@ -35,13 +35,13 @@ namespace AZ::Render
         //void SetUnfocusTint(const AZ::Color& tint);
         //void SetUnfocusBlur(float intensity);
 
-        // EditorModeStateParentPass overrides ...
-        void InitPassData(RPI::ParentPass* parentPass) override;
         bool IsEnabled() const override;
 
         // EditorStateParentPassBase overrides ...
         AzToolsFramework::EntityIdList GetMaskedEntities() const override;
     private:
+        void InitPassData(RPI::ParentPass* parentPass) override;
+
         bool m_enabled = false;
     };
 } // namespace AZ::Render

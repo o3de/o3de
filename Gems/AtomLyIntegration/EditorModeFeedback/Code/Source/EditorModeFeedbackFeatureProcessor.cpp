@@ -75,13 +75,7 @@ namespace AZ
 
         void EditorModeFeatureProcessor::InitPasses(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::PassFilter tintPassFilter = RPI::PassFilter::CreateWithPassName(Name("EditorModeFeedbackPassParent"), renderPipeline);
-            RPI::Ptr<RPI::Pass> tintPass = RPI::PassSystemInterface::Get()->FindFirstPass(tintPassFilter);
-            if (tintPass)
-            {
-                auto foo = azdynamic_cast<RPI::ParentPass*>(tintPass.get());
-                AZ_Printf("", "%zu", reinterpret_cast<std::uintptr_t>(foo));
-            }
+            m_editorStatePassSystem->InitPasses(renderPipeline);
         }
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
@@ -106,6 +100,11 @@ namespace AZ
                     it->second.RenderMaskEntities(entities);
                 } 
             }
+        }
+
+        void EditorModeFeatureProcessor::Simulate([[maybe_unused]] const SimulatePacket& packet)
+        {
+            //m_editorStatePassSystem->Update();
         }
     } // namespace Render
 } // namespace AZ
