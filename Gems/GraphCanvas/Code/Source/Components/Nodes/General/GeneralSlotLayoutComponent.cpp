@@ -17,7 +17,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 
 #include <Components/Nodes/General/GeneralSlotLayoutComponent.h>
-
+#include <Components/Nodes/General/GeneralNodeTitleComponent.h>
 #include <Components/Nodes/General/GeneralNodeFrameComponent.h>
 #include <GraphCanvas/Components/GeometryBus.h>
 #include <GraphCanvas/Components/Nodes/NodeLayoutBus.h>
@@ -164,25 +164,30 @@ namespace GraphCanvas
             m_outputs->addItem(spacer);
         }
 
-        QGraphicsLinearLayout* layout = new QGraphicsLinearLayout(Qt::Horizontal);
-        setLayout(layout);
+        m_layout = new QGraphicsLinearLayout(Qt::Horizontal);
+        setLayout(m_layout);
 
-        layout->setInstantInvalidatePropagation(true);
+        m_layout->setInstantInvalidatePropagation(true);
 
         // Creating the actual display
         // <input><spacer><output>
-        layout->addItem(m_inputs);
+        m_layout->addItem(m_inputs);
 
+        /*
         m_horizontalSpacer = new QGraphicsWidget();
         m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         m_horizontalSpacer->setContentsMargins(0, 0, 0, 0);
         m_horizontalSpacer->setPreferredSize(0, 0);
 
-        layout->addItem(m_horizontalSpacer);
+        layout->addItem(m_horizontalSpacer);*/
 
-        layout->addItem(m_outputs);
+        /* QGraphicsWidget* titleGraphicsItem = nullptr;
+        NodeTitleRequestBus::EventResult(titleGraphicsItem, m_entityId, &NodeTitleRequests::GetGraphicsWidget);
+        layout->addItem(titleGraphicsItem);*/
 
-        layout->setAlignment(m_outputs, Qt::AlignRight);
+        m_layout->addItem(m_outputs);
+
+        m_layout->setAlignment(m_outputs, Qt::AlignRight);
     }
 
     void GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::DisplaySlot(const AZ::EntityId& slotId)
@@ -490,9 +495,9 @@ namespace GraphCanvas
         return this;
     }
 
-    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetInputGraphicsLayoutItem()
+    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::GetInputGraphicsLayoutItem()
     {
-        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetInputSlotLayout();
+        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->m_layout;
     }
 
     QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetOutputGraphicsLayoutItem()

@@ -121,6 +121,9 @@ namespace GraphCanvas
             void OnSlotLayoutPriorityChanged(int layoutPriority) override;
             ////
 
+            // CHANGE THIS!!!
+            QGraphicsLinearLayout* m_layout;
+
         private:
 
             int LayoutSlot(QGraphicsLinearLayout* layout, AZStd::vector<SlotLayoutInfo>& slotList, const SlotLayoutInfo& slotInfo);
@@ -159,7 +162,7 @@ namespace GraphCanvas
         // NodeSlotsRequestBus
         QGraphicsLayoutItem* GetGraphicsLayoutItem() override;
 
-        QGraphicsLayoutItem* GetInputGraphicsLayoutItem() override;
+        QGraphicsLinearLayout* GetInputGraphicsLayoutItem() override;
         QGraphicsLayoutItem* GetOutputGraphicsLayoutItem() override;
         ////
 

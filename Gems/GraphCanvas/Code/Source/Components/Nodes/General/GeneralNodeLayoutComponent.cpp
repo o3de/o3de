@@ -81,19 +81,19 @@ namespace GraphCanvas
         m_title = new QGraphicsLinearLayout(m_layoutOrientation);
         m_title->setInstantInvalidatePropagation(true);
 
-        if (m_layoutOrientation == Qt::Vertical)
+        //if (m_layoutOrientation == Qt::Vertical)
         {
             m_slots = new QGraphicsLinearLayout(Qt::Vertical);
             m_slots->setInstantInvalidatePropagation(true);
         }
-        else
+        /* else
         {
-            m_inputSlots = new QGraphicsLinearLayout(Qt::Vertical);
+            m_inputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
             m_inputSlots->setInstantInvalidatePropagation(true);
 
-            m_outputSlots = new QGraphicsLinearLayout(Qt::Vertical);
+            m_outputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
             m_outputSlots->setInstantInvalidatePropagation(true);
-        }
+        }*/
     }
 
     void GeneralNodeLayoutComponent::Activate()
@@ -139,32 +139,22 @@ namespace GraphCanvas
         }
         else
         {
-            QGraphicsLayoutItem* inputGraphicsItem = nullptr;
-            NodeSlotsRequestBus::EventResult(inputGraphicsItem, GetEntityId(), &NodeSlotsRequestBus::Events::GetInputGraphicsLayoutItem);
-            if (inputGraphicsItem)
-            {
-                m_inputSlots->addItem(inputGraphicsItem);
-                m_inputSlots->setContentsMargins(0, 0, 0, 0);
-            }
-            GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_inputSlots);
-
             QGraphicsWidget* titleGraphicsItem = nullptr;
             NodeTitleRequestBus::EventResult(titleGraphicsItem, GetEntityId(), &NodeTitleRequests::GetGraphicsWidget);
-            if (titleGraphicsItem)
-            {
-                m_title->addItem(titleGraphicsItem);
-                m_title->setContentsMargins(0, 0, 0, 0);
-            }
-            GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_title);
 
-            QGraphicsLayoutItem* outputGraphicsItem = nullptr;
-            NodeSlotsRequestBus::EventResult(outputGraphicsItem, GetEntityId(), &NodeSlotsRequestBus::Events::GetOutputGraphicsLayoutItem);
-            if (outputGraphicsItem)
+            QGraphicsLinearLayout* test = nullptr;
+            NodeSlotsRequestBus::EventResult(test, GetEntityId(), &NodeSlotsRequestBus::Events::GetInputGraphicsLayoutItem);
+
+            test->insertItem(1, titleGraphicsItem);
+
+            QGraphicsLayoutItem* slotsGraphicsItem = nullptr;
+            NodeSlotsRequestBus::EventResult(slotsGraphicsItem, GetEntityId(), &NodeSlotsRequestBus::Events::GetGraphicsLayoutItem);
+            if (slotsGraphicsItem)
             {
-                m_outputSlots->addItem(outputGraphicsItem);
-                m_outputSlots->setContentsMargins(0, 0, 0, 0);
+                m_slots->addItem(slotsGraphicsItem);
+                m_slots->setContentsMargins(0, 0, 0, 0);
             }
-            GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_outputSlots);
+            GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_slots);
         }
 
         StyleNotificationBus::Handler::BusConnect(GetEntityId());

@@ -45,7 +45,7 @@ namespace GraphCanvas
 
         virtual QGraphicsLayoutItem* GetGraphicsLayoutItem() = 0;
 
-        virtual QGraphicsLayoutItem* GetInputGraphicsLayoutItem() = 0;
+        virtual QGraphicsLinearLayout* GetInputGraphicsLayoutItem() = 0;
         virtual QGraphicsLayoutItem* GetOutputGraphicsLayoutItem() = 0;
 
     };
