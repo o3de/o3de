@@ -11,6 +11,7 @@ from PySide2.QtCore import Qt
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
+import azlmbr.legacy.general as general
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
@@ -121,10 +122,9 @@ def open_node_palette(self):
         action.trigger()
 
 
-def open_script_canvas(self):
-    if self.sc_editor.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI) is None:
-        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": SCRIPT_CANVAS_UI, "type": QtWidgets.QAction})
-        action.trigger()
+def open_script_canvas():
+    general.open_pane(SCRIPT_CANVAS_UI)
+    helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
 
 
 def canvas_node_palette_search(self, node_name, number_of_retries):

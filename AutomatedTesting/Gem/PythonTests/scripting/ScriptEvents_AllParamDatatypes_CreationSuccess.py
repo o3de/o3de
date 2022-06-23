@@ -11,8 +11,6 @@ from editor_python_test_tools.utils import Report
 from PySide2 import QtWidgets, QtTest, QtCore
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.legacy.general as general
-import azlmbr.editor as editor
-import azlmbr.bus as bus
 import azlmbr.paths as paths
 import scripting_utils.scripting_tools as tools
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT,
@@ -97,9 +95,9 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
         tools.initialize_editor_object(self)
 
-        # 2) Initially create new Script Event file with one method
+        # 2) Initialize asset editor, script canvas and create new Script Event file with one method
         tools.initialize_asset_editor_object(self)
-        tools.open_script_canvas(self)
+        tools.open_script_canvas()
         tools.initialize_sc_editor_objects(self)
         action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
         action.trigger()
@@ -160,8 +158,6 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 8) Save file and verify node in SC Node Palette
         Report.result(Tests.file_saved, tools.save_script_event_file(self, FILE_PATH))
-        general.open_pane(SCRIPT_CANVAS_UI)
-        helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
         tools.open_node_palette(self)
         tools.initialize_node_palette_object(self)
         tools.canvas_node_palette_search(self, TEST_METHOD_NAME, SEARCH_RETRY_ATTEMPTS)
