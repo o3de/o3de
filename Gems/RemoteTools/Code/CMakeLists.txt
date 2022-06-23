@@ -69,8 +69,10 @@ ly_add_target(
 # Client, Server and Tools type targets when this gem is enabled.  If you don't want it
 # active in Clients, Servers and Tools by default, delete one or all of the following lines:
 ly_create_alias(NAME RemoteTools.Clients NAMESPACE Gem TARGETS Gem::RemoteTools)
-ly_create_alias(NAME RemoteTools.Tools   NAMESPACE Gem TARGETS Gem::RemoteTools)
 ly_create_alias(NAME RemoteTools.Servers NAMESPACE Gem TARGETS Gem::RemoteTools)
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME RemoteTools.Tools   NAMESPACE Gem TARGETS Gem::RemoteTools)
+endif()
 
 ################################################################################
 # Tests
