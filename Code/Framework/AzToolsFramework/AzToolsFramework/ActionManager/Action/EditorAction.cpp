@@ -17,6 +17,8 @@ namespace AzToolsFramework
         AZStd::string description,
         AZStd::string category,
         AZStd::string iconPath,
+        bool hideFromMenusWhenDisabled,
+        bool hideFromToolBarsWhenDisabled,
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
         : m_identifier(AZStd::move(identifier))
@@ -24,6 +26,8 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
+        , m_hideFromMenusWhenDisabled(hideFromMenusWhenDisabled)
+        , m_hideFromToolBarsWhenDisabled(hideFromToolBarsWhenDisabled)
     {
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), nullptr);

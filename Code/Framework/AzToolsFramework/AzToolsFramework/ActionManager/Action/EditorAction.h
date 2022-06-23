@@ -27,6 +27,8 @@ namespace AzToolsFramework
             AZStd::string description,
             AZStd::string category,
             AZStd::string iconPath,
+            bool hideFromMenusWhenDisabled,
+            bool hideFromToolBarsWhenDisabled,
             AZStd::function<void()> handler,
             AZStd::function<bool()> checkStateCallback = nullptr
         );
@@ -39,6 +41,8 @@ namespace AzToolsFramework
         void SetCategory(AZStd::string category);
         const AZStd::string& GetIconPath() const;
         void SetIconPath(AZStd::string iconPath);
+        bool GetHideFromMenusWhenDisabled();
+        bool GetHideFromToolBarsWhenDisabled();
 
         //! Returns the pointer to the action.
         QAction* GetAction();
@@ -69,6 +73,9 @@ namespace AzToolsFramework
         AZStd::string m_description;
         AZStd::string m_category;
         AZStd::string m_iconPath;
+
+        bool m_hideFromMenusWhenDisabled;
+        bool m_hideFromToolBarsWhenDisabled;
 
         AZStd::function<bool()> m_checkStateCallback = nullptr;
         AZStd::function<bool()> m_enabledStateCallback = nullptr;
