@@ -38,6 +38,7 @@
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
@@ -92,6 +93,7 @@ namespace Multiplayer
         "The base used for blending between network updates, 0.1 will be quite linear, 0.2 or 0.3 will "
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
+    AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -189,14 +191,21 @@ namespace Multiplayer
         SessionNotificationBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
-        if (AZ::Interface<AZ::IConsole>::Get())
-        {
-            m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
-        }
+
         AZ::Interface<ISessionHandlingClientRequests>::Register(this);
 
         //! Register our gems multiplayer components to assign NetComponentIds
         RegisterMultiplayerComponents();
+
+        if (auto console = AZ::Interface<AZ::IConsole>::Get())
+        {
+            m_consoleCommandHandler.Connect(console->GetConsoleCommandInvokedEvent());
+
+            if (cl_connect_onstartup)
+            {
+                console->PerformCommand("connect");
+            }
+        }
     }
 
     void MultiplayerSystemComponent::Deactivate()
@@ -236,7 +245,7 @@ namespace Multiplayer
     {
         InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
-        return m_networkInterface->Connect(address) != InvalidConnectionId;
+        return m_networkInterface->Connect(address, cl_clientport) != InvalidConnectionId;
     }
 
     void MultiplayerSystemComponent::Terminate(AzNetworking::DisconnectReason reason)
@@ -707,20 +716,31 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::EntityRpcs& packet
     )
     {
-        bool handledAll = true;
         if (connection->GetUserData() == nullptr)
         {
             AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing, entity updates size %u", aznumeric_cast<uint32_t>(packet.GetEntityRpcs().size()));
-            return handledAll;
+            return true;
         }
 
         EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
-        for (AZStd::size_t i = 0; i < packet.GetEntityRpcs().size(); ++i)
+        return replicationManager.HandleEntityRpcMessages(connection, packet.ModifyEntityRpcs());
+    }
+
+    bool MultiplayerSystemComponent::HandleRequest
+    (
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerPackets::RequestReplicatorReset& packet
+    )
+    {
+        if (connection->GetUserData() == nullptr)
         {
-            handledAll &= replicationManager.HandleEntityRpcMessage(connection, packet.ModifyEntityRpcs()[i]);
+            AZLOG_WARN("Missing connection data, likely due to a connection in the process of closing");
+            return true;
         }
 
-        return handledAll;
+        EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
+        return replicationManager.HandleEntityResetMessages(connection, packet.GetEntityIds());
     }
 
     bool MultiplayerSystemComponent::HandleRequest
@@ -1243,8 +1263,56 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
-    void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
+        // Try finding the game launcher from the executable folder where this server was launched from.
+        AZ::IO::FixedMaxPath gameLauncherPath = AZ::Utils::GetExecutableDirectory();
+        gameLauncherPath /= AZStd::string_view(AZ::Utils::GetProjectName() + ".GameLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        if (!AZ::IO::SystemFile::Exists(gameLauncherPath.c_str()))
+        {
+            AZLOG_ERROR("Could not find GameLauncher executable (%s)", gameLauncherPath.c_str());
+            return;
+        }
+
+        const auto multiplayerInterface = AZ::Interface<IMultiplayer>::Get();
+        if (!multiplayerInterface)
+        {
+            AZLOG_ERROR("Sv_launch_local_client failed. MultiplayerSystemComponent hasn't been constructed yet.");
+            return;
+        }
+
+        // Only allow hosts to launch a client, otherwise there's nothing for the client to connect to.
+        if (multiplayerInterface->GetAgentType() != MultiplayerAgentType::DedicatedServer &&
+            multiplayerInterface->GetAgentType() != MultiplayerAgentType::ClientServer)
+        {
+            AZLOG_ERROR("Cannot sv_launch_local_client. This program isn't hosting, please call 'host' command.");
+            return;
+        }
+        
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        processLaunchInfo.m_processExecutableString = gameLauncherPath.String();
+        processLaunchInfo.m_commandlineParameters = "--cl_connect_onstartup=true";
+        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+        
+        // Launch GameLauncher and connect to this server
+        const bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+        if (!launchSuccess)
+        {
+            AZLOG_ERROR("Failed to launch the local client process.");
+            return;
+        }
+    }
+    AZ_CONSOLEFREEFUNC(sv_launch_local_client, AZ::ConsoleFunctorFlags::DontReplicate, "Launches a local client and connects to this host server (only works if currently hosting)");
+
+
+    void connect(const AZ::ConsoleCommandContainer& arguments)
+    {
+        if (!AZ::Interface<IMultiplayer>::Get())
+        {
+            AZLOG_ERROR("Connect failed. MultiplayerSystemComponent hasn't been constructed yet. Did you mean to use cl_connect_onstartup?");
+            return;
+        }
+
         if (arguments.size() < 1)
         {
             const AZ::CVarFixedString remoteAddress = cl_serveraddr;

@@ -11,66 +11,18 @@
 namespace EditorPythonBindings
 {
     PythonEditorAction::PythonEditorAction(PyObject* handler)
-        : m_handler(handler)
+        : m_pythonCallableObject(handler)
     {
-        // Increment the reference counter for the handler on the Python side to ensure the function isn't garbage collected.
-        if (m_handler)
-        {
-            Py_INCREF(m_handler);
-        }
     }
 
-    PythonEditorAction::PythonEditorAction(const PythonEditorAction& obj)
-        : m_handler(obj.m_handler)
+    PyObject* PythonEditorAction::GetPyObject()
     {
-        if (m_handler)
-        {
-            Py_INCREF(m_handler);
-        }
+        return m_pythonCallableObject;
     }
 
-    PythonEditorAction::PythonEditorAction(PythonEditorAction&& obj)
-        : m_handler(obj.m_handler)
+    const PyObject* PythonEditorAction::GetPyObject() const
     {
-        // Reference counter does not need to be touched since we're moving ownership.
-        obj.m_handler = nullptr;
-    }
-
-    PythonEditorAction& PythonEditorAction::operator=(const PythonEditorAction& obj)
-    {
-        if (m_handler)
-        {
-            Py_DECREF(m_handler);
-        }
-
-        m_handler = obj.m_handler;
-
-        if (m_handler)
-        {
-            Py_INCREF(m_handler);
-        }
-
-        return *this;
-    }
-
-    PythonEditorAction::~PythonEditorAction()
-    {
-        if (m_handler)
-        {
-            Py_DECREF(m_handler);
-            // Clear the pointer in case the destructor is called multiple times.
-            m_handler = nullptr;
-        }
-    }
-
-    PyObject* PythonEditorAction::GetHandler()
-    {
-        return m_handler;
-    }
-
-    const PyObject* PythonEditorAction::GetHandler() const
-    {
-        return m_handler;
+        return m_pythonCallableObject;
     }
 
 } // namespace EditorPythonBindings

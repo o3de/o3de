@@ -58,7 +58,7 @@ namespace AZ::Reflection
     {
     }
 
-    void IRead::VisitObjectEnd()
+    void IRead::VisitObjectEnd(const IObjectAccess&, const IAttributes&)
     {
     }
 
@@ -138,7 +138,7 @@ namespace AZ::Reflection
     {
     }
 
-    void IReadWrite::VisitObjectEnd()
+    void IReadWrite::VisitObjectEnd(IObjectAccess&, const IAttributes&)
     {
     }
 

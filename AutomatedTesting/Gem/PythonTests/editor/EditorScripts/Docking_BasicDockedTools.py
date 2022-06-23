@@ -116,7 +116,7 @@ def Docking_BasicDockedTools():
                    (entity_inspector_parent == entity_outliner_parent) and \
                    (entity_outliner_parent == console_parent)
 
-        success = await pyside_utils.wait_for(check_all_panes_tabbed, timeout=3.0)
+        success = await pyside_utils.wait_for_condition(lambda: check_all_panes_tabbed, timeout=5.0)
         Report.result(Tests.all_tools_docked, success)
 
         # 2.1,2) Select an Entity in the Entity Outliner.

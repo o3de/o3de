@@ -19,7 +19,7 @@ namespace AWSClientAuth
     public:
         AZ_RTTI(AWSCognitoUserManagementController, "{2645D1CC-EB55-4A8D-8F45-5DFE94032813}", IAWSCognitoUserManagementRequests);
         AWSCognitoUserManagementController();
-        virtual ~AWSCognitoUserManagementController();
+        ~AWSCognitoUserManagementController() override;
 
         // AWSCognitoUserManagementRequestsBus interface methods
         bool Initialize() override;

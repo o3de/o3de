@@ -1316,6 +1316,103 @@ namespace UnitTest
         }
     };
 
+    class InstanceDataHierarchyEndGroupTest
+        : public AllocatorsFixture
+    {
+    public:
+        class EndGroupContainer
+            : public AZ::Component
+        {
+        public:
+            AZ_COMPONENT(EndGroupContainer, "{0CFC7838-9B01-4E25-8932-1C1EE4FCEC77}", AZ::Component);
+
+            int m_rootData;
+            bool m_otherRootData;
+            int m_group1Data;
+            int m_group2Data;
+            int m_finalRootData;
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serialize->Class<EndGroupContainer, AZ::Component>()
+                        ->Field("rootData", &EndGroupContainer::m_rootData)
+                        ->Field("otherRootData", &EndGroupContainer::m_otherRootData)
+                        ->Field("group1Data", &EndGroupContainer::m_group1Data)
+                        ->Field("group2Data", &EndGroupContainer::m_group2Data)
+                        ->Field("finalRootData", &EndGroupContainer::m_finalRootData)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<EndGroupContainer>("EndGroupTest", "")
+                            ->DataElement(nullptr, &EndGroupContainer::m_rootData)
+                            ->DataElement(nullptr, &EndGroupContainer::m_otherRootData)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "First Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group1Data)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "Second Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group2Data)
+                            ->EndGroup()
+
+                            ->DataElement(nullptr, &EndGroupContainer::m_finalRootData)
+                            ;
+                    }
+                }
+            }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
+        };
+
+        void run()
+        {
+            AZ::SerializeContext serializeContext;
+            serializeContext.CreateEditContext();
+            AZ::Entity::Reflect(&serializeContext);
+            EndGroupContainer::Reflect(&serializeContext);
+
+            EndGroupContainer test;
+            AzToolsFramework::InstanceDataHierarchy idh;
+            idh.AddRootInstance(&test, azrtti_typeid<EndGroupContainer>());
+            idh.Build(&serializeContext, 0);
+
+            auto children = idh.GetChildren();
+            ASSERT_EQ(children.size(), 6);
+            auto it = children.begin();
+
+            // The first child will be the AZ::Component Id data,
+            // which we don't care about for this test
+            ++it;
+
+            // The next two children are root data, which both should
+            // have no group element
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "rootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "otherRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+
+            // The next data should be in the first group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group1Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "First Group");
+
+            // The following data should be in the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group2Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "Second Group");
+
+            // The final data should have no group since we ended the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "finalRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+        }
+    };
+
     class InstanceDataHierarchyAggregateInstanceTest
         : public AllocatorsFixture
     {
@@ -1472,6 +1569,11 @@ namespace UnitTest
     }
 
     TEST_F(InstanceDataHierarchyElementTest, TestLayingOutUIAndDataElements)
+    {
+        run();
+    }
+
+    TEST_F(InstanceDataHierarchyEndGroupTest, TestEndGroup)
     {
         run();
     }

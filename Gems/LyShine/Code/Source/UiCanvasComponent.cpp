@@ -294,6 +294,35 @@ namespace
 
         return canHandleEvents;
     }
+
+    bool IsAttachmentImageAssetCompatible(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
+    {
+        // Check that the attachment image asset's bind flags are compatible
+        // - Supports use as a color attachment on a scope
+        // - Supports read access through a ShaderResourceGroup
+        const AZ::RHI::ImageDescriptor& imageDescriptor = attachmentImageAsset->GetImageDescriptor();
+        bool isCompatible = AZ::RHI::CheckBitsAll(imageDescriptor.m_bindFlags,
+            AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderRead);
+        if (!isCompatible)
+        {
+            AZ_Error("UI", false, "Attachment image asset: %s has invalid bindings for rendering a UI Canvas. Please "
+                "ensure that its BindFlags property includes Color and ShaderRead.", attachmentImageAsset.GetHint().c_str());
+            return false;
+        }
+
+        // Check that the attachment image asset's pixel format is compatible
+        isCompatible = (imageDescriptor.m_format == AZ::RHI::Format::R8G8B8A8_UNORM)
+            || (imageDescriptor.m_format == AZ::RHI::Format::R8G8B8A8_UNORM_SRGB);
+        if (!isCompatible)
+        {
+            AZ_Error("UI", false, "Attachment image asset: %s has an invalid pixel format for rendering a "
+                "UI Canvas. Please ensure that it contains a Format property with a valid value of "
+                "19 (R8G8B8A8_UNORM) or 20 (R8G8B8A8_UNORM_SRGB).", attachmentImageAsset.GetHint().c_str());
+            return false;
+        }
+
+        return true;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1874,19 +1903,29 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
-    if (!attachmentImage)
+    AZ::RHI::AttachmentId attachmentId = AZ::RHI::AttachmentId{};
+
+    // Check that the attachment image asset's properties are compatible for rendering a UI canvas
+    if (IsAttachmentImageAssetCompatible(attachmentImageAsset))
     {
-        AZ_Warning("UI", false, "Failed to find or create render target");
-        return AZ::RHI::AttachmentId();
+        // Instantiate or get an existing image instance for the specified asset
+        auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+        if (attachmentImage)
+        {
+            attachmentId = attachmentImage->GetAttachmentId();
+            m_attachmentImageMap[attachmentId] = attachmentImage;
+
+            // Notify LyShine render pass that it needs to rebuild
+            QueueRttPassRebuild();
+        }
+        else
+        {
+            AZ_Error("UI", false, "Failed to find or create render target from asset: %s",
+                attachmentImageAsset.GetHint().c_str());
+        }
     }
 
-    m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
-
-    // Notify LyShine render pass that it needs to rebuild
-    QueueRttPassRebuild();
-
-    return attachmentImage->GetAttachmentId();
+    return attachmentId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2089,8 +2128,11 @@ void UiCanvasComponent::QueueRttPassRebuild()
     UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
     if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
     {
-        AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
-        EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+        if (const AZ::RPI::ScenePtr& scene = uiRenderer->GetViewportContext()->GetRenderScene())
+        {
+            AZ::RPI::SceneId sceneId = scene->GetId();
+            EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+        }
     }
 }
 
@@ -3665,7 +3707,7 @@ void UiCanvasComponent::CreateRenderTarget()
     // Create a render target for the canvas
     LyShine::RenderToTextureRequestBus::EventResult(m_attachmentImageId, GetEntityId(),
         &LyShine::RenderToTextureRequestBus::Events::UseRenderTargetAsset, m_attachmentImageAsset);
-    AZ_Warning("UI", !m_attachmentImageId.IsEmpty(), "Failed to find or create render target for UI canvas: %s", m_pathname.c_str());
+    AZ_Error("UI", !m_attachmentImageId.IsEmpty(), "Failed to acquire a render target for UI canvas: %s", m_pathname.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

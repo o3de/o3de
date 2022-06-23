@@ -218,7 +218,7 @@ bool CAnimSequence::AddNode(IAnimNode* animNode)
         m_nodes.push_back(AZStd::intrusive_ptr<IAnimNode>(animNode));
     }
 
-    const int nodeId = static_cast<CAnimNode*>(animNode)->GetId();
+    const int nodeId = animNode->GetId();
     if (nodeId >= (int)m_nextGenId)
     {
         m_nextGenId = nodeId + 1;
@@ -395,8 +395,8 @@ void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
 {
     assert(node != 0);
 
-    static_cast<CAnimNode*>(node)->Activate(false);
-    static_cast<CAnimNode*>(node)->OnReset();
+    node->Activate(false);
+    node->OnReset();
 
     for (int i = 0; i < (int)m_nodes.size(); )
     {
@@ -465,7 +465,7 @@ void CAnimSequence::Reset(bool bSeekToStart)
         for (const auto& it :m_nodes)
         {
             IAnimNode* animNode = it.get();
-            static_cast<CAnimNode*>(animNode)->OnReset();
+            animNode->OnReset();
         }
         m_bResetting = false;
         return;
@@ -494,7 +494,7 @@ void CAnimSequence::Reset(bool bSeekToStart)
         for (AnimNodes::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
         {
             IAnimNode* animNode = it->get();
-            static_cast<CAnimNode*>(animNode)->OnReset();
+            animNode->OnReset();
         }
     }
 
@@ -1148,7 +1148,7 @@ IAnimNode* CAnimSequence::FindNodeById(int nNodeId)
     for (AnimNodes::const_iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
     {
         IAnimNode* animNode = it->get();
-        if (static_cast<CAnimNode*>(animNode)->GetId() == nNodeId)
+        if (animNode->GetId() == nNodeId)
         {
             return animNode;
         }
@@ -1163,7 +1163,7 @@ IAnimNode* CAnimSequence::FindNodeByName(const char* sNodeName, const IAnimNode*
     {
         IAnimNode* animNode = it->get();
         // Case insensitive name comparison.
-        if (_stricmp(static_cast<CAnimNode*>(animNode)->GetNameFast(), sNodeName) == 0)
+        if (_stricmp(animNode->GetName(), sNodeName) == 0)
         {
             bool bParentDirectorCheck = animNode->HasDirectorAsParent() == pParentDirector;
             if (bParentDirectorCheck)
@@ -1271,7 +1271,7 @@ void CAnimSequence::PasteNodes(const XmlNodeRef& xmlNode, IAnimNode* pParent)
 
         idToNode[id] = node;
 
-        xn->setAttr("Id", static_cast<CAnimNode*>(node)->GetId());
+        xn->setAttr("Id", node->GetId());
         node->Serialize(xn, true, true);
 
         int parentId = 0;

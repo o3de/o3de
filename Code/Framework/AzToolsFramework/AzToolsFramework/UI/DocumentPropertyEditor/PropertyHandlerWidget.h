@@ -52,9 +52,22 @@ namespace AzToolsFramework
 
         //! This must be implemented in subclasses registered with PropertyEditorToolsSystemInterface::RegisterHandler.
         //! Returns the handler name, used to look up the type of handler to use from a PropertyEditor node.
-        static const AZStd::string_view GetHandlerName()
+        static constexpr const AZStd::string_view GetHandlerName()
         {
             return "<undefined handler name>";
+        }
+
+        //! If overrideen, this can be used to indicate that this handler should be added to the "default" pool of
+        //! property handlers. Default property handlers will have ShouldHandleNode queried for PropertyEditor nodes
+        //! that don't have an explicit Type set.
+        //! For example, a numeric spin box might be registered as a default handler, in which case a node like:
+        //! <PropertyEditor Value=5 ValueType="int" />
+        //! would resolve to a spin box, while
+        //! <PropertyEditor Type="Slider" Value=5 ValueType="int" />
+        //! would still resolve to a slider.
+        static constexpr bool IsDefaultHandler()
+        {
+            return false;
         }
     };
 

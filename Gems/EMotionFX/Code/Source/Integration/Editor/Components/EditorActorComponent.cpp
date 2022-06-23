@@ -301,6 +301,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::DestroyActorInstance()
         {
+            DetachFromEntity();
+
             if (m_actorInstance)
             {
                 ActorComponentNotificationBus::Event(
@@ -543,12 +545,7 @@ namespace EMotionFX
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;
-
-            Actor* actor = m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -885,20 +882,20 @@ namespace EMotionFX
             // Enable/disable debug drawing.
             OnRenderFlagChanged();
 
+            if (m_actorInstance)
+            {
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_renderActorInstance.reset(nullptr);
+                m_actorInstance.reset();
+            }
+
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
             if (!actorAsset)
             {
                 return;
-            }
-
-            if (m_actorInstance)
-            {
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
             }
 
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
@@ -979,6 +976,9 @@ namespace EMotionFX
                 }
             }
 
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
             {
@@ -1052,8 +1052,8 @@ namespace EMotionFX
             if (attachedTo)
             {
                 attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
             }
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
         }
 
         void EditorActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
@@ -1083,6 +1083,9 @@ namespace EMotionFX
             {
                 return;
             }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
 
             DetachFromEntity();
             Attachment* attachmentSkin = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());

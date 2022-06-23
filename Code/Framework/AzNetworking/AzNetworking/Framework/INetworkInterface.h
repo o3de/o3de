@@ -67,8 +67,9 @@ namespace AzNetworking
 
         //! Opens a new connection to the provided address.
         //! @param remoteAddress the IpAddress of the remote process to open a connection to
+        //! @param localPort     the local port number to open a socket on to initiate the connection, 0 binds to any available port
         //! @return the connectionId of the new connection, or InvalidConnectionId if the operation failed
-        virtual ConnectionId Connect(const IpAddress& remoteAddress) = 0;
+        virtual ConnectionId Connect(const IpAddress& remoteAddress, uint16_t localPort = 0) = 0;
 
         //! Updates the INetworkInterface.
         virtual void Update() = 0;
