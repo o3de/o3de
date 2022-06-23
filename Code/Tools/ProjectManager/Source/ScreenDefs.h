@@ -24,6 +24,7 @@ namespace O3DE::ProjectManager
         Projects,
         UpdateProject,
         UpdateProjectSettings,
+        Engine,
         EngineSettings,
         GemRepos,
         GemsGemRepos
@@ -38,6 +39,7 @@ namespace O3DE::ProjectManager
         { "Projects", ProjectManagerScreen::Projects},
         { "UpdateProject", ProjectManagerScreen::UpdateProject},
         { "UpdateProjectSettings", ProjectManagerScreen::UpdateProjectSettings},
+        { "Engine", ProjectManagerScreen::Engine},
         { "EngineSettings", ProjectManagerScreen::EngineSettings},
         { "GemRepos", ProjectManagerScreen::GemRepos},
         { "GemsGemRepos", ProjectManagerScreen::GemsGemRepos}

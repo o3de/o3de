@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
         {
             ProjectManagerScreen::Projects,
             ProjectManagerScreen::GemCatalog,
-            ProjectManagerScreen::EngineSettings,
+            ProjectManagerScreen::Engine,
             ProjectManagerScreen::CreateProject,
             ProjectManagerScreen::UpdateProject,
             ProjectManagerScreen::GemsGemRepos

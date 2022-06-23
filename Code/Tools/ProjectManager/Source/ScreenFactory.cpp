@@ -15,6 +15,7 @@
 #include <ProjectGemCatalogScreen.h>
 #include <UpdateProjectSettingsScreen.h>
 #include <GemsGemRepoScreen.h>
+#include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
 
@@ -49,6 +50,9 @@ namespace O3DE::ProjectManager
             break;
         case (ProjectManagerScreen::GemsGemRepos):
             newScreen = new GemsGemRepoScreen(parent);
+            break;
+        case (ProjectManagerScreen::Engine):
+            newScreen = new EngineScreenCtrl(parent);
             break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);

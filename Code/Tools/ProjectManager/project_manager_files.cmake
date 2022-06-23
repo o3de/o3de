@@ -66,6 +66,8 @@ set(FILES
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
+    Source/EngineScreenCtrl.h
+    Source/EngineScreenCtrl.cpp
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h
