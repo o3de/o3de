@@ -449,10 +449,10 @@ namespace Terrain
 
             AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
             layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 0 }, XYPositionFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, HeightFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 0 }, NormalFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 2 }, HeightFormat);
-            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 1 }, NormalFormat);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 1 }, HeightFormat)->Padding(2);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 0 }, NormalFormat)->Padding(2);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "POSITION", 2 }, HeightFormat)->Padding(2);
+            layoutBuilder.AddBuffer()->Channel(AZ::RHI::ShaderSemantic{ "NORMAL", 1 }, NormalFormat)->Padding(2);
             pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
 
             m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
