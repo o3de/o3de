@@ -28,7 +28,7 @@ namespace AZ
         }
 
         FullscreenShadowPass::FullscreenShadowPass(const RPI::PassDescriptor& descriptor)
-            : RPI::FullscreenTrianglePass(descriptor)
+            : Base(descriptor)
             , m_outputName("Output")
             , m_depthInputName("Depth")
         {
@@ -37,12 +37,12 @@ namespace AZ
         void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             SetConstantData();
-            FullscreenTrianglePass::CompileResources(context);
+            Base::CompileResources(context);
         }
 
-        AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
+        RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
-            AZ::RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
+            RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
             auto outputDim = outputBinding->GetAttachment()->m_descriptor.m_image.m_size;
             AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
             return outputDim;
@@ -50,7 +50,7 @@ namespace AZ
 
         int FullscreenShadowPass::GetDepthBufferMSAACount()
         {
-            AZ::RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
+            RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
             return outputBinding->GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
         }       
 

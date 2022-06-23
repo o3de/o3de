@@ -37,6 +37,11 @@ get_property(
     PROPERTY COMPILE_OPTIONS
 )
 include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# Include compiler settings for Recast libraries
+set(common_platform_dir "${CMAKE_CURRENT_LIST_DIR}/Platform/Common")
+include(${common_platform_dir}/${PAL_TRAIT_COMPILER_ID}/PAL_recast_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
+
 set_property(
     DIRECTORY
     APPEND
@@ -271,7 +276,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
+                        AZ::AzToolsFramework
                         Gem::RecastNavigation.Private.Object
+                        Gem::RecastNavigation.Editor.Private.Object
+                        Gem::RecastNavigation.API
+                        Gem::LmbrCentral.API
                         Gem::PhysX.Mocks
             )
 
