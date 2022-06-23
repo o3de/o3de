@@ -37,7 +37,11 @@ namespace ScriptCanvasEditor::Nodes
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
         if (serializeContext)
         {
-            serializeContext->Class<SmallOperatorCreationData>()->Version(0)->Field("Title", &SmallOperatorCreationData::m_title);
+            serializeContext->Class<SmallOperatorCreationData>()
+                ->Version(0)
+                ->Field("Title", &SmallOperatorCreationData::m_title)
+                ->Field("ToolTip", &SmallOperatorCreationData::m_toolTip)
+                ->Field("DataType", &SmallOperatorCreationData::m_dataType);
         }
     }
 
@@ -249,53 +253,40 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
-    NodeIdPair CreateDataDrivenNode(const AZStd::any& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateDataDrivenNode(const AZStd::any& nodeData, const AZ::Crc32& nodeLexicalId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         // TODO: Make this check what types nodeData can be cast to and decide what create function to run based on that
-        return CreateSmallOperatorNode(AZStd::any_cast<SmallOperatorCreationData>(nodeData), scriptCanvasId);
+        return CreateSmallOperatorNode(AZStd::any_cast<SmallOperatorCreationData>(nodeData), nodeLexicalId, scriptCanvasId);
     }
 
-    NodeIdPair CreateSmallOperatorNode(const SmallOperatorCreationData& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateSmallOperatorNode(const SmallOperatorCreationData& nodeData, const AZ::Crc32& nodeLexicalId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
-        NodeIdPair nodeIdPair;
-
-        ScriptCanvas::Node* node{};
-        AZ::Entity* scriptCanvasEntity{ aznew AZ::Entity };
-        scriptCanvasEntity->Init();
-        nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
-
-        AZ::Entity* nodeEntity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, scriptCanvasEntity->GetId());
-
-        node = aznew ScriptCanvas::Node();
+        ScriptCanvas::Node* node = aznew ScriptCanvas::Node();
         node->SetNodeName(nodeData.m_title);
+        node->SetNodeToolTip(nodeData.m_toolTip);
+        node->SetNodenodeLexicalId(nodeLexicalId);
 
         ScriptCanvas::DynamicDataSlotConfiguration inputPin;
-
         inputPin.m_name = " ";
         inputPin.m_toolTip = "Input";
         inputPin.m_canHaveInputField = false;
         inputPin.SetConnectionType(ScriptCanvas::ConnectionType::Input);
-        inputPin.m_displayType = ScriptCanvas::Data::Type::Number();
-
-        node->AddSlot(inputPin, true);
+        inputPin.m_displayType = nodeData.m_dataType;
 
         ScriptCanvas::DynamicDataSlotConfiguration outputPin;
-
         outputPin.m_name = " ";
         outputPin.m_toolTip = "Output";
         outputPin.SetConnectionType(ScriptCanvas::ConnectionType::Output);
-        outputPin.m_displayType = ScriptCanvas::Data::Type::Number(); 
+        outputPin.m_displayType = nodeData.m_dataType; 
 
-        node->AddSlot(outputPin, true);
-
-        if (node && nodeEntity)
-        {
-            nodeEntity->SetName(node->GetNodeName());
-            nodeEntity->AddComponent(node);
-        }
-
+        AZ::Entity* nodeEntity{ aznew AZ::Entity };
+        nodeEntity->Init();
+        nodeEntity->SetName(node->GetNodeName());
+        nodeEntity->AddComponent(node);
         ScriptCanvas::GraphRequestBus::Event(scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
+
+        node->AddSlot(inputPin, true);
+        node->AddSlot(outputPin, true);
 
         AZ::EntityId graphCanvasGraphId;
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -303,11 +294,12 @@ namespace ScriptCanvasEditor::Nodes
         NodeReplacementConfiguration nodeConfiguration;
         nodeConfiguration.m_nodeSubStyle = GraphCanvas::Styling::Elements::Small;
 
+        NodeIdPair nodeIdPair;
+        nodeIdPair.m_scriptCanvasId = nodeEntity->GetId();
         nodeIdPair.m_graphCanvasId = DisplayGeneralScriptCanvasNode(graphCanvasGraphId, node, nodeConfiguration);
 
         return nodeIdPair;
     }
-
 
     NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId)
     {

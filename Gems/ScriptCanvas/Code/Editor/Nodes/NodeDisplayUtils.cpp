@@ -201,15 +201,23 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::NodeTitleRequestBus::Event(
             graphCanvasEntity->GetId(), &GraphCanvas::NodeTitleRequests::SetSubTitle, details.m_category);
 
-        // Add to the tooltip the C++ class for reference
-        if (!details.m_tooltip.empty())
+        if (node->GetNodeToolTip().empty())   // Old way of setting the node tooltip
         {
-            details.m_tooltip.append("\n");
+            // Add to the tooltip the C++ class for reference
+            if (!details.m_tooltip.empty())
+            {
+                details.m_tooltip.append("\n");
+            }
+            details.m_tooltip.append(AZStd::string::format("[C++] %s", node->GetNodeTypeName().c_str()));
+            GraphCanvas::NodeRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
         }
-        details.m_tooltip.append(AZStd::string::format("[C++] %s", node->GetNodeTypeName().c_str()));
-
-        GraphCanvas::NodeRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
-
+        else
+        {
+            AZStd::string toolTip = node->GetNodeToolTip();
+            toolTip.append(AZStd::string::format("\n[C++] %s", node->GetNodeTypeName().c_str()));
+            GraphCanvas::NodeRequestBus::Event(graphCanvasEntity->GetId(), &GraphCanvas::NodeRequests::SetTooltip, toolTip);
+        }
+        
         if (!nodeConfiguration.m_titlePalette.empty())
         {
             GraphCanvas::NodeTitleRequestBus::Event(
