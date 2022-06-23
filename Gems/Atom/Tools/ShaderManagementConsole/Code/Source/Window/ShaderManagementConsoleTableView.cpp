@@ -8,22 +8,23 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AzCore/Name/Name.h>
-#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Window/ShaderManagementConsoleTableView.h>
 
+#include <QComboBox>
 #include <QHeaderView>
+#include <QSpinBox>
 
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleTableView::ShaderManagementConsoleTableView(
         const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent)
-        : QTableView(parent)
+        : QTableWidget(parent)
         , m_toolId(toolId)
         , m_documentId(documentId)
-        , m_model(new QStandardItemModel(this))
     {
-        setSelectionBehavior(QAbstractItemView::SelectRows);
-        setModel(m_model);
+        setSelectionBehavior(QAbstractItemView::SelectItems);
+        setSelectionMode(QAbstractItemView::SingleSelection);
+        horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
         RebuildTable();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
@@ -52,106 +53,170 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleTableView::RebuildTable()
     {
+        QSignalBlocker blocker(this);
+
+        // Delete any active edit widget from the current selection
+        setCellWidget(currentRow(), currentColumn(), nullptr);
+
         // Disconnect data change signal while populating the table
-        disconnect(m_model, &QAbstractItemModel::dataChanged, this, &ShaderManagementConsoleTableView::RebuildDocument);
+        disconnect();
 
         // Get the shader variant list source data whose options will be used to populate the table
-        AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
+        m_shaderVariantListSourceData = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
-            shaderVariantListSourceData, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
+            m_shaderVariantListSourceData, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
 
         // The number of variants corresponds to the number of rows in the table
-        size_t shaderVariantCount = shaderVariantListSourceData.m_shaderVariants.size();
+        m_shaderVariantCount = m_shaderVariantListSourceData.m_shaderVariants.size();
 
         // The number of options corresponds to the number of columns in the table. This data is being pulled from the asset instead of the
         // shader variant list source data. The asset may contain more options that are listed in the source data. This will result in
         // several columns with no values.
-        size_t shaderOptionCount = 0;
+        m_shaderOptionCount = {};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
-            shaderOptionCount, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount);
+            m_shaderOptionCount, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount);
 
         // Only clear the table if the number of columns or rows have changed
-        if (m_model->rowCount() != shaderVariantCount || m_model->columnCount() != shaderOptionCount)
+        if (rowCount() != m_shaderVariantCount || columnCount() != m_shaderOptionCount)
         {
-            m_model->clear();
-            m_model->setRowCount(static_cast<int>(shaderVariantCount));
-            m_model->setColumnCount(static_cast<int>(shaderOptionCount));
+            clear();
+            setRowCount(static_cast<int>(m_shaderVariantCount));
+            setColumnCount(static_cast<int>(m_shaderOptionCount));
         }
 
         // Get a list of all of the shader option descriptors from the shader asset that will be used for the columns in the table
-        AZStd::vector<AZ::RPI::ShaderOptionDescriptor> shaderOptionDescriptors;
-        for (size_t shaderOptionIndex = 0; shaderOptionIndex < shaderOptionCount; ++shaderOptionIndex)
+        m_shaderOptionDescriptors = {};
+        m_shaderOptionDescriptors.reserve(columnCount());
+        for (int column = 0; column < columnCount(); ++column)
         {
             AZ::RPI::ShaderOptionDescriptor shaderOptionDescriptor;
             ShaderManagementConsoleDocumentRequestBus::EventResult(
-                shaderOptionDescriptor, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor,
-                shaderOptionIndex);
-            shaderOptionDescriptors.push_back(shaderOptionDescriptor);
+                shaderOptionDescriptor,
+                m_documentId,
+                &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor,
+                column);
+            m_shaderOptionDescriptors.push_back(shaderOptionDescriptor);
         }
 
         // Sort all of the descriptors by name so that the columns are arranged in alphabetical order
-        AZStd::sort(shaderOptionDescriptors.begin(), shaderOptionDescriptors.end(), [](const auto& a, const auto& b) {
-            return a.GetName().GetStringView() < b.GetName().GetStringView();
-        });
+        AZStd::sort(
+            m_shaderOptionDescriptors.begin(),
+            m_shaderOptionDescriptors.end(),
+            [](const auto& a, const auto& b)
+            {
+                return a.GetName().GetStringView() < b.GetName().GetStringView();
+            });
 
-        // Do a first pass iteration over all of the variants to set the numeric headers for each variant
-        size_t shaderVariantIndex = 0;
-        for (const auto& shaderVariant : shaderVariantListSourceData.m_shaderVariants)
+        // Fill in the header of each column with the descriptor name
+        for (int column = 0; column < columnCount(); ++column)
         {
-            m_model->setHeaderData(
-                static_cast<int>(shaderVariantIndex), Qt::Vertical, QString::number(static_cast<int>(shaderVariant.m_stableId)));
-            ++shaderVariantIndex;
+            const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
+            setHorizontalHeaderItem(column, new QTableWidgetItem(shaderOptionDescriptor.GetName().GetCStr()));
         }
 
-        for (size_t shaderOptionIndex = 0; shaderOptionIndex < shaderOptionCount; ++shaderOptionIndex)
+        // Fill all the rows with values from each variant
+        for (int row = 0; row < rowCount(); ++row)
         {
-            const auto& shaderOptionDescriptor = shaderOptionDescriptors[shaderOptionIndex];
+            const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
+            setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(row)));
 
-            // Create a horizontal header at the top of the table using the descriptor name
-            m_model->setHeaderData(static_cast<int>(shaderOptionIndex), Qt::Horizontal, shaderOptionDescriptor.GetName().GetCStr());
-
-            // Fill in the rows of this column with the shader option values stored in the variant
-            shaderVariantIndex = 0;
-            for (const auto& shaderVariant : shaderVariantListSourceData.m_shaderVariants)
+            for (int column = 0; column < columnCount(); ++column)
             {
+                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
                 const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
-                m_model->setItem(
-                    static_cast<int>(shaderVariantIndex), static_cast<int>(shaderOptionIndex),
-                    new QStandardItem(optionIt != shaderVariant.m_options.end() ? optionIt->second.c_str() : ""));
-                ++shaderVariantIndex;
+                const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : shaderOptionDescriptor.GetDefaultValue();
+                setItem(row, column, new QTableWidgetItem(valueName.GetCStr()));
             }
         }
 
         // Connect to the data changed signal to listen for and apply table edits back to the document
-        connect(m_model, &QAbstractItemModel::dataChanged, this, &ShaderManagementConsoleTableView::RebuildDocument);
+        connect(this, &QTableWidget::cellChanged, this, &ShaderManagementConsoleTableView::OnCellChanged);
+        connect(this, &QTableWidget::currentCellChanged, this, &ShaderManagementConsoleTableView::OnCellSelected);
     }
 
-    void ShaderManagementConsoleTableView::RebuildDocument()
+    void ShaderManagementConsoleTableView::OnCellSelected(int row, int column, int previousRow, int previousColumn)
     {
-        // Get a copy of the document's current shader variant list source data so that changes can be applied to it
-        AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(
-            shaderVariantListSourceData, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
-
-        // Reset the shader variant list because it will be rebuilt from table data
-        shaderVariantListSourceData.m_shaderVariants.clear();
-        shaderVariantListSourceData.m_shaderVariants.resize(m_model->rowCount());
-        for (int row = 0; row < m_model->rowCount(); ++row)
+        setCellWidget(previousRow, previousColumn, nullptr);
+        if (row < 0 || row >= m_shaderVariantListSourceData.m_shaderVariants.size())
         {
-            auto& shaderVariant = shaderVariantListSourceData.m_shaderVariants[row];
-            shaderVariant.m_stableId = row;
+            return;
+        }
 
-            for (int column = 0; column < m_model->columnCount(); ++column)
+        if (column < 0 || column >= m_shaderOptionDescriptors.size())
+        {
+            return;
+        }
+
+        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
+        const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
+        const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
+
+        const AZ::Name valueName =
+            optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : shaderOptionDescriptor.GetDefaultValue();
+        const AZ::RPI::ShaderOptionValue value = shaderOptionDescriptor.FindValue(valueName);
+        const AZ::RPI::ShaderOptionValue valueMin = shaderOptionDescriptor.GetMinValue();
+        const AZ::RPI::ShaderOptionValue valueMax = shaderOptionDescriptor.GetMaxValue();
+
+        switch (shaderOptionDescriptor.GetType())
+        {
+        case AZ::RPI::ShaderOptionType::Boolean:
+        case AZ::RPI::ShaderOptionType::Enumeration:
             {
-                auto header = m_model->horizontalHeaderItem(column);
-                if (header && !header->text().isEmpty())
+                QComboBox* comboBox = new QComboBox(this);
+                for (uint32_t valueIndex = valueMin.GetIndex(); valueIndex <= valueMax.GetIndex(); ++valueIndex)
                 {
-                    auto item = m_model->item(row, column);
-                    if (item && !item->text().isEmpty())
-                    {
-                        // If the header and item text are not empty assign them as a shader option
-                        shaderVariant.m_options.emplace(header->text().toUtf8().constData(), item->text().toUtf8().constData());
-                    }
+                    comboBox->addItem(shaderOptionDescriptor.GetValueName(AZ::RPI::ShaderOptionValue{ valueIndex }).GetCStr());
+                }
+                comboBox->setCurrentText(valueName.GetCStr());
+                setCellWidget(row, column, comboBox);
+                connect(comboBox, &QComboBox::currentTextChanged, this, [this, row, column](const QString& text) {
+                    item(row, column)->setText(text);
+                });
+                break;
+            }
+        case AZ::RPI::ShaderOptionType::IntegerRange:
+            {
+                QSpinBox* spinBox = new QSpinBox(this);
+                spinBox->setRange(valueMin.GetIndex(), valueMax.GetIndex());
+                spinBox->setValue(value.GetIndex());
+                setCellWidget(row, column, spinBox);
+                connect(spinBox, &QSpinBox::textChanged, this, [this, row, column](const QString& text) {
+                    item(row, column)->setText(text);
+                });
+                break;
+            }
+        }
+    }
+
+    void ShaderManagementConsoleTableView::OnCellChanged(int row, int column)
+    {
+        if (row < 0 || row >= m_shaderVariantListSourceData.m_shaderVariants.size())
+        {
+            return;
+        }
+
+        if (column < 0 || column >= m_shaderOptionDescriptors.size())
+        {
+            return;
+        }
+
+        // Update the cedar reenlist from the table data
+        auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
+
+        const auto optionItem = horizontalHeaderItem(column);
+        if (optionItem && !optionItem->text().isEmpty())
+        {
+            if (const auto variantItem = item(row, column))
+            {
+                // Set or clear the option based on the item text
+                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
+                if (variantItem->text().isEmpty() || variantItem->text() == shaderOptionDescriptor.GetDefaultValue().GetCStr())
+                {
+                    shaderVariant.m_options.erase(optionItem->text().toUtf8().constData());
+                }
+                else
+                {
+                    shaderVariant.m_options[optionItem->text().toUtf8().constData()] = variantItem->text().toUtf8().constData();
                 }
             }
         }
@@ -165,7 +230,7 @@ namespace ShaderManagementConsole
 
         // Set the shader variant list source data built from the table onto the document
         ShaderManagementConsoleDocumentRequestBus::Event(
-            m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData, shaderVariantListSourceData);
+            m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData, m_shaderVariantListSourceData);
 
         // Signify the end of the undoable change
         AtomToolsFramework::AtomToolsDocumentRequestBus::Event(

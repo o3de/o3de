@@ -82,5 +82,9 @@ namespace ShaderManagementConsole
         AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset;
 
         AZ::RPI::ShaderOptionDescriptor m_invalidDescriptor;
+
+        // Flag tracking the modified state of the document.
+        // Will be set to true anytime data is changed and cleared anytime the document is saved.
+        bool m_modified = {};
     };
 } // namespace ShaderManagementConsole

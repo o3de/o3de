@@ -73,6 +73,7 @@ namespace ShaderManagementConsole
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_modified = true;
     }
 
     const AZ::RPI::ShaderVariantListSourceData& ShaderManagementConsoleDocument::GetShaderVariantListSourceData() const
@@ -205,7 +206,7 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::IsModified() const
     {
-        return CanUndo();
+        return m_modified;
     }
 
     bool ShaderManagementConsoleDocument::BeginEdit()
@@ -259,6 +260,7 @@ namespace ShaderManagementConsole
         m_shaderVariantListSourceData = {};
         m_shaderVariantListSourceDataBeforeEdit = {};
         m_shaderAsset = {};
+        m_modified = {};
     }
 
     bool ShaderManagementConsoleDocument::SaveSourceData()
@@ -270,6 +272,7 @@ namespace ShaderManagementConsole
         }
 
         m_absolutePath = m_savePathNormalized;
+        m_modified = {};
         return SaveSucceeded();
     }
 
@@ -349,6 +352,8 @@ namespace ShaderManagementConsole
         AzFramework::StringFunc::Path::ReplaceExtension(m_absolutePath, AZ::RPI::ShaderVariantListSourceData::Extension);
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
+        m_modified = {};
+
         return IsOpen() ? OpenSucceeded() : OpenFailed();
     }
 
@@ -363,6 +368,8 @@ namespace ShaderManagementConsole
         }
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
+        m_modified = {};
+
         return IsOpen() ? OpenSucceeded() : OpenFailed();
     }
 
