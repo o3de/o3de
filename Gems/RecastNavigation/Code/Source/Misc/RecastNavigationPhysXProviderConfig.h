@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/Collision/CollisionGroups.h>
 
 namespace RecastNavigation
 {

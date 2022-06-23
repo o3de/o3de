@@ -76,4 +76,10 @@ namespace RecastNavigation
         BaseClass::BuildGameEntity(gameEntity);
         m_controller.m_config.m_useEditorScene = true;
     }
+
+    AZ::u32 EditorRecastNavigationPhysXProviderComponent::OnConfigurationChanged()
+    {
+        m_controller.OnConfigurationChanged();
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
 } // namespace RecastNavigation
