@@ -224,11 +224,6 @@ namespace AZ::IO::PosixInternal
     {
         return dup2(fileDescriptorSource, fileDescriptorDestination);
     }
-
-    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags pipeFlags)
-    {
-        return pipe2(pipeFileDescriptors, static_cast<int>(pipeFlags));
-    }
 } // namespace AZ::IO::PosixInternal
 
 namespace AZ::IO
