@@ -218,6 +218,9 @@ namespace AZ
             //! Stops capture of file descriptor and reset it back to it's previous value
             void Stop(const OutputRedirectVisitor& redirectCallback);
 
+            // Writes to the original source descriptor, bypassing the capture
+            int WriteBypassingCapture(const void* data, unsigned int size);
+
         private:
             void Reset();
             int m_sourceDescriptor = -1;

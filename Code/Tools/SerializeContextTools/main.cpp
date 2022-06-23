@@ -8,6 +8,7 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <Application.h>
@@ -95,68 +96,88 @@ void PrintHelp()
     AZ_Printf("Help", "  This options can be used with any of the above actions:\n");
     AZ_Printf("Help", "    [opt] --regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
     AZ_Printf("Help", "    [opt] --project-path <project_path>: Sets the path to the active project. Used to load gems associated with project\n");
-    AZ_Printf("Help", "\n");
 }
 
 int main(int argc, char** argv)
 {
     using namespace AZ::SerializeContextTools;
 
-    bool result = false;
-    Application application(argc, argv);
-    // Direct Raw Debug Trace Messages to stderr
-    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    constexpr int StdoutDescriptor = 1;
+    AZ::IO::FileDescriptorCapturer stdoutCapturer(StdoutDescriptor);
+
+    // Send stdout output to stderr if the executed command returned a failure
+    bool suppressStderr = false;
+    auto SendStdoutToError = [&suppressStderr](AZStd::span<AZStd::byte const> outputBytes)
     {
-        constexpr auto traceRedirectStream = AZ::Debug::RedirectCStream::Stderr;
-        console->PerformCommand("bg_redirectrawoutput",
-            { AZ::CVarFixedString::format("%d", static_cast<int>(traceRedirectStream)) });
-    }
+        if (!suppressStderr)
+        {
+            constexpr int StderrDescriptor = 2;
+            AZ::IO::PosixInternal::Write(StderrDescriptor, outputBytes.data(), aznumeric_cast<int>(outputBytes.size()));
+        }
+    };
+
+    stdoutCapturer.Start();
+    Application application(argc, argv, &stdoutCapturer);
     AZ::ComponentApplication::StartupParameters startupParameters;
     application.Start({}, startupParameters);
 
+    bool result = false;
     const AZ::CommandLine* commandLine = application.GetAzCommandLine();
-    if (commandLine->GetNumMiscValues() < 1)
+    bool commandExecuted = false;
+    if (commandLine->GetNumMiscValues() >= 1)
     {
-        PrintHelp();
-        result = true;
-    }
-    else
-    {
-        const AZStd::string& action = commandLine->GetMiscValue(0);
-        if (AZ::StringFunc::Equal("dumpfiles", action.c_str()))
+        // Set the command executed boolean to true
+        commandExecuted = true;
+        AZStd::string_view action = commandLine->GetMiscValue(0);
+        if (AZ::StringFunc::Equal("dumpfiles", action))
         {
             result = Dumper::DumpFiles(application);
         }
-        else if (AZ::StringFunc::Equal("dumpsc", action.c_str()))
+        else if (AZ::StringFunc::Equal("dumpsc", action))
         {
             result = Dumper::DumpSerializeContext(application);
         }
-        else if (AZ::StringFunc::Equal("dumptypes", action.c_str()))
+        else if (AZ::StringFunc::Equal("dumptypes", action))
         {
             result = Dumper::DumpTypes(application);
         }
-        else if (AZ::StringFunc::Equal("convert", action.c_str()))
+        else if (AZ::StringFunc::Equal("convert", action))
         {
             result = Converter::ConvertObjectStreamFiles(application);
         }
-        else if (AZ::StringFunc::Equal("convert-ini", action.c_str()))
+        else if (AZ::StringFunc::Equal("convert-ini", action))
         {
             result = Converter::ConvertConfigFile(application);
         }
-        else if (AZ::StringFunc::Equal("convert-slice", action.c_str()))
+        else if (AZ::StringFunc::Equal("convert-slice", action))
         {
             SliceConverter sliceConverter;
             result = sliceConverter.ConvertSliceFiles(application);
         }
-        else if (AZ::StringFunc::Equal("createtype", action.c_str()))
+        else if (AZ::StringFunc::Equal("createtype", action))
         {
             result = Dumper::CreateType(application);
         }
         else
         {
-            PrintHelp();
-            result = true;
+            commandExecuted = false;
         }
+    }
+
+    // If a command was executed, display the help options
+    if (!commandExecuted)
+    {
+        // Stop capture of stdout to allow the help command to output to stdout
+        // stderr messages are suppressed in this case
+        fflush(stdout);
+        suppressStderr = true;
+        stdoutCapturer.Stop(SendStdoutToError);
+        PrintHelp();
+        result = true;
+        // Flush stdout stream before restarting the capture to make sure
+        // all the help text is output
+        fflush(stdout);
+        stdoutCapturer.Start();
     }
 
     if (!result)
@@ -165,6 +186,15 @@ int main(int argc, char** argv)
     }
 
     application.Destroy();
+
+    // Write out any stdout to stderr at this point
+
+    // Because the FILE* stream is buffered, make sure to flush
+    // it before stopping the capture of stdout.
+    fflush(stdout);
+
+    suppressStderr = result;
+    stdoutCapturer.Stop(SendStdoutToError);
 
     return result ? 0 : -1;
 }
