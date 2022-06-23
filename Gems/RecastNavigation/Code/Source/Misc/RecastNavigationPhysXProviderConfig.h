@@ -25,5 +25,8 @@ namespace RecastNavigation
 
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene = false;
+
+        //! Only colliders from the specified collision group will be considered.
+        AzPhysics::CollisionGroups::Id m_collisionGroupId;
     };
 } // namespace RecastNavigation

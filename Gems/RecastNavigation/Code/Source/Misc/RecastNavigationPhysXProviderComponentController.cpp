@@ -159,7 +159,7 @@ namespace RecastNavigation
 
         AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
         request.m_queryType = AzPhysics::SceneQuery::QueryType::Static; // only looking for static PhysX colliders
-        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
+        request.m_collisionGroup = GetCollisionGroupById(m_config.m_collisionGroupId);
 
         AzPhysics::SceneQuery::UnboundedOverlapHitCallback unboundedOverlapHitCallback =
             [&overlapHits](AZStd::optional<AzPhysics::SceneQueryHit>&& hit)

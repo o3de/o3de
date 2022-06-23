@@ -16,7 +16,8 @@ namespace RecastNavigation
         {
             serializeContext->Class<RecastNavigationPhysXProviderConfig>()
                 ->Field("Use Editor Scene", &RecastNavigationPhysXProviderConfig::m_useEditorScene)
-                ->Version(1)
+                ->Field("Collision Group", &RecastNavigationPhysXProviderConfig::m_collisionGroupId)
+                ->Version(2)
                 ;
         }
     }
