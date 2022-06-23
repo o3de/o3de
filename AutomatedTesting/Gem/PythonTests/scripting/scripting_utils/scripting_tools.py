@@ -234,7 +234,7 @@ def create_new_variable(self, new_variable_type):
     """
 
     if type(new_variable_type) is not str:
-        return Report.critical_result(["Invalid variable type provided", ""], False)
+        Report.critical_result(["Invalid variable type provided", ""], False)
 
     valid_type = False
     for this_type in VARIABLE_TYPES:
@@ -242,7 +242,7 @@ def create_new_variable(self, new_variable_type):
             valid_type = True
 
     if not valid_type:
-        return Report.critical_result(["Invalid variable type provided", ""], False)
+        Report.critical_result(["Invalid variable type provided", ""], False)
 
     add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
     add_new_variable_button.click()  # Click on Create Variable button

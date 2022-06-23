@@ -80,7 +80,6 @@ class EditMenu_Default_UndoRedo:
         # 4) Create and verify the new variable exists in variable manager
         scripting_tools.create_new_variable(self, VARIABLE_TYPES[0])
         graph_variables = self.variable_manager.findChild(QtWidgets.QTableView, GRAPH_VARIABLES_QT)
-        # since we added 1 variable, rowcount=1
         row_count = 1
         Report.result(Tests.variable_created, helper.wait_for_condition(
             lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
@@ -88,7 +87,6 @@ class EditMenu_Default_UndoRedo:
         # 5) Trigger Undo action and verify if variable is removed in Variable Manager
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Undo")
         undo_redo_action.trigger()
-        # since we triggered undo, rowcount=0
         row_count = 0
         Report.result(Tests.undo_worked, helper.wait_for_condition(
             lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
@@ -96,7 +94,6 @@ class EditMenu_Default_UndoRedo:
         # 6) Trigger Redo action and verify if variable is re-added in Variable Manager
         undo_redo_action = self.sc_editor.findChild(QtWidgets.QAction, "action_Redo")
         undo_redo_action.trigger()
-        # since action is redone 1 variable is re-added, rowcount=1
         row_count = 1
         Report.result(Tests.redo_worked, helper.wait_for_condition(
             lambda: self.get_graph_variables_row_count(graph_variables) == row_count, WAIT_TIME_3))
