@@ -128,8 +128,7 @@ namespace EMotionFX
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
-            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-                AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
+            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.GetJointParentFrame();
 
             AZStd::optional<float> swingLimitY =
                 m_physicsSetupManipulatorData.m_jointConfiguration->GetPropertyValue(AZ::Name("SwingLimitY"));
@@ -230,11 +229,7 @@ namespace EMotionFX
         AZ::u32 previousState = m_debugDisplay->GetState();
         m_debugDisplay->CullOff();
         m_debugDisplay->SetColor(AZ::Colors::White);
-
-        const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-            AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
-
-        m_debugDisplay->PushMatrix(parentWorldTransform);
+        m_debugDisplay->PushMatrix(m_physicsSetupManipulatorData.GetJointParentFrame());
         if (swingLimitY.has_value())
         {
             m_debugDisplay->DrawLine(
