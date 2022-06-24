@@ -8,11 +8,11 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AzCore/Name/Name.h>
+#include <AzQtComponents/Components/StyledSpinBox.h>
 #include <Window/ShaderManagementConsoleTableView.h>
 
 #include <QComboBox>
 #include <QHeaderView>
-#include <QSpinBox>
 
 namespace ShaderManagementConsole
 {
@@ -22,6 +22,7 @@ namespace ShaderManagementConsole
         , m_toolId(toolId)
         , m_documentId(documentId)
     {
+        setEditTriggers(QAbstractItemView::NoEditTriggers);
         setSelectionBehavior(QAbstractItemView::SelectItems);
         setSelectionMode(QAbstractItemView::SingleSelection);
         horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -124,19 +125,21 @@ namespace ShaderManagementConsole
             {
                 const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
                 const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
-                const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : shaderOptionDescriptor.GetDefaultValue();
+                const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
                 setItem(row, column, new QTableWidgetItem(valueName.GetCStr()));
             }
         }
 
         // Connect to the data changed signal to listen for and apply table edits back to the document
-        connect(this, &QTableWidget::cellChanged, this, &ShaderManagementConsoleTableView::OnCellChanged);
         connect(this, &QTableWidget::currentCellChanged, this, &ShaderManagementConsoleTableView::OnCellSelected);
+        connect(this, &QTableWidget::cellChanged, this, &ShaderManagementConsoleTableView::OnCellChanged);
     }
 
     void ShaderManagementConsoleTableView::OnCellSelected(int row, int column, int previousRow, int previousColumn)
     {
+        setCellWidget(row, column, nullptr);
         setCellWidget(previousRow, previousColumn, nullptr);
+
         if (row < 0 || row >= m_shaderVariantListSourceData.m_shaderVariants.size())
         {
             return;
@@ -151,8 +154,7 @@ namespace ShaderManagementConsole
         const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
         const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
 
-        const AZ::Name valueName =
-            optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : shaderOptionDescriptor.GetDefaultValue();
+        const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
         const AZ::RPI::ShaderOptionValue value = shaderOptionDescriptor.FindValue(valueName);
         const AZ::RPI::ShaderOptionValue valueMin = shaderOptionDescriptor.GetMinValue();
         const AZ::RPI::ShaderOptionValue valueMax = shaderOptionDescriptor.GetMaxValue();
@@ -163,6 +165,7 @@ namespace ShaderManagementConsole
         case AZ::RPI::ShaderOptionType::Enumeration:
             {
                 QComboBox* comboBox = new QComboBox(this);
+                comboBox->addItem("");
                 for (uint32_t valueIndex = valueMin.GetIndex(); valueIndex <= valueMax.GetIndex(); ++valueIndex)
                 {
                     comboBox->addItem(shaderOptionDescriptor.GetValueName(AZ::RPI::ShaderOptionValue{ valueIndex }).GetCStr());
@@ -176,11 +179,11 @@ namespace ShaderManagementConsole
             }
         case AZ::RPI::ShaderOptionType::IntegerRange:
             {
-                QSpinBox* spinBox = new QSpinBox(this);
+                AzQtComponents::StyledSpinBox* spinBox = new AzQtComponents::StyledSpinBox(this);
                 spinBox->setRange(valueMin.GetIndex(), valueMax.GetIndex());
                 spinBox->setValue(value.GetIndex());
                 setCellWidget(row, column, spinBox);
-                connect(spinBox, &QSpinBox::textChanged, this, [this, row, column](const QString& text) {
+                connect(spinBox, &AzQtComponents::StyledSpinBox::textChanged, this, [this, row, column](const QString& text) {
                     item(row, column)->setText(text);
                 });
                 break;
@@ -209,8 +212,7 @@ namespace ShaderManagementConsole
             if (const auto variantItem = item(row, column))
             {
                 // Set or clear the option based on the item text
-                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
-                if (variantItem->text().isEmpty() || variantItem->text() == shaderOptionDescriptor.GetDefaultValue().GetCStr())
+                if (variantItem->text().isEmpty())
                 {
                     shaderVariant.m_options.erase(optionItem->text().toUtf8().constData());
                 }
