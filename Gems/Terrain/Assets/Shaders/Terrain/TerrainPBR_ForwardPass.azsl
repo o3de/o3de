@@ -31,11 +31,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-
-    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
-    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
-    // support for continuous lod is added, we should be able to get away with just one culling plane.
-    float2 m_cullDistance : SV_CullDistance; 
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
@@ -44,7 +39,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
     
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        output.m_worldPosition, output.m_position, output.m_cullDistance, output.m_normal // output params
+        output.m_worldPosition, output.m_position, output.m_normal // output params
         );
 
     return output;
@@ -222,6 +217,13 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
             output.m_diffuseColor.g += 1.0;
+        }
+
+        // Draw blue on sector boundaries
+        modPos = input.m_worldPosition.xy % ObjectSrg::m_patchData.m_xyScale;
+        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > ObjectSrg::m_patchData.m_xyScale - quadSpacing * 0.5))
+        {
+            output.m_diffuseColor.b += 1.0;
         }
     }
 
