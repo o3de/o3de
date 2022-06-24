@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 class CCryEditApp;
 class QMainWindow;
@@ -27,6 +28,8 @@ namespace AzToolsFramework
 
 class EditorActionsHandler
     : private AzToolsFramework::EditorEventsBus::Handler
+    , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
@@ -34,15 +37,27 @@ public:
 
 private:
     void InitializeActionContext();
+    void InitializeActionUpdaters();
     void InitializeActions();
     void InitializeMenus();
     void InitializeToolBars();
 
+    QWidget* CreateExpander();
+    QWidget* CreateLabel(const AZStd::string& text);
     QWidget* CreateDocsSearchWidget();
     
     // EditorEventsBus overrides ...
     void OnViewPaneOpened(const char* viewPaneName) override;
     void OnViewPaneClosed(const char* viewPaneName) override;
+
+    // EditorEntityContextNotificationBus overrides ...
+    void OnStartPlayInEditor() override;
+    void OnStopPlayInEditor() override;
+    void OnEntityStreamLoadSuccess() override;
+
+    // ToolsApplicationNotificationBus overrides ...
+    void AfterEntitySelectionChanged(
+        const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities);
 
     void RefreshToolActions();
 
@@ -58,4 +73,6 @@ private:
     QtViewPaneManager* m_qtViewPaneManager;
 
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
+
+    bool m_isPrefabSystemEnabled = false;
 };
