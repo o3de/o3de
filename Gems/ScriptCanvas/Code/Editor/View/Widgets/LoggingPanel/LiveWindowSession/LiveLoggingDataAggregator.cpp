@@ -364,8 +364,13 @@ namespace ScriptCanvasEditor
 
         if (m_captureType == CaptureType::Editor)
         {
-            const AzFramework::RemoteToolsEndpointInfo& desiredTarget = AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
-            bool isDesiredTargetConnected = desiredTarget.IsOnline();
+            bool isDesiredTargetConnected = false;
+            AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                isDesiredTargetConnected = desiredTarget.IsOnline();
+            }
 
             if (isDesiredTargetConnected)
             {

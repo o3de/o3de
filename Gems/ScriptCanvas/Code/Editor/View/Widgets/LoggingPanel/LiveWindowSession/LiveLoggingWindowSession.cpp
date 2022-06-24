@@ -121,8 +121,12 @@ namespace ScriptCanvasEditor
 
     void TargetManagerModel::ScrapeTargetInfo()
     {
+        AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
         AzFramework::RemoteToolsEndpointContainer targets;
-        AzFramework::RemoteToolsInterface::Get()->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+        if (remoteTools)
+        {
+            remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+        }
 
         for (const auto& targetPair : targets)
         {
