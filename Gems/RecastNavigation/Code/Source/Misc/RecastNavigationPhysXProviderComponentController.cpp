@@ -77,6 +77,7 @@ namespace RecastNavigation
         m_entityComponentIdPair = entityComponentIdPair;
         m_shouldProcessTiles = true;
         m_updateInProgress = false;
+        OnConfigurationChanged();
         RecastNavigationProviderRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
@@ -147,6 +148,11 @@ namespace RecastNavigation
         return m_config.m_useEditorScene ? AzPhysics::EditorPhysicsSceneName : AzPhysics::DefaultPhysicsSceneName;
     }
 
+    void RecastNavigationPhysXProviderComponentController::OnConfigurationChanged()
+    {
+        m_collisionGroup = GetCollisionGroupById(m_config.m_collisionGroupId);
+    }
+
     void RecastNavigationPhysXProviderComponentController::CollectCollidersWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryWithinVolume");
@@ -159,7 +165,7 @@ namespace RecastNavigation
 
         AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
         request.m_queryType = AzPhysics::SceneQuery::QueryType::Static; // only looking for static PhysX colliders
-        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
+        request.m_collisionGroup = m_collisionGroup;
 
         AzPhysics::SceneQuery::UnboundedOverlapHitCallback unboundedOverlapHitCallback =
             [&overlapHits](AZStd::optional<AzPhysics::SceneQueryHit>&& hit)
@@ -320,6 +326,29 @@ namespace RecastNavigation
         return tiles;
     }
 
+    // Adjust the origin, so that any tile over-extension is even across all sides.
+    // Note, navigation mesh is made up of square tiles. Recast does not support uneven tiles,
+    // so the best we can do is even them out. Additionally, users can set their own tile size on @RecastNavigationMeshComponent.
+    AZ::Vector3 GetAdjustedOriginBasedOnTileSize(const AZ::Aabb& worldVolume, float tileSize)
+    {
+        if (tileSize <= 0.f)
+        {
+            AZ_Warning("Recast Navigation", true, "Tile size is invalid. It should be a positive number.");
+            return AZ::Vector3::CreateZero();
+        }
+
+        AZ::Vector3 origin = worldVolume.GetMin();
+        const AZ::Vector3& extents = worldVolume.GetExtents();
+
+        const float tileOverExtensionOnX = AZStd::ceil(extents.GetX() / tileSize) * tileSize - extents.GetX();
+        origin.SetX(origin.GetX() - tileOverExtensionOnX / 2.f);
+
+        const float tileOverExtensionOnY = AZStd::ceil(extents.GetY() / tileSize) * tileSize - extents.GetY();
+        origin.SetY(origin.GetY() - tileOverExtensionOnY / 2.f);
+
+        return origin;
+    }
+
     bool RecastNavigationPhysXProviderComponentController::CollectGeometryAsyncImpl(
         float tileSize,
         float borderSize,
@@ -344,9 +373,12 @@ namespace RecastNavigation
             const AZ::Vector3 extents = worldVolume.GetExtents();
             int tilesAlongX = aznumeric_cast<int>(AZStd::ceil(extents.GetX() / tileSize));
             int tilesAlongY = aznumeric_cast<int>(AZStd::ceil(extents.GetY() / tileSize));
-
-            const AZ::Vector3& worldMin = worldVolume.GetMin();
-            const AZ::Vector3& worldMax = worldVolume.GetMax();
+            
+            const AZ::Vector3 worldOrigin = GetAdjustedOriginBasedOnTileSize(worldVolume, tileSize);
+            const AZ::Vector3 worldMax(
+                worldOrigin.GetX() + tileSize * aznumeric_cast<float>(tilesAlongX),
+                worldOrigin.GetY() + tileSize * aznumeric_cast<float>(tilesAlongY),
+                worldVolume.GetMax().GetZ());
 
             const AZ::Vector3 border = AZ::Vector3::CreateOne() * borderSize;
 
@@ -358,14 +390,14 @@ namespace RecastNavigation
                 for (int x = 0; x < tilesAlongX; ++x)
                 {
                     const AZ::Vector3 tileMin{
-                        worldMin.GetX() + aznumeric_cast<float>(x) * tileSize,
-                        worldMin.GetY() + aznumeric_cast<float>(y) * tileSize,
-                        worldMin.GetZ()
+                        worldOrigin.GetX() + aznumeric_cast<float>(x) * tileSize,
+                        worldOrigin.GetY() + aznumeric_cast<float>(y) * tileSize,
+                        worldOrigin.GetZ()
                     };
 
                     const AZ::Vector3 tileMax{
-                        worldMin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
-                        worldMin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
+                        worldOrigin.GetX() + aznumeric_cast<float>(x + 1) * tileSize,
+                        worldOrigin.GetY() + aznumeric_cast<float>(y + 1) * tileSize,
                         worldMax.GetZ()
                     };
 

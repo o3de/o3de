@@ -27,5 +27,8 @@ namespace GradientSignal
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
         static constexpr const char* const s_helpUrl = "";
+
+        // DependencyNotificationBus overrides ...
+        void OnCompositionChanged() override;
     };
 }

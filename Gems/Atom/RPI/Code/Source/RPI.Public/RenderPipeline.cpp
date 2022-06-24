@@ -19,7 +19,6 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
-#include <Atom/RPI.Public/WindowContext.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
@@ -84,7 +83,8 @@ namespace AZ
             return CreateRenderPipelineForWindow(*renderPipelineDescriptor, windowContext);
         }
 
-        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext)
+        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
+                                                                        const WindowContext::SwapChainMode swapchainMode)
         {
             RenderPipeline* pipeline = aznew RenderPipeline();
             PassSystemInterface* passSystem = PassSystemInterface::Get();
@@ -94,7 +94,7 @@ namespace AZ
             swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
             AZ_Assert(swapChainDescriptor.m_passTemplate, "Root-PassTemplate %s not found!", templateName.GetCStr());
 
-            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext);
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, swapchainMode);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
 
             InitializeRenderPipeline(pipeline, desc);
@@ -365,6 +365,7 @@ namespace AZ
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
                 }
             }
         }

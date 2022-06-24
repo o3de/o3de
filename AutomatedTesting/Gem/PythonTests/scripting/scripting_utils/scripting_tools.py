@@ -8,13 +8,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 from PySide2.QtCore import Qt
+from editor_python_test_tools.utils import Report
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI)
+                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT,
+                                                 ADD_BUTTON_QT, VARIABLE_TYPES)
 
 
 def click_menu_option(window, option_text):
@@ -112,6 +114,19 @@ def expand_qt_container_rows(self, object_name):
             QtTest.QTest.mouseClick(check_box, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
 
 
+def open_node_palette(self):
+    """
+    function for checking if node palette is on and if not turn it on
+
+    param self: the script calling this function
+
+    returns none
+    """
+    if self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT) is None:
+        action = pyside_utils.find_child_by_pattern(self.sc_editor, {"text": NODE_PALETTE_UI, "type": QtWidgets.QAction})
+        action.trigger()
+
+
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
     function for searching the script canvas node palette for user defined nodes. function takes a number of retries as
@@ -131,6 +146,31 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
         if pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None:
             break
 
+def get_node_palette_node_tree_qt_object (self):
+    """
+    function for retrieving the tree view qt object for the node palette
+
+    params self: the script calling this function
+
+    returns: a tree view qt object
+    """
+    node_palette_widget = self.sc_editor.findChild(QtWidgets.QDockWidget, NODE_PALETTE_QT)
+    node_palette_node_tree = node_palette_widget.findChild(QtWidgets.QTreeView, TREE_VIEW_QT)
+    return node_palette_node_tree
+
+
+def get_node_palette_category_qt_object(self, category_name):
+    """
+    function for retrieving the qt object for a node palette category
+
+    param self: the script calling this function
+    param category_name: string for the category label you are searching node palette for
+
+    returns: the qt object for the node palette category
+    """
+    node_palette_node_tree = get_node_palette_node_tree_qt_object(self)
+    node_palette_category = pyside_utils.find_child_by_pattern(node_palette_node_tree, category_name)
+    return node_palette_category
 
 def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
     """
@@ -184,6 +224,37 @@ def create_new_sc_graph(sc_editor_main_window):
     create_new_graph_action.trigger()
 
 
+def create_new_variable(self, new_variable_type):
+    """
+    function for creating a new SC variable through variable manager
+
+    param self: the script objecting calling this function
+    param variable_type: The variable data type to create as a string. i.e "Boolean"
+    returns: none
+    """
+
+    if type(new_variable_type) is not str:
+        Report.critical_result(["Invalid variable type provided", ""], False)
+
+    valid_type = False
+    for this_type in VARIABLE_TYPES:
+        if new_variable_type == this_type:
+            valid_type = True
+
+    if not valid_type:
+        Report.critical_result(["Invalid variable type provided", ""], False)
+
+    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
+    add_new_variable_button.click()  # Click on Create Variable button
+    helper.wait_for_condition((
+        lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+    # Select variable type
+    table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+    model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
+    # Click on it to create variable
+    pyside_utils.item_view_index_mouse_click(table_view, model_index)
+
+
 def get_sc_editor_node_inspector(sc_editor):
     """
     function for toggling the node inspector if it's not already turned on and returning the qt widget object
@@ -199,3 +270,4 @@ def get_sc_editor_node_inspector(sc_editor):
         action.trigger()
 
     return node_inspector_widget
+

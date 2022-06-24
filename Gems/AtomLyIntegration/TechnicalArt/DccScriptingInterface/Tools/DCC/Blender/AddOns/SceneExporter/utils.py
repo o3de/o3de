@@ -12,6 +12,7 @@ import bpy
 from bpy.props import EnumProperty
 import shutil
 from pathlib import Path
+import re
 
 from . import constants
 from . import ui
@@ -22,11 +23,28 @@ def check_selected():
     """
     selections = [obj.name for obj in bpy.context.selected_objects]
     if selections == []:
-        ui.message_box("Nothing Selected....", "O3DE Tools", "ERROR")
         return False, "None"
     else:
         return True, selections
 
+def check_selected_bone_names():
+    """!
+    This function will check to see if there is a ARMATURE selected and if the bone names are o3de compatable.
+    """
+    context = bpy.context
+    ob = context.object
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "ARMATURE":
+                for pb in ob.pose.bones:
+                    print(pb.name)
+                    # Validate all chars in string.
+                    check_re =  re.compile(r"^[^<>/{}[\]~.`]*$");
+                    if not check_re.match(pb.name):
+                        # If any in the ARMATURE are named invalid return will fail.
+                        return False
+                      
 def selected_hierarchy_and_rig_animation():
     """!
     This function will check to see if an animation armature rig has been selected.

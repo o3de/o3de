@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/map.h>
@@ -35,7 +36,6 @@ namespace AZ
         class Scene;
         class ShaderResourceGroup;
         class AnyAsset;
-        class WindowContext;
 
         enum class PipelineViewType
         {
@@ -91,7 +91,8 @@ namespace AZ
 
             static RenderPipelinePtr CreateRenderPipelineFromAsset(Data::Asset<AnyAsset> pipelineAsset);
 
-            static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext);
+            static RenderPipelinePtr CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
+                                                                   const WindowContext::SwapChainMode swapchainMode = WindowContext::SwapChainMode::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
             // Data type for render pipeline's views' information
