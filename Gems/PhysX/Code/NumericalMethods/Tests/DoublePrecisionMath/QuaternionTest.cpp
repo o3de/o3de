@@ -6,7 +6,6 @@
  *
  */
 
-//#include <Tests/Environment.h>
 #include <AzTest/AzTest.h>
 #include <NumericalMethods/DoublePrecisionMath/Quaternion.h>
 
