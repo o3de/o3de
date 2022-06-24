@@ -103,8 +103,8 @@ from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
 os.environ[ENVAR_PATH_DCCSI_BLENDER_EXE] = PATH_DCCSI_BLENDER_EXE.as_posix()
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
-os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = DCCSI_BLENDER_PY_EXE.as_posix()
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
+os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = PATH_DCCSI_BLENDER_PY_EXE.as_posix()
 # --- END -----------------------------------------------------------------
 
 
