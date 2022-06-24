@@ -74,10 +74,12 @@ namespace AssetProcessor
         PopulateJobStateCache();
 
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Register(m_platformConfig);
     }
 
     AssetProcessorManager::~AssetProcessorManager()
     {
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Unregister(m_platformConfig);
         AssetProcessor::ProcessingJobInfoBus::Handler::BusDisconnect();
     }
 
@@ -2341,21 +2343,20 @@ namespace AssetProcessor
         }
 
         auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
-        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        for(const auto& cacheRecognizerPair : cacheRecognizerContainer)
         {
-            auto matchingPatternIt = AZStd::find_if(
-                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
-                jobDetails.m_assetBuilderDesc.m_patterns.end(),
-                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
-                {
-                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
-                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
-                }
-            );
+            auto& cacheRecognizer = cacheRecognizerPair.second;
 
-            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            bool matchFound =
+                cacheRecognizer.m_patternMatcher.MatchesPath(jobDetails.m_jobEntry.m_databaseSourceName.toUtf8().data());
+
+            bool builderNameMatches =
+                cacheRecognizer.m_name.compare(jobDetails.m_assetBuilderDesc.m_name.c_str()) == 0;
+
+            if (matchFound || builderNameMatches)
             {
                 jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+                return;
             }
         }
     }

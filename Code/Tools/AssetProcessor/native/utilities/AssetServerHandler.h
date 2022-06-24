@@ -28,6 +28,8 @@ namespace AssetProcessor
         bool StoreJobResult(const AssetProcessor::BuilderParams& builderParams, AZStd::vector<AZStd::string>& sourceFileList)  override;
         //! RetrieveJobResult will retrieve the zip file from the network share associated with the server key and unzip it to the temporary directory provided by AP.
         bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) override;
+        //! HandleRemoteConfiguration will attempt to set or get the remote configuration for the cache server
+        void HandleRemoteConfiguration();
     protected:
         //! Source files intended to be copied into the cache don't go through out temp folder so they need
         //! to be added to the Archive in an additional step

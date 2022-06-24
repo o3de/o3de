@@ -1339,6 +1339,7 @@ void ApplicationManagerBase::InitAssetServerHandler()
     // This will cache whether AP is running in server mode or not.
     // It is also important to invoke it here because incase the asset server address is invalid, the error message should get captured in the AP log.
     AssetUtilities::InServerMode();
+    m_assetServerHandler->HandleRemoteConfiguration();
 }
 
 void ApplicationManagerBase::DestroyAssetServerHandler()
