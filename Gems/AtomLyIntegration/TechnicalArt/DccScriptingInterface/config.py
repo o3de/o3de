@@ -43,7 +43,7 @@ import os
 import sys
 import site
 import re
-import time
+import timeit
 import logging as _logging
 
 # import pathlib
@@ -60,6 +60,7 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+_START = timeit.default_timer()  # start tracking
 # global scope, set up module logging, etc.
 _MODULENAME = 'config'
 _LOGGER = _logging.getLogger(_MODULENAME)
@@ -67,7 +68,7 @@ _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
 # if we know we are running in O3DE, there are assumptions we can make,
 # or things we can inspect/discover and thus perform optimizations
-_O3DE_RUNNING=None    
+_O3DE_RUNNING=None
 try:
     import azlmbr
     _O3DE_RUNNING=True
@@ -97,7 +98,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG   
+from azpy.constants import FRMT_LOG_LONG
 
 # defaults, can be overriden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
@@ -115,16 +116,16 @@ def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
     This should be replaced with a plugin based dev package."""
     _DCCSI_GDEBUG = True
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-    
+
     _DCCSI_DEV_MODE = True
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-    
+
     from azpy.test.entry_test import connect_wing
     if debugger_type == 'WING':
         _debugger = connect_wing()
     else:
         _LOGGER.warning('Debugger type: {}, is Not Implemented!'.format(debugger_type))
-    
+
     return _debugger
 # -------------------------------------------------------------------------
 
@@ -211,24 +212,24 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
     @param path_list: a list() of paths
     @param envar: add paths to this ENVAR
     """
-    
+
     _LOGGER.info('checking envar: {}'.format(envar))
-    
+
     # get or default to empty
     if envar in os.environ:
         _ENVAR = os.getenv(envar, "< NOT SET >")
     else:
         os.environ[envar]='' # create empty
         _ENVAR = os.getenv(envar)
-    
+
     # this is seperated (split) into a list
-    known_pathlist = _ENVAR.split(os.pathsep)    
-        
+    known_pathlist = _ENVAR.split(os.pathsep)
+
     if len(path_list) == 0:
         _LOGGER.warning('No {} paths added, path_list is empty'.format(envar))
         return None
     else:
-        _LOGGER.info('Adding paths to envar: {}'.format(envar)) 
+        _LOGGER.info('Adding paths to envar: {}'.format(envar))
         # To Do: more validation and error checking?
         for p in path_list:
             p = Path(p)
@@ -253,25 +254,25 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
     @param envar: add paths to this ENVAR (and site.addsitedir)
     """
 
-    _LOGGER.info('checking envar: {}'.format(envar))    
-    
+    _LOGGER.info('checking envar: {}'.format(envar))
+
     # get or default to empty
     if envar in os.environ:
         _ENVAR = os.getenv(envar, "< NOT SET >")
     else:
         os.environ[envar]='' # create empty
         _ENVAR = os.getenv(envar)
-    
+
     # this is seperated (split) into a list
-    known_pathlist = _ENVAR.split(os.pathsep)        
-    
+    known_pathlist = _ENVAR.split(os.pathsep)
+
     new_pathlist = known_pathlist.copy()
-        
+
     if len(path_list) == 0:
         _LOGGER.warning('No {} paths added, path_list is empty'.format(envar))
         return None
     else:
-        _LOGGER.info('Adding paths to envar: {}'.format(envar)) 
+        _LOGGER.info('Adding paths to envar: {}'.format(envar))
         for p in path_list:
             p = Path(p)
             if (p.exists() and p.as_posix() not in known_pathlist):
@@ -279,9 +280,9 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
                 new_pathlist.insert(0, p.as_posix())
                 # Add site directory to make from imports work in namespace
                 site.addsitedir(p.as_posix())
-    
-        os.environ[envar] = os.pathsep.join(new_pathlist)        
-    
+
+        os.environ[envar] = os.pathsep.join(new_pathlist)
+
     return os.environ[envar]
 # -------------------------------------------------------------------------
 
@@ -293,16 +294,16 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     """!
     Initialize the DCCsi Qt/PySide dynamic env and settings
     sets access to lumberyards Qt dlls and PySide access,
-    which are built into the /bin folder 
+    which are built into the /bin folder
     @param dccsi_path
     @param engine_bin_path
     @param dccsi_sys_path
     """
-    time_start = time.process_time() # start tracking
-    
+    time_start = timeit.default_timer()  # start tracking
+
     # we don't do this often but we want to stash to global dict
     global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
-    
+
     _PATH_DCCSIG = Path(dccsi_path)
     _PATH_O3DE_BIN = Path(engine_bin_path)
 
@@ -328,7 +329,7 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     # ^^ bypass trying to set only with DYNACONF environment
     _DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH'] = str(QT_QPA_PLATFORM_PLUGIN_PATH.as_posix())
     dccsi_sys_path.append(QT_QPA_PLATFORM_PLUGIN_PATH)
-    
+
     # Access to QtForPython:
     # PySide2 is added to the O3DE Python install during CMake built aginst O3DE Qt dlls
     # the only way import becomes an actual issue is if running this config script
@@ -336,9 +337,9 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
     # and/or a non-Qt app (or a DCC tool that is a Qt app but doesn't provide PySide2 bidnings)
     # To Do: tackle this when it becomes and issue (like Blender?)
 
-    from dynaconf import settings    
-    
-    time_complete = time.process_time() - time_start 
+    from dynaconf import settings
+
+    time_complete = timeit.default_timer() - time_start
     _LOGGER.info('~   config.init_o3de_pyside() DONE: {} sec'.format(time_complete))
 
     return settings
@@ -353,7 +354,7 @@ def init_o3de_pyside2_tools():
     if _DCCSI_PYSIDE2_TOOLS.exists():
         os.environ["DYNACONF_DCCSI_PYSIDE2_TOOLS"] = str(_DCCSI_PYSIDE2_TOOLS.as_posix())
         os.environ['PATH'] = _DCCSI_PYSIDE2_TOOLS.as_posix() + os.pathsep + os.environ['PATH']
-    
+
         site.addsitedir(_DCCSI_PYSIDE2_TOOLS)
         _DCCSI_PYTHONPATH.append(_DCCSI_PYSIDE2_TOOLS.as_posix())
         _LOGGER.info('~   PySide2-Tools bootstrapped PATH for Windows.')
@@ -367,7 +368,7 @@ def init_o3de_pyside2_tools():
             status = False
             raise(e)
     else:
-        _LOGGER.warning('~   No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.as_posix()))    
+        _LOGGER.warning('~   No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.as_posix()))
 # -------------------------------------------------------------------------
 
 
@@ -433,12 +434,12 @@ def init_o3de_core(engine_path=_O3DE_DEV,
                    dccsi_path=_PATH_DCCSIG,
                    dccsi_sys_path=_DCCSI_SYS_PATH):
     """Initialize the DCCsi Core dynamic env and settings."""
-    
-    time_start = time.process_time() # start tracking for perf
-    
+
+    time_start = timeit.default_timer()  # start tracking for perf
+
     # we don't do this often but we want to stash to global dict
     global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
-    
+
     # ENVARS with DYNACONF_ are managed and exported to settings
     # These envars are set like the following
     #     from dynaconf import settings
@@ -448,31 +449,31 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # They will not be written to settings the impact of this is,
     # they can not be retreived like (will assert):
     #     foo = settings.DCCSI_GDEBUG
-    
+
     # ensures dccsi python extension lib sandbox is bootstrapped
     dccsi_python_lib = azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
-    # dont' append it to _DCCSI_PYTHONPATH = list() to be managed    
-    
+    # dont' append it to _DCCSI_PYTHONPATH = list() to be managed
+
     # `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
     # `settings_files` = Load this files in the order.
     # here we are modifying or adding to the dynamic config settings on import
-    
+
     # this code block commented out below is how to change the prefix
     # and the order in which to load settings (settings.py,.json already default)
     #settings = Dynaconf(envvar_prefix='DYNACONF',
                         ## the following will also load settings.local.json
                         #settings_files=['settings.json',
                                         #'.secrets.json'])
-    
+
     # global settings
     os.environ["DYNACONF_DCCSI_OS_FOLDER"] = azpy.config_utils.get_os()
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
     os.environ['DYNACONF_DCCSI_LOGLEVEL'] = str(_DCCSI_LOGLEVEL)
-    
+
     dccsi_path = Path(dccsi_path)
     os.environ["DYNACONF_PATH_DCCSIG"] = str(dccsi_path.as_posix())
-    
+
     # we store these and will manage them last (as a combined set)
     dccsi_sys_path.append(dccsi_path)
 
@@ -499,7 +500,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # we can pull the O3DE_PROJECT (name) from the project path
     if not project_name:
         project_name = Path(_PATH_O3DE_PROJECT).name
-        
+
     os.environ["O3DE_PROJECT"] = str(project_name)
     _DCCSI_LOCAL_SETTINGS['O3DE_PROJECT'] = str(project_name)
 
@@ -509,45 +510,45 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     _PATH_O3DE_BUILD = Path(azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
                                                                   'CMakeCache.txt'))
     os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
-    
+
     _PATH_O3DE_BIN = Path(STR_PATH_O3DE_BIN.format(_PATH_O3DE_BUILD))
     os.environ["DYNACONF_PATH_O3DE_BIN"] = str(_PATH_O3DE_BIN.as_posix())
-    
+
     # hard check
     if not _PATH_O3DE_BIN.exists():
         raise Exception('PATH_O3DE_BIN does NOT exist: {0}'.format(_PATH_O3DE_BIN))
     else:
         dccsi_sys_path.append(_PATH_O3DE_BIN)
     # --
-    
+
     from azpy.constants import TAG_DIR_DCCSI_TOOLS
     _PATH_DCCSI_TOOLS = Path(dccsi_path, TAG_DIR_DCCSI_TOOLS)
     os.environ["DYNACONF_PATH_DCCSI_TOOLS"] = str(_PATH_DCCSI_TOOLS.as_posix())
-    
+
     from azpy.constants import TAG_DCCSI_NICKNAME
     from azpy.constants import PATH_DCCSI_LOG_PATH
     _DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(PATH_O3DE_PROJECT=project_path,
                                                       TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
-    os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH.as_posix())    
-    
+    os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH.as_posix())
+
     from azpy.constants import TAG_DIR_REGISTRY, TAG_DCCSI_CONFIG
     _PATH_DCCSI_CONFIG = Path(project_path, TAG_DIR_REGISTRY, TAG_DCCSI_CONFIG)
     os.environ["DYNACONF_PATH_DCCSI_CONFIG"] = str(_PATH_DCCSI_CONFIG.as_posix())
-    
+
     from azpy.constants import TAG_DIR_DCCSI_TOOLS
     _DCCSIG_TOOLS_PATH = Path.joinpath(dccsi_path, TAG_DIR_DCCSI_TOOLS)
     os.environ["DYNACONF_DCCSIG_TOOLS_PATH"] = str(_DCCSIG_TOOLS_PATH.as_posix())
-    
+
     # To Do: Need to add some json validation for settings.json,
     # and settings.local.json, as importing settings will read json data
     # if the json is malformed it will cause an assert like:
     # "json.decoder.JSONDecodeError: Expecting ',' delimiter: line 45 column 5 (char 2463)"
     # but might be hard to quickly find out which serttings file is bad
-    from dynaconf import settings    
-    
-    time_complete = time.process_time() - time_start 
+    from dynaconf import settings
+
+    time_complete = timeit.default_timer() - time_start
     _LOGGER.info('~   config.init_o3de_core() DONE: {} sec'.format(time_complete))
-    
+
     # we return dccsi_sys_path because we may want to pass it on
     # settings my be passes on and added to or re-initialized with changes
     return dccsi_sys_path, settings
@@ -562,43 +563,43 @@ def init_o3de_python(engine_path=_O3DE_DEV,
                      dccsi_pythonpath=_DCCSI_PYTHONPATH):
     """Initialize the O3DE dynamic Python env and settings.
     Note: """
-    
+
     global _DCCSI_LOCAL_SETTINGS
     global _DCCSI_PYTHONPATH_EXCLUDE
-    
-    time_start = time.process_time() 
-    
+
+    time_start = timeit.default_timer()
+
     # pathify
     _O3DE_DEV = Path(engine_path)
     _PATH_O3DE_BIN = Path(engine_bin_path)
     _PATH_DCCSIG = Path(dccsi_path)
-    
+
     # python config
     _PATH_DCCSI_PYTHON = Path(_PATH_DCCSIG,'3rdParty','Python')
     os.environ["DYNACONF_PATH_DCCSI_PYTHON"] = str(_PATH_DCCSI_PYTHON.as_posix())
-    
+
     _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
     os.environ["PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
     _DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']= str(_PATH_DCCSI_PYTHON_LIB.as_posix())
     #dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
     # ^ adding here will cause this to end up in settings.local.json
     # and we don't want that, since this LIB location is transient/procedural
-        
+
     # this is transient and will always track the exe this script is executing on
     _O3DE_PY_EXE = Path(sys.executable)
     _DCCSI_PY_IDE = Path(_O3DE_PY_EXE)
     os.environ["DCCSI_PY_IDE"] = str(_DCCSI_PY_IDE.as_posix())
     _DCCSI_LOCAL_SETTINGS['DCCSI_PY_IDE']= str(_DCCSI_PY_IDE.as_posix())
-    
+
     _O3DE_PYTHONHOME = Path(_O3DE_PY_EXE.parents[0])
     os.environ["DYNACONF_O3DE_PYTHONHOME"] = str(_O3DE_PYTHONHOME.as_posix())
     dccsi_sys_path.append(_O3DE_PYTHONHOME)
     _LOGGER.info('~   O3DE_PYTHONHOME - is now the folder containing O3DE python executable')
-    
+
     # this will always be the O3DE pythin interpreter
     _PATH_O3DE_PYTHON_INSTALL = Path(_O3DE_DEV, 'python')
     os.environ["DYNACONF_PATH_O3DE_PYTHON_INSTALL"] = str(_PATH_O3DE_PYTHON_INSTALL.as_posix())
-    dccsi_sys_path.append(_PATH_O3DE_PYTHON_INSTALL) 
+    dccsi_sys_path.append(_PATH_O3DE_PYTHON_INSTALL)
 
     if sys.platform.startswith('win'):
         _DCCSI_PY_BASE = Path(_PATH_O3DE_PYTHON_INSTALL, 'python.cmd')
@@ -608,16 +609,16 @@ def init_o3de_python(engine_path=_O3DE_DEV,
         _DCCSI_PY_BASE = Path(_PATH_O3DE_PYTHON_INSTALL, 'python.sh')
     else:
         _DCCSI_PY_BASE = None
-        
+
     # this is the system specific shell around O3DE Python install
     if _DCCSI_PY_BASE:
-        os.environ["DYNACONF_DCCSI_PY_BASE"] = str(_DCCSI_PY_BASE.as_posix())        
+        os.environ["DYNACONF_DCCSI_PY_BASE"] = str(_DCCSI_PY_BASE.as_posix())
 
-    from dynaconf import settings    
-    
-    time_complete = time.process_time() - time_start
+    from dynaconf import settings
+
+    time_complete = timeit.default_timer() - time_start
     _LOGGER.info('~   config.init_o3de_python() ... DONE: {} sec'.format(time_complete))
-    
+
     return dccsi_sys_path, dccsi_pythonpath, settings
 # -------------------------------------------------------------------------
 
@@ -636,15 +637,15 @@ def get_config_settings(engine_path=_O3DE_DEV,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH):
     """Convenience method to initialize and retreive settings directly from module."""
-    
-    time_start = time.process_time() # start tracking
-    
+
+    time_start = timeit.default_timer()  # start tracking
+
     dccsi_path = Path(dccsi_path)
-    
+
     # ensures dccsi python extension lib sandbox is bootstrapped
     dccsi_python_lib = azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
     # dont' append it to _DCCSI_PYTHONPATH = list() to be managed
-    
+
     # always init the core
     dccsi_sys_path, settings = init_o3de_core(engine_path,
                                               engine_bin_path,
@@ -662,7 +663,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
                                                                       settings.PATH_DCCSIG,
                                                                       dccsi_sys_path,
                                                                       dccsi_pythonpath)
-    
+
     # that provide their own Qt dlls and Pyside2
     # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     # _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
@@ -672,7 +673,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
         settings = init_o3de_pyside2(settings.PATH_DCCSIG,
                                      settings.PATH_O3DE_BIN,
                                      dccsi_sys_path)
-        
+
     # final stage, if we have managed path lists set them
     new_PATH = add_path_list_to_envar(dccsi_sys_path)
     new_PYTHONPATH = add_path_list_to_addsitedir(dccsi_pythonpath)
@@ -681,10 +682,10 @@ def get_config_settings(engine_path=_O3DE_DEV,
     from dynaconf import settings
     if set_env:
         settings.setenv()
-    
-    time_complete = time.process_time() - time_start 
+
+    time_complete = timeit.default_timer()  # start tracking
     _LOGGER.info('~   config.get_config_settings() DONE TOTAL: {} sec'.format(time_complete))
-    
+
     return settings
 # -------------------------------------------------------------------------
 
@@ -697,7 +698,7 @@ def export_settings(settings,
                     use_dynabox=False,
                     env=None,
                     merge=False):
-    
+
     # To Do: when running script from IDE settings.local.json are
     # correctly written to the < dccsi > root folder (script is cwd?)
     # when I run this from cli using O3DE Python:
@@ -705,7 +706,7 @@ def export_settings(settings,
     # the setting end up in that folder:
     #     C:\Depot\o3de-dev\python\settings.local.json"
     # we need to ensure that the settings are written to the < dccsi >
-    
+
     # To Do: multiple configs in different states can actually be written,
     # so provide a output path and name so a collection can be made in
     #     < dccsi >\configs\settings.core.json
@@ -713,13 +714,13 @@ def export_settings(settings,
     #     < dccsi >\configs\settings.pyside.json, etc.
     # dynaconf has way to load specific settings files,
     # which could be useful for tools?
-    
+
     # To Do: need to add malformed json validation to <dccsi>\settings.json
     # this can cause a bad error that is deep and hard to debug
 
     # this just ensures that the settings.local.json file has a marker
     # we can use this marker to know the local settings exist
-    os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"  
+    os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"
 
     # make sure the dnyaconf synthetic env is updated before writting settings
     # this will make it into our settings file as "DCCSI_SYS_PATH":<value>
@@ -727,57 +728,57 @@ def export_settings(settings,
     add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
     # we did not use list_to_addsitedir() because we are just ensuring
     # the managed envar path list is updated so paths are written to settings
-    
+
     if not use_dynabox:
         # update settings
         from dynaconf import settings
         settings.setenv()
-    
+
         _settings_dict = settings.as_dict()
-        
+
         # default temp filename
         _settings_file = Path(settings_filepath)
-    
+
         # we want to possibly modify or stash our settings into a o3de .setreg
         from box import Box
         _settings_box = Box(_settings_dict)
-    
+
         _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
         _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
                                                indent=4)))
-        
+
         # writes settings box
         _settings_box.to_json(filename=_settings_file.as_posix(),
                                sort_keys=True,
                                indent=4)
         return _settings_box
-    
-    # experimental, have not utilized this yet but it would be the native 
+
+    # experimental, have not utilized this yet but it would be the native
     # way for dynaconf to write settings, i went with a Box dictionary
     # as it is ordered and I can ensure the setttings are pretty
     elif use_dynabox:
         # writting settings using dynabox
         from dynaconf import loaders
         from dynaconf.utils.boxing import DynaBox
-        
+
         _settings_box = DynaBox(settings).to_dict()
-    
+
         if not env:
             # writes to a file, the format is inferred by extension
             # can be .yaml, .toml, .ini, .json, .py
             loaders.write(_settings_file.as_posix(), _settings_box)
             return _settings_box
-        
+
         elif env:
             # the env can also be written, though this isn't yet utilized by config.py
             #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
             loaders.write(_settings_file.as_posix(), _settings_box, merge, env)
             return _settings_box
-            
+
         else:
             _LOGGER.warning('something went wrong')
             return
-            
+
     else:
         _LOGGER.warning('something went wrong')
         return
@@ -789,41 +790,40 @@ def export_settings(settings,
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
-    
+
     while 0: # temp internal debug flag
         _DCCSI_GDEBUG = True
-        break    
-    
-    import time
-    main_start = time.process_time() # start tracking 
-    
+        break
+
+    main_start = timeit.default_timer()  # start tracking
+
     from azpy.constants import STR_CROSSBAR
-    
+
     _MODULENAME = 'DCCsi.config'
-    
+
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
     if _DCCSI_GDEBUG:
         # override loglevel if runnign debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
-        
+
     # set up module logging
     #for handler in _logging.root.handlers[:]:
         #_logging.root.removeHandler(handler)
-        
+
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
-    
+
     _LOGGER = _logging.getLogger(_MODULENAME)
     _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
     _LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
     _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
     _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
-    
+
     # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
@@ -835,116 +835,116 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='O3DE DCCsi Dynamic Config (dynaconf)',
         epilog="Attempts to determine O3DE project if -pp not set")
-    
+
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
-    
+
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables dev mode for early auto attaching debugger.')
-    
+
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
                         required=False,
                         default='WING',
                         help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
-    
+
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,
                         required=False,
-                        default=Path('{ to do: implement }'),                        
+                        default=Path('{ to do: implement }'),
                         help='The path to the o3de engine.')
-    
+
     parser.add_argument('-eb', '--engine-bin-path',
                         type=pathlib.Path,
                         required=False,
-                        default=Path('{ to do: implement }'), 
+                        default=Path('{ to do: implement }'),
                         help='The path to the o3de engine binaries (build/bin/profile).')
-    
+
     parser.add_argument('-bf', '--build-folder',
                         type=str,
                         required=False,
                         default='build',
                         help='The name (tag) of the o3de build folder, example build or windows.')
-    
+
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
                         required=False,
-                        default=Path('{ to do: implement }'), 
+                        default=Path('{ to do: implement }'),
                         help='The path to the project.')
-    
+
     parser.add_argument('-pn', '--project-name',
                         type=str,
                         required=False,
                         default='{ to do: implement }',
                         help='The name of the project.')
-    
+
     parser.add_argument('-py', '--enable-python',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables O3DE python access.')
-    
+
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables O3DE Qt & PySide2 access.')
-    
+
     parser.add_argument('-pc', '--project-config',
                         type=bool,
                         required=False,
                         default=False,
                         help='(not implemented) Enables reading the < >project >/registry/dccsi_configuration.setreg.')
-    
+
     parser.add_argument('-cls', '--cache-local-settings',
                         type=bool,
                         required=False,
                         default=True,
                         help='Ensures setting.local.json is written to cache settings')
-    
+
     parser.add_argument('-es', '--export-settings',
                         type=pathlib.Path,
                         required=False,
                         default=False,
                         help='Writes managed settings to specified path.')
-    
+
     parser.add_argument('-ls', '--load-settings',
                         type=pathlib.Path,
                         required=False,
                         default=False,
                         help='(Not Implemented) Would load and read settings from a specified path.')
-    
+
     parser.add_argument('-ec', '--export-configuration',
                         type=bool,
                         required=False,
                         default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
-    
+
     parser.add_argument('-tp', '--test-pyside2',
                         type=bool,
                         required=False,
                         default=False,
                         help='Runs Qt/PySide2 tests and reports.')
-    
+
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
                         default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
-    
+
     args = parser.parse_args()
 
     # easy overrides
     if args.global_debug:
         _DCCSI_GDEBUG = True
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-        
+
     if args.developer_mode:
         _DCCSI_DEV_MODE = True
         attach_debugger()  # attempts to start debugger
@@ -952,21 +952,21 @@ if __name__ == '__main__':
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
         # To Do: implement debugger plugin pattern
-        
+
     # need to do a little plumbing
     if not args.engine_path:
         args.engine_path=_O3DE_DEV
-        
+
     if not args.build_folder:
         from azpy.constants import TAG_DIR_O3DE_BUILD_FOLDER
         args.build_folder = TAG_DIR_O3DE_BUILD_FOLDER
-        
+
     if not args.engine_bin_path:
         args.engine_bin_path=_PATH_O3DE_BIN
-        
+
     if not args.project_path:
         args.project_path=_PATH_O3DE_PROJECT
-        
+
     if _DCCSI_GDEBUG:
         args.enable_python = True
         args.enable_qt = True
@@ -985,29 +985,29 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_DEV_MODE: {}'.format(settings.DCCSI_DEV_MODE))
     _LOGGER.info('DCCSI_LOGLEVEL: {}'.format(settings.DCCSI_LOGLEVEL))
     _LOGGER.info('DCCSI_OS_FOLDER: {}'.format(settings.DCCSI_OS_FOLDER))
-    
+
     _LOGGER.info('O3DE_DEV: {}'.format(settings.O3DE_DEV))
     _LOGGER.info('O3DE_O3DE_BUILD_FOLDER: {}'.format(settings.PATH_O3DE_BUILD))
     _LOGGER.info('PATH_O3DE_BUILD: {}'.format(settings.PATH_O3DE_BUILD))
     _LOGGER.info('PATH_O3DE_BIN: {}'.format(settings.PATH_O3DE_BIN))
-    
+
     _LOGGER.info('PATH_DCCSIG: {}'.format(settings.PATH_DCCSIG))
     _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
     _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(settings.PATH_DCCSI_CONFIG))
 
     # settings no longer managed with DYNACONF_ in config.py
     #_LOGGER.info('O3DE_PROJECT: {}'.format(settings.O3DE_PROJECT))
-    #_LOGGER.info('PATH_O3DE_PROJECT: {}'.format(settings.PATH_O3DE_PROJECT))    
-    
+    #_LOGGER.info('PATH_O3DE_PROJECT: {}'.format(settings.PATH_O3DE_PROJECT))
+
     try:
         settings.O3DE_DCCSI_ENV_TEST
         _LOGGER.info('O3DE_DCCSI_ENV_TEST: {}'.format(settings.O3DE_DCCSI_ENV_TEST))
     except:
         pass # don't exist
-    
+
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('')
-    
+
     if args.enable_python:
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('PATH_DCCSI_PYTHON'.format(settings.PATH_DCCSI_PYTHON))
@@ -1019,10 +1019,10 @@ if __name__ == '__main__':
         _LOGGER.info('')
 
         # settings no longer managed with DYNACONF_ in config.py
-        #_LOGGER.info('DCCSI_PY_IDE'.format(settings.DCCSI_PY_IDE))        
+        #_LOGGER.info('DCCSI_PY_IDE'.format(settings.DCCSI_PY_IDE))
     else:
         _LOGGER.info('Tip: add arg --enable-python (-py) to extend the environment with O3DE python access')
-        
+
     if args.enable_qt:
         _LOGGER.info(STR_CROSSBAR)
         # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
@@ -1030,17 +1030,17 @@ if __name__ == '__main__':
         _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(_DCCSI_LOCAL_SETTINGS['QT_QPA_PLATFORM_PLUGIN_PATH']))
         try:
             settings.DCCSI_PYSIDE2_TOOLS
-            _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))  
+            _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))
         except:
             pass # don't exist
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('')
     else:
-        _LOGGER.info('Tip: add arg --enable-qt (-qt) to extend the environment with O3DE Qt/PySide2 support')      
-        _LOGGER.info('Tip: add arg --test-pyside2 (-tp) to test the O3DE Qt/PySide2 support')    
-    
+        _LOGGER.info('Tip: add arg --enable-qt (-qt) to extend the environment with O3DE Qt/PySide2 support')
+        _LOGGER.info('Tip: add arg --test-pyside2 (-tp) to test the O3DE Qt/PySide2 support')
+
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
-    
+
     if _DCCSI_GDEBUG or args.cache_local_settings:
         if args.export_settings:
             export_settings(settings=settings, settings_filepath=args.export_settings)
@@ -1048,10 +1048,10 @@ if __name__ == '__main__':
             export_settings(settings)
             # this should be set if there are local settings!?
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
-        
+
     # end tracking here, the pyside test exits before hitting the end of script
-    _LOGGER.info('DCCsi: config.py TOTAL: {} sec'.format(time.process_time() - main_start)) 
-    
+    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+
     if _DCCSI_GDEBUG or args.test_pyside2:
         test_pyside2()  # test PySide2 access with a pop-up button
         try:
@@ -1064,4 +1064,4 @@ if __name__ == '__main__':
     if args.exit:
         # return
         sys.exit()
-# --- END -----------------------------------------------------------------    
+# --- END -----------------------------------------------------------------
