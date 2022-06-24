@@ -104,35 +104,35 @@ EBVAR_DCCSI_BLENDER_PROJECT = "DCCSI_BLENDER_PROJECT"
 
 ENVAR_PATH_DCCSI_BLENDER_LOC = "PATH_DCCSI_BLENDER_LOC"
 STR_PATH_DCCSI_BLENDER_LOCATION = f'C:/Program Files/Blender Foundation/Blender {TAG_DCCSI_BLENDER_VERSION}'
-PATH_DCCSI_BLENDER_LOC = Path(STR_PATH_DCCSI_BLENDER_LOCATION)
+PATH_DCCSI_BLENDER_LOC = Path(STR_PATH_DCCSI_BLENDER_LOCATION).as_posix()
 
 # I think this one will launch with a console
 TAG_BLENDER_EXE = "blender.exe"
 ENVAR_PATH_DCCSI_BLENDER_EXE = "PATH_DCCSI_BLENDER_EXE"
 STR_PATH_DCCSI_BLENDER_EXE = f"{PATH_DCCSI_BLENDER_LOC}/{TAG_BLENDER_EXE}"
-PATH_DCCSI_BLENDER_EXE = Path(STR_PATH_DCCSI_BLENDER_EXE)
+PATH_DCCSI_BLENDER_EXE = Path(STR_PATH_DCCSI_BLENDER_EXE).as_posix()
 
 # this is the standard launcher that prevents the command window from popping up on start
 # https://developer.blender.org/rBf3944cf503966a93a124e389d9232d7f833c0077
 TAG_BLENDER_LAUNCHER = "blender-launcher.exe"
 ENVAR_DCCSI_BLENDER_LAUNCHER = "DCCSI_BLENDER_LAUNCHER_EXE"
 STR_DCCSI_BLENDER_LAUNCHER_EXE = f'{PATH_DCCSI_BLENDER_LOC}/{TAG_BLENDER_LAUNCHER}'
-PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(STR_DCCSI_BLENDER_LAUNCHER_EXE)
+PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(STR_DCCSI_BLENDER_LAUNCHER_EXE).as_posix()
 
 # know where to find Blenders python if we ever need it
 ENVAR_DCCSI_BLENDER_PYTHON_LOC = "PATH_DCCSI_BLENDER_PYTHON_LOC"
 STR_DCCSI_BLENDER_PYTHON_LOC = f"{PATH_DCCSI_BLENDER_LOC}/python"
-PATH_DCCSI_BLENDER_PYTHON_LOC = Path(STR_DCCSI_BLENDER_PYTHON_LOC)
+PATH_DCCSI_BLENDER_PYTHON_LOC = Path(STR_DCCSI_BLENDER_PYTHON_LOC).as_posix()
 
 ENVAR_DCCSI_BLENDER_PY_EXE = "DCCSI_BLENDER_PY_EXE"
 STR_DCCSI_BLENDER_PY_EXE = f'{PATH_DCCSI_BLENDER_PYTHON_LOC}/bin/python.exe'
-DCCSI_BLENDER_PY_EXE = Path(STR_DCCSI_BLENDER_PY_EXE)
+PATH_DCCSI_BLENDER_PY_EXE = Path(STR_DCCSI_BLENDER_PY_EXE).as_posix()
 
 # our dccsi default start up script for blender aka bootstrap
 TAG_DCCSI_BLENDER_BOOTSTRAP = "bootstrap.py"
 ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP = "PATH_DCCSI_BLENDER_BOOTSTRAP"
 STR_PATH_DCCSI_BLENDER_BOOTSTRAP = f'{PATH_DCCSI_TOOLS_BLENDER}/{TAG_DCCSI_BLENDER_BOOTSTRAP}'
-PATH_DCCSI_BLENDER_BOOTSTRAP = Path(STR_PATH_DCCSI_BLENDER_BOOTSTRAP)
+PATH_DCCSI_BLENDER_BOOTSTRAP = Path(STR_PATH_DCCSI_BLENDER_BOOTSTRAP).as_posix()
 
 URL_DCCSI_BLENDER_WIKI = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC-Blender'
 # -------------------------------------------------------------------------
@@ -143,7 +143,7 @@ URL_DCCSI_BLENDER_WIKI = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Tools-DCC
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone script"""
-    
+
     # turn all of these off/on for testing
     _DCCSI_GDEBUG = False
     _DCCSI_DEV_MODE = False
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
                          datefmt='%m-%d %H:%M')
-    
+
     _LOGGER = _logging.getLogger(_MODULENAME)
 
     # happy print
@@ -181,16 +181,16 @@ if __name__ == '__main__':
     _stash_dict['PATH_DCCSI_TOOLS_DCC'] = Path(PATH_DCCSI_TOOLS_DCC)
     _stash_dict['PATH_DCCSI_TOOLS_BLENDER'] = Path(PATH_DCCSI_TOOLS_BLENDER)
 
-    _stash_dict['PATH_DCCSI_BLENDER_LOC'] = Path(PATH_DCCSI_BLENDER_LOC)   
-    _stash_dict['DCCSI_BLENDER_EXE'] = Path(DCCSI_BLENDER_EXE)  
-    _stash_dict['DCCSI_BLENDER_LAUNCHER_EXE'] = Path(DCCSI_BLENDER_LAUNCHER_EXE)  
-    _stash_dict['PATH_DCCSI_BLENDER_PYTHON_LOC'] = Path(PATH_DCCSI_BLENDER_PYTHON_LOC)    
-    _stash_dict['DCCSI_BLENDER_PY_EXE'] = Path(DCCSI_BLENDER_PY_EXE)  
-    _stash_dict['PATH_DCCSI_BLENDER_BOOTSTRAP'] = Path(PATH_DCCSI_BLENDER_BOOTSTRAP)  
+    _stash_dict['PATH_DCCSI_BLENDER_LOC'] = Path(PATH_DCCSI_BLENDER_LOC)
+    _stash_dict['DCCSI_BLENDER_EXE'] = Path(PATH_DCCSI_BLENDER_EXE)
+    _stash_dict['DCCSI_BLENDER_LAUNCHER_EXE'] = Path(PATH_DCCSI_BLENDER_LAUNCHER_EXE)
+    _stash_dict['PATH_DCCSI_BLENDER_PYTHON_LOC'] = Path(PATH_DCCSI_BLENDER_PYTHON_LOC)
+    _stash_dict['DCCSI_BLENDER_PY_EXE'] = Path(PATH_DCCSI_BLENDER_PY_EXE)
+    _stash_dict['PATH_DCCSI_BLENDER_BOOTSTRAP'] = Path(PATH_DCCSI_BLENDER_BOOTSTRAP)
     _stash_dict['URL_DCCSI_BLENDER_WIKI'] = Path(URL_DCCSI_BLENDER_WIKI)
 
     # ---------------------------------------------------------------------
-    # py 2 and 3 compatible iter    
+    # py 2 and 3 compatible iter
     def get_items(dict_object):
         for key in dict_object:
             yield key, dict_object[key]
@@ -201,10 +201,10 @@ if __name__ == '__main__':
             value.exists()
             _LOGGER.info(F'{key}: {value}')
         except Exception as e:
-            _LOGGER.warning(f'FAILED PATH: {e}') 
+            _LOGGER.warning(f'FAILED PATH: {e}')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
 
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START)) 
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 # --- END -----------------------------------------------------------------
