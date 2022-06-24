@@ -16,6 +16,7 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class ActionManagerInternalInterface;
     
     //! ToolBar Manager class definition.
     //! Handles Editor ToolBars and allows registration and access across tools.
@@ -47,6 +48,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZStd::string, EditorToolBar> m_toolBars;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

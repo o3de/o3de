@@ -56,6 +56,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

@@ -75,6 +75,11 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
 
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     AZ_Assert(m_actionManagerInterface, "EditorActionsHandler - could not get ActionManagerInterface on EditorActionsHandler construction.");
+
+    m_actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get();
+    AZ_Assert(
+        m_actionManagerInternalInterface,
+        "EditorActionsHandler - could not get ActionManagerInternalInterface on EditorActionsHandler construction.");
         
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
@@ -799,7 +804,7 @@ void EditorActionsHandler::RefreshToolActions()
         AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewpane.m_name.toUtf8().data());
 
         // Create the action if it does not already exist.
-        if (m_actionManagerInterface->GetAction(toolActionIdentifier) == nullptr)
+        if (m_actionManagerInternalInterface->GetAction(toolActionIdentifier) == nullptr)
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name =

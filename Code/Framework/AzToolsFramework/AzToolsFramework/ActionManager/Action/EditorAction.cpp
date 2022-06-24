@@ -109,6 +109,16 @@ namespace AzToolsFramework
         }
     }
 
+    bool EditorAction::GetHideFromMenusWhenDisabled()
+    {
+        return m_hideFromMenusWhenDisabled;
+    }
+
+    bool EditorAction::GetHideFromToolBarsWhenDisabled()
+    {
+        return m_hideFromToolBarsWhenDisabled;
+    }
+
     QAction* EditorAction::GetAction()
     {
         return m_action;

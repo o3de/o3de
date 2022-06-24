@@ -17,6 +17,9 @@ namespace AzToolsFramework
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "MenuManager - Could not retrieve instance of ActionManagerInterface");
 
+        m_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(m_actionManagerInternalInterface, "MenuManager - Could not retrieve instance of ActionManagerInternalInterface");
+
         AZ::Interface<MenuManagerInterface>::Register(this);
 
         EditorMenu::Initialize();
@@ -75,7 +78,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
         if (!action)
         {
             return AZ::Failure(AZStd::string::format(
@@ -111,7 +114,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : actions)
         {
-            QAction* action = m_actionManagerInterface->GetAction(pair.first);
+            QAction* action = m_actionManagerInternalInterface->GetAction(pair.first);
             if (!action)
             {
                 errorMessage += AZStd::string(" ") + pair.first;
@@ -150,7 +153,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
         if (!action)
         {
             return AZ::Failure(AZStd::string::format(
@@ -186,7 +189,7 @@ namespace AzToolsFramework
 
         for (const AZStd::string& actionIdentifier : actionIdentifiers)
         {
-            QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+            QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
             if (!action)
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;

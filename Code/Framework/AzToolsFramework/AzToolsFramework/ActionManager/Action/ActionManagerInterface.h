@@ -209,6 +209,6 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
         virtual bool HideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) = 0;
-    }
+    };
 
 } // namespace AzToolsFramework
