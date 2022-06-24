@@ -30,11 +30,25 @@ namespace AssetProcessor
         bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) override;
         //! HandleRemoteConfiguration will attempt to set or get the remote configuration for the cache server
         void HandleRemoteConfiguration();
+        //! TBD
+        AssetServerMode GetRemoteCachingMode() const override;
+        //! TBD
+        void SetRemoteCachingMode(AssetServerMode mode) override;
+
+        //! TBD
+        const AZStd::string& GetServerAddress() const override;
+
+        //! TBD
+        void SetServerAddress(const AZStd::string& address) override;
+
     protected:
         //! Source files intended to be copied into the cache don't go through out temp folder so they need
         //! to be added to the Archive in an additional step
         bool AddSourceFilesToArchive(const AssetProcessor::BuilderParams& builderParams, const QString& archivePath, AZStd::vector<AZStd::string>& sourceFileList);
+        QString ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams);
         
-        //////////////////////////////////////////////////////////////////////////
+    private:
+        AssetServerMode m_assetCachingMode = AssetServerMode::Inactive;
+        AZStd::string m_serverAddress;
     };
 } //namespace AssetProcessor

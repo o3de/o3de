@@ -226,6 +226,14 @@ namespace AssetProcessor
 
     using DiskSpaceInfoBus = AZ::EBus<DiskSpaceInfoBusTraits>;
 
+    //! Defines the modes the Asset Cache Server mode setting for the Asset Processor (AP).
+    enum class AssetServerMode
+    {
+        Inactive, //! This mode means the AP is offline; only processing the assets locally
+        Server, //! This mode means the AP is writing out the asset products to a remote location
+        Client //! This mode means the AP is attempting to retrieve asset products from a remote location
+    };
+
     // This EBUS is used to perform Asset Server related tasks.
     class AssetServerBusTraits
         : public AZ::EBusTraits
@@ -248,9 +256,34 @@ namespace AssetProcessor
         //! and put them in the temporary directory provided by the builderParam.
         //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
-    };
 
+        //! TBD
+        virtual AssetServerMode GetRemoteCachingMode() const = 0;
+
+        //! TBD
+        virtual void SetRemoteCachingMode(AssetServerMode mode) = 0;
+
+        //! TBD
+        virtual const AZStd::string& GetServerAddress() const = 0;
+
+        //! TBD
+        virtual void SetServerAddress(const AZStd::string& address) = 0;
+    };
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
+
+    // This EBUS is notify listeners when Asset Server state(s) changes.
+    class AssetServerNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // multi listener
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+        typedef AZStd::recursive_mutex MutexType;
+
+        //! TBD
+        virtual void OnRemoteCachingModeChanged([[maybe_unused]] AssetServerMode mode) {}
+    };
+    using AssetServerNotificationBus = AZ::EBus<AssetServerNotifications>;
 
     // This EBUS is used to retrieve asset server information
     class AssetServerInfoBusTraits

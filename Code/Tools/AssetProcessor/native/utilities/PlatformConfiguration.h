@@ -245,6 +245,8 @@ namespace AssetProcessor
         explicit PlatformConfiguration(QObject* pParent = nullptr);
         virtual ~PlatformConfiguration() = default;
 
+        static void Reflect(AZ::ReflectContext* context);
+
         /** Use this function to parse the set of config files and the gem file to set up the platform config.
         * This should be about the only function that is required to be called in order to end up with
         * a full configuration.
@@ -373,6 +375,8 @@ namespace AssetProcessor
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
 
         bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) override;
+
+        static bool ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText);
 
         /** returns true if the config is valid.
         * configs are considered invalid if critical information is missing.

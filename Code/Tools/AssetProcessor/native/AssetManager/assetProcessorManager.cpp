@@ -2331,7 +2331,10 @@ namespace AssetProcessor
 
     void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
     {
-        if (AssetUtilities::ServerAddress().isEmpty())
+        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
+        if (assetServerMode == AssetServerMode::Inactive)
         {
             // Asset Cache Server mode feature is turned off
             return;

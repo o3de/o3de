@@ -28,10 +28,60 @@ namespace AssetProcessor
         string.append(buffer.c_str());
     }
 
-    QString ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams)
+    AssetServerMode CheckServerMode()
+    {
+        AssetServerMode enableCacheServerMode = AssetServerMode::Inactive;
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            bool enableAssetCacheServerMode = false;
+            AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
+            if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+            {
+                enableCacheServerMode = enableAssetCacheServerMode ? AssetServerMode::Server : AssetServerMode::Client;
+                AZ_Warning(AssetProcessor::DebugChannel, false, "The 'enableCacheServer' key is deprecated. Please swith to 'assetCacheServerMode'");
+            }
+
+            AZStd::string assetCacheServerModeValue;
+            if (settingsRegistry->Get(assetCacheServerModeValue, key + "/Server/assetCacheServerMode"))
+            {
+                AZStd::to_lower(assetCacheServerModeValue.begin(), assetCacheServerModeValue.end());
+
+                if(assetCacheServerModeValue == "server")
+                {
+                    return AssetServerMode::Server;
+                }
+                else if (assetCacheServerModeValue == "client")
+                {
+                    return AssetServerMode::Client;
+                }
+            }
+        }
+
+        return enableCacheServerMode;
+    }
+
+    AZStd::string CheckServerAddress()
+    {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            AZStd::string address;
+            if (settingsRegistry->Get(address,
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey) + "/Server/cacheServerAddress"))
+            {
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
+                return AZStd::move(address);
+            }
+        }
+        return {};
+    }
+
+    QString AssetServerHandler::ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams)
     {
         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
-        QString assetServerAddress = QDir::toNativeSeparators(AssetUtilities::ServerAddress());
+        QString assetServerAddress = QDir::toNativeSeparators(QString{m_serverAddress.c_str()});
         if (!assetServerAddress.isEmpty())
         {
             QString archiveFileName = builderParams.GetServerKey() + ".zip";
@@ -62,29 +112,31 @@ namespace AssetProcessor
 
     AssetServerHandler::AssetServerHandler()
     {
+        SetServerAddress(CheckServerAddress());
+        SetRemoteCachingMode(CheckServerMode());
         AssetServerBus::Handler::BusConnect();
     }
 
     AssetServerHandler::~AssetServerHandler()
     {
+        SetRemoteCachingMode(AssetServerMode::Inactive);
         AssetServerBus::Handler::BusDisconnect();
     }
 
     bool AssetServerHandler::IsServerAddressValid()
     {
-        QString address = AssetUtilities::ServerAddress();
+        QString address{m_serverAddress.c_str()};
         bool isValid = !address.isEmpty() && QDir(address).exists();
         return isValid;
     }
 
     void AssetServerHandler::HandleRemoteConfiguration()
     {
-        // the logic uses the server address to fetch and store the Asset Cache Server configuration
-        if (!IsServerAddressValid())
+        if (m_assetCachingMode == AssetServerMode::Inactive || !IsServerAddressValid())
         {
             return;
         }
-        AZ::IO::Path settingsFilePath{ AssetUtilities::ServerAddress().toUtf8().data() };
+        AZ::IO::Path settingsFilePath{ m_serverAddress };
         settingsFilePath /= "settings.json";
 
         auto* recognizerConfiguration = AZ::Interface<AssetProcessor::RecognizerConfiguration>::Get();
@@ -93,7 +145,7 @@ namespace AssetProcessor
             return;
         }
 
-        if (AssetUtilities::InServerMode())
+        if (m_assetCachingMode == AssetServerMode::Server)
         {
             AZStd::string jsonBuffer;
             const auto& assetCacheRecognizerContainer = recognizerConfiguration->GetAssetCacheRecognizerContainer();
@@ -123,7 +175,7 @@ namespace AssetProcessor
 
             AZ::JsonSerializationUtils::WriteJsonFile(assetServerCacheDoc, settingsFilePath.LexicallyNormal().c_str());
         }
-        else
+        else if (m_assetCachingMode == AssetServerMode::Client)
         {
             // load the configuration
             if (!AZ::IO::SystemFile::Exists(settingsFilePath.c_str()))
@@ -154,6 +206,27 @@ namespace AssetProcessor
 
             recognizerConfiguration->AddAssetCacheRecognizerContainer(recognizerContainer);
         }
+    }
+
+    AssetServerMode AssetServerHandler::GetRemoteCachingMode() const
+    {
+        return m_assetCachingMode;
+    }
+
+    void AssetServerHandler::SetRemoteCachingMode(AssetServerMode mode)
+    {
+        m_assetCachingMode = mode;
+        AssetServerNotificationBus::Broadcast(&AssetServerNotificationBus::Events::OnRemoteCachingModeChanged, mode);
+    }
+
+    const AZStd::string& AssetServerHandler::GetServerAddress() const
+    {
+        return m_serverAddress;
+    }
+
+    void AssetServerHandler::SetServerAddress(const AZStd::string& address)
+    {
+        m_serverAddress = address;
     }
 
     bool AssetServerHandler::RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams)
