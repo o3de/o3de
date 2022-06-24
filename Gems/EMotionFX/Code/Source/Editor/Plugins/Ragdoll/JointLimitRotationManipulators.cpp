@@ -30,7 +30,6 @@ namespace EMotionFX
             return;
         }
 
-        m_rotationManipulators.SetSpace(physicsSetupManipulatorData.m_nodeWorldTransform);
         Refresh();
         m_rotationManipulators.Register(EMStudio::g_animManipulatorManagerId);
         m_rotationManipulators.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
@@ -66,6 +65,17 @@ namespace EMotionFX
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
+            if (m_jointLimitFrame == JointLimitFrame::Parent)
+            {
+                m_rotationManipulators.SetSpace(AZ::Transform::CreateFromQuaternionAndTranslation(
+                    m_physicsSetupManipulatorData.m_parentWorldTransform.GetRotation(),
+                    m_physicsSetupManipulatorData.m_nodeWorldTransform.GetTranslation()));
+            }
+            else
+            {
+                m_rotationManipulators.SetSpace(m_physicsSetupManipulatorData.m_nodeWorldTransform);
+            }
+
             m_rotationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
             m_rotationManipulators.SetLocalOrientation(GetLocalOrientation());
         }
