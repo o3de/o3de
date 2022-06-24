@@ -59,7 +59,7 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("NetworkingService"));
+        ;
     }
 
     void RemoteToolsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -106,7 +106,10 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
-        m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         m_entryRegistry[key].m_isHost = false;
         m_entryRegistry[key].m_name = name;
         m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
@@ -114,11 +117,19 @@ namespace RemoteTools
         AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
             name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         netInterface->SetTimeoutMs(AZ::TimeMs(0));
+
+        if (!m_joinThread->IsRunning())
+        {
+            m_joinThread->Start();
+        }
     }
 
     void RemoteToolsSystemComponent::RegisterToolingServiceHost(AZ::Crc32 key, AZ::Name name, uint16_t port)
     {
-        m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         m_entryRegistry[key].m_isHost = true;
         m_entryRegistry[key].m_name = name;
 
@@ -146,26 +157,42 @@ namespace RemoteTools
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointJoinedHandler(
-        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler)
     {
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         handler.Connect(m_entryRegistry[key].m_endpointJoinedEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointLeftHandler(
-        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler)
     {
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         handler.Connect(m_entryRegistry[key].m_endpointLeftEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointConnectedHandler(
-        AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler& handler)
     {
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         handler.Connect(m_entryRegistry[key].m_endpointConnectedEvent);
     }
 
     void RemoteToolsSystemComponent::RegisterRemoteToolsEndpointChangedHandler(
-        AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler)
+        AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler& handler)
     {
+        if (!m_entryRegistry.contains(key))
+        {
+            m_entryRegistry[key] = RemoteToolsRegistryEntry();
+        }
         handler.Connect(m_entryRegistry[key].m_endpointChangedEvent);
     }
 
@@ -301,13 +328,17 @@ namespace RemoteTools
 
         AzNetworking::INetworkInterface* networkInterface =
             AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(
-                AZ::Name(AZStd::string::format("%d", target.GetPersistentId())));
-
+                AZ::Name(m_entryRegistry[target.GetPersistentId()].m_name));
+        
         OutboundToolingDatum datum;
         datum.first = target.GetPersistentId();
         datum.second.swap(msgBuffer);
         m_outboxThread->PushOutboxMessage(
             networkInterface, static_cast<AzNetworking::ConnectionId>(target.GetNetworkId()), AZStd::move(datum));
+        if (!m_outboxThread->IsRunning())
+        {
+            m_outboxThread->Start();
+        }
     }
 
     void RemoteToolsSystemComponent::OnMessageParsed(
@@ -472,14 +503,18 @@ namespace RemoteTools
                     if (endpointIt->second.GetNetworkId() == static_cast<AZ::u32>(connection->GetConnectionId()))
                     {
                         AzFramework::RemoteToolsEndpointInfo ti = endpointIt->second;
-                        container.erase(endpointIt);
                         registryIt->second.m_endpointLeftEvent.Signal(ti);
+                        container.extract(endpointIt);
+                        break;
                     }
                 }
             }
         }
 
-        m_joinThread->UpdateStatus();
+        if (!m_joinThread->IsRunning())
+        {
+            m_joinThread->Start();
+        }
     }
 
 } // namespace RemoteTools

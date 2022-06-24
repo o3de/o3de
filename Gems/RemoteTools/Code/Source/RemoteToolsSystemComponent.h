@@ -117,13 +117,13 @@ namespace RemoteTools
 
         void ClearReceivedMessages(AZ::Crc32 key) override;
 
-        void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler) override;
 
-        void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointStatusEvent::Handler& handler) override;
 
-        void RegisterRemoteToolsEndpointConnectedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointConnectedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointConnectedEvent::Handler& handler) override;
 
-        void RegisterRemoteToolsEndpointChangedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler handler) override;
+        void RegisterRemoteToolsEndpointChangedHandler(AZ::Crc32 key, AzFramework::RemoteToolsEndpointChangedEvent::Handler& handler) override;
 
         void EnumTargetInfos(AZ::Crc32 key, AzFramework::RemoteToolsEndpointContainer& infos) override;
 

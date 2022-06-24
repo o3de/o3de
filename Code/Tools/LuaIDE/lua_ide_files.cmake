@@ -76,5 +76,4 @@ set(FILES
     Source/LUA/CodeCompletion/LUACompleter.hxx
     Source/LUA/CodeCompletion/LUACompletionModel.cpp
     Source/LUA/CodeCompletion/LUACompletionModel.hxx
-    Source/Utils/LuaIDEConstants.h
 )

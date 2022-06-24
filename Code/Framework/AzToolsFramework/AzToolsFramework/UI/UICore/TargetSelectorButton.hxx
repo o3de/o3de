@@ -39,6 +39,7 @@ namespace AzToolsFramework
         void ConstructDisplayTargetString(QString& outputString, const AzFramework::RemoteToolsEndpointInfo& info);
 
         AZ::Crc32 m_remoteToolsKey;
+        AzFramework::RemoteToolsEndpointConnectedEvent::Handler m_connectedEventHandler;
 
     private slots:
         void DoPopup();

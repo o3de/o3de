@@ -72,7 +72,7 @@ namespace AzFramework
 
     inline bool RemoteToolsEndpointInfo::IsValid() const
     {
-        return !m_displayName.empty() && m_networkId != 0 && m_persistentId != 0;
+        return !m_displayName.empty() && m_networkId != 0xFFFFFFFF && m_persistentId != 0;
     }
 
     inline const char* RemoteToolsEndpointInfo::GetDisplayName() const

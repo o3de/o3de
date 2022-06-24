@@ -27,9 +27,6 @@ namespace RemoteTools
         RemoteToolsJoinThread(int updateRate, RemoteToolsSystemComponent* component);
         ~RemoteToolsJoinThread() override;
 
-        //! Checks network status on all registered services and updates thread state if polling is required
-        void UpdateStatus();
-
     private:
         AZ_DISABLE_COPY_MOVE(RemoteToolsJoinThread);
 

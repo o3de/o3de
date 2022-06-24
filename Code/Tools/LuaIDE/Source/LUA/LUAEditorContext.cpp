@@ -27,6 +27,7 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
@@ -36,7 +37,6 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <Source/LUA/LUALocalsTrackerMessages.h>
-#include <Source/Utils/LuaIDEConstants.h>
 
 #include <QMessageBox>
 #include <regex>
@@ -125,21 +125,25 @@ namespace LUAEditor
         m_fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(m_fileIO, "FileIO system is not present, make sure a FileIO instance is set by the application.");
 
-        m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
-            [this](bool value)
-            {
-                this->DesiredTargetConnected(value);
-            });
-        AzFramework::RemoteToolsInterface::Get()->RegisterRemoteToolsEndpointConnectedHandler(
-            LUADebugger::LuaToolsKey, m_connectedEventHandler);
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
+                [this](bool value)
+                {
+                    this->DesiredTargetConnected(value);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointConnectedHandler(
+                AzFramework::LuaToolsKey, m_connectedEventHandler);
 
-        m_changedEventHandler = AzFramework::RemoteToolsEndpointChangedEvent::Handler(
-            [this](AZ::u32 oldVal, AZ::u32 newVal)
-            {
-                this->DesiredTargetChanged(oldVal, newVal);
-            });
-        AzFramework::RemoteToolsInterface::Get()->RegisterRemoteToolsEndpointChangedHandler(
-            LUADebugger::LuaToolsKey, m_changedEventHandler);
+            m_changedEventHandler = AzFramework::RemoteToolsEndpointChangedEvent::Handler(
+                [this](AZ::u32 oldVal, AZ::u32 newVal)
+                {
+                    this->DesiredTargetChanged(oldVal, newVal);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointChangedHandler(
+                AzFramework::LuaToolsKey, m_changedEventHandler);
+        }
     }
 
     void Context::Activate()

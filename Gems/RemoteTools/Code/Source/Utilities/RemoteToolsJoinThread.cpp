@@ -8,7 +8,14 @@
 
 #include "RemoteToolsJoinThread.h"
 
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/std/ranges/elements_view.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/Name/Name.h>
+
 #include <AzNetworking/Framework/INetworking.h>
 
 #include <RemoteToolsSystemComponent.h>
@@ -28,26 +35,38 @@ namespace RemoteTools
         Join();
     }
 
+    AZStd::string GetPersistentName()
+    {
+        AZStd::string persistentName = "O3DE";
+
+        char procPath[AZ_MAX_PATH_LEN];
+        AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);
+        if (ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success)
+        {
+            AzFramework::StringFunc::Path::GetFileName(procPath, persistentName);
+        }
+
+        return persistentName;
+    }
+
     void RemoteToolsJoinThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
     {
         bool isRequestingConnection = false;
         auto& networkInterfaces = AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces();
-        for (auto registryIt = m_remoteToolsComponent->m_entryRegistry.begin();
-            registryIt != m_remoteToolsComponent->m_entryRegistry.end();
-             ++registryIt)
+        for (const auto& [persistentId, toolsRegistryEntry] : m_remoteToolsComponent->m_entryRegistry)
         {
-            AZ::Name serviceName = registryIt->second.m_name;
-            if (!registryIt->second.m_isHost && networkInterfaces.contains(serviceName))
+            AZ::Name serviceName = toolsRegistryEntry.m_name;
+            if (!toolsRegistryEntry.m_isHost && networkInterfaces.contains(serviceName))
             {
                 auto networkInterface = networkInterfaces.find(serviceName);
                 if (networkInterface->second->GetConnectionSet().GetActiveConnectionCount() == 0)
                 {
-                    AzNetworking::ConnectionId connId = networkInterface->second->Connect(registryIt->second.m_ip);
+                    AzNetworking::ConnectionId connId = networkInterface->second->Connect(toolsRegistryEntry.m_ip);
                     if (connId != AzNetworking::InvalidConnectionId)
                     {
                         RemoteToolsPackets::RemoteToolsConnect initPacket;
-                        initPacket.SetPersistentId(registryIt->first);
-                        initPacket.SetDisplayName(serviceName.GetCStr());
+                        initPacket.SetPersistentId(persistentId);
+                        initPacket.SetDisplayName(GetPersistentName());
                         networkInterface->second->SendReliablePacket(connId, initPacket);
                     }
                     else
@@ -64,34 +83,4 @@ namespace RemoteTools
             Join();
         }
     }
-
-    void RemoteToolsJoinThread::UpdateStatus()
-    {
-        if (!IsRunning())
-        {
-            bool isRequestingConnection = false;
-            auto& networkInterfaces = AZ::Interface<AzNetworking::INetworking>::Get()->GetNetworkInterfaces();
-            for (auto registryIt = m_remoteToolsComponent->m_entryRegistry.begin();
-                 registryIt != m_remoteToolsComponent->m_entryRegistry.end();
-                 ++registryIt)
-            {
-                AZ::Name serviceName = registryIt->second.m_name;
-                if (networkInterfaces.contains(serviceName))
-                {
-                    auto networkInterface = networkInterfaces.find(serviceName);
-                    if (networkInterface->second->GetConnectionSet().GetActiveConnectionCount() == 0)
-                    {
-                        isRequestingConnection = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isRequestingConnection)
-            {
-                Start();
-            }
-        }
-    }
-
 } // namespace RemoteTools

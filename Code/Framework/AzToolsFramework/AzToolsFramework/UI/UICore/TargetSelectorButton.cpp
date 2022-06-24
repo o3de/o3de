@@ -31,13 +31,28 @@ namespace AzToolsFramework
         sizePolicy1.setHeightForWidth(sizePolicy().hasHeightForWidth());
         setSizePolicy(sizePolicy1);
         setMinimumSize(QSize(128, 24));
+
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
+                [this](bool value)
+                {
+                    this->DesiredTargetConnected(value);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointConnectedHandler(key, m_connectedEventHandler);
+        }
     }
 
     void TargetSelectorButton::DoPopup()
     {
         AzFramework::RemoteToolsEndpointContainer targets;
 
-        AzFramework::RemoteToolsInterface::Get()->EnumTargetInfos(m_remoteToolsKey, targets);
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            remoteToolsInterface->EnumTargetInfos(m_remoteToolsKey, targets);
+        }
 
         QMenu menu;
 
@@ -55,7 +70,8 @@ namespace AzToolsFramework
                 continue;
             }
 
-            bool isOnline = AzFramework::RemoteToolsInterface::Get()->IsEndpointOnline(m_remoteToolsKey, info.GetNetworkId());
+            bool isOnline = remoteToolsInterface ?
+                remoteToolsInterface->IsEndpointOnline(m_remoteToolsKey, info.GetPersistentId()) : false;
 
             QString displayTargetString;
             ConstructDisplayTargetString(displayTargetString, info);
@@ -67,10 +83,10 @@ namespace AzToolsFramework
         
         QAction* resultAction = menu.exec(QCursor::pos());
         
-        if (resultAction)
+        if (resultAction && remoteToolsInterface)
         {
             AZ::u32 networkId = resultAction->property("targetID").toUInt();
-            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(m_remoteToolsKey, networkId);
+            remoteToolsInterface->SetDesiredEndpoint(m_remoteToolsKey, networkId);
         }
     }
 
@@ -115,31 +131,34 @@ namespace AzToolsFramework
 
     void TargetSelectorButton::UpdateStatus()
     {
-        AzFramework::RemoteToolsEndpointInfo info = AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(m_remoteToolsKey);
-        if (!info.GetPersistentId())
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
         {
-            this->setIcon(QIcon(":/general/target_none"));
-            this->setText("Target: None");
-            return;
+            AzFramework::RemoteToolsEndpointInfo info = AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(m_remoteToolsKey);
+            if (!info.GetPersistentId())
+            {
+                this->setIcon(QIcon(":/general/target_none"));
+                this->setText("Target: None");
+                return;
+            }
+
+            if (!info.IsValid())
+            {
+                this->setIcon(QIcon(":/general/target_none"));
+                this->setText("Target: None");
+                return;
+            }
+
+            this->setText(QString("Target: %1").arg(info.GetDisplayName()));
+
+            if (AzFramework::RemoteToolsInterface::Get()->IsEndpointOnline(m_remoteToolsKey, info.GetNetworkId()))
+            {
+                this->setIcon(QIcon(":/general/target_connected"));
+                return;
+            }
         }
 
-        if (!info.IsValid())
-        {
-            this->setIcon(QIcon(":/general/target_none"));
-            this->setText("Target: None");
-            return;
-        }
-
-        this->setText(QString("Target: %1").arg(info.GetDisplayName()));
-        if (AzFramework::RemoteToolsInterface::Get()->IsEndpointOnline(m_remoteToolsKey, info.GetNetworkId()))
-        {
-            this->setIcon(QIcon(":/general/target_connected"));
-        }
-        else
-        {
-            this->setIcon(QIcon(":/general/target_disconnected"));
-        }
-        //updateGeometry();
+        this->setIcon(QIcon(":/general/target_disconnected"));
     }
 
     void TargetSelectorButton::ConstructDisplayTargetString(QString& outputString, const AzFramework::RemoteToolsEndpointInfo& info)

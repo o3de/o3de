@@ -15,7 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzCore/std/smart_ptr/intrusive_refcount.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
@@ -26,7 +26,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class RemoteToolsMessage
+    class RemoteToolsMessage : public AZStd::intrusive_refcount<size_t>
     {
     public:
         AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator, 0);
@@ -37,7 +37,6 @@ namespace AzFramework
             , m_senderTargetId(0)
             , m_customBlob(nullptr)
             , m_customBlobSize(0)
-            , m_refCount(0)
             , m_isBlobOwner(false)
             , m_immediateSelfDispatch(false)
         {
@@ -47,7 +46,6 @@ namespace AzFramework
             , m_senderTargetId(0)
             , m_customBlob(nullptr)
             , m_customBlobSize(0)
-            , m_refCount(0)
             , m_isBlobOwner(false)
             , m_immediateSelfDispatch(false)
         {
@@ -96,33 +94,13 @@ namespace AzFramework
         AZ::u32 m_customBlobSize;
         bool m_isBlobOwner;
         bool m_immediateSelfDispatch;
-
-        //---------------------------------------------------------------------
-        // refcount
-        //---------------------------------------------------------------------
-        template<class T>
-        friend struct AZStd::IntrusivePtrCountPolicy;
-        AZ_FORCE_INLINE void add_ref()
-        {
-            ++m_refCount;
-        }
-        AZ_FORCE_INLINE void release()
-        {
-            if (--m_refCount == 0)
-            {
-                delete this;
-            }
-        }
-
-        size_t m_refCount;
-        //---------------------------------------------------------------------
     };
 
-    typedef AZStd::intrusive_ptr<RemoteToolsMessage> RemoteToolsMessagePointer;
-    typedef AZStd::deque<RemoteToolsMessagePointer, AZ::OSStdAllocator> RemoteToolsMessageQueue;
+    using RemoteToolsMessagePointer = AZStd::intrusive_ptr<RemoteToolsMessage>;
+    using RemoteToolsMessageQueue = AZStd::deque<RemoteToolsMessagePointer, AZ::OSStdAllocator>;
     
     // id for the local application
-    static const AZ::u32 s_selfNetworkId = 0xFFFFFFFF;
+    static constexpr AZ::u32 s_selfNetworkId = 0xFFFFFFFF;
 
     class RemoteToolsEndpointInfo final
     {
@@ -177,7 +155,7 @@ namespace AzFramework
         bool m_isOnline;
     };
 
-    typedef AZStd::unordered_map<AZ::u32, RemoteToolsEndpointInfo> RemoteToolsEndpointContainer;
+    using RemoteToolsEndpointContainer = AZStd::unordered_map<AZ::u32, RemoteToolsEndpointInfo>;
     using RemoteToolsEndpointStatusEvent = AZ::Event<RemoteToolsEndpointInfo>;
     using RemoteToolsEndpointConnectedEvent = AZ::Event<bool>;
     using RemoteToolsEndpointChangedEvent = AZ::Event<AZ::u32, AZ::u32>;
@@ -210,13 +188,13 @@ namespace AzFramework
         //! @param key Th e key of the service to clear messages for
         virtual void ClearReceivedMessages(AZ::Crc32 key) = 0;
 
-        virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler handler) = 0;
+        virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
 
-        virtual void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler handler) = 0;
+        virtual void RegisterRemoteToolsEndpointLeftHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
 
-        virtual void RegisterRemoteToolsEndpointConnectedHandler(AZ::Crc32 key, RemoteToolsEndpointConnectedEvent::Handler handler) = 0;
+        virtual void RegisterRemoteToolsEndpointConnectedHandler(AZ::Crc32 key, RemoteToolsEndpointConnectedEvent::Handler& handler) = 0;
 
-        virtual void RegisterRemoteToolsEndpointChangedHandler(AZ::Crc32 key, RemoteToolsEndpointChangedEvent::Handler handler) = 0;
+        virtual void RegisterRemoteToolsEndpointChangedHandler(AZ::Crc32 key, RemoteToolsEndpointChangedEvent::Handler& handler) = 0;
 
         //! Retrieves a list of currently known endpoints for a given service, useful for GUI
         //! @param key The key fo the service to fetch endpoints for
