@@ -106,31 +106,13 @@ namespace AZ::SceneAPI::Behaviors
         };
 
         using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshTransformMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshDataMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>; // MeshData Index -> MeshNodeData
         using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
         using NodeEntityMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
         using EntityIdList = AZStd::vector<AZ::EntityId>;
 
-        void AssignCustomPropertyMapIndex(
-            MeshNodeData& meshNodeData,
-            const Containers::SceneGraph& graph,
-            const Containers::SceneGraph::NodeIndex meshIndex)
-        {
-            auto childIndex = graph.GetNodeChild(meshIndex);
-            while (childIndex.IsValid())
-            {
-                const auto nodeContent = graph.GetNodeContent(childIndex);
-                if (nodeContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(nodeContent.get()))
-                {
-                    meshNodeData.m_propertyMapIndex = childIndex;
-                    return;
-                }
-                childIndex = graph.GetNodeSibling(childIndex);
-            }
-        }
-
-        MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
+        MeshDataMap CalculateMeshTransformMap(const Containers::Scene& scene)
         {
             auto graph = scene.GetGraph();
             const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(
@@ -145,7 +127,7 @@ namespace AZ::SceneAPI::Behaviors
             }
 
             MeshIndexContainer meshIndexContainer;
-            MeshTransformMap meshTransformMap;
+            MeshDataMap meshDataMap;
             for (auto it = view.begin(); it != view.end(); ++it)
             {
                 Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
@@ -153,41 +135,37 @@ namespace AZ::SceneAPI::Behaviors
                 const auto currentContent = graph.GetNodeContent(currentIndex);
                 if (currentContent)
                 {
-                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
+                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(currentContent.get()))
                     {
-                        const auto parentIndex = graph.GetNodeParent(currentIndex);
-                        if (parentIndex.IsValid() == false)
+                        // get the MeshData child node index values for Transform and CustomPropertyData
+                        auto childIndex = it.GetHierarchyIterator()->GetChildIndex();
+
+                        MeshNodeData meshNodeData;
+                        meshNodeData.m_meshIndex = currentIndex;
+
+                        while (childIndex.IsValid())
                         {
-                            continue;
+                            const auto childContent = graph.GetNodeContent(childIndex);
+                            if (currentContent.get())
+                            {
+                                if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(childContent.get()))
+                                {
+                                    meshNodeData.m_transformIndex = childIndex;
+                                }
+                                else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(childContent.get()))
+                                {
+                                    meshNodeData.m_propertyMapIndex = childIndex;
+                                }
+                            }
+                            childIndex = graph.GetNodeSibling(childIndex);
                         }
-                        const auto parentContent = graph.GetNodeContent(parentIndex);
-                        if (parentContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
-                        {
-                            // map the node parent to the ITransform
-                            meshIndexContainer.erase(parentIndex);
-                            MeshNodeData meshNodeData{ parentIndex, currentIndex };
-                            AssignCustomPropertyMapIndex(meshNodeData, graph, parentIndex);
-                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(meshNodeData) });
-                        }
-                    }
-                    else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(currentContent.get()))
-                    {
-                        meshIndexContainer.insert(currentIndex);
+
+                        meshDataMap.emplace(MeshTransformEntry{ currentIndex, AZStd::move(meshNodeData) });
                     }
                 }
             }
 
-            // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node
-            // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
-            // indicate the transform should not be set to a default value
-            for( const auto& meshIndex : meshIndexContainer)
-            {
-                MeshNodeData meshNodeData { meshIndex, Containers::SceneGraph::NodeIndex{} };
-                AssignCustomPropertyMapIndex(meshNodeData, graph, meshIndex);
-                meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(meshNodeData) });
-            }
-
-            return meshTransformMap;
+            return meshDataMap;
         }
 
         bool AddEditorMaterialComponent(const AZ::EntityId& entityId, const DataTypes::ICustomPropertyData& propertyData)
@@ -291,14 +269,14 @@ namespace AZ::SceneAPI::Behaviors
 
         NodeEntityMap CreateMeshGroups(
             ManifestUpdates& manifestUpdates,
-            const MeshTransformMap& meshTransformMap,
+            const MeshDataMap& meshDataMap,
             const Containers::Scene& scene,
             const AZStd::string& relativeSourcePath)
         {
             NodeEntityMap nodeEntityMap;
             const auto& graph = scene.GetGraph();
 
-            for (const auto& entry : meshTransformMap)
+            for (const auto& entry : meshDataMap)
             {
                 const auto thisNodeIndex = entry.first;
                 const auto meshNodeIndex = entry.second.m_meshIndex;
@@ -324,7 +302,7 @@ namespace AZ::SceneAPI::Behaviors
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
                 meshGroup->SetName(meshGroupName);
                 meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
-                for (const auto& meshGoupNamePair : meshTransformMap)
+                for (const auto& meshGoupNamePair : meshDataMap)
                 {
                     if (meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
                     {
@@ -390,7 +368,7 @@ namespace AZ::SceneAPI::Behaviors
         EntityIdList FixUpEntityParenting(
             const NodeEntityMap& nodeEntityMap,
             const Containers::SceneGraph& graph,
-            const MeshTransformMap& meshTransformMap)
+            const MeshDataMap& meshDataMap)
         {
             EntityIdList entities;
             entities.reserve(nodeEntityMap.size());
@@ -405,8 +383,8 @@ namespace AZ::SceneAPI::Behaviors
                 auto parentNodeIndex = graph.GetNodeParent(thisNodeIndex);
                 while (parentNodeIndex.IsValid())
                 {
-                    auto parentNodeIterator = meshTransformMap.find(parentNodeIndex);
-                    if (meshTransformMap.end() != parentNodeIterator)
+                    auto parentNodeIterator = meshDataMap.find(parentNodeIndex);
+                    if (meshDataMap.end() != parentNodeIterator)
                     {
                         auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
                         if (nodeEntityMap.end() != parentEntiyIterator)
@@ -438,8 +416,8 @@ namespace AZ::SceneAPI::Behaviors
                     entityTransform->SetParent(parentEntityId);
                 }
 
-                auto thisNodeIterator = meshTransformMap.find(thisNodeIndex);
-                AZ_Assert(thisNodeIterator != meshTransformMap.end(), "This node index missing.");
+                auto thisNodeIterator = meshDataMap.find(thisNodeIndex);
+                AZ_Assert(thisNodeIterator != meshDataMap.end(), "This node index missing.");
                 auto thisTransformIndex = thisNodeIterator->second.m_transformIndex;
 
                 // get node matrix data to set the entity's local transform
