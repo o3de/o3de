@@ -69,7 +69,7 @@ private:
 
     //! Handler for shader lookup callbacks.
     //! This is used by the JSON decoder for mapping shader instruction
-    //! addresses to DXIL lines or HLSL source lines.
+    //! addresses to SPIR-V lines or HLSL source lines.
     //! NOTE: If the application loads stripped shader binaries (-Qstrip_debug),
     //! Aftermath will require access to both the stripped and the not stripped
     //! shader binaries.
