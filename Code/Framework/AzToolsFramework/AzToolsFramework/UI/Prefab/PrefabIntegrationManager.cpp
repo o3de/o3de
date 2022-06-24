@@ -18,6 +18,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
@@ -112,15 +113,17 @@ namespace AzToolsFramework
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             prefabFocusInterface->InitializeEditorInterfaces();
 
-            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-            AZ_Assert(
-                m_actionManagerInterface,
-                "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
-
-            // Register an updater that will refresh actions when a level is loaded.
-            if (m_actionManagerInterface)
+            if (IsNewActionManagerEnabled())
             {
-                m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+                m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+                AZ_Assert(
+                    m_actionManagerInterface, "Prefab - could not get m_actionManagerInterface on PrefabIntegrationManager construction.");
+
+                // Register an updater that will refresh actions when a level is loaded.
+                if (m_actionManagerInterface)
+                {
+                    m_actionManagerInterface->RegisterActionUpdater(LevelLoadedUpdaterIdentifier);
+                }
             }
             
             EditorContextMenuBus::Handler::BusConnect();
