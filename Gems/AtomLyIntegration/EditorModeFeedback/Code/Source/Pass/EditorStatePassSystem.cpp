@@ -26,6 +26,7 @@ namespace AZ::Render
     static constexpr const char* const MainPassParentTemplatePassClassName = "EditorModeFeedbackParentPass";
     static constexpr const char* const MainPassParentPassName = "EditorModeFeedbackPassParent";
     static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
+    static constexpr const char* const PassthroughStatePassTemplatePassClassName = "EditorStatePassthroughPass";
 
     static Name GetMaskPassTemplateNameForDrawList(const Name& drawList)
     {
@@ -35,6 +36,11 @@ namespace AZ::Render
     static Name GetMaskPassNameForDrawList(const Name& drawList)
     {
         return Name(AZStd::string(drawList.GetStringView()) + "_EntityMaskPass");
+    }
+
+    static Name GetPassthroughPassTemplateName(const EditorStateParentPassBase& state)
+    {
+        return Name(state.GetStateName() + "PassthroughTemplate");
     }
     
     static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
@@ -147,11 +153,11 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->AddPassTemplate(stateParentPassTemplate->m_name, stateParentPassTemplate);
     }
 
-    void CreateAndAddPassthroughPassTemplate()
+    void CreateAndAddPassthroughPassTemplate(const EditorStateParentPassBase& state)
     {
         auto passTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        passTemplate->m_name = Name("EditorModePassthroughPassTemplate");
-        passTemplate->m_passClass = Name("FullScreenTriangle");
+        passTemplate->m_name = GetPassthroughPassTemplateName(state);
+        passTemplate->m_passClass = PassthroughStatePassTemplatePassClassName;
     
         // Input color slot
         {
@@ -201,10 +207,11 @@ namespace AZ::Render
                 return;
             }
 
-            auto passData = AZStd::make_shared<RPI::FullscreenTrianglePassData>();
+            auto passData = AZStd::make_shared<RPI::EditorStatePassthroughPassData>();
             passData->m_pipelineViewTag = "MainCamera";
             passData->m_shaderAsset.m_filePath = shaderFilePath;
             passData->m_shaderAsset.m_assetId = shaderAssetId;
+            passData->editorStatePass = &state;
             passTemplate->m_passData = passData;
         }
 
@@ -289,6 +296,7 @@ namespace AZ::Render
         auto* passSystem = RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
         passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
+        passSystem->AddPassCreator(Name(PassthroughStatePassTemplatePassClassName), &EditorStatePassthroughPass::Create);
         passSystem->AddPassCreator(Name(StatePassTemplatePassClassName), &EditorStateParentPass::Create);
         passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
         passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
@@ -342,8 +350,6 @@ namespace AZ::Render
 
             mainParentPassTemplate->AddPassRequest(pass);
         }
-
-        CreateAndAddPassthroughPassTemplate();
         
         // Editor state passes
         auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
@@ -382,9 +388,10 @@ namespace AZ::Render
         
             // Passthrough pass 
             {
+                CreateAndAddPassthroughPassTemplate(*state);
                 RPI::PassRequest passthrough;
                 passthrough.m_passName = GetPassthroughPassNameForState(*state);
-                passthrough.m_templateName = Name("EditorModePassthroughPassTemplate");
+                passthrough.m_templateName = GetPassthroughPassTemplateName(*state);
                 
                 // Input color
                 {
@@ -444,18 +451,18 @@ namespace AZ::Render
         return entityMaskMap;
     }
 
-    void EditorStatePassSystem::InitPasses(RPI::RenderPipeline* renderPipeline)
+    void EditorStatePassSystem::InitPasses([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
     {
-        RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
-        RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);
-        if (mainPass)
-        {
-            auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
-            for (auto& state : m_editorStateParentPasses)
-            {
-                auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
-                state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
-            }
-        }
+        //RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
+        //RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);
+        //if (mainPass)
+        //{
+        //    auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
+        //    for (auto& state : m_editorStateParentPasses)
+        //    {
+        //        auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
+        //        state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
+        //    }
+        //}
     }
 } // namespace AZ::Render

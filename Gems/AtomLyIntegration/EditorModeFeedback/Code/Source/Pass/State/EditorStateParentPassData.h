@@ -11,6 +11,8 @@
 
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
+#include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
+
 namespace AZ::RPI
 {
     //! Custom data for the FullscreenTrianglePass. Should be specified in the PassRequest.
@@ -22,6 +24,19 @@ namespace AZ::RPI
 
         EditorStateParentPassData() = default;
         virtual ~EditorStateParentPassData() = default;
+
+        const Render::EditorStateParentPassBase* editorStatePass = nullptr;
+    };
+
+    //! Custom data for the FullscreenTrianglePass. Should be specified in the PassRequest.
+    struct EditorStatePassthroughPassData
+        : public RPI::FullscreenTrianglePassData
+    {
+        AZ_RTTI(EditorStatePassthroughPassData, "{3782A63C-4FFE-417B-86B5-C61E986CCBE6}", FullscreenTrianglePassData);
+        AZ_CLASS_ALLOCATOR(EditorStatePassthroughPassData, SystemAllocator, 0);
+
+        EditorStatePassthroughPassData() = default;
+        virtual ~EditorStatePassthroughPassData() = default;
 
         const Render::EditorStateParentPassBase* editorStatePass = nullptr;
     };

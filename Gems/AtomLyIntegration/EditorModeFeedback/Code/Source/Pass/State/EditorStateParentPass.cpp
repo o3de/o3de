@@ -15,30 +15,30 @@ namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<EditorStateParentPass> EditorStateParentPass::Create(const RPI::PassDescriptor& descriptor)
-        {
-            RPI::Ptr<EditorStateParentPass> pass = aznew EditorStateParentPass(descriptor);
-            return AZStd::move(pass);
-        }
+        //RPI::Ptr<EditorStateParentPass> EditorStateParentPass::Create(const RPI::PassDescriptor& descriptor)
+        //{
+        //    RPI::Ptr<EditorStateParentPass> pass = aznew EditorStateParentPass(descriptor);
+        //    return AZStd::move(pass);
+        //}
 
-        EditorStateParentPass::EditorStateParentPass(const RPI::PassDescriptor& descriptor)
-            : AZ::RPI::ParentPass(descriptor)
-            , m_passDescriptor(descriptor)
-        {
-        }
-
-        bool EditorStateParentPass::IsEnabled() const
-        {
-            return false;
-            //const RPI::EditorStateParentPassData* passData = RPI::PassUtils::GetPassData<RPI::EditorStateParentPassData>(m_passDescriptor);
-            //if (passData == nullptr)
-            //{
-            //    AZ_Error(
-            //        "PassSystem", false, "[EditorStateParentPassData '%s']: Trying to construct without valid EditorStateParentPassData!",
-            //        GetPathName().GetCStr());
-            //    return false;
-            //}
-            //return passData->editorStatePass->IsEnabled();
-        }
+        //EditorStateParentPass::EditorStateParentPass(const RPI::PassDescriptor& descriptor)
+        //    : AZ::RPI::ParentPass(descriptor)
+        //    , m_passDescriptor(descriptor)
+        //{
+        //}
+        //
+        //bool EditorStateParentPass::IsEnabled() const
+        //{
+        //    return false;
+        //    //const RPI::EditorStateParentPassData* passData = RPI::PassUtils::GetPassData<RPI::EditorStateParentPassData>(m_passDescriptor);
+        //    //if (passData == nullptr)
+        //    //{
+        //    //    AZ_Error(
+        //    //        "PassSystem", false, "[EditorStateParentPassData '%s']: Trying to construct without valid EditorStateParentPassData!",
+        //    //        GetPathName().GetCStr());
+        //    //    return false;
+        //    //}
+        //    //return passData->editorStatePass->IsEnabled();
+        //}
     } // namespace Render
 } // namespace AZ
