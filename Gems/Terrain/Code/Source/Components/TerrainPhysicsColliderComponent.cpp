@@ -566,7 +566,7 @@ namespace Terrain
 
         m_surfaceTagToMaterialIndexLookup.clear();
 
-        for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
+        for (const auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {
             for (uint8_t materialIndex = 0; materialIndex < materialList.size(); materialIndex++)
             {
