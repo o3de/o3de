@@ -1276,21 +1276,7 @@ namespace AssetProcessor
                 //delete the full file path
                 if (shouldDeleteFile)
                 {
-                    if (!productWrapper.ExistOnDisk(true))
-                    {
-                        Q_EMIT AssetMessage(message);
-                    }
-                    else
-                    {
-                        if (productWrapper.DeleteFiles(true))
-                        {
-                            Q_EMIT AssetMessage(message);
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
+                    DeleteProducts({ priorProduct });
                 }
                 else
                 {
@@ -1298,29 +1284,7 @@ namespace AssetProcessor
                     // Don't report that the file has been removed as it's still there, but as a different kind of file (different sub id, type, etc.).
                 }
 
-                //trace that we are about to remove a lingering prior product from the database
-                // because of On Delete Cascade this will also remove any legacy subIds associated with that product automatically.
-                if (!m_stateData->RemoveProduct(priorProduct.m_productID))
-                {
-                    //somethings wrong...
-                    AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove lingering prior products from the database!!! %s", priorProduct.ToString().c_str());
-                }
-                else
-                {
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "Removed lingering prior product %s\n", priorProduct.ToString().c_str());
-
-                    AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> unresolvedProductDependencies;
-                    auto queryFunc = [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& productDependencyData)
-                    {
-                        if (!productDependencyData.m_unresolvedPath.empty())
-                        {
-                            unresolvedProductDependencies.push_back(productDependencyData);
-                        }
-                        return true;
-                    };
-
-                    m_stateData->QueryProductDependencyByProductId(priorProduct.m_productID, queryFunc);
-                }
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Removed lingering prior product %s\n", priorProduct.ToString().c_str());
             }
 
             //trace that we are about to update the products in the database
@@ -3525,7 +3489,7 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
                 if (m_stateData->GetJobsBySourceName(sourceFileDependency.m_sourceFileDependencyPath.c_str(), jobs, AZ::Uuid::CreateNull(), jobDependencyInternal->m_jobDependency.m_jobKey.c_str(), jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str(), AzToolsFramework::AssetSystem::JobStatus::Completed))
                 {
-                    jobDependencyInternal = job.m_jobDependencyList.erase(jobDependencyInternal);
+                    job.m_jobDependencyList.erase(jobDependencyInternal);
                     continue;
                 }
 
