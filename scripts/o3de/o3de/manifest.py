@@ -325,9 +325,16 @@ def get_gem_gems(gem_path: pathlib.Path) -> list:
 def get_gem_external_subdirectories(gem_path: pathlib.Path) -> list:
     gem_object = get_gem_json_data(gem_path=gem_path)
     if gem_object:
-        return list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
-                        gem_object[
-                            'external_subdirectories'])) if 'external_subdirectories' in gem_object else []
+        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
+            gem_object['external_subdirectories'])) if 'external_subdirectories' in gem_object else []
+
+        # recurse into gem subdirectories 
+        for external_subdirectory in external_subdirectories:
+            gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
+            if gem_json_path.is_file():
+                external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory))
+
+        return external_subdirectories
     return []
 
 
@@ -357,16 +364,9 @@ def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
     if project_path:
         external_subdirectories_data.extend(get_project_external_subdirectories(project_path))
 
-    def descend_gems(gem_path: pathlib.Path):
-        new_external_subdirectories_data = get_gem_external_subdirectories(gem_path)
-        external_subdirectories_data.extend(new_external_subdirectories_data)
-        new_gems_data = get_gems_from_external_subdirectories(new_external_subdirectories_data)
-        for new_gem in new_gems_data:
-            descend_gems(new_gem)
-
-    gems_data = get_gems_from_external_subdirectories(external_subdirectories_data)
-    for gem in gems_data:
-        descend_gems(gem)
+    gem_paths = get_gems_from_external_subdirectories(external_subdirectories_data)
+    for gem_path in gem_paths:
+        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path))
 
     # Remove duplicates from the list
     return list(dict.fromkeys(external_subdirectories_data))
