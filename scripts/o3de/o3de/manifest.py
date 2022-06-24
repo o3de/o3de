@@ -265,8 +265,8 @@ def get_manifest_repos() -> list:
 
 
 # engine.json queries
-def get_engine_projects() -> list:
-    engine_path = get_this_engine_path()
+def get_engine_projects(engine_path:pathlib.Path = None) -> list:
+    engine_path = engine_path or get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
     if engine_object:
         return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
@@ -308,6 +308,24 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
                         project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
     return []
 
+def get_project_engine(project_path: pathlib.Path) -> pathlib.Path or None:
+    project_object = get_project_json_data(project_path=project_path)
+    if project_object:
+        engine_name = project_object.get('engine_name','')
+        logger.error(f'found engine with name {engine_name}')
+        if engine_name:
+            return get_registered(engine_name=engine_name)
+    
+    engine_paths = get_manifest_engines()
+    for engine_path in engine_paths:
+        logger.error(f'checking engine {engine_path}')
+        projects = get_engine_projects(engine_path)
+        for engine_project_path in projects:
+            logger.error(f'checking path {engine_project_path} vs {project_path}')
+            if project_path == engine_project_path:
+                return engine_path
+
+    return None
 
 def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)

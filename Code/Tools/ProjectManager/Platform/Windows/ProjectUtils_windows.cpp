@@ -186,19 +186,50 @@ namespace O3DE::ProjectManager
                     // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
                     // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
                     buildConfigurationPath /= "bin";
-                    if (editorPath = (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
+                    auto paths = AZStd::vector<AZ::IO::FixedMaxPath>{
+                        buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor",
+                        buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE / "Editor"
+                    };
+
+                    // always try profile config because that is the default
+                    if (strcmp(AZ_BUILD_CONFIGURATION_TYPE, "profile") != 0)
+                    {
+                        paths.emplace_back(buildConfigurationPath / "profile" / "Editor");
+                        paths.emplace_back(buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Editor");
+                    }
+
+                    for (auto path : paths)
+                    {
+                        if(AZ::IO::SystemFile::Exists(path.ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION).c_str()))
+                        {
+                            return path;
+                        }
+                    }
+                }
+            }
+
+            // Attempt to find the Editor in the specified engine's bin folder
+            if(auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath.Native().data()); engineResult)
+            {
+                auto engineInfo = engineResult.GetValue<EngineInfo>();
+                if (!engineInfo.m_thisEngine)
+                {
+                    AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toStdString().c_str() };
+                    // first try the default sdk path
+                    if (editorPath = (fixedEnginePath / "bin" / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Default" / "Editor").
                         ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                         AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
                         return editorPath;
                     }
-                    else if (editorPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME
-                        / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
+                    // next try the default build path
+                    else if (editorPath = (fixedEnginePath / "build" / "windows_vs2019" / "bin" / "profile" / "Editor").
                         ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                         AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
                         return editorPath;
                     }
+                    return {};
                 }
             }
 
