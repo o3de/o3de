@@ -33,6 +33,32 @@ class TestEditorTest(unittest.TestCase):
         assert mock_editorsharedtest.is_batchable
         assert not mock_editorsharedtest.is_parallelizable
 
+    def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.py (testcase ) \n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+
+    def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.\n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 1
+
 
 class TestResultType(unittest.TestCase):
 
@@ -686,6 +712,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_filepath):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
@@ -717,6 +744,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                              mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -747,6 +775,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                  mock_retrieve_log, mock_retrieve_editor_log,
                                                                  mock_get_results, mock_retrieve_crash):
@@ -785,6 +814,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                    mock_retrieve_log, mock_retrieve_editor_log,
                                                                    mock_get_results, mock_retrieve_crash):
