@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <EngineInfo.h>
 #include <ProjectInfo.h>
 #include <AzCore/std/functional.h>
 
@@ -88,7 +89,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
+        explicit ProjectButton(const ProjectInfo& m_projectInfo, const EngineInfo& m_engineInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
         const ProjectInfo& GetProjectInfo() const;
@@ -133,6 +134,7 @@ namespace O3DE::ProjectManager
 
         QMenu* CreateProjectMenu();
 
+        EngineInfo m_engineInfo;
         ProjectInfo m_projectInfo;
 
         LabelButton* m_projectImageLabel = nullptr;

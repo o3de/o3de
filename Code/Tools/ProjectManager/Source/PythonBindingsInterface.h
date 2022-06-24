@@ -66,12 +66,20 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) = 0;
 
         /**
+         * Get info about an engine the provided project is registered with 
+         * @param projectPath The path of the project 
+         * @return an outcome with EngineInfo on success
+         */
+        virtual AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) = 0;
+
+        /**
          * Set info about the engine 
          * @param force True to force registration even if an engine with the same name is already registered
          * @param engineInfo an EngineInfo object 
          * @return a detailed error outcome on failure.
          */
         virtual DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) = 0;
+
 
         // Gems
 

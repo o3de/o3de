@@ -222,8 +222,9 @@ namespace O3DE::ProjectManager
     }
 
 
-    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
+    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent)
         : QFrame(parent)
+        , m_engineInfo(engineInfo)
         , m_projectInfo(projectInfo)
         , m_isProjectBuilding(false)
     {
@@ -248,11 +249,15 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
         QFrame* projectFooter = new QFrame(this);
-        QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setContentsMargins(0, 0, 0, 0);
-        projectFooter->setLayout(hLayout);
+        QVBoxLayout* projectFooterLayout = new QVBoxLayout();
+        projectFooterLayout->setContentsMargins(0, 0, 0, 0);
+        projectFooter->setLayout(projectFooterLayout);
         {
-            AzQtComponents::ElidingLabel* projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
+            // row 1
+            QHBoxLayout* hLayout = new QHBoxLayout();
+            hLayout->setContentsMargins(0, 0, 0, 0);
+
+            auto projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
             projectNameLabel->setToolTip(m_projectInfo.m_path);
             hLayout->addWidget(projectNameLabel);
 
@@ -260,6 +265,16 @@ namespace O3DE::ProjectManager
             m_projectMenuButton->setObjectName("projectMenuButton");
             m_projectMenuButton->setMenu(CreateProjectMenu());
             hLayout->addWidget(m_projectMenuButton);
+            projectFooterLayout->addLayout(hLayout);
+
+            // row 2
+            if (!m_projectInfo.m_engineName.isEmpty() && !m_engineInfo.m_name.isEmpty())
+            {
+                auto engineNameLabel = new AzQtComponents::ElidingLabel(m_engineInfo.m_name + " " + m_engineInfo.m_version, this);
+                engineNameLabel->setObjectName(m_engineInfo.m_thisEngine ? "thisEngineLabel" : "otherEngineLabel");
+                engineNameLabel->setToolTip(m_engineInfo.m_name + " " + m_engineInfo.m_version + " " + m_engineInfo.m_path);
+                projectFooterLayout->addWidget(engineNameLabel);
+            }
         }
 
         vLayout->addWidget(projectFooter);

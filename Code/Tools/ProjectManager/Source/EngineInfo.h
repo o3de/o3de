@@ -34,6 +34,7 @@ namespace O3DE::ProjectManager
         QString m_defaultRestrictedFolder;
 
         bool m_registered = false;
+        bool m_thisEngine = false;
 
         bool IsValid() const;
     };

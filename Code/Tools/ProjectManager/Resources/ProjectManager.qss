@@ -476,12 +476,21 @@ QTabBar::tab:focus {
 #projectButton  {
     min-width: 210px;
     max-width: 210px;
-    min-height: 310px;
-    max-height: 310px;
+    min-height: 330px;
+    max-height: 330px;
 }
 
-#projectButton > Frame {
+#projectButton > QFrame {
     margin-top:6px;
+}
+
+#projectButton #thisEngineLabel, #projectButton #otherEngineLabel {
+    font-weight:normal;
+    font-size:12px;
+}
+
+#projectButton #otherEngineLabel {
+    color: yellow;
 }
 
 #projectButton QLabel {
