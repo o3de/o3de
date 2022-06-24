@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 
 def get_package_name(project_path):
     """
-    Gets the Package name from the project's settings JSON.
+    Gets the Package name from the android project's settings JSON.
 
     :param project_path: The project path of the project
     :return: The Package name from the settings JSON
