@@ -36,9 +36,15 @@ namespace Physics
         using NameSet = AZStd::unordered_set<AZStd::string>;
 
         /// Helper routine for certain physics engines that don't directly expose this property on rigid bodies.
-        AZ_INLINE AZ::Matrix3x3 InverseInertiaLocalToWorld(const AZ::Vector3& diag, const AZ::Matrix3x3& rotationToWorld)
+        AZ_INLINE AZ::Matrix3x3 InverseInertiaLocalToWorld(const AZ::Vector3& inverseInertiaDiagonal, const AZ::Matrix3x3& rotationToWorld)
         {
-            return rotationToWorld * AZ::Matrix3x3::CreateDiagonal(diag) * rotationToWorld.GetTranspose();
+            return rotationToWorld * AZ::Matrix3x3::CreateDiagonal(inverseInertiaDiagonal) * rotationToWorld.GetTranspose();
+        }
+
+        /// Helper routine for certain physics engines that don't directly expose this property on rigid bodies.
+        AZ_INLINE AZ::Matrix3x3 InertiaLocalToWorld(const AZ::Vector3& inertiaDiagonal, const AZ::Matrix3x3& rotationToWorld)
+        {
+            return rotationToWorld * AZ::Matrix3x3::CreateDiagonal(inertiaDiagonal) * rotationToWorld.GetTranspose();
         }
 
         /// Makes the input string unique for the input set
