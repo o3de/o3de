@@ -10,7 +10,6 @@
 	</projectinfo>
 	<preferences>
 		<view3d>
-			<statesavefileurl>file:///C:/Users/gallowj/AppData/Local/Adobe/Adobe Substance 3D Designer/user_view3d_settings.sbsscn</statesavefileurl>
 			<ispointlight2enable>false</ispointlight2enable>
 			<ispointlight1enable>false</ispointlight1enable>
 			<isambientlightenable>true</isambientlightenable>
