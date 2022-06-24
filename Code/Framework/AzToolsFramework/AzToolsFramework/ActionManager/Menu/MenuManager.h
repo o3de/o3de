@@ -10,6 +10,8 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 
+#include <AzCore/Component/TickBus.h>
+
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
@@ -22,6 +24,8 @@ namespace AzToolsFramework
     //! Handles Editor Menus and allows registration and access across tools.
     class MenuManager
         : private MenuManagerInterface
+        , private MenuManagerInternalInterface
+        , private AZ::SystemTickBus::Handler
     {
     public:
         MenuManager();
@@ -52,8 +56,20 @@ namespace AzToolsFramework
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
 
+        // MenuManagerInterface overrides ...
+        MenuManagerOperationResult QueueMenuRefresh(const AZStd::string& menuIdentifier) override;
+        MenuManagerOperationResult QueueMenuBarRefresh(const AZStd::string& menuBarIdentifier) override;
+        void RefreshMenus() override;
+        void RefreshMenuBars() override;
+
+        // SystemTickBus overrides ...
+        void OnSystemTick() override;
+
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;
+
+        AZStd::unordered_set<AZStd::string> m_menusToRefresh;
+        AZStd::unordered_set<AZStd::string> m_menuBarsToRefresh;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

@@ -150,6 +150,9 @@ namespace UnitTest
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
         // Verify the action is now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 1);
     }
@@ -168,12 +171,15 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 1);
 
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
         // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct.
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = toolBar->actions();
         EXPECT_EQ(actions[0], test1);
@@ -194,12 +200,15 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 42);
 
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
         // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct (when a collision happens, items should be in order of addition).
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = toolBar->actions();
         EXPECT_EQ(actions[0], test2);
@@ -215,6 +224,9 @@ namespace UnitTest
 
         // Add a separator to the toolbar.
         m_toolBarManagerInterface->AddSeparatorToToolBar("o3de.toolbar.test", 42);
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Verify the separator is now in the toolbar.
         const auto& actions = toolBar->actions();
@@ -241,6 +253,9 @@ namespace UnitTest
 
         // Add the widget to the toolbar.
         m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", widget, 42);
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Verify the separator is now in the menu.
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
@@ -272,8 +287,11 @@ namespace UnitTest
 
         // Verify the actions are now in the toolbar in the expected order.
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Note: separators and sub-menus are still QActions in the context of the toolbar.
         const auto& actions = toolBar->actions();

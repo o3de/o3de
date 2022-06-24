@@ -57,7 +57,7 @@ namespace AzToolsFramework
         virtual MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
-        //! Add multiple Actions to a Menu. Saves time as it only updates the menu once at the end.
+        //! Add multiple Actions to a Menu.
         //! @param menuIdentifier The identifier for the menu the actions are being added to.
         //! @param actions A vector of pairs of identifiers for the actions to add to the menu and their sort position.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
@@ -136,6 +136,30 @@ namespace AzToolsFramework
         //! @param menuIdentifier The identifier for the menu whose sort key to get in the menu bar.
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const = 0;
+    };
+
+    //! MenuManagerInternalInterface
+    //! Internal Interface to query implementation details for menus.
+    class MenuManagerInternalInterface
+    {
+    public:
+        AZ_RTTI(MenuManagerInternalInterface, "{59ED06E9-0F68-4CF4-9C2A-4FEFE534AD02}");
+
+        //! Queues up a menu for a refresh at the end of this tick.
+        //! @param menuIdentifier The identifier for the menu to refresh.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult QueueMenuRefresh(const AZStd::string& menuIdentifier) = 0;
+
+        //! Queues up a menuBar for a refresh at the end of this tick.
+        //! @param menuIdentifier The identifier for the menuBar to refresh.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult QueueMenuBarRefresh(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Refreshes all menus that were queued up by QueueMenuRefresh.
+        virtual void RefreshMenus() = 0;
+
+        //! Refreshes all menuBars that were queued up by QueueMenuBarRefresh.
+        virtual void RefreshMenuBars() = 0;
     };
 
 } // namespace AzToolsFramework

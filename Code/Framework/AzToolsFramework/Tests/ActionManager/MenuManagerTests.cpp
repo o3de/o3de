@@ -162,6 +162,9 @@ namespace UnitTest
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the action is now in the menu.
         EXPECT_EQ(menu->actions().size(), 1);
     }
@@ -180,12 +183,15 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 1);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu.
         EXPECT_EQ(menu->actions().size(), 2);
 
         // Verify the order is correct.
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = menu->actions();
         EXPECT_EQ(actions[0], test1);
@@ -206,12 +212,15 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test1", 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu.
         EXPECT_EQ(menu->actions().size(), 2);
 
         // Verify the order is correct (when a collision happens, items should be in order of addition).
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = menu->actions();
         EXPECT_EQ(actions[0], test2);
@@ -228,6 +237,9 @@ namespace UnitTest
         // Add a separator to the menu.
         m_menuManagerInterface->AddSeparatorToMenu("o3de.menu.test", 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the separator is now in the menu.
         const auto& actions = menu->actions();
 
@@ -243,6 +255,9 @@ namespace UnitTest
 
         // Add the sub-menu to the menu.
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the sub-menu is now in the menu.
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
@@ -284,6 +299,9 @@ namespace UnitTest
         // Add the widget to the menu.
         m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", widget, 42);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the widget is now in the menu.
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
         const auto& actions = menu->actions();
@@ -319,11 +337,14 @@ namespace UnitTest
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testMenu", "o3de.action.test1", 11);
         m_menuManagerInterface->AddSeparatorToMenu("o3de.menu.testMenu", 18);
 
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
         // Verify the actions are now in the menu in the expected order.
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
         QMenu* submenu = m_menuManagerInterface->GetMenu("o3de.menu.testSubMenu");
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         // Note: separators and sub-menus are still QActions in the context of the menu.
         EXPECT_EQ(menu->actions().size(), 4);
@@ -383,6 +404,9 @@ namespace UnitTest
         // Add the menu to the menu bar.
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.test", 42);
 
+        // Manually trigger MenuBar refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenuBars();
+
         // Verify the submenu is now in the menu.
         QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
         QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
@@ -408,6 +432,9 @@ namespace UnitTest
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.testMenu2", 42);
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.testMenu3", 42);
         m_menuManagerInterface->AddMenuToMenuBar("o3de.menubar.test", "o3de.menu.testMenu1", 16);
+
+        // Manually trigger MenuBar refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenuBars();
 
         // Verify the menus are now in the menu bar in the expected order.
         QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");

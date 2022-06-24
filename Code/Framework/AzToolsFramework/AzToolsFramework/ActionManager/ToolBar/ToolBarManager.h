@@ -10,6 +10,8 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 
+#include <AzCore/Component/TickBus.h>
+
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 
@@ -22,6 +24,8 @@ namespace AzToolsFramework
     //! Handles Editor ToolBars and allows registration and access across tools.
     class ToolBarManager
         : private ToolBarManagerInterface
+        , private ToolBarManagerInternalInterface
+        , private AZ::SystemTickBus::Handler
     {
     public:
         ToolBarManager();
@@ -45,7 +49,16 @@ namespace AzToolsFramework
         QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
         ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
 
+        // ToolBarManagerInternalInterface overrides ...
+        ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
+        void RefreshToolBars() override;
+
+        // SystemTickBus overrides ...
+        void OnSystemTick() override;
+
         AZStd::unordered_map<AZStd::string, EditorToolBar> m_toolBars;
+
+        AZStd::unordered_set<AZStd::string> m_toolBarsToRefresh;
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
         ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

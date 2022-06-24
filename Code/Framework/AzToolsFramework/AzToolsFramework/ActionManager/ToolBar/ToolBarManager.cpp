@@ -23,12 +23,16 @@ namespace AzToolsFramework
         AZ_Assert(m_actionManagerInternalInterface, "ToolBarManager - Could not retrieve instance of ActionManagerInternalInterface");
 
         AZ::Interface<ToolBarManagerInterface>::Register(this);
+        AZ::Interface<ToolBarManagerInternalInterface>::Register(this);
+
+        AZ::SystemTickBus::Handler::BusConnect();
 
         EditorToolBar::Initialize();
     }
 
     ToolBarManager::~ToolBarManager()
     {
+        AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
     }
     
@@ -295,6 +299,38 @@ namespace AzToolsFramework
         }
 
         return AZ::Success(sortKey.value());
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::QueueToolBarRefresh(const AZStd::string& toolBarIdentifier)
+    {
+        if (!m_toolBars.contains(toolBarIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format("ToolBar Manager - Could not refresh toolBar \"%.s\" as it is not registered.", toolBarIdentifier.c_str()));
+        }
+
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
+        return AZ::Success();
+    }
+
+    void ToolBarManager::RefreshToolBars()
+    {
+        for (const AZStd::string& toolBarIdentifier : m_toolBarsToRefresh)
+        {
+            auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+            if (toolBarIterator != m_toolBars.end())
+            {
+                toolBarIterator->second.RefreshToolBar();
+            }
+        }
+
+        m_toolBarsToRefresh.clear();
+    }
+
+    // SystemTickBus overrides ...
+    void ToolBarManager::OnSystemTick()
+    {
+        RefreshToolBars();
     }
 
 } // namespace AzToolsFramework
