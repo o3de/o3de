@@ -39,7 +39,7 @@ def get_package_name(project_path):
     :param project_path: The project path of the project
     :return: The Package name from the settings JSON
     """
-    project_json_path = os.path.join(project_path, 'project.json')
+    project_json_path = os.path.join(project_path, 'Platform', 'Android', 'android_project.json')
     with open(project_json_path) as json_file:
         json_list = json.loads(json_file.read())
 
