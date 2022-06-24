@@ -295,13 +295,15 @@ namespace PhysX
             desc.samples.data = physxSamples.data();
             desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
-            // Lock the scene and modify the heightfield itself, as well as the shape that's using it.
+            // Modify the heightfield samples
+            constexpr bool shrinkBounds = false;
+            pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
+
+            // Lock the scene and modify the heightfield shape in the scene.
             // (If only the heightfield is modified, the shape won't get refreshed with the new data)
             {
                 PHYSX_SCENE_WRITE_LOCK(pxScene);
 
-                constexpr bool shrinkBounds = false;
-                pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
                 physx::PxHeightFieldGeometry hfGeom;
                 pxShape->getHeightFieldGeometry(hfGeom);
                 hfGeom.heightField = pxHeightfield;
