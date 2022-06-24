@@ -77,6 +77,7 @@ namespace RecastNavigation
         m_entityComponentIdPair = entityComponentIdPair;
         m_shouldProcessTiles = true;
         m_updateInProgress = false;
+        OnConfigurationChanged();
         RecastNavigationProviderRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
 
@@ -147,6 +148,11 @@ namespace RecastNavigation
         return m_config.m_useEditorScene ? AzPhysics::EditorPhysicsSceneName : AzPhysics::DefaultPhysicsSceneName;
     }
 
+    void RecastNavigationPhysXProviderComponentController::OnConfigurationChanged()
+    {
+        m_collisionGroup = GetCollisionGroupById(m_config.m_collisionGroupId);
+    }
+
     void RecastNavigationPhysXProviderComponentController::CollectCollidersWithinVolume(const AZ::Aabb& volume, QueryHits& overlapHits)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryWithinVolume");
@@ -159,7 +165,7 @@ namespace RecastNavigation
 
         AzPhysics::OverlapRequest request = AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(dimension, pose, nullptr);
         request.m_queryType = AzPhysics::SceneQuery::QueryType::Static; // only looking for static PhysX colliders
-        request.m_collisionGroup = AzPhysics::CollisionGroup::All;
+        request.m_collisionGroup = m_collisionGroup;
 
         AzPhysics::SceneQuery::UnboundedOverlapHitCallback unboundedOverlapHitCallback =
             [&overlapHits](AZStd::optional<AzPhysics::SceneQueryHit>&& hit)
