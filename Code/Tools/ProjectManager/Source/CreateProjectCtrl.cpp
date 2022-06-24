@@ -98,8 +98,6 @@ namespace O3DE::ProjectManager
 
         m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
         connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
-
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 
         m_secondaryButton = buttons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
@@ -108,8 +106,6 @@ namespace O3DE::ProjectManager
         connect(m_secondaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleSecondaryButton);
 
         Update();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
-
 
         setLayout(vLayout);
     }
@@ -139,10 +135,7 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() > 0)
         {
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
             PreviousScreen();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
-
         }
         else
         {
@@ -150,7 +143,6 @@ namespace O3DE::ProjectManager
         }
     }
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
     void CreateProjectCtrl::HandleSecondaryButton()
     {
         if (m_stack->currentIndex() > 0)
@@ -231,7 +223,6 @@ namespace O3DE::ProjectManager
             Update();
         }
     }
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
     void CreateProjectCtrl::HandlePrimaryButton()
     {
@@ -267,7 +258,6 @@ namespace O3DE::ProjectManager
                 // automatically register the project
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
                 const ProjectGemCatalogScreen::EnableDisableGemsResult gemResult = m_projectGemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
                 if (gemResult == ProjectGemCatalogScreen::EnableDisableGemsResult::Failed)
                 {
@@ -277,7 +267,6 @@ namespace O3DE::ProjectManager
                 {
                     return;
                 }
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
                 projectInfo.m_needsBuild = true;
                 emit NotifyBuildProject(projectInfo);
