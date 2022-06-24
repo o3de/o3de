@@ -45,25 +45,10 @@ namespace ScriptCanvasEditor
             static constexpr char EBusSenderPath[] = "EBus\\Senders";
         } // namespace AssetPath
 
-        inline AZStd::string GetSafeTypeName(ScriptCanvas::Data::Type dataType)
-        {
-            if (!dataType.IsValid())
-            {
-                return "";
-            }
+        AZStd::string SanitizeText(const AZStd::string& text);
 
-            AZStd::string azType = dataType.GetAZType().ToString<AZStd::string>();
+        AZStd::string SanitizeCustomNodeFileName(const AZStd::string& nodeName, const AZ::Uuid& nodeUuid);
 
-            GraphCanvas::TranslationKey key;
-            key << "BehaviorType" << azType << "details";
-
-            GraphCanvas::TranslationRequests::Details details;
-
-            details.m_name = ScriptCanvas::Data::GetName(dataType);
-
-            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-
-            return details.m_name;
-        }
+        AZStd::string GetSafeTypeName(ScriptCanvas::Data::Type dataType);
     }
 }

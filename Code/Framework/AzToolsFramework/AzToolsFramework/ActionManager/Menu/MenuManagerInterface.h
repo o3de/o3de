@@ -49,13 +49,34 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
 
-        //! Bind an Action to a Menu.
+        //! Add an Action to a Menu. Will prompt an update of the menu.
         //! @param menuIdentifier The identifier for the menu the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the menu.
         //! @param sortIndex An integer defining the position the action should appear in the menu.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
+
+        //! Add multiple Actions to a Menu. Saves time as it only updates the menu once at the end.
+        //! @param menuIdentifier The identifier for the menu the actions are being added to.
+        //! @param actions A vector of pairs of identifiers for the actions to add to the menu and their sort position.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult AddActionsToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) = 0;
+
+        //! Removes an Action from a Menu.
+        //! @param menuIdentifier The identifier for the menu the action is being removed from.
+        //! @param actionIdentifier The identifier for the action to remove from the menu.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult RemoveActionFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Removes multiple Actions from a Menu.
+        //! @param menuIdentifier The identifier for the menu the actions are being removed from.
+        //! @param actionIdentifiers A vector of identifiers for the actions to remove from the menu.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult RemoveActionsFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) = 0;
 
         //! Add a Separator to a Menu.
         //! @param menuIdentifier The identifier for the menu the separator is being added to.

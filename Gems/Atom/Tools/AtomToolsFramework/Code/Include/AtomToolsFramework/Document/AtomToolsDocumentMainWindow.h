@@ -86,9 +86,6 @@ namespace AtomToolsFramework
 
     protected:
         void AddDocumentTabBar();
-
-        void AddRecentFilePath(const AZStd::string& absolutePath);
-        void ClearRecentFilePaths();
         void UpdateRecentFileMenu();
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
@@ -126,7 +123,5 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
-
-        static constexpr const char* RecentFilePathsKey = "/O3DE/AtomToolsFramework/Document/RecentFilePaths";
     };
 } // namespace AtomToolsFramework

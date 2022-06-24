@@ -30,6 +30,14 @@ namespace AZ
             Info = 3
         };
 
+        // Represents the options to select C language FILE* stream to write raw output
+        enum class RedirectCStream
+        {
+            Stdout,
+            Stderr,
+            None
+        };
+
         class Trace
         {
         public:

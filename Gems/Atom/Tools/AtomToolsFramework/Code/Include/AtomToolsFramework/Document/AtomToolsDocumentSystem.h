@@ -53,6 +53,10 @@ namespace AtomToolsFramework
         bool SaveAllDocuments() override;
         AZ::u32 GetDocumentCount() const override;
         bool IsDocumentOpen(const AZ::Uuid& documentId) const override;
+        void AddRecentFilePath(const AZStd::string& absolutePath) override;
+        void ClearRecentFilePaths() override;
+        void SetRecentFilePaths(const AZStd::vector<AZStd::string>& absolutePaths) override;
+        const AZStd::vector<AZStd::string> GetRecentFilePaths() const override;
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...

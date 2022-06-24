@@ -128,7 +128,7 @@
                         {
                             "typeid": "{E13859C4-1F24-5C44-A133-F17B4B050D7C}",
                             "details": {
-                                "name": "AZStd::shared_ptr"
+                                "name": "Spline"
                             }
                         }
                     ]

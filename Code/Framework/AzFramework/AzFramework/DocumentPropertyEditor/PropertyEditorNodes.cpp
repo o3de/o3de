@@ -44,11 +44,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
         system->RegisterNode<Row, NodeWithVisiblityControl>();
-
-        for (const auto& rowAttribute : Row::RowAttributes)
-        {
-            system->RegisterNodeAttribute<Row>(rowAttribute);
-        }
+        system->RegisterNodeAttribute<Row>(Row::AutoExpand);
+        system->RegisterNodeAttribute<Row>(Row::ForceAutoExpand);
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
@@ -62,6 +59,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
@@ -82,9 +82,15 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Button>();
         system->RegisterNodeAttribute<Button>(Button::ButtonText);
 
+        system->RegisterPropertyEditor<ContainerActionButton>();
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
+
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();
+        system->RegisterNodeAttribute<ComboBox>(ComboBox::StringList);
+
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();

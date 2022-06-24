@@ -189,7 +189,7 @@ namespace UnitTest
         Ptr<RasterPass> newPass = RasterPass::Create(passDesc);
 
         // Add new pass to render pipeline which should trigger render pipeline pass modify notification
-        pipeline2->GetRootPass()->AddChild(newPass);
+        pipeline2->GetRootPass()->AddChild(newPass, true);
         // This function is called in every RPISystem render tick. We call it manually here to trigger the pass change notification
         pipeline2->OnPassModified();
         EXPECT_TRUE(feature->m_pipelineChangedCount == 1);
@@ -238,7 +238,7 @@ namespace UnitTest
         Ptr<RasterPass> newPass = RasterPass::Create(passDesc);
 
         // Add new pass to render pipeline which should trigger render pipeline pass modify notification
-        pipeline1->GetRootPass()->AddChild(newPass);
+        pipeline1->GetRootPass()->AddChild(newPass, true);
         // This function is called in every RPISystem render tick. We call it manually here to trigger the pass change notification
         pipeline1->OnPassModified();
         // Set view to pipeline
