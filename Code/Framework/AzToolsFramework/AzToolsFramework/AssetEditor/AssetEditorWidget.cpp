@@ -8,6 +8,8 @@
 
 #include "AssetEditorWidget.h"
 
+#include "AzCore/Console/IConsole.h"
+
 #include <API/ToolsApplicationAPI.h>
 #include <API/EditorAssetSystemAPI.h>
 
@@ -47,11 +49,16 @@ AZ_POP_DISABLE_WARNING
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
+
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QMenu>
 #include <QMenuBar>
 #include <QAction>
+
+AZ_CVAR_EXTERNED(bool, ed_enableDPE);
 
 namespace AzToolsFramework
 {
@@ -176,10 +183,6 @@ namespace AzToolsFramework
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
             setObjectName("AssetEditorWidget");
-            m_propertyEditor = new ReflectedPropertyEditor(this);
-            m_propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
-            m_propertyEditor->Setup(m_serializeContext, this, true, 250);
-            m_propertyEditor->show();
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
             mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -189,8 +192,25 @@ namespace AzToolsFramework
             mainLayout->addWidget(m_header);
             m_header->show();
 
-            m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            mainLayout->addWidget(m_propertyEditor);
+            QWidget* propertyEditor = nullptr;
+            m_useDPE = ed_enableDPE;
+            if (!m_useDPE)
+            {
+                m_propertyEditor = new ReflectedPropertyEditor(this);
+                m_propertyEditor->Setup(m_serializeContext, this, true, 250);
+                propertyEditor = m_propertyEditor;
+            }
+            else
+            {
+                m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+                m_dpe = new DocumentPropertyEditor(this);
+                propertyEditor = m_dpe;
+            }
+
+            propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
+            propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            mainLayout->addWidget(propertyEditor);
+            propertyEditor->show();
 
             QWidget* statusBarWidget = new QWidget(this);
             statusBarWidget->setObjectName("AssetEditorStatusBar");
@@ -313,17 +333,23 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
-            m_propertyEditor->ClearInstances();
-
             AZ::Crc32 saveStateKey;
             saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
 
-            m_propertyEditor->SetSavedStateKey(saveStateKey);
-            m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
+            if (m_useDPE)
+            {
+                m_adapter->SetValue(asset.Get(), asset.GetType());
+                m_dpe->SetAdapter(m_adapter);
+            }
+            else
+            {
+                m_propertyEditor->ClearInstances();
+                m_propertyEditor->SetSavedStateKey(saveStateKey);
+                m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
 
-            m_propertyEditor->InvalidateAll();
-            m_propertyEditor->setEnabled(true);
-
+                m_propertyEditor->InvalidateAll();
+                m_propertyEditor->setEnabled(true);
+            }
         }
 
         void AssetEditorWidget::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
