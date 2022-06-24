@@ -237,3 +237,76 @@ def ReplaceStoredPaths():
             pass
         image.reload()
     bpy.types.Scene.stored_image_source_paths = {}
+
+
+def compair_set(list_a, list_b):
+    """!
+    This function will check to see if there are any difference between two list
+    """
+    set_a = list_a
+    set_b = list_b
+    if set_a == set_b:
+        return True
+    else:
+        return False
+
+def check_selected_transforms():
+    """!
+    This function will check to see if there are unfrozen transfors and to warn the artist before export.
+    """
+    context = bpy.context
+    ob = context.object
+    # We will make list for each selection and compair to a frozzen transfrom.
+    location_list = []
+    location_source = [0.0, 0.0, 0.0]
+    rotation_list = []
+    rotation_source = [1.0, 0.0, 0.0, 0.0]
+    scale_list = []
+    scale_source = [1.0, 1.0, 1.0]
+    location_good = True
+    rotation_good = True
+    scale_good = True
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            obj = selected_obj.matrix_world.decompose()
+            # Start a matrix count
+            count = 0
+            for vector in obj:
+                # We will count from 1 to 3, every object will have a matrix of Location, Rotation, and Scale
+                count += 1
+                if count == 1:
+                    # Add vector3 to Location list
+                    for floatdata in vector:
+                        location_list.append(floatdata)
+                elif count == 2:
+                    # Add vector4 to Rotation list
+                    for floatdata in vector:
+                        rotation_list.append(floatdata)
+                else:
+                    # Add vector3 to Scale list
+                    for floatdata in vector:
+                        scale_list.append(floatdata)
+                    count = 0
+                    
+            # Lets look at the results and compair the sets
+            if not compair_set(location_list, location_source):
+                location_good = False
+            elif not compair_set(rotation_list, rotation_source):
+                rotation_good = False
+            elif not compair_set(scale_list, scale_source):
+                scale_good = False
+
+            check_transfroms_bools = [location_good, rotation_good, scale_good]
+            print(check_transfroms_bools)
+            if all(check_transfroms_bools):
+                return True
+            else:
+                return False
+        # Reset the list
+        location_list = []
+        rotation_list = []
+        scale_list = []
+        location_good = True
+        rotation_good = True
+        scale_good = True

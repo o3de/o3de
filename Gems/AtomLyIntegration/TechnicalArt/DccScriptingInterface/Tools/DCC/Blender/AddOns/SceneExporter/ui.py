@@ -33,6 +33,34 @@ def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
         """
         self.layout.label(text = message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
+class MessageBox(bpy.types.Operator):
+    """!
+    This Class is for the UI Message Box Pop-Up
+    """
+    bl_idname = "message.popup"
+    bl_label = "O3DE Tool Information"
+
+    def invoke(self, context, event):
+        """!
+        This function will invoke the blender windowe manager
+        """
+        window_manager = context.window_manager
+        return window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        """!
+        This function draws this gui element in Blender UI
+        """
+        layout = self.layout
+        layout.label(text=bpy.types.Scene.pop_up_notes)
+        
+    def execute(self, context):
+        """!
+        This will update the UI with the current o3de Project Title.
+        """
+        return {'FINISHED'}
+
 class WikiButton(bpy.types.Operator):
     """!
     This Class is for the UI Wiki Button

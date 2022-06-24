@@ -160,6 +160,10 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_metadata=True,
             axis_forward='-Z',
             axis_up='Y')
-        ui.message_box("3D Model Exported!", "O3DE Tools", "LIGHT")
+        
+        transforms_status = utils.check_selected_transforms()
+        # Show export status
+        bpy.types.Scene.pop_up_notes = f'3D Model Exported! Freeze Transforms: {transforms_status}'
+        bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
             utils.ReplaceStoredPaths()
