@@ -105,11 +105,10 @@ namespace AZ::SceneAPI::Behaviors
             Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
         };
 
-        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshDataMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, MeshNodeData>; // MeshData Index -> MeshNodeData
-        using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
+        using MeshDataMapEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>; // MeshData Index -> MeshNodeData
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
-        using NodeEntityMap = AZStd::unordered_multimap<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
+        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // MeshData Index -> EntityId
         using EntityIdList = AZStd::vector<AZ::EntityId>;
 
         MeshDataMap CalculateMeshTransformMap(const Containers::Scene& scene)
@@ -126,7 +125,6 @@ namespace AZ::SceneAPI::Behaviors
                 return {};
             }
 
-            MeshIndexContainer meshIndexContainer;
             MeshDataMap meshDataMap;
             for (auto it = view.begin(); it != view.end(); ++it)
             {
@@ -160,7 +158,7 @@ namespace AZ::SceneAPI::Behaviors
                             childIndex = graph.GetNodeSibling(childIndex);
                         }
 
-                        meshDataMap.emplace(MeshTransformEntry{ currentIndex, AZStd::move(meshNodeData) });
+                        meshDataMap.emplace(MeshDataMapEntry{ currentIndex, AZStd::move(meshNodeData) });
                     }
                 }
             }
