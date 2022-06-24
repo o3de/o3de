@@ -69,12 +69,12 @@ namespace ScriptCanvas
             virtual ~ClientRequests() = default;
 
             // Target Management Methods
-            virtual AzFramework::TargetContainer EnumerateAvailableNetworkTargets() { return AzFramework::TargetContainer(); }
+            virtual AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() { return AzFramework::RemoteToolsEndpointContainer(); }
 
             virtual bool HasValidConnection() const { return false; }
-            virtual bool IsConnected(const AzFramework::TargetInfo&) const { return false; }
+            virtual bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const { return false; }
             virtual bool IsConnectedToSelf() const { return false; }
-            virtual AzFramework::TargetInfo GetNetworkTarget() { return AzFramework::TargetInfo(); }
+            virtual AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() { return AzFramework::RemoteToolsEndpointInfo(); }
 
             // Control Methods
             virtual void AddBreakpoint(const Breakpoint&) {}

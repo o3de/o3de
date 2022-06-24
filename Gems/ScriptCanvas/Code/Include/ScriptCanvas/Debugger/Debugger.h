@@ -13,7 +13,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 
 #include <ScriptCanvas/Core/NodeBus.h>
@@ -26,16 +26,12 @@ namespace ScriptCanvas
 {
     namespace Debugger
     {
-
-
         //! The ScriptCanvas debugger component, this is the runtime debugger code that directly controls the execution
         //! and provides insight into a running ScriptCanvas graph.
         class ServiceComponent 
             : public AZ::Component
             , public Message::RequestVisitor
-            , public AzFramework::TmMsgBus::Handler
             , public ExecutionNotificationsBus::Handler
-            , public AzFramework::TargetManagerClient::Bus::Handler
         {
            using Lock = AZStd::lock_guard<AZStd::recursive_mutex>;
 
@@ -58,14 +54,11 @@ namespace ScriptCanvas
             void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // TmMsgBus
-            void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
-            //////////////////////////////////////////////////////////////////////////
+            void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
 
             //////////////////////////////////////////////////////////////////////////
             // TargetManagerClient::Bus::Handler
-            void TargetLeftNetwork(AzFramework::TargetInfo info) override;
+            void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -106,16 +99,23 @@ namespace ScriptCanvas
             template<typename t_SignalType, typename t_MessageType>
             void NodeSignalled(const t_SignalType& nodeSignal)
             {
+                auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
                 if (m_state == SCDebugState_Interactive)
                 {
                     SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Interactive: %s", nodeSignal.ToString().data());
-                    AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                    if (remoteToolsInterface)
+                    {
+                        remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                    }
                     Interact();
                 }
                 else if (m_state == SCDebugState_InteractOnNext)
                 {
                     SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("IterateOnNext: %s", nodeSignal.ToString().data());
-                    AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                    if (remoteToolsInterface)
+                    {
+                        remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                    }
                     m_state = SCDebugState_Interactive;
                     Interact();
                 }
@@ -127,14 +127,20 @@ namespace ScriptCanvas
                     if (m_breakpoints.find(breakpoint) != m_breakpoints.end())
                     {
                         SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Hit breakpoint: %s", nodeSignal.ToString().data());
-                        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::BreakpointHit(nodeSignal));
+                        if (remoteToolsInterface)
+                        {
+                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, Message::BreakpointHit(nodeSignal));
+                        }
                         m_state = SCDebugState_Interactive;
                         Interact();
                     }
                     else if (m_client.m_script.m_logExecution)
                     {
                         SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("Logging Requested: %s", nodeSignal.ToString().data());
-                        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, t_MessageType(nodeSignal));
+                        if (remoteToolsInterface)
+                        {
+                            remoteToolsInterface->SendRemoteToolsMessage(m_client.m_info, t_MessageType(nodeSignal));
+                        }
                     }
                 }
                 else
@@ -144,7 +150,7 @@ namespace ScriptCanvas
             }
 
             void Connect(Target& target);
-            Message::Request* FilterMessage(AzFramework::TmMsgPtr& msg);
+            Message::Request* FilterMessage(AzFramework::RemoteToolsMessagePointer& msg);
             void Interact();
             bool IsAttached() const;
             void ProcessMessages();
@@ -180,7 +186,8 @@ namespace ScriptCanvas
             ActiveEntityStatusMap   m_activeEntities;
 
             AZStd::recursive_mutex m_msgMutex;
-            AzFramework::TmMsgQueue m_msgQueue;
+            AzFramework::RemoteToolsMessageQueue m_msgQueue;
+            AzFramework::IRemoteTools* m_remoteTools = nullptr;
         };
     }
 }

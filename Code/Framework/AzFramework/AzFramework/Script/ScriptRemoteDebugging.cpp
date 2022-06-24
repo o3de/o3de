@@ -11,6 +11,7 @@
 #include "ScriptDebugMsgReflection.h"
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -276,7 +277,7 @@ namespace AzFramework
         if (remoteTools)
         {
             const AzFramework::ReceivedRemoteToolsMessages* messages =
-                remoteTools->GetReceivedMessages(AZ::Crc32("LuaRemoteTools"));
+                remoteTools->GetReceivedMessages(AzFramework::LuaToolsKey);
             if (messages)
             {
                 for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
@@ -284,7 +285,7 @@ namespace AzFramework
                     AZStd::lock_guard<AZStd::mutex> l(m_msgMutex);
                     m_msgQueue.push_back(msg);
                 }
-                remoteTools->ClearReceivedMessages(AZ::Crc32("LuaRemoteTools"));
+                remoteTools->ClearReceivedMessages(AzFramework::LuaToolsKey);
             }
         }
 
@@ -433,7 +434,7 @@ namespace AzFramework
                 if (remoteTools)
                 {
                     const AzFramework::ReceivedRemoteToolsMessages* messages =
-                        remoteTools->GetReceivedMessages(AZ::Crc32("LuaRemoteTools"));
+                        remoteTools->GetReceivedMessages(AzFramework::LuaToolsKey);
                     if (messages)
                     {
                         for (const AzFramework::RemoteToolsMessagePointer& msg : *messages)
@@ -441,7 +442,7 @@ namespace AzFramework
                             AZStd::lock_guard<AZStd::mutex> l(m_msgMutex);
                             m_msgQueue.push_back(msg);
                         }
-                        remoteTools->ClearReceivedMessages(AZ::Crc32("LuaRemoteTools"));
+                        remoteTools->ClearReceivedMessages(AzFramework::LuaToolsKey);
                     }
                 }
                 Process();
@@ -462,7 +463,7 @@ namespace AzFramework
             m_msgQueue.pop_front();
             m_msgMutex.unlock();
             AZ_Assert(msg, "We received a NULL message in the script debug agent's message queue!");
-            RemoteToolsEndpointInfo sender = RemoteToolsInterface::Get()->GetEndpointInfo(AZ::Crc32("LuaRemoteTools"), msg->GetSenderTargetId());
+            RemoteToolsEndpointInfo sender = RemoteToolsInterface::Get()->GetEndpointInfo(AzFramework::LuaToolsKey, msg->GetSenderTargetId());
 
             // The only message we accept without a target match is AttachDebugger
             if (!m_debugger.IsIdentityEqualTo(sender))
@@ -723,7 +724,7 @@ namespace AzFramework
         // Check if our debugger is still around
         if (m_executionState != SDA_STATE_DETACHED)
         {
-            if (!RemoteToolsInterface::Get()->IsEndpointOnline(AZ::Crc32("LuaRemoteTools"), m_debugger.GetPersistentId()))
+            if (!RemoteToolsInterface::Get()->IsEndpointOnline(AzFramework::LuaToolsKey, m_debugger.GetPersistentId()))
             {
                 m_executionState = SDA_STATE_DETACHING;
             }
