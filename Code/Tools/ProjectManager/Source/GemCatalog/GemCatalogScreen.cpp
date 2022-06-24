@@ -549,7 +549,7 @@ namespace O3DE::ProjectManager
             m_gemModel->UpdateGemDependencies();
 
             // if we don't have a project path early out
-            if (m_projectPath == "")
+            if (m_projectPath.isEmpty())
             {
                 return;
             }
@@ -685,7 +685,7 @@ namespace O3DE::ProjectManager
 
     QString GemCatalogScreen::GetTabText()
     {
-        return tr("Gems");
+        return "Gems";
     }
 
     bool GemCatalogScreen::IsTab()
