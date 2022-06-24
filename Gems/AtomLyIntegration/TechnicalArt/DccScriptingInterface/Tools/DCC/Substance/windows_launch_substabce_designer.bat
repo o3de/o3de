@@ -15,7 +15,7 @@ PUSHD %~dp0
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 CALL %~dp0..\..\Dev\Windows\Env_O3DE_Core.bat
 
@@ -37,7 +37,7 @@ echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 SET PATH=%DCCSI_SUBSTANCE_PYTHON%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
 
-:: the next line sets up too much, I beleive is causing a maya boot failure
+:: the next line sets up too much, I believe causes boot failure with DCC apps with python
 ::CALL %~dp0..\Env_O3DE_Python.bat
 
 :: shared location for 64bit python 3.7 DEV location
@@ -58,7 +58,7 @@ SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
 set PYTHONPATH=%DCCSI_SUBSTANCE_SCRIPTS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -82,7 +82,7 @@ echo.
 set command=""%DCCSI_SUBSTANCE_EXE%" --config-file %DCCSI_SUBSTANCE_CFG%"
 
 IF EXIST "%DCCSI_SUBSTANCE_LOCATION%\Adobe Substance 3D Designer.exe" (
-    start "" "%DCCSI_SUBSTANCE_LOCATION%\Adobe Substance 3D Designer.exe" --config-file %~dp0\o3de_dccsi.sbscfg %*
+    start "" "%DCCSI_SUBSTANCE_LOCATION%\Adobe Substance 3D Designer.exe" --config-file %~dp0o3de_dccsi.sbscfg %*
 )
 ::ELSE (
 ::    Where "Adobe Substance 3D Designer.exe" 2> NUL

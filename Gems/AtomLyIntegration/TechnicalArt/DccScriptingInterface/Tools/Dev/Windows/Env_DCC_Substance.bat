@@ -43,7 +43,7 @@ IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=9)
 :: This gives us core access to O3DE but puts nothing on the PATH or PYTHONPATH
 CALL %~dp0\Env_O3DE_Core.bat
 CALL %~dp0\Env_O3DE_Python.bat
-:: We must becareful not to muck with Substance built-in python or Qt
+:: We must be careful not to muck with Substance built-in python or Qt
 :: Incorrect configuration will cause conflicts, likely a app boot failure!
 
 echo.
