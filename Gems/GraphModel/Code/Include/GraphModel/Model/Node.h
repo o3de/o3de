@@ -110,17 +110,11 @@ namespace GraphModel
         virtual const char* GetTitle() const = 0;
 
         //! Returns the name that will be displayed as the sub-title of the Node in the UI
-        virtual const char* GetSubTitle() const
-        {
-            return "";
-        };
+        virtual const char* GetSubTitle() const;
 
         //! Returns node type (general by default) which can be overriden for
         //! other types, such as wrapper nodes
-        virtual NodeType GetNodeType() const
-        {
-            return NodeType::GeneralNode;
-        }
+        virtual NodeType GetNodeType() const;
 
         NodeId GetId() const;
 

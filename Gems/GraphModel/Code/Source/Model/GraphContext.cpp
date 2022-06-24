@@ -82,7 +82,7 @@ namespace GraphModel
     {
         for (DataTypePtr dataType : m_dataTypes)
         {
-            if (dataType->GetTypeUuid() == typeId)
+            if (dataType->IsSupportedType(typeId))
             {
                 return dataType;
             }
@@ -93,6 +93,14 @@ namespace GraphModel
 
     DataTypePtr GraphContext::GetDataTypeForValue(const AZStd::any& value) const
     {
-        return GetDataType(value.type());
+        for (DataTypePtr dataType : m_dataTypes)
+        {
+            if (dataType->IsSupportedValue(value))
+            {
+                return dataType;
+            }
+        }
+
+        return {};
     }
 } // namespace GraphModel

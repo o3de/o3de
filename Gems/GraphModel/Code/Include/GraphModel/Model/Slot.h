@@ -310,14 +310,12 @@ namespace GraphModel
         //! (Property slots will never have connections)
         // AZStd::vector<NodeId> GetConnectedNodeIds();
 
-    protected:
+    private:
 
 #if defined(AZ_ENABLE_TRACING)
         void AssertWithTypeInfo(bool expression, DataTypePtr dataTypeUsed, const char* message) const;
-        void AssertTypeMatch(DataTypePtr dataTypeUsed, const char* message) const;
 #endif
-
-    private:
+        DataTypePtr GetDataTypeForTypeId(const AZ::Uuid& typeId) const;
         DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
         mutable AZStd::weak_ptr<Node> m_parentNode; //!< This is a mutable because it is just-in-time initialized in a const accessor function. This is okay because it's just a cache.
@@ -334,9 +332,9 @@ namespace GraphModel
         const T* pValue = AZStd::any_cast<T>(&m_value);
 
         #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetDataTypeForValue(m_value);
-            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support Value");
-            AssertTypeMatch(dataTypeUsed, "Slot::GetValue used with the wrong type");
+            DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
+            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support values");
+            AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
             AssertWithTypeInfo(nullptr != pValue, dataTypeUsed, "m_value does not hold data of the appropriate type");
         #endif
 
@@ -347,15 +345,8 @@ namespace GraphModel
     template<typename T>
     void Slot::SetValue(const T& value)
     {
-        #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetDataTypeForValue(AZStd::any(value));
-            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support Value");
-            AssertTypeMatch(dataTypeUsed, "Slot::SetValue used with the wrong type");
-        #endif
-
-        m_value = value;
+        SetValue(AZStd::any(value));
     }
-
 } // namespace GraphModel
 
 namespace AZStd

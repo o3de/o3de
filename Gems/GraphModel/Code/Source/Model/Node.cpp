@@ -78,6 +78,13 @@ namespace GraphModel
         AZ_Assert(m_allSlotDefinitions.size() == m_propertySlotDefinitions.size() + m_inputDataSlotDefinitions.size() + m_outputDataSlotDefinitions.size() + m_inputEventSlotDefinitions.size() + m_outputEventSlotDefinitions.size() + m_extendableSlotDefinitions.size(), "SlotDefinition counts don't match");
     }
 
+    //! Returns the name that will be displayed as the sub-title of the Node in the UI
+
+    const char* Node::GetSubTitle() const
+    {
+        return "";
+    }
+
     void Node::CreateSlotData()
     {
         AZ_Assert(m_allSlots.empty(), "CreateSlotData() should only be called once after creating a new node.");
@@ -214,6 +221,15 @@ namespace GraphModel
 
         // Make sure all SlotDefinitions have slot data. This would normally happen when the code for a Node class has been changed to add a new slot.
         CreateExtendableSlotData();
+    }
+
+    
+//! Returns node type (general by default) which can be overriden for
+    //! other types, such as wrapper nodes
+
+    NodeType Node::GetNodeType() const
+    {
+        return NodeType::GeneralNode;
     }
 
     NodeId Node::GetId() const

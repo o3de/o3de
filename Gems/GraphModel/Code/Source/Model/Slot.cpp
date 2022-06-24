@@ -494,13 +494,9 @@ namespace GraphModel
             // multiple supported types, Slot::GetDataType() will call GetParentNode()
             // to try and resolve its type, which will be a nullptr at this point
             // because the parent won't be valid yet
-            [[maybe_unused]] const DataTypePtr valueDataType1 = GetGraphContext()->GetDataTypeForValue(m_value);
-            [[maybe_unused]] const DataTypePtr valueDataType2 = GetDataTypeForValue(m_value);
-            [[maybe_unused]] const bool valueTypeSupported = valueDataType1 && valueDataType2 && valueDataType1 == valueDataType2;
-
             AZ_Error(
                 GetGraph()->GetSystemName(),
-                valueTypeSupported,
+                GetDataTypeForValue(m_value),
                 "Possible data corruption. Slot [%s] does not match any supported data type.",
                 GetDisplayName().c_str());
         }
@@ -612,7 +608,7 @@ namespace GraphModel
 
     DataTypePtr Slot::GetDataType() const
     {
-        // Search for the data type corresponding to the current value because some nodes support multiple types
+        // Because some slots support multiple data types search for the one corresponding to the value
         return GetDataTypeForValue(m_value);
     }
 
@@ -621,10 +617,10 @@ namespace GraphModel
         if (SupportsValue())
         {
 #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataType = GetDataTypeForValue(value);
-            AssertTypeMatch(dataType, "Slot::SetValue used with the wrong type");
+            DataTypePtr dataTypeUsed = GetDataTypeForValue(value);
+            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support values");
+            AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::SetValue used with the wrong type");
 #endif
-
             m_value = value;
         }
     }
@@ -632,38 +628,38 @@ namespace GraphModel
 #if defined(AZ_ENABLE_TRACING)
     void Slot::AssertWithTypeInfo(bool expression, DataTypePtr dataTypeUsed, const char* message) const
     {
+        DataTypePtr dataType = GetDataType();
         AZ_Assert(expression, "%s (Slot DataType=['%s', '%s', %s]. Used DataType=['%s', '%s', %s]). m_value TypeId=%s.",
             message,
-            GetDataType()->GetDisplayName().c_str(),
-            GetDataType()->GetCppName().c_str(),
-            GetDataType()->GetTypeUuidString().c_str(),
-            dataTypeUsed->GetDisplayName().c_str(),
-            dataTypeUsed->GetCppName().c_str(),
-            dataTypeUsed->GetTypeUuidString().c_str(),
+            !dataType ? "nullptr" : dataType->GetDisplayName().c_str(),
+            !dataType ? "nullptr" : dataType->GetCppName().c_str(),
+            !dataType ? "nullptr" : dataType->GetTypeUuidString().c_str(),
+            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetDisplayName().c_str(),
+            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetCppName().c_str(),
+            !dataTypeUsed ? "nullptr" : dataTypeUsed->GetTypeUuidString().c_str(),
             m_value.type().ToString<AZStd::string>().c_str()
         );
     }
-
-    void Slot::AssertTypeMatch(DataTypePtr dataTypeUsed, const char* message) const
-    {
-        // Check if any of the possible data types for this slot match
-        bool expression = false;
-        for (auto iter : GetSupportedDataTypes())
-        {
-            expression |= (*dataTypeUsed == *iter);
-        }
-        AssertWithTypeInfo(expression, dataTypeUsed, message);
-    }
 #endif // AZ_ENABLE_TRACING
+
+    DataTypePtr Slot::GetDataTypeForTypeId(const AZ::Uuid& typeId) const
+    {
+        for (DataTypePtr dataType : GetSupportedDataTypes())
+        {
+            if (!SupportsDataType() || dataType->IsSupportedType(typeId))
+            {
+                return dataType;
+            }
+        }
+
+        return {};
+    }
 
     DataTypePtr Slot::GetDataTypeForValue(const AZStd::any& value) const
     {
-        // Determine of the data type of a value by searching through this slots list of supported data types.
-        const AZ::Uuid& valueTypeId = value.type();
         for (DataTypePtr dataType : GetSupportedDataTypes())
         {
-            // If there is no value or the data types match return immediately.
-            if (valueTypeId.IsNull() || valueTypeId == dataType->GetTypeUuid())
+            if (!SupportsValue() || dataType->IsSupportedValue(value))
             {
                 return dataType;
             }
