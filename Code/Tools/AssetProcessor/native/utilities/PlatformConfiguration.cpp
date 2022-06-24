@@ -632,6 +632,12 @@ namespace AssetProcessor
         */
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
+            // Exclude the common platform from the internal copy builder, we don't support it as an output for assets currently
+            if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                continue;
+            }
+
             AZStd::string_view currentParams = assetRecognizer.m_defaultParams;
             // The "/Amazon/AssetProcessor/Settings/SJ */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
@@ -944,6 +950,13 @@ namespace AssetProcessor
 
         FinalizeEnabledPlatforms();
 
+        if(!m_enabledPlatforms.empty())
+        {
+            // Add the common platform if we have some other platforms enabled.  For now, this is only intended for intermediate assets
+            // So we don't want to enable it unless at least one actual platform is available, to avoid hiding an error state of no real platforms being active
+            EnableCommonPlatform();
+        }
+
         if (scanFolderOverride)
         {
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
@@ -964,6 +977,7 @@ namespace AssetProcessor
                     true));
             }
         }
+
         // Then read recognizers (which depend on platforms)
         if (!ReadRecognizersFromSettingsRegistry(absoluteAssetRoot, noConfigScanFolders, scanFolderPatterns))
         {
@@ -973,6 +987,14 @@ namespace AssetProcessor
             }
             return IsValid();
         }
+
+        if(!m_scanFolders.empty())
+        {
+            // Enable the intermediate scanfolder if we have some other scanfolders.  Since this is hardcoded we don't want to hide an error state
+            // where no other scanfolders are enabled besides this one.  It wouldn't make sense for the intermediate scanfolder to be the only enabled scanfolder
+            AddIntermediateScanFolder();
+        }
+
         if (!noGemScanFolders && addGemsConfigs)
         {
             if (settingsRegistry == nullptr || !AzFramework::GetGemsInfo(m_gemInfoList, *settingsRegistry))
@@ -1130,6 +1152,12 @@ namespace AssetProcessor
             // Add all enabled platforms
             for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
             {
+                if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                {
+                    // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                    continue;
+                }
+
                 if (AZStd::find(platformsList.begin(), platformsList.end(), platform) == platformsList.end())
                 {
                     platformsList.push_back(platform);
@@ -1142,6 +1170,12 @@ namespace AssetProcessor
             {
                 for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
                 {
+                    if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                    {
+                        // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                        continue;
+                    }
+
                     bool addPlatform = (QString::compare(identifier, platform.m_identifier.c_str(), Qt::CaseInsensitive) == 0) ||
                         platform.m_tags.find(identifier.toLower().toUtf8().data()) != platform.m_tags.end();
 
@@ -1169,6 +1203,32 @@ namespace AssetProcessor
                 }
             }
         }
+    }
+
+    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId()
+    {
+        for (const auto& scanfolder : m_scanFolders)
+        {
+            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            {
+                m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
+                return;
+            }
+        }
+
+        AZ_Error(
+            "PlatformConfiguration", false,
+            "CacheIntermediateAssetsScanFolderId: Failed to find Intermediate Assets folder in scanfolder list");
+    }
+
+    AZStd::optional<AZ::s64> PlatformConfiguration::GetIntermediateAssetsScanFolderId() const
+    {
+        if (m_intermediateAssetScanFolderId >= 0)
+        {
+            return m_intermediateAssetScanFolderId;
+        }
+
+        return AZStd::nullopt;
     }
 
     bool PlatformConfiguration::ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders, QStringList scanFolderPatterns)
@@ -1620,7 +1680,7 @@ namespace AssetProcessor
         return QString();
     }
 
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName) const
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
     {
         if (relativeName.isEmpty())
         {
@@ -1629,9 +1689,19 @@ namespace AssetProcessor
 
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
+        QDir cacheRoot;
+        AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
+
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
+
+            if (skipIntermediateScanFolder && AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData()) == AZ::IO::PathView(scanFolderInfo.ScanPath().toUtf8().constData()))
+            {
+                // There's only 1 intermediate assets folder, if we've skipped it, theres no point continuing to check every folder afterwards
+                skipIntermediateScanFolder = false;
+                continue;
+            }
 
             QString tempRelativeName(relativeName);
 
@@ -1819,6 +1889,38 @@ namespace AssetProcessor
     int PlatformConfiguration::GetMaxJobs() const
     {
         return m_maxJobs;
+    }
+
+    void PlatformConfiguration::EnableCommonPlatform()
+    {
+        EnablePlatform(AssetBuilderSDK::PlatformInfo{ AssetBuilderSDK::CommonPlatformName, AZStd::unordered_set<AZStd::string>{ "common" } });
+    }
+
+    void PlatformConfiguration::AddIntermediateScanFolder()
+    {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
+        settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+
+        AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
+        scanfolderPath /= IntermediateAssetsFolderName;
+
+        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
+        PopulatePlatformsForScanFolder(platforms);
+
+        // By default the project scanfolder is recursive with an order of 0
+        // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
+        constexpr int order = -1;
+
+        AddScanFolder(ScanFolderInfo{
+            scanfolderPath.c_str(),
+            IntermediateAssetsFolderName,
+            IntermediateAssetsFolderName,
+            false,
+            true,
+            platforms,
+            order
+        });
     }
 
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)

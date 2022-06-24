@@ -104,11 +104,12 @@ namespace AZ
                 return supported == VK_TRUE;
             };
 
-            for (const auto& commandQueue : m_commandQueues)
+            for (uint32_t i = 0; i < m_commandQueues.size(); i++)
             {
-                if (supportsPresentation(commandQueue->GetQueueDescriptor().m_familyIndex))
+                if (supportsPresentation(m_commandQueues[i]->GetQueueDescriptor().m_familyIndex))
                 {
-                    return *commandQueue;
+                    m_presentationQueueIndex = i;
+                    return *m_commandQueues[i];
                 }
             }
 
@@ -123,7 +124,8 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Failed to find a queue suitable for presentation");
-            }          
+            }
+            m_presentationQueueIndex = commandQueueIndex;
             return *m_commandQueues[commandQueueIndex];
         }
 
@@ -377,6 +379,12 @@ namespace AZ
 
                 rhiMetrics.PushSample(AZ_CRC_CE("Present"), static_cast<double>(presentDuration));
             }
+        }
+
+        CommandQueue& CommandQueueContext::GetPresentationCommandQueue() const
+        {
+            AZ_Assert(m_presentationQueueIndex != InvalidIndex, "Invalid presentation queue index");
+            return *m_commandQueues[m_presentationQueueIndex];
         }
     }
 }
