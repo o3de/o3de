@@ -70,7 +70,7 @@ namespace EMotionFX
         {
             const MotionSet* motionSet = motionManager.GetMotionSet(motionSetIndex);
             const MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
-            for (const auto motionEntryPair : motionEntries)
+            for (const auto& motionEntryPair : motionEntries)
             {
                 MotionSet::MotionEntry* motionEntry = motionEntryPair.second;
                 motionSet->LoadMotion(motionEntry);
@@ -100,7 +100,7 @@ namespace EMotionFX
         {
             const MotionSet* motionSet = motionManager.GetMotionSet(motionSetIndex);
             const MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
-            for (const auto motionEntryPair : motionEntries)
+            for (const auto& motionEntryPair : motionEntries)
             {
                 MotionSet::MotionEntry* motionEntry = motionEntryPair.second;
                 motionSet->LoadMotion(motionEntry);
