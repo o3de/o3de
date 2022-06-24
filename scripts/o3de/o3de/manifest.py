@@ -214,26 +214,13 @@ def get_gems_from_external_subdirectories(external_subdirs: list) -> list:
     '''
     Helper Method for scanning a set of external subdirectories for gem.json files
     '''
-    def is_gem_subdirectory(subdir_files):
-        for name in files:
-            if name == 'gem.json':
-                return True
-        return False
-
     gem_directories = []
 
-    # Locate all subfolders with gem.json files within them
     if external_subdirs:
         for subdirectory in external_subdirs:
-            subdirectory_path = pathlib.PurePath(subdirectory).as_posix()
-
-            # don't revisit paths added when walking the directory tree
-            if subdirectory_path in gem_directories:
-                continue
-
-            for root, dirs, files in os.walk(pathlib.Path(subdirectory).resolve()):
-                if is_gem_subdirectory(files):
-                    gem_directories.append(pathlib.PurePath(root).as_posix())
+            gem_json_path = pathlib.Path(subdirectory).resolve() / 'gem.json'
+            if gem_json_path.is_file():
+                gem_directories.append(pathlib.PurePath(subdirectory).as_posix())
 
     return gem_directories
 
