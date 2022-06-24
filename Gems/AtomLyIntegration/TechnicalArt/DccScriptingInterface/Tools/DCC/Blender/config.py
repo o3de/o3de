@@ -38,11 +38,12 @@ _MODULENAME = 'Tools.DCC.Blender.config'
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
+site.addsitedir(_PATH_DCCSIG.as_posix())
 
 # set envar so DCCsi synthetic env bootstraps with it (config.py)
 from azpy.constants import ENVAR_PATH_DCCSIG
 os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.as_posix())
-site.addsitedir(_PATH_DCCSIG.as_posix())
+
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
