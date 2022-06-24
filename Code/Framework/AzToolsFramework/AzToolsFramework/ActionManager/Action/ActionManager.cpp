@@ -13,10 +13,12 @@ namespace AzToolsFramework
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
+        AZ::Interface<ActionManagerInternalInterface>::Register(this);
     }
 
     ActionManager::~ActionManager()
     {
+        AZ::Interface<ActionManagerInternalInterface>::Unregister(this);
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
         ClearActionContextMap();
