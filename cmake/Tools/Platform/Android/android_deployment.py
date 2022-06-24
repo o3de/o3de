@@ -481,7 +481,10 @@ class AndroidDeployment(object):
                 logging.info(f"Copying {len(files_to_copy)} assets to device  {target_device}")
 
             for src_path in files_to_copy:
-                relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
+                if os.path.isabs(str(src_path)):
+                    relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
+                else:
+                    relative_path = str(src_path)
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_call(arg_list=['push', str(src_path), target_path],
                               device_id=target_device)
