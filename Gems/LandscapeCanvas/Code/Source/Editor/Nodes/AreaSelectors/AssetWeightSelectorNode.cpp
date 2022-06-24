@@ -77,7 +77,7 @@ namespace LandscapeCanvas
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType, invalidEntityDataType },
-            gradientDataType->GetDefaultValue(),
+            invalidEntityDataType->GetDefaultValue(),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas
