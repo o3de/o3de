@@ -271,6 +271,8 @@ namespace PhysX
             const size_t startCol, const size_t startRow,
             const size_t numColsToUpdate, const size_t numRowsToUpdate)
         {
+            AZ_PROFILE_FUNCTION(Physics);
+
             auto* pxScene = static_cast<physx::PxScene*>(physicsScene->GetNativePointer());
             AZ_Assert(pxScene, "Attempting to reference a null physics scene");
 
