@@ -155,6 +155,10 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     if not skip_auto_register:
         if object_type == 'gem':
             return register.register(gem_path=dest_path)
+        elif object_type == 'project':
+            return register.register(project_path=dest_path)
+        elif object_type == 'template':
+            return register.register(template_path=dest_path)
 
     return 0
 
