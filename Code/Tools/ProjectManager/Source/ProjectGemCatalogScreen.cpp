@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::ProjectGemCatalog;
     }
 
-    ProjectGemCatalogScreen::EnableDisableGemsResult ProjectGemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
+    ProjectGemCatalogScreen::ConfiguredGemsResult ProjectGemCatalogScreen::ConfigureGemsForProject(const QString& projectPath)
     {
         IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
         QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
             GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, this);
             if(confirmRequirementsDialog->exec() == QDialog::Rejected)
             {
-                return EnableDisableGemsResult::Cancel;
+                return ConfiguredGemsResult::Cancel;
             }
         }
 
@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
             GemDependenciesDialog* dependenciesDialog = new GemDependenciesDialog(m_gemModel, this);
             if(dependenciesDialog->exec() == QDialog::Rejected)
             {
-                return EnableDisableGemsResult::Cancel;
+                return ConfiguredGemsResult::Cancel;
             }
 
             toBeAdded = m_gemModel->GatherGemsToBeAdded();
@@ -72,7 +72,7 @@ namespace O3DE::ProjectManager
                     tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
                         .arg(GemModel::GetDisplayName(modelIndex)));
 
-                return EnableDisableGemsResult::Failed;
+                return ConfiguredGemsResult::Failed;
             }
 
             const AZ::Outcome<void, AZStd::string> result = pythonBindings->AddGemToProject(gemPath, projectPath);
@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(nullptr, "Failed to add gem to project",
                     tr("Cannot add gem %1 to project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
-                return EnableDisableGemsResult::Failed;
+                return ConfiguredGemsResult::Failed;
             }
 
             // register external gems that were added with relative paths
@@ -100,11 +100,11 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(nullptr, "Failed to remove gem from project",
                     tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
-                return EnableDisableGemsResult::Failed;
+                return ConfiguredGemsResult::Failed;
             }
         }
 
-        return EnableDisableGemsResult::Success;
+        return ConfiguredGemsResult::Success;
     }
 
     bool ProjectGemCatalogScreen::IsTab()

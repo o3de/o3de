@@ -24,13 +24,13 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
         bool IsTab() override;
 
-        enum class EnableDisableGemsResult 
+        enum class ConfiguredGemsResult 
         {
             Failed = 0,
             Success,
             Cancel
         };
-        EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
+        ConfiguredGemsResult ConfigureGemsForProject(const QString& projectPath);
     };
 
 } // namespace O3DE::ProjectManager

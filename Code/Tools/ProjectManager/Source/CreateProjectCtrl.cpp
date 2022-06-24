@@ -258,12 +258,12 @@ namespace O3DE::ProjectManager
                 // automatically register the project
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
-                const ProjectGemCatalogScreen::EnableDisableGemsResult gemResult = m_projectGemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
-                if (gemResult == ProjectGemCatalogScreen::EnableDisableGemsResult::Failed)
+                const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
+                if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
                 {
                     QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
                 }
-                if (gemResult != ProjectGemCatalogScreen::EnableDisableGemsResult::Success)
+                if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
                 {
                     return;
                 }
