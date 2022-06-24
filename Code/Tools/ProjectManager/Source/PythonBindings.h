@@ -36,6 +36,7 @@ namespace O3DE::ProjectManager
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
         AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) override;
+        AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) override;
         DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) override;
 
         // Gem

@@ -192,9 +192,9 @@ namespace O3DE::ProjectManager
         return frame;
     }
 
-    ProjectButton* ProjectsScreen::CreateProjectButton(const ProjectInfo& project)
+    ProjectButton* ProjectsScreen::CreateProjectButton(const ProjectInfo& project, const EngineInfo& engine)
     {
-        ProjectButton* projectButton = new ProjectButton(project, this);
+        ProjectButton* projectButton = new ProjectButton(project, engine, this);
         m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), projectButton);
         m_projectsFlowLayout->addWidget(projectButton);
 
@@ -287,13 +287,34 @@ namespace O3DE::ProjectManager
                 }
             });
 
+            QHash<QString, EngineInfo> engines;
+
             // Add any missing project buttons and restore buttons to default state
             for (const ProjectInfo& project : projectsVector)
             {
                 ProjectButton* currentButton = nullptr;
                 if (!m_projectButtons.contains(QDir::toNativeSeparators(project.m_path)))
                 {
-                    currentButton = CreateProjectButton(project);
+                    EngineInfo engine{};
+                    if (!project.m_engineName.isEmpty())
+                    {
+                        if (auto it = engines.constFind(project.m_engineName); it != engines.cend())
+                        {
+                            engine = it.value();
+                        }
+                        else if (auto engineResult = PythonBindingsInterface::Get()->GetEngineInfo(project.m_engineName); engineResult)
+                        {
+                            engine = engineResult.GetValue<EngineInfo>();
+                            engines.insert(project.m_engineName, engine);
+                        }
+                    }
+                    else if (auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(project.m_path); engineResult)
+                    {
+                        engine = engineResult.GetValue<EngineInfo>();
+                        engines.insert(project.m_engineName, engine);
+                    }
+
+                    currentButton = CreateProjectButton(project, engine);
                     m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), currentButton);
                     m_fileSystemWatcher->addPath(QDir::toNativeSeparators(project.m_path + "/project.json"));
                 }

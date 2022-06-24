@@ -387,6 +387,13 @@ namespace O3DE::ProjectManager
                 engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0.0");
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
+
+                // check if this engine is the engine for this Project Manager
+                auto thisEnginePath = m_manifest.attr("get_this_engine_path")();
+                if (enginePath.equal(thisEnginePath))
+                {
+                    engineInfo.m_thisEngine = true;
+                }
             }
 
             auto o3deData = m_manifest.attr("load_o3de_manifest")();
@@ -407,6 +414,7 @@ namespace O3DE::ProjectManager
                 auto defaultThirdPartyFolder = m_manifest.attr("get_o3de_third_party_folder")();
                 engineInfo.m_thirdPartyPath = Py_To_String_Optional(o3deData, "default_third_party_folder", Py_To_String(defaultThirdPartyFolder));
             }
+
 
             // check if engine path is registered
             auto allEngines = m_manifest.attr("get_manifest_engines")();
@@ -438,6 +446,7 @@ namespace O3DE::ProjectManager
         bool result = ExecuteWithLock([&] {
             auto enginePath = m_manifest.attr("get_this_engine_path")();
             engineInfo = EngineInfoFromPath(enginePath);
+            engineInfo.m_thisEngine = true;
         });
 
         if (!result || !engineInfo.IsValid())
@@ -463,6 +472,29 @@ namespace O3DE::ProjectManager
 
                 // it is possible an engine is registered in o3de_manifest.json but the engine.json is
                 // missing or corrupt in which case we do not consider it a registered engine
+            }
+        });
+
+        if (!result || !engineInfo.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(engineInfo));
+        }
+    }
+
+    AZ::Outcome<EngineInfo> PythonBindings::GetProjectEngine(const QString& projectPath)
+    {
+        EngineInfo engineInfo;
+        bool result = ExecuteWithLock([&] {
+            auto enginePathResult = m_manifest.attr("get_project_engine")(QString_To_Py_String(projectPath));
+
+            // if a valid registered object is not found None is returned
+            if (!pybind11::isinstance<pybind11::none>(enginePathResult))
+            {
+                engineInfo = EngineInfoFromPath(enginePathResult);
             }
         });
 
@@ -875,6 +907,7 @@ namespace O3DE::ProjectManager
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
                 projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
+                projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
                 if (projectData.contains("user_tags"))
                 {
                     for (auto tag : projectData["user_tags"])

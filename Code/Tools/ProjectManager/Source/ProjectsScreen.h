@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <EngineInfo.h>
 #include <ProjectInfo.h>
 
 #include <QQueue>
@@ -34,7 +35,7 @@ namespace O3DE::ProjectManager
 
     public:
         explicit ProjectsScreen(QWidget* parent = nullptr);
-        ~ProjectsScreen();
+        ~ProjectsScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;
         QString GetTabText() override;
@@ -68,7 +69,7 @@ namespace O3DE::ProjectManager
     private:
         QFrame* CreateFirstTimeContent();
         QFrame* CreateProjectsContent();
-        ProjectButton* CreateProjectButton(const ProjectInfo& project);
+        ProjectButton* CreateProjectButton(const ProjectInfo& project, const EngineInfo& engine);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
         bool RemoveInvalidProjects();
