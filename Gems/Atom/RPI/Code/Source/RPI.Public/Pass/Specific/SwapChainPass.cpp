@@ -84,7 +84,7 @@ namespace AZ
 
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChain() == nullptr)
+            if (m_windowContext->GetSwapChainsSize() == 0)
             {
                 return;
             }
