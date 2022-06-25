@@ -148,12 +148,17 @@ namespace AzToolsFramework
         //! Queues up a menu for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menu to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult QueueMenuRefresh(const AZStd::string& menuIdentifier) = 0;
+        virtual MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) = 0;
+
+        //! Queues up all menus containing the action provided for a refresh at the end of this tick.
+        //! @param actionIdentifier The identifier for the action triggering the refresh for menus containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult QueueRefreshForMenuContainingAction(const AZStd::string& actionIdentifier) = 0;
 
         //! Queues up a menuBar for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menuBar to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult QueueMenuBarRefresh(const AZStd::string& menuBarIdentifier) = 0;
+        virtual MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) = 0;
 
         //! Refreshes all menus that were queued up by QueueMenuRefresh.
         virtual void RefreshMenus() = 0;

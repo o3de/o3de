@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+
 namespace AzToolsFramework
 {
     ActionManager::ActionManager()
@@ -308,6 +310,11 @@ namespace AzToolsFramework
         }
         
         actionIterator->second.Update();
+
+        // TODO - How to handle this?
+        auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        menuManagerInternalInterface->QueueRefreshForMenuContainingAction(actionIdentifier);
+
         return AZ::Success();
     }
     

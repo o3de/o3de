@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
@@ -56,11 +57,11 @@ namespace AzToolsFramework
         //! Returns true if the EditorAction is enabled, false otherwise.
         bool IsEnabled() const;
 
-        //! Calls the callback to update the action's checked and enabled state, if any.
-        void Update();
-
         //! Returns whether the action is checkable.
         bool IsCheckable();
+
+        //! Calls the callback to update the action's checked and enabled state, if any.
+        void Update();
 
     private:
         void UpdateIconFromPath();
@@ -74,13 +75,11 @@ namespace AzToolsFramework
         AZStd::string m_category;
         AZStd::string m_iconPath;
 
-        bool m_hideFromMenusWhenDisabled;
-        bool m_hideFromToolBarsWhenDisabled;
-
         AZStd::function<bool()> m_checkStateCallback = nullptr;
         AZStd::function<bool()> m_enabledStateCallback = nullptr;
 
-        AZStd::string m_parentIdentifier;
+        bool m_hideFromMenusWhenDisabled;
+        bool m_hideFromToolBarsWhenDisabled;
     };
 
 } // namespace AzToolsFramework

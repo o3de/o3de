@@ -57,8 +57,9 @@ namespace AzToolsFramework
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
 
         // MenuManagerInterface overrides ...
-        MenuManagerOperationResult QueueMenuRefresh(const AZStd::string& menuIdentifier) override;
-        MenuManagerOperationResult QueueMenuBarRefresh(const AZStd::string& menuBarIdentifier) override;
+        MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
+        MenuManagerOperationResult QueueRefreshForMenuContainingAction(const AZStd::string& actionIdentifier) override;
+        MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) override;
         void RefreshMenus() override;
         void RefreshMenuBars() override;
 
@@ -67,6 +68,8 @@ namespace AzToolsFramework
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;
+
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionsToMenusMap;
 
         AZStd::unordered_set<AZStd::string> m_menusToRefresh;
         AZStd::unordered_set<AZStd::string> m_menuBarsToRefresh;

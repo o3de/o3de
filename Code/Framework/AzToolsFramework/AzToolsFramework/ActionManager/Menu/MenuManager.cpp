@@ -100,6 +100,7 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.AddAction(sortIndex, actionIdentifier);
+        m_actionsToMenusMap[actionIdentifier].insert(menuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
         return AZ::Success();
     }
@@ -136,6 +137,7 @@ namespace AzToolsFramework
             }
 
             menuIterator->second.AddAction(pair.second, pair.first);
+            m_actionsToMenusMap[pair.first].insert(menuIdentifier);
         }
 
         m_menusToRefresh.insert(menuIdentifier);
@@ -175,6 +177,8 @@ namespace AzToolsFramework
         }
 
         menuIterator->second.RemoveAction(actionIdentifier);
+        m_actionsToMenusMap[actionIdentifier].erase(menuIdentifier);
+
         m_menusToRefresh.insert(menuIdentifier);
         return AZ::Success();
     }
@@ -211,6 +215,7 @@ namespace AzToolsFramework
             }
 
             menuIterator->second.RemoveAction(actionIdentifier);
+            m_actionsToMenusMap[actionIdentifier].erase(menuIdentifier);
         }
 
         m_menusToRefresh.insert(menuIdentifier);
@@ -398,7 +403,7 @@ namespace AzToolsFramework
         return AZ::Success(sortKey.value());
     }
 
-    MenuManagerOperationResult MenuManager::QueueMenuRefresh(const AZStd::string& menuIdentifier)
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenu(const AZStd::string& menuIdentifier)
     {
         if (!m_menus.contains(menuIdentifier))
         {
@@ -410,7 +415,17 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    MenuManagerOperationResult MenuManager::QueueMenuBarRefresh(const AZStd::string& menuBarIdentifier)
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenuContainingAction(const AZStd::string& actionIdentifier)
+    {
+        for (const AZStd::string& menuIdentifier : m_actionsToMenusMap[actionIdentifier])
+        {
+            m_menusToRefresh.insert(menuIdentifier);
+        }
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier)
     {
         if (!m_menuBars.contains(menuBarIdentifier))
         {

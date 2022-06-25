@@ -138,6 +138,11 @@ namespace AzToolsFramework
                 {
                     if(QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
                     {
+                        if (!action->isEnabled() && m_actionManagerInternalInterface->HideFromMenusWhenDisabled(elem.second.m_identifier))
+                        {
+                            continue;
+                        }
+
                         m_menu->addAction(action);
                     }
                     break;

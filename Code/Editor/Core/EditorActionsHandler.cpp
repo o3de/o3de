@@ -80,10 +80,10 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     AZ_Assert(
         m_actionManagerInternalInterface,
         "EditorActionsHandler - could not get ActionManagerInternalInterface on EditorActionsHandler construction.");
-        
+    
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
-        
+    
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
