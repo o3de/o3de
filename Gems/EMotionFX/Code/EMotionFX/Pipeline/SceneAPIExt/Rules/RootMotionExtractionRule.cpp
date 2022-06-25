@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 
 namespace EMotionFX::Pipeline::Rule
@@ -34,8 +35,10 @@ namespace EMotionFX::Pipeline::Rule
         {
             editContext->Class<RootMotionExtractionData>("Root motion extraction data", "Root motion extraction data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                ->DataElement("NodeListSelection", &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
+                    ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
+                ->ClassElement(AZ::Edit::ClassElements::Group, "Transition Extraction")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroXAxis, "Force X Axis Transition to 0", "Force X Axis movement to be zero.")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroYAxis, "Force Y Axis Transition to 0", "Force Y Axis movement to be zero.");
         }
@@ -75,11 +78,12 @@ namespace EMotionFX::Pipeline::Rule
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            editContext->Class<RootMotionExtractionRule>("Root motion extraction", "Extract motion from the sample joint.")
+            editContext->Class<RootMotionExtractionRule>("Root motion extraction (preview)", "Extract motion from the sample joint.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionRule::m_data, "", "")
-                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionRule::m_data, "Root motion extraction data", "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
         }
     }
 } // EMotionFX::Pipeline::Rule

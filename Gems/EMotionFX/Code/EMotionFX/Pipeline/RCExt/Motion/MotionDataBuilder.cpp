@@ -267,6 +267,7 @@ namespace EMotionFX
 
                 const SceneContainers::SceneGraph::NodeIndex boneNodeIndex = graph.Find(it->first.GetPath());
                 const char* nodeName = it->first.GetName();
+                const char* nodePath = it->first.GetPath();
 
                 if (rootMotionExtractionRule)
                 {
@@ -289,12 +290,10 @@ namespace EMotionFX
                 const size_t jointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
 
                 // Remember the sample joint index
-                if (rootMotionExtractionRule)
+                if (rootMotionExtractionRule && sampleJointDataIndex == invalidJointDataIndex
+                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().GetSampleJoint().c_str()) != AZStd::string::npos)
                 {
-                    if (AzFramework::StringFunc::Find(nodeName, rootMotionExtractionRule->GetData().GetSampleJoint().c_str()) != AZStd::string::npos && sampleJointDataIndex == invalidJointDataIndex)
-                    {
-                        sampleJointDataIndex = jointDataIndex;
-                    }
+                    sampleJointDataIndex = jointDataIndex;
                 }
 
                 // If we deal with a root bone or one of its child nodes, disable the keytrack optimization.
