@@ -176,36 +176,36 @@ namespace WhiteBox
         {
             auto& vertexIntersection = m_vertexIntersection.value();
             auto handles = AZStd::array<Api::VertexHandle, 1>({ vertexIntersection.GetHandle() });
-            DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexHover);
+            DrawPoints(debugDisplay, whiteBox, viewportInfo, handles, ed_whiteBoxVertexHover);
         }
 
         if (m_vertexSelection)
         {
-            if (auto selection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
+            if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
             {
-                auto vertexHandles = Api::PolygonVertexHandles(*whiteBox, selection->GetHandle());
-                DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
-                if (m_polygonIntersection.value_or(PolygonIntersection{}).GetHandle() != selection->GetHandle())
+                auto vertexHandles = Api::PolygonVertexHandles(*whiteBox, polygonSelection->GetHandle());
+                DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
+                if (m_polygonIntersection.value_or(PolygonIntersection{}).GetHandle() != polygonSelection->GetHandle())
                 {
-                    DrawFace(debugDisplay, whiteBox, selection->GetHandle(), ed_whiteBoxPolygonSelection);
-                    DrawOutline(debugDisplay, whiteBox, selection->GetHandle(), ed_whiteBoxOutlineSelection);
+                    DrawFace(debugDisplay, whiteBox, polygonSelection->GetHandle(), ed_whiteBoxPolygonSelection);
+                    DrawOutline(debugDisplay, whiteBox, polygonSelection->GetHandle(), ed_whiteBoxOutlineSelection);
                 }
             }
-            else if (auto selection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
+            else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
             {
-                auto vertexHandles = Api::EdgeVertexHandles(*whiteBox, selection->GetHandle());
-                DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
-                if (m_edgeIntersection.value_or(EdgeIntersection{}).GetHandle() != selection->GetHandle())
+                auto vertexHandles = Api::EdgeVertexHandles(*whiteBox, edgeSelection->GetHandle());
+                DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
+                if (m_edgeIntersection.value_or(EdgeIntersection{}).GetHandle() != edgeSelection->GetHandle())
                 {
-                    DrawEdge(debugDisplay, whiteBox, selection->GetHandle(), ed_whiteBoxOutlineSelection);
+                    DrawEdge(debugDisplay, whiteBox, edgeSelection->GetHandle(), ed_whiteBoxOutlineSelection);
                 }
             }
-            else if (auto selection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
+            else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
             {
-                if (m_vertexIntersection.value_or(VertexIntersection{}).GetHandle() != selection->GetHandle())
+                if (m_vertexIntersection.value_or(VertexIntersection{}).GetHandle() != vertexSelection->GetHandle())
                 {
-                    auto handles = AZStd::array<Api::VertexHandle, 1>({ selection->GetHandle() });
-                    DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexSelection);
+                    auto handles = AZStd::array<Api::VertexHandle, 1>({ vertexSelection->GetHandle() });
+                    DrawPoints(debugDisplay, whiteBox, viewportInfo, handles, ed_whiteBoxVertexSelection);
                 }
             }
         }
@@ -310,24 +310,24 @@ namespace WhiteBox
 
     void TransformMode::UpdateTransformHandles(WhiteBoxMesh* mesh)
     {
-        if (auto selection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
+        if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
         {
-            m_vertexSelection->m_vertexHandles = Api::PolygonVertexHandles(*mesh, selection->GetHandle());
+            m_vertexSelection->m_vertexHandles = Api::PolygonVertexHandles(*mesh, polygonSelection->GetHandle());
             m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::PolygonMidpoint(*mesh, selection->GetHandle());
+            m_vertexSelection->m_localPosition = Api::PolygonMidpoint(*mesh, polygonSelection->GetHandle());
         }
-        else if (auto selection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
+        else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
         {
-            auto edgeHandle = Api::EdgeVertexHandles(*mesh, selection->GetHandle());
+            auto edgeHandle = Api::EdgeVertexHandles(*mesh, edgeSelection->GetHandle());
             m_vertexSelection->m_vertexHandles = Api::VertexHandles(edgeHandle.cbegin(), edgeHandle.cend());
             m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::EdgeMidpoint(*mesh, selection->GetHandle());
+            m_vertexSelection->m_localPosition = Api::EdgeMidpoint(*mesh, edgeSelection->GetHandle());
         }
-        else if (auto selection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
+        else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
         {
-            m_vertexSelection->m_vertexHandles = Api::VertexHandles({ selection->GetHandle() });
+            m_vertexSelection->m_vertexHandles = Api::VertexHandles({ vertexSelection->GetHandle() });
             m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::VertexPosition(*mesh, selection->GetHandle());
+            m_vertexSelection->m_localPosition = Api::VertexPosition(*mesh, vertexSelection->GetHandle());
         }
     }
 
