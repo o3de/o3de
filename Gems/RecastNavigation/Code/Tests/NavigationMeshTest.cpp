@@ -705,8 +705,7 @@ namespace RecastNavigationTests
     }
 
     // Disabling this test to unblock AR while an investigation is in progress.
-    /*
-    TEST_F(NavigationTest, AsyncRerun)
+    TEST_F(NavigationTest, DISABLED_AsyncRerun)
     {
         Entity e;
         PopulateEntity(e);
@@ -726,7 +725,6 @@ namespace RecastNavigationTests
             wait.BlockUntilCalled();
         }
     }
-    */
 
     TEST_F(NavigationTest, AsyncSecondWhileFirstIsInProgress)
     {
