@@ -75,7 +75,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_TreeNavigation(EditorSharedTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
-    class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
+    class test_ComponentCRUD_Add_Delete_Components(EditorSingleTest):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
     @pytest.mark.REQUIRES_gpu
