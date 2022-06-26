@@ -269,12 +269,10 @@ namespace EMotionFX
                 const char* nodeName = it->first.GetName();
                 const char* nodePath = it->first.GetPath();
 
-                if (rootMotionExtractionRule)
+                // Add root joint to motion data when root motion extraction rule exsits.
+                if (rootMotionExtractionRule && boneNodeIndex == rootBoneNodeIndex)
                 {
-                    if (boneNodeIndex == rootBoneNodeIndex)
-                    {
-                        rootJointDataIndex = motionData->AddJoint(it->first.GetName(), Transform::CreateIdentity(), Transform::CreateIdentity());
-                    }
+                    rootJointDataIndex = motionData->AddJoint(it->first.GetName(), Transform::CreateIdentity(), Transform::CreateIdentity());
                 }
 
                 // Currently only get the first (one) AnimationData
@@ -289,7 +287,7 @@ namespace EMotionFX
                 const SceneDataTypes::IAnimationData* animation = azrtti_cast<const SceneDataTypes::IAnimationData*>(result->get());
                 const size_t jointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
 
-                // Remember the sample joint index
+                // Keep track of the sample joint index.
                 if (rootMotionExtractionRule && sampleJointDataIndex == invalidJointDataIndex
                     && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().GetSampleJoint().c_str()) != AZStd::string::npos)
                 {
