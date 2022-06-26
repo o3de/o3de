@@ -8,20 +8,25 @@
 
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
+#include <QMenu>
 #include <QToolBar>
+#include <QToolButton>
 
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
         : m_toolBar(new QToolBar(""))
     {
+        m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
         : m_toolBar(new QToolBar(name.c_str()))
     {
+        m_toolBar->setMovable(false);
     }
 
     void EditorToolBar::AddSeparator(int sortKey)
@@ -33,6 +38,23 @@ namespace AzToolsFramework
     {
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
         m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
+    }
+
+    void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
+    {
+        if (QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+            QMenu* subMenu = m_menuManagerInterface->GetMenu(subMenuIdentifier))
+        {
+            QToolButton* toolButton = new QToolButton(m_toolBar);
+            
+            toolButton->setPopupMode(QToolButton::MenuButtonPopup);
+            toolButton->setAutoRaise(true);
+            toolButton->setMenu(subMenu);
+            toolButton->setDefaultAction(action);
+
+            m_actionToSortKeyMap.insert(AZStd::make_pair(AZStd::move(actionIdentifier), sortKey));
+            m_toolBarItems.insert({ sortKey, ToolBarItem(static_cast<QWidget*>(toolButton)) });
+        }
     }
 
     void EditorToolBar::RemoveAction(AZStd::string actionIdentifier)
@@ -146,6 +168,9 @@ namespace AzToolsFramework
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
+
+        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInterface");
 
         m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
         AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");

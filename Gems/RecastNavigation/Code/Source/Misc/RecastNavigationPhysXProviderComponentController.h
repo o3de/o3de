@@ -99,8 +99,12 @@ namespace RecastNavigation
         const char* GetSceneName() const;
 
     protected:
+        void OnConfigurationChanged();
+
         AZ::EntityComponentIdPair m_entityComponentIdPair;
         RecastNavigationPhysXProviderConfig m_config;
+
+        AzPhysics::CollisionGroup m_collisionGroup;
 
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };

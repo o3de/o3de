@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 
+#include <QWidget>
+
 namespace AzToolsFramework
 {
     ToolBarManager::ToolBarManager()
@@ -72,6 +74,37 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddAction(sortIndex, actionIdentifier);
+        toolBarIterator->second.RefreshToolBar();
+        return AZ::Success();
+    }
+    
+    ToolBarManagerOperationResult ToolBarManager::AddActionWithSubMenuToToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar has not been registered.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        if (!action)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        if (toolBarIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar already contains action.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.AddActionWithSubMenu(sortIndex, actionIdentifier, subMenuIdentifier);
         toolBarIterator->second.RefreshToolBar();
         return AZ::Success();
     }
@@ -202,11 +235,32 @@ namespace AzToolsFramework
         if (toolBarIterator == m_toolBars.end())
         {
             return AZ::Failure(AZStd::string::format(
-                "ToolBar Manager - Could not add separator - menu \"%s\" has not been registered.", toolBarIdentifier.c_str()));
+                "ToolBar Manager - Could not add separator - toolbar \"%s\" has not been registered.", toolBarIdentifier.c_str()));
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
         toolBarIterator->second.RefreshToolBar();
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::AddWidgetToToolBar(const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add widget - toolbar \"%s\" has not been registered.", toolBarIdentifier.c_str()));
+        }
+
+        if (!widget)
+        {
+            return AZ::Failure(
+                AZStd::string::format("ToolBar Manager - Could not add widget to toolbar \"%s\" - nullptr widget.", toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.AddWidget(sortIndex, widget);
+        toolBarIterator->second.RefreshToolBar();
+
         return AZ::Success();
     }
 
