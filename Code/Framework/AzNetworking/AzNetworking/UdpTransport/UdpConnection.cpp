@@ -118,8 +118,7 @@ namespace AzNetworking
         }
         if (m_state == ConnectionState::Disconnecting)
         {
-            AZStd::string reasonString = ToString(reason);
-            AZLOG_ERROR("Disconnecting an already disconnecting connection due to %s", reasonString.c_str());
+            AZLOG_ERROR("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
             return false;
         }
         m_state = ConnectionState::Disconnecting;
