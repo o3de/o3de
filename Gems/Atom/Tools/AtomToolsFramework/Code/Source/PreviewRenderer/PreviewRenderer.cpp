@@ -66,7 +66,6 @@ namespace AtomToolsFramework
         pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-        //m_renderPipeline->RemoveFromRenderTick();
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
