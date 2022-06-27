@@ -72,6 +72,7 @@ ly_create_alias(NAME RemoteTools.Clients NAMESPACE Gem TARGETS Gem::RemoteTools)
 ly_create_alias(NAME RemoteTools.Servers NAMESPACE Gem TARGETS Gem::RemoteTools)
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME RemoteTools.Tools   NAMESPACE Gem TARGETS Gem::RemoteTools)
+    ly_create_alias(NAME RemoteTools.LuaTools NAMESPACE Gem TARGETS Gem::RemoteTools)
 endif()
 
 ################################################################################

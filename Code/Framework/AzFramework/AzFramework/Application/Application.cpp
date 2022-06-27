@@ -47,6 +47,7 @@
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -59,6 +60,7 @@
 #include <AzFramework/Archive/Archive.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
@@ -226,6 +228,10 @@ namespace AzFramework
                 using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
+#if !defined(_RELEASE)
+            RemoteToolsInterface::Get()->RegisterToolingServiceClient(AzFramework::LuaToolsKey,
+                AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+#endif
         }
     }
 

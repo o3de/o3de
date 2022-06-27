@@ -8,8 +8,6 @@
 
 #include "StandaloneToolsApplication.h"
 
-#include <Source/Utils/LuaIDEConstants.h>
-
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -17,6 +15,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -89,14 +88,15 @@ namespace StandaloneTools
 
     bool BaseApplication::StartDebugService()
     {
+#if !defined(_RELEASE)
         auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
         if (remoteToolsInterface)
         {
             remoteToolsInterface->RegisterToolingServiceHost(
-                LUADebugger::LuaToolsKey, LUADebugger::LuaToolsName, LUADebugger::LuaToolsPort);
+                AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
             return true;
         }
-
+#endif
         return false;
     }
 
@@ -108,8 +108,8 @@ namespace StandaloneTools
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
-        LegacyFramework::Application::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("standalone_tools");
+        ComponentApplication::SetSettingsRegistrySpecializations(specializations);
+        specializations.Append("luaide");
     }
 
     AZStd::string BaseApplication::GetStoragePath() const

@@ -26,7 +26,6 @@ ly_add_target(
             .
             Source/Editor
             Source/LUA
-            Source/Utils
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
@@ -41,4 +40,5 @@ ly_add_target(
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
 
+ly_set_gem_variant_to_load(TARGETS LuaIDE VARIANTS LuaTools)
 ly_add_dependencies(Editor LuaIDE)
