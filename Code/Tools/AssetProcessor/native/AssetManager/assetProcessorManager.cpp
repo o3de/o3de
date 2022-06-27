@@ -238,7 +238,7 @@ namespace AssetProcessor
 
                 if (operationDuration)
                 {
-                    Q_EMIT JobProcessDurationChanged(jobEntry, static_cast<unsigned int>(operationDuration.value()));
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<unsigned int>(operationDuration.value()));
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
