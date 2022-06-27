@@ -34,27 +34,9 @@ namespace AZStd
 
 //! This implements cvar binding methods for a type safe integral alias.
 //! This must be placed in global scope (not in a namespace) and the TYPE_NAME should be fully qualified.
-#define AZ_TYPE_SAFE_INTEGRAL_CVARBINDING(TYPE_NAME)                                                                                                \
-    namespace AZ::ConsoleTypeHelpers                                                                                                                \
-    {                                                                                                                                               \
-        template <>                                                                                                                                 \
-        inline CVarFixedString ValueToString<TYPE_NAME>(const TYPE_NAME& value)                                                                     \
-        {                                                                                                                                           \
-            return ConvertString(AZStd::to_string(static_cast<AZStd::underlying_type<TYPE_NAME>::type>(value)));                                    \
-        }                                                                                                                                           \
-                                                                                                                                                    \
-        template <>                                                                                                                                 \
-        inline bool StringSetToValue<TYPE_NAME>(TYPE_NAME& outValue, const AZ::ConsoleCommandContainer& arguments)                                  \
-        {                                                                                                                                           \
-            AZStd::underlying_type<TYPE_NAME>::type underlyingValue;                                                                                \
-            const bool result = StringSetToValue(underlyingValue, arguments);                                                                       \
-            if (result)                                                                                                                             \
-            {                                                                                                                                       \
-                outValue = TYPE_NAME(underlyingValue);                                                                                              \
-            }                                                                                                                                       \
-            return result;                                                                                                                          \
-        }                                                                                                                                           \
-    }
+//! O3DE_DEPRECATED This macro no longer needs to be used
+//! The ConsoleTypeHelpers automatically support cvar bindings for Enums
+#define AZ_TYPE_SAFE_INTEGRAL_CVARBINDING(TYPE_NAME)
 
 #define AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(TYPE_NAME) \
     namespace AZStd \
