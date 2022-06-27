@@ -3,22 +3,26 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Color Operations",
-        "title": "Split Color",
+        "category": "Math Operations",
+        "title": "Split",
         "inputSlots": [
             {
-                "name": "inColor",
-                "displayName": "Color",
-                "description": "Color",
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
-                    "Color"
+                    "float",
+                    "float2",
+                    "float3",
+                    "float4",
+                    "color"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
+                        0.0,
+                        0.0,
+                        0.0,
                         1.0
                     ]
                 }
@@ -26,45 +30,45 @@
         ],
         "outputSlots": [
             {
-                "name": "outR",
-                "displayName": "R",
-                "description": "Red color channel",
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "outG",
-                "displayName": "G",
-                "description": "Green color channel",
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "outB",
-                "displayName": "B",
-                "description": "Blue color channel",
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
                 "supportedDataTypes": [
                     "float"
                 ],
                 "defaultValue": {
                     "$type": "float",
-                    "Value": 1.0
+                    "Value": 0.0
                 }
             },
             {
-                "name": "outA",
-                "displayName": "A",
-                "description": "Alpha color channel",
+                "name": "outW",
+                "displayName": "W",
+                "description": "W",
                 "supportedDataTypes": [
                     "float"
                 ],
@@ -73,6 +77,6 @@
                     "Value": 1.0
                 }
             }
-        ]
+       ]
     }
 }

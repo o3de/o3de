@@ -114,7 +114,7 @@ namespace ScriptCanvasEditor
         if (auto fileLoadResult = LoadFromFile(graphPath))
         {
             auto& source = fileLoadResult.m_handle;
-            auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
+            auto testableSource = SourceHandle::FromRelativePath(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
 
             AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
             ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
@@ -162,7 +162,7 @@ namespace ScriptCanvasEditor
         reporter.SetExecutionMode(mode);
 
         LoadTestGraphResult loadResult;
-        loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.Path());
+        loadResult.m_editorAsset = SourceHandle::FromRelativePath(nullptr, assetId.m_guid, asset.Path());
         AZ::EntityId scriptCanvasId;
         loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
         loadResult.m_runtimeAsset = runtimeAsset;

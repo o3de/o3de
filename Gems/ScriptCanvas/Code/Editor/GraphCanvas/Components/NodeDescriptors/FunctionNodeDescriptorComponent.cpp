@@ -90,7 +90,7 @@ namespace ScriptCanvasEditor
     {
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
         GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset
-            , SourceHandle( nullptr, m_assetId.m_guid, {} ), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+            , SourceHandle(nullptr, m_assetId.m_guid), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         return openOutcome.IsSuccess();
     }
 
