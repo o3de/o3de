@@ -24,5 +24,5 @@ namespace PhysX
         virtual void RequestHeightfieldBaking() = 0;
     };
 
-    using EditorHeightfieldColliderBus = AZ::EBus<EditorHeightfieldColliderInterface>;
+    using EditorHeightfieldColliderRequestBus = AZ::EBus<EditorHeightfieldColliderInterface>;
 } // namespace PhysX

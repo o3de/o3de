@@ -17,7 +17,7 @@
 
 #include <Source/HeightfieldCollider.h>
 #include <PhysX/HeightFieldAsset.h>
-#include <PhysX/EditorHeightfieldColliderBus.h>
+#include <PhysX/EditorHeightfieldColliderRequestBus.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Jobs/JobCompletion.h>
 
@@ -28,7 +28,7 @@ namespace PhysX
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , protected DebugDraw::DisplayCallback
-        , private EditorHeightfieldColliderBus::Handler
+        , private EditorHeightfieldColliderRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(

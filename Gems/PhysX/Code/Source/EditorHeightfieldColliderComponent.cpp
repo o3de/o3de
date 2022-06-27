@@ -90,7 +90,7 @@ namespace PhysX
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<EditorHeightfieldColliderBus>("EditorHeightfieldColliderBus")
+                behaviorContext->EBus<EditorHeightfieldColliderRequestBus>("EditorHeightfieldColliderRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
                     ->Event("RequestHeightfieldBaking", &EditorHeightfieldColliderInterface::RequestHeightfieldBaking);
@@ -154,7 +154,7 @@ namespace PhysX
     // AZ::Component
     void EditorHeightfieldColliderComponent::Activate()
     {
-        EditorHeightfieldColliderBus::Handler::BusConnect(GetEntityId());
+        EditorHeightfieldColliderRequestBus::Handler::BusConnect(GetEntityId());
 
         m_bakingCompletion.Reset(true /*isClearDependent*/);
         m_heightfieldAssetBakingJob.Reset(true);
@@ -186,7 +186,7 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
-        EditorHeightfieldColliderBus::Handler::BusDisconnect();
+        EditorHeightfieldColliderRequestBus::Handler::BusDisconnect();
 
         if (m_useBakedHeightfield)
         {
