@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
 #include <AzCore/std/string/string.h>
 
@@ -22,6 +23,8 @@ namespace AZ
 {
     template<typename T>
     class Interface;
+
+    class Name;
 }
 
 namespace AzFramework

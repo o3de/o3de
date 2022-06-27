@@ -95,33 +95,33 @@ namespace LUADebugger
                 {
                     if (AzFramework::ScriptDebugAck* ack = azdynamic_cast<AzFramework::ScriptDebugAck*>(msg.get()))
                     {
-                        if (ack->m_ackCode == AZ_CRC_CE("Ack", 0x22e4f8b1))
+                        if (ack->m_ackCode == AZ_CRC_CE("Ack"))
                         {
-                            if (ack->m_request == AZ_CRC_CE("Continue", 0x13e32adf) || ack->m_request == AZ_CRC_CE("StepIn", 0x761a6b13) ||
-                                ack->m_request == AZ_CRC_CE("StepOut", 0xac19b635) || ack->m_request == AZ_CRC_CE("StepOver", 0x6b89bf41))
+                            if (ack->m_request == AZ_CRC_CE("Continue") || ack->m_request == AZ_CRC_CE("StepIn") ||
+                                ack->m_request == AZ_CRC_CE("StepOut") || ack->m_request == AZ_CRC_CE("StepOver"))
                             {
                                 LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                     &LUAEditor::Context_DebuggerManagement::OnExecutionResumed);
                             }
-                            else if (ack->m_request == AZ_CRC_CE("AttachDebugger", 0x6590ff36))
+                            else if (ack->m_request == AZ_CRC_CE("AttachDebugger"))
                             {
                                 LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                     &LUAEditor::Context_DebuggerManagement::OnDebuggerAttached);
                             }
-                            else if (ack->m_request == AZ_CRC_CE("DetachDebugger", 0x88a2ee04))
+                            else if (ack->m_request == AZ_CRC_CE("DetachDebugger"))
                             {
                                 LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                     &LUAEditor::Context_DebuggerManagement::OnDebuggerDetached);
                             }
                         }
-                        else if (ack->m_ackCode == AZ_CRC_CE("IllegalOperation", 0x437dc900))
+                        else if (ack->m_ackCode == AZ_CRC_CE("IllegalOperation"))
                         {
-                            if (ack->m_request == AZ_CRC_CE("ExecuteScript", 0xc35e01e7))
+                            if (ack->m_request == AZ_CRC_CE("ExecuteScript"))
                             {
                                 LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                     &LUAEditor::Context_DebuggerManagement::OnExecuteScriptResult, false);
                             }
-                            else if (ack->m_request == AZ_CRC_CE("AttachDebugger", 0x6590ff36))
+                            else if (ack->m_request == AZ_CRC_CE("AttachDebugger"))
                             {
                                 LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                     &LUAEditor::Context_DebuggerManagement::OnDebuggerRefused);
@@ -134,13 +134,13 @@ namespace LUADebugger
                                     ack->m_request);
                             }
                         }
-                        else if (ack->m_ackCode == AZ_CRC_CE("AccessDenied", 0xde72ce21))
+                        else if (ack->m_ackCode == AZ_CRC_CE("AccessDenied"))
                         {
                             AZ_TracePrintf("LUA Debug", "Debug Agent: Access denied 0x%x. Attach debugger first!\n", ack->m_request);
                             LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                 &LUAEditor::Context_DebuggerManagement::OnDebuggerDetached);
                         }
-                        else if (ack->m_ackCode == AZ_CRC_CE("InvalidCmd", 0x926abd27))
+                        else if (ack->m_ackCode == AZ_CRC_CE("InvalidCmd"))
                         {
                             AZ_TracePrintf(
                                 "LUA Debug",
@@ -152,21 +152,21 @@ namespace LUADebugger
                     {
                         AzFramework::ScriptDebugAckBreakpoint* ackBreakpoint =
                             azdynamic_cast<AzFramework::ScriptDebugAckBreakpoint*>(msg.get());
-                        if (ackBreakpoint->m_id == AZ_CRC_CE("BreakpointHit", 0xf1a38e0b))
+                        if (ackBreakpoint->m_id == AZ_CRC_CE("BreakpointHit"))
                         {
                             LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                 &LUAEditor::Context_DebuggerManagement::OnBreakpointHit,
                                 ackBreakpoint->m_moduleName,
                                 ackBreakpoint->m_line);
                         }
-                        else if (ackBreakpoint->m_id == AZ_CRC_CE("AddBreakpoint", 0xba71daa4))
+                        else if (ackBreakpoint->m_id == AZ_CRC_CE("AddBreakpoint"))
                         {
                             LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                 &LUAEditor::Context_DebuggerManagement::OnBreakpointAdded,
                                 ackBreakpoint->m_moduleName,
                                 ackBreakpoint->m_line);
                         }
-                        else if (ackBreakpoint->m_id == AZ_CRC_CE("RemoveBreakpoint", 0x90ade500))
+                        else if (ackBreakpoint->m_id == AZ_CRC_CE("RemoveBreakpoint"))
                         {
                             LUAEditor::Context_DebuggerManagement::Bus::Broadcast(
                                 &LUAEditor::Context_DebuggerManagement::OnBreakpointRemoved,
@@ -268,7 +268,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumContexts", 0xbdb959ba)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumContexts")));
         }
     }
 
@@ -280,7 +280,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("AttachDebugger", 0x6590ff36), scriptContextName));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("AttachDebugger"), scriptContextName));
         }
     }
 
@@ -291,7 +291,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("DetachDebugger", 0x88a2ee04)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("DetachDebugger")));
         }
     }
 
@@ -300,7 +300,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumRegisteredClasses", 0xed6b8070), scriptContextName));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumRegisteredClasses"), scriptContextName));
         }
     }
 
@@ -318,7 +318,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumRegisteredGlobals", 0x80d1e6af), scriptContextName));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumRegisteredGlobals"), scriptContextName));
         }
     }
 
@@ -337,7 +337,7 @@ namespace LUADebugger
         {
             // local editors are never debuggable (they'd never have the debuggable flag) so if you get here you know its over the network
             // and its network id is targetID.
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC_CE("AddBreakpoint", 0xba71daa4), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC_CE("AddBreakpoint"), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
         }
     }
 
@@ -356,7 +356,7 @@ namespace LUADebugger
         {
             // local editors are never debuggable (they'd never have the debuggable flag) so if you get here you know its over the network
             // and its network id is targetID.
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC_CE("RemoveBreakpoint", 0x90ade500), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugBreakpointRequest(AZ_CRC_CE("RemoveBreakpoint"), relativePath.c_str(), static_cast<AZ::u32>(lineNumber)));
         }
     }
 
@@ -365,7 +365,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepOver", 0x6b89bf41)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepOver")));
         }
     }
 
@@ -374,7 +374,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepIn", 0x761a6b13)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepIn")));
         }
     }
 
@@ -383,7 +383,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepOut", 0xac19b635)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("StepOut")));
         }
     }
 
@@ -397,7 +397,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("Continue", 0x13e32adf)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("Continue")));
         }
     }
 
@@ -406,7 +406,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumLocals", 0x4aa29dcf)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("EnumLocals")));
         }
     }
 
@@ -415,7 +415,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("GetValue", 0x2d64f577), varName.c_str()));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("GetValue"), varName.c_str()));
         }
     }
 
@@ -436,7 +436,7 @@ namespace LUADebugger
         AzFramework::RemoteToolsEndpointInfo targetInfo;
         if (m_remoteTools && GetDesiredTarget(targetInfo))
         {
-            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("GetCallstack", 0x343b24f3)));
+            m_remoteTools->SendRemoteToolsMessage(targetInfo, AzFramework::ScriptDebugRequest(AZ_CRC_CE("GetCallstack")));
         }
     }
 
