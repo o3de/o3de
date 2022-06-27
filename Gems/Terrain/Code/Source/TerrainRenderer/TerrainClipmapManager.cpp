@@ -164,6 +164,10 @@ namespace Terrain
         }
 
         m_isInitialized = UpdateSrgIndices(terrainSrg);
+
+        TerrainAreaMaterialNotificationBus::Handler::BusConnect();
+        TerrainMacroMaterialNotificationBus::Handler::BusConnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
     
     bool TerrainClipmapManager::UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
@@ -184,6 +188,24 @@ namespace Terrain
     void TerrainClipmapManager::Reset()
     {
         m_isInitialized = false;
+        m_fullRefreshClipmaps = true;
+
+        m_macroClipmapBounds.clear();
+        m_detailClipmapBounds.clear();
+
+        for (uint32_t i = 0; i < ClipmapName::Count; ++i)
+        {
+            m_clipmaps[i] = nullptr;
+        }
+
+        TerrainAreaMaterialNotificationBus::Handler::BusDisconnect();
+        TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+    }
+
+    void TerrainClipmapManager::ResetFullRefreshClipmaps()
+    {
+        m_fullRefreshClipmaps = true;
     }
 
     void TerrainClipmapManager::Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
@@ -389,9 +411,9 @@ namespace Terrain
         m_detailClipmapUpdateRegions.clear();
 
         // First time update will run through the whole clipmap
-        if (m_firstTimeUpdate)
+        if (m_fullRefreshClipmaps)
         {
-            m_firstTimeUpdate = false;
+            m_fullRefreshClipmaps = false;
 
             InitializeClipmapBounds(currentViewPosition);
 
@@ -569,5 +591,102 @@ namespace Terrain
     bool TerrainClipmapManager::HasDetailClipmapUpdate() const
     {
         return m_detailTotalDispatchThreadX != 0 && m_detailTotalDispatchThreadY != 0;
+    }
+
+    // AzFramework::Terrain::TerrainDataNotificationBus overrides...
+    void TerrainClipmapManager::OnTerrainDataChanged(
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    // TerrainMacroMaterialNotificationBus overrides...
+    void TerrainClipmapManager::OnTerrainMacroMaterialCreated(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const MacroMaterialData& material)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainMacroMaterialChanged(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const MacroMaterialData& material)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainMacroMaterialRegionChanged(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, [[maybe_unused]] const AZ::Aabb& newRegion)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainMacroMaterialDestroyed([[maybe_unused]] AZ::EntityId entityId)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    // TerrainAreaMaterialNotificationBus overrides...
+    void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialCreated(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialDestroyed([[maybe_unused]] AZ::EntityId entityId)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialChanged(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> newMaterial)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingCreated(
+        [[maybe_unused]] AZ::EntityId entityId,
+        [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag,
+        [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingDestroyed(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingMaterialChanged(
+        [[maybe_unused]] AZ::EntityId entityId,
+        [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag,
+        [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingTagChanged(
+        [[maybe_unused]] AZ::EntityId entityId,
+        [[maybe_unused]] SurfaceData::SurfaceTag oldSurfaceTag,
+        [[maybe_unused]] SurfaceData::SurfaceTag newSurfaceTag)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionCreated(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& region)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionDestroyed(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion)
+    {
+        ResetFullRefreshClipmaps();
+    }
+
+    void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionChanged(
+        [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, [[maybe_unused]] const AZ::Aabb& newRegion)
+    {
+        ResetFullRefreshClipmaps();
     }
 }
