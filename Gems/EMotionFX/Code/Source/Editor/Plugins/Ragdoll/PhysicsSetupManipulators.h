@@ -33,7 +33,7 @@ namespace EMotionFX
         bool HasColliders() const;
         bool HasCapsuleCollider() const;
         bool HasJointLimit() const;
-        AZ::Transform GetJointParentFrame() const;
+        AZ::Transform GetJointParentFrameWorld() const;
 
         AZ::Transform m_nodeWorldTransform = AZ::Transform::CreateIdentity();
         AZ::Transform m_parentWorldTransform = AZ::Transform::CreateIdentity();

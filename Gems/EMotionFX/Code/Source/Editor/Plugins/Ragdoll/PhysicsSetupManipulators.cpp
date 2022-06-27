@@ -27,7 +27,7 @@ namespace EMotionFX
         return m_valid && m_jointConfiguration;
     }
 
-    AZ::Transform PhysicsSetupManipulatorData::GetJointParentFrame() const
+    AZ::Transform PhysicsSetupManipulatorData::GetJointParentFrameWorld() const
     {
         const AZ::Quaternion& parentWorldRotation = m_parentWorldTransform.GetRotation();
         const AZ::Vector3& childWorldTranslation = m_nodeWorldTransform.GetTranslation();

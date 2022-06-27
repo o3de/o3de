@@ -126,6 +126,11 @@ namespace PhysX::JointLimitOptimizer
         const double tanQuarterSwingLimitY = tan(0.25f * clampedLimitY);
         const double tanQuarterSwingLimitZ = tan(0.25f * clampedLimitZ);
 
+        // the optimizer tries to minimize a sum of two terms:
+        // - a violation term, which adds a penalty if the provided local rotation samples go outside the limit cone
+        // - a volume term, which tries to make the cone as small as possible (otherwise the violation term could
+        // trivially be minimized by making the cone very large)
+
         // violation term
         double objectiveViolation = 0.0;
         const size_t numPoses = m_localRotationSamples.size();
