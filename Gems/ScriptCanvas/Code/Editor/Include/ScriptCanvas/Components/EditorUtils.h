@@ -27,6 +27,10 @@ namespace ScriptCanvasEditor
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
     // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
     bool CompleteDescriptionInPlace(SourceHandle& source);
+    // accepts any sort of path and returns one with a relative path if possible
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path);
+
+    AZStd::optional<AZ::IO::Path> GetFullPath(const SourceHandle& source);
 
     class EditorGraph;
     class NodePaletteModel;

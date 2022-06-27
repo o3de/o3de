@@ -350,20 +350,21 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
         SourceHandle();
 
-        /// All input paths to constructors may be absolute or relative, and are assumed to be absolute.
-        /// The relative path will be generated from the absolute path. 
-        /// If the input path is relative, the methods Path() and RelativePath() will return the same value.
-        SourceHandle(const AZ::IO::Path& path);
+        SourceHandle(const SourceHandle& source);
 
-        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id);
 
-        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
-
-        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
-
-        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
 
         bool AnyEquals(const SourceHandle& other) const;
 
@@ -394,17 +395,22 @@ namespace ScriptCanvas
 
         bool PathEquals(const SourceHandle& other) const;
 
-        const AZ::IO::Path& RelativePath() const;
-
         AZStd::string ToString() const;
 
     private:
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
         DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
-        AZ::IO::Path m_absolutePath;
         AZ::IO::Path m_relativePath;
 
-        void SanitizePaths();
+        void SanitizePath();
     };
 
     class ScriptCanvasData

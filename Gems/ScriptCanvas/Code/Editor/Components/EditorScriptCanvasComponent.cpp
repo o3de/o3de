@@ -129,6 +129,6 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
-        m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid, {}));
+        m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
     }
 }
