@@ -141,7 +141,6 @@ namespace Terrain
         {
             // Rebuild the draw packets when the material or shaders change.
             RebuildDrawPackets();
-            m_candidateSectors.clear();
             m_rebuildDrawPackets = false;
         }
 
@@ -149,7 +148,6 @@ namespace Terrain
         {
             // Rebuild the sectors when the configuration or terrain world changes
             RebuildSectors();
-            m_candidateSectors.clear();
             m_rebuildSectors = false;
         }
 
@@ -224,7 +222,6 @@ namespace Terrain
 
         if (!sectorsToUpdate.empty())
         {
-            m_candidateSectors.clear(); // sectors updated, candidates should be recalculated.
             ProcessSectorUpdates(sectorsToUpdate);
             return;
         }
@@ -410,6 +407,7 @@ namespace Terrain
     {
         m_materialInstance->ApplyGlobalShaderOptions();
         m_cachedDrawData.clear();
+        m_candidateSectors.clear();
 
         // Rebuild common draw packet data
         for (auto& shaderItem : m_materialInstance->GetShaderCollection())
@@ -538,7 +536,6 @@ namespace Terrain
                     {
                         ProcessSectorUpdates(sectorsToUpdate);
                     }
-                    m_candidateSectors.clear(); // Force recalculation of candidate sectors since AABBs could have changed.
                 }
 
                 UpdateRaytracingData(clampedDirtyRegion);
@@ -978,7 +975,7 @@ namespace Terrain
             }
         }
         jobCompletion.StartAndWaitForCompletion();
-
+        m_candidateSectors.clear(); // Force recalculation of candidate sectors since AABBs could have changed.
     }
 
     void TerrainMeshManager::UpdateRaytracingData(const AZ::Aabb& bounds)
