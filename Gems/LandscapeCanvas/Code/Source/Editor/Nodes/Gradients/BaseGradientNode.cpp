@@ -59,7 +59,7 @@ namespace LandscapeCanvas
             PREVIEW_BOUNDS_SLOT_ID,
             PREVIEW_BOUNDS_SLOT_LABEL.toUtf8().constData(),
             { boundsDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(

@@ -31,10 +31,16 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path)
+    {
+        return CompleteDescription(SourceHandle::FromRelativePath(source, path));
+    }
+
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
-        if (assetSystem)
+        using namespace AzToolsFramework;
+
+        if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
         {
             if (!source.Id().IsNull())
             {
@@ -42,32 +48,28 @@ namespace ScriptCanvasEditor
                 AZ::Data::AssetInfo assetInfoID;
                 if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfoID, watchFolderID))
                 {
-                    AZStd::string watchFolderPath;
-                    AZ::Data::AssetInfo assetInfoPath;
-                    if (assetSystem->GetSourceInfoBySourcePath(assetInfoID.m_relativePath.c_str(), assetInfoPath, watchFolderPath)
-                    && assetInfoPath.m_assetId.IsValid())
-                    {
-                        AZ_Warning("ScriptCanvas", assetInfoID.m_assetId.m_guid == source.Id()
-                            , "SourceHandle completion produced conflicting AssetIds.");
-                        AZ::IO::Path watchPath(watchFolderPath);
-                        AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                        return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
-                    }
+                    return SourceHandle::FromRelativePath(source, assetInfoID.m_assetId.m_guid, assetInfoID.m_relativePath.c_str());
                 }
             }
-            else if (!source.Path().empty())
+
+            if (!source.Path().empty())
             {
-                AZStd::string watchFolderPath;
-                AZ::Data::AssetInfo assetInfoPath;
-                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath) && assetInfoPath.m_assetId.IsValid())
+                AZStd::string rootFolder;
+                AZStd::string relativePath;
+                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
                 {
-                    AZ::IO::Path watchPath(watchFolderPath);
-                    AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                    return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                    AZStd::string watchFolderPath;
+                    AZ::Data::AssetInfo assetInfoPath;
+                    if (assetSystem->GetSourceInfoBySourcePath(relativePath.c_str(), assetInfoPath, watchFolderPath)
+                    && assetInfoPath.m_assetId.IsValid())
+                    {
+                        return SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, assetInfoPath.m_relativePath.c_str());
+                    }
+
+                    return SourceHandle::FromRelativePath(source, relativePath);
                 }
             }
         }
-
 
         return AZStd::nullopt;
     }
@@ -83,6 +85,26 @@ namespace ScriptCanvasEditor
         {
             return false;
         }
+    }
+
+    AZStd::optional<AZ::IO::Path> GetFullPath(const SourceHandle& source)
+    {
+        using namespace AzToolsFramework;
+
+        if (!source.Path().empty())
+        {
+            if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
+            {
+                AZStd::string rootFolder;
+                AZStd::string relativePath;
+                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
+                {
+                    return AZ::IO::Path(rootFolder) / AZ::IO::Path(relativePath);
+                }
+            }
+        }
+
+        return AZStd::nullopt;
     }
 
     //////////////////////////
