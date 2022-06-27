@@ -141,6 +141,7 @@ namespace Terrain
         {
             // Rebuild the draw packets when the material or shaders change.
             RebuildDrawPackets();
+            m_candidateSectors.clear();
             m_rebuildDrawPackets = false;
         }
 
@@ -148,6 +149,7 @@ namespace Terrain
         {
             // Rebuild the sectors when the configuration or terrain world changes
             RebuildSectors();
+            m_candidateSectors.clear();
             m_rebuildSectors = false;
         }
 
@@ -535,6 +537,7 @@ namespace Terrain
                     {
                         ProcessSectorUpdates(sectorsToUpdate);
                     }
+                    m_candidateSectors.clear(); // Force recalculation of candidate sectors since AABBs could have changed.
                 }
 
                 UpdateRaytracingData(clampedDirtyRegion);
