@@ -366,7 +366,7 @@ namespace ScriptCanvas
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
 
-            behaviorContext->Method("SourceHandleFromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return SourceHandle(AZ::IO::Path(pathStringView)); })
+            behaviorContext->Method("SourceHandleFromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return FromRelativePath(DataPtr{}, AZ::IO::Path(pathStringView)); })
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
                 ->Attribute(AZ::Script::Attributes::Module, "scriptcanvas")
