@@ -432,6 +432,8 @@ namespace ScriptCanvas
                 ->Field("Datums", &Node::m_slotDatums)
                 ->Field("NodeDisabledFlag", &Node::m_disabledFlag)
                 ->Field("Name", &Node::m_name)
+                ->Field("ToolTip", &Node::m_toolTip)
+                ->Field("Style", &Node::m_nodeStyle)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -2995,6 +2997,11 @@ namespace ScriptCanvas
         return m_toolTip;
     }
 
+    const AZStd::string& Node::GetNodeStyle() const
+    {
+        return m_nodeStyle;
+    }
+
     void Node::SetNodeName(const AZStd::string& name)
     {
         m_name = name;
@@ -3003,6 +3010,11 @@ namespace ScriptCanvas
     void Node::SetNodeToolTip(const AZStd::string& toolTip)
     {
         m_toolTip = toolTip;
+    }
+
+    void Node::SetNodeStyle(const AZStd::string& nodeStyle)
+    {
+        m_nodeStyle = nodeStyle;
     }
 
     void Node::SetNodenodeLexicalId(const AZ::Crc32& nodeLexicalId)

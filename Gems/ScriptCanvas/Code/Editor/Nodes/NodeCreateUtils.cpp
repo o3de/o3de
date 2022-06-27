@@ -288,15 +288,14 @@ namespace ScriptCanvasEditor::Nodes
         node->AddSlot(inputPin, true);
         node->AddSlot(outputPin, true);
 
+        node->SetNodeStyle(GraphCanvas::Styling::Elements::Small);
+
         AZ::EntityId graphCanvasGraphId;
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
-        NodeReplacementConfiguration nodeConfiguration;
-        nodeConfiguration.m_nodeSubStyle = GraphCanvas::Styling::Elements::Small;
-
         NodeIdPair nodeIdPair;
         nodeIdPair.m_scriptCanvasId = nodeEntity->GetId();
-        nodeIdPair.m_graphCanvasId = DisplayGeneralScriptCanvasNode(graphCanvasGraphId, node, nodeConfiguration);
+        nodeIdPair.m_graphCanvasId = DisplayScriptCanvasNode(graphCanvasGraphId, node);
 
         return nodeIdPair;
     }

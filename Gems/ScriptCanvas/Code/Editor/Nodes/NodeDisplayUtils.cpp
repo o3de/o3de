@@ -1176,7 +1176,16 @@ namespace ScriptCanvasEditor::Nodes
         }
         else if (node)
         {
-            graphCanvasNodeId = DisplayNode(graphCanvasGraphId, node);
+            if (!node->GetNodeStyle().empty())
+            {
+                NodeReplacementConfiguration nodeConfiguration;
+                nodeConfiguration.m_nodeSubStyle = node->GetNodeStyle();
+                graphCanvasNodeId = DisplayGeneralScriptCanvasNode(graphCanvasGraphId, node, nodeConfiguration);
+            }
+            else
+            {
+                graphCanvasNodeId = DisplayNode(graphCanvasGraphId, node);
+            }
         }
 
         return graphCanvasNodeId;

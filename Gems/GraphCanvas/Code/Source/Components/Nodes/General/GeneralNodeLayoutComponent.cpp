@@ -52,7 +52,7 @@ namespace GraphCanvas
         entity->CreateComponent<StylingComponent>(Styling::Elements::Node, AZ::EntityId(), nodeType);        
         entity->CreateComponent<GeneralNodeLayoutComponent>(nodeType);
         entity->CreateComponent<GeneralNodeTitleComponent>(nodeType);
-        entity->CreateComponent<GeneralSlotLayoutComponent>();
+        entity->CreateComponent<GeneralSlotLayoutComponent>(nodeType);
         entity->CreateComponent<NodeLayerControllerComponent>();
 
         return entity;
@@ -78,22 +78,11 @@ namespace GraphCanvas
         m_layout = new QGraphicsLinearLayout(m_layoutOrientation);
         m_layout->setInstantInvalidatePropagation(true);
 
+        m_slots = new QGraphicsLinearLayout(Qt::Vertical);
+        m_slots->setInstantInvalidatePropagation(true);
+
         m_title = new QGraphicsLinearLayout(m_layoutOrientation);
         m_title->setInstantInvalidatePropagation(true);
-
-        //if (m_layoutOrientation == Qt::Vertical)
-        {
-            m_slots = new QGraphicsLinearLayout(Qt::Vertical);
-            m_slots->setInstantInvalidatePropagation(true);
-        }
-        /* else
-        {
-            m_inputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
-            m_inputSlots->setInstantInvalidatePropagation(true);
-
-            m_outputSlots = new QGraphicsLinearLayout(Qt::Horizontal);
-            m_outputSlots->setInstantInvalidatePropagation(true);
-        }*/
     }
 
     void GeneralNodeLayoutComponent::Activate()
@@ -141,11 +130,17 @@ namespace GraphCanvas
         {
             QGraphicsWidget* titleGraphicsItem = nullptr;
             NodeTitleRequestBus::EventResult(titleGraphicsItem, GetEntityId(), &NodeTitleRequests::GetGraphicsWidget);
+            if (titleGraphicsItem)
+            {
+                m_title->addItem(titleGraphicsItem);
+                m_title->setContentsMargins(0, 0, 0, 0);
+            }
 
-            QGraphicsLinearLayout* test = nullptr;
-            NodeSlotsRequestBus::EventResult(test, GetEntityId(), &NodeSlotsRequestBus::Events::GetInputGraphicsLayoutItem);
-
-            test->insertItem(1, titleGraphicsItem);
+            // Here we insert the title into slot layout so it appears between the input and output slots
+            QGraphicsLinearLayout* slotLayout = nullptr;
+            NodeSlotsRequestBus::EventResult(slotLayout, GetEntityId(), &NodeSlotsRequestBus::Events::GetLinearLayout);
+            
+            slotLayout->insertItem(1, m_title);
 
             QGraphicsLayoutItem* slotsGraphicsItem = nullptr;
             NodeSlotsRequestBus::EventResult(slotsGraphicsItem, GetEntityId(), &NodeSlotsRequestBus::Events::GetGraphicsLayoutItem);
@@ -153,6 +148,7 @@ namespace GraphCanvas
             {
                 m_slots->addItem(slotsGraphicsItem);
                 m_slots->setContentsMargins(0, 0, 0, 0);
+                m_slots->setMaximumHeight(32);
             }
             GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_slots);
         }

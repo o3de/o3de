@@ -53,6 +53,12 @@ namespace GraphCanvas
     {
     }
 
+    GeneralSlotLayoutComponent::GeneralSlotLayoutComponent(const AZStd::string& nodeType)
+        : m_enableDividers(false)
+        , m_nodeType(nodeType)
+    {
+    }
+
     GeneralSlotLayoutComponent::~GeneralSlotLayoutComponent()
     {
     }
@@ -131,22 +137,24 @@ namespace GraphCanvas
     //////////////////////////
     // LinearSlotGroupLayout
     //////////////////////////
-    GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::LinearSlotGroupWidget(QGraphicsItem* parent)
+    GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::LinearSlotGroupWidget(QGraphicsItem* parent, const AZStd::string& nodeType)
         : QGraphicsWidget(parent)
         , m_inputs(nullptr)
-        , m_outputs(nullptr)        
+        , m_outputs(nullptr)
+        , m_nodeType(nodeType)
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
         m_inputs = new QGraphicsLinearLayout(Qt::Vertical);
         m_inputs->setContentsMargins(0, 0, 0, 0);
         m_inputs->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
+        
         {
             QGraphicsWidget* spacer = new QGraphicsWidget();
-            spacer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             spacer->setContentsMargins(0, 0, 0, 0);
             spacer->setPreferredSize(0, 0);
+            spacer->setMaximumHeight(0);
 
             m_inputs->addItem(spacer);
         }
@@ -154,12 +162,13 @@ namespace GraphCanvas
         m_outputs = new QGraphicsLinearLayout(Qt::Vertical);
         m_outputs->setContentsMargins(0, 0, 0, 0);
         m_outputs->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
+        
         {
             QGraphicsWidget* spacer = new QGraphicsWidget();
-            spacer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             spacer->setContentsMargins(0, 0, 0, 0);
             spacer->setPreferredSize(0, 0);
+            spacer->setMaximumHeight(0);
 
             m_outputs->addItem(spacer);
         }
@@ -173,20 +182,18 @@ namespace GraphCanvas
         // <input><spacer><output>
         m_layout->addItem(m_inputs);
 
-        /*
-        m_horizontalSpacer = new QGraphicsWidget();
-        m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        m_horizontalSpacer->setContentsMargins(0, 0, 0, 0);
-        m_horizontalSpacer->setPreferredSize(0, 0);
+        if (m_nodeType != Styling::Elements::Small)
+        {
+            m_horizontalSpacer = new QGraphicsWidget();
+            m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            m_horizontalSpacer->setContentsMargins(0, 0, 0, 0);
+            m_horizontalSpacer->setPreferredSize(0, 0);
 
-        layout->addItem(m_horizontalSpacer);*/
-
-        /* QGraphicsWidget* titleGraphicsItem = nullptr;
-        NodeTitleRequestBus::EventResult(titleGraphicsItem, m_entityId, &NodeTitleRequests::GetGraphicsWidget);
-        layout->addItem(titleGraphicsItem);*/
+            m_layout->addItem(m_horizontalSpacer);
+        }
 
         m_layout->addItem(m_outputs);
-
+        
         m_layout->setAlignment(m_outputs, Qt::AlignRight);
     }
 
@@ -264,19 +271,14 @@ namespace GraphCanvas
         }
     }
 
-    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetInputSlotLayout()
+    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetLayout()
     {
-        return m_inputs;
+        return m_layout;
     }
 
     const AZStd::vector< SlotLayoutInfo >& GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetInputSlots() const
     {
         return m_inputSlots;
-    }
-
-    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetOutputSlotLayout()
-    {
-        return m_outputs;
     }
 
     const AZStd::vector< SlotLayoutInfo >& GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetOutputSlots() const
@@ -410,6 +412,7 @@ namespace GraphCanvas
         : m_nodeSlots(nodeSlots)
         , m_entityId(nodeSlots.GetEntityId())
         , m_addedToScene(false)
+        , m_nodeType(nodeSlots.m_nodeType)
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         setGraphicsItem(this);
@@ -495,14 +498,9 @@ namespace GraphCanvas
         return this;
     }
 
-    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::GetInputGraphicsLayoutItem()
+    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::GetLinearLayout()
     {
-        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->m_layout;
-    }
-
-    QGraphicsLayoutItem* GeneralSlotLayoutGraphicsWidget::GetOutputGraphicsLayoutItem()
-    {
-        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetOutputSlotLayout();
+        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetLayout();
     }
 
     void GeneralSlotLayoutGraphicsWidget::OnSceneSet(const AZ::EntityId& /*sceneId*/)
@@ -810,7 +808,7 @@ namespace GraphCanvas
                     m_nodeSlots.m_slotGroupConfigurations[slotType] = groupConfiguration;
                 }
 
-                retVal = aznew LinearSlotGroupWidget(this);
+                retVal = aznew LinearSlotGroupWidget(this, m_nodeType);
                 retVal->UpdateStyle(m_styleHelper);
 
                 m_slotGroups[slotType] = retVal;

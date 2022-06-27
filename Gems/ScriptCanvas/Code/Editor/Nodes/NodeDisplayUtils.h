@@ -41,8 +41,6 @@ namespace ScriptCanvasEditor::Nodes
     // Generic method of displaying a node.
     AZ::EntityId DisplayScriptCanvasNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Node* node);
 
-    AZ::EntityId DisplayGeneralScriptCanvasNode(AZ::EntityId, const ScriptCanvas::Node* node, const NodeReplacementConfiguration& nodeConfiguration);
-
     // Core Node
     AZ::EntityId DisplayEbusEventNode(AZ::EntityId graphCanvasGraphId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId);
     AZ::EntityId DisplayEbusWrapperNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::EBusEventHandler* busNode);

@@ -32,6 +32,7 @@ namespace GraphCanvas
         static void Reflect(AZ::ReflectContext*);
 
         GeneralSlotLayoutComponent();
+        GeneralSlotLayoutComponent(const AZStd::string& nodeType);
         ~GeneralSlotLayoutComponent();
 
         // AZ::Component
@@ -73,6 +74,8 @@ namespace GraphCanvas
 
         friend class GeneralSlotLayoutGraphicsWidget;
         GeneralSlotLayoutGraphicsWidget* m_nodeSlotsUi;
+
+        AZStd::string m_nodeType;
     };
 
     //! The slots QGraphicsWidget for displaying a the node slots
@@ -103,15 +106,14 @@ namespace GraphCanvas
         {
         public:
             AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator, 0);
-            LinearSlotGroupWidget(QGraphicsItem* parent);
+            LinearSlotGroupWidget(QGraphicsItem* parent, const AZStd::string& nodeType = "");
 
             void DisplaySlot(const AZ::EntityId& slotId);
             void RemoveSlot(const AZ::EntityId& slotId);
 
-            QGraphicsLayoutItem* GetInputSlotLayout();
-            const AZStd::vector< SlotLayoutInfo >& GetInputSlots() const;
+            QGraphicsLinearLayout* GetLayout();
 
-            QGraphicsLayoutItem* GetOutputSlotLayout();
+            const AZStd::vector< SlotLayoutInfo >& GetInputSlots() const;
             const AZStd::vector< SlotLayoutInfo >& GetOutputSlots() const;
 
             bool IsEmpty() const;
@@ -121,14 +123,13 @@ namespace GraphCanvas
             void OnSlotLayoutPriorityChanged(int layoutPriority) override;
             ////
 
-            // CHANGE THIS!!!
-            QGraphicsLinearLayout* m_layout;
-
         private:
 
             int LayoutSlot(QGraphicsLinearLayout* layout, AZStd::vector<SlotLayoutInfo>& slotList, const SlotLayoutInfo& slotInfo);
 
             QGraphicsLayoutItem* GetLayoutItem(const AZ::EntityId& slotId) const;
+
+            QGraphicsLinearLayout* m_layout;
 
             QGraphicsWidget* m_horizontalSpacer;
 
@@ -139,6 +140,8 @@ namespace GraphCanvas
             QGraphicsLinearLayout* m_outputs;
             AZStd::vector< SlotLayoutInfo > m_outputSlots;
             AZStd::unordered_set< SlotId >  m_outputSlotSet;
+
+            AZStd::string m_nodeType;
         };
 
     public:
@@ -161,9 +164,7 @@ namespace GraphCanvas
 
         // NodeSlotsRequestBus
         QGraphicsLayoutItem* GetGraphicsLayoutItem() override;
-
-        QGraphicsLinearLayout* GetInputGraphicsLayoutItem() override;
-        QGraphicsLayoutItem* GetOutputGraphicsLayoutItem() override;
+        QGraphicsLinearLayout* GetLinearLayout() override;
         ////
 
         // SceneMemberNotificationBus
@@ -217,5 +218,7 @@ namespace GraphCanvas
         AZ::EntityId         m_entityId;
 
         bool                 m_addedToScene;
+
+        AZStd::string m_nodeType;
     };
 }
