@@ -224,6 +224,7 @@ namespace Terrain
 
         if (!sectorsToUpdate.empty())
         {
+            m_candidateSectors.clear(); // sectors updated, candidates should be recalculated.
             ProcessSectorUpdates(sectorsToUpdate);
             return;
         }
