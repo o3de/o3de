@@ -84,40 +84,6 @@ namespace AtomSampleViewer
         AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(m_windowContext, &AZ::Render::Bootstrap::DefaultWindowBus::Events::GetDefaultWindowContext);
     }
 
-    void MeshletsExampleComponent::CreateLowEndPipeline()
-    {
-        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
-        pipelineDesc.m_mainViewTagName = "MainCamera";
-        pipelineDesc.m_name = "LowEndPipeline";
-        pipelineDesc.m_rootPassTemplate = "LowEndPipelineTemplate";     // The active pipeline for this example
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
-
-        m_lowEndPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineDesc, *m_windowContext);
-    }
-
-    void MeshletsExampleComponent::DestroyLowEndPipeline()
-    {
-        m_lowEndPipeline = nullptr;
-    }
-
-    void MeshletsExampleComponent::ActivateLowEndPipeline()
-    {
-        m_originalPipeline = m_scene->GetDefaultRenderPipeline();
-        m_scene->AddRenderPipeline(m_lowEndPipeline);
-        m_lowEndPipeline->SetDefaultView(m_originalPipeline->GetDefaultView());
-        m_scene->RemoveRenderPipeline(m_originalPipeline->GetId());
-
-        m_imguiScope = AZ::Render::ImGuiActiveContextScope::FromPass({ m_lowEndPipeline->GetId().GetCStr(), "ImGuiPass" });
-    }
-
-    void MeshletsExampleComponent::DeactivateLowEndPipeline()
-    {
-        m_imguiScope = {}; // restores previous ImGui context.
-
-        m_scene->AddRenderPipeline(m_originalPipeline);
-        m_scene->RemoveRenderPipeline(m_lowEndPipeline->GetId());
-    }
-
     void MeshletsExampleComponent::Activate()
     {
         UseArcBallCameraController();
@@ -128,10 +94,12 @@ namespace AtomSampleViewer
             {
                 return false;
             }
+
             if (m_showModelMaterials)
             {
                 return true;
             }
+
             // Return true only if the azmaterial was generated from a ".material" file.
             // Materials with subid == 0, are 99.99% guaranteed to be generated from a ".material" file.
             // Without this assurance We would need to call  AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID()
@@ -156,16 +124,10 @@ namespace AtomSampleViewer
 
         AZ::TickBus::Handler::BusConnect();
         AZ::Render::Bootstrap::DefaultWindowNotificationBus::Handler::BusConnect();
-        CreateLowEndPipeline();
     }
 
     void MeshletsExampleComponent::Deactivate()
     {
-        if (m_useLowEndPipeline)
-        {
-            DeactivateLowEndPipeline();
-        }
-        DestroyLowEndPipeline();
         AZ::Render::Bootstrap::DefaultWindowNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
 
@@ -215,28 +177,11 @@ namespace AtomSampleViewer
     {
         bool modelNeedsUpdate = false;
 
-        // Switch pipeline before any imGui actions (switching pipelines switches imGui scope)
-        if (m_switchPipeline)
-        {
-            if (m_useLowEndPipeline)
-            {
-                ActivateLowEndPipeline();
-            }
-            else
-            {
-                DeactivateLowEndPipeline();
-            }
-
-            m_switchPipeline = false;
-        }
-
         if (m_imguiSidebar.Begin())
         {
             ImGuiLightingPreset();
 
             ImGuiAssetBrowser::WidgetSettings assetBrowserSettings;
-
-            m_switchPipeline = ScriptableImGui::Checkbox("Use Low End Pipeline", &m_useLowEndPipeline) || m_switchPipeline;
 
             modelNeedsUpdate |= ScriptableImGui::Checkbox("Enable Material Override", &m_enableMaterialOverride);
            
@@ -452,12 +397,13 @@ namespace AtomSampleViewer
             return;
         }
 
+
         if (!m_meshetsModel)
         {
             m_meshetsModel = new AZ::Meshlets::MeshletsModel(m_modelAsset);
             if (m_meshetsModel->GetMeshletsModel())
             {
-                static constexpr const char meshletDebugMaterialPath[] = "objects/debugshadermaterial_01.azmaterial";
+                static constexpr const char meshletDebugMaterialPath[] = "materials/debugshadermaterial_01.azmaterial";
 
                 AZ::Data::Asset<AZ::RPI::MaterialAsset> meshletDebugMaterialAsset =
                     AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(meshletDebugMaterialPath, AZ::RPI::AssetUtils::TraceLevel::Error);

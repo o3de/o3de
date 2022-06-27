@@ -7,8 +7,12 @@
 #
 
 set(FILES
-    Include/RecastNavigation/RecastNavigationBus.h
+    Include/RecastNavigation/NavMeshQuery.h
+    Include/RecastNavigation/RecastHelpers.h
+    Include/RecastNavigation/RecastSmartPointer.h
+
     Include/RecastNavigation/DetourNavigationBus.h
+    Include/RecastNavigation/RecastNavigationBus.h
     Include/RecastNavigation/RecastNavigationMeshBus.h
     Include/RecastNavigation/RecastNavigationProviderBus.h
 )

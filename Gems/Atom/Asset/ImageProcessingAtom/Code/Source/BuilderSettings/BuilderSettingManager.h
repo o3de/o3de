@@ -102,6 +102,19 @@ namespace ImageProcessingAtom
         //! Otherwise, the preset's file path can be retrieved in GetPreset() function
         AZStd::vector<AZStd::string> GetPossiblePresetPaths(const PresetName& presetName) const;
 
+        //! Extract the file mask of a file path
+        AZStd::string GetFileMask(AZStd::string_view imageFilePath) const;
+
+        //! Return the default opaque preset name
+        PresetName GetDefaultPreset() const;
+
+        //! Return the default alpha preset name
+        PresetName GetDefaultAlphaPreset() const;
+
+        //! Return all preset names associated with this file mask
+        AZStd::vector<PresetName> GetPresetsForFileMask(const FileMask& fileMask) const;
+
+        //! Return true if the preset name is valid
         bool IsValidPreset(PresetName presetName) const;
 
         bool DoesSupportPlatform(AZStd::string_view platformId);

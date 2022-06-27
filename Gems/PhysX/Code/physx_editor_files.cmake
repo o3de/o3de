@@ -31,6 +31,10 @@ set(FILES
     Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
     Source/EditorJointComponent.h
+    Source/EditorPhysXJointInterface.cpp
+    Source/EditorPhysXJointInterface.h
+    Source/EditorJointOptimizer.cpp
+    Source/EditorJointOptimizer.h
     Source/Pipeline/MeshExporter.cpp
     Source/Pipeline/MeshExporter.h
     Source/Pipeline/MeshGroup.cpp

@@ -274,7 +274,7 @@ namespace LmbrCentral
         return (m_spline->GetPosition(address) - localPoint).GetLengthSq() < (radiusSq + variableRadiusSq) * scale;
     }
 
-    float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float TubeShape::DistanceFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
         AZ::Transform worldFromLocalNormalized = m_currentTransform;
@@ -286,7 +286,14 @@ namespace LmbrCentral
         const float variableRadius =
             m_variableRadius.GetElementInterpolated(splineQueryResult.m_splineAddress, Lerpf);
 
-        return powf((sqrtf(splineQueryResult.m_distanceSq) - (m_radius + variableRadius)) * uniformScale, 2.0f);
+        // Make sure the distance is clamped to 0 for all points that exist within the tube.
+        return AZStd::max(0.0f, (sqrtf(splineQueryResult.m_distanceSq) - (m_radius + variableRadius)) * uniformScale);
+    }
+
+    float TubeShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    {
+        float distance = DistanceFromPoint(point);
+        return powf(distance, 2.0f);
     }
 
     bool TubeShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
