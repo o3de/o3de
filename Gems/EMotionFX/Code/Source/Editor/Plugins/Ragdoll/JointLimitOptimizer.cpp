@@ -94,8 +94,8 @@ namespace EMotionFX
         // now do the actual sampling of rotation values
         const int numSamplesPerMotion = AZ::GetMin(JointLimitOptimizerMaxSamplesPerMotion, JointLimitOptimizerTotalSamples / numMotions);
         const int sampleCount = numMotions * numSamplesPerMotion;
-        AZStd::vector<AZ::Quaternion> sampleJointRotations;
-        sampleJointRotations.reserve(sampleCount);
+        AZStd::vector<AZ::Quaternion> localRotationSamples;
+        localRotationSamples.reserve(sampleCount);
         for (size_t motionSetIndex = 0; motionSetIndex < numMotionSets; motionSetIndex++)
         {
             const MotionSet* motionSet = motionManager.GetMotionSet(motionSetIndex);
@@ -117,7 +117,7 @@ namespace EMotionFX
                     const float duration = motion->GetDuration();
                     for (int sampleIndex = 0; sampleIndex < numSamplesPerMotion; sampleIndex++)
                     {
-                        sampleJointRotations.push_back(motionData->SampleJointRotation(
+                        localRotationSamples.push_back(motionData->SampleJointRotation(
                             (sampleIndex * duration) / aznumeric_cast<float>(numSamplesPerMotion), jointIndexOutcome.GetValue()));
                     }
                 }
@@ -126,7 +126,7 @@ namespace EMotionFX
 
         // perform the optimization
         AZStd::unique_ptr<AzPhysics::JointConfiguration> optimizedJointLimit =
-            editorJointHelpersInterface->ComputeOptimalJointLimit(jointInitialConfiguration.get(), sampleJointRotations);
+            editorJointHelpersInterface->ComputeOptimalJointLimit(jointInitialConfiguration.get(), localRotationSamples);
 
         if (!optimizedJointLimit)
         {

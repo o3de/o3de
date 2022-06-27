@@ -26,6 +26,6 @@ namespace PhysX
 
         AZStd::unique_ptr<AzPhysics::JointConfiguration> ComputeOptimalJointLimit(
             const AzPhysics::JointConfiguration* initialConfiguration,
-            const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) override;
+            const AZStd::vector<AZ::Quaternion>& localRotationSamples) override;
     };
 } // namespace PhysX

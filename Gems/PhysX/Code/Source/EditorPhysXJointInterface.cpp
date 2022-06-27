@@ -15,13 +15,13 @@ namespace PhysX
 {
     AZStd::unique_ptr<AzPhysics::JointConfiguration> PhysXEditorJointHelpersInterface::ComputeOptimalJointLimit(
         const AzPhysics::JointConfiguration* initialConfiguration,
-        const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+        const AZStd::vector<AZ::Quaternion>& localRotationSamples)
     {
         if (const auto* d6JointLimitConfiguration = azdynamic_cast<const D6JointLimitConfiguration*>(initialConfiguration))
         {
             JointLimitOptimizer::D6JointLimitFitter jointLimitFitter;
             jointLimitFitter.SetChildLocalRotation(d6JointLimitConfiguration->m_childLocalRotation);
-            jointLimitFitter.SetExampleRotations(exampleLocalRotations);
+            jointLimitFitter.SetLocalRotationSamples(localRotationSamples);
             jointLimitFitter.SetInitialGuess(
                 d6JointLimitConfiguration->m_parentLocalRotation, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi);
             D6JointLimitConfiguration fittedLimit = jointLimitFitter.GetFit(d6JointLimitConfiguration->m_childLocalRotation);

@@ -45,17 +45,17 @@ namespace PhysX::JointLimitOptimizer
 
     D6JointLimitFitter::~D6JointLimitFitter()
     {
-        m_exampleRotations.clear();
+        m_localRotationSamples.clear();
         m_initialValue.clear();
     }
 
-    void D6JointLimitFitter::SetExampleRotations(const AZStd::vector<AZ::Quaternion>& exampleRotations)
+    void D6JointLimitFitter::SetLocalRotationSamples(const AZStd::vector<AZ::Quaternion>& localRotationSamples)
     {
-        m_exampleRotations.clear();
-        m_exampleRotations.reserve(exampleRotations.size());
-        for (const auto& exampleRotation : exampleRotations)
+        m_localRotationSamples.clear();
+        m_localRotationSamples.reserve(localRotationSamples.size());
+        for (const auto& localRotationSample : localRotationSamples)
         {
-            m_exampleRotations.push_back(NumericalMethods::DoublePrecisionMath::Quaternion(exampleRotation) * m_childLocalRotation);
+            m_localRotationSamples.push_back(NumericalMethods::DoublePrecisionMath::Quaternion(localRotationSample) * m_childLocalRotation);
         }
     }
 
@@ -96,9 +96,9 @@ namespace PhysX::JointLimitOptimizer
         float twistMin = AZ::Constants::Pi;
         float twistMax = -AZ::Constants::Pi;
         NumericalMethods::DoublePrecisionMath::Quaternion parentLocalConjugate = parentLocalRotation.GetConjugate();
-        for (const auto& exampleRotation : m_exampleRotations)
+        for (const auto& localRotationSample : m_localRotationSamples)
         {
-            NumericalMethods::DoublePrecisionMath::Quaternion relativeRotation = parentLocalConjugate * exampleRotation;
+            NumericalMethods::DoublePrecisionMath::Quaternion relativeRotation = parentLocalConjugate * localRotationSample;
             if (relativeRotation.GetZ() < 0.0)
             {
                 relativeRotation = -relativeRotation;
@@ -128,13 +128,13 @@ namespace PhysX::JointLimitOptimizer
 
         // violation term
         double objectiveViolation = 0.0;
-        const size_t numPoses = m_exampleRotations.size();
+        const size_t numPoses = m_localRotationSamples.size();
         if (numPoses > 0)
         {
-            for (const auto& exampleRotation : m_exampleRotations)
+            for (const auto& localRotationSample : m_localRotationSamples)
             {
                 objectiveViolation +=
-                    SwingValues(parentLocalConjugate * exampleRotation).GetViolation(tanQuarterSwingLimitY, tanQuarterSwingLimitZ);
+                    SwingValues(parentLocalConjugate * localRotationSample).GetViolation(tanQuarterSwingLimitY, tanQuarterSwingLimitZ);
             }
             objectiveViolation /= double(numPoses);
         }

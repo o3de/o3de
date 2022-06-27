@@ -40,7 +40,7 @@ namespace PhysX::JointLimitOptimizer
         D6JointLimitFitter() = default;
         virtual ~D6JointLimitFitter();
 
-        void SetExampleRotations(const AZStd::vector<AZ::Quaternion>& exampleRotations);
+        void SetLocalRotationSamples(const AZStd::vector<AZ::Quaternion>& localRotationSamples);
         void SetChildLocalRotation(const AZ::Quaternion& childLocalRotation);
         void SetInitialGuess(const AZ::Quaternion& parentLocalRotation, float swingYRadians, float swingZRadians);
         D6JointLimitConfiguration GetFit(const AZ::Quaternion& childLocalRotation);
@@ -51,7 +51,7 @@ namespace PhysX::JointLimitOptimizer
         AZ::u32 GetDimension() const override;
         AZ::Outcome<double, NumericalMethods::Optimization::FunctionOutcome> ExecuteImpl(const AZStd::vector<double>& x) const override;
 
-        AZStd::vector<NumericalMethods::DoublePrecisionMath::Quaternion> m_exampleRotations;
+        AZStd::vector<NumericalMethods::DoublePrecisionMath::Quaternion> m_localRotationSamples;
         NumericalMethods::DoublePrecisionMath::Quaternion m_childLocalRotation;
         AZStd::vector<double> m_initialValue;
     };
