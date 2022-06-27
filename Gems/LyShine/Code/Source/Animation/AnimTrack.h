@@ -23,7 +23,7 @@ class TUiAnimTrack
 {
 public:
     AZ_CLASS_ALLOCATOR(TUiAnimTrack, AZ::SystemAllocator, 0)
-    AZ_RTTI((TUiAnimTrack<KeyType>, "{5513FA16-991D-40DD-99B2-9C5531AC872C}", KeyType), IUiAnimTrack);
+    AZ_RTTI((TUiAnimTrack, "{5513FA16-991D-40DD-99B2-9C5531AC872C}", KeyType), IUiAnimTrack);
 
     TUiAnimTrack();
 
