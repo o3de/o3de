@@ -315,6 +315,11 @@ namespace AssetProcessor
 
             StatsEntry& totalScanTime = m_stats["AssetScanning"];
             PrintStat("AssetScanning", totalScanTime.m_cumulativeTime, totalScanTime.m_operationCount);
+            StatsEntry& cacheWarmTime = m_stats["WarmingFileCache"];
+            PrintStat("WarmingFileCache", cacheWarmTime.m_cumulativeTime, cacheWarmTime.m_operationCount);
+            StatsEntry& assessTime = m_stats["InitialFileAssessment"];
+            PrintStat("InitialFileAssessment", assessTime.m_cumulativeTime, assessTime.m_operationCount);
+            
             StatsEntry& totalHashTime = m_stats["HashFileTotal"];
             PrintStat("HashFileTotal", totalHashTime.m_cumulativeTime, totalHashTime.m_operationCount);
             PrintStatsArray(allHashFiles, maxIndividualStats, "longest individual file hashes:");
