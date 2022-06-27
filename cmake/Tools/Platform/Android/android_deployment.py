@@ -452,13 +452,13 @@ class AndroidDeployment(object):
                            device_id=target_device)
             logging.info(f"Device '{target_device}': Target cleaned.")
 
-        settings_registry_src = self.build_dir / 'app/src/main/assets/Registry'
-        settings_registry_dst = f'{output_target}/Registry'
+        # Assets layout folder when assets are not included into APK is 'app/src/assets'
+        assets_layout_src = self.build_dir / 'app/src/assets'
+        assets_layout_dst = f'{output_target}'
 
         if self.clean_deploy or not target_timestamp:
             logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path.resolve())} to device ...")
-            paths_to_deploy = [(str(self.local_asset_path.resolve()), output_target),
-                               (str(settings_registry_src), settings_registry_dst)]
+            paths_to_deploy = [(str(assets_layout_src), assets_layout_dst)]
             for path_to_deploy, target_path in paths_to_deploy:
                 try:
                     self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
