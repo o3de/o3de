@@ -136,6 +136,7 @@ namespace GradientSignal
         // Make sure we're notified whenever the shape changes, so that we can re-cache its center point.
         if (m_configuration.m_shapeEntityId.IsValid())
         {
+            AZ::EntityBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
         }
 
@@ -154,6 +155,7 @@ namespace GradientSignal
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         m_dependencyMonitor.Reset();
         ShapeAreaFalloffGradientRequestBus::Handler::BusDisconnect();
+        AZ::EntityBus::Handler::BusDisconnect();
     }
 
     bool ShapeAreaFalloffGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -268,9 +270,11 @@ namespace GradientSignal
 
             m_configuration.m_shapeEntityId = entityId;
 
+            AZ::EntityBus::Handler::BusDisconnect();
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
             if (m_configuration.m_shapeEntityId.IsValid())
             {
+                AZ::EntityBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
                 LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeEntityId);
             }
         }
@@ -333,6 +337,16 @@ namespace GradientSignal
     
     void ShapeAreaFalloffGradientComponent::OnShapeChanged(
         [[maybe_unused]] LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons)
+    {
+        CacheShapeBounds();
+    }
+
+    void ShapeAreaFalloffGradientComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        CacheShapeBounds();
+    }
+
+    void ShapeAreaFalloffGradientComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         CacheShapeBounds();
     }

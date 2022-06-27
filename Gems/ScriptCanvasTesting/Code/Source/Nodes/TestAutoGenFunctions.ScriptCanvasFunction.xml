@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library Include="Source/Nodes/TestAutoGenFunctions.h"
+		Namespace="ScriptCanvasTesting::TestAutoGenFunctions"
+        Category="Tests">
+		
+        <Function Name="NoArgsReturn"/>
+        <Function Name="ArgsReturnMulti"/>
+        <Function Name="NoArgsReturnMulti"/>
+        
+        <Function Name="MaxReturnByValueInteger"/>
+        <Function Name="MaxReturnByPointerInteger"/>
+        <Function Name="MaxReturnByReferenceInteger"/>
+        
+        <Function Name="IsPositive"/>
+        <Function Name="NegateBranchBooleanNoResult" Branch="Boolean"/>
+        <Function Name="NegateBranchNonBooleanWithResult" Branch="IsPositive" BranchWithValue="True">
+            <Out Name="Negate Is Positive"/>
+            <Out Name="Negate Is Negative"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

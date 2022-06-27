@@ -251,20 +251,10 @@ namespace AZ
                     EXPECT_EQ(lhs, rhs);
                 }
 
-
-                static void Create()
-                {
-                    AZ::NameDictionary::Create();
-                }
-
-                static void Destroy()
-                {
-                    AZ::NameDictionary::Destroy();
-                }
-
                 void SetUp() override
                 {
                     UnitTest::AllocatorsFixture::SetUp();
+                    AZ::NameDictionary::Create();
 
                     m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
                     AZ::SceneAPI::RegisterDataTypeReflection(m_serializeContext.get());
@@ -287,6 +277,7 @@ namespace AZ
                     m_serializeContext.reset();
                     m_behaviorContext.reset();
 
+                    AZ::NameDictionary::Destroy();
                     UnitTest::AllocatorsFixture::TearDown();
                 }
 

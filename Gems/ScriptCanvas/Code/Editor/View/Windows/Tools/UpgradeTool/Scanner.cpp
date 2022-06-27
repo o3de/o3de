@@ -22,22 +22,21 @@ namespace ScannerCpp
         , AzToolsFramework::AssetBrowser::AssetBrowserFilterModel& model
         , ScriptCanvasEditor::VersionExplorer::ScanResult& result)
     {
+        using namespace ScriptCanvas;
+
         QModelIndex sourceIndex = model.mapToSource(index);
         AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry =
             reinterpret_cast<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>(sourceIndex.internalPointer());
 
         if (entry
-            && entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source
-            && azrtti_istypeof<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry)
-            && entry->GetFullPath().ends_with(".scriptcanvas"))
+        && entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source
+        && azrtti_istypeof<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry)
+        && entry->GetFullPath().ends_with(".scriptcanvas"))
         {
             auto sourceEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry);
-
-            AZStd::string fullPath = sourceEntry->GetFullPath();
+            AZStd::string fullPath = sourceEntry->GetRelativePath();
             AzFramework::StringFunc::Path::Normalize(fullPath);
-
-            result.m_catalogAssets.push_back(
-                ScriptCanvasEditor::SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
+            result.m_catalogAssets.push_back(SourceHandle::FromRelativePath(nullptr, sourceEntry->GetSourceUuid(), fullPath));
         }
 
         const int rowCount = model.rowCount(index);
@@ -102,10 +101,10 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
-            if (fileOutcome.IsSuccess())
+            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().Path().c_str());
+            if (result)
             {
-                return fileOutcome.GetValue().handle;
+                return result.m_handle;
             }
             else
             {

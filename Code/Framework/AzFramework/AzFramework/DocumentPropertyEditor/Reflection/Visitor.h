@@ -206,7 +206,7 @@ namespace AZ::Reflection
         // that are supported.
 
         virtual void VisitObjectBegin(const IObjectAccess& access, const IAttributes& attributes);
-        virtual void VisitObjectEnd();
+        virtual void VisitObjectEnd(const IObjectAccess& access, const IAttributes& attributes);
 
         virtual void Visit(const AZStd::string_view value, const IStringAccess& access, const IAttributes& attributes);
         virtual void Visit(const IArrayAccess& access, const IAttributes& attributes);
@@ -242,7 +242,7 @@ namespace AZ::Reflection
         // that are supported.
 
         virtual void VisitObjectBegin(IObjectAccess& access, const IAttributes& attributes);
-        virtual void VisitObjectEnd();
+        virtual void VisitObjectEnd(IObjectAccess& access, const IAttributes& attributes);
 
         virtual void Visit(const AZStd::string_view value, IStringAccess& access, const IAttributes& attributes);
         virtual void Visit(IArrayAccess& access, const IAttributes& attributes);
@@ -275,7 +275,7 @@ namespace AZ::Reflection
         void Visit(double& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
         void VisitObjectBegin(IObjectAccess& access, const IAttributes& attributes) override { m_reader->VisitObjectBegin(access, attributes); }
-        void VisitObjectEnd() override { m_reader->VisitObjectEnd(); }
+        void VisitObjectEnd(IObjectAccess& access, const IAttributes& attributes) override { m_reader->VisitObjectEnd(access, attributes); }
 
         void Visit(const AZStd::string_view value, IStringAccess& access, const IAttributes& attributes) override { m_reader->Visit(value, access, attributes); }
         void Visit(IArrayAccess& access, const IAttributes& attributes) override { m_reader->Visit(access, attributes); }

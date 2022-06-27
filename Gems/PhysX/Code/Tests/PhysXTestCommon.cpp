@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <PhysX/SystemComponentBus.h>
 
 #include <BoxColliderComponent.h>
@@ -43,6 +44,11 @@ namespace PhysX
 
         void ResetPhysXSystem()
         {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+            
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
                 physicsSystem->RemoveAllScenes(); //Cleanup any created scenes

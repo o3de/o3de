@@ -44,13 +44,13 @@ namespace ShaderManagementConsole
         bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsOpen() const override;
         bool IsModified() const override;
+        bool BeginEdit() override;
+        bool EndEdit() override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
-        size_t GetShaderVariantCount() const override;
-        const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const override;
-        size_t GetShaderOptionCount() const override;
+        size_t GetShaderOptionDescriptorCount() const override;
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
 
     private:
@@ -75,9 +75,16 @@ namespace ShaderManagementConsole
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
 
+        // Backup copy of the shader variant list source data that will be saved for restoration during undo.
+        AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceDataBeforeEdit;
+
         // Shader asset for the corresponding shader variant list
         AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset;
 
         AZ::RPI::ShaderOptionDescriptor m_invalidDescriptor;
+
+        // Flag tracking the modified state of the document.
+        // Will be set to true anytime data is changed and cleared anytime the document is saved.
+        bool m_modified = {};
     };
 } // namespace ShaderManagementConsole

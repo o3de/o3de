@@ -14,7 +14,6 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/EBus/IEventScheduler.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 
 namespace Multiplayer
 {

@@ -134,7 +134,7 @@ namespace AZ
         void ModelAsset::BuildKdTree() const
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_kdTreeLock);
-            if (m_isKdTreeCalculationRunning == false)
+            if ((m_isKdTreeCalculationRunning == false) && !m_kdTree)
             {
                 m_isKdTreeCalculationRunning = true;
 

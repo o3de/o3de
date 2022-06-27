@@ -53,7 +53,7 @@ namespace LandscapeCanvas
             INBOUND_SHAPE_SLOT_ID,
             INBOUND_SHAPE_SLOT_LABEL.toUtf8().constData(),
             { boundsDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             INBOUND_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

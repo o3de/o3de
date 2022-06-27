@@ -298,7 +298,7 @@ namespace AZ
         {
             if (!CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem))
             {
-                AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
+                AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
                 return;
             }
 

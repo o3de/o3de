@@ -140,6 +140,7 @@ class TestReplaceLineInFile(unittest.TestCase):
     @mock.patch('os.path.isfile')
     @mock.patch('fileinput.input')
     @mock.patch('sys.stdout')
+    @mock.patch('builtins.open', mock.MagicMock())
     def test_ReplaceLineInFile_NoMatch_SettingAppended(self, mock_stdout, mock_input, mock_isfile):
         mock_isfile.return_value = True
         mock_input.return_value = MockDocumentInput(self.mock_file_content)

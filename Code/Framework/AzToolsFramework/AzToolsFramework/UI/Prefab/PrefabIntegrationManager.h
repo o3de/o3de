@@ -13,6 +13,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -23,6 +24,7 @@
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ContainerEntityInterface;
     class ReadOnlyEntityPublicInterface;
 
@@ -38,6 +40,7 @@ namespace AzToolsFramework
             , public EditorEventsBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
+            , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
         {
         public:
@@ -70,6 +73,9 @@ namespace AzToolsFramework
             void SaveCurrentPrefab() override;
 
         private:
+            // PrefabPublicNotificationBus overrides ...
+            void OnRootPrefabInstanceLoaded() override;
+
             // Handles the UI for prefab save operations.
             PrefabSaveHandler m_prefabSaveHandler;
 
@@ -120,6 +126,7 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
 
+            ActionManagerInterface* m_actionManagerInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         };
     }

@@ -18,6 +18,7 @@ import tempfile
 import time
 
 from typing import List, Tuple
+from enum import IntEnum
 
 import ly_test_tools
 import ly_test_tools.environment.file_system as file_system
@@ -46,6 +47,22 @@ ASSET_PROCESSOR_SETTINGS_ROOT_KEY = '/Amazon/AssetProcessor/Settings'
 class AssetProcessorError(Exception):
     """ Indicates that the AssetProcessor raised an error """
 
+class StopReason(IntEnum):
+    """
+    Indicates what stop reason was used during the stop() function.
+        NOT_RUNNING = 0
+        NO_CONTROL = 1
+        NO_QUIT = 2
+        IO_ERROR = 3
+        TIMEOUT = 4
+        NO_STOP = 5
+    """
+    NOT_RUNNING = 0
+    NO_CONTROL = 1
+    NO_QUIT = 2
+    IO_ERROR = 3
+    TIMEOUT = 4
+    NO_STOP = 5
 
 class AssetProcessor(object):
     def __init__(self, workspace, port=45643):
@@ -270,35 +287,40 @@ class AssetProcessor(object):
          :param timeout: How long to wait, in seconds, for AP to shut down after receiving quit message.
             This timeout is a longer default because AP doesn't quit immediately on receiving the quit message,
             it waits until finishing its current task, which can sometimes take a while.
-         :return: None
+         :return: Returns the StopReason as an Int
          """
         if not self._ap_proc:
             logger.warning("Attempting to quit AP but none running")
-            return
+            return StopReason.NOT_RUNNING
 
         if not self._control_connection:
             logger.info("No control connection open, using terminate")
-            return self.terminate()
+            self.terminate()
+            return StopReason.NO_CONTROL
 
         try:
             if not self.send_quit():
                 logger.warning("Failed to send quit command, using terminate")
                 self.terminate()
+                return StopReason.NO_QUIT
         except IOError as e:
             logger.warning(f"Failed to send quit request with error {e}, stopping")
             self.terminate()
-        wait_timeout = timeout
+            return StopReason.IO_ERROR
 
+        wait_timeout = timeout
         try:
             waiter.wait_for(lambda: not self.process_exists(), exc=AssetProcessorError, timeout=wait_timeout)
         except AssetProcessorError:
             logger.warning(f"Timeout attempting to quit asset processor after {wait_timeout} seconds, using terminate")
             self.terminate()
-            pass
+            return StopReason.TIMEOUT
 
         if self.process_exists():
             logger.warning(f"Failed to stop process {self.get_pid()} after {wait_timeout} seconds, using terminate")
             self.terminate()
+            return StopReason.NO_STOP
+
         self._ap_proc = None
 
     def terminate(self):

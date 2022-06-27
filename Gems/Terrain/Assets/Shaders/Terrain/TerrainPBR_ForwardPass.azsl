@@ -24,17 +24,13 @@
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
+option bool o_debugTerrainLodLevels = false;
+
 struct VSOutput
 {
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
-
-    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
-    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
-    // support for continuous lod is added, we should be able to get away with just one culling plane.
-    float2 m_cullDistance : SV_CullDistance; 
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
@@ -43,29 +39,9 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
     
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        output.m_worldPosition, output.m_position, output.m_cullDistance // output params
+        output.m_worldPosition, output.m_position, output.m_normal // output params
         );
 
-    if (isnan(output.m_position.x))
-    {
-        // Don't bother with additional processing if this vertex is out of bounds.
-        return output;
-    }
-
-    output.m_normal = float3(input.m_xyNormal, 0.0);
-    output.m_normal.z = saturate(sqrt(1.0 - output.m_normal.x * output.m_normal.x - output.m_normal.y * output.m_normal.y));
-
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            output.m_worldPosition,
-            output.m_normal,
-            output.m_shadowCoords);
-    }
-    
     return output;
 }
 
@@ -142,7 +118,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     {
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
-    
+
     const float macroRoughness = 1.0;
     const float macroSpecularF0 = 0.5;
     const float macroMetalness = 0.0;
@@ -180,7 +156,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow, Occlusion
-    lightingData.shadowCoords = input.m_shadowCoords;
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
@@ -195,7 +170,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, input.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
@@ -210,6 +185,48 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     ForwardPassOutput output;
 
     output.m_diffuseColor = lightingOutput.m_diffuseColor;
+
+    if (o_debugTerrainLodLevels)
+    {
+        // Assign the LOD a color
+        float3 debugColors[6] = 
+        {
+            float3(0.1, 0.0, 0.0),
+            float3(0.0, 0.1, 0.0),
+            float3(0.0, 0.0, 0.1),
+            float3(0.1, 0.1, 0.0),
+            float3(0.1, 0.0, 0.1),
+            float3(0.0, 0.1, 0.1),
+        };
+        uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
+        float3 debugColor = debugColors[lodLevel];
+        output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+
+        // Draw red wireframe on quad boundaries
+        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * RcpGridSize;
+        float2 modPos = input.m_worldPosition.xy % quadSpacing;
+        const float lineWidth = 0.04 * quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.r += 1.0;
+        }
+
+        // Draw yellow (red + green) wireframe on quad boundaries of next lod level.
+        quadSpacing *= 2.0;
+        modPos = input.m_worldPosition.xy % quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.g += 1.0;
+        }
+
+        // Draw blue on sector boundaries
+        modPos = input.m_worldPosition.xy % ObjectSrg::m_patchData.m_xyScale;
+        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > ObjectSrg::m_patchData.m_xyScale - quadSpacing * 0.5))
+        {
+            output.m_diffuseColor.b += 1.0;
+        }
+    }
+
     output.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     output.m_specularColor = lightingOutput.m_specularColor;
     output.m_specularF0 = lightingOutput.m_specularF0;

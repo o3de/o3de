@@ -30,6 +30,12 @@ namespace EMotionFX
         {
             ColliderTranslation,
             ColliderRotation,
+            ColliderDimensions,
+            JointLimitParentRotation,
+            JointLimitChildRotation,
+            JointSwingLimits,
+            JointTwistLimits,
+            JointLimitOptimization,
             NumModes
         };
 
@@ -44,5 +50,7 @@ namespace EMotionFX
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         mutable AZStd::optional<AZ::s32> m_viewportId;
+        bool m_hasCapsuleCollider = false;
+        bool m_hasJointLimit = false;
     };
 } // namespace EMotionFX

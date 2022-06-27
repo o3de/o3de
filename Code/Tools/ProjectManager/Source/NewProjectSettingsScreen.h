@@ -16,6 +16,7 @@
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(FlowLayout)
 
 namespace O3DE::ProjectManager
 {
@@ -46,9 +47,9 @@ namespace O3DE::ProjectManager
 
     private:
         QString GetDefaultProjectName();
-        QString GetDefaultProjectPath();
         QString GetProjectAutoPath();
         QFrame* CreateTemplateDetails(int margin);
+        void AddTemplateButtons();
         void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
         QButtonGroup* m_projectTemplateButtonGroup;
@@ -56,6 +57,7 @@ namespace O3DE::ProjectManager
         QLabel* m_templateSummary;
         TagContainerWidget* m_templateIncludedGems;
         QVector<ProjectTemplateInfo> m_templates;
+        FlowLayout* m_templateFlowLayout = nullptr;
         int m_selectedTemplateIndex = -1;
         bool m_userChangedProjectPath = false;
 

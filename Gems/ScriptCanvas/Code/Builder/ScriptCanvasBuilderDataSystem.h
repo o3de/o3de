@@ -19,7 +19,7 @@
 
 namespace ScriptCanvasEditor
 {
-    class EditorAssetTree;
+    class SourceTree;
 }
 
 namespace ScriptCanvasBuilder
@@ -61,14 +61,14 @@ namespace ScriptCanvasBuilder
         /// </summary>
         /// <param name="sourceHandle"></param>
         /// <returns>BuilderSourceResult editor properties status and data </returns>
-        BuilderSourceResult CompileBuilderData(ScriptCanvasEditor::SourceHandle sourceHandle) override;
+        BuilderSourceResult CompileBuilderData(SourceHandle sourceHandle) override;
 
         /// <summary>
         /// Returns the latest built runtime data for the source file
         /// </summary>
         /// <param name="sourceHandle"></param>
         /// <returns>BuilderAssetResult runtime status and data </returns>
-        BuilderAssetResult LoadAsset(ScriptCanvasEditor::SourceHandle sourceHandle) override;
+        BuilderAssetResult LoadAsset(SourceHandle sourceHandle) override;
 
     private:
         struct BuilderSourceStorage
@@ -82,9 +82,9 @@ namespace ScriptCanvasBuilder
         AZStd::unordered_map<AZ::Uuid, BuilderSourceStorage> m_buildResultsByHandle;
         AZStd::unordered_map<AZ::Uuid, BuilderAssetResult> m_assets;
         
-        void AddResult(const ScriptCanvasEditor::SourceHandle& handle, BuilderSourceStorage&& result);
+        void AddResult(const SourceHandle& handle, BuilderSourceStorage&& result);
         void AddResult(AZ::Uuid&& id, BuilderSourceStorage&& result);
-        void CompileBuilderDataInternal(ScriptCanvasEditor::SourceHandle sourceHandle);
+        void CompileBuilderDataInternal(SourceHandle sourceHandle);
         BuilderAssetResult& MonitorAsset(AZ::Uuid fileAssetId);
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

@@ -58,6 +58,7 @@ class ApplicationManagerBase
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     , public AssetProcessor::DiskSpaceInfoBus::Handler
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
+    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -108,6 +109,9 @@ public:
 
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;
+
+    //! MessageInfoBus::Handler
+    void OnBuilderRegistrationFailure() override;
 
     void RemoveOldTempFolders();
 
@@ -233,11 +237,6 @@ protected:
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;
-
-    // When job priority and escalation is equal, jobs sort in order by job key.
-    // This switches that behavior to instead sort by the DB source name, which
-    // allows automated tests to get deterministic behavior out of Asset Processor.
-    bool m_sortJobsByDBSourceName = false;
 
     unsigned int m_highestConnId = 0;
     AzToolsFramework::Ticker* m_ticker = nullptr; // for ticking the tickbus.
