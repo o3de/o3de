@@ -40,7 +40,6 @@ namespace AZ::Render
         AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
     }
 
-    // ViewportEditorModeNotificationsBus overrides ...
     void FocusedEntityParentPass::OnEditorModeActivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
         AzToolsFramework::ViewportEditorMode mode)
@@ -52,7 +51,7 @@ namespace AZ::Render
     }
     void FocusedEntityParentPass::OnEditorModeDeactivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
-    {
+    {   
         if (mode == AzToolsFramework::ViewportEditorMode::Focus)
         {
             m_enabled = false;

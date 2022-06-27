@@ -16,7 +16,6 @@ namespace AZ::Render
 {
     class FocusedEntityParentPass
         : public EditorStateParentPassBase
-            
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         //, private EditorModeFocusModeStateNotificationBus::Handler
         //, private EditorModeFocusModeStateRequestBus::Handler

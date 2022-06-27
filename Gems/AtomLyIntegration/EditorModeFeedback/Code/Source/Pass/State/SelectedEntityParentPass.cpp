@@ -10,6 +10,8 @@
 #include <Pass/Child/EditorModeOutlinePass.h>
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 
 namespace AZ::Render
 {
@@ -48,9 +50,42 @@ namespace AZ::Render
 
     AzToolsFramework::EntityIdList SelectedEntityParentPass::GetMaskedEntities() const
     {
-        AzToolsFramework::EntityIdList selectedEntityList;
+        AzToolsFramework::EntityIdList initialSelectedEntityList, selectedEntityList;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+            initialSelectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+
+        // iterate over selected entities and check if any are container (IsContainer) 
+        // c&p FocusModeSystemComponent::RefreshFocusedEntityIdList() code to get all descendants the container
+        //
+        // UNLESS all heirachies will be outlined accordingly for children
+        // just do for every entity and get all descendants (iterate over all children entities recursivley as per FocusModeSystemComponent::RefreshFocusedEntityIdList())
+
+        for (const auto& selectedEntityId : initialSelectedEntityList)
+        {
+            AZStd::queue<AZ::EntityId> entityIdQueue;
+            entityIdQueue.push(selectedEntityId);
+
+            while (!entityIdQueue.empty())
+            {
+                AZ::EntityId entityId = entityIdQueue.front();
+                entityIdQueue.pop();
+
+                if (entityId.IsValid())
+                {
+                    selectedEntityList.push_back(entityId);
+                }
+
+                AzToolsFramework::EntityIdList children;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    children, entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetChildren);
+
+                for (AZ::EntityId childEntityId : children)
+                {
+                    entityIdQueue.push(childEntityId);
+                }
+            }
+        }
 
         return selectedEntityList;
     }

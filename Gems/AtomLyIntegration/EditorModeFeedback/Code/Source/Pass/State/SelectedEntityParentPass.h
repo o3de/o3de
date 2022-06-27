@@ -29,7 +29,5 @@ namespace AZ::Render
 
         // EditorStateParentPassBase overrides ...
         AzToolsFramework::EntityIdList GetMaskedEntities() const override;
-    private:
-
     };
 } // namespace AZ::Render
