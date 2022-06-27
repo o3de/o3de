@@ -32,11 +32,13 @@ namespace AzToolsFramework
         void LuaEditorSystemComponent::Activate()
         {
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Handler::BusConnect(LuaComponentScriptBusId);
         }
 
         void LuaEditorSystemComponent::Deactivate()
         {
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
+            AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Handler::BusDisconnect(LuaComponentScriptBusId);
         }
 
         void LuaEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -66,7 +68,7 @@ namespace AzToolsFramework
                 AZStd::string fullFilepath;
                 AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback,
                     defaultScriptName.c_str(),
-                    m_luaExtension,
+                    LuaExtension,
                     fullFilepath);
 
                 MakeFilenameUnique(fullSourceFolderNameInCallback, defaultScriptName, fullFilepath);
@@ -74,8 +76,11 @@ namespace AzToolsFramework
                 auto outcome = SaveLuaScriptFile(fullFilepath, "");
                 if (outcome.IsSuccess())
                 {
-                    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
-                        &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::NotifyAssetWasCreatedInEditor, fullFilepath);
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                        fullFilepath,
+                        AZ::Crc32());
                 }
                 else
                 {
@@ -92,7 +97,7 @@ namespace AzToolsFramework
                 AZStd::string fullFilepath;
                 AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback,
                     defaultScriptName.c_str(),
-                    m_luaExtension,
+                    LuaExtension,
                     fullFilepath);
 
                 MakeFilenameUnique(fullSourceFolderNameInCallback, defaultScriptName, fullFilepath);
@@ -102,8 +107,11 @@ namespace AzToolsFramework
                 auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (outcome.IsSuccess())
                 {
-                    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
-                        &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::NotifyAssetWasCreatedInEditor, fullFilepath);
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                        fullFilepath,
+                        LuaComponentScriptBusId);
                 }
                 else
                 {
@@ -119,7 +127,7 @@ namespace AzToolsFramework
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
         {
-            if (AZ::IO::Path(fullSourceFileName).Extension() == m_luaExtension)
+            if (AZ::IO::Path(fullSourceFileName).Extension() == LuaExtension)
             {
                 auto luaScriptOpener = [](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
                 {
@@ -131,7 +139,23 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::string LuaEditorSystemComponent::GenerateLuaComponentBoilerplate(const AZStd::string& filename)
+        void LuaEditorSystemComponent::HandleInitialFilenameChange(const AZStd::string& fullFilepath)
+        {
+            AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
+            if (filepath.Extension() == LuaExtension)
+            {
+                AZStd::string_view& filename = filepath.Stem().Native();
+                AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filename);
+
+                auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
+                if (!outcome.IsSuccess())
+                {
+                    AZ_Error(LogName, false, outcome.GetError().c_str());
+                }
+            }
+        }
+
+        AZStd::string LuaEditorSystemComponent::GenerateLuaComponentBoilerplate(const AZStd::string& componentName)
         {
             constexpr const char* namePlaceholder = "$SCRIPT_NAME";
             AZStd::string luaComponentBoilerplate = R"LUA(-- $SCRIPT_NAME.lua
@@ -154,7 +178,7 @@ end
 
 return $SCRIPT_NAME)LUA";
 
-            AZ::StringFunc::Replace(luaComponentBoilerplate, namePlaceholder, filename.c_str());
+            AZ::StringFunc::Replace(luaComponentBoilerplate, namePlaceholder, componentName.c_str());
             return luaComponentBoilerplate;
         }
 
@@ -167,11 +191,11 @@ return $SCRIPT_NAME)LUA";
             while (AZ::IO::FileIOBase::GetInstance()->Exists(outFullFilepath.c_str()))
             {
                 fileCounter++;
-                AZStd::string filenameDigit = AZStd::to_string(fileCounter);
+                AZStd::string incrementalFilename = filename + AZStd::to_string(fileCounter);
 
                 AZ::StringFunc::Path::ConstructFull(directoryPath.c_str(),
-                    (filename + filenameDigit).c_str(),
-                    m_luaExtension,
+                    incrementalFilename.c_str(),
+                    LuaExtension,
                     outFullFilepath);
             }
         }
@@ -180,8 +204,12 @@ return $SCRIPT_NAME)LUA";
             const AZStd::string& fullFilepath,
             const AZStd::string& fileContents)
         {
+            AZStd::string correctedFilepath = AZ::IO::Path(fullFilepath).MakePreferred().Native();
+
             AZ::IO::SystemFile scriptFile = AZ::IO::SystemFile();
-            scriptFile.Open(fullFilepath.c_str(), static_cast<int>(AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText));
+            int openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            scriptFile.Open(correctedFilepath.c_str(), openMode);
+
             if (scriptFile.IsOpen())
             {
                 auto bytesWritten = scriptFile.Write(fileContents.c_str(), strlen(fileContents.c_str()));
@@ -194,12 +222,12 @@ return $SCRIPT_NAME)LUA";
                 }
                 else
                 {
-                    return AZ::Failure(AZStd::string::format("Failed to write contents to Lua file: %s", fullFilepath.c_str()));
+                    return AZ::Failure(AZStd::string::format("Failed to write contents to Lua file: %s", correctedFilepath.c_str()));
                 }
             }
             else
             {
-                return AZ::Failure(AZStd::string::format("Failed to open file when writing Lua script: %s", fullFilepath.c_str()));
+                return AZ::Failure(AZStd::string::format("Failed to open file when writing Lua script: %s", correctedFilepath.c_str()));
             }
         }
 

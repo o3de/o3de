@@ -219,10 +219,10 @@ namespace ScriptCanvasEditor
             while (AZ::IO::FileIOBase::GetInstance()->Exists(fullFilepath.c_str()))
             {
                 fileCounter++;
-                AZStd::string filenameDigit = AZStd::to_string(fileCounter);
+                AZStd::string incrementalFilename = defaultFilename + AZStd::to_string(fileCounter);
 
                 AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback
-                    , (defaultFilename + filenameDigit).c_str()
+                    , incrementalFilename.c_str()
                     , scriptCanvasExtension.c_str()
                     , fullFilepath);
             }
@@ -242,9 +242,11 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
-                        &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::NotifyAssetWasCreatedInEditor,
-                        source.Path().Native());
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId
+                        , &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor
+                        , source.Path().Native()
+                        , AZ::Crc32());
                 }
 
                 fileStream.Close();
@@ -255,10 +257,7 @@ namespace ScriptCanvasEditor
             }
         };
 
-        creators.push_back({ "ScriptCanvas_creator"
-            , "ScriptCanvas"
-            , QIcon()
-            , scriptCavnasAssetCreator });
+        creators.push_back({ "ScriptCanvas_creator", "ScriptCanvas", QIcon(), scriptCavnasAssetCreator });
     }
 
     void SystemComponent::AddSourceFileOpeners

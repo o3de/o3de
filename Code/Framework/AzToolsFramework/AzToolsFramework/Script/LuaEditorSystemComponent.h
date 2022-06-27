@@ -18,6 +18,7 @@ namespace AzToolsFramework
         class LuaEditorSystemComponent
             : public AZ::Component
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(LuaEditorSystemComponent, "{8F3DFC84-2D59-416C-B04D-56C550114D9B}");
@@ -28,7 +29,7 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
             ////////////////////////////////////////////////////////////////////////
-            //  AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus
+            // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus
             void AddSourceFileCreators(
                 const char* fullSourceFolderName,
                 const AZ::Uuid& sourceUUID,
@@ -39,7 +40,12 @@ namespace AzToolsFramework
                 AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
             ////////////////////////////////////////////////////////////////////////
 
-            static constexpr char LogName[] = "LuaEditorSystemComponent";
+            ////////////////////////////////////////////////////////////////////////
+            // AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationsBus
+            void HandleInitialFilenameChange(const AZStd::string& fullFilepath) override;
+            ////////////////////////////////////////////////////////////////////////
+
+            static AZStd::string GenerateLuaComponentBoilerplate(const AZStd::string& componentName);
 
         protected:
             void Activate() override;
@@ -50,11 +56,13 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         private:
-            AZStd::string GenerateLuaComponentBoilerplate(const AZStd::string& filename);
             void MakeFilenameUnique(const AZStd::string& directoryPath, const AZStd::string& filename, AZStd::string& outFullFilepath);
             AZ::Outcome<void, AZStd::string> SaveLuaScriptFile(const AZStd::string& fullFilepath, const AZStd::string& fileContents);
 
-            static constexpr char m_luaExtension[] = ".lua";
+            static constexpr char LuaExtension[] = ".lua";
+            static constexpr char LogName[] = "LuaEditorSystemComponent";
+            // The ebus address for Lua component script initial name change notifications
+            static constexpr AZ::Crc32 LuaComponentScriptBusId = AZ::Crc32("LuaComponentScriptRenameHandler");
         };
 } // namespace Component
 } // namespace AzToolsFramework

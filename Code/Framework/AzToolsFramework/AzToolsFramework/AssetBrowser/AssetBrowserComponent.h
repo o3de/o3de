@@ -50,6 +50,7 @@ namespace AzToolsFramework
             , public AZ::TickBus::Handler
             , public AssetSystemBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
+            , public AssetBrowserFileCreationNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(AssetBrowserComponent, "{4BC5F93F-2F9E-412E-B00A-396C68CFB5FB}")
@@ -100,7 +101,11 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserInteractionNotificationBus
             SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
-            void NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath) override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // AssetBrowserFileCreationNotificationsBus
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
             //////////////////////////////////////////////////////////////////////////
 
             void AddFile(const AZ::s64& fileId);
@@ -108,6 +113,7 @@ namespace AzToolsFramework
 
             void PopulateAssets();
             void UpdateAssets();
+
         private:
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;

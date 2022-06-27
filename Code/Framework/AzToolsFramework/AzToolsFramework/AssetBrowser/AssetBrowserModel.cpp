@@ -221,6 +221,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
+
             Path newPath = oldPath;
             newPath.ReplaceFilename(newFile);
             newPath.ReplaceExtension(extension);
@@ -386,7 +387,7 @@ namespace AzToolsFramework
                 m_addingEntry = false;
                 endInsertRows();
 
-                if (!m_watchedIncomingAssetPaths.empty())
+                if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty())
                 {
                     // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
                     AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
@@ -432,7 +433,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::NotifyAssetWasCreatedInEditor(const AZStd::string& assetPath)
+        void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId)
         {
             QModelIndex index = findIndex(assetPath.c_str());
             if (index.isValid())
@@ -441,7 +442,7 @@ namespace AzToolsFramework
             }
             else
             {
-                m_watchedIncomingAssetPaths.insert(AZ::IO::Path(assetPath).AsPosix());
+                m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
             }
         }
 
@@ -494,13 +495,17 @@ namespace AzToolsFramework
 
         void AssetBrowserModel::WatchForExpectedAssets(AssetBrowserEntry* entry)
         {
-            const AZStd::string& childFullPath = AZ::IO::Path(entry->GetFullPath()).AsPosix();
-            if (m_watchedIncomingAssetPaths.contains(childFullPath))
+            const AZStd::string& fullpath = AZ::IO::Path(entry->GetFullPath()).AsPosix();
+            if (m_newlyCreatedAssetPathsToCreatorBusIds.contains(fullpath))
             {
-                m_watchedIncomingAssetPaths.erase(childFullPath);
+                if (m_newlyCreatedAssetPathsToCreatorBusIds[fullpath] != AZ::Crc32())
+                {
+                    m_assetEntriesToCreatorBusIds[entry] = m_newlyCreatedAssetPathsToCreatorBusIds[fullpath];
+                }
 
-                QTimer::singleShot(
-                    0, this,
+                m_newlyCreatedAssetPathsToCreatorBusIds.erase(fullpath);
+
+                QTimer::singleShot(0, this,
                     [&, entry]()
                     {
                         QModelIndex index;
