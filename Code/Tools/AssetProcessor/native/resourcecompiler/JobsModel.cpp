@@ -184,21 +184,24 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    AZ::u32 minutes, seconds, milliseconds = getItem(index.row())->m_processDuration;
-                    seconds = milliseconds / 1000;
-                    milliseconds = milliseconds % 1000;
-                    minutes = seconds / 60;
-                    seconds = seconds % 60;
-                    QString processDurationString = QString("%1 ms").arg(milliseconds, 3);
-                    if (seconds)
+                    QTime processDuration = getItem(index.row())->m_processDuration;
+                    if (!processDuration.isValid())
                     {
-                        processDurationString.prepend(QString("%1 sec, ").arg(seconds, 2));
+                        return "Invalid duration value";
                     }
-                    if (minutes)
+                    if (processDuration.hour() > 0)
                     {
-                        processDurationString.prepend(QString("%1 min, ").arg(minutes, 2));
+                        return processDuration.toString("hh 'hr, 'mm' min, 'ss' sec, 'zzz' ms'");
                     }
-                    return processDurationString;
+                    if (processDuration.minute() > 0)
+                    {
+                        return processDuration.toString("mm' min, 'ss' sec, 'zzz' ms'");
+                    }
+                    if (processDuration.second() > 0)
+                    {
+                        return processDuration.toString("ss' sec, 'zzz' ms'");
+                    }
+                    return processDuration.toString("zzz' ms'");
                 }
             default:
                 break;
@@ -472,7 +475,7 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, unsigned int duration)
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration)
     {
         QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
 
@@ -480,7 +483,7 @@ namespace AssetProcessor
         {
             unsigned int jobIndex = iter.value();
             CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
-            jobInfo->m_processDuration = aznumeric_cast<AZ::u32>(duration);
+            jobInfo->m_processDuration = duration;
             Q_EMIT dataChanged(
                 index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
         }
