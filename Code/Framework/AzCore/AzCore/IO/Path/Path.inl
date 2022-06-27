@@ -853,7 +853,10 @@ namespace AZ::IO
             // This follows the behavior of python Pathlib
             return *this;
         }
-        if (Internal::IsAbsolute(first, last, m_preferred_separator))
+
+        // If the path to append is an absolute path or starts with an alias
+        // then replace this with the path.
+        if (Internal::IsAbsolute(first, last, m_preferred_separator) || *first == '@')
         {
             m_path.assign(first, last);
             return *this;

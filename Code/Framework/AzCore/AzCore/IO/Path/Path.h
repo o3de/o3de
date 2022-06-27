@@ -398,12 +398,13 @@ namespace AZ::IO
         // appends
         //! Joins a path together using the following rule set
         //! let p = other PathView
-        //! # If p.is_absolute() || (p.has_root_name() && p.root.name() != root_name()
+        //! # If p.is_absolute() || p.starts_with_alias() || (p.has_root_name() && p.root.name() != root_name()
         //! Then replaces the current *this path with p
         //! NOTE: This is the case of trying to append something such as
         //! "C:\Foo" / "F:\Foo" = "F:\Foo"
         //! IMPORTANT NOTE: this also applies for the root directory as well
-        //! So appending "test/foo" "/bar" results in "/bar", not "test/foo/bar"
+        //! So appending "test/foo" "/bar" results in "/bar", not "test/foo/bar",
+        //! also appending "test/foo" "@products@/bar" results in "@products@/bar", not "test/foo/@products@/bar".
         //! If "test/foo/bar" is desired then either operator+=/concat can be used with "/bar"
         //! or leading path separator in bar is skipped over so that only "bar" is passed to operator+=
         //!

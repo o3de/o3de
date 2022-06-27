@@ -298,6 +298,14 @@ namespace AZ
             if (path && assetAliasPath)
             {
                 const AZ::IO::PathView pathView(path);
+
+                const auto devWriteStoragePath = AZ::Utils::GetDevWriteStoragePath();
+                if (devWriteStoragePath.has_value() &&
+                    pathView.IsRelativeTo(devWriteStoragePath->c_str()))
+                {
+                    return;
+                }
+
                 if (pathView.IsRelativeTo(assetAliasPath))
                 {
                     AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
