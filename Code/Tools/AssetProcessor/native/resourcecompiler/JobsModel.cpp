@@ -187,7 +187,7 @@ namespace AssetProcessor
                     QTime processDuration = getItem(index.row())->m_processDuration;
                     if (!processDuration.isValid())
                     {
-                        return "Invalid duration value";
+                        return "";
                     }
                     if (processDuration.hour() > 0)
                     {
