@@ -477,8 +477,11 @@ namespace AzToolsFramework
             {
                 // if there's a null entry in the current place for m_domOrderedChildren,
                 // that's ok if this entry isn't expanded to that depth and need not follow the change any further
-                // if we are expanded, then this patch references an unsupported handler, which is probably a problem
-                AZ_Assert(!IsExpanded(), "got patch for unimplemented PropertyHandler");
+                // if we are expanded, then this patch references an unsupported handler, which might a problem
+                if (IsExpanded())
+                {
+                    AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                }
                 return;
             }
 
