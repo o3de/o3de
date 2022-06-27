@@ -103,7 +103,7 @@ namespace PhysX
 
     AZ::u32 EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting()
     {
-        // controls specific to baked heightfields call this to determine their visibility
+        // Controls that are specific to baked heightfields call this to determine their visibility
         // they are visible when the mode is set to baked, otherwise hidden
         return m_useBakedHeightfield ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }

@@ -80,7 +80,7 @@ namespace PhysX
                 AZ_Warning(
                     "PhysX",
                     false,
-                    "MinMax heights mismatch between baked heightfield and terrain. Entity [%s]. "
+                    "MinMax heights mismatch between baked heightfield and heightfield provider. Entity [%s]. "
                     "Terrain [%0.2f, %0.2f], Asset [%0.2f, %0.2f]",
                     GetEntity()->GetName().c_str(),
                     m_shapeConfig->GetMinHeightBounds(),
