@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/std/ranges/ranges_algorithm.h>
 #include "CompressionFactoryImpl.h"
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace Compression
 {
