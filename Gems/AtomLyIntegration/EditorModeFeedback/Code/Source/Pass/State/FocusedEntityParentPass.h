@@ -23,6 +23,7 @@ namespace AZ::Render
     {
     public:
         FocusedEntityParentPass();
+        ~FocusedEntityParentPass();
 
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(

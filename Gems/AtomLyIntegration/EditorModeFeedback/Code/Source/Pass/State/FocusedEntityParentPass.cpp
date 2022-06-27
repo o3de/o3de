@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 namespace AZ::Render
 {
@@ -31,6 +32,12 @@ namespace AZ::Render
     FocusedEntityParentPass::FocusedEntityParentPass()
         : EditorStateParentPassBase("FocusMode", CreateFocusedEntityChildPasses())
     {
+        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+    }
+
+    FocusedEntityParentPass::~FocusedEntityParentPass()
+    {
+        AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
     }
 
     // ViewportEditorModeNotificationsBus overrides ...
