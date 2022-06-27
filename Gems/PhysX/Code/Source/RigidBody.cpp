@@ -339,7 +339,7 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             AZ::Vector3 inertiaDiagonal = PxMathConvert(m_pxRigidActor->getMassSpaceInertiaTensor());
             AZ::Matrix3x3 rotationToWorld = AZ::Matrix3x3::CreateFromQuaternion(PxMathConvert(m_pxRigidActor->getGlobalPose().q.getConjugate()));
-            return Physics::Utils::InertiaLocalToWorld(inertiaDiagonal, rotationToWorld);
+            return Physics::Utils::DiagonalMatrixLocalToWorld(inertiaDiagonal, rotationToWorld);
         }
 
         return AZ::Matrix3x3::CreateZero();
@@ -364,7 +364,7 @@ namespace PhysX
             PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
             AZ::Vector3 inverseInertiaDiagonal = PxMathConvert(m_pxRigidActor->getMassSpaceInvInertiaTensor());
             AZ::Matrix3x3 rotationToWorld = AZ::Matrix3x3::CreateFromQuaternion(PxMathConvert(m_pxRigidActor->getGlobalPose().q.getConjugate()));
-            return Physics::Utils::InverseInertiaLocalToWorld(inverseInertiaDiagonal, rotationToWorld);
+            return Physics::Utils::DiagonalMatrixLocalToWorld(inverseInertiaDiagonal, rotationToWorld);
         }
 
         return AZ::Matrix3x3::CreateZero();
