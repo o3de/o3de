@@ -13,6 +13,7 @@ set(FILES
     tests/GemCatalogTests.cpp
     tests/SettingsTests.cpp
     tests/PythonBindingsTests.cpp
+    tests/MockPythonBindings.h
     tests/main.cpp
     tests/UtilsTests.cpp
     tests/TextOverflowTests.cpp

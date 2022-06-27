@@ -248,12 +248,12 @@ namespace PhysX
         return convex;
     }
 
-    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows)
     {
         physx::PxHeightFieldDesc desc;
         desc.format = physx::PxHeightFieldFormat::eS16_TM;
-        desc.nbColumns = numColumns;
-        desc.nbRows = numRows;
+        desc.nbColumns = static_cast<physx::PxU32>(numColumns);
+        desc.nbRows = static_cast<physx::PxU32>(numRows);
         desc.samples.data = samples;
         desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
@@ -417,6 +417,16 @@ namespace PhysX
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_physXSystem->CreateCollisionGroup(groupName, group);
+    }
+
+    bool SystemComponent::ShouldCollide(
+        const Physics::ColliderConfiguration& colliderConfigurationA, const Physics::ColliderConfiguration& colliderConfigurationB)
+    {
+        physx::PxFilterData filterDataA = PhysX::Collision::CreateFilterData(
+            colliderConfigurationA.m_collisionLayer, GetCollisionGroupById(colliderConfigurationA.m_collisionGroupId));
+        physx::PxFilterData filterDataB = PhysX::Collision::CreateFilterData(
+            colliderConfigurationB.m_collisionLayer, GetCollisionGroupById(colliderConfigurationB.m_collisionGroupId));
+        return PhysX::Collision::ShouldCollide(filterDataA, filterDataB);
     }
 
     physx::PxFilterData SystemComponent::CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group)

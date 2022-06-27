@@ -168,5 +168,6 @@ namespace AZ::IO
         AZ::IO::SizeType GetCurPos() const override;
         AZ::IO::SizeType GetLength() const override;
         AZ::IO::OpenMode GetModeFlags() const override;
+        const char* GetFilename() const override;
     };
 }   // namespace AZ::IO

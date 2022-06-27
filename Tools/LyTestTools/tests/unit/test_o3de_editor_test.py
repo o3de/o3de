@@ -16,7 +16,7 @@ import ly_test_tools.launchers.exceptions
 pytestmark = pytest.mark.SUITE_smoke
 
 
-class TestEditorTestBase(unittest.TestCase):
+class TestEditorTest(unittest.TestCase):
 
     def test_EditorSharedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorSharedTest()
@@ -34,10 +34,14 @@ class TestEditorTestBase(unittest.TestCase):
         assert not mock_editorsharedtest.is_parallelizable
 
 
-class TestResultBase(unittest.TestCase):
+class TestResultType(unittest.TestCase):
+
+    class DummySubclass(editor_test.Result.ResultType):
+        def __str__(self):
+            return None
 
     def setUp(self):
-        self.mock_result = editor_test.Result.Base()
+        self.mock_result = TestResultType.DummySubclass()
 
     def test_GetOutputStr_HasOutput_ReturnsCorrectly(self):
         self.mock_result.output = 'expected output'
@@ -304,7 +308,7 @@ class TestEditorTestSuite(unittest.TestCase):
         assert mock_get_shared_tests.called
         assert mock_filter_session.called
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock())
     def test_FilterSessionSharedTests_OneSharedTest_ReturnsOne(self):
         def mock_test():
             pass
@@ -317,7 +321,7 @@ class TestEditorTestSuite(unittest.TestCase):
         assert selected_tests == mock_session_items
         assert len(selected_tests) == 1
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock())
     def test_FilterSessionSharedTests_ManyTests_ReturnsCorrectTests(self):
         def mock_test():
             pass
@@ -337,7 +341,7 @@ class TestEditorTestSuite(unittest.TestCase):
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == mock_session_items
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup')
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup')
     def test_FilterSessionSharedTests_SkipOneTest_ReturnsCorrectTests(self, mock_skip):
         def mock_test():
             pass
@@ -358,7 +362,7 @@ class TestEditorTestSuite(unittest.TestCase):
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == [mock_test]
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock(side_effect=Exception))
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock(side_effect=Exception))
     def test_FilterSessionSharedTests_ExceptionDuringSkipSetup_SkipsAddingTest(self):
         def mock_test():
             pass
@@ -426,6 +430,7 @@ class TestUtils(unittest.TestCase):
         assert isinstance(mock_editor_data.asset_processor, ly_test_tools.o3de.asset_processor.AssetProcessor)
         assert mock_start.called
 
+#TODO not run???
     @mock.patch('ly_test_tools.o3de.asset_processor.AssetProcessor.start')
     @mock.patch('ly_test_tools.environment.process_utils.process_exists')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
@@ -595,7 +600,6 @@ class TestRunningTests(unittest.TestCase):
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Pass)
         assert mock_cycle_crash.called
         assert mock_editor.start.called
-
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')

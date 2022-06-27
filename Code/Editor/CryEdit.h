@@ -196,7 +196,6 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void SaveTagLocations();
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
@@ -247,7 +246,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
@@ -303,10 +301,6 @@ private:
 
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    Vec3 m_tagLocations[12];
-    Ang3 m_tagAngles[12];
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 

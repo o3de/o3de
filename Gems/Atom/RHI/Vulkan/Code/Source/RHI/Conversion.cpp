@@ -1132,10 +1132,21 @@ namespace AZ
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageAttachment)
         {
             const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = imageAttachment.GetUsageAndAccess();
+
             if (usagesAndAccesses.size() > 1)
             {
-                //[GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized. For now VK_IMAGE_LAYOUT_GENERAL is the fallback.
-                return VK_IMAGE_LAYOUT_GENERAL;
+                // The Attachment is used multiple times: If all usages/accesses are the same type, we can determine the
+                // vk image layout from the first usage. If not, use the fallback VK_IMAGE_LAYOUT_GENERAL for now.
+                // [GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized.
+
+                const auto& first = usagesAndAccesses.front();
+                for (int i = 1; i < usagesAndAccesses.size(); ++i)
+                {
+                    if (usagesAndAccesses[i].m_access != first.m_access || usagesAndAccesses[i].m_usage != first.m_usage)
+                    {
+                        return VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                }
             }
 
             const RHI::ImageView* imageView = imageAttachment.GetImageView();
