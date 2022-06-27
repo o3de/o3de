@@ -321,7 +321,7 @@ namespace UnitTest
             EXPECT_FALSE(enabledOutcome.GetValue());
         }
 
-        auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
         
         {
             auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");

@@ -338,4 +338,85 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyHideFromToolBarsWhenDisabledTrue)
+    {
+        // Register toolbar, get it and verify it's empty.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        EXPECT_EQ(toolBar->actions().size(), 0);
+
+        // Register a new action and add it to the menu. Have HideFromToolBarsWhenDisabled set to true.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_hideFromToolBarsWhenDisabled = true;
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(toolBar->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is no longer in the toolbar.
+        EXPECT_EQ(toolBar->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromToolBarsWhenDisabledFalse)
+    {
+        // Register toolbar, get it and verify it's empty.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        EXPECT_EQ(toolBar->actions().size(), 0);
+
+        // Register a new action and add it to the menu. HideFromToolBarsWhenDisabled is set to false by default.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(toolBar->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is still in the toolbar.
+        EXPECT_EQ(toolBar->actions().size(), 1);
+    }
+
 } // namespace UnitTest

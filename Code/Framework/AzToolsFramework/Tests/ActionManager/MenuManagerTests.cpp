@@ -553,4 +553,85 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledTrue)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the menu. HideFromMenusWhenDisabled is set to true by default.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is no longer in the menu.
+        EXPECT_EQ(menu->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledFalse)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the menu. Have HideFromMenusWhenDisabled set to true.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is still in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+    }
+
 } // namespace UnitTest
