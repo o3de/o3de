@@ -56,7 +56,7 @@ namespace PhysX
 
         void Activate() override;
 
-        void InitHeightfieldCollider();
+        void InitHeightfieldCollider(HeightfieldCollider::DataSource heightfieldDataSource);
 
         void Deactivate() override;
 

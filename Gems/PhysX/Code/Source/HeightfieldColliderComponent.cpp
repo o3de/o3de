@@ -70,17 +70,10 @@ namespace PhysX
         {
             m_bakedHeightfieldAsset = asset;
 
-            Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig);
-            configuration = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
-
-            // Update material selection from the mapping
-            Physics::ColliderConfiguration* colliderConfig = m_colliderConfig.get();
-            Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), colliderConfig->m_materialSlots);
-
             Pipeline::HeightFieldAsset* heightfieldAsset = m_bakedHeightfieldAsset.Get();
-
-            bool minMaxHeightsMatch = AZ::IsClose(configuration.GetMinHeightBounds(), heightfieldAsset->GetMinHeight()) &&
-                AZ::IsClose(configuration.GetMaxHeightBounds(), heightfieldAsset->GetMaxHeight());
+            
+            bool minMaxHeightsMatch = AZ::IsClose(m_shapeConfig->GetMinHeightBounds(), heightfieldAsset->GetMinHeight()) &&
+                AZ::IsClose(m_shapeConfig->GetMaxHeightBounds(), heightfieldAsset->GetMaxHeight());
 
             if (!minMaxHeightsMatch)
             {
@@ -90,8 +83,8 @@ namespace PhysX
                     "MinMax heights mismatch between baked heightfield and terrain. Entity [%s]. "
                     "Terrain [%0.2f, %0.2f], Asset [%0.2f, %0.2f]",
                     GetEntity()->GetName().c_str(),
-                    configuration.GetMinHeightBounds(),
-                    configuration.GetMaxHeightBounds(),
+                    m_shapeConfig->GetMinHeightBounds(),
+                    m_shapeConfig->GetMaxHeightBounds(),
                     heightfieldAsset->GetMinHeight(),
                     heightfieldAsset->GetMaxHeight());
             }
@@ -102,19 +95,21 @@ namespace PhysX
             // we need to increment the reference counter here. Both of these places call release() in destructors,
             // so we need to avoid double deletion this way.
             pxHeightfield->acquireReference();
-            configuration.SetCachedNativeHeightfield(pxHeightfield);
+            m_shapeConfig->SetCachedNativeHeightfield(pxHeightfield);
 
-            InitHeightfieldCollider();
+            InitHeightfieldCollider(HeightfieldCollider::DataSource::UseCachedHeightfield);
         }
     }
 
     void HeightfieldColliderComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        InitHeightfieldCollider();
+        InitHeightfieldCollider(HeightfieldCollider::DataSource::GenerateNewHeightfield);
     }
 
     void HeightfieldColliderComponent::Activate()
     {
+        *m_shapeConfig = Utils::CreateBaseHeightfieldShapeConfiguration(GetEntityId());
+
         AZ::Data::AssetId assetId = m_bakedHeightfieldAsset.GetId();
         AZ::Data::AssetData::AssetStatus assetStatus = m_bakedHeightfieldAsset.GetStatus();
 
@@ -129,7 +124,7 @@ namespace PhysX
         }
         else
         {
-            InitHeightfieldCollider();
+            InitHeightfieldCollider(HeightfieldCollider::DataSource::GenerateNewHeightfield);
         }
     }
 
@@ -269,15 +264,15 @@ namespace PhysX
         }
     }
 
-    void HeightfieldColliderComponent::InitHeightfieldCollider()
+    void HeightfieldColliderComponent::InitHeightfieldCollider(HeightfieldCollider::DataSource heightfieldDataSource)
     {
         const AZ::EntityId entityId = GetEntityId();
 
         AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
         Physics::DefaultWorldBus::BroadcastResult(sceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-
-        m_heightfieldCollider =
-            AZStd::make_unique<HeightfieldCollider>(entityId, GetEntity()->GetName(), sceneHandle, m_colliderConfig, m_shapeConfig);
+        
+        m_heightfieldCollider = AZStd::make_unique<HeightfieldCollider>(
+            entityId, GetEntity()->GetName(), sceneHandle, m_colliderConfig, m_shapeConfig, heightfieldDataSource);
 
         ColliderComponentRequestBus::Handler::BusConnect(entityId);
         Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);

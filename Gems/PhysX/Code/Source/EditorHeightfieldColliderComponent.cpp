@@ -156,6 +156,10 @@ namespace PhysX
     {
         EditorHeightfieldColliderBus::Handler::BusConnect(GetEntityId());
 
+        m_bakingCompletion.Reset(true /*isClearDependent*/);
+        m_heightfieldAssetBakingJob.Reset(true);
+
+
         AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
         if (auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -163,7 +167,8 @@ namespace PhysX
         }
 
         m_heightfieldCollider = AZStd::make_unique<HeightfieldCollider>(
-            GetEntityId(), GetEntity()->GetName(), sceneHandle, m_colliderConfig, m_shapeConfig);
+            GetEntityId(), GetEntity()->GetName(), sceneHandle, m_colliderConfig,
+            m_shapeConfig, HeightfieldCollider::DataSource::GenerateNewHeightfield);
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
