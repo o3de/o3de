@@ -81,21 +81,36 @@ namespace AssetProcessor
 
     bool JobSortFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
     {
-        // Only the completed column has an override, because it displays time in a different format
-        // than what works best to sort.
-        if (left.column() != JobsModel::ColumnCompleted || right.column() != JobsModel::ColumnCompleted)
+        // The comparisons of completed column and the last process duration are overridden, because they display time/duration
+        // in a different format than what works best to sort.
+        if (left.column() == JobsModel::ColumnCompleted && right.column() == JobsModel::ColumnCompleted)
+        {
+            QVariant leftTime = sourceModel()->data(left, JobsModel::SortRole);
+            QVariant rightTime = sourceModel()->data(right, JobsModel::SortRole);
+
+            if (leftTime.type() != QVariant::DateTime || rightTime.type() != QVariant::DateTime)
+            {
+                return QSortFilterProxyModel::lessThan(left, right);
+            }
+
+            return leftTime.toDateTime() < rightTime.toDateTime();    
+        }
+        else if (left.column() == JobsModel::ColumnProcessDuration && right.column() == JobsModel::ColumnProcessDuration)
+        {
+            QVariant leftDuration = sourceModel()->data(left, JobsModel::SortRole);
+            QVariant rightDuration = sourceModel()->data(right, JobsModel::SortRole);
+
+            /*if (leftDuration.type() != AZ::u32 || rightTime.type() != QVariant::DateTime)
+            {
+                return QSortFilterProxyModel::lessThan(left, right);
+            }*/
+
+            return leftDuration.value<AZ::u32>() < rightDuration.value<AZ::u32>(); 
+        }
+        else
         {
             return QSortFilterProxyModel::lessThan(left, right);
         }
-        QVariant leftTime = sourceModel()->data(left, JobsModel::SortRole);
-        QVariant rightTime = sourceModel()->data(right, JobsModel::SortRole);
-
-        if (leftTime.type() != QVariant::DateTime || rightTime.type() != QVariant::DateTime)
-        {
-            return QSortFilterProxyModel::lessThan(left, right);
-        }
-
-        return leftTime.toDateTime() < rightTime.toDateTime();
     }
 } //namespace AssetProcessor
 

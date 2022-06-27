@@ -85,7 +85,7 @@ namespace AssetProcessor
                 case ColumnCompleted:
                     return tr("Completed");
                 case ColumnProcessDuration:
-                    return tr("Last Process Duration (ms)");
+                    return tr("Last Process Duration");
                 default:
                     break;
                 }
@@ -178,7 +178,28 @@ namespace AssetProcessor
                     return getItem(index.row())->m_completedTime.toString("hh:mm:ss.zzz MMM dd, yyyy");
                 }
             case ColumnProcessDuration:
-                return getItem(index.row())->m_processDuration;
+                if (role == SortRole)
+                {
+                    return getItem(index.row())->m_processDuration;
+                }
+                else
+                {
+                    AZ::u32 minutes, seconds, milliseconds = getItem(index.row())->m_processDuration;
+                    seconds = milliseconds / 1000;
+                    milliseconds = milliseconds % 1000;
+                    minutes = seconds / 60;
+                    seconds = seconds % 60;
+                    QString processDurationString = QString("%1 ms").arg(milliseconds, 3);
+                    if (seconds)
+                    {
+                        processDurationString.prepend(QString("%1 sec, ").arg(seconds, 2));
+                    }
+                    if (minutes)
+                    {
+                        processDurationString.prepend(QString("%1 min, ").arg(minutes, 2));
+                    }
+                    return processDurationString;
+                }
             default:
                 break;
             }
@@ -228,6 +249,10 @@ namespace AssetProcessor
         }
         case Qt::TextAlignmentRole:
         {
+            if (index.column() == ColumnProcessDuration)
+            {
+                return Qt::AlignRight + Qt::AlignVCenter;
+            }
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
         case statusRole:
