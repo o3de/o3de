@@ -1185,8 +1185,8 @@ namespace GraphModelIntegration
         }
         else
         {
-            // Both data types are valid so check if they match
-            dataTypesMatch = *sourceSlotDataType == *targetSlotDataType;
+            // The source slot data type must be supported by the target slot
+            dataTypesMatch = targetSlot->IsSupportedDataType(sourceSlotDataType);
         }
 
         return dataTypesMatch && !CheckForLoopback(sourceSlot->GetParentNode(), targetSlot->GetParentNode());

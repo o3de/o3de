@@ -19,6 +19,7 @@
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
+#include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <QPushButton>
 #include <QWidget>
@@ -75,6 +76,8 @@ namespace EMotionFX
         Node* GetJoint() const { return m_joint; }
         size_t GetColliderIndex() const { return m_colliderIndex; }
         PhysicsSetup::ColliderConfigType GetColliderType() const { return m_colliderType; }
+
+        void InvalidateEditorValues();
 
     signals:
         void CopyCollider(size_t index);
