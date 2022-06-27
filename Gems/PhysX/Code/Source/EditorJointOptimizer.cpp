@@ -77,12 +77,12 @@ namespace PhysX::JointLimitOptimizer
 
     D6JointLimitConfiguration D6JointLimitFitter::GetFit(const AZ::Quaternion& childLocalRotation)
     {
-        NumericalMethods::Optimization::SolverResult solverResult = NumericalMethods::Optimization::SolverBFGS(*this, m_initialValue);
-        AZStd::vector<double> xValues = solverResult.m_xValues;
-        NumericalMethods::DoublePrecisionMath::Quaternion parentLocalRotation =
+        const NumericalMethods::Optimization::SolverResult solverResult = NumericalMethods::Optimization::SolverBFGS(*this, m_initialValue);
+        const AZStd::vector<double> xValues = solverResult.m_xValues;
+        const NumericalMethods::DoublePrecisionMath::Quaternion parentLocalRotation =
             NumericalMethods::DoublePrecisionMath::Quaternion(xValues[0], xValues[1], xValues[2], xValues[3]).GetNormalized();
-        float swingLimitY = aznumeric_cast<float>(xValues[4]);
-        float swingLimitZ = aznumeric_cast<float>(xValues[5]);
+        const float swingLimitY = aznumeric_cast<float>(xValues[4]);
+        const float swingLimitZ = aznumeric_cast<float>(xValues[5]);
 
         D6JointLimitConfiguration fittedLimit;
         fittedLimit.m_parentLocalRotation = parentLocalRotation.ToSingle();
@@ -117,14 +117,14 @@ namespace PhysX::JointLimitOptimizer
     AZ::Outcome<double, NumericalMethods::Optimization::FunctionOutcome> D6JointLimitFitter::GetObjective(
         const AZStd::vector<double>& x, bool debug) const
     {
-        auto parentLocalConjugate =
+        const auto parentLocalConjugate =
             NumericalMethods::DoublePrecisionMath::Quaternion(x[0], x[1], x[2], x[3]).GetNormalized().GetConjugate();
-        double swingLimitY = fabs(x[4]);
-        double swingLimitZ = fabs(x[5]);
-        double clampedLimitY = AZ::GetClamp(swingLimitY, 0.0, aznumeric_cast<double>(AZ::Constants::Pi));
-        double clampedLimitZ = AZ::GetClamp(swingLimitZ, 0.0, aznumeric_cast<double>(AZ::Constants::Pi));
-        double tanQuarterSwingLimitY = tan(0.25f * clampedLimitY);
-        double tanQuarterSwingLimitZ = tan(0.25f * clampedLimitZ);
+        const double swingLimitY = fabs(x[4]);
+        const double swingLimitZ = fabs(x[5]);
+        const double clampedLimitY = AZ::GetClamp(swingLimitY, 0.0, aznumeric_cast<double>(AZ::Constants::Pi));
+        const double clampedLimitZ = AZ::GetClamp(swingLimitZ, 0.0, aznumeric_cast<double>(AZ::Constants::Pi));
+        const double tanQuarterSwingLimitY = tan(0.25f * clampedLimitY);
+        const double tanQuarterSwingLimitZ = tan(0.25f * clampedLimitZ);
 
         // violation term
         double objectiveViolation = 0.0;
@@ -140,15 +140,15 @@ namespace PhysX::JointLimitOptimizer
         }
 
         // volume term
-        double objectiveVolume = 0.1 * swingLimitY * swingLimitZ;
+        const double objectiveVolume = 0.1 * swingLimitY * swingLimitZ;
 
-        double weightViolation = 1.0;
-        double weightVolume = 1.0;
+        const double weightViolation = 1.0;
+        const double weightVolume = 1.0;
         if (debug)
         {
             AZ_Printf("Joint limit fitter", "limit violation term: %f, volume term: %f", objectiveViolation, objectiveVolume);
         }
-        double totalObjective = weightViolation * objectiveViolation + weightVolume * objectiveVolume;
+        const double totalObjective = weightViolation * objectiveViolation + weightVolume * objectiveVolume;
 
         return AZ::Success(totalObjective);
     }

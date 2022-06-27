@@ -11,8 +11,8 @@
 
 namespace EMotionFX
 {
-    static const int JointLimitOptimizerTotalSamples = 1000; //!< Approximate number of joint poses to sample from available motion sets.
-    static const int JointLimitOptimizerMaxSamplesPerMotion = 50; //!< Upper limit on number of samples from a single motion.
+    inline const int JointLimitOptimizerTotalSamples = 1000; //!< Approximate number of joint poses to sample from available motion sets.
+    inline const int JointLimitOptimizerMaxSamplesPerMotion = 50; //!< Upper limit on number of samples from a single motion.
 
     void OptimizeJointLimits(const PhysicsSetupManipulatorData& physicsSetupManipulatorData);
 } // namespace EMotionFX

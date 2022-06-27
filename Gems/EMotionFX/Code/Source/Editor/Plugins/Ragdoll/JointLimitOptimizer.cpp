@@ -92,8 +92,8 @@ namespace EMotionFX
         }
 
         // now do the actual sampling of rotation values
-        int numSamplesPerMotion = AZ::GetMin(JointLimitOptimizerMaxSamplesPerMotion, JointLimitOptimizerTotalSamples / numMotions);
-        int sampleCount = numMotions * numSamplesPerMotion;
+        const int numSamplesPerMotion = AZ::GetMin(JointLimitOptimizerMaxSamplesPerMotion, JointLimitOptimizerTotalSamples / numMotions);
+        const int sampleCount = numMotions * numSamplesPerMotion;
         AZStd::vector<AZ::Quaternion> sampleJointRotations;
         sampleJointRotations.reserve(sampleCount);
         for (size_t motionSetIndex = 0; motionSetIndex < numMotionSets; motionSetIndex++)

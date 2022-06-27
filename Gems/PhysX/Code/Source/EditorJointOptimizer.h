@@ -18,6 +18,8 @@ namespace PhysX
 
 namespace PhysX::JointLimitOptimizer
 {
+    //! Used to represent the extents of the two swing degrees of freedom during optimization of a PhysX D6 joint.
+    //! Double precision is used because the BFGS optimization routine may not converge in single precision.
     struct SwingValues
     {
         SwingValues(const NumericalMethods::DoublePrecisionMath::Quaternion& quaternion);
@@ -27,6 +29,10 @@ namespace PhysX::JointLimitOptimizer
         double m_tanQuarterSwingZ;
     };
 
+    //! Used to optimize the orientation and limit values of a PhysX D6 joint, based on sample joint rotations.
+    //! The fitter attempts to find an optimal limit cone using an objective function which penalizes violations of the
+    //! limit cone by the sample rotations, while simultaneously trying to minimize the size of the cone.
+    //! Double precision is used because the BFGS optimization routine may not converge in single precision.
     class D6JointLimitFitter
         : public NumericalMethods::Optimization::Function
     {
