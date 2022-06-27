@@ -19,6 +19,7 @@
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
+#include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <QPushButton>
 #include <QWidget>
