@@ -203,12 +203,12 @@ namespace AzToolsFramework
         //! Retrieve whether an Action should be hidden from Menus when disabled.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool HideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) = 0;
+        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) = 0;
 
         //! Retrieve whether an Action should be hidden from ToolBars when disabled.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool HideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) = 0;
+        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

@@ -411,7 +411,7 @@ namespace AzToolsFramework
         return actionIterator->second.GetAction();
     }
 
-    bool ActionManager::HideFromMenusWhenDisabled(const AZStd::string& actionIdentifier)
+    bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
@@ -424,7 +424,7 @@ namespace AzToolsFramework
 
     }
 
-    bool ActionManager::HideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier)
+    bool ActionManager::GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
