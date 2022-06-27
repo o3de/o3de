@@ -192,7 +192,8 @@ namespace PhysXEditorTests
 
             // Notify the Editor entity that the heightfield data changed so that it refreshes itself before we build
             // the corresponding game entity.
-            Physics::HeightfieldProviderNotificationBus::Broadcast(
+            Physics::HeightfieldProviderNotificationBus::Event(
+                m_editorEntity->GetId(),
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
@@ -202,7 +203,8 @@ namespace PhysXEditorTests
             m_gameEntity->Activate();
 
             // Send the notification a second time so that the game entity gets refreshed as well.
-            Physics::HeightfieldProviderNotificationBus::Broadcast(
+            Physics::HeightfieldProviderNotificationBus::Event(
+                m_gameEntity->GetId(),
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
