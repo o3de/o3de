@@ -417,7 +417,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    MenuManagerOperationResult MenuManager::QueueRefreshForMenuContainingAction(const AZStd::string& actionIdentifier)
+    MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier)
     {
         for (const AZStd::string& menuIdentifier : m_actionsToMenusMap[actionIdentifier])
         {
@@ -475,7 +475,7 @@ namespace AzToolsFramework
 
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
-        QueueRefreshForMenuContainingAction(actionIdentifier);
+        QueueRefreshForMenusContainingAction(actionIdentifier);
     }
 
 } // namespace AzToolsFramework

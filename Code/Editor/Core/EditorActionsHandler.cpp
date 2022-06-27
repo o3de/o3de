@@ -278,6 +278,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Export Selected Objects";
         actionProperties.m_description = "Export Selected Objects.";
         actionProperties.m_category = "Game";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.exportSelectedObjects", actionProperties,
@@ -288,7 +289,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.exportSelectedObjects", IsEntitySelected);
-
         m_actionManagerInterface->AddActionToUpdater(EntitySelectionChangedUpdaterIdentifier, "o3de.action.game.exportSelectedObjects");
     }
 
@@ -618,7 +618,6 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, GameDebuggingMenuIdentifier, 1100);
         {
         }
-
     }
 
     // Help - Search Documentation Widget

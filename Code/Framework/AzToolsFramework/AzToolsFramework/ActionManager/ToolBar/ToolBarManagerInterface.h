@@ -120,6 +120,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
 
+        //! Queues up all toolbars containing the action provided for a refresh at the end of this tick.
+        //! @param actionIdentifier The identifier for the action triggering the refresh for toolbars containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
+
         //! Refreshes all toolBar that were queued up by QueueMenuRefresh.
         virtual void RefreshToolBars() = 0;
     };

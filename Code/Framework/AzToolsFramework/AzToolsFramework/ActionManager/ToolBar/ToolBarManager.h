@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 
@@ -26,6 +27,7 @@ namespace AzToolsFramework
         : private ToolBarManagerInterface
         , private ToolBarManagerInternalInterface
         , private AZ::SystemTickBus::Handler
+        , private ActionManagerNotificationBus::Handler
     {
     public:
         ToolBarManager();
@@ -51,12 +53,18 @@ namespace AzToolsFramework
 
         // ToolBarManagerInternalInterface overrides ...
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
+        ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) override;
         void RefreshToolBars() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
 
+        // ActionManagerNotificationBus overrides ...
+        void OnActionStateChanged(AZStd::string actionIdentifier) override;
+
         AZStd::unordered_map<AZStd::string, EditorToolBar> m_toolBars;
+
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionsToToolBarsMap;
 
         AZStd::unordered_set<AZStd::string> m_toolBarsToRefresh;
 

@@ -128,6 +128,11 @@ namespace AzToolsFramework
                 {
                     if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
                     {
+                        if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(elem.second.m_identifier))
+                        {
+                            continue;
+                        }
+
                         m_toolBar->addAction(action);
                     }
                     break;

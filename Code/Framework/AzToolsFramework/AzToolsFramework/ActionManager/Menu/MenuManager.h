@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
         // MenuManagerInterface overrides ...
         MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
-        MenuManagerOperationResult QueueRefreshForMenuContainingAction(const AZStd::string& actionIdentifier) override;
+        MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) override;
         void RefreshMenus() override;
         void RefreshMenuBars() override;

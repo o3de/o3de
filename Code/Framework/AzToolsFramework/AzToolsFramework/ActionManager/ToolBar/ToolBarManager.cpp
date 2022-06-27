@@ -26,12 +26,16 @@ namespace AzToolsFramework
         AZ::Interface<ToolBarManagerInternalInterface>::Register(this);
 
         AZ::SystemTickBus::Handler::BusConnect();
+        ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorToolBar::Initialize();
     }
 
     ToolBarManager::~ToolBarManager()
     {
+        ActionManagerNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
+
         AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
     }
@@ -81,7 +85,8 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddAction(sortIndex, actionIdentifier);
-        toolBarIterator->second.RefreshToolBar();
+        m_actionsToToolBarsMap[actionIdentifier].insert(toolBarIdentifier);
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
     
@@ -112,7 +117,8 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddActionWithSubMenu(sortIndex, actionIdentifier, subMenuIdentifier);
-        toolBarIterator->second.RefreshToolBar();
+        m_actionsToToolBarsMap[actionIdentifier].insert(toolBarIdentifier);
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
 
@@ -148,9 +154,10 @@ namespace AzToolsFramework
             }
 
             toolBarIterator->second.AddAction(pair.second, pair.first);
+            m_actionsToToolBarsMap[pair.first].insert(toolBarIdentifier);
         }
 
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         if (couldNotAddAction)
         {
@@ -187,7 +194,9 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.RemoveAction(actionIdentifier);
-        toolBarIterator->second.RefreshToolBar();
+        m_actionsToToolBarsMap[actionIdentifier].erase(toolBarIdentifier);
+
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
 
@@ -223,9 +232,10 @@ namespace AzToolsFramework
             }
 
             toolBarIterator->second.RemoveAction(actionIdentifier);
+            m_actionsToToolBarsMap[actionIdentifier].erase(toolBarIdentifier);
         }
 
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         if (couldNotRemoveAction)
         {
@@ -246,7 +256,7 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
 
@@ -266,7 +276,7 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddWidget(sortIndex, widget);
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         return AZ::Success();
     }
@@ -313,6 +323,16 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    ToolBarManagerOperationResult ToolBarManager::QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier)
+    {
+        for (const AZStd::string& toolBarIdentifier : m_actionsToToolBarsMap[actionIdentifier])
+        {
+            m_toolBarsToRefresh.insert(toolBarIdentifier);
+        }
+
+        return AZ::Success();
+    }
+
     void ToolBarManager::RefreshToolBars()
     {
         for (const AZStd::string& toolBarIdentifier : m_toolBarsToRefresh)
@@ -327,10 +347,14 @@ namespace AzToolsFramework
         m_toolBarsToRefresh.clear();
     }
 
-    // SystemTickBus overrides ...
     void ToolBarManager::OnSystemTick()
     {
         RefreshToolBars();
+    }
+
+    void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
+    {
+        QueueRefreshForToolBarsContainingAction(actionIdentifier);
     }
 
 } // namespace AzToolsFramework
