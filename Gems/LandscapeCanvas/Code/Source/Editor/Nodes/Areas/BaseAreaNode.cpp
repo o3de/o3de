@@ -84,7 +84,7 @@ namespace LandscapeCanvas
             PLACEMENT_BOUNDS_SLOT_ID,
             PLACEMENT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
             { boundsDataType, invalidEntityDataType },
-            boundsDataType->GetDefaultValue(),
+            invalidEntityDataType->GetDefaultValue(),
             PLACEMENT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(

@@ -31,16 +31,4 @@ namespace LandscapeCanvas
     static const AZ::Uuid BoundsTypeId = "{746398F1-0325-4A56-A544-FEF561C24E7C}";
     static const AZ::Uuid GradientTypeId = "{F38CF64A-1EB6-41FA-A2CC-73D19B48E59E}";
     static const AZ::Uuid AreaTypeId = "{FE1878D9-D445-4652-894B-D6348706EEAE}";
-
-    class LandscapeCanvasDataType : public GraphModel::DataType
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(LandscapeCanvasDataType, AZ::SystemAllocator, 0);
-        AZ_RTTI(LandscapeCanvasDataType, "{BD06082C-5CCA-4FB6-B881-6927B82A2142}", GraphModel::DataType);
-
-        static void Reflect(AZ::ReflectContext* reflection);
-
-        LandscapeCanvasDataType() = default;
-        LandscapeCanvasDataType(Enum typeEnum, AZ::Uuid typeUuid, AZStd::any defaultValue, AZStd::string_view typeDisplayName, AZStd::string_view cppTypeName);
-    };    
 }
