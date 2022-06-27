@@ -19,13 +19,4 @@ set(FILES
     Common/OrbitCamera.h
     Common/OrthographicCamera.cpp
     Common/OrthographicCamera.h
-    Common/RenderUtil.cpp
-    Common/RenderUtil.h
-    Common/RotateManipulator.cpp
-    Common/RotateManipulator.h
-    Common/ScaleManipulator.cpp
-    Common/ScaleManipulator.h
-    Common/TransformationManipulator.h
-    Common/TranslateManipulator.cpp
-    Common/TranslateManipulator.h
 )
