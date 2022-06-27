@@ -93,6 +93,10 @@ namespace AssetProcessor
 
             case Qt::TextAlignmentRole:
             {
+                if (section == ColumnProcessDuration)
+                {
+                    return Qt::AlignRight + Qt::AlignVCenter;
+                }
                 return Qt::AlignLeft + Qt::AlignVCenter;
             }
 
@@ -192,6 +196,8 @@ namespace AssetProcessor
                     if (processDuration.hour() > 0)
                     {
                         return processDuration.toString("hh 'hr, 'mm' min, 'ss' sec, 'zzz' ms'");
+                        /*"hh 'hr, 'mm' min, 'ss' sec, 'zzz' ms'"*/
+                        /*"zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'"*/
                     }
                     if (processDuration.minute() > 0)
                     {
