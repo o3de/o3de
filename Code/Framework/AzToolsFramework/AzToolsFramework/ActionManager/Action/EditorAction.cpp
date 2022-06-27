@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -156,6 +157,8 @@ namespace AzToolsFramework
             // Refresh enabled state.
             m_action->setEnabled(m_enabledStateCallback());
         }
+
+        ActionManagerNotificationBus::Broadcast(&ActionManagerNotificationBus::Handler::OnActionStateChanged, m_identifier);
     }
 
     bool EditorAction::IsCheckable()

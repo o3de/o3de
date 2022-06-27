@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TickBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
@@ -26,6 +27,7 @@ namespace AzToolsFramework
         : private MenuManagerInterface
         , private MenuManagerInternalInterface
         , private AZ::SystemTickBus::Handler
+        , private ActionManagerNotificationBus::Handler
     {
     public:
         MenuManager();
@@ -65,6 +67,9 @@ namespace AzToolsFramework
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
+
+        // ActionManagerNotificationBus overrides ...
+        void OnActionStateChanged(AZStd::string actionIdentifier) override;
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;

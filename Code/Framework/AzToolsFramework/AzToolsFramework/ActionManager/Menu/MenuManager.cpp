@@ -24,6 +24,7 @@ namespace AzToolsFramework
         AZ::Interface<MenuManagerInternalInterface>::Register(this);
 
         AZ::SystemTickBus::Handler::BusConnect();
+        ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorMenu::Initialize();
         EditorMenuBar::Initialize();
@@ -31,6 +32,7 @@ namespace AzToolsFramework
 
     MenuManager::~MenuManager()
     {
+        ActionManagerNotificationBus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
 
         AZ::Interface<MenuManagerInternalInterface>::Unregister(this);
@@ -469,6 +471,11 @@ namespace AzToolsFramework
     {
         RefreshMenus();
         RefreshMenuBars();
+    }
+
+    void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
+    {
+        QueueRefreshForMenuContainingAction(actionIdentifier);
     }
 
 } // namespace AzToolsFramework
