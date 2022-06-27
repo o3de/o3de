@@ -8,7 +8,6 @@
 
 #include "RemoteToolsJoinThread.h"
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
@@ -39,11 +38,11 @@ namespace RemoteTools
     {
         AZStd::string persistentName = "O3DE";
 
-        char procPath[AZ_MAX_PATH_LEN];
-        AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(procPath, AZ_MAX_PATH_LEN);
-        if (ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success)
+        char procPath[AZ::IO::MaxPathLength];
+        AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(AZStd::data(procPath), AZStd::size(procPath));
+        if (ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success && ret.m_pathIncludesFilename)
         {
-            AzFramework::StringFunc::Path::GetFileName(procPath, persistentName);
+            persistentName = AZ::IO::PathView(procPath).Filename().Native();
         }
 
         return persistentName;

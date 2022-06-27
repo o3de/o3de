@@ -11,8 +11,9 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/EBus.h>
-#include <ScriptCanvas/Core/Core.h>
 #include <AzFramework/Network/IRemoteTools.h>
+
+#include <ScriptCanvas/Core/Core.h>
 #include <Debugger/Bus.h>
 #include <Debugger/Messages/Notify.h>
 

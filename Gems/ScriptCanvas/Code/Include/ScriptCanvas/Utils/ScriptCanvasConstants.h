@@ -13,5 +13,5 @@ namespace ScriptCanvas
 {
     static const AZ::Name RemoteToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools");
     static constexpr AZ::Crc32 RemoteToolsKey("ScriptCanvasRemoteTools");
-    static const uint16_t RemoteToolsPort = 6787;
+    static constexpr uint16_t RemoteToolsPort = 6787;
 }

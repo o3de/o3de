@@ -109,8 +109,8 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator, 0);
         AZ_TYPE_INFO(RemoteToolsEndpointInfo, "{DD0E9B2A-3B25-43B1-951E-CACCEC5D6754}");
 
-        RemoteToolsEndpointInfo(const AZStd::string& displayName = "", AZ::u32 networkId = 0)
-            : m_displayName(displayName)
+        explicit RemoteToolsEndpointInfo(AZStd::string displayName = AZStd::string{}, AZ::u32 networkId = 0)
+            : m_displayName(AZStd::move(displayName))
             , m_persistentId(0)
             , m_networkId(networkId)
         {

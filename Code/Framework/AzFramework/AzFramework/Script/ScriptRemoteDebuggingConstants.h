@@ -13,5 +13,5 @@ namespace AzFramework
 {
     static const AZ::Name LuaToolsName = AZ::Name::FromStringLiteral("LuaRemoteTools");
     static constexpr AZ::Crc32 LuaToolsKey("LuaRemoteTools");
-    static const uint16_t LuaToolsPort = 6777;
+    static constexpr uint16_t LuaToolsPort = 6777;
 }

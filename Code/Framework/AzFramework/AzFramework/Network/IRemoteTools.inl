@@ -97,7 +97,7 @@ namespace AzFramework
 
     inline void RemoteToolsEndpointInfo::SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId)
     {
-        m_displayName = displayName;
+        m_displayName = AZStd::move(displayName);
         m_persistentId = persistentId;
         m_networkId = networkId;
     }

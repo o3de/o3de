@@ -38,7 +38,7 @@ namespace RemoteTools
 
         AzFramework::RemoteToolsEndpointContainer m_availableTargets;
         AzFramework::RemoteToolsEndpointInfo m_lastTarget;
-        AZStd::vector<char, AZ::OSStdAllocator> m_tmpInboundBuffer;
+        AZStd::vector<AZStd::byte> m_tmpInboundBuffer;
         uint32_t m_tmpInboundBufferPos;
 
         AzFramework::RemoteToolsEndpointStatusEvent m_endpointJoinedEvent;

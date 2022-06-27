@@ -97,7 +97,7 @@ namespace LUADebugger
         static void Reflect(AZ::ReflectContext* reflection);
 
      private:
-        AzFramework::IRemoteTools* m_remoteTools;
+        AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 };
 

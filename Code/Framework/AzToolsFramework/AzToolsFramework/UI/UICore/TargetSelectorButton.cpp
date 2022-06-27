@@ -134,7 +134,7 @@ namespace AzToolsFramework
         auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
         if (remoteToolsInterface)
         {
-            AzFramework::RemoteToolsEndpointInfo info = AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(m_remoteToolsKey);
+            AzFramework::RemoteToolsEndpointInfo info = remoteToolsInterface->GetDesiredEndpoint(m_remoteToolsKey);
             if (!info.GetPersistentId())
             {
                 this->setIcon(QIcon(":/general/target_none"));
@@ -151,7 +151,7 @@ namespace AzToolsFramework
 
             this->setText(QString("Target: %1").arg(info.GetDisplayName()));
 
-            if (AzFramework::RemoteToolsInterface::Get()->IsEndpointOnline(m_remoteToolsKey, info.GetNetworkId()))
+            if (remoteToolsInterface->IsEndpointOnline(m_remoteToolsKey, info.GetNetworkId()))
             {
                 this->setIcon(QIcon(":/general/target_connected"));
                 return;
