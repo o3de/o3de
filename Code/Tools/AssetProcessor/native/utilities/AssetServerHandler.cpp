@@ -56,6 +56,10 @@ namespace AssetProcessor
                 {
                     return AssetServerMode::Client;
                 }
+                else if (assetCacheServerModeValue != "inactive")
+                {
+                    AZ_Warning(AssetProcessor::DebugChannel, false, "Unknown mode for 'assetCacheServerMode' (%s)", assetCacheServerModeValue.c_str());
+                }
             }
         }
 
@@ -159,52 +163,43 @@ namespace AssetProcessor
             // save the configuration
             rapidjson::Document recognizerDoc;
             recognizerDoc.Parse(jsonBuffer.c_str());
-
-            rapidjson::Value amazon(rapidjson::Type::kObjectType);
-            rapidjson::Value asssetProcessor(rapidjson::Type::kObjectType);
-            rapidjson::Value settings(rapidjson::Type::kObjectType);
-            rapidjson::Value server(rapidjson::Type::kObjectType);
-
-            rapidjson::Document assetServerCacheDoc;
-            assetServerCacheDoc.SetObject();
-
-            settings.AddMember("Server", recognizerDoc.GetObject(), assetServerCacheDoc.GetAllocator());
-            asssetProcessor.AddMember("Settings", settings, assetServerCacheDoc.GetAllocator());
-            amazon.AddMember("AssetProcessor", asssetProcessor, assetServerCacheDoc.GetAllocator());
-            assetServerCacheDoc.AddMember("Amazon", amazon, assetServerCacheDoc.GetAllocator());
-
-            AZ::JsonSerializationUtils::WriteJsonFile(assetServerCacheDoc, settingsFilePath.LexicallyNormal().c_str());
+            AZ::JsonSerializationUtils::WriteJsonFile(recognizerDoc, settingsFilePath.LexicallyNormal().c_str());
         }
         else if (m_assetCachingMode == AssetServerMode::Client)
         {
             // load the configuration
             if (!AZ::IO::SystemFile::Exists(settingsFilePath.c_str()))
             {
+                // no log since it is okay to not have a settings file
                 return;
             }
 
             auto result = AZ::JsonSerializationUtils::ReadJsonFile(settingsFilePath.LexicallyNormal().c_str());
             if (!result.IsSuccess())
             {
+                AZ_Warning(AssetProcessor::DebugChannel, false, "ACS settings file failed with (%s)", result.GetError().c_str());
                 return;
             }
 
-            rapidjson::Document& configDoc = result.GetValue();
-            auto* serverSettings = rapidjson::Pointer("/Amazon/AssetProcessor/Settings/Server").Get(configDoc);
-            if (!serverSettings)
+            rapidjson::StringBuffer stringBuffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(stringBuffer);
+            if (result.GetValue().Accept(writer) == false)
             {
+                AZ_Warning(AssetProcessor::DebugChannel, false, "ACS failed to load settings file (%s)", settingsFilePath.c_str());
                 return;
             }
 
             RecognizerContainer recognizerContainer;
-            AZ::JsonDeserializerSettings settings;
-            auto jsonResult = AZ::JsonSerialization::Load(recognizerContainer, *serverSettings, settings);
-            if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+            if (!AssetProcessor::PlatformConfiguration::ConvertFromJson(stringBuffer.GetString(), recognizerContainer))
             {
+                AZ_Warning(AssetProcessor::DebugChannel, false, "ACS failed to convert settings file (%s)", settingsFilePath.c_str());
                 return;
             }
 
             recognizerConfiguration->AddAssetCacheRecognizerContainer(recognizerContainer);
+
+            // TODO: send notification that the asset cache has been updated
+            // TODO: start file watcher for settings file so that clients can be updated if the server saves out settings.json again during runtime?
         }
     }
 
@@ -226,7 +221,16 @@ namespace AssetProcessor
 
     void AssetServerHandler::SetServerAddress(const AZStd::string& address)
     {
+        AZStd::string previousServerAddress = m_serverAddress;
         m_serverAddress = address;
+        if (!IsServerAddressValid())
+        {
+            m_serverAddress = previousServerAddress;
+            AZ_Error(AssetProcessor::DebugChannel, false,
+                "Server address (%s) is invalid! Reverting back to (%s)",
+                address.c_str(),
+                previousServerAddress.c_str());
+        }
     }
 
     bool AssetServerHandler::RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams)
@@ -238,7 +242,7 @@ namespace AssetProcessor
         QString archiveAbsFilePath = ComputeArchiveFilePath(builderParams);
         if (archiveAbsFilePath.isEmpty())
         {
-            AZ_Error(AssetProcessor::DebugChannel, false, "Extracting archive operation failed. Archive Absolute Path is empty. \n");
+            AZ_Error(AssetProcessor::DebugChannel, false, "Extracting archive operation failed. Archive Absolute Path is empty.");
             return false;
         }
 

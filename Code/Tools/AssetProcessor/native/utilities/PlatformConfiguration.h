@@ -69,7 +69,7 @@ namespace AssetProcessor
     struct AssetRecognizer
     {
         AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(AssetPlatformSpec, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
+        AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
 
         AssetRecognizer() = default;
 
@@ -377,6 +377,7 @@ namespace AssetProcessor
         bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) override;
 
         static bool ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText);
+        static bool ConvertFromJson(const AZStd::string& jsonText, RecognizerContainer& recognizerContainer);
 
         /** returns true if the config is valid.
         * configs are considered invalid if critical information is missing.

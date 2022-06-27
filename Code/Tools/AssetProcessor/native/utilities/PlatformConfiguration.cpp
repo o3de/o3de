@@ -1230,14 +1230,47 @@ namespace AssetProcessor
         return AZStd::nullopt;
     }
 
+    // used to save our the AssetCacheServer settings to a remote location
+    struct AssetCacheServerMatcher
+    {
+        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AssetCacheServerMatcher, "{329A59C9-755E-4FA9-AADB-05C50AC62FD5}");
+
+        AZStd::string m_name;
+        AZStd::string m_glob;
+        AZStd::string m_pattern;
+        AZ::Uuid m_productAssetType = AZ::Uuid::CreateNull();
+        bool m_checkServer = false;
+    };
+
     bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
     {
         AZ::JsonSerializerSettings settings;
         AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         settings.m_registrationContext = nullptr;
 
+        AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
+        
+        for (const auto& recognizer : recognizerContainer)
+        {
+            AssetCacheServerMatcher matcher;
+            matcher.m_name = recognizer.first;
+            matcher.m_checkServer = recognizer.second.m_checkServer;
+            matcher.m_productAssetType = recognizer.second.m_productAssetType;
+
+            if (recognizer.second.m_patternMatcher.GetBuilderPattern().m_type == AssetBuilderSDK::AssetBuilderPattern::Wildcard)
+            {
+                matcher.m_glob = recognizer.second.m_patternMatcher.GetBuilderPattern().m_pattern;
+            }
+            else if (recognizer.second.m_patternMatcher.GetBuilderPattern().m_type == AssetBuilderSDK::AssetBuilderPattern::Regex)
+            {
+                matcher.m_pattern = recognizer.second.m_patternMatcher.GetBuilderPattern().m_pattern;
+            }
+            assetCacheServerMatcherMap.insert({"ACS " + recognizer.first, matcher});
+        }
+
         rapidjson::Document jsonDocument;
-        auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), recognizerContainer, settings);
+        auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), assetCacheServerMatcherMap, settings);
         if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
         {
             return false;
@@ -1245,6 +1278,48 @@ namespace AssetProcessor
 
         auto saveToFileOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDocument, jsonText);
         return saveToFileOutcome.IsSuccess();
+    }
+
+    bool PlatformConfiguration::ConvertFromJson(const AZStd::string& jsonText, RecognizerContainer& recognizerContainer)
+    {
+        rapidjson::Document assetCacheServerMatcherDoc;
+        assetCacheServerMatcherDoc.Parse(jsonText.c_str());
+        if (assetCacheServerMatcherDoc.HasParseError())
+        {
+            return false;
+        }
+
+        AZ::JsonSerializerSettings settings;
+        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        settings.m_registrationContext = nullptr;
+
+        AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
+        auto resultCode = AZ::JsonSerialization::Load(assetCacheServerMatcherMap, assetCacheServerMatcherDoc, {});        
+        if (!resultCode.HasDoneWork())
+        {
+            return false;
+        }
+
+        recognizerContainer.clear();
+        for (const auto& matcher : assetCacheServerMatcherMap)
+        {
+            AssetRecognizer assetRecognizer;
+            assetRecognizer.m_checkServer = matcher.second.m_checkServer;
+            assetRecognizer.m_name = matcher.second.m_name;
+            assetRecognizer.m_productAssetType = matcher.second.m_productAssetType;
+
+            if (!matcher.second.m_glob.empty())
+            {
+                assetRecognizer.m_patternMatcher = { matcher.second.m_glob , AssetBuilderSDK::AssetBuilderPattern::Wildcard };
+            }
+            else if (!matcher.second.m_pattern.empty())
+            {
+                assetRecognizer.m_patternMatcher = { matcher.second.m_pattern , AssetBuilderSDK::AssetBuilderPattern::Regex };
+            }
+            recognizerContainer.insert({ "ACS " + assetRecognizer.m_name, assetRecognizer });
+        }
+
+        return !recognizerContainer.empty();
     }
 
     void PlatformConfiguration::Reflect(AZ::ReflectContext* context)
@@ -1255,6 +1330,7 @@ namespace AssetProcessor
 
             serializeContext->Class<AssetInternalSpec>()->Version(0);                
 
+            // needs to serialize in/out 'glob' and 'pattern'
             serializeContext->Class<AssetRecognizer>()->Version(0)
                 ->Field("checkServer", &AssetRecognizer::m_checkServer)
                 ->Field("isCritical", &AssetRecognizer::m_isCritical)
@@ -1268,8 +1344,16 @@ namespace AssetProcessor
                 ->Field("testLockSource", &AssetRecognizer::m_testLockSource)
                 ->Field("version", &AssetRecognizer::m_version);
 
+            serializeContext->Class<AssetCacheServerMatcher>()->Version(0)
+                ->Field("name", &AssetCacheServerMatcher::m_name)
+                ->Field("glob", &AssetCacheServerMatcher::m_glob)
+                ->Field("pattern", &AssetCacheServerMatcher::m_pattern)
+                ->Field("productAssetType", &AssetCacheServerMatcher::m_productAssetType)
+                ->Field("checkServer", &AssetCacheServerMatcher::m_checkServer);
+
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetRecognizer>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetInternalSpec>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher>>();
         }
     }
 

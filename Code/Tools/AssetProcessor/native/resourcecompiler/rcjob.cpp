@@ -569,7 +569,7 @@ namespace AssetProcessor
                                 }
                             }
                         }
-                        else if (assetServerMode == AssetServerMode::Server)
+                        else if (assetServerMode == AssetServerMode::Client)
                         {
                             // running as client, check with the server whether it has already
                             // processed this asset, if not or if the operation fails then process locally
