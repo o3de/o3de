@@ -10,6 +10,7 @@
 #include <AzCore/std/ranges/all_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/ranges_functional.h>
+#include <AzCore/std/typetraits/is_reference.h>
 
 namespace AZStd::ranges
 {
