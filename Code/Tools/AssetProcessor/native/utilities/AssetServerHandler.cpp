@@ -197,9 +197,6 @@ namespace AssetProcessor
             }
 
             recognizerConfiguration->AddAssetCacheRecognizerContainer(recognizerContainer);
-
-            // TODO: send notification that the asset cache has been updated
-            // TODO: start file watcher for settings file so that clients can be updated if the server saves out settings.json again during runtime?
         }
     }
 
