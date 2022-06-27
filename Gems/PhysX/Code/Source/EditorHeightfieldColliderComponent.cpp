@@ -67,7 +67,8 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnConfigurationChanged)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, "Use Baked Heightfield", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
+                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, "Use Baked Heightfield",
+                        "Selects between a dynamically generated heightfield or a prebaked one. Note: This affects only game time heightfields")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnToggleBakedHeightfield)
 
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Heightfield", "Bake Heightfield")
@@ -77,7 +78,8 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::MultiLineEdit, &EditorHeightfieldColliderComponent::m_bakedHeightfieldRelativePath, "bakedHeightfieldRelativePath", "bakedHeightfieldRelativePath")
+                        AZ::Edit::UIHandlers::MultiLineEdit, &EditorHeightfieldColliderComponent::m_bakedHeightfieldRelativePath,
+                        "Baked Heightfield Relative Path", "Path to the baked heightfield asset")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
 
@@ -357,7 +359,7 @@ namespace PhysX
 
         if (!checkedOutSuccessfully)
         {
-            AZ_Error("CubeMapCapture", false, "Source control checkout failed for file [%s]", heightfieldFullPath.c_str());
+            AZ_Error("PhysX", false, "Source control checkout failed for file [%s]", heightfieldFullPath.c_str());
             return false;
         }
 
