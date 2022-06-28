@@ -188,9 +188,6 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        EntityList newEntities;
-
-                        // TODO - Add relevant comment.
                         bool instanceDomGenerated = m_instanceDomGenerator.GenerateInstanceDomAccordingToCurrentFocus(
                             instanceToUpdate, instanceDomAccordingToFocus);
                         if (!instanceDomGenerated)
@@ -204,6 +201,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
+                        EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomAccordingToFocus,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
