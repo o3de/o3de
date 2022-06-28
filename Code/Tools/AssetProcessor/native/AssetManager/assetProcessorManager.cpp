@@ -267,7 +267,12 @@ namespace AssetProcessor
         JobInfo jobInfo;
 
         bool hasSpace = false;
-        AssetProcessor::DiskSpaceInfoBus::BroadcastResult(hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, m_cacheRootDir.absolutePath().toUtf8().data(), 0, false);
+        auto* diskSpaceInfoBus = AZ::Interface<IDiskSpaceInfo>::Get();
+
+        if(diskSpaceInfoBus)
+        {
+            hasSpace = diskSpaceInfoBus->CheckSufficientDiskSpace(0, false);
+        }
 
         if (!hasSpace)
         {
