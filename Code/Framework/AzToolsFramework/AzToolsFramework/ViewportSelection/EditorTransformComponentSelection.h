@@ -33,7 +33,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
-namespace AzToolsFramework  
+namespace AzToolsFramework
 {
     namespace ViewportUi
     {

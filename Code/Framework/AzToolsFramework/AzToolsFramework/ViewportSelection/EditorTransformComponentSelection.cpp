@@ -2569,7 +2569,7 @@ namespace AzToolsFramework
                 m_selectedEntityIds.erase(focusRoot);
             }
         }
-        
+
         // do not create manipulators for any entities marked as read only
         if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
