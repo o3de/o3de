@@ -557,6 +557,8 @@ set(FILES
     ViewportUi/ViewportUiCluster.cpp
     ViewportUi/ViewportUiSwitcher.h
     ViewportUi/ViewportUiSwitcher.cpp
+    ViewportUi/ViewportUiSwitcherManager.h
+    ViewportUi/ViewportUiSwitcherManager.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h

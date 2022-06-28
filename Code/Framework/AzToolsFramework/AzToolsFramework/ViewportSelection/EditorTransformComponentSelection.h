@@ -33,8 +33,13 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
-namespace AzToolsFramework
+namespace AzToolsFramework  
 {
+    namespace ViewportUi
+    {
+        class ViewportSwitcherManager;
+    }
+
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -111,6 +116,20 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
     };
 
+    struct SwitcherCluster
+    {
+        SwitcherCluster() = default;
+        // disable copying and moving (implicit)
+        SwitcherCluster(const SwitcherCluster&) = delete;
+        SwitcherCluster& operator=(const SwitcherCluster&) = delete;
+
+        ViewportUi::SwitcherId m_switcherId; //!< Component mode switcher id.
+        AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of component mode switcher button ids.
+    };
+
+    //! Exposed to the viewport manager
+    ViewportUi::ButtonId RegisterSwitcherButton(ViewportUi::SwitcherId switcherId, const char* name, const char* iconName);
+
     //! Grouping of viewport ui related state for aligning transforms to a grid.
     struct SnappingCluster
     {
@@ -183,6 +202,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateSwitcherCluster();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
@@ -346,7 +366,9 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        SwitcherCluster m_switcherCluster; //!< Related viewport ui state for controlling the component mode switcher.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
+        AZStd::unique_ptr<ViewportUi::ViewportSwitcherManager> m_viewportSwitcherManager;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

@@ -38,6 +38,7 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiSwitcherManager.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
@@ -475,6 +476,16 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        return buttonId;
+    }
+
+    ViewportUi::ButtonId RegisterSwitcherButton(const ViewportUi::SwitcherId switcherId, const char* name, const char* iconName)
+    {
+        ViewportUi::ButtonId buttonId;
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, switcherId,
+            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName), name);
 
         return buttonId;
     }
@@ -1028,6 +1039,7 @@ namespace AzToolsFramework
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
+        CreateSwitcherCluster();
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
@@ -2554,7 +2566,7 @@ namespace AzToolsFramework
                 m_selectedEntityIds.erase(focusRoot);
             }
         }
-
+        
         // do not create manipulators for any entities marked as read only
         if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
         {
@@ -2727,6 +2739,19 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
+    }
+
+    void EditorTransformComponentSelection::CreateSwitcherCluster()
+    {
+        // Create the cluster for the switcher
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_switcherCluster.m_switcherId, ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
+            ViewportUi::Alignment::TopLeft);
+
+        // Register the switcher cluster with the switcher manager
+        m_viewportSwitcherManager = AZStd::make_unique<ViewportUi::ViewportSwitcherManager>(&m_switcherCluster);
+ 
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
