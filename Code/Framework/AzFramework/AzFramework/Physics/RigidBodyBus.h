@@ -34,6 +34,8 @@ namespace Physics
         virtual AZ::Vector3 GetCenterOfMassWorld() const = 0;
         virtual AZ::Vector3 GetCenterOfMassLocal() const = 0;
 
+        virtual AZ::Matrix3x3 GetInertiaWorld() const = 0;
+        virtual AZ::Matrix3x3 GetInertiaLocal() const = 0;
         virtual AZ::Matrix3x3 GetInverseInertiaWorld() const = 0;
         virtual AZ::Matrix3x3 GetInverseInertiaLocal() const = 0;
 

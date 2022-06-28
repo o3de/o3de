@@ -134,7 +134,7 @@ namespace ScriptCanvasEditor
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
-        const char* className = m_className.toUtf8().data();
+        const AZStd::string className = GetClassMethodName();
         if (behaviorContext->m_classes.contains(className))
         {
             auto behaviorClass = behaviorContext->m_classes.find(className);
@@ -305,8 +305,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path CustomNodePaletteTreeItem::GetTranslationDataPath() const
     {
-        AZStd::string filename = AZStd::string::format("%s_%s", GetInfo().m_categoryPath.c_str(), GetName().toUtf8().data());
-        filename = GraphCanvas::TranslationKey::Sanitize(filename);
+        AZStd::string filename =
+            ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(GetName().toUtf8().data(), GetInfo().m_typeId);
 
         return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::CustomNodePath) / filename;
     }

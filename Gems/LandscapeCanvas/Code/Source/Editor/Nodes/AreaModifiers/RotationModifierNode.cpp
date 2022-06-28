@@ -50,21 +50,21 @@ namespace LandscapeCanvas
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             BaseAreaModifierNode::INBOUND_GRADIENT_X_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

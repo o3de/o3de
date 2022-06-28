@@ -463,26 +463,6 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnFolderRemoved(QString folderPath)
-    {
-        QList<AssetProcessor::QueueElementID> elementsToRemove;
-        for (int index = 0; index < m_cachedJobs.size(); ++index)
-        {
-            if (m_cachedJobs[index]->m_elementId.GetInputAssetName().startsWith(folderPath, Qt::CaseSensitive))
-            {
-                elementsToRemove.push_back(m_cachedJobs[index]->m_elementId);
-            }
-        }
-
-        // now that we've collected all the elements to remove, we can remove them.  
-        // Doing it this way avoids problems with mutating these cache structures while iterating them.
-        for (const AssetProcessor::QueueElementID& removal : elementsToRemove)
-        {
-            RemoveJob(removal);
-        }
-
-    }
-
     void JobsModel::OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo)
     {
         RemoveJob(QueueElementID(jobInfo.m_sourceFile.c_str(), jobInfo.m_platform.c_str(), jobInfo.m_jobKey.c_str()));
