@@ -272,7 +272,7 @@ namespace EMotionFX
                 // Add root joint to motion data when root motion extraction rule exsits.
                 if (rootMotionExtractionRule && boneNodeIndex == rootBoneNodeIndex)
                 {
-                    rootJointDataIndex = motionData->AddJoint(it->first.GetName(), Transform::CreateIdentity(), Transform::CreateIdentity());
+                    rootJointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
                 }
 
                 // Currently only get the first (one) AnimationData
