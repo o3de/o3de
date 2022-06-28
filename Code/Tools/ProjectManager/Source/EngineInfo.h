@@ -19,6 +19,7 @@ namespace O3DE::ProjectManager
     public:
         EngineInfo() = default;
         EngineInfo(const QString& path, const QString& name, const QString& version, const QString& thirdPartyPath);
+        bool operator<(const EngineInfo& engineInfo) const;
 
         // from engine.json
         QString m_version;
