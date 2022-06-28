@@ -66,7 +66,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=2,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial.assetinfo.dbg',
@@ -110,8 +109,8 @@ blackbox_fbx_tests = [
                         asset_db_utils.DBJob(
                             job_key='Scene compilation',
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
-                            status=4, error_count=0,
-                            warning_count=14,
+                            status=4,
+                            error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest.assetinfo.dbg',
@@ -159,7 +158,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=9,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='softnamingphysics/physicstest.assetinfo.dbg',
@@ -208,7 +206,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=3,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshonematerial/multiple_mesh_one_material.assetinfo.dbg',
@@ -248,7 +245,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=3,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.assetinfo.dbg',
@@ -296,7 +292,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=2,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials.assetinfo.dbg',
@@ -343,7 +338,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=2,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor.assetinfo.dbg',
@@ -390,7 +384,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=1,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='motion/jack_idle_aim_zup.assetinfo.dbg',
@@ -431,7 +424,6 @@ blackbox_fbx_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=31,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='shaderball/shaderball.assetinfo.dbg',
@@ -481,7 +473,6 @@ blackbox_fbx_special_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=3,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg',
@@ -511,7 +502,6 @@ blackbox_fbx_special_tests = [
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
                             error_count=0,
-                            warning_count=3,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg',
@@ -543,6 +533,7 @@ blackbox_fbx_special_tests = [
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_sandbox
 class TestsFBX_AllPlatforms(object):
 
     @pytest.mark.BAT
