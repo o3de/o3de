@@ -88,12 +88,14 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.cpp
     Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h
     Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h
+    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/JointLimitOptimizer.h
+    Source/Editor/Plugins/Ragdoll/JointLimitOptimizer.cpp
     Source/Editor/Plugins/Ragdoll/JointSwingLimitManipulators.h
     Source/Editor/Plugins/Ragdoll/JointSwingLimitManipulators.cpp
     Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.h
     Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.cpp
-    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h
-    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h

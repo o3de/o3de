@@ -1059,13 +1059,12 @@ namespace AZ::AtomBridge
             AZ::Vector3 axisNormalized = axis.GetNormalizedEstimate();
 
             const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
-            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
 
             // Draw cylinder part (if cylinder height is too small, ignore cylinder and just draw both hemispheres)
             if (heightStraightSection > FLT_EPSILON)
             {
-                DrawWireCylinderNoEnds(worldCenter, worldAxis, scale * radius, scale * heightStraightSection);
+                DrawWireCylinderNoEnds(center, axis, scale * radius, scale * heightStraightSection);
             }
 
             AZ::Vector3 centerToTopCircleCenter = axisNormalized * heightStraightSection * 0.5f;

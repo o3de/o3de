@@ -78,7 +78,7 @@ namespace LandscapeCanvas
             PREVIEW_BOUNDS_SLOT_ID,
             PREVIEW_BOUNDS_SLOT_LABEL.toUtf8().constData(),
             { boundsDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         GraphModel::ExtendableSlotConfiguration slotConfig;
@@ -88,7 +88,7 @@ namespace LandscapeCanvas
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType, invalidEntityDataType },
-            AZStd::any(AZ::EntityId()),
+            invalidEntityDataType->GetDefaultValue(),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
             &slotConfig));
 
