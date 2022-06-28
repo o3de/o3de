@@ -178,6 +178,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         asset_processor.run_and_check_output(False, error_search_terms)
 
     @pytest.mark.assetpipeline
+    @pytest.mark.SUITE_sandbox(reason="Disabling test with intermittent failures temporarily")
     def test_reprocessFileList_processesInOrder(self, asset_processor, ap_setup_fixture):
         """
         Tests the reprocessFileList and debugOutput commands to verify that all assets
