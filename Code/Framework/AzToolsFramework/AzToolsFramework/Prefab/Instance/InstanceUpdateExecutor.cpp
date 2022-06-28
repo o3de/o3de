@@ -111,8 +111,8 @@ namespace AzToolsFramework
             {
                 prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
             }
-            
         }
+
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
