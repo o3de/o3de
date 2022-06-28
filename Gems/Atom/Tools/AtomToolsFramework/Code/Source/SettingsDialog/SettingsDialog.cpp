@@ -105,17 +105,17 @@ namespace AtomToolsFramework
         config.m_name = displayName;
         config.m_displayName = displayName;
         config.m_description = description;
-        config.m_defaultValue = config.m_originalValue = config.m_parentValue = static_cast<float>(GetSettingsValue<double>(id, defaultValue));
+        config.m_defaultValue = config.m_originalValue = config.m_parentValue = aznumeric_cast<float>(GetSettingsValue<double>(id, defaultValue));
         config.m_dataChangeCallback = [id](const AZStd::any& value)
         {
-            SetSettingsValue<double>(id, static_cast<double>(AZStd::any_cast<float>(value)));
+            SetSettingsValue<double>(id, aznumeric_cast<double>(AZStd::any_cast<float>(value)));
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         };
         return DynamicProperty(config);
     }
 
     DynamicProperty CreatePropertyFromSetting(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const uint64_t& defaultValue)
+        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::u64& defaultValue)
     {
         DynamicPropertyConfig config;
         config.m_dataType = DynamicPropertyType::UInt;
@@ -123,17 +123,17 @@ namespace AtomToolsFramework
         config.m_name = displayName;
         config.m_displayName = displayName;
         config.m_description = description;
-        config.m_defaultValue = config.m_originalValue = config.m_parentValue = static_cast<uint32_t>(GetSettingsValue<uint64_t>(id, defaultValue));
+        config.m_defaultValue = config.m_originalValue = config.m_parentValue = aznumeric_cast<AZ::u32>(GetSettingsValue<AZ::u64>(id, defaultValue));
         config.m_dataChangeCallback = [id](const AZStd::any& value)
         {
-            SetSettingsValue<uint64_t>(id, static_cast<uint64_t>(AZStd::any_cast<uint32_t>(value)));
+            SetSettingsValue<AZ::u64>(id, aznumeric_cast<AZ::u64>(AZStd::any_cast<AZ::u32>(value)));
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         };
         return DynamicProperty(config);
     }
 
     DynamicProperty CreatePropertyFromSetting(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const int64_t& defaultValue)
+        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::s64& defaultValue)
     {
         DynamicPropertyConfig config;
         config.m_dataType = DynamicPropertyType::Int;
@@ -141,10 +141,10 @@ namespace AtomToolsFramework
         config.m_name = displayName;
         config.m_displayName = displayName;
         config.m_description = description;
-        config.m_defaultValue = config.m_originalValue = config.m_parentValue = static_cast<int32_t>(GetSettingsValue<int64_t>(id, defaultValue));
+        config.m_defaultValue = config.m_originalValue = config.m_parentValue = aznumeric_cast<AZ::s32>(GetSettingsValue<AZ::s64>(id, defaultValue));
         config.m_dataChangeCallback = [id](const AZStd::any& value)
         {
-            SetSettingsValue<int64_t>(id, static_cast<int64_t>(AZStd::any_cast<int32_t>(value)));
+            SetSettingsValue<AZ::s64>(id, aznumeric_cast<AZ::s64>(AZStd::any_cast<AZ::s32>(value)));
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         };
         return DynamicProperty(config);
