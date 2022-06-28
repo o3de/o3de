@@ -229,8 +229,12 @@ namespace AzFramework
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
 #if !defined(_RELEASE)
-            RemoteToolsInterface::Get()->RegisterToolingServiceClient(AzFramework::LuaToolsKey,
-                AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+            IRemoteTools* remoteTools = RemoteToolsInterface::Get());
+            if (remoteTools)
+            {
+                remoteTools->RegisterToolingServiceClient(
+                    AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+            }
 #endif
         }
     }
