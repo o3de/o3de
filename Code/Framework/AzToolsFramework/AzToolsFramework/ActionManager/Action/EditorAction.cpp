@@ -26,7 +26,7 @@ namespace AzToolsFramework
         , m_iconPath(AZStd::move(iconPath))
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), nullptr);
+        m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
 
         QObject::connect(
             m_action, &QAction::triggered, parentWidget,

@@ -56,7 +56,8 @@ namespace AzToolsFramework
         const ActionProperties& properties,
         AZStd::function<void()> handler)
     {
-        if (!m_actionContexts.contains(contextIdentifier))
+        auto actionContextIterator = m_actionContexts.find(contextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
@@ -77,7 +78,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionContextIterator->second->GetWidget(),
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
@@ -98,7 +99,8 @@ namespace AzToolsFramework
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
     {
-        if (!m_actionContexts.contains(contextIdentifier))
+        auto actionContextIterator = m_actionContexts.find(contextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
@@ -119,7 +121,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionContextIterator->second->GetWidget(),
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
