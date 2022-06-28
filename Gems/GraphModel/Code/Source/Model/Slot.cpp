@@ -210,13 +210,13 @@ namespace GraphModel
         return m_slotType;
     }
 
-    bool SlotDefinition::SupportsValue() const
+    bool SlotDefinition::SupportsValues() const
     {
         return (GetSlotType() == SlotType::Data && GetSlotDirection() == SlotDirection::Input) || 
                (GetSlotType() == SlotType::Property);
     }
 
-    bool SlotDefinition::SupportsDataType() const
+    bool SlotDefinition::SupportsDataTypes() const
     {
         return GetSlotType() == SlotType::Data || GetSlotType() == SlotType::Property;
     }
@@ -469,12 +469,8 @@ namespace GraphModel
         , m_slotDefinition(slotDefinition)
         , m_subId(subId)
     {
-        if (SupportsValue())
-        {
-            // The m_value must be initialized with an object of the appropriate type, or 
-            // GetValue() will fail the first time its called.
-            SetValue(m_slotDefinition->GetDefaultValue());
-        }
+        // The m_value must be initialized with an object of the appropriate type, or GetValue() will fail the first time its called.
+        SetValue(m_slotDefinition->GetDefaultValue());
     }
 
     void Slot::PostLoadSetup(GraphPtr graph, SlotDefinitionPtr slotDefinition)
@@ -485,7 +481,7 @@ namespace GraphModel
         m_graph = graph;
         m_slotDefinition = slotDefinition;
 
-        if (SupportsValue())
+        if (SupportsValues())
         {
             // CJS TODO: Consider using AZ::Outcome for better error reporting
 
@@ -560,8 +556,8 @@ namespace GraphModel
 
     SlotDirection        Slot::GetSlotDirection()      const { return m_slotDefinition->GetSlotDirection(); }
     SlotType             Slot::GetSlotType()           const { return m_slotDefinition->GetSlotType(); }
-    bool                 Slot::SupportsValue()         const { return m_slotDefinition->SupportsValue(); }
-    bool                 Slot::SupportsDataType()      const { return m_slotDefinition->SupportsDataType(); }
+    bool                 Slot::SupportsValues()         const { return m_slotDefinition->SupportsValues(); }
+    bool                 Slot::SupportsDataTypes()      const { return m_slotDefinition->SupportsDataTypes(); }
     bool                 Slot::SupportsConnections()   const { return m_slotDefinition->SupportsConnections(); }
     bool                 Slot::SupportsExtendability() const { return m_slotDefinition->SupportsExtendability(); }
     const SlotName&      Slot::GetName()               const { return m_slotDefinition->GetName(); }
@@ -614,11 +610,10 @@ namespace GraphModel
 
     void Slot::SetValue(const AZStd::any& value)
     {
-        if (SupportsValue())
+        if (SupportsValues())
         {
 #if defined(AZ_ENABLE_TRACING)
             DataTypePtr dataTypeUsed = GetDataTypeForValue(value);
-            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support values");
             AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::SetValue used with the wrong type");
 #endif
             m_value = value;
@@ -644,9 +639,11 @@ namespace GraphModel
 
     DataTypePtr Slot::GetDataTypeForTypeId(const AZ::Uuid& typeId) const
     {
+        // Search for and return the first data type that supports the input type ID
         for (DataTypePtr dataType : GetSupportedDataTypes())
         {
-            if (!SupportsDataType() || dataType->IsSupportedType(typeId))
+            // If this slot does not support input values but has registered data types then the first data type will be returned.
+            if (!SupportsDataTypes() || dataType->IsSupportedType(typeId))
             {
                 return dataType;
             }
@@ -657,9 +654,11 @@ namespace GraphModel
 
     DataTypePtr Slot::GetDataTypeForValue(const AZStd::any& value) const
     {
+        // Search for and return the first data type that supports the input value
         for (DataTypePtr dataType : GetSupportedDataTypes())
         {
-            if (!SupportsValue() || dataType->IsSupportedValue(value))
+            // If this slot does not support input values but has registered data types then the first data type will be returned.
+            if (!SupportsValues() || dataType->IsSupportedValue(value))
             {
                 return dataType;
             }
