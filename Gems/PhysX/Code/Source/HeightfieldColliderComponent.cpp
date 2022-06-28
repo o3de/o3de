@@ -101,6 +101,15 @@ namespace PhysX
         }
     }
 
+    void HeightfieldColliderComponent::OnAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_bakedHeightfieldAsset)
+        {
+            m_heightfieldCollider.reset();
+            OnAssetReady(asset);
+        }
+    }
+
     void HeightfieldColliderComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         InitHeightfieldCollider(HeightfieldCollider::DataSource::GenerateNewHeightfield);

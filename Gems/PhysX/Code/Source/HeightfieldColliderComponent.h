@@ -79,6 +79,7 @@ namespace PhysX
 
         // AZ::Data::AssetBus::Handler overrides ...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset);
         void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
     private:
