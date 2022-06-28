@@ -198,17 +198,17 @@ namespace AzToolsFramework
         //! Retrieve a QAction via its identifier (const version).
         //! @param actionIdentifier The identifier for the action to retrieve.
         //! @return A raw const pointer to the QAction, or nullptr if the action could not be found.
-        virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
+        virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) const = 0;
 
         //! Retrieve whether an Action should be hidden from Menus when disabled.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) = 0;
+        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
 
         //! Retrieve whether an Action should be hidden from ToolBars when disabled.
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
-        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) = 0;
+        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework

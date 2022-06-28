@@ -419,9 +419,14 @@ namespace AzToolsFramework
 
     MenuManagerOperationResult MenuManager::QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier)
     {
-        for (const AZStd::string& menuIdentifier : m_actionsToMenusMap[actionIdentifier])
+        auto actionIterator = m_actionsToMenusMap.find(actionIdentifier);
+
+        if (actionIterator != m_actionsToMenusMap.end())
         {
-            m_menusToRefresh.insert(menuIdentifier);
+            for (const AZStd::string& menuIdentifier : actionIterator->second)
+            {
+                m_menusToRefresh.insert(menuIdentifier);
+            }
         }
 
         return AZ::Success();

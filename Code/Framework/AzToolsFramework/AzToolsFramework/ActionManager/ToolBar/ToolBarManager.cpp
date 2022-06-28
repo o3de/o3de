@@ -325,9 +325,14 @@ namespace AzToolsFramework
 
     ToolBarManagerOperationResult ToolBarManager::QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier)
     {
-        for (const AZStd::string& toolBarIdentifier : m_actionsToToolBarsMap[actionIdentifier])
+        auto actionIterator = m_actionsToToolBarsMap.find(actionIdentifier);
+
+        if (actionIterator != m_actionsToToolBarsMap.end())
         {
-            m_toolBarsToRefresh.insert(toolBarIdentifier);
+            for (const AZStd::string& toolBarIdentifier : actionIterator->second)
+            {
+                m_toolBarsToRefresh.insert(toolBarIdentifier);
+            }
         }
 
         return AZ::Success();

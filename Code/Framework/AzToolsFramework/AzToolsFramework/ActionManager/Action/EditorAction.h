@@ -42,11 +42,12 @@ namespace AzToolsFramework
         void SetCategory(AZStd::string category);
         const AZStd::string& GetIconPath() const;
         void SetIconPath(AZStd::string iconPath);
-        bool GetHideFromMenusWhenDisabled();
-        bool GetHideFromToolBarsWhenDisabled();
+        bool GetHideFromMenusWhenDisabled() const;
+        bool GetHideFromToolBarsWhenDisabled() const;
 
         //! Returns the pointer to the action.
         QAction* GetAction();
+        const QAction* GetAction() const;
 
         //! Sets the enabled state callback for the action.
         void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);

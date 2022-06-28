@@ -136,7 +136,7 @@ namespace AzToolsFramework
             {
             case MenuItemType::Action:
                 {
-                    if(QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
+                    if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
                     {
                         if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(elem.second.m_identifier))
                         {
@@ -149,7 +149,7 @@ namespace AzToolsFramework
                 }
             case MenuItemType::SubMenu:
                 {
-                    if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
+                    if (QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
                     {
                         m_menu->addMenu(menu);
                     }

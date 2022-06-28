@@ -65,9 +65,9 @@ namespace AzToolsFramework
 
         // ActionManagerInternalInterface overrides ...
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
-        const QAction* GetActionConst(const AZStd::string& actionIdentifier) override;
-        bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) override;
-        bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) override;
+        const QAction* GetActionConst(const AZStd::string& actionIdentifier) const override;
+        bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const override;
+        bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const override;
 
         void ClearActionContextMap();
 
