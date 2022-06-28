@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 from PySide2.QtCore import Qt
+from editor_python_test_tools.utils import Report
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
@@ -15,8 +16,15 @@ import azlmbr.legacy.general as general
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI)
+                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
+                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
+                                                 SCRIPT_EVENT_FILE_PATH)
 
+class Tests():
+    new_event_created = ("Successfully created a new event", "Failed to create a new event")
+    child_event_created = ("Successfully created Child Event", "Failed to create Child Event")
+    parameter_created = ("Successfully added parameter", "Failed to add parameter")
+    parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
 def click_menu_option(window, option_text):
     """
@@ -227,6 +235,37 @@ def create_new_sc_graph(sc_editor_main_window):
     create_new_graph_action.trigger()
 
 
+def create_new_variable(self, new_variable_type):
+    """
+    function for creating a new SC variable through variable manager
+
+    param self: the script objecting calling this function
+    param variable_type: The variable data type to create as a string. i.e "Boolean"
+    returns: none
+    """
+
+    if type(new_variable_type) is not str:
+        Report.critical_result(["Invalid variable type provided", ""], False)
+
+    valid_type = False
+    for this_type in VARIABLE_TYPES:
+        if new_variable_type == this_type:
+            valid_type = True
+
+    if not valid_type:
+        Report.critical_result(["Invalid variable type provided", ""], False)
+
+    add_new_variable_button = self.variable_manager.findChild(QtWidgets.QPushButton, ADD_BUTTON_QT)
+    add_new_variable_button.click()  # Click on Create Variable button
+    helper.wait_for_condition((
+        lambda: self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT) is not None), WAIT_TIME_3)
+    # Select variable type
+    table_view = self.variable_manager.findChild(QtWidgets.QTableView, VARIABLE_PALETTE_QT)
+    model_index = pyside_utils.find_child_by_pattern(table_view, new_variable_type)
+    # Click on it to create variable
+    pyside_utils.item_view_index_mouse_click(table_view, model_index)
+
+
 def get_sc_editor_node_inspector(sc_editor):
     """
     function for toggling the node inspector if it's not already turned on and returning the qt widget object
@@ -243,3 +282,41 @@ def get_sc_editor_node_inspector(sc_editor):
 
     return node_inspector_widget
 
+def create_script_event(self):
+    """
+    Function for creating a script event from the editor's asset editor.
+
+    param self: the script calling this function
+
+    returns None
+    """
+    action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
+    action.trigger()
+    result = helper.wait_for_condition(
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3
+    )
+    Report.result(Tests.new_event_created, result)
+
+    # Add new child event
+    add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
+    add_event.click()
+    result = helper.wait_for_condition(
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
+    )
+    Report.result(Tests.child_event_created, result)
+
+def create_script_event_parameter(self):
+    add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
+    add_param.click()
+    result = helper.wait_for_condition(
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
+    )
+    Report.result(Tests.parameter_created, result)
+
+def remove_script_event_parameter(self):
+    remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
+    remove_param.click()
+    result = helper.wait_for_condition(
+        lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
+    )
+    Report.result(Tests.parameter_removed, result)

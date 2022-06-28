@@ -39,6 +39,10 @@ set(FILES
     native/tests/assetmanager/MockFileProcessor.cpp
     native/tests/assetmanager/TestEventSignal.cpp
     native/tests/assetmanager/TestEventSignal.h
+    native/tests/assetmanager/AssetManagerTestingBase.cpp
+    native/tests/assetmanager/AssetManagerTestingBase.h
+    native/tests/assetmanager/IntermediateAssetTests.cpp
+    native/tests/assetmanager/IntermediateAssetTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h

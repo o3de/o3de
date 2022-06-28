@@ -14,15 +14,11 @@ import azlmbr.bus as bus
 import azlmbr.editor as editor
 import scripting_utils.scripting_tools as tools
 import azlmbr.legacy.general as general
-from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                 SAVE_ASSET_AS, WAIT_TIME_3, SCRIPT_EVENT_FILE_PATH)
+from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SAVE_ASSET_AS, WAIT_TIME_3, SCRIPT_EVENT_FILE_PATH)
+
 # fmt: off
 class Tests():
-    new_event_created   = ("Successfully created a new event", "Failed to create a new event")
-    child_event_created = ("Successfully created Child Event", "Failed to create Child Event")
-    file_saved          = ("Successfully saved event asset",   "Failed to save event asset")
-    parameter_created   = ("Successfully added parameter",     "Failed to add parameter")
-    parameter_removed   = ("Successfully removed parameter",   "Failed to remove parameter")
+    file_saved = ("Successfully saved event asset", "Failed to save event asset")
 # fmt: on
 
 class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
@@ -55,45 +51,10 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         self.asset_editor_row_container = None
         self.asset_editor_menu_bar = None
 
-    def create_script_event(self) -> None:
-        action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
-        action.trigger()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3
-        )
-        Report.result(Tests.new_event_created, result)
-
-        # Add new child event
-        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
-        add_event.click()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
-        )
-        Report.result(Tests.child_event_created, result)
-        # Save the Script Event file
+    def save_and_verify_file(self):
         editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, SCRIPT_EVENT_FILE_PATH)
-
-        # Verify if file is created
         result = helper.wait_for_condition(lambda: os.path.exists(SCRIPT_EVENT_FILE_PATH), WAIT_TIME_3)
         Report.result(Tests.file_saved, result)
-
-    def create_parameter(self) -> None:
-        add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
-        add_param.click()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
-        )
-        Report.result(Tests.parameter_created, result)
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, SCRIPT_EVENT_FILE_PATH)
-
-    def remove_parameter(self) -> None:
-        remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
-        remove_param.click()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
-        )
-        Report.result(Tests.parameter_removed, result)
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, SCRIPT_EVENT_FILE_PATH)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -110,13 +71,19 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         tools.initialize_asset_editor_object(self)
 
         # 3) Create new Script Event Asset
-        self.create_script_event()
+        tools.create_script_event(self)
+        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
+        Report.result(Tests.file_saved, result)
 
         # 4) Add Parameter to Event
-        self.create_parameter()
+        tools.create_script_event_parameter(self)
+        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
+        Report.result(Tests.file_saved, result)
 
         # 5) Remove Parameter from Event
-        self.remove_parameter()
+        tools.remove_script_event_parameter(self)
+        result = tools.save_script_event_file(self, SCRIPT_EVENT_FILE_PATH)
+        Report.result(Tests.file_saved, result)
 
 
 test = ScriptEvent_AddRemoveParameter_ActionsSuccessful()

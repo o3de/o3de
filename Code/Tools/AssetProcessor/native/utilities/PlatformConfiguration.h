@@ -70,8 +70,8 @@ namespace AssetProcessor
     {
         AssetRecognizer() = default;
 
-        AssetRecognizer(const QString& name, bool testLockSource, int priority, 
-            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+        AssetRecognizer(const QString& name, bool testLockSource, int priority,
+            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher,
             const QString& version, const AZ::Data::AssetType& productAssetType, bool outputProductDependencies, bool checkServer = false)
             : m_name(name)
             , m_testLockSource(testLockSource)
@@ -267,6 +267,9 @@ namespace AssetProcessor
         int GetMinJobs() const;
         int GetMaxJobs() const;
 
+        void EnableCommonPlatform();
+        void AddIntermediateScanFolder();
+
         //! Return how many scan folders there are
         int GetScanFolderCount() const;
 
@@ -318,7 +321,7 @@ namespace AssetProcessor
         QString GetOverridingFile(QString relativeName, QString scanFolderName) const;
 
         //! given a relative name, loop over folders and resolve it to a full path with the first existing match.
-        QString FindFirstMatchingFile(QString relativeName) const;
+        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
         QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
@@ -370,6 +373,9 @@ namespace AssetProcessor
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
 
+        void CacheIntermediateAssetsScanFolderId();
+        AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
+
     protected:
 
         // call this first, to populate the list of platform informations
@@ -395,6 +401,7 @@ namespace AssetProcessor
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
+        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

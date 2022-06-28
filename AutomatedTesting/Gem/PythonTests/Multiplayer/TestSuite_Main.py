@@ -48,6 +48,7 @@ class TestAutomation(EditorTestSuite):
         def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
             save_multiplayer_level_cache_folder_artifact(workspace, "basicconnectivity_connects")
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/10392")
     class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
         from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
 
