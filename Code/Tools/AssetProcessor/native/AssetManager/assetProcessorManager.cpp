@@ -3080,7 +3080,7 @@ namespace AssetProcessor
     }
 
     // The file cache is used before actually hitting physical media to determine the
-    // existence of files and to retrive the file's hash.
+    // existence of files and to retrieve the file's hash.
     // It assumes that the presence of a file in the cache means the file exists.
     // Because of this, it also monitors for file notifications from the operating system
     // (such as changed, deleted, etc) and invalidates its cache, removing hashes or file entries

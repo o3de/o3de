@@ -57,7 +57,7 @@ namespace AssetProcessor
         virtual bool GetHash(const QString& absolutePath, FileHash* foundHash) = 0;
         
         //! Called when the caller knows a hash and file info already.
-        //! This can for example warm up the cache so that it can returrn hashes without actually hashing.
+        //! This can for example warm up the cache so that it can return hashes without actually hashing.
         //! (optional for implementations)
         virtual void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = INVALID_FILEHASH) = 0;
         virtual void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) = 0;
