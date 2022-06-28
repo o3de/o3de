@@ -22,6 +22,7 @@ class QWidget;
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class ActionManagerInternalInterface;
     class MenuManagerInterface;
     class ToolBarManagerInterface;
 } // namespace AzToolsFramework
@@ -65,6 +66,7 @@ private:
 
     // Editor Action Manager initialization functions
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+    AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
