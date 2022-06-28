@@ -20,6 +20,10 @@
 namespace AZ
 {
     class SerializeContext;
+    namespace DocumentPropertyEditor
+    {
+        class ReflectionAdapter;
+    }
 }
 
 namespace Ui
@@ -34,6 +38,7 @@ class QMenu;
 namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
+    class DocumentPropertyEditor;
 
     namespace AssetEditor
     {
@@ -142,6 +147,8 @@ namespace AzToolsFramework
             AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;
             Ui::AssetEditorHeader* m_header;
             ReflectedPropertyEditor* m_propertyEditor;
+            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+            DocumentPropertyEditor* m_dpe;
             AZ::SerializeContext* m_serializeContext = nullptr;
 
             // Ids can change when an asset goes from in-memory to saved on disk.
@@ -152,6 +159,7 @@ namespace AzToolsFramework
             AZStd::string m_recentlyAddedAssetPath;
 
             bool m_dirty = false;
+            bool m_useDPE = false;
             
             QString m_currentAsset;
 

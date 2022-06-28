@@ -3286,7 +3286,7 @@ namespace LandscapeCanvasEditor
                 // some magic that takes place where they each support an Invalid data type as well as
                 // their specific data type, so instead of comparing the current slot->GetDataType() directly
                 // we need to check the possible data types instead for a  match.
-                const auto& dataTypes = slot->GetPossibleDataTypes();
+                const auto& dataTypes = slot->GetSupportedDataTypes();
                 auto iter = AZStd::find(dataTypes.begin(), dataTypes.end(), dataType);
                 if (iter != dataTypes.end())
                 {

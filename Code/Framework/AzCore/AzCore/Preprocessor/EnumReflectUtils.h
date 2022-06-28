@@ -20,7 +20,7 @@
     static void AZ_JOIN(EnumTypeName, Reflect)(AZ::SerializeContext& context)                                                                           \
     {                                                                                                                                                   \
         auto enumMaker = context.Enum<EnumTypeName>();                                                                                                  \
-        for (auto&& member : AzEnumTraits<EnumTypeName>::Members)                                                                                       \
+        for (auto&& member : AZ::AzEnumTraits<EnumTypeName>::Members)                                                                                       \
         {                                                                                                                                               \
             enumMaker.Value(member.m_string.data(), member.m_value);                                                                                    \
         }                                                                                                                                               \
@@ -31,9 +31,9 @@
     {                                                                                                                                                   \
         if (typeName.empty())                                                                                                                           \
         {                                                                                                                                               \
-            typeName = AzEnumTraits<EnumTypeName>::EnumName;                                                                                            \
+            typeName = AZ::AzEnumTraits<EnumTypeName>::EnumName;                                                                                            \
         }                                                                                                                                               \
-        constexpr auto& enumValueStringPair = AzEnumTraits<EnumTypeName>::Members[Index];                                                               \
+        constexpr auto& enumValueStringPair = AZ::AzEnumTraits<EnumTypeName>::Members[Index];                                                               \
         auto qualifiedEnumName = AZStd::fixed_string<256>::format("%.*s_%.*s", AZ_STRING_ARG(typeName), AZ_STRING_ARG(enumValueStringPair.m_string));   \
         context.Enum<aznumeric_cast<int>(enumValueStringPair.m_value)>(qualifiedEnumName.c_str());                                                      \
     }                                                                                                                                                   \
@@ -46,6 +46,6 @@
                                                                                                                                                         \
     void AZ_JOIN(EnumTypeName, Reflect)(AZ::BehaviorContext& context, AZStd::string_view typeName = {})                                                 \
     {                                                                                                                                                   \
-        AZ_JOIN(EnumTypeName, ReflectValues)(context, typeName, AZStd::make_index_sequence<AzEnumTraits<EnumTypeName>::Members.size()>());              \
+        AZ_JOIN(EnumTypeName, ReflectValues)(context, typeName, AZStd::make_index_sequence<AZ::AzEnumTraits<EnumTypeName>::Members.size()>());              \
     }                                                                                                                                                   
 

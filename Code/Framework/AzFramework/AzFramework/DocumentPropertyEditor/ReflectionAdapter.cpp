@@ -177,7 +177,7 @@ namespace AZ::DocumentPropertyEditor
 
                     for (const auto& rowAttribute : Nodes::Row::RowAttributes)
                     {
-                        if (name == rowAttribute.GetName())
+                        if (name == rowAttribute->GetName())
                         {
                             return;
                         }
@@ -321,10 +321,10 @@ namespace AZ::DocumentPropertyEditor
 
             for (const auto& attribute : Nodes::Row::RowAttributes)
             {
-                auto attributeValue = attributes.Find(attribute.GetName());
+                auto attributeValue = attributes.Find(attribute->GetName());
                 if (!attributeValue.IsNull())
                 {
-                    m_builder.Attribute(attribute, attributeValue);
+                    m_builder.Attribute(attribute->GetName(), attributeValue);
                 }
             }
 

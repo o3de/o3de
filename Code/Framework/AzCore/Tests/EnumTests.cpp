@@ -133,7 +133,7 @@ namespace UnitTest
 
     TEST_F(EnumTests, TraitsBehaviorRegular)
     {
-        static_assert(AzEnumTraits<TestEnum>::Members.size() == 26);
+        static_assert(AZ::AzEnumTraits<TestEnum>::Members.size() == 26);
     }
 
 }

@@ -146,7 +146,7 @@ namespace Multiplayer
                 // However in the delta serializer case, we use the previous input as our initial value
                 // which will have the NetworkInputs setup and therefore won't write out the componentId
                 NetComponentId componentId = m_componentInputs[i] ? m_componentInputs[i]->GetNetComponentId() : InvalidNetComponentId;
-                serializer.Serialize(componentId, "ComponentType");
+                serializer.Serialize(componentId, "ComponentId");
                 // Create a new input if we don't have one or the types do not match
                 if ((m_componentInputs[i] == nullptr) || (componentId != m_componentInputs[i]->GetNetComponentId()))
                 {

@@ -34,6 +34,7 @@ namespace EMotionFX
             virtual float GetPlaySpeed() const = 0;
             virtual void PlayTime(float time) = 0;
             virtual float GetPlayTime() const = 0;
+            virtual float GetDuration() const = 0;
             virtual void Motion(AZ::Data::AssetId assetId) = 0;
             virtual AZ::Data::AssetId  GetMotion() const = 0;
             virtual void BlendInTime(float time) = 0;

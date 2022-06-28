@@ -72,7 +72,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id("C3594360")
     @pytest.mark.test_case_id("C3688013")
-    @pytest.mark.sandbox(reason="Disabling flaky test, replacing with a more deterministic version")
+    @pytest.mark.SUITE_sandbox(reason="Disabling flaky test, replacing with a more deterministic version")
     # fmt:off
     def test_AllSupportedPlatforms_FastScanWorks_FasterThanFullScan(self, workspace, asset_processor, ap_setup_fixture):
         # fmt:on

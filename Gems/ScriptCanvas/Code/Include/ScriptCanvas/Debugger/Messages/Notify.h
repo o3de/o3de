@@ -43,7 +43,7 @@ namespace ScriptCanvas
             {
             public:
                 AZ_CLASS_ALLOCATOR(NotificationPayload<t_Payload>, AZ::SystemAllocator, 0);
-                AZ_RTTI(((NotificationPayload<t_Payload>), "{AC9FC9F9-C660-43DC-BCB8-0CD390432ED1}", t_Payload), Notification);
+                AZ_RTTI((NotificationPayload, "{AC9FC9F9-C660-43DC-BCB8-0CD390432ED1}", t_Payload), Notification);
 
                 t_Payload m_payload;
 
