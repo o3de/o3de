@@ -15,7 +15,7 @@
 #include <AzCore/Task/TaskDescriptor.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <Misc/RecastNavigationDebugDraw.h>
 #include <Misc/RecastNavigationMeshConfig.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
@@ -48,9 +48,8 @@ namespace RecastNavigation
 
         //! Allocates and initializes Recast navigation mesh into @m_navMesh.
         //! @param meshEntityId the entity's positions will be used as the center of the navigation mesh.
-        //! @param tileSize the size of each square tile that form the navigation mesh. Recommended values are power of 2.
         //! @return true if the navigation mesh object was successfully created.
-        bool CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize);
+        bool CreateNavigationMesh(AZ::EntityId meshEntityId);
 
         //! Given a Recast data add a tile to the navigation mesh @m_navMesh.
         //! @param navigationTileData the raw data of a Recast tile
@@ -71,8 +70,8 @@ namespace RecastNavigation
 
         //! RecastNavigationRequestBus overrides ...
         //! @{
-        void UpdateNavigationMeshBlockUntilCompleted() override;
-        void UpdateNavigationMeshAsync() override;
+        bool UpdateNavigationMeshBlockUntilCompleted() override;
+        bool UpdateNavigationMeshAsync() override;
         AZStd::shared_ptr<NavMeshQuery> GetNavigationObject() override;
         //! @}
 
@@ -87,6 +86,8 @@ namespace RecastNavigation
         //! Tick event to notify on navigation mesh updates from the main thread.
         //! This is often needed for script environment, such as Script Canvas.
         AZ::ScheduledEvent m_sendNotificationEvent{ [this]() { OnSendNotificationTick(); }, AZ::Name("RecastNavigationMeshUpdated") };
+
+        bool IsDebugDrawEnabled() const;
 
         //! If debug draw was specified, then this call will be invoked every frame.
         void OnDebugDrawTick();
@@ -122,5 +123,8 @@ namespace RecastNavigation
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };
+
+        //! If true, an update operation is in progress.
+        AZStd::atomic<bool> m_updateInProgress{ false };
     };
 } // namespace RecastNavigation

@@ -85,6 +85,7 @@ namespace AZ
 
         Pass::~Pass()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             PassSystemInterface::Get()->UnregisterPass(this);
         }
 
@@ -138,25 +139,25 @@ namespace AZ
 
         void Pass::OnHierarchyChange()
         {
-            if (m_parent == nullptr)
+            if (m_parent != nullptr)
             {
-                return;
-            }
+                // Set new tree depth and path
+                m_flags.m_parentEnabled = m_parent->m_flags.m_enabled && (m_parent->m_flags.m_parentEnabled || m_parent->m_parent == nullptr);
+                m_treeDepth = m_parent->m_treeDepth + 1;
+                m_path = ConcatPassName(m_parent->m_path, m_name);
+                m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
 
-            // Set new tree depth and path
-            m_flags.m_parentEnabled = m_parent->m_flags.m_enabled && (m_parent->m_flags.m_parentEnabled || m_parent->m_parent == nullptr);
-            m_treeDepth = m_parent->m_treeDepth + 1;
-            m_path = ConcatPassName(m_parent->m_path, m_name);
-            m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
-
-            if (m_state == PassState::Orphaned)
-            {
-                QueueForBuildAndInitialization();
+                if (m_state == PassState::Orphaned)
+                {
+                    QueueForBuildAndInitialization();
+                }
             }
+            AZ_RPI_BREAK_ON_TARGET_PASS;
         }
 
         void Pass::RemoveFromParent()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
             m_queueState = PassQueueState::NoQueue;
@@ -165,6 +166,7 @@ namespace AZ
 
         void Pass::OnOrphan()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             if (m_flags.m_containsGlobalReference && m_pipeline != nullptr)
             {
                 m_pipeline->RemovePipelineGlobalConnectionsFromPass(this);
@@ -1118,6 +1120,8 @@ namespace AZ
 
         void Pass::Reset()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
+
             // Ensure we're in a valid state to reset. This ensures the pass won't be reset multiple times in the same frame.
             bool execute = (m_state == PassState::Idle);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuildAndInitialization);
@@ -1389,6 +1393,11 @@ namespace AZ
                 return m_pipeline->GetScene();
             }
             return nullptr;
+        }
+
+        PassTree* Pass::GetPassTree() const
+        {
+            return m_pipeline ? &(m_pipeline->m_passTree) : nullptr;
         }
 
         void Pass::GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const

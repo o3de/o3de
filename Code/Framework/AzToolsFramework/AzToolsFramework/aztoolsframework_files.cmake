@@ -23,6 +23,11 @@ set(FILES
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
     ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/ToolBar/EditorToolBar.cpp
+    ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/ToolBarManager.cpp
+    ActionManager/ToolBar/ToolBarManager.h
+    ActionManager/ToolBar/ToolBarManagerInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
@@ -344,6 +349,8 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
+    UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -355,6 +362,9 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
     UI/DPEDebugViewer/DPEDebugTextView.h
+    UI/DPEDebugViewer/DPEDebugWindow.cpp
+    UI/DPEDebugViewer/DPEDebugWindow.h
+    UI/DPEDebugViewer/DPEDebugWindow.ui
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h

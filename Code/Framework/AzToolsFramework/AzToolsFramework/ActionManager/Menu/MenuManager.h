@@ -17,7 +17,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-
+    
+    //! Menu Manager class definition.
+    //! Handles Editor Menus and allows registration and access across tools.
     class MenuManager
         : private MenuManagerInterface
     {
@@ -31,6 +33,12 @@ namespace AzToolsFramework
         MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) override;
         MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddActionsToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) override;
+        MenuManagerOperationResult RemoveActionFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) override;
+        MenuManagerOperationResult RemoveActionsFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) override;
         MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
@@ -40,6 +48,9 @@ namespace AzToolsFramework
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) override;
+        MenuManagerIntegerResult GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const override;
+        MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
+        MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
 
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;

@@ -52,14 +52,24 @@ QTreeView#SourceAssetsTreeView::item,
 QTreeView#SourceAssetsTreeView::branch,
 QTreeView#ProductAssetsTreeView,
 QTreeView#ProductAssetsTreeView::item,
-QTreeView#ProductAssetsTreeView::branch {
+QTreeView#ProductAssetsTreeView::branch,
+QTreeView#OutgoingProductDependenciesTreeView,
+QTreeView#OutgoingProductDependenciesTreeView::item,
+QTreeView#OutgoingProductDependenciesTreeView::branch,
+QTreeView#IncomingProductDependenciesTreeView,
+QTreeView#IncomingProductDependenciesTreeView::item,
+QTreeView#IncomingProductDependenciesTreeView::branch {
     background-color: rgb(45,45,45);
 }
 
 QTreeView#SourceAssetsTreeView::item:hover,
 QTreeView#SourceAssetsTreeView::branch:hover,
 QTreeView#ProductAssetsTreeView::item:hover,
-QTreeView#ProductAssetsTreeView::branch:hover {
+QTreeView#ProductAssetsTreeView::branch:hover,
+QTreeView#OutgoingProductDependenciesTreeView::item:hover,
+QTreeView#OutgoingProductDependenciesTreeView::branch:hover,
+QTreeView#IncomingProductDependenciesTreeView::item:hover,
+QTreeView#IncomingProductDependenciesTreeView::branch:hover {
     background-color: rgb(60,60,60);
 }
 
@@ -68,12 +78,20 @@ QTreeView#SourceAssetsTreeView::branch:selected,
 QTreeView#SourceAssetsTreeView::item:selected:active,
 QTreeView#ProductAssetsTreeView::item:selected,
 QTreeView#ProductAssetsTreeView::branch:selected,
-QTreeView#ProductAssetsTreeView::item:selected:active {
+QTreeView#ProductAssetsTreeView::item:selected:active,
+QTreeView#OutgoingProductDependenciesTreeView::item:selected,
+QTreeView#OutgoingProductDependenciesTreeView::branch:selected,
+QTreeView#OutgoingProductDependenciesTreeView::item:selected:active,
+QTreeView#IncomingProductDependenciesTreeView::item:selected,
+QTreeView#IncomingProductDependenciesTreeView::branch:selected,
+QTreeView#IncomingProductDependenciesTreeView::item:selected:active {
     background-color: rgb(73,73,73);
 }
 
 QTreeView#SourceAssetsTreeView::item:selected:!active,
 QTreeView#ProductAssetsTreeView::item:selected:!active,
+QTreeView#OutgoingProductDependenciesTreeView::item:selected:!active,
+QTreeView#IncomingProductDependenciesTreeView::item:selected:!active,
 QTableWidget#outgoingProductDependenciesTable:item:selected:!active,
 QListWidget#outgoingUnmetPathProductDependenciesList:item:selected:!active,
 QTableWidget#incomingProductDependenciesTable:item:selected:!active,

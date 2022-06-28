@@ -20,8 +20,6 @@ set(FILES
     native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.h
     native/tests/resourcecompiler/RCControllerTest.cpp
     native/tests/resourcecompiler/RCControllerTest.h
     native/tests/resourcecompiler/RCJobTest.cpp
@@ -41,6 +39,10 @@ set(FILES
     native/tests/assetmanager/MockFileProcessor.cpp
     native/tests/assetmanager/TestEventSignal.cpp
     native/tests/assetmanager/TestEventSignal.h
+    native/tests/assetmanager/AssetManagerTestingBase.cpp
+    native/tests/assetmanager/AssetManagerTestingBase.h
+    native/tests/assetmanager/IntermediateAssetTests.cpp
+    native/tests/assetmanager/IntermediateAssetTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h
