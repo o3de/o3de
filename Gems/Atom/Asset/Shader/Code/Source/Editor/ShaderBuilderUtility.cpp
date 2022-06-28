@@ -128,7 +128,6 @@ namespace AZ
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
-                const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
@@ -175,7 +174,7 @@ namespace AZ
                 }
 
                 // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayoutList))
+                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, srgLayoutList))
                 {
                     AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
                     return AssetBuilderSDK::ProcessJobResult_Failed;

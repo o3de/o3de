@@ -885,7 +885,6 @@ namespace AZ
                             {
                                 srgData.m_srgConstantDataSpaceId = itr3->value.GetInt();
                             }
-                            // The logical space attribute ("space") is also available when using the --use-spaces argument.
                         }
                     }
                 }

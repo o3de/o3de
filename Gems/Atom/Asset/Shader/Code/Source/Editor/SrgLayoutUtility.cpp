@@ -90,14 +90,10 @@ namespace AZ
             }
 
             bool LoadShaderResourceGroupLayouts(
-                [[maybe_unused]] const char* builderName, const SrgDataContainer& resourceGroups,
-                const bool platformUsesRegisterSpaces, RPI::ShaderResourceGroupLayoutList& srgLayoutList)
+                [[maybe_unused]] const char* builderName,
+                const SrgDataContainer& resourceGroups,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList)
             {
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // All we care about is whether the shaderPlatformInterface appends the "--use-spaces" flag.
-                bool useRegisterId = platformUsesRegisterSpaces;
-
                 // Load all SRGs included in source file
                 for (const SrgData& srgData : resourceGroups)
                 {
@@ -111,14 +107,16 @@ namespace AZ
                     {
                         if (samplerData.m_isDynamic)
                         {
-                            newSrgLayout->AddShaderInput({ samplerData.m_nameId, samplerData.m_count,
-                                                           useRegisterId ? samplerData.m_registerId : RHI::UndefinedRegisterSlot,
+                            newSrgLayout->AddShaderInput({ samplerData.m_nameId,
+                                                           samplerData.m_count,
+                                                           samplerData.m_registerId,
                                                            samplerData.m_spaceId });
                         }
                         else
                         {
-                            newSrgLayout->AddStaticSampler({ samplerData.m_nameId, samplerData.m_descriptor,
-                                                             useRegisterId ? samplerData.m_registerId : RHI::UndefinedRegisterSlot,
+                            newSrgLayout->AddStaticSampler({ samplerData.m_nameId,
+                                                             samplerData.m_descriptor,
+                                                             samplerData.m_registerId,
                                                              samplerData.m_spaceId });
                         }
                     }
@@ -137,14 +135,14 @@ namespace AZ
                             {
                                 newSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{
                                     textureData.m_nameId, imageAccess, imageType, textureData.m_count,
-                                    useRegisterId ? textureData.m_registerId : RHI::UndefinedRegisterSlot, textureData.m_spaceId });
+                                    textureData.m_registerId, textureData.m_spaceId });
                             }
                             else
                             {
                                 // unbounded array
                                 newSrgLayout->AddShaderInput(RHI::ShaderInputImageUnboundedArrayDescriptor{
                                     textureData.m_nameId, imageAccess, imageType,
-                                    useRegisterId ? textureData.m_registerId : RHI::UndefinedRegisterSlot, textureData.m_spaceId });
+                                    textureData.m_registerId, textureData.m_spaceId });
                             }
                         }
                         else
@@ -162,8 +160,7 @@ namespace AZ
                         {
                             newSrgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
                                 cbData.m_nameId, RHI::ShaderInputBufferAccess::Constant, RHI::ShaderInputBufferType::Constant,
-                                cbData.m_count, cbData.m_strideSize, useRegisterId ? cbData.m_registerId : RHI::UndefinedRegisterSlot,
-                                cbData.m_spaceId });
+                                cbData.m_count, cbData.m_strideSize, cbData.m_registerId, cbData.m_spaceId });
                         }
 
                         for (const BufferSrgData& bufferData : srgData.m_buffers)
@@ -179,14 +176,14 @@ namespace AZ
                                 {
                                     newSrgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
                                         bufferData.m_nameId, bufferAccess, bufferType, bufferData.m_count, bufferData.m_strideSize,
-                                        useRegisterId ? bufferData.m_registerId : RHI::UndefinedRegisterSlot, bufferData.m_spaceId });
+                                        bufferData.m_registerId, bufferData.m_spaceId });
                                 }
                                 else
                                 {
                                     // unbounded array
                                     newSrgLayout->AddShaderInput(RHI::ShaderInputBufferUnboundedArrayDescriptor{
                                         bufferData.m_nameId, bufferAccess, bufferType, bufferData.m_strideSize,
-                                        useRegisterId ? bufferData.m_registerId : RHI::UndefinedRegisterSlot, bufferData.m_spaceId });
+                                        bufferData.m_registerId, bufferData.m_spaceId });
                                 }
                             }
                             else
@@ -201,11 +198,10 @@ namespace AZ
                     }
 
                     // SRG Constants
-                    uint32_t constantDataRegisterId = useRegisterId ? srgData.m_srgConstantDataRegisterId : RHI::UndefinedRegisterSlot;
                     for (const SrgConstantData& srgConstants : srgData.m_srgConstantData)
                     {
                         newSrgLayout->AddShaderInput({ srgConstants.m_nameId, srgConstants.m_constantByteOffset,
-                                                       srgConstants.m_constantByteSize, constantDataRegisterId,
+                                                       srgConstants.m_constantByteSize, srgData.m_srgConstantDataRegisterId,
                                                        srgData.m_srgConstantDataSpaceId });
                     }
 
