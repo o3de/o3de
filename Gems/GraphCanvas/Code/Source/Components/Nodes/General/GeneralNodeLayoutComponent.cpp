@@ -48,19 +48,18 @@ namespace GraphCanvas
         // Create this Node's entity.
         AZ::Entity* entity = NodeComponent::CreateCoreNodeEntity(configuration);
 
-        entity->CreateComponent<GeneralNodeFrameComponent>(nodeType);
+        entity->CreateComponent<GeneralNodeFrameComponent>();
         entity->CreateComponent<StylingComponent>(Styling::Elements::Node, AZ::EntityId(), nodeType);        
-        entity->CreateComponent<GeneralNodeLayoutComponent>(nodeType);
-        entity->CreateComponent<GeneralNodeTitleComponent>(nodeType);
-        entity->CreateComponent<GeneralSlotLayoutComponent>(nodeType);
+        entity->CreateComponent<GeneralNodeLayoutComponent>();
+        entity->CreateComponent<GeneralNodeTitleComponent>();
+        entity->CreateComponent<GeneralSlotLayoutComponent>();
         entity->CreateComponent<NodeLayerControllerComponent>();
 
         return entity;
     }
 
-    GeneralNodeLayoutComponent::GeneralNodeLayoutComponent(AZStd::string nodeType)
-        : m_nodeType(AZStd::move(nodeType))
-        , m_title(nullptr)
+    GeneralNodeLayoutComponent::GeneralNodeLayoutComponent()
+        : m_title(nullptr)
         , m_slots(nullptr)
     {
     }
@@ -73,15 +72,10 @@ namespace GraphCanvas
     {
         NodeLayoutComponent::Init();
 
-        m_layoutOrientation = m_nodeType == Styling::Elements::Small ? Qt::Horizontal : Qt::Vertical;
-
-        m_layout = new QGraphicsLinearLayout(m_layoutOrientation);
-        m_layout->setInstantInvalidatePropagation(true);
-
         m_slots = new QGraphicsLinearLayout(Qt::Vertical);
         m_slots->setInstantInvalidatePropagation(true);
 
-        m_title = new QGraphicsLinearLayout(m_layoutOrientation);
+        m_title = new QGraphicsLinearLayout(Qt::Vertical);
         m_title->setInstantInvalidatePropagation(true);
     }
 
@@ -106,7 +100,15 @@ namespace GraphCanvas
 
     void GeneralNodeLayoutComponent::OnNodeActivated()
     {
-        if (m_layoutOrientation == Qt::Vertical)
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+        Qt::Orientation layoutOrientation = nodeType == Styling::Elements::Small ? Qt::Horizontal : Qt::Vertical;
+
+        m_layout = new QGraphicsLinearLayout(layoutOrientation);
+        m_layout->setInstantInvalidatePropagation(true);
+
+        if (layoutOrientation == Qt::Vertical)
         {
             QGraphicsWidget* titleGraphicsItem = nullptr;
             NodeTitleRequestBus::EventResult(titleGraphicsItem, GetEntityId(), &NodeTitleRequests::GetGraphicsWidget);

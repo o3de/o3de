@@ -53,12 +53,6 @@ namespace GraphCanvas
     {
     }
 
-    GeneralSlotLayoutComponent::GeneralSlotLayoutComponent(const AZStd::string& nodeType)
-        : m_enableDividers(false)
-        , m_nodeType(nodeType)
-    {
-    }
-
     GeneralSlotLayoutComponent::~GeneralSlotLayoutComponent()
     {
     }
@@ -141,7 +135,6 @@ namespace GraphCanvas
         : QGraphicsWidget(parent)
         , m_inputs(nullptr)
         , m_outputs(nullptr)
-        , m_nodeType(nodeType)
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
@@ -182,7 +175,7 @@ namespace GraphCanvas
         // <input><spacer><output>
         m_layout->addItem(m_inputs);
 
-        if (m_nodeType != Styling::Elements::Small)
+        if (nodeType != Styling::Elements::Small)
         {
             m_horizontalSpacer = new QGraphicsWidget();
             m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -412,7 +405,6 @@ namespace GraphCanvas
         : m_nodeSlots(nodeSlots)
         , m_entityId(nodeSlots.GetEntityId())
         , m_addedToScene(false)
-        , m_nodeType(nodeSlots.m_nodeType)
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         setGraphicsItem(this);
@@ -808,7 +800,10 @@ namespace GraphCanvas
                     m_nodeSlots.m_slotGroupConfigurations[slotType] = groupConfiguration;
                 }
 
-                retVal = aznew LinearSlotGroupWidget(this, m_nodeType);
+                AZStd::string nodeType;
+                StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+                retVal = aznew LinearSlotGroupWidget(this, nodeType);
                 retVal->UpdateStyle(m_styleHelper);
 
                 m_slotGroups[slotType] = retVal;

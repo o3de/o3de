@@ -51,18 +51,12 @@ namespace GraphCanvas
     }
 
     GeneralNodeTitleComponent::GeneralNodeTitleComponent()
-        : m_nodeType("")
-    {
-    }
-
-    GeneralNodeTitleComponent::GeneralNodeTitleComponent(const AZStd::string& nodeType)
-        : m_nodeType(nodeType)
     {
     }
 
     void GeneralNodeTitleComponent::Init()
     {
-        m_generalNodeTitleWidget = aznew GeneralNodeTitleGraphicsWidget(GetEntityId(), m_nodeType);
+        m_generalNodeTitleWidget = aznew GeneralNodeTitleGraphicsWidget(GetEntityId());
     }
 
     void GeneralNodeTitleComponent::Activate()
@@ -222,16 +216,6 @@ namespace GraphCanvas
     ///////////////////////////////////
     GeneralNodeTitleGraphicsWidget::GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId)
         : m_entityId(entityId)
-        , m_nodeType("")
-        , m_paletteOverride(nullptr)
-        , m_colorOverride(nullptr)
-    {
-        Initialize();
-    }
-
-    GeneralNodeTitleGraphicsWidget::GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId, const AZStd::string& nodeType)
-        : m_entityId(entityId)
-        , m_nodeType(nodeType)
         , m_paletteOverride(nullptr)
         , m_colorOverride(nullptr)
     {
@@ -466,7 +450,10 @@ namespace GraphCanvas
     {
         SceneNotificationBus::Handler::BusConnect(scene);
 
-        if (m_nodeType == Styling::Elements::Small)
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+        if (nodeType == Styling::Elements::Small)
         {
             m_titleWidget->SetAlignment(Qt::AlignCenter);
         }
@@ -495,7 +482,10 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
 
-        if (m_nodeType == Styling::Elements::Small)
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+        if (nodeType == Styling::Elements::Small)
         {
             return;
         }

@@ -37,7 +37,6 @@ namespace GraphCanvas
         static void Reflect(AZ::ReflectContext*);
 
         GeneralNodeTitleComponent();
-        GeneralNodeTitleComponent(const AZStd::string& nodeType);
         ~GeneralNodeTitleComponent() = default;
 
         // AZ::Component
@@ -103,8 +102,6 @@ namespace GraphCanvas
         GeneralNodeTitleComponentSaveData m_saveData;
         
         GeneralNodeTitleGraphicsWidget* m_generalNodeTitleWidget = nullptr;
-
-        const AZStd::string m_nodeType;
     };    
 
     //! The Title QGraphicsWidget for displaying a title
@@ -120,7 +117,6 @@ namespace GraphCanvas
         AZ_CLASS_ALLOCATOR(GeneralNodeTitleGraphicsWidget, AZ::SystemAllocator, 0);        
 
         GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId);
-        GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId, const AZStd::string& nodeType);
         ~GeneralNodeTitleGraphicsWidget() override;
 
         void Initialize();
@@ -183,7 +179,5 @@ namespace GraphCanvas
         Styling::StyleHelper* m_colorOverride;        
 
         Styling::StyleHelper m_styleHelper;
-
-        const AZStd::string m_nodeType;
     };
 }
