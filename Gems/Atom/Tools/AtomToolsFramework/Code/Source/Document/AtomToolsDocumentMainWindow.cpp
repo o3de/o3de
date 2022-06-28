@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Document/CreateDocumentDialog.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -227,6 +228,32 @@ namespace AtomToolsFramework
 
         m_actionPreviousTab->setEnabled(m_tabWidget->count() > 1);
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
+    }
+
+    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    {
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
+        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+            "Document System Settings",
+            "Document System Settings",
+            {
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                    "Display Error Message Dialogs",
+                    "Display message boxes for warnings and errors opening documents",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                    "Enable Automatic Reload",
+                    "Automatically reload documents after external modifications",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                    "Enable Automatic Reload Prompts",
+                    "Confirm before automatically reloading modified documents",
+                    true),
+            }));
+        return groups;
     }
 
     void AtomToolsDocumentMainWindow::AddDocumentTabBar()
