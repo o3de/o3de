@@ -14,15 +14,15 @@ import azlmbr.editor as editor
 import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
-                                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
+                                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
                                                  VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
                                                  VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                 SCRIPT_EVENT_FILE_PATH)
+                                                 SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT)
 
 class Tests():
-    new_event_created = ("Successfully created a new event", "Failed to create a new event")
-    child_event_created = ("Successfully created Child Event", "Failed to create Child Event")
+    new_event_created = ("New Script Event created", "Failed to create a new event")
+    child_event_created = ("Child Event created", "Failed to create Child Event")
     parameter_created = ("Successfully added parameter", "Failed to add parameter")
     parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
@@ -131,12 +131,24 @@ def open_node_palette(self):
 
 
 def open_script_canvas():
+    """
+    function for opening the script canvas UI
+
+    returns true / false result of helper function's attempt
+    """
     general.open_pane(SCRIPT_CANVAS_UI)
-    helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: general.is_pane_visible(SCRIPT_CANVAS_UI), WAIT_TIME_3)
+    return result
 
 def open_asset_editor():
+    """
+    function for opening the asset editor UI
+
+    returns true/false result of helper function's attempt
+    """
     general.open_pane(ASSET_EDITOR_UI)
-    helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+    result = helper.wait_for_condition(lambda: general.is_pane_visible(ASSET_EDITOR_UI), WAIT_TIME_3)
+    return result
 
 def canvas_node_palette_search(self, node_name, number_of_retries):
     """
@@ -147,15 +159,19 @@ def canvas_node_palette_search(self, node_name, number_of_retries):
     param node_name: the name of the node being searched for
     param number_of_retries: the number of times to search (click on the search button)
 
-    returns: None
+    returns: boolean value of the search attempt
     """
     self.node_tree_search_box.setText(node_name)
     helper.wait_for_condition(lambda: self.node_tree_search_box.text() == node_name, WAIT_TIME_3)
     # Try clicking ENTER in search box multiple times
+    found_node = False
     for _ in range(number_of_retries):
         QtTest.QTest.keyClick(self.node_tree_search_box, QtCore.Qt.Key_Enter, QtCore.Qt.NoModifier)
-        if pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None:
+        found_node = helper.wait_for_condition(
+            lambda: pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": node_name}) is not None, WAIT_TIME_3)
+        if found_node is True:
             break
+    return found_node
 
 def get_node_palette_node_tree_qt_object (self):
     """
@@ -320,3 +336,50 @@ def remove_script_event_parameter(self):
         lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
     )
     Report.result(Tests.parameter_removed, result)
+
+def add_empty_parameter_to_script_event(self, number_of_parameters):
+    """
+    Function for adding a new blank parameter to a script event
+
+    param self: the script calling this function
+    param number_of_parameters: the number of empty parameters to add
+
+    returns none
+    """
+    helper.wait_for_condition(
+        lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
+    parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
+    add_parameter = parameters.findChild(QtWidgets.QToolButton, "")
+
+    for _ in range(number_of_parameters):
+        add_parameter.click()
+
+def get_script_event_parameter_name_text(self):
+    """
+    function for retrieving the name field of script event parameters
+
+    param self: the script calling this function
+
+    returns a container with all the parameters' editable name fields
+    """
+    parameter_names = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
+    name_fields = []
+    for parameter_name in parameter_names:
+        name_fields.append(parameter_name.findChild(QtWidgets.QLineEdit))
+
+    return name_fields
+
+def get_script_event_parameter_type_combobox(self):
+    """
+    function for retrieving the type field of script event parameters
+
+    param self: the script calling this function
+
+    returns a container with all the parameters' editable type combo boxes
+    """
+    parameter_types = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Type")
+    type_combo_boxes =[]
+    for parameter_type in parameter_types:
+        type_combo_boxes.append(parameter_type.findChild(QtWidgets.QComboBox))
+
+    return type_combo_boxes

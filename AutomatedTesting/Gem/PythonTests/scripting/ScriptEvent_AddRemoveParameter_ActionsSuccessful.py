@@ -8,17 +8,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 from PySide2 import QtWidgets
 from editor_python_test_tools.utils import Report
-from editor_python_test_tools.utils import TestHelper as helper
 import editor_python_test_tools.pyside_utils as pyside_utils
-import azlmbr.bus as bus
-import azlmbr.editor as editor
 import scripting_utils.scripting_tools as tools
 import azlmbr.legacy.general as general
-from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SAVE_ASSET_AS, WAIT_TIME_3, SCRIPT_EVENT_FILE_PATH)
+from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_FILE_PATH)
 
 # fmt: off
 class Tests():
     file_saved = ("Successfully saved event asset", "Failed to save event asset")
+    asset_editor_opened = ("asset editor successfully opened",    "Asset editor failed to open")
 # fmt: on
 
 class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
@@ -59,7 +57,8 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         general.close_pane(ASSET_EDITOR_UI)
 
         # 1) Open the asset editor
-        tools.open_asset_editor()
+        result = tools.open_asset_editor()
+        Report.result(Tests.asset_editor_opened, result)
 
         # 2) Initialize the editor and asset editor qt objects
         tools.initialize_editor_object(self)

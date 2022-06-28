@@ -8,19 +8,19 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
-from PySide2 import QtWidgets, QtTest, QtCore
+from PySide2 import QtWidgets
 import editor_python_test_tools.pyside_utils as pyside_utils
 import azlmbr.legacy.general as general
 import azlmbr.paths as paths
 import scripting_utils.scripting_tools as tools
-from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI, EVENTS_QT,
-                                                 DEFAULT_METHOD_NAME, EVENT_NAME_QT, NAME_STRING, PARAMETERS_QT, WAIT_TIME_3)
+from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, DEFAULT_METHOD_NAME, EVENT_NAME_QT,
+                                                 NAME_STRING, WAIT_TIME_3, PARAMETER_NAME)
 
 
 # fmt: off
 class Tests():
-    new_event_created   = ("New Script Event created",    "New Script Event not created")
-    child_event_created = ("Child Event created",         "Child Event not created")
+    script_canvas_opened = ("Script canvas successfully opened",    "Script Canvas failed to open")
+    asset_editor_opened = ("asset editor successfully opened",    "Asset editor failed to open")
     params_added        = ("New parameters added",        "New parameters are not added")
     file_saved          = ("Script event file saved",     "Script event file did not save")
     node_found          = ("Node found in Script Canvas", "Node not found in Script Canvas")
@@ -91,29 +91,18 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
         # 1) Open Asset Editor
         # Initially close the Asset Editor and then reopen to ensure we don't have any existing assets open
         general.close_pane(ASSET_EDITOR_UI) # this doesn't close a file that was previously open if you had just run a test that created an asset
-        tools.open_asset_editor()
+        result = tools.open_asset_editor()
+        Report.result(Tests.asset_editor_opened, result)
         tools.initialize_editor_object(self)
 
         # 2) Initialize asset editor, script canvas and create new Script Event file with one method
         tools.initialize_asset_editor_object(self)
-        tools.open_script_canvas()
+        result = tools.open_script_canvas()
+        Report.result(Tests.script_canvas_opened, result)
         tools.initialize_sc_editor_objects(self)
-        action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
-        action.trigger()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None
-                    and self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "") is not None,
-            WAIT_TIME_3,
-        )
-        Report.result(Tests.new_event_created, result)
+        tools.create_script_event(self)
 
         # 3) Add new method and set name to it
-        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
-        add_event.click()
-        result = helper.wait_for_condition(
-            lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, EVENT_NAME_QT) is not None, WAIT_TIME_3
-        )
-        Report.result(Tests.child_event_created, result)
         tools.expand_qt_container_rows(self, EVENT_NAME_QT)
         tools.expand_qt_container_rows(self, NAME_STRING)
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
@@ -123,11 +112,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
                 line_edit.setText(TEST_METHOD_NAME)
 
         # 4) Add new parameters of each type
-        helper.wait_for_condition(lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
-        parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
-        add_param = parameters.findChild(QtWidgets.QToolButton, "")
-        for _ in range(N_VAR_TYPES):
-            add_param.click()
+        tools.add_empty_parameter_to_script_event(self, N_VAR_TYPES)
 
         # 5) Verify if parameters are added
         result = helper.wait_for_condition(lambda: self.verify_added_params(), WAIT_TIME_3)
@@ -139,29 +124,25 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 7) Set different names and datatypes for each parameter
         tools.expand_qt_container_rows(self, NAME_STRING)
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, NAME_STRING)
         index = 0
-        for child in children:
-            line_edit = child.findChild(QtWidgets.QLineEdit)
-            if line_edit is not None and line_edit.text() == "ParameterName":
-                line_edit.setText(f"param_{index}")
+        name_fields = tools.get_script_event_parameter_name_text(self)
+        for name_field in name_fields:
+            if name_field is not None and name_field.text() == PARAMETER_NAME:
+                name_field.setText(f"param_{index}")
                 index += 1
 
-        children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Type")
         index = 0
-        for child in children:
-            combo_box = child.findChild(QtWidgets.QComboBox)
-            if combo_box is not None and index < N_VAR_TYPES:
-                combo_box.setCurrentIndex(index)
+        type_combo_boxes = tools.get_script_event_parameter_type_combobox(self)
+        for type_combo_box in type_combo_boxes:
+            if type_combo_box is not None and index < N_VAR_TYPES:
+                type_combo_box.setCurrentIndex(index)
                 index += 1
 
         # 8) Save file and verify node in SC Node Palette
         Report.result(Tests.file_saved, tools.save_script_event_file(self, FILE_PATH))
         tools.open_node_palette(self)
         tools.initialize_node_palette_object(self)
-        tools.canvas_node_palette_search(self, TEST_METHOD_NAME, SEARCH_RETRY_ATTEMPTS)
-        result = helper.wait_for_condition(lambda:
-                                           pyside_utils.find_child_by_pattern(self.node_tree_view, {"text": TEST_METHOD_NAME}) is not None, WAIT_TIME_3)
+        result = tools.canvas_node_palette_search(self, TEST_METHOD_NAME, SEARCH_RETRY_ATTEMPTS)
         Report.result(Tests.node_found, result)
 
         # 9) Close Asset Editor
