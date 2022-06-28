@@ -53,6 +53,7 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+            incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
             incompatible.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
         }
 
