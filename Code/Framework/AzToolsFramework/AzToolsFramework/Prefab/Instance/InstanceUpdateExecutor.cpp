@@ -40,12 +40,6 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
         {
-            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            AZ_Assert(m_prefabFocusInterface != nullptr,
-                "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
-                "Prefab Focus Interface could not be found. "
-                "Check that it is being correctly initialized.");
-
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "

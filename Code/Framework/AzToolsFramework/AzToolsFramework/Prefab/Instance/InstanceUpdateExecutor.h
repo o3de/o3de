@@ -60,7 +60,6 @@ namespace AzToolsFramework
             //! gets initialized after the PrefabSystemComponent
             void LazyConnectGameModeEventHandler();
 
-            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
