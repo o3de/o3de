@@ -129,8 +129,8 @@ namespace Terrain
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
         void Reset();
-        //! Reset the first refresh clipmap flag so that all the clipmap image will be repainted.
-        void ResetFullRefreshClipmaps();
+        //! Reset full refresh flag so that all the clipmap image will be repainted.
+        void TriggerFullRefresh();
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);

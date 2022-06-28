@@ -203,7 +203,7 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
-    void TerrainClipmapManager::ResetFullRefreshClipmaps()
+    void TerrainClipmapManager::TriggerFullRefresh()
     {
         m_fullRefreshClipmaps = true;
     }
@@ -597,49 +597,49 @@ namespace Terrain
     void TerrainClipmapManager::OnTerrainDataChanged(
         [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     // TerrainMacroMaterialNotificationBus overrides...
     void TerrainClipmapManager::OnTerrainMacroMaterialCreated(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const MacroMaterialData& material)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainMacroMaterialChanged(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const MacroMaterialData& material)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainMacroMaterialRegionChanged(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, [[maybe_unused]] const AZ::Aabb& newRegion)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainMacroMaterialDestroyed([[maybe_unused]] AZ::EntityId entityId)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     // TerrainAreaMaterialNotificationBus overrides...
     void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialCreated(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialDestroyed([[maybe_unused]] AZ::EntityId entityId)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainDefaultSurfaceMaterialChanged(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> newMaterial)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingCreated(
@@ -647,13 +647,13 @@ namespace Terrain
         [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag,
         [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingDestroyed(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingMaterialChanged(
@@ -661,7 +661,7 @@ namespace Terrain
         [[maybe_unused]] SurfaceData::SurfaceTag surfaceTag,
         [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> material)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingTagChanged(
@@ -669,24 +669,24 @@ namespace Terrain
         [[maybe_unused]] SurfaceData::SurfaceTag oldSurfaceTag,
         [[maybe_unused]] SurfaceData::SurfaceTag newSurfaceTag)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionCreated(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& region)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionDestroyed(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 
     void TerrainClipmapManager::OnTerrainSurfaceMaterialMappingRegionChanged(
         [[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, [[maybe_unused]] const AZ::Aabb& newRegion)
     {
-        ResetFullRefreshClipmaps();
+        TriggerFullRefresh();
     }
 }
