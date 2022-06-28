@@ -1487,7 +1487,7 @@ namespace PhysX
 
         // Save initial values
         const AZ::Vector3 comBefore = m_rigidBody->GetCenterOfMassWorld();
-        const AZ::Matrix3x3 inertiaBefore = m_rigidBody->GetInverseInertiaWorld();
+        const AZ::Matrix3x3 inertiaBefore = m_rigidBody->GetInertiaWorld();
         const float massBefore = m_rigidBody->GetMass();
 
         // Shape will be simulated for ALL and MIXED shape modes
@@ -1515,7 +1515,7 @@ namespace PhysX
 
         const float massAfter = m_rigidBody->GetMass();
         const AZ::Vector3 comAfter = m_rigidBody->GetCenterOfMassWorld();
-        const AZ::Matrix3x3 inertiaAfter = m_rigidBody->GetInverseInertiaWorld();
+        const AZ::Matrix3x3 inertiaAfter = m_rigidBody->GetInertiaWorld();
 
         using ::testing::Not;
         using ::testing::FloatNear;

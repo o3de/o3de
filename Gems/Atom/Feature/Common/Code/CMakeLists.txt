@@ -132,6 +132,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_Feature_Common.Public
     )
 
+    set(runtime_dependencies_builders ${pal_source_dir}/runtime_dependencies_builders.cmake)
     ly_add_target(
         NAME Atom_Feature_Common.Builders GEM_MODULE
 
@@ -139,7 +140,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${runtime_dependencies_tools}
+            ${runtime_dependencies_builders}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Builders

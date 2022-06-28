@@ -25,9 +25,6 @@ namespace LandscapeCanvas
         GraphContext();
         virtual ~GraphContext() = default;
 
-        //! Overridden for custom handling of invalid entity IDs
-        GraphModel::DataTypePtr GetDataTypeForValue(const AZStd::any& value) const override;
-
     private:
         static AZStd::shared_ptr<GraphContext> s_instance;
     };

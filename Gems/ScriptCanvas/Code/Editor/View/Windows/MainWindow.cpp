@@ -1069,7 +1069,7 @@ namespace ScriptCanvasEditor
         , AZStd::string scanFolder
         , [[maybe_unused]] AZ::Uuid fileAssetId)
     {
-        auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId, {}));
+        auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId));
         if (handle)
         {
             if (!IsRecentSave(*handle))
@@ -1091,7 +1091,7 @@ namespace ScriptCanvasEditor
         , [[maybe_unused]] AZStd::string scanFolder
         , AZ::Uuid fileAssetId)
     {
-        SourceHandle handle(nullptr, fileAssetId, relativePath);
+        SourceHandle handle = SourceHandle::FromRelativePath(nullptr, fileAssetId, relativePath);
         {
             if (!IsRecentSave(handle))
             {
@@ -1256,7 +1256,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RemoveScriptCanvasAsset(const SourceHandle& assetId)
     {
-        AssetHelpers::PrintInfo("RemoveScriptCanvasAsset : %s", assetId.ToString().c_str());
+        AZ_TracePrintf("ScriptCanvas", "RemoveScriptCanvasAsset : %s\n", assetId.ToString().c_str());
         m_assetCreationRequests.erase(assetId);
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
@@ -1373,7 +1373,9 @@ namespace ScriptCanvasEditor
         }
 
         m_errorFilePath.clear();
-        auto activeGraph = SourceHandle(result.m_handle, assetInfo.m_assetId.m_guid, fullPath);
+
+
+        auto activeGraph =  SourceHandle::FromRelativePath(result.m_handle, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
         
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
@@ -1513,7 +1515,7 @@ namespace ScriptCanvasEditor
             AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + SourceDescription::GetFileExtension()).data(), assetPath);
             AZ::Data::AssetInfo assetInfo;
 
-            if (!AssetHelpers::GetAssetInfo(assetPath, assetInfo))
+            if (!AssetHelpers::GetSourceInfo(assetPath, assetInfo))
             {
                 break;
             }
@@ -1564,7 +1566,8 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::DataPtr graph = EditorGraph::Create();
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
-        SourceHandle handle = SourceHandle(graph, assetId, assetPath);
+        auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(graph, assetId), assetPath);
+        SourceHandle handle = relativeOption ? *relativeOption : SourceHandle(graph, assetId);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
         
@@ -1632,16 +1635,16 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const SourceHandle& inMemoryAssetIdIn, Save save)
+    bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save)
     {
-        SourceHandle inMemoryAssetId = inMemoryAssetIdIn;
+        SourceHandle sourceHandle = sourceHandleIn;
 
-        if (!inMemoryAssetId.IsGraphValid())
+        if (!sourceHandle.IsGraphValid())
         {
             return false;
         }
 
-        if (inMemoryAssetId.Get()->IsScriptEventExtension())
+        if (sourceHandle.Get()->IsScriptEventExtension())
         {
             QMessageBox mb
                 ( QMessageBox::Warning
@@ -1656,41 +1659,47 @@ namespace ScriptCanvasEditor
             }
         }
 
-        if (inMemoryAssetId.Path().Extension() == ".scriptevents")
+        if (sourceHandle.Path().Extension() == ".scriptevents")
         {
-            auto newPath = inMemoryAssetId.Path();
+            auto newPath = sourceHandle.Path();
             newPath.ReplaceExtension(".scriptcanvas");
-            inMemoryAssetId = SourceHandle(inMemoryAssetId, newPath);
+            if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(sourceHandle, newPath))
+            {
+                sourceHandle = *relativeOption;
+            }
         }        
 
-        if (!m_activeGraph.AnyEquals(inMemoryAssetId))
+        if (!m_activeGraph.AnyEquals(sourceHandle))
         {
-            OnChangeActiveGraphTab(inMemoryAssetId);
+            OnChangeActiveGraphTab(sourceHandle);
         }
 
-        PrepareAssetForSave(inMemoryAssetId);
+        PrepareAssetForSave(sourceHandle);
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
         bool isValidFileName = false;
-            
+
+        AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
+        projectSourcePath /= "ScriptCanvas";
+
         if (save == Save::InPlace)
         {
             isValidFileName = true;
             suggestedFileFilter = SourceDescription::GetFileExtension();
-            suggestedFilename = inMemoryAssetId.Path().c_str();
+            suggestedFilename = sourceHandle.Path().Native();
         }
         else
         {
             suggestedFileFilter = SourceDescription::GetFileExtension();
 
-            if (inMemoryAssetId.Path().empty())
+            if (sourceHandle.Path().empty())
             {
-                suggestedFilename = SourceDescription::GetSuggestedSavePath();
+                suggestedFilename = projectSourcePath.Native();
             }
             else
             {
-                suggestedFilename = inMemoryAssetId.Path().c_str();
+                suggestedFilename = sourceHandle.Path().Native();
             }
         }
         
@@ -1753,7 +1762,7 @@ namespace ScriptCanvasEditor
                 return false;
             }
 
-            SaveAs(internalStringFile, inMemoryAssetId);
+            SaveAs(internalStringFile, sourceHandle);
             m_newlySavedFile = internalStringFile;
             // Forcing the file add here, since we are creating a new file
             AddRecentFile(m_newlySavedFile.c_str());
@@ -1797,11 +1806,9 @@ namespace ScriptCanvasEditor
             int currentTabIndex = m_tabBar->currentIndex();
 
             AZ::Data::AssetInfo assetInfo;
-            assetInfo.m_assetId = fileAssetId.Id();
-            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path().c_str(), assetInfo)
+            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetSourceInfo(fileAssetId.Path().c_str(), assetInfo)
                 , "Failed to find asset info for source file just saved: %s", fileAssetId.Path().c_str());
-
-            fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
+            fileAssetId = SourceHandle::FromRelativePath(fileAssetId, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
 
             // this path is questionable, this is a save request that is not the current graph
             // We've saved as over a new graph, so we need to close the old one.
@@ -1822,9 +1829,6 @@ namespace ScriptCanvasEditor
 
             auto tabData = m_tabBar->GetTabData(saveTabIndex);
             tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
-
-            // keep the old data, and take the new ID and path if either have changed.
-            fileAssetId = SourceHandle(tabData->m_assetId, fileAssetId.Id(), fileAssetId.Path());
 
             tabData->m_assetId = fileAssetId;
             m_tabBar->SetTabData(*tabData, saveTabIndex);
@@ -1864,17 +1868,26 @@ namespace ScriptCanvasEditor
         return OnFileSave();
     }
 
-    void MainWindow::SaveAs(AZStd::string_view path, SourceHandle inMemoryAssetId)
+    void MainWindow::SaveAs(AZStd::string_view path, SourceHandle sourceHandle)
     {
-        DisableAssetView(inMemoryAssetId);
+        // clear the AZ::Uuid because it will change
+        if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(sourceHandle, AZ::Uuid::CreateNull()), path))
+        {
+            sourceHandle = *relativeOption;
+        }
+        else
+        {
+            sourceHandle = SourceHandle::FromRelativePath(SourceHandle(sourceHandle, AZ::Uuid::CreateNull()), path);
+        }
+
+        DisableAssetView(sourceHandle);
         UpdateSaveState(false);
         m_fileSaver = AZStd::make_unique<VersionExplorer::FileSaver>
                 ( nullptr
                 , [this](const VersionExplorer::FileSaveResult& fileSaveResult) { OnSaveCallBack(fileSaveResult); });
 
-        SourceHandle newLocation(inMemoryAssetId, AZ::Uuid::CreateNull(), path);
-        MarkRecentSave(newLocation);
-        m_fileSaver->Save(newLocation);
+        MarkRecentSave(sourceHandle);
+        m_fileSaver->Save(sourceHandle);
 
         BlockCloseRequests();        
     }
@@ -2414,7 +2427,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        AssetHelpers::PrintInfo("SetActiveAsset : from: %s to %s", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
+        AZ_TracePrintf("ScriptCanvas", "SetActiveAsset : from: %s to %s\n", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
 
         if (fileAssetId.IsGraphValid())
         {
@@ -2462,7 +2475,7 @@ namespace ScriptCanvasEditor
     {
         if (m_activeGraph.IsGraphValid())
         {
-            AssetHelpers::PrintInfo("RefreshActiveAsset : m_activeGraph (%s)", m_activeGraph.ToString().c_str());
+            AZ_TracePrintf("ScriptCanvas", "RefreshActiveAsset : m_activeGraph (%s)\n", m_activeGraph.ToString().c_str());
             if (auto view = m_tabBar->ModOrCreateTabView(m_tabBar->FindTab(m_activeGraph)))
             {
                 view->ShowScene(m_activeGraph.Get()->GetScriptCanvasId());

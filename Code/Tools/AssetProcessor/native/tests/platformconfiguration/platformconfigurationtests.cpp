@@ -55,9 +55,9 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BadPlatform)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_badplatform");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 }
 
 
@@ -71,9 +71,9 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoPlatform)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noplatform");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
@@ -86,9 +86,9 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_NoScanFolders)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_noscans");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
@@ -101,9 +101,9 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BrokenRecognizers)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_broken_recognizers");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
@@ -116,9 +116,9 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     // verify the data.
     ASSERT_NE(config.GetPlatformByIdentifier(AzToolsFramework::AssetSystem::GetHostAssetPlatform()), nullptr);
@@ -330,29 +330,32 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     AssetUtilities::ComputeProjectName(EmptyDummyProjectName, true);
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
-    ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
+    ASSERT_EQ(config.GetScanFolderCount(), 4); // the two, and then the one that has the same data as prior but different identifier, plus hardcoded intermediates scanfolder
     QString scanName = AssetUtilities::ComputeProjectPath(true) + " Scan Folder";
-    ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), scanName);
-    ASSERT_EQ(config.GetScanFolderAt(0).RecurseSubFolders(), true);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetOrder(), 0);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetPortableKey(), QString("Game"));
 
-    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("FeatureTests"));
-    ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), false);
-    ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 5000);
-    // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("FeatureTests"));
+    // Scanfolder 0 is the intermediate assets scanfolder, we don't need to check that folder, so start checking at 1
 
-    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), scanName);
+    ASSERT_EQ(config.GetScanFolderAt(1).RecurseSubFolders(), true);
+    ASSERT_EQ(config.GetScanFolderAt(1).GetOrder(), 0);
+    ASSERT_EQ(config.GetScanFolderAt(1).GetPortableKey(), QString("Game"));
+
+    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("FeatureTests"));
     ASSERT_EQ(config.GetScanFolderAt(2).RecurseSubFolders(), false);
-    ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 6000);
+    ASSERT_EQ(config.GetScanFolderAt(2).GetOrder(), 5000);
     // this proves that the featuretests name is used instead of the output prefix
-    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(2).GetPortableKey(), QString("FeatureTests"));
+
+    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("FeatureTests2"));
+    ASSERT_EQ(config.GetScanFolderAt(3).RecurseSubFolders(), false);
+    ASSERT_EQ(config.GetScanFolderAt(3).GetOrder(), 6000);
+    // this proves that the featuretests name is used instead of the output prefix
+    ASSERT_EQ(config.GetScanFolderAt(3).GetPortableKey(), QString("FeatureTests2"));
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderPlatformSpecific)
@@ -365,39 +368,40 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular_platform_scanfolder");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
-    ASSERT_EQ(config.GetScanFolderCount(), 5);
-    ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), QString("gameoutput"));
-    AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = config.GetScanFolderAt(0).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderCount(), 6); // +1 for hardcoded intermediates scanfolder
+    // Scanfolder 0 is the intermediate assets folder, so start at 1
+    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("gameoutput"));
+    AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = config.GetScanFolderAt(1).GetPlatforms();
     ASSERT_EQ(platforms.size(), 4);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("ios", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("server", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(1).GetDisplayName(), QString("editoroutput"));
-    platforms = config.GetScanFolderAt(1).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("editoroutput"));
+    platforms = config.GetScanFolderAt(2).GetPlatforms();
     ASSERT_EQ(platforms.size(), 2);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("folder1output"));
-    platforms = config.GetScanFolderAt(2).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("folder1output"));
+    platforms = config.GetScanFolderAt(3).GetPlatforms();
     ASSERT_EQ(platforms.size(), 1);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("folder2output"));
-    platforms = config.GetScanFolderAt(3).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(4).GetDisplayName(), QString("folder2output"));
+    platforms = config.GetScanFolderAt(4).GetPlatforms();
     ASSERT_EQ(platforms.size(), 3);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("ios", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("server", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
-    ASSERT_EQ(config.GetScanFolderAt(4).GetDisplayName(), QString("folder3output"));
-    platforms = config.GetScanFolderAt(4).GetPlatforms();
+    ASSERT_EQ(config.GetScanFolderAt(5).GetDisplayName(), QString("folder3output"));
+    platforms = config.GetScanFolderAt(5).GetPlatforms();
     ASSERT_EQ(platforms.size(), 0);
 }
 
@@ -412,11 +416,11 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    
+
     config.AddScanFolder(ScanFolderInfo("blahblah", "Blah ScanFolder", "sf2", true, true), true);
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     ASSERT_TRUE(config.IsFileExcluded("blahblah/$tmp_01.test"));
     ASSERT_FALSE(config.IsFileExcluded("blahblah/tmp_01.test"));
@@ -495,9 +499,9 @@ TEST_F(PlatformConfigurationUnitTests, ReadCheckServer_FromConfig_Valid)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     const AssetProcessor::RecognizerContainer& recogs = config.GetAssetRecognizerContainer();
 
@@ -545,9 +549,9 @@ TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes_AssetImporterExtension
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_metadata");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
-    m_absorber.Clear();
+    m_errorAbsorber->Clear();
     ASSERT_FALSE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), projectPath.c_str(), false, false));
-    ASSERT_GT(m_absorber.m_numErrorsAbsorbed, 0);
+    ASSERT_GT(m_errorAbsorber->m_numErrorsAbsorbed, 0);
     ASSERT_TRUE(config.MetaDataFileTypesCount() == 2);
 
     QStringList entriesToTest{ "aaa", "bbb" };
