@@ -24,6 +24,7 @@ namespace AssetProcessor
     {
         m_ui->setupUi(this);
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
+        //m_ui->productTable->Resize
         ResetText();
     }
 
@@ -100,7 +101,10 @@ namespace AssetProcessor
             return true;
         });
 
-        m_ui->productsValueLabel->setText(QString::number(productCount));
+        m_ui->SourceAssetDetailTabs->setTabText(0, QString("Product%1 (%2)").arg(
+            productCount == 1 ? "" : "s").
+            arg(productCount));
+
         if (productCount == 0)
         {
             m_ui->productTable->insertRow(productCount);
@@ -111,7 +115,8 @@ namespace AssetProcessor
 
         // The default list behavior is to maintain size and let you scroll within.
         // The entire frame is scrollable here, so the list should adjust to fit the contents.
-        m_ui->productTable->setMinimumHeight(m_ui->productTable->rowHeight(0) * productCount + 2 * m_ui->productTable->frameWidth());
+        //m_ui->productTable->setMinimumHeight(m_ui->productTable->rowHeight(0) * productCount + 2 * m_ui->productTable->frameWidth());
+        m_ui->productTable->resize(m_ui->SourceAssetDetailTabs->size());
         m_ui->productTable->adjustSize();
 
     }
@@ -227,8 +232,6 @@ namespace AssetProcessor
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
 
-        m_ui->productsTitleLabel->setVisible(visible);
-        m_ui->productsValueLabel->setVisible(visible);
         m_ui->productTable->setVisible(visible);
 
         m_ui->outgoingSourceDependenciesTitleLabel->setVisible(visible);

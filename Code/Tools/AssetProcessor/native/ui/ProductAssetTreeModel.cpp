@@ -9,10 +9,12 @@
 #include "ProductAssetTreeModel.h"
 #include "ProductAssetTreeItemData.h"
 
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Console/IConsole.h>
+
 
 namespace AssetProcessor
 {
@@ -169,6 +171,23 @@ namespace AssetProcessor
         const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product,
         bool modelIsResetting)
     {
+        AZStd::string platform;
+        m_sharedDbConnection->QueryJobByProductID(
+            product.m_productID,
+            [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+            {
+                platform = jobEntry.m_platform;
+                return true;
+            });
+
+        // Common platform is currently only for Intermediate Product Assets,
+        // which are functionally Source Assets, output as products from other Source Assets.
+        // Don't display them in both Source and Product Asset tabs, just the Source Assets tab.
+        if (platform == AssetBuilderSDK::CommonPlatformName)
+        {
+            return;
+        }
+
         const auto& existingEntry = m_productIdToTreeItem.find(product.m_productID);
         if (existingEntry != m_productIdToTreeItem.end())
         {
