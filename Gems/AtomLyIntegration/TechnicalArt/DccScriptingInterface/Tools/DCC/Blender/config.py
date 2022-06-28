@@ -30,88 +30,62 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 #os.environ['PYTHONINSPECT'] = 'True'
-_START = timeit.default_timer()  # start tracking
+_MODULE_START = timeit.default_timer()  # start tracking
 
 # global scope
 _MODULENAME = 'Tools.DCC.Blender.config'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
+
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
 # we need to set up basic access to the DCCsi
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
 site.addsitedir(_PATH_DCCSIG.as_posix())
 
 # set envar so DCCsi synthetic env bootstraps with it (config.py)
 from azpy.constants import ENVAR_PATH_DCCSIG
 os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.as_posix())
-
-
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug(f'Initializing: {_MODULENAME}')
-_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 _LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG.as_posix()}')
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
 # now we have dccsi azpy api access
-import azpy.config_utils
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
+from azpy.config_utils import *  # imports from __all__
+
+# these must be imported explicitly, they are not defined in __all__
+from azpy.config_utils import ENVAR_DCCSI_GDEBUG
+from azpy.config_utils import ENVAR_DCCSI_DEV_MODE
+from azpy.config_utils import ENVAR_DCCSI_LOGLEVEL
+from azpy.config_utils import ENVAR_DCCSI_GDEBUGGER
+from azpy.config_utils import FRMT_LOG_LONG
+from azpy.config_utils import STR_CROSSBAR
 
 # defaults, can be overriden/forced here for development
+from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-from azpy.constants import STR_PATH_DCCSI_PYTHON_LIB
-
-# override based on current executable
-_PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                         sys.version_info.major,
-                                                         sys.version_info.minor)
-_PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB)
+# this will boostrap access to the dccsi managed package dependancies
+_PATH_DCCSI_PYTHON_LIB = bootstrap_dccsi_py_libs()
 site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# _settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG.resolve()):
-    """Convenience method to set and retreive settings directly from module."""
+# This will import and retreive the core <dccsi>/config.py and settings
+_DCCSI_CORE_CONFIG = get_dccsi_config(_PATH_DCCSIG)
 
-    try:
-        Path(PATH_DCCSIG).exists()
-    except FileNotFoundError as e:
-        _LOGGER.debug(f"File does not exist: {PATH_DCCSIG}")
-        return None
-
-    # we can go ahead and just make sure the the DCCsi env is set
-    # module name config.py is SO generic this ensures we are importing a specific one
-    _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._DCCSI_CORE_CONFIG",
-                                                                Path(PATH_DCCSIG,
-                                                                     "config.py"))
-    _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
-    _spec_dccsi_config.loader.exec_module(_dccsi_config)
-
-    return _dccsi_config
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-_DCCSI_CORE_CONFIG = get_dccsi_config()
-settings = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=True)
+# now standalone we can validate the config. env, settings.
+_SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
+                                                  enable_o3de_pyside2=True,
+                                                  set_env=True)
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
 # we are enabling the O3DE PySide2 (aka QtForPython) access
+# to do: get o3de Qt running on a thread in blender:
+# https://github.com/friedererdmann/blender_pyside2_example
 
 # now we can extend the environment specific to Blender
 # start by grabbing the constants we want to work with as envars
@@ -125,16 +99,15 @@ from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
 #_DCCSI_PATH_BLENDER = Path(sys.prefix)
 #os.environ["DYNACONF_DCCSI_PATH_BLENDER"] = _DCCSI_PATH_BLENDER.resolve()
 #_LOGGER.debug(f"Blender Install: {_DCCSI_PATH_BLENDER}")
-
-from dynaconf import settings
-settings.setenv()
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def get_dccsi_blender_settings(settings):
+def get_config_settings(settings=_SETTINGS):
     return settings
 # -------------------------------------------------------------------------
+
+
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
@@ -150,9 +123,7 @@ if __name__ == '__main__':
         _DCCSI_GDEBUGGER = 'WING'
         break
 
-    from azpy.constants import STR_CROSSBAR
-
-    _MODULENAME = 'DCCsi.Tools.DCC.Blender.config'
+    _MODULENAME = 'DCCsi.Tools.DCC.Blender.config.cli'
 
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
@@ -179,7 +150,7 @@ if __name__ == '__main__':
 
     # happy print
     _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
+    _LOGGER.info('~ {} ... Running script as __main__'.format(_MODULENAME))
     _LOGGER.info(STR_CROSSBAR)
 
     # go ahead and run the rest of the configuration
@@ -246,10 +217,9 @@ if __name__ == '__main__':
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
         # To Do: implement debugger plugin pattern
 
-    # now standalone we can validate the config. env, settings.
-    # settings = get_config_settings(stub) # To Do: pipe in CLI
-    settings = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                      enable_o3de_pyside2=True)
+    # after CLI set the altered/extended env
+    settings = get_config_settings()
+    settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
     # CORE
     _LOGGER.info(STR_CROSSBAR)
@@ -268,10 +238,8 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
     _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(settings.PATH_DCCSI_CONFIG))
 
-    settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
-
     # end tracking here, the pyside test exits before hitting the end of script
-    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _MODULE_START))
 
     if args.exit:
         # return

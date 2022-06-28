@@ -60,7 +60,7 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-_START = timeit.default_timer()  # start tracking
+_MODULE_START = timeit.default_timer()  # start tracking
 # global scope, set up module logging, etc.
 _MODULENAME = 'config'
 _LOGGER = _logging.getLogger(_MODULENAME)
@@ -623,7 +623,7 @@ def init_o3de_python(engine_path=_O3DE_DEV,
 # -------------------------------------------------------------------------
 
 
-
+# -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_config_settings(engine_path=_O3DE_DEV,
                         engine_bin_path=None,
@@ -664,7 +664,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
                                                                       dccsi_sys_path,
                                                                       dccsi_pythonpath)
 
-    # that provide their own Qt dlls and Pyside2
+    # Many DCC apps provide their own Qt dlls and Pyside2
     # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     # _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     # assume our standalone python tools wants this access?
@@ -795,11 +795,9 @@ if __name__ == '__main__':
         _DCCSI_GDEBUG = True
         break
 
-    main_start = timeit.default_timer()  # start tracking
-
     from azpy.constants import STR_CROSSBAR
 
-    _MODULENAME = 'DCCsi.config'
+    _MODULENAME = 'DCCsi.config.cli'
 
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
@@ -826,7 +824,7 @@ if __name__ == '__main__':
 
     # happy print
     _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
+    _LOGGER.info(f'~ {_MODULENAME} ... Running module as __main__')
     _LOGGER.info(STR_CROSSBAR)
 
     # go ahead and run the rest of the configuration
@@ -935,7 +933,6 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
 
     args = parser.parse_args()
@@ -970,6 +967,8 @@ if __name__ == '__main__':
     if _DCCSI_GDEBUG:
         args.enable_python = True
         args.enable_qt = True
+
+    import o3de
 
     # now standalone we can validate the config. env, settings.
     settings = get_config_settings(engine_path=args.engine_path,
@@ -1050,7 +1049,9 @@ if __name__ == '__main__':
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
     # end tracking here, the pyside test exits before hitting the end of script
-    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+
+    _MODULE_END = timeit.default_timer() - _MODULE_START
+    _LOGGER.info(f'CLI {_MODULENAME} took: {_MODULE_END} sec')
 
     if _DCCSI_GDEBUG or args.test_pyside2:
         test_pyside2()  # test PySide2 access with a pop-up button
@@ -1060,6 +1061,9 @@ if __name__ == '__main__':
             _LOGGER.warning("Could not import 'pyside2uic'")
             _LOGGER.warning("Refer to: '{}/3rdParty/Python/README.txt'".format(settings.PATH_DCCSIG))
             _LOGGER.error(e)
+
+    # custom prompt
+    sys.ps1 = f"[{_MODULENAME}]>>"
 
     if args.exit:
         # return

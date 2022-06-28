@@ -58,11 +58,17 @@ _MODULENAME = 'azpy.config_utils'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
-__all__ = ['get_os',
-           'return_stub',
+__all__ = ['attach_debugger',
+           'get_os',
+           'return_stub_dir',
            'get_stub_check_path',
+           'get_o3de_engine_root',
+           'get_o3de_build_path',
            'get_dccsi_config',
-           'get_current_project']
+           'get_current_project_cfg',
+           'get_check_global_project',
+           'get_o3de_project_path',
+           'bootstrap_dccsi_py_libs']
 
 # dccsi site/code access
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
@@ -97,6 +103,8 @@ ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT'
 STR_PATH_DCCSI_PYTHON_LIB = '{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages'
 
 PATH_USER_HOME = expanduser("~")
+
+STR_CROSSBAR = str('{0}'.format('-' * 74))
 # --------------------------------------------------------------------------
 
 
@@ -550,7 +558,6 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpretter after config')
 
     args = parser.parse_args()
@@ -605,11 +612,11 @@ if __name__ == '__main__':
                                                     'CMakeCache.txt')).resolve()
         _LOGGER.info('PATH_O3DE_BUILD: {}'.format(_PATH_O3DE_BUILD.as_posix()))
 
-    # custom prompt
-    sys.ps1 = f"[{_MODULENAME}]>>"
-
     _MODULE_END = timeit.default_timer() - _MODULE_START
     _LOGGER.info(f'CLI {_MODULENAME} took: {_MODULE_END} sec')
+
+    # custom prompt
+    sys.ps1 = f"[{_MODULENAME}]>>"
 
     if args.exit:
         # return
