@@ -103,6 +103,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
+    SetupEditModeMenu();
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
@@ -195,6 +196,16 @@ void CViewportTitleDlg::SetupResolutionDropdownMenu()
     m_ui->m_resolutionMenu->setMenu(resolutionMenu);
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
 }
+
+void CViewportTitleDlg::SetupEditModeMenu()
+{
+    m_ui->m_editModeMenu->setMenu(GetEditModeMenu());
+    //connect(m_ui->m_editModeMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleEditMode);
+    //m_ui->m_editModeMenu->setPopupMode(QToolButton::MenuButtonPopup);
+    m_ui->m_editModeMenu->setAutoRaise(true);
+    m_ui->m_editModeMenu->setPopupMode(QToolButton::InstantPopup);
+}
+
 
 void CViewportTitleDlg::SetupViewportInformationMenu()
 {
@@ -428,6 +439,20 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
+void CViewportTitleDlg::SetNormalEditMode()
+{
+    AZ_Printf("Edit Mode", "Normal");
+    m_editMode = EditMode::Normal;
+    UpdateEditMode();
+}
+
+void CViewportTitleDlg::SetMonochromaticEditMode()
+{
+    AZ_Printf("Edit Mode", "Monochromatic");
+    m_editMode = EditMode::Monochromatic;
+    UpdateEditMode();
+}
+
 void CViewportTitleDlg::SetNoViewportInfo()
 {
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
@@ -453,6 +478,32 @@ void CViewportTitleDlg::SetCompactViewportInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdateEditMode()
+{
+    if (m_editModeMenu == nullptr)
+    {
+        // Nothing to update, just return;
+        return;
+    }
+
+    m_normalEditModeAction->setChecked(false);
+    m_monochromaticEditModeAction->setChecked(false);
+
+    switch (m_editMode)
+    {
+    case EditMode::Normal:
+        {
+            m_normalEditModeAction->setChecked(true);
+            break;
+        }
+    case EditMode::Monochromatic:
+        {
+            m_monochromaticEditModeAction->setChecked(true);
+            break;
+        }
+    }
+}
+
 void CViewportTitleDlg::UpdateDisplayInfo()
 {
     if (m_viewportInformationMenu == nullptr)
@@ -501,6 +552,11 @@ void CViewportTitleDlg::UpdateDisplayInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
+//void CViewportTitleDlg::OnToggleEditMode()
+//{
+//    UpdateEditMode();
+//}
+
 void CViewportTitleDlg::OnToggleDisplayInfo()
 {
     AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
@@ -701,6 +757,32 @@ QMenu* const CViewportTitleDlg::GetAspectMenu()
 {
     CreateAspectMenu();
     return m_aspectMenu;
+}
+
+QMenu* const CViewportTitleDlg::GetEditModeMenu()
+{
+    CreateEditModeMenu();
+    return m_editModeMenu;
+}
+
+void CViewportTitleDlg::CreateEditModeMenu()
+{
+    if (m_editModeMenu == nullptr)
+    {
+        m_editModeMenu = new QMenu("Edit Mode");
+
+        m_normalEditModeAction = new QAction(tr("None"), m_editModeMenu);
+        m_normalEditModeAction->setCheckable(true);
+        connect(m_normalEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalEditMode);
+        m_editModeMenu->addAction(m_normalEditModeAction);
+
+        m_monochromaticEditModeAction = new QAction(tr("Normal"), m_editModeMenu);
+        m_monochromaticEditModeAction->setCheckable(true);
+        connect(m_monochromaticEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticEditMode);
+        m_editModeMenu->addAction(m_monochromaticEditModeAction);
+
+        UpdateEditMode();
+    }
 }
 
 QMenu* const CViewportTitleDlg::GetViewportInformationMenu()

@@ -76,6 +76,16 @@
     </spacer>
    </item>
    <item>
+    <widget class="QToolButton" name="m_editModeMenu">
+     <property name="toolTip">
+      <string>Edit mode</string>
+     </property>
+     <property name="text">
+      <string>Edit mode</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QToolButton" name="m_cameraMenu">
      <property name="toolTip">
       <string>Camera settings</string>
