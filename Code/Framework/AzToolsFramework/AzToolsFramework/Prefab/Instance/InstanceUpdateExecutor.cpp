@@ -103,10 +103,9 @@ namespace AzToolsFramework
         void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(const Instance* instance)
         {
             AZStd::erase_if(m_instancesUpdateQueue, [instance](Instance* entry)
-                {
-                    return entry == instance;
-                }
-            );
+            {
+                return entry == instance;
+            });
         }
 
         void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
