@@ -717,7 +717,6 @@ class TestRunningTests(unittest.TestCase):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_artifact_manager = mock.MagicMock()
-        mock_artifact_manager.save_artifact.return_value = mock.MagicMock()
         mock_workspace.artifact_manager = mock_artifact_manager
         mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
@@ -728,9 +727,13 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
         mock_get_filepath.return_value = ""
+        mock_path_exists = mock.MagicMock()
+        mock_path_exists.return_value = True
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
+
         assert len(results) == 2
         assert isinstance(results['mock_test_name'], editor_test.Result.Pass)
         assert isinstance(results['mock_test_name_2'], editor_test.Result.Pass)
@@ -758,8 +761,9 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {'mock_test_name': mock.MagicMock(), 'mock_test_name_2': mock.MagicMock()}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
 
         assert len(results) == 2
         assert mock_cycle_crash.called
@@ -776,6 +780,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                  mock_retrieve_log, mock_retrieve_editor_log,
                                                                  mock_get_results, mock_retrieve_crash):
@@ -815,6 +820,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                    mock_retrieve_log, mock_retrieve_editor_log,
                                                                    mock_get_results, mock_retrieve_crash):

@@ -65,16 +65,8 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
     dir_name = os.path.dirname(starting_path)
 
     # the current log we are writing to
-    current_new_log = None
-
-    # Using this to make sure we don't impact other log names that have already been created
-    index = 1
-    while not current_new_log:
-        current_new_log_path = os.path.join(dir_name, f"SetUp" + str(index) + ".log")
-        if not os.path.exists(current_new_log_path):
-            current_new_log = open(current_new_log_path, "a+")
-        else:
-            index += 1
+    current_new_log_path = os.path.join(dir_name, f"SetUp" + ".log")
+    current_new_log = open(current_new_log_path, "a+")
 
     # loop through the log to split, and write to the split logs
     with open(destination_file) as log_file:
@@ -92,8 +84,9 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
             else:
                 current_new_log.write(line)
         # make sure to save the last log
+        last_log_name = current_new_log.name
         current_new_log.close()
-        workspace.artifact_manager.save_artifact(current_new_log.name)
+        workspace.artifact_manager.save_artifact(last_log_name)
 
 class EditorTest(abc.ABC):
     """
