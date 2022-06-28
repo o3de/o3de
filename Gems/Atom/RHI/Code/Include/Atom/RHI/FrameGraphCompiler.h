@@ -162,7 +162,7 @@ namespace AZ
 
             void CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase);
 
-            //Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
+            // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
             ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
             BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
@@ -170,6 +170,9 @@ namespace AZ
             // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
             ObjectCache<ImageView> m_imageViewCache;
             ObjectCache<BufferView> m_bufferViewCache;
+            // This map is used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
+            // once they have been replaced with a new view instance. 
+            AZStd::unordered_map<HashValue64, HashValue64> m_reverseLookupHash;
 
         };
     }

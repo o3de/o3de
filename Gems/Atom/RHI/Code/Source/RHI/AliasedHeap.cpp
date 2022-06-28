@@ -254,6 +254,8 @@ namespace AZ
                 // image is not in cache. Create a new one at the placed address, and add it to the cache.
                 else
                 {
+                    // Remove any existing resource entries from the cache before adding a new one
+                    RemoveFromCache(descriptor.m_attachmentId);
                     RHI::Ptr<Image> imagePtr = Factory::Get().CreateImage();
                     image = imagePtr.get();
 
@@ -272,6 +274,10 @@ namespace AZ
 
                     image->SetName(descriptor.m_attachmentId);
                     m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(imagePtr));
+                    if (!descriptor.m_attachmentId.IsEmpty())
+                    {
+                        m_reverseLookupHash.emplace(descriptor.m_attachmentId, hash);
+                    }
                 }
             }
 
@@ -301,6 +307,17 @@ namespace AZ
         void AliasedHeap::DeactivateImage(const AttachmentId& imageAttachment, Scope& scope)
         {
             DeactivateResourceInternal(imageAttachment, scope, AliasedResourceType::Image);
+        }
+
+        void AliasedHeap::RemoveFromCache(RHI::AttachmentId attachmentId)
+        {
+            bool isResourceRegistered = m_reverseLookupHash.contains(attachmentId);
+            if (isResourceRegistered)
+            {
+                HashValue64 originalHash = m_reverseLookupHash.find(attachmentId)->second;
+                m_cache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
+                m_reverseLookupHash.erase(attachmentId);
+            }
         }
 
         const AliasedHeapDescriptor& AliasedHeap::GetDescriptor() const

@@ -26,15 +26,13 @@ namespace AZ
             }
         };
 
-        /**
-         * ObjectCache is a least-recently-used map with a fixed capacity. If the capacity is exceeded,
-         * objects will be evicted from the map. When eviction occurs, the user-provided eviction callback is called.
-         * The cache holds a reference on the object. When eviction occurs that reference is released.
-         *
-         * The user is expected to search for an object, and if it doesn't exist, insert it. The inserted
-         * object should not be cached externally unless a reference is taken, since eviction results in
-         * forfeit of its internal reference.
-         */
+        //! ObjectCache is a least-recently-used map with a fixed capacity. If the capacity is exceeded,
+        //! objects will be evicted from the map. When eviction occurs, the user-provided eviction callback is called.
+        //! The cache holds a reference on the object. When eviction occurs that reference is released.
+        //!
+        //! The user is expected to search for an object, and if it doesn't exist, insert it. The inserted
+        //! object should not be cached externally unless a reference is taken, since eviction results in
+        //! forfeit of its internal reference.
         template <typename ObjectType, typename KeyType = size_t, typename EvictionCallback = ObjectCacheEvictionCallbackNull<ObjectType>>
         class ObjectCache
         {
@@ -46,10 +44,8 @@ namespace AZ
 
             ~ObjectCache();
 
-            /**
-             * Clears the object cache. This will call the eviction callback on each object, and
-             * release all internal references. The cache will then be empty.
-             */
+            //! Clears the object cache. This will call the eviction callback on each object, and
+            //! release all internal references. The cache will then be empty.
             void Clear()
             {
                 while (m_cacheList.size())
@@ -58,18 +54,14 @@ namespace AZ
                 }
             }
 
-            /**
-             * Specify a custom eviction callback to call when an object is evicted.
-             */
+            //! Specify a custom eviction callback to call when an object is evicted.
             void SetEvictionCallback(EvictionCallback evictionCallback)
             {
                 m_evictionCallback = evictionCallback;
             }
 
-            /**
-             * Sets the capacity of the cache. If capacity is exceeded when inserting, the least-recently-used object
-             * will be evicted.
-             */
+            //! Sets the capacity of the cache. If capacity is exceeded when inserting, the least-recently-used object
+            //! will be evicted.
             void SetCapacity(size_t capacity)
             {
                 AZ_Assert(capacity != 0, "Capacity cannot be 0.");
@@ -84,26 +76,20 @@ namespace AZ
                 m_capacity = capacity;
             }
 
-            /**
-             * Returns the capacity of the cache.
-             */
+            //! Returns the capacity of the cache.
             size_t GetCapacity() const
             {
                 return m_capacity;
             }
 
-            /**
-             * Returns the number of objects in the cache.
-             */
+            //! Returns the number of objects in the cache.
             size_t GetSize() const
             {
                 return m_cacheList.size();
             }
 
-            /**
-             * Finds an object in the cache. If the object exists, it will be returned. If not,
-             * nullptr will be returned.
-             */
+            //! Finds an object in the cache. If the object exists, it will be returned. If not,
+            //! nullptr will be returned.
             ObjectType* Find(KeyType key)
             {
                 auto findIt = m_cacheMap.find(key);
@@ -120,10 +106,22 @@ namespace AZ
                 return nullptr;
             }
 
-            /**
-             * Inserts an object with a specified key into the cache. The cache will evict an
-             * object before inserting if at capacity.
-             */
+            //! Erase a specific item with the provided key from the cache. 
+            void EraseItem(KeyType key)
+            {
+                auto findIt = m_cacheMap.find(key);
+                if (findIt != m_cacheMap.end())
+                {
+                    CacheItem* cacheItem = findIt->second;
+                    m_cacheMap.erase(cacheItem->m_key);
+                    m_cacheList.erase(*cacheItem);
+                    m_evictionCallback(cacheItem->m_object.get());
+                    delete cacheItem;
+                }
+            }
+
+            //! Inserts an object with a specified key into the cache. The cache will evict an
+            //! object before inserting if at capacity.
             void Insert(KeyType key, RHI::Ptr<ObjectType> object)
             {
                 if (m_cacheList.size() == m_capacity)

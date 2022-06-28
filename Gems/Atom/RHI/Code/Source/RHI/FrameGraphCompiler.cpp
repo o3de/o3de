@@ -724,12 +724,27 @@ namespace AZ
 
             if (!imageView)
             {
+                // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
+                // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
+                HashValue64 idViewHash = imageViewDescriptor.GetHash(TypeHash64(image->GetName()));
+                bool isResourceRegistered = m_reverseLookupHash.contains(idViewHash);
+                if (isResourceRegistered)
+                {
+                    HashValue64 originalHash = m_reverseLookupHash.find(idViewHash)->second;
+                    m_imageViewCache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
+                    m_reverseLookupHash.erase(idViewHash);
+                }
+
                 // Create a new image view instance and insert it into the cache.
                 Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
                 if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
                 {
                     imageView = imageViewPtr.get();
                     m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
+                    if (!image->GetName().IsEmpty())
+                    {
+                        m_reverseLookupHash.emplace(idViewHash, hash);
+                    }
                 }
                 else
                 {
