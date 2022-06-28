@@ -7,9 +7,11 @@
  */
 
 #include <UpdateProjectSettingsScreen.h>
+#include <PythonBindingsInterface.h>
 #include <ProjectManagerDefs.h>
 #include <FormImageBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
+#include <FormComboBoxWidget.h>
 
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -17,6 +19,7 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QPushButton>
+#include <QComboBox>
 
 namespace O3DE::ProjectManager
 {
@@ -24,6 +27,9 @@ namespace O3DE::ProjectManager
         : ProjectSettingsScreen(parent)
         , m_userChangedPreview(false)
     {
+        m_projectEngine = new FormComboBoxWidget(tr("Engine"), {}, this);
+        m_verticalLayout->addWidget(m_projectEngine);
+
         m_projectPreview = new FormImageBrowseEditWidget(tr("Project Preview"), "", this);
         m_projectPreview->lineEdit()->setReadOnly(true);
         connect(m_projectPreview->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
@@ -120,6 +126,38 @@ namespace O3DE::ProjectManager
         m_projectId->lineEdit()->setText(projectInfo.m_id);
 
         UpdateProjectPreviewPath();
+
+        auto combobox = m_projectEngine->comboBox();
+        combobox->clear();
+
+        // we use engine path which is unique instead of engine name which may not be
+        QString enginePath{};
+        if(auto result = PythonBindingsInterface::Get()->GetProjectEngine(projectInfo.m_path); result)
+        {
+            enginePath = result.GetValue<EngineInfo>().m_path;
+        }
+
+        int index = 0;
+        if (auto result = PythonBindingsInterface::Get()->GetAllEngineInfos(); result)
+        {
+            for (auto engineInfo : result.GetValue<QVector<EngineInfo>>())
+            {
+                if (!engineInfo.m_name.isEmpty())
+                {
+                    combobox->addItem(
+                        QString("%1 (%2)").arg(engineInfo.m_name, engineInfo.m_path),
+                        QStringList{ engineInfo.m_path, engineInfo.m_name });
+
+                    if (!enginePath.isEmpty() && enginePath == engineInfo.m_path)
+                    {
+                        combobox->setCurrentIndex(index);
+                    }
+                    index++;
+                }
+            }
+        }
+
+        combobox->setVisible(combobox->count() > 0);
     }
 
     void UpdateProjectSettingsScreen::UpdateProjectPreviewPath()

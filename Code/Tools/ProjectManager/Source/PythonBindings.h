@@ -34,6 +34,7 @@ namespace O3DE::ProjectManager
         bool StartPython() override;
 
         // Engine
+        AZ::Outcome<QVector<EngineInfo>> GetAllEngineInfos() override;
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
         AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) override;
         AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) override;

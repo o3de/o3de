@@ -82,7 +82,8 @@ QTabBar::tab:focus {
 /************** General (Forms) **************/
 
 #formLineEditWidget,
-#formBrowseEditWidget {
+#formBrowseEditWidget, 
+#formComboBoxWidget {
     max-width: 890px;
 }
 
@@ -144,6 +145,35 @@ QTabBar::tab:focus {
 #formFrame QLineEdit:disabled {
     color: #AAAAAA
 }
+
+#formFrame QComboBox {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    color:red;
+    min-width:810px;
+    max-width:810px;
+    line-height: 26px;
+    font-size: 18px;
+    height: 26px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#formFrame QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    padding-right:20px;
+    min-width: 24px;
+    max-width: 24px;
+    width:24px;
+}
+
+#formFrame QComboBox QListView::item {
+    line-height: 30px;
+    font-size: 18px;
+    height: 40px;
+}
+
 
 
 #formErrorLabel {
@@ -476,21 +506,23 @@ QTabBar::tab:focus {
 #projectButton  {
     min-width: 210px;
     max-width: 210px;
-    min-height: 330px;
-    max-height: 330px;
+    min-height: 324px;
+    max-height: 324px;
 }
 
 #projectButton > QFrame {
-    margin-top:6px;
+    margin-top:8px;
 }
 
 #projectButton #thisEngineLabel, #projectButton #otherEngineLabel {
+    margin-top:0px;
     font-weight:normal;
     font-size:12px;
+    color: #eee;
 }
 
 #projectButton #otherEngineLabel {
-    color: yellow;
+    color: #dd0;
 }
 
 #projectButton QLabel {

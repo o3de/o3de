@@ -439,6 +439,27 @@ namespace O3DE::ProjectManager
         return engineInfo;
     }
 
+    AZ::Outcome<QVector<EngineInfo>> PythonBindings::GetAllEngineInfos()
+    {
+        QVector<EngineInfo> engines;
+
+        auto result = ExecuteWithLockErrorHandling([&]
+        {
+            for (auto path : m_manifest.attr("get_manifest_engines")())
+            {
+                engines.push_back(EngineInfoFromPath(path));
+            }
+        });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure();
+        }
+
+        std::sort(engines.begin(), engines.end());
+        return AZ::Success(AZStd::move(engines));
+    }
+
     AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()
     {
         EngineInfo engineInfo;

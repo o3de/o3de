@@ -16,6 +16,8 @@ QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormComboBoxWidget)
+
     class UpdateProjectSettingsScreen
         : public ProjectSettingsScreen
     {
@@ -43,6 +45,7 @@ namespace O3DE::ProjectManager
 
         inline constexpr static int s_collapseButtonSize = 24;
 
+        FormComboBoxWidget* m_projectEngine;
         FormBrowseEditWidget* m_projectPreview;
         QLabel* m_projectPreviewImage;
         FormLineEditWidget* m_projectId;
