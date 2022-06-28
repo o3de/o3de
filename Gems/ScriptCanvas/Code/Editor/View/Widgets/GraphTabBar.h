@@ -37,6 +37,7 @@ namespace ScriptCanvasEditor
             SourceHandle m_assetId;
             QWidget* m_hostWidget = nullptr;
             CanvasWidget* m_canvasWidget = nullptr;
+            AZ::IO::Path m_absolutePath;
             Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
         };
 

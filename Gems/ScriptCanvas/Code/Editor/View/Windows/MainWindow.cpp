@@ -1499,10 +1499,11 @@ namespace ScriptCanvasEditor
         static int scriptCanvasEditorDefaultNewNameCount = 0;
 
         AZStd::string assetPath;
+        AZStd::string newAssetName;
 
         for (;;)
         {
-            AZStd::string newAssetName = AZStd::string::format(SourceDescription::GetAssetNamePattern()
+            newAssetName = AZStd::string::format(SourceDescription::GetAssetNamePattern()
                 , ++scriptCanvasEditorDefaultNewNameCount);
             
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
@@ -1521,7 +1522,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        auto createOutcome = CreateScriptCanvasAsset(assetPath);
+        auto createOutcome = CreateScriptCanvasAsset(newAssetName);
         if (!createOutcome.IsSuccess())
         {
             AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
@@ -1620,13 +1621,19 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::OnFileSave()
     {
-        if (auto metaData = m_tabBar->GetTabData(m_activeGraph); metaData && metaData->m_fileState == Tracker::ScriptCanvasFileState::NEW)
+        auto metaData = m_tabBar->GetTabData(m_activeGraph);
+        if (!metaData)
+        {
+            return false;
+        }
+
+        if (metaData && metaData->m_fileState == Tracker::ScriptCanvasFileState::NEW)
         {
             return SaveAssetImpl(m_activeGraph, Save::As);
         }
         else
         {
-            return SaveAssetImpl(m_activeGraph, Save::InPlace);
+            return SaveAssetImpl(m_activeGraph, Save::InPlace, metaData->m_absolutePath);
         }
     }
 
@@ -1635,7 +1642,7 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save)
+    bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save, AZ::IO::Path absolutePath)
     {
         SourceHandle sourceHandle = sourceHandleIn;
 
@@ -1677,39 +1684,50 @@ namespace ScriptCanvasEditor
         PrepareAssetForSave(sourceHandle);
 
         AZStd::string suggestedFilename;
+        AZStd::string suggestedDirectoryPath;
         AZStd::string suggestedFileFilter;
         bool isValidFileName = false;
 
         AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
-        projectSourcePath /= "ScriptCanvas";
+        projectSourcePath /= "ScriptCanvas//";
+        QString selectedFile;
 
         if (save == Save::InPlace)
         {
             isValidFileName = true;
             suggestedFileFilter = SourceDescription::GetFileExtension();
-            suggestedFilename = sourceHandle.Path().Native();
+            
+            auto sourceHandlePath = absolutePath;
+            selectedFile = absolutePath.Native().c_str();
+            suggestedFilename = sourceHandle.Path().Filename().Native();
+            sourceHandlePath.RemoveFilename();
+            suggestedDirectoryPath = sourceHandlePath.Native();
         }
         else
         {
             suggestedFileFilter = SourceDescription::GetFileExtension();
 
-            if (sourceHandle.Path().empty())
+            if (sourceHandle.Path().empty() || sourceHandle.Path() == sourceHandle.Path().Filename())
             {
-                suggestedFilename = projectSourcePath.Native();
+                suggestedDirectoryPath = projectSourcePath.Native();
+                suggestedFilename += sourceHandle.Path().Filename().Native();
             }
             else
             {
+                auto sourceHandlePath = sourceHandle.Path();
                 suggestedFilename = sourceHandle.Path().Native();
+                sourceHandlePath.RemoveFilename();
+                suggestedDirectoryPath = sourceHandlePath.Native();
             }
+
+            selectedFile = suggestedFilename.c_str();
         }
         
-        EnsureSaveDestinationDirectory(suggestedFilename);
         QString filter = suggestedFileFilter.c_str();
-        QString selectedFile = suggestedFilename.c_str();
-
+        
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedFilename.data(), filter);
+            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedDirectoryPath.data(), filter);
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
@@ -1723,13 +1741,6 @@ namespace ScriptCanvasEditor
                 }
 
                 AZStd::string fileName;
-
-                // Verify that the path is within the project
-
-                AZStd::string assetRoot;
-                AZStd::array<char, AZ::IO::MaxPathLength> assetRootChar;
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@", assetRootChar.data(), assetRootChar.size());
-                assetRoot = assetRootChar.data();
 
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
@@ -1829,7 +1840,7 @@ namespace ScriptCanvasEditor
 
             auto tabData = m_tabBar->GetTabData(saveTabIndex);
             tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
-
+            tabData->m_absolutePath = result.absolutePath;
             tabData->m_assetId = fileAssetId;
             m_tabBar->SetTabData(*tabData, saveTabIndex);
             m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
@@ -1887,7 +1898,7 @@ namespace ScriptCanvasEditor
                 , [this](const VersionExplorer::FileSaveResult& fileSaveResult) { OnSaveCallBack(fileSaveResult); });
 
         MarkRecentSave(sourceHandle);
-        m_fileSaver->Save(sourceHandle);
+        m_fileSaver->Save(sourceHandle, path);
 
         BlockCloseRequests();        
     }
@@ -2532,7 +2543,7 @@ namespace ScriptCanvasEditor
         if (tabdata.isValid())
         {
             auto assetId = tabdata.value<Widget::GraphTabMetadata>();
-            SaveAssetImpl(assetId.m_assetId, Save::InPlace);
+            SaveAssetImpl(assetId.m_assetId, Save::InPlace, assetId.m_absolutePath);
         }
     }
 

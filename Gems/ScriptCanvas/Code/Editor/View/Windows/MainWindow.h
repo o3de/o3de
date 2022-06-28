@@ -332,7 +332,7 @@ namespace ScriptCanvasEditor
             InPlace,
             As
         };
-        bool SaveAssetImpl(const SourceHandle& assetId, Save save);
+        bool SaveAssetImpl(const SourceHandle& assetId, Save save, AZ::IO::Path absolutePath = {});
         void OnFileOpen();        
 
         // Edit menu
