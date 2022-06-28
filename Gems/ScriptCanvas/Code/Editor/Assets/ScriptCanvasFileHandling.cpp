@@ -52,14 +52,21 @@ namespace ScriptCanvas
 
         if (!handle.Get())
         {
-            auto loadResult = LoadFromFile(handle.Path().c_str());
+            auto fullPathHandleOptional = ScriptCanvasEditor::GetFullPath(handle);
+            if (!fullPathHandleOptional)
+            {
+                return AZ::Failure(AZStd::string::format("Failure to determine the full, absolute path for relative path: %s"
+                    , handle.Path().c_str()));
+            }
+
+            auto loadResult = LoadFromFile((*fullPathHandleOptional).Native());
             if (!loadResult)
             {
                 return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
                     , handle.ToString().c_str(), loadResult.ToString().c_str()));
             }
 
-            handle = SourceHandle(loadResult.m_handle.Data(), handle.Id(), handle.Path().c_str());
+            handle = SourceHandle::FromRelativePath(loadResult.m_handle.Data(), handle.Id(), handle.Path().c_str());
         }
 
         AZStd::vector<SourceHandle> dependentAssets;
@@ -84,7 +91,7 @@ namespace ScriptCanvas
             if (azTypeId == subgraphInterfaceAssetTypeID)
             {
                 auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
-                dependentAssets.push_back(SourceHandle(nullptr, id.m_guid, {}));
+                dependentAssets.push_back(SourceHandle(nullptr, id.m_guid));
             }
 
             return true;
@@ -137,7 +144,8 @@ namespace ScriptCanvas
         const auto& asString = fileStringOutcome.GetValue();
         result.m_deserializeResult = Deserialize(asString, makeEntityIdsUnique);
         result.m_isSuccess = result.m_deserializeResult;
-        result.m_handle = SourceHandle(result.m_deserializeResult.m_graphDataPtr, path);
+
+        result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);
         return result;
     }
 

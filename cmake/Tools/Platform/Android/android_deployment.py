@@ -94,7 +94,8 @@ class AndroidDeployment(object):
             if asset_mode == 'PAK':
                 self.local_asset_path = self.dev_root / 'Pak' / f'{game_name.lower()}_{asset_type}_paks'
             else:
-                self.local_asset_path = self.dev_root / game_name / 'Cache' / asset_type
+                # Assets layout folder when assets are not included into APK is 'app/src/assets'
+                self.local_asset_path = self.build_dir / 'app/src/assets'
 
             assert game_name is not None, f"'game_name' is required"
             self.game_name = game_name
@@ -452,22 +453,20 @@ class AndroidDeployment(object):
                            device_id=target_device)
             logging.info(f"Device '{target_device}': Target cleaned.")
 
-        settings_registry_src = self.build_dir / 'app/src/main/assets/Registry'
-        settings_registry_dst = f'{output_target}/Registry'
+        # '/.' is necessary to avoid copying folder 'assets' to destination, but its content.
+        assets_layout_src = f'{str(self.local_asset_path)}/.'
+        assets_layout_dst = f'{output_target}'
 
         if self.clean_deploy or not target_timestamp:
-            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path.resolve())} to device ...")
-            paths_to_deploy = [(str(self.local_asset_path.resolve()), output_target),
-                               (str(settings_registry_src), settings_registry_dst)]
-            for path_to_deploy, target_path in paths_to_deploy:
-                try:
-                    self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
-                                  device_id=target_device)
-                except common.LmbrCmdError as err:
-                    # Something went wrong, clean up before leaving
-                    self.adb_shell(command=f'rm -rf {output_target}',
-                                   device_id=target_device)
-                    raise err
+            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {assets_layout_src} to device {assets_layout_dst} ...")
+            try:
+                self.adb_call(arg_list=['push', assets_layout_src, assets_layout_dst],
+                                device_id=target_device)
+            except common.LmbrCmdError as err:
+                # Something went wrong, clean up before leaving
+                self.adb_shell(command=f'rm -rf {output_target}',
+                                device_id=target_device)
+                raise err
 
         else:
             # If no clean was specified, individually inspect all files to see if it needs to be updated
@@ -478,17 +477,13 @@ class AndroidDeployment(object):
                     files_to_copy.append(asset_file)
 
             if len(files_to_copy) > 0:
-                logging.info(f"Copying {len(files_to_copy)} assets to device  {target_device}")
+                logging.info(f"Copying {len(files_to_copy)} assets to device {target_device}")
 
             for src_path in files_to_copy:
                 relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_call(arg_list=['push', str(src_path), target_path],
                               device_id=target_device)
-
-            # Always update the settings registry
-            self.adb_call(arg_list=['push', str(settings_registry_src), settings_registry_dst],
-                          device_id=target_device)
 
         self.update_device_file_timestamp(relative_assets_path=output_target,
                                           device_id=target_device)

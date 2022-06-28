@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Document/CreateDocumentDialog.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -229,6 +230,32 @@ namespace AtomToolsFramework
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
     }
 
+    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    {
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
+        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+            "Document System Settings",
+            "Document System Settings",
+            {
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                    "Display Error Message Dialogs",
+                    "Display message boxes for warnings and errors opening documents",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                    "Enable Automatic Reload",
+                    "Automatically reload documents after external modifications",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                    "Enable Automatic Reload Prompts",
+                    "Confirm before automatically reloading modified documents",
+                    true),
+            }));
+        return groups;
+    }
+
     void AtomToolsDocumentMainWindow::AddDocumentTabBar()
     {
         m_tabWidget = new AzQtComponents::TabWidget(centralWidget());
@@ -246,13 +273,13 @@ namespace AtomToolsFramework
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
         // This should automatically clear the active document
-        connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int tabIndex) {
-            const AZ::Uuid documentId = GetDocumentTabId(tabIndex);
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, [this]() {
+            const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentNotificationBus::Event(m_toolId,&AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
 
-        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
-            const AZ::Uuid documentId = GetDocumentTabId(tabIndex);
+        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this]() {
+            const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
 
