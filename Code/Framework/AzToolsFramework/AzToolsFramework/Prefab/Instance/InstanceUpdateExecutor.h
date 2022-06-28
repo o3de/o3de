@@ -11,8 +11,11 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
@@ -21,6 +24,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
         class TemplateInstanceMapperInterface;
 
@@ -43,7 +47,6 @@ namespace AzToolsFramework
             void UnregisterInstanceUpdateExecutorInterface();
 
         private:
-
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // PropertyEditorGUIMessages::Bus::Handler
             //! When making property changes in the editor, listening to the below notifications and pausing propagation accordingly will
@@ -57,6 +60,7 @@ namespace AzToolsFramework
             //! gets initialized after the PrefabSystemComponent
             void LazyConnectGameModeEventHandler();
 
+            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
@@ -66,6 +70,7 @@ namespace AzToolsFramework
             bool m_isRootPrefabInstanceLoaded = false;
             bool m_shouldPausePropagation = false;
             bool m_updatingTemplateInstancesInQueue { false };
+            InstanceDomGenerator m_instanceDomGenerator;
         };
     }
 }

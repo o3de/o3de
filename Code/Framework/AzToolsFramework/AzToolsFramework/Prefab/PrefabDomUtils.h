@@ -197,6 +197,8 @@ namespace AzToolsFramework
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
+
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
             struct LinkIdMetadata
