@@ -407,6 +407,7 @@ namespace Terrain
     {
         m_materialInstance->ApplyGlobalShaderOptions();
         m_cachedDrawData.clear();
+        m_candidateSectors.clear();
 
         // Rebuild common draw packet data
         for (auto& shaderItem : m_materialInstance->GetShaderCollection())
@@ -974,7 +975,7 @@ namespace Terrain
             }
         }
         jobCompletion.StartAndWaitForCompletion();
-
+        m_candidateSectors.clear(); // Force recalculation of candidate sectors since AABBs could have changed.
     }
 
     void TerrainMeshManager::UpdateRaytracingData(const AZ::Aabb& bounds)
