@@ -48,6 +48,7 @@ namespace AZ
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
 
         private:
+            // Wrap the state necessary for 1 capture
             struct CaptureState
             {
                 CaptureState(uint32_t captureId);
@@ -59,6 +60,9 @@ namespace AZ
                 AZStd::atomic<FrameCaptureResult> m_result = FrameCaptureResult::None; // use atomic as this is written and read on different threads.
                 AZStd::string m_latestCaptureInfo;
             };
+
+            // Handle to wrap an index into the allCaptures CaptureState list
+            // Provides utility functions to check it's safe to use the CaptureState Ptr (vector isn't being resized)
             class CaptureHandle
             {
             public:

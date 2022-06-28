@@ -106,8 +106,6 @@ namespace AZ
 
                 // Detect if we are able to continue merging.
                 {
-                    const AZStd::string_view scopeName = scope.GetId().GetStringView();
-                    const bool frameCaptureScope = scopeName.starts_with("FrameCapture_");
                     // Check if the group fits into the current running merge queue. If not, we have to flush the queue.
                     const bool exceededCommandCost = (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
 
@@ -121,7 +119,7 @@ namespace AZ
                     const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) || hasUserFencesToSignal;
 
                     // If we exceeded limits, then flush the group.
-                    const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries || frameCaptureScope;
+                    const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries;
 
                     if (flushMergedScopes && mergedScopes.size())
                     {

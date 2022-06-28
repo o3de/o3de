@@ -323,6 +323,7 @@ namespace AZ
         {
             if (m_idleCaptures.size())
             {
+                // Use an existing idle capture state
                 CaptureHandle captureHandle = m_idleCaptures.front();
                 m_idleCaptures.pop_front();
                 if (captureHandle.IsNull())
@@ -341,6 +342,7 @@ namespace AZ
             }
             else
             {
+                // Create a new CaptureState
                 AZStd::lock_guard<AZStd::shared_mutex> lock(m_handleLock); // take exclusive write lock as we may move CaptureState locations in memory
                 uint32_t captureIndex = aznumeric_cast<uint32_t>(m_allCaptures.size());
                 m_allCaptures.emplace_back(captureIndex);
