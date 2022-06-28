@@ -12,10 +12,9 @@
 #include <AzQtComponents/Components/Style.h>
 
 #include <QApplication>
+#include <QEvent>
 #include <QStyleOptionToolButton>
 #include <QStylePainter>
-#include <QTimer>
-#include <QEvent>
 
 namespace AzQtComponents
 {
@@ -98,7 +97,7 @@ namespace AzQtComponents
 
     bool DockBarButton::eventFilter(QObject* object, QEvent* event)
     {
-        if (event->type() == QEvent::WindowStateChange)
+        if (event->type() == QEvent::WindowStateChange && m_buttonType == DockBarButton::MaximizeButton)
         {
             SetMaximizeRestoreButton();
         }
