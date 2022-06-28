@@ -95,6 +95,7 @@ namespace AZ
         {
             m_barrierTracker = nullptr;
             m_cache.Clear();
+            m_reverseLookupHash.clear();
             m_firstFitAllocator.Shutdown();
         }
 
@@ -140,7 +141,10 @@ namespace AZ
                 // buffer is not in cache. Create a new one at the placed address, and add it to the cache.
                 else
                 {
-                    /// Ownership is managed by the cache.
+                    // Remove any existing resource entries from the cache before adding a new one
+                    RemoveFromCache(descriptor.m_attachmentId);
+
+                    // Ownership is managed by the cache.
                     RHI::Ptr<Buffer> bufferPtr = Factory::Get().CreateBuffer();
                     buffer = bufferPtr.get();
 
@@ -159,6 +163,10 @@ namespace AZ
 
                     buffer->SetName(descriptor.m_attachmentId);
                     m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferPtr));
+                    if (!descriptor.m_attachmentId.IsEmpty())
+                    {
+                        m_reverseLookupHash.emplace(descriptor.m_attachmentId, hash);
+                    }
                 }
             }
 
@@ -256,6 +264,8 @@ namespace AZ
                 {
                     // Remove any existing resource entries from the cache before adding a new one
                     RemoveFromCache(descriptor.m_attachmentId);
+
+                    // Ownership is managed by the cache.
                     RHI::Ptr<Image> imagePtr = Factory::Get().CreateImage();
                     image = imagePtr.get();
 

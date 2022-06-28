@@ -162,6 +162,10 @@ namespace AZ
 
             void CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase);
 
+            //! Remove the entry related to the provided attachmentId/idViewHash from the appropriate cache as it is probably stale now
+            template<typename ObjectType>
+            void RemoveFromCache(RHI::AttachmentId attachmentId, HashValue64 idViewHash, ObjectCache<ObjectType>& cache);
+
             // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
             ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
             BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);

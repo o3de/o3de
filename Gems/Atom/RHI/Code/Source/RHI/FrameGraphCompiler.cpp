@@ -60,6 +60,7 @@ namespace AZ
             {
                 m_imageViewCache.Clear();
                 m_bufferViewCache.Clear();
+                m_reverseLookupHash.clear();
 
                 ShutdownInternal();
                 DeviceObject::Shutdown();
@@ -727,13 +728,7 @@ namespace AZ
                 // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
                 // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
                 HashValue64 idViewHash = imageViewDescriptor.GetHash(TypeHash64(image->GetName()));
-                bool isResourceRegistered = m_reverseLookupHash.contains(idViewHash);
-                if (isResourceRegistered)
-                {
-                    HashValue64 originalHash = m_reverseLookupHash.find(idViewHash)->second;
-                    m_imageViewCache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
-                    m_reverseLookupHash.erase(idViewHash);
-                }
+                RemoveFromCache(image->GetName(), idViewHash, m_imageViewCache);
 
                 // Create a new image view instance and insert it into the cache.
                 Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
@@ -765,6 +760,11 @@ namespace AZ
 
             if (!bufferView)
             {
+                // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
+                // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
+                HashValue64 idViewHash = bufferViewDescriptor.GetHash(TypeHash64(buffer->GetName()));
+                RemoveFromCache(buffer->GetName(), idViewHash, m_bufferViewCache);
+
                 // Create a new buffer view instance and insert it into the cache.
                 Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
                 if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
@@ -847,6 +847,22 @@ namespace AZ
 
                     node->SetBufferView(bufferView);
                 }
+            }
+        }
+       
+        template<typename ObjectType>
+        void FrameGraphCompiler::RemoveFromCache(RHI::AttachmentId attachmentId, HashValue64 idViewHash, ObjectCache<ObjectType>& cache)
+        {
+            if (attachmentId.IsEmpty())
+            {
+                return;
+            }
+            bool isResourceRegistered = m_reverseLookupHash.contains(idViewHash);
+            if (isResourceRegistered)
+            {
+                HashValue64 originalHash = m_reverseLookupHash.find(idViewHash)->second;
+                cache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
+                m_reverseLookupHash.erase(idViewHash);
             }
         }
     }
