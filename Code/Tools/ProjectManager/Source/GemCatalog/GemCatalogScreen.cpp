@@ -20,6 +20,7 @@
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <CreateAGemScreen.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
@@ -70,6 +71,7 @@ namespace O3DE::ProjectManager
         connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::CreateANewGem(), this, &GemCatalogScreen::HandleCreateANewGem);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
@@ -655,6 +657,11 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::HandleOpenGemRepo()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+    }
+
+    void GemCatalogScreen::HandleCreateAGem()
+    {
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateAGemScreen);
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)

@@ -20,6 +20,7 @@ namespace O3DE::ProjectManager
         CreateProject,
         NewProjectSettings,
         GemCatalog,
+        CreateAGemScreen,
         Projects,
         UpdateProject,
         UpdateProjectSettings,
@@ -38,7 +39,8 @@ namespace O3DE::ProjectManager
         { "UpdateProjectSettings", ProjectManagerScreen::UpdateProjectSettings},
         { "Engine", ProjectManagerScreen::Engine},
         { "EngineSettings", ProjectManagerScreen::EngineSettings},
-        { "GemRepos", ProjectManagerScreen::GemRepos}
+        { "GemRepos", ProjectManagerScreen::GemRepos},
+        { "CreateAGemScreen", ProjectManagerScreen::CreateAGemScreen}
     };
 
     // need to define qHash for ProjectManagerScreen when using scoped enums

@@ -9,6 +9,7 @@
 
 #include <CreateProjectCtrl.h>
 #include <UpdateProjectCtrl.h>
+#include <CreateAGemScreen.h>
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsScreen.h>
@@ -16,6 +17,7 @@
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 
 namespace O3DE::ProjectManager
 {
@@ -30,6 +32,9 @@ namespace O3DE::ProjectManager
             break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::CreateAGemScreen):
+            newScreen = new CreateAGemScreen(parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(parent);

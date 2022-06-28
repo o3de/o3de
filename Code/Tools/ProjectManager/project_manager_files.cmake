@@ -54,6 +54,8 @@ set(FILES
     Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
+    Source/CreateAGemScreen.h
+    Source/CreateAGemScreen.cpp
     Source/CreateProjectCtrl.h
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
