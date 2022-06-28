@@ -44,7 +44,7 @@ namespace AssetProcessor
         m_fileInfoMap[key] = FileStateInfo(existingInfo);
         
         // it is possible to update the cache so that the info is known, but the hash is not.
-        if (hash == INVALID_FILEHASH)
+        if (hash == InvalidFileHash)
         {
             m_fileHashMap.remove(key);
         }

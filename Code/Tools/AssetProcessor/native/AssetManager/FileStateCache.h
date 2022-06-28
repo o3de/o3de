@@ -48,7 +48,7 @@ namespace AssetProcessor
         virtual ~IFileStateRequests() = default;
 
         using FileHash = AZ::u64;
-        static constexpr FileHash INVALID_FILEHASH = 0;
+        static constexpr FileHash InvalidFileHash = 0;
 
         /// Fetches info on the file/directory if it exists.  Returns true if it exists, false otherwise
         virtual bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const = 0;
@@ -59,7 +59,7 @@ namespace AssetProcessor
         //! Called when the caller knows a hash and file info already.
         //! This can for example warm up the cache so that it can return hashes without actually hashing.
         //! (optional for implementations)
-        virtual void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = INVALID_FILEHASH) = 0;
+        virtual void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = InvalidFileHash) = 0;
         virtual void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) = 0;
 
         AZ_DISABLE_COPY_MOVE(IFileStateRequests);
@@ -112,7 +112,7 @@ namespace AssetProcessor
         void UpdateFile(const QString& absolutePath) override;
         void RemoveFile(const QString& absolutePath) override;
         
-        void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = IFileStateRequests::INVALID_FILEHASH) override;
+        void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = IFileStateRequests::InvalidFileHash) override;
 
     private:
 
