@@ -198,31 +198,6 @@ namespace ScriptCanvasEditor
 
             return mimeDelegateEntity->GetId();
         }
-
-        void EnsureSaveDestinationDirectory(AZStd::string directoryLocation)
-        {
-            if (AzFramework::StringFunc::Path::HasExtension(directoryLocation.c_str()))
-            {
-                size_t offset = directoryLocation.find_last_of('/');
-
-                if (offset != AZStd::string::npos)
-                {
-                    directoryLocation = directoryLocation.substr(0, offset);
-                }
-                else
-                {
-                    AzFramework::StringFunc::Path::StripComponent(directoryLocation, true);
-                }
-            }
-
-            // We just need the path to exist.
-            QDir canvasDirectory = QDir(directoryLocation.c_str());
-
-            if (!canvasDirectory.exists())
-            {
-                canvasDirectory.mkpath(".");
-            }
-        }
     } // anonymous namespace.
 
     void Workspace::Save()
