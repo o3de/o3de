@@ -85,7 +85,7 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("PhysXColliderService"));
-        incompatible.push_back(AZ_CRC_CE("PhysXStaticRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
         incompatible.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
     }
 

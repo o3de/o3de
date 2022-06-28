@@ -311,7 +311,6 @@ namespace LmbrCentral
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
             dependent.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
             dependent.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
         }

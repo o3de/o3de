@@ -129,7 +129,6 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("LegacyCryPhysicsService"));
         incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
         incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
