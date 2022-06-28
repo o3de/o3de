@@ -90,7 +90,7 @@ namespace AZ
                             result.Combine(ContinueLoading(&path, azrtti_typeid(path), pathMember->value, context));
                         }
 
-                        sourceHandle = SourceHandle(nullptr, assetId.m_guid, path);
+                        sourceHandle = SourceHandle::FromRelativePath(nullptr, assetId.m_guid, path);
                     }
                 }
 

@@ -55,7 +55,7 @@ namespace LandscapeCanvas
             INBOUND_AREA_SLOT_ID,
             INBOUND_AREA_SLOT_LABEL.toUtf8().constData(),
             { areaDataType, invalidEntityDataType },
-            areaDataType->GetDefaultValue(),
+            invalidEntityDataType->GetDefaultValue(),
             INBOUND_AREA_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
             &slotConfig));
 

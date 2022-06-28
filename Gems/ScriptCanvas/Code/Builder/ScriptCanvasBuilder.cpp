@@ -51,7 +51,7 @@ namespace ScriptCanvasBuilderCpp
                 return false;
             }
 
-            SourceHandle sourceHandle(nullptr, asset.GetId().m_guid, {});
+            SourceHandle sourceHandle(nullptr, asset.GetId().m_guid);
             if (!rootElement.AddElementWithData(serializeContext, "source", sourceHandle))
             {
                 AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: could not add updated 'source' data");
