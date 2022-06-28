@@ -52,6 +52,13 @@ namespace O3DE::ProjectManager
 
         // Engine
 
+
+        /**
+         * Get info about all registered engines
+         * @return an outcome with a vector of EngineInfos on success
+         */
+        virtual AZ::Outcome<QVector<EngineInfo>> GetAllEngineInfos() = 0;
+
         /**
          * Get info about the current engine 
          * @return an outcome with EngineInfo on success
