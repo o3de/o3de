@@ -256,17 +256,13 @@ namespace AssetProcessor
         //! and put them in the temporary directory provided by the builderParam.
         //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
-
-        //! TBD
+        //! Retrive the current mode for shared caching
         virtual AssetServerMode GetRemoteCachingMode() const = 0;
-
-        //! TBD
+        //! Store the shared caching mode
         virtual void SetRemoteCachingMode(AssetServerMode mode) = 0;
-
-        //! TBD
+        //! Retrieve the remote folder location for the shared cache 
         virtual const AZStd::string& GetServerAddress() const = 0;
-
-        //! TBD
+        //! Store the remote folder location for the shared cache 
         virtual void SetServerAddress(const AZStd::string& address) = 0;
     };
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;

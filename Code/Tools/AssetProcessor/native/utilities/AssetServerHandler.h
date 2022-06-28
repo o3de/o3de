@@ -30,17 +30,14 @@ namespace AssetProcessor
         bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) override;
         //! HandleRemoteConfiguration will attempt to set or get the remote configuration for the cache server
         void HandleRemoteConfiguration();
-        //! TBD
+        //! Retrive the current mode for shared caching
         AssetServerMode GetRemoteCachingMode() const override;
-        //! TBD
+        //! Store the shared caching mode
         void SetRemoteCachingMode(AssetServerMode mode) override;
-
-        //! TBD
+        //! Retrieve the remote folder location for the shared cache 
         const AZStd::string& GetServerAddress() const override;
-
-        //! TBD
+        //! Store the remote folder location for the shared cache 
         void SetServerAddress(const AZStd::string& address) override;
-
     protected:
         //! Source files intended to be copied into the cache don't go through out temp folder so they need
         //! to be added to the Archive in an additional step
