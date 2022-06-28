@@ -51,11 +51,6 @@ class ScriptEvent_AddRemoveParameter_ActionsSuccessful:
         self.asset_editor_row_container = None
         self.asset_editor_menu_bar = None
 
-    def save_and_verify_file(self):
-        editor.AssetEditorWidgetRequestsBus(bus.Broadcast, SAVE_ASSET_AS, SCRIPT_EVENT_FILE_PATH)
-        result = helper.wait_for_condition(lambda: os.path.exists(SCRIPT_EVENT_FILE_PATH), WAIT_TIME_3)
-        Report.result(Tests.file_saved, result)
-
     @pyside_utils.wrap_async
     async def run_test(self):
 
