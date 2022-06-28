@@ -323,12 +323,12 @@ namespace AtomToolsFramework
                     "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                     "Update Interval When Active",
                     "Minimum delay between ticks (in milliseconds) when the application has focus",
-                    (uint32_t)1),
+                    static_cast<uint64_t>(1)),
                 AtomToolsFramework::CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
                     "Update Interval When Not Active",
                     "Minimum delay between ticks (in milliseconds) when the application does not have focus",
-                    (uint32_t)250),
+                    static_cast<uint64_t>(250)),
                 AtomToolsFramework::CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
                     "Allow Multiple Instances",
@@ -348,7 +348,7 @@ namespace AtomToolsFramework
                     "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
                     "Prompt To Open Multiple Files Threshold",
                     "Maximum number of files that can be selected before prompting for confirmation",
-                    10),
+                    static_cast<uint64_t>(10)),
             }));
         return groups;
     }

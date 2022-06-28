@@ -46,13 +46,13 @@ namespace AtomToolsFramework
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreatePropertyFromSetting(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const float& defaultValue);
+        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const double& defaultValue);
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreatePropertyFromSetting(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const uint32_t& defaultValue);
+        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const uint64_t& defaultValue);
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreatePropertyFromSetting(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const int32_t& defaultValue);
+        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const int64_t& defaultValue);
 } // namespace AtomToolsFramework
