@@ -192,7 +192,7 @@ namespace ScriptCanvasEditor
             return "";
         }
 
-        void FileSaver::Save(const SourceHandle& source, AZ::IO::Path absolutePath)
+        void FileSaver::Save(const SourceHandle& source, const AZ::IO::Path& absolutePath)
         {
             m_fullPath.clear();
             m_source = source;

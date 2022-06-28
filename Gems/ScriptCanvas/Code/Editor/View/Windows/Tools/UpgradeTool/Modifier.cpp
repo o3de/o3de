@@ -215,7 +215,6 @@ namespace ScriptCanvasEditor
             if (m_assetIndex != m_assets.size())
             {
                 m_result.asset = m_assets[GetCurrentIndex()];
-                CompleteDescriptionInPlace(m_result.asset);
                 m_attemptedAssets.insert(m_result.asset.Id());
             }
         }
@@ -225,7 +224,7 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto result = ScriptCanvas::LoadFromFile(handle.Path().c_str());
+                auto result = ScriptCanvas::LoadFromFile(handle.AbsolutePath().c_str());
                 if (result)
                 {
                     handle = result.m_handle;
@@ -391,7 +390,7 @@ namespace ScriptCanvasEditor
             m_fileSaver = AZStd::make_unique<FileSaver>
                     ( m_config.onReadOnlyFile
                     , [this](const FileSaveResult& fileSaveResult) { OnFileSaveComplete(fileSaveResult); });
-            m_fileSaver->Save(result.asset);
+            m_fileSaver->Save(result.asset, result.asset.AbsolutePath());
         }
 
         void Modifier::SortGraphsByDependencies()

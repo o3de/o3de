@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
                 , AZStd::function<void(const FileSaveResult& result)> onComplete);
 
             const SourceHandle& GetSource() const;
-            void Save(const SourceHandle& source, AZ::IO::Path absolutePath = {});
+            void Save(const SourceHandle& source, const AZ::IO::Path& absolutePath);
 
         private:
             AZStd::mutex m_mutex;

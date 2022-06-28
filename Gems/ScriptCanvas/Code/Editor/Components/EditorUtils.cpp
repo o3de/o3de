@@ -48,25 +48,22 @@ namespace ScriptCanvasEditor
                 AZ::Data::AssetInfo assetInfoID;
                 if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfoID, watchFolderID))
                 {
-                    return SourceHandle::FromRelativePath(source, assetInfoID.m_assetId.m_guid, assetInfoID.m_relativePath.c_str());
+                    return SourceHandle::MarkAbsolutePath
+                        ( SourceHandle::FromRelativePath(source, assetInfoID.m_assetId.m_guid, assetInfoID.m_relativePath.c_str())
+                        , (AZ::IO::Path(watchFolderID) / AZ::IO::Path(assetInfoID.m_relativePath)));
                 }
             }
 
             if (!source.Path().empty())
             {
-                AZStd::string rootFolder;
-                AZStd::string relativePath;
-                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
-                {
-                    AZStd::string watchFolderPath;
-                    AZ::Data::AssetInfo assetInfoPath;
-                    if (assetSystem->GetSourceInfoBySourcePath(relativePath.c_str(), assetInfoPath, watchFolderPath)
+                AZStd::string watchFolderPath;
+                AZ::Data::AssetInfo assetInfoPath;
+                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath)
                     && assetInfoPath.m_assetId.IsValid())
-                    {
-                        return SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, assetInfoPath.m_relativePath.c_str());
-                    }
-
-                    return SourceHandle::FromRelativePath(source, relativePath);
+                {
+                    return SourceHandle::MarkAbsolutePath
+                        ( SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, assetInfoPath.m_relativePath.c_str())
+                        , (AZ::IO::Path(watchFolderPath) / AZ::IO::Path(assetInfoPath.m_relativePath)));
                 }
             }
         }
@@ -95,11 +92,10 @@ namespace ScriptCanvasEditor
         {
             if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
             {
-                AZStd::string rootFolder;
-                AZStd::string relativePath;
-                if (assetSystem->GenerateRelativeSourcePath(source.Path().c_str(), relativePath, rootFolder))
+                AZStd::string fullSourcePath;
+                if (assetSystem->GetFullSourcePathFromRelativeProductPath(source.Path().c_str(), fullSourcePath))
                 {
-                    return AZ::IO::Path(rootFolder) / AZ::IO::Path(relativePath);
+                    return AZ::IO::Path(fullSourcePath);
                 }
             }
         }
