@@ -105,6 +105,7 @@ namespace AZ
         {
             if (waitEvent)
             {
+                waitEvent->IncWaitCount();
                 waitEvent->Signal();
             }
             return;
