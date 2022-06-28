@@ -17,7 +17,7 @@ namespace AzToolsFramework
 
     HotKeyManager::~HotKeyManager()
     {
-        AZ::Interface<HotKeyManager>::Unregister(this);
+        AZ::Interface<HotKeyManagerInterface>::Unregister(this);
     }
 
 } // namespace AzToolsFramework
