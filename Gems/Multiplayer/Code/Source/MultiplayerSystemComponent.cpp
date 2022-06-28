@@ -45,6 +45,12 @@
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::MultiplayerAgentType, "{53EA1938-5FFB-4305-B50A-D20730E8639B}");
+}
+
+
 namespace AZ::ConsoleTypeHelpers
 {
     template <>
@@ -123,10 +129,15 @@ namespace Multiplayer
             behaviorContext->Class<ClientInputId>();
             behaviorContext->Class<HostFrameId>();
 
+            behaviorContext->Enum<(int)MultiplayerAgentType::Uninitialized>("MultiplayerAgentType_Uninitialized")
+                ->Enum<(int)MultiplayerAgentType::Client>("MultiplayerAgentType_Client")
+                ->Enum<(int)MultiplayerAgentType::ClientServer>("MultiplayerAgentType_ClientServer")
+                ->Enum<(int)MultiplayerAgentType::DedicatedServer>("MultiplayerAgentType_DedicatedServer");
+
             behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
                 ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
-                ->Method("GetOnClientDisconnectedEvent", [](AZ::EntityId id) -> AZ::Event<>*
+                ->Method("GetOnClientDisconnectedEvent", [](AZ::EntityId id) -> ClientDisconnectedEvent*
                 {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
@@ -839,7 +850,6 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::Client)
         {
             AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
-            m_clientDisconnectedEvent.Signal();
         }
         else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
@@ -877,6 +887,8 @@ namespace Multiplayer
                 }
             }
         }
+
+        m_clientDisconnectedEvent.Signal(m_agentType);
 
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
