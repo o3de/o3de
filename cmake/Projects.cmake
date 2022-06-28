@@ -48,8 +48,8 @@ function(ly_add_target_dependencies)
 
     unset(ALL_GEM_DEPENDENCIES)
     foreach(dependency_file ${ly_add_gem_dependencies_DEPENDENCIES_FILES})
-    #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
-    unset(GEM_DEPENDENCIES)
+        #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
+        unset(GEM_DEPENDENCIES)
         include(${dependency_file})
         list(APPEND ALL_GEM_DEPENDENCIES ${GEM_DEPENDENCIES})
     endforeach()
@@ -62,13 +62,16 @@ function(ly_add_target_dependencies)
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
         # Add the target to the LY_DELAYED_LOAD_DEPENDENCIES if it isn't already on the list
-        get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" SET)
-        if(NOT delayed_load_target_set)
+        get_property(load_dependencies_set GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
+        if(NOT "${ly_add_gem_dependencies_PREFIX},${target}" IN_LIST load_dependencies_set)
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${ly_add_gem_dependencies_PREFIX},${target}")
         endif()
         foreach(gem_target ${ALL_GEM_DEPENDENCIES})
             # Add the list of gem dependencies to the LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX};${target} property
-            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}")
+            if(NOT "${gem_target}" IN_LIST target_load_dependencies)
+                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            endif()
         endforeach()
     endforeach()
 endfunction()
