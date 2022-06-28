@@ -12,6 +12,7 @@ set(FILES
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
@@ -362,6 +363,9 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
     UI/DPEDebugViewer/DPEDebugTextView.h
+    UI/DPEDebugViewer/DPEDebugWindow.cpp
+    UI/DPEDebugViewer/DPEDebugWindow.h
+    UI/DPEDebugViewer/DPEDebugWindow.ui
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h

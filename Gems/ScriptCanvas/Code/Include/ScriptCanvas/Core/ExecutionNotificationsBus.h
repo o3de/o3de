@@ -221,7 +221,7 @@ namespace ScriptCanvas
     {
         using ThisType = TaggedParent<t_Tag, t_Parent>;
         AZ_CLASS_ALLOCATOR(ThisType, AZ::SystemAllocator, 0);
-        AZ_RTTI(((TaggedParent<t_Tag, t_Parent>), "{CF75CEEE-2305-49D4-AD41-407E82F819D7}", t_Tag, t_Parent), t_Parent, LoggableEvent);
+        AZ_RTTI((TaggedParent, "{CF75CEEE-2305-49D4-AD41-407E82F819D7}", t_Tag, t_Parent), t_Parent, LoggableEvent);
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -397,7 +397,7 @@ namespace ScriptCanvas
         using ThisType = TaggedDataValue<t_Tag>;
         
         AZ_CLASS_ALLOCATOR(TaggedDataValue<t_Tag>, AZ::SystemAllocator, 0);
-        AZ_RTTI(((TaggedDataValue<t_Tag>), "{893B73BA-E1CC-4D91-92D1-C1CF46817A57}", t_Tag), DatumValue, GraphInfo, LoggableEvent);
+        AZ_RTTI((TaggedDataValue, "{893B73BA-E1CC-4D91-92D1-C1CF46817A57}", t_Tag), DatumValue, GraphInfo, LoggableEvent);
         using DatumValue::DatumValue;
         
         static void Reflect(AZ::ReflectContext* context)

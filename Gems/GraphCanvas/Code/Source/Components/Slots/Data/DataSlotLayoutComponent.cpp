@@ -159,7 +159,7 @@ namespace GraphCanvas
                                     anchorPoint = QPointF(1.0f, 0.5f);
                                 }
                                 
-                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto to slot", error.c_str());
+                                AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Error, "Unable to drop onto slot", error.c_str());
                                 toastConfiguration.m_closeOnClick = false;
 
                                 m_toastId = viewHandler->ShowToastAtPoint(globalConnectionPoint.toPoint(), anchorPoint, toastConfiguration);

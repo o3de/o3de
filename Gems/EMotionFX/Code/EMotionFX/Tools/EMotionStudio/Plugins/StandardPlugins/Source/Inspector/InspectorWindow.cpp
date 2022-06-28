@@ -6,9 +6,13 @@
  *
  */
 
+
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/NoSelectionWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/ContentWidget.h>
+
 #include <QDockWidget>
 #include <QScrollArea>
 #include <QVBoxLayout>

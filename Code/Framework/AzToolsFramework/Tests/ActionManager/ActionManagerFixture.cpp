@@ -21,14 +21,20 @@ namespace UnitTest
         m_actionManager = AZStd::make_unique<AzToolsFramework::ActionManager>();
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         ASSERT_TRUE(m_actionManagerInterface != nullptr);
+        m_actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get();
+        ASSERT_TRUE(m_actionManagerInternalInterface != nullptr);
 
         m_menuManager = AZStd::make_unique<AzToolsFramework::MenuManager>();
         m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
         ASSERT_TRUE(m_menuManagerInterface != nullptr);
+        m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        ASSERT_TRUE(m_menuManagerInternalInterface != nullptr);
 
         m_toolBarManager = AZStd::make_unique<AzToolsFramework::ToolBarManager>();
         m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
         ASSERT_TRUE(m_toolBarManagerInterface != nullptr);
+        m_toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get();
+        ASSERT_TRUE(m_toolBarManagerInternalInterface != nullptr);
 
         m_widget = new QWidget();
     }

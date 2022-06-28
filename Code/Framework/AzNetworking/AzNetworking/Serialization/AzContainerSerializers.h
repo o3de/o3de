@@ -22,6 +22,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <limits>
 
 namespace AzNetworking
@@ -63,7 +65,7 @@ namespace AzNetworking
         }
     };
 
-    // fixed size array
+    // Fixed size array
     template <typename TYPE, AZStd::size_t Size>
     struct SerializeAzContainer<AZStd::array<TYPE, Size>>
     {
@@ -82,7 +84,7 @@ namespace AzNetworking
         }
     };
 
-    // fixed_unordered_map
+    // Fixed unordered map
     template <typename Key, typename MappedType, AZStd::size_t FixedNumBuckets, AZStd::size_t FixedNumElements, class Hasher, class EqualKey>
     struct SerializeAzContainer<AZStd::fixed_unordered_map<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey>>
     {
@@ -121,7 +123,7 @@ namespace AzNetworking
         }
     };
 
-    // fixed_unordered_multimap
+    // Fixed unordered multimap
     template <typename Key, typename MappedType, AZStd::size_t FixedNumBuckets, AZStd::size_t FixedNumElements, class Hasher, class EqualKey>
     struct SerializeAzContainer<AZStd::fixed_unordered_multimap<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey>>
     {
@@ -160,7 +162,7 @@ namespace AzNetworking
         }
     };
 
-    // multimap
+    // Multimap
     template <class Key, class MappedType, class Compare, class Allocator>
     struct SerializeAzContainer<AZStd::multimap<Key, MappedType, Compare, Allocator>>
     {
@@ -214,7 +216,7 @@ namespace AzNetworking
         }
     };
 
-    // fixed_string
+    // Fixed string
     template <AZStd::size_t MaxElementCount>
     struct SerializeAzContainer<AZStd::fixed_string<MaxElementCount>>
     {
@@ -334,6 +336,22 @@ namespace AzNetworking
             value.SetMin(minValue);
             value.SetMax(maxValue);
             return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Name>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Name& value)
+        {
+            AZ::Name::Hash nameHash = value.GetHash();
+            bool result = serializer.Serialize(nameHash, "NameHash");
+
+            if (result && serializer.GetSerializerMode() == SerializerMode::WriteToObject)
+            {
+                value = AZ::NameDictionary::Instance().FindName(nameHash);
+            }
+            return result;
         }
     };
 }

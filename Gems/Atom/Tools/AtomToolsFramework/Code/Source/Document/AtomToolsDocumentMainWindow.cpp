@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Document/CreateDocumentDialog.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -229,6 +230,32 @@ namespace AtomToolsFramework
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
     }
 
+    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    {
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
+        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+            "Document System Settings",
+            "Document System Settings",
+            {
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                    "Display Error Message Dialogs",
+                    "Display message boxes for warnings and errors opening documents",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                    "Enable Automatic Reload",
+                    "Automatically reload documents after external modifications",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                    "Enable Automatic Reload Prompts",
+                    "Confirm before automatically reloading modified documents",
+                    true),
+            }));
+        return groups;
+    }
+
     void AtomToolsDocumentMainWindow::AddDocumentTabBar()
     {
         m_tabWidget = new AzQtComponents::TabWidget(centralWidget());
@@ -246,13 +273,13 @@ namespace AtomToolsFramework
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
         // This should automatically clear the active document
-        connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int tabIndex) {
-            const AZ::Uuid documentId = GetDocumentTabId(tabIndex);
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, [this]() {
+            const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentNotificationBus::Event(m_toolId,&AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
 
-        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
-            const AZ::Uuid documentId = GetDocumentTabId(tabIndex);
+        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this]() {
+            const AZ::Uuid documentId = GetCurrentDocumentId();
             AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
 
@@ -265,39 +292,14 @@ namespace AtomToolsFramework
         centralWidget()->layout()->addWidget(m_tabWidget);
     }
 
-    void AtomToolsDocumentMainWindow::AddRecentFilePath(const AZStd::string& absolutePath)
-    {
-        if (!absolutePath.empty())
-        {
-            // Get the list of previously stored recent file paths from the settings registry
-            AZStd::vector<AZStd::string> paths = GetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>());
-
-            // If the new path is already in the list then remove it Because it will be moved to the front of the list
-            AZStd::erase_if(paths, [&absolutePath](const AZStd::string& currentPath) {
-                return AZ::StringFunc::Equal(currentPath, absolutePath);
-            });
-
-            paths.insert(paths.begin(), absolutePath);
-
-            constexpr const size_t recentFilePathsMax = 10;
-            if (paths.size() > recentFilePathsMax)
-            {
-                paths.resize(recentFilePathsMax);
-            }
-
-            SetSettingsObject(RecentFilePathsKey, paths);
-        }
-    }
-
-    void AtomToolsDocumentMainWindow::ClearRecentFilePaths()
-    {
-        SetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>());
-    }
-
     void AtomToolsDocumentMainWindow::UpdateRecentFileMenu()
     {
         m_menuOpenRecent->clear();
-        for (const AZStd::string& path : GetSettingsObject(RecentFilePathsKey, AZStd::vector<AZStd::string>()))
+
+        AZStd::vector<AZStd::string> absolutePaths;
+        AtomToolsDocumentSystemRequestBus::EventResult(
+            absolutePaths, m_toolId, &AtomToolsDocumentSystemRequestBus::Handler::GetRecentFilePaths);
+        for (const AZStd::string& path : absolutePaths)
         {
             if (QFile::exists(path.c_str()))
             {
@@ -308,7 +310,10 @@ namespace AtomToolsFramework
         }
 
         m_menuOpenRecent->addAction(tr("Clear Recent Files"), [this]() {
-            QTimer::singleShot(0, this, &AtomToolsDocumentMainWindow::ClearRecentFilePaths);
+            QTimer::singleShot(0, this, [this]() {
+                AtomToolsDocumentSystemRequestBus::Event(
+                    m_toolId, &AtomToolsDocumentSystemRequestBus::Handler::ClearRecentFilePaths);
+            });
         });
     }
 
@@ -543,15 +548,18 @@ namespace AtomToolsFramework
         AZStd::string absolutePath;
         AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
-        AddRecentFilePath(absolutePath);
         UpdateDocumentTab(documentId);
         ActivateWindow();
         QueueUpdateMenus(true);
 
-        m_assetBrowser->SelectEntries(absolutePath);
-
         if (isOpen && !absolutePath.empty())
         {
+            // Whenever a document is opened or selected select the corresponding tab
+            m_tabWidget->setCurrentIndex(GetDocumentTabIndex(documentId));
+
+            // Find and select the file path in the asset browser
+            m_assetBrowser->SelectEntries(absolutePath);
+
             SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()));
         }
     }

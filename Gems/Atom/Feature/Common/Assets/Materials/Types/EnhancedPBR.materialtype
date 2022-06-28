@@ -50,7 +50,7 @@
             },
             {
                 "name": "anisotropy",
-                "displayName": "Anisotropic Material Response",
+                "displayName": "Anisotropic Response",
                 "description": "How much is this material response anisotropic.",
                 "properties": [
                     {

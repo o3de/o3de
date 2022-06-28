@@ -11,9 +11,10 @@
 #include <Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointLimitOptimizer.h>
+#include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/JointSwingLimitManipulators.h>
 #include <Editor/Plugins/Ragdoll/JointTwistLimitManipulators.h>
-#include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 
 namespace EMotionFX
@@ -104,6 +105,8 @@ namespace EMotionFX
                     RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits");
                 m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)] =
                     RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits");
+                m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "Question");
             }
 
             const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -135,6 +138,10 @@ namespace EMotionFX
                 else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)])
                 {
                     SetCurrentMode(SubMode::JointTwistLimits);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)])
+                {
+                    OptimizeJointLimits(m_physicsSetupManipulatorData);
                 }
             };
 

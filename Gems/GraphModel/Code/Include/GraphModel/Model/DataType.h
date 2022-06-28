@@ -40,7 +40,7 @@ namespace GraphModel
 
         static const Enum ENUM_INVALID = uint32_t(-1);
 
-        DataType();
+        DataType() = default;
 
         //! Constructs a new DataType object.
         //! @param typeEnum - The main unique ID used by the GraphModel framework for this DataType object.Every DataType in the GraphContext must have a unique enum value.
@@ -48,12 +48,14 @@ namespace GraphModel
         //! @param defaultValue - The default value assigned to any slot that uses this data type upon creation.
         //! @param typeDisplayName - Used for tooltips or other UI elements as well as debug messages.This should be unique, and similar to typeEnum.
         //! @param cppTypeName - The name of the c++ class that the DataType maps to.This is only used for debug messages.
+        //! @param valueValidator - An optional function used to check for specific values compatible with this data type.
         DataType(
             Enum typeEnum,
             const AZ::Uuid& typeUuid,
             const AZStd::any& defaultValue,
             AZStd::string_view typeDisplayName,
-            AZStd::string_view cppTypeName);
+            AZStd::string_view cppTypeName,
+            const AZStd::function<bool(const AZStd::any&)>& valueValidator = {});
 
         template<typename T>
         DataType(Enum typeEnum, const T& defaultValue, AZStd::string_view typeDisplayName)
@@ -82,21 +84,27 @@ namespace GraphModel
         //! Returns a default value for data of this type
         const AZStd::any& GetDefaultValue() const;
 
-        //! Returns the C++ type name
-        const AZStd::string& GetCppName() const;
-
         //! Returns a user friently type name, for UI display
         const AZStd::string& GetDisplayName() const;
 
+        //! Returns the C++ type name
+        const AZStd::string& GetCppName() const;
+
+        // Return true if the input type id matches the storage type ID or the type ID of the default value.
+        // This supports special cases where the same underlying type is registered with multiple type IDs. 
+        bool IsSupportedType(const AZ::Uuid& typeUuid) const;
+
+        // Return true if the input value is of a supported type or is accepted by the value validator callback.
+        bool IsSupportedValue(const AZStd::any& value) const;
+
     private:
-        Enum m_typeEnum;
+        Enum m_typeEnum = ENUM_INVALID;
         AZ::Uuid m_typeUuid;
         AZStd::any m_defaultValue;
-        AZStd::string m_cppName;
-        AZStd::string m_displayName;
+        AZStd::string m_cppName = "INVALID";
+        AZStd::string m_displayName = "INVALID";
+        AZStd::function<bool(const AZStd::any&)> m_valueValidator;
     };
-
-    
 } // namespace GraphModel
 
 
