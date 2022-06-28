@@ -43,6 +43,8 @@ namespace AzToolsFramework
         AZStd::string m_description = "";
         AZStd::string m_category = "";
         AZStd::string m_iconPath = "";
+        bool m_hideFromMenusWhenDisabled = true;
+        bool m_hideFromToolBarsWhenDisabled = false;
     };
 
     //! ActionManagerInterface
@@ -147,16 +149,6 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to trigger.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
-
-        //! Retrieve a QAction via its identifier.
-        //! @param actionIdentifier The identifier for the action to retrieve.
-        //! @return A raw pointer to the QAction, or nullptr if the action could not be found.
-        virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
-        
-        //! Retrieve a QAction via its identifier (const version).
-        //! @param actionIdentifier The identifier for the action to retrieve.
-        //! @return A raw const pointer to the QAction, or nullptr if the action could not be found.
-        virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) = 0;
         
         //! Installs an enabled state callback to an action that will set its enabled state when the action is updated.
         //! An action can only have a single enabled state callback. The function will fail if called multiple times.
@@ -189,6 +181,34 @@ namespace AzToolsFramework
         //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
+    };
+
+    //! ActionManagerInternalInterface
+    //! Internal Interface to query implementation details for actions.
+    class ActionManagerInternalInterface
+    {
+    public:
+        AZ_RTTI(ActionManagerInternalInterface, "{2DCEB7AB-B07A-4085-B5AF-6EEB37439ED6}");
+
+        //! Retrieve a QAction via its identifier.
+        //! @param actionIdentifier The identifier for the action to retrieve.
+        //! @return A raw pointer to the QAction, or nullptr if the action could not be found.
+        virtual QAction* GetAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Retrieve a QAction via its identifier (const version).
+        //! @param actionIdentifier The identifier for the action to retrieve.
+        //! @return A raw const pointer to the QAction, or nullptr if the action could not be found.
+        virtual const QAction* GetActionConst(const AZStd::string& actionIdentifier) const = 0;
+
+        //! Retrieve whether an Action should be hidden from Menus when disabled.
+        //! @param actionIdentifier The identifier for the action to query.
+        //! @return True if the actions should be hidden, false otherwise.
+        virtual bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
+
+        //! Retrieve whether an Action should be hidden from ToolBars when disabled.
+        //! @param actionIdentifier The identifier for the action to query.
+        //! @return True if the actions should be hidden, false otherwise.
+        virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework
