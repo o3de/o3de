@@ -66,7 +66,6 @@ namespace AZ
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
-                const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,

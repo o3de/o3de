@@ -444,13 +444,6 @@ namespace AZ
                     return;
                 }
 
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the "--use-spaces" flag.
-                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
-
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
                 {
@@ -525,7 +518,7 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList,
+                        ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
                         shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 

@@ -5,7 +5,6 @@
               , "-+" // C++ mode
         ],
         "azslc": ["--full" // Always generate the *.json files with SRG and reflection info.
-                , "--use-spaces"
                 , "--Zpr" // Row major matrices.
                 , "--W1" // Warning Level 1
                 , "--strip-unused-srgs" // Remove unreferenced SRGs.
