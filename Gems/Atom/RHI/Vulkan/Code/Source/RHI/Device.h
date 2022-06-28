@@ -126,7 +126,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
 
             void ShutdownInternal() override;
-            void BeginFrameInternal() override;
+            RHI::ResultCode BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
@@ -187,6 +187,7 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+            bool m_isXrNativeDevice = false;
         };
 
         template<typename ObjectType, typename ...Args>

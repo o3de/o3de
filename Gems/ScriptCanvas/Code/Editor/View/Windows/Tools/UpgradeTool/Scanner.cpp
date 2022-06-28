@@ -29,17 +29,14 @@ namespace ScannerCpp
             reinterpret_cast<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>(sourceIndex.internalPointer());
 
         if (entry
-            && entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source
-            && azrtti_istypeof<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry)
-            && entry->GetFullPath().ends_with(".scriptcanvas"))
+        && entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source
+        && azrtti_istypeof<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry)
+        && entry->GetFullPath().ends_with(".scriptcanvas"))
         {
             auto sourceEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry);
-
-            AZStd::string fullPath = sourceEntry->GetFullPath();
+            AZStd::string fullPath = sourceEntry->GetRelativePath();
             AzFramework::StringFunc::Path::Normalize(fullPath);
-
-            result.m_catalogAssets.push_back(
-                SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
+            result.m_catalogAssets.push_back(SourceHandle::FromRelativePath(nullptr, sourceEntry->GetSourceUuid(), fullPath));
         }
 
         const int rowCount = model.rowCount(index);

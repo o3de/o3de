@@ -455,7 +455,7 @@ namespace Multiplayer
             AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
             // Build a set of Net IDs for the children
-            AZStd::unordered_set<NetEntityId> currentChildren;
+            NetEntityIdSet currentChildren;
             NetworkHierarchyRootComponent& component = GetParent();
             for (AZ::Entity* child : component.m_hierarchicalEntities)
             {

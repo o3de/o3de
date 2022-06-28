@@ -157,96 +157,56 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}.qrc",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorModule.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.h",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}Module.cpp",
-            "isTemplated": true
-        },
-        {
             "file": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}SystemComponent.cpp",
+            "file": "Code/Source/Clients/${Name}Module.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}SystemComponent.h",
+            "file": "Code/Source/Clients/${Name}SystemComponent.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}Widget.cpp",
+            "file": "Code/Source/Clients/${Name}SystemComponent.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}Widget.h",
+            "file": "Code/Source/Tools/${Name}.qrc",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/toolbar_icon.svg",
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}Widget.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}Widget.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/toolbar_icon.svg",
             "isTemplated": false
         },
         {
-            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "file": "Code/Tests/Clients/${Name}Test.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Tests/${Name}Test.cpp",
+            "file": "Code/Tests/Tools/${Name}EditorTest.cpp",
             "isTemplated": true
-        },
-        {
-            "file": "Platform/Android/android_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Android/android_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Linux/linux_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Linux/linux_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Mac/mac_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Mac/mac_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Windows/windows_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/Windows/windows_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/iOS/ios_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/iOS/ios_gem.json",
-            "isTemplated": false
         },
         {
             "file": "Registry/assetprocessor_settings.setreg",
@@ -296,25 +256,19 @@
             "dir": "Code/Source"
         },
         {
+            "dir": "Code/Source/Clients"
+        },
+        {
+            "dir": "Code/Source/Tools"
+        },
+        {
             "dir": "Code/Tests"
         },
         {
-            "dir": "Platform"
+            "dir": "Code/Tests/Clients"
         },
         {
-            "dir": "Platform/Android"
-        },
-        {
-            "dir": "Platform/Linux"
-        },
-        {
-            "dir": "Platform/Mac"
-        },
-        {
-            "dir": "Platform/Windows"
-        },
-        {
-            "dir": "Platform/iOS"
+            "dir": "Code/Tests/Tools"
         },
         {
             "dir": "Registry"

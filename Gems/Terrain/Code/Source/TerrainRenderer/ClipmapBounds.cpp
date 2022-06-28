@@ -140,7 +140,15 @@ namespace Terrain
                 minY = (updatedCenter.m_y - m_halfSize) * m_worldToClipmapScale;
             }
 
-            untouchedRegion->Set(AZ::Vector3(minX, minY, 0.0f), AZ::Vector3(maxX, maxY, 0.0f));
+            if (minX > maxX || minY > maxY)
+            {
+                // The center has moved so far, there is no untouched region.
+                untouchedRegion->SetNull();
+            }
+            else
+            {
+                untouchedRegion->Set(AZ::Vector3(minX, minY, 0.0f), AZ::Vector3(maxX, maxY, 0.0f));
+            }
         }
 
         m_center = updatedCenter;
@@ -286,8 +294,8 @@ namespace Terrain
     AZ::Vector2 ClipmapBounds::GetCenterInWorldSpace() const
     {
         AZ::Vector2 worldCenter;
-        worldCenter.SetX(m_center.m_x * m_clipmapToWorldScale + 0.5f);
-        worldCenter.SetY(m_center.m_y * m_clipmapToWorldScale + 0.5f);
+        worldCenter.SetX(m_center.m_x * m_clipmapToWorldScale);
+        worldCenter.SetY(m_center.m_y * m_clipmapToWorldScale);
         return worldCenter;
     }
 

@@ -33,7 +33,6 @@ namespace AZ
         {
         public:
             static bool ConvertObjectStreamFiles(Application& application);
-            static bool ConvertApplicationDescriptor(Application& application);
             //! Converts Windows INI Style File
             //! Can be used to convert *.ini and *.cfg files
             static bool ConvertConfigFile(Application& application);
@@ -42,13 +41,6 @@ namespace AZ
             using PathDocumentPair = AZStd::pair<AZStd::string, rapidjson::Document>;
             using PathDocumentContainer = AZStd::vector<PathDocumentPair>;
 
-            static bool ConvertSystemSettings(PathDocumentContainer& documents, const ComponentApplication::Descriptor& descriptor, 
-                const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder);
-            static bool ConvertSystemComponents(PathDocumentContainer& documents, const Entity& entity,
-                const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder,
-                const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings);
-            static bool ConvertModuleComponents(PathDocumentContainer& documents, const ModuleEntity& entity, const AZStd::string& configurationName,
-                const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings);
             static bool VerifyConvertedData(rapidjson::Value& convertedData, const void* original, const Uuid& originalType,
                 const JsonDeserializerSettings& settings);
 

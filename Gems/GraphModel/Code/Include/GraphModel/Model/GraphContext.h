@@ -54,7 +54,7 @@ namespace GraphModel
         DataTypePtr GetDataType(const AZStd::string& name) const;
 
         //! Returns a DataType object representing the given TypeId, or Invalid if it doesn't exist.
-        DataTypePtr GetDataType(AZ::Uuid typeId) const;
+        DataTypePtr GetDataType(const AZ::Uuid& typeId) const;
 
         //! Utility function to returns a DataType object representing the given template type T, or Invalid if it doesn't exist.
         template<typename T>

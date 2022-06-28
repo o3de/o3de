@@ -34,8 +34,7 @@
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
-#include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
-#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
+#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -166,18 +165,6 @@ namespace AZ
 
 namespace DPEDebugView
 {
-    class DPEDebugWindow
-        : public QMainWindow
-        , public Ui::DPEDebugWindow
-    {
-    public:
-        DPEDebugWindow(QWidget* parentWidget)
-            : QMainWindow(parentWidget)
-        {
-            setupUi(this);
-        }
-    };
-
     class DPEDebugApplication : public AzToolsFramework::ToolsApplication
     {
     public:
@@ -226,40 +213,20 @@ int main(int argc, char** argv)
     testContainer.m_map["A"] = 1.f;
     testContainer.m_map["B"] = 2.f;
 
-    AZStd::vector<AZStd::pair<QString, AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter>>> adapters;
-    adapters.emplace_back("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
-    adapters.emplace_back("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
-    adapters.emplace_back("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
+    QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
 
-    AzToolsFramework::DPEDebugModel adapterModel(nullptr);
-
-    QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
-    theWindow->m_treeView->setModel(&adapterModel);
-
-    for (int columnIndex = 0, maxColumns = adapterModel.GetMaxColumns(); columnIndex < maxColumns; ++columnIndex)
-    {
-        // resize the columns to accommodate the displayed data
-        theWindow->m_treeView->resizeColumnToContents(columnIndex);
-    }
-
-    // create a real DPE on the same adapter as the debug adapter for testing purposes
+    // create a real DPE to track the same adapter selected for the debug tool
     AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->SetSpawnDebugView(false); // don't allow this DPE to spawn debug views, as we've made our own
+    QObject::connect(
+        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
+        &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
 
-    // add the adapters to a combo box and switch out the views on selection change
-    QObject::connect(theWindow->adapterSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), [&]()
-        {
-            auto adapter = adapters[theWindow->adapterSelector->currentIndex()].second;
-            adapterModel.SetAdapter(adapter.get());
-            theWindow->m_textView->SetAdapter(adapter);
-            dpeInstance->SetAdapter(adapter.get());
-        });
-    for (const auto& entry : adapters)
-    {
-        theWindow->adapterSelector->addItem(entry.first);
-    }
-    theWindow->adapterSelector->setCurrentIndex(0);
+    debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
+    debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
+    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
 
-    theWindow->show();
+    debugViewer->show();
     dpeInstance->show();
 
     return qtApp.exec();

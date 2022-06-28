@@ -76,7 +76,17 @@ namespace Multiplayer
         //! IsNetEntityRoleClient
         //! @return true if this network entity is a simulated proxy on a client; otherwise false.
         bool IsNetEntityRoleClient() const;
-        
+
+        //! Sets whether or not a netbound entity is allowed to migrate between hosts.
+        //! Use this feature carefully, as replication is spatially based. If migration is disabled chances are you want to mark the entity as always persistent as well.
+        //! See INetworkEntityManager::MarkAlwaysRelevantToClients and INetworkEntityManager::MarkAlwaysRelevantToServers
+        //! @param value whether to enable or disable host migrations for this entity
+        void SetAllowEntityMigration(EntityMigration value);
+
+        //! Retrieves whether or not the netbound entity is allowed to migrate between hosts.
+        //! @return EntityMigration::Enabled if the entity is allowed to migrate, EntityMigration::Disabled otherwise
+        EntityMigration GetAllowEntityMigration() const;
+
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
@@ -161,7 +171,8 @@ namespace Multiplayer
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
         AZ::Data::AssetId m_prefabAssetId;
-        AZStd::unordered_map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
+        // It is important that this component map be ordered, as we walk it to generate serialization ordering
+        AZStd::map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
         AZStd::vector<MultiplayerComponent*> m_multiplayerSerializationComponentVector;
         AZStd::vector<MultiplayerComponent*> m_multiplayerInputComponentVector;
 
@@ -185,6 +196,7 @@ namespace Multiplayer
         NetworkEntityHandle   m_netEntityHandle;
         NetEntityRole         m_netEntityRole   = NetEntityRole::InvalidRole;
         NetEntityId           m_netEntityId     = InvalidNetEntityId;
+        EntityMigration       m_netEntityMigration = EntityMigration::Enabled;
 
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 

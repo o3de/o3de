@@ -7,9 +7,9 @@
 # {END_LICENSE}
 
 set(FILES
-    Source/${Name}EditorSystemComponent.cpp
-    Source/${Name}EditorSystemComponent.h
-    Source/${Name}Widget.cpp
-    Source/${Name}Widget.h
-    Source/${Name}.qrc
+    Source/Tools/${Name}EditorSystemComponent.cpp
+    Source/Tools/${Name}EditorSystemComponent.h
+    Source/Tools/${Name}Widget.cpp
+    Source/Tools/${Name}Widget.h
+    Source/Tools/${Name}.qrc
 )

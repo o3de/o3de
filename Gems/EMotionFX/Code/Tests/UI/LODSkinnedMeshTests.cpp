@@ -21,6 +21,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Material.h>
 #include <EMotionFX/Source/StandardMaterial.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
