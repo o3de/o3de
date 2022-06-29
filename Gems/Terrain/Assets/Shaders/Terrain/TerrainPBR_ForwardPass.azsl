@@ -206,9 +206,10 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
         float3 debugColor = debugColors[lodLevel];
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+        float patchScale = ObjectSrg::m_patchData.m_xyScale * TerrainSrg::m_meshData.m_gridToQuadScale;
 
         // Draw red wireframe on quad boundaries
-        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * RcpGridSize;
+        float quadSpacing = patchScale * TerrainSrg::m_meshData.m_rcpGridSize;
         float2 modPos = input.m_worldPosition.xy % quadSpacing;
         const float lineWidth = 0.04 * quadSpacing;
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
@@ -225,10 +226,20 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         }
 
         // Draw blue on sector boundaries
-        modPos = input.m_worldPosition.xy % ObjectSrg::m_patchData.m_xyScale;
-        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > ObjectSrg::m_patchData.m_xyScale - quadSpacing * 0.5))
+        modPos = input.m_worldPosition.xy % patchScale;
+        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > patchScale - quadSpacing * 0.5))
         {
             output.m_diffuseColor.b += 1.0;
+        }
+        
+        if (o_useTerrainClod)
+        {
+            float clodDistance = TerrainSrg::CalculateClodDistance(ObjectSrg::m_patchData.m_lodLevel, input.m_worldPosition);
+            float clodBlend = 1.0 - saturate(clodDistance * TerrainSrg::m_meshData.m_rcpClodDistance * ObjectSrg::m_patchData.m_rcpLodLevel);
+            if (clodBlend > 0.0 && clodBlend < 1.0)
+            {
+                output.m_diffuseColor.rgb += lerp(float3(0.1, 0.1, 0.0), float3(0.0, 0.1, 0.1), clodBlend);
+            }
         }
     }
 
