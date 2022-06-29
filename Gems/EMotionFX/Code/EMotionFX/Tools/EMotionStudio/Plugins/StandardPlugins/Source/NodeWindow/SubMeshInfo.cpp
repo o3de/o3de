@@ -18,7 +18,7 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(SubMeshInfo, EMStudio::UIAllocator, 0)
 
-    SubMeshInfo::SubMeshInfo(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::SubMesh* subMesh)
+    SubMeshInfo::SubMeshInfo([[maybe_unused]] EMotionFX::Actor* actor, [[maybe_unused]] size_t lodLevel, EMotionFX::SubMesh* subMesh)
     {
         m_verticesCount = subMesh->GetNumVertices();
         m_indicesCount = subMesh->GetNumIndices();
