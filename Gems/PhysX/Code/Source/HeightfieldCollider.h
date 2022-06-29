@@ -90,6 +90,9 @@ namespace PhysX
         void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
     private:
+        void UpdateHeightfieldRows(
+            AzPhysics::Scene* scene, AZStd::shared_ptr<Physics::Shape> shape, size_t rowsPerUpdate, size_t startColumn, size_t numColumns);
+
         //! Helper class to manage the spawned physics update jobs.
         class HeightfieldUpdateJobContext : public AZ::JobContext
         {
@@ -105,11 +108,11 @@ namespace PhysX
             //! Check to see if the jobs should be canceled.
             bool IsCanceled() const;
 
-            //! Track all jobs that are being started.
-            void OnJobStart();
+            //! Track that the refresh has been started.
+            void OnRefreshStart();
 
-            //! Track all jobs that have been completed.
-            void OnJobComplete();
+            //! Track that the refresh has been completed.
+            void OnRefreshComplete();
 
             //! Block until all jobs have been completed.
             void BlockUntilComplete();
