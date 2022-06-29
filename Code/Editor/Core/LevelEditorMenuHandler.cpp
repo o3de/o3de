@@ -1062,7 +1062,7 @@ void LevelEditorMenuHandler::UpdateMRUFiles()
                 // Check file is still available
                 if (mruList->GetSize() > i)
                 {
-                    cryEdit->OpenDocumentFile((*mruList)[i].toUtf8().data());
+                    cryEdit->OpenDocumentFile((*mruList)[i].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
                 }
             });
         m_actionManager->RegisterUpdateCallback(ID_FILE_MRU_FILE1 + i, cryEdit, &CCryEditApp::OnUpdateFileOpen);
