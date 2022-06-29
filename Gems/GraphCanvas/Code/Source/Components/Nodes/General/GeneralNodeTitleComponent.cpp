@@ -239,6 +239,7 @@ namespace GraphCanvas
         m_subTitleWidget = aznew GraphCanvasLabel(this);
         m_linearLayout = new QGraphicsLinearLayout(Qt::Vertical);
         m_linearLayout->setSpacing(0);
+        
         setLayout(m_linearLayout);
         setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(m_entityId), 16, 16, QChar('0')));
     }
@@ -419,6 +420,14 @@ namespace GraphCanvas
             m_linearLayout->addItem(m_subTitleWidget);
         }
 
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+        if (nodeType == Styling::Elements::Small)
+        {
+            m_linearLayout->setContentsMargins(0, 0, 0, 0);
+        }
+
         RefreshDisplay();
         NodeTitleNotificationsBus::Event(GetEntityId(), &NodeTitleNotifications::OnTitleChanged);
         NodeUIRequestBus::Event(GetEntityId(), &NodeUIRequests::AdjustSize);
@@ -427,7 +436,19 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::UpdateStyles()
     {
         m_styleHelper.SetStyle(GetEntityId(), Styling::Elements::Title);
-        m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
+        
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
+        if (nodeType == Styling::Elements::Small)
+        {
+            m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitleCentered);
+        }
+        else
+        {
+            m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
+        }
+        
         m_subTitleWidget->SetStyle(GetEntityId(), Styling::Elements::SubTitle);
 
         // Just clear our the disabled palette and we'll get it when we need it.
@@ -449,14 +470,6 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::OnAddedToScene(const AZ::EntityId& scene)
     {
         SceneNotificationBus::Handler::BusConnect(scene);
-
-        AZStd::string nodeType;
-        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
-
-        if (nodeType == Styling::Elements::Small)
-        {
-            m_titleWidget->SetAlignment(Qt::AlignCenter);
-        }
 
         UpdateStyles();
         RefreshDisplay();

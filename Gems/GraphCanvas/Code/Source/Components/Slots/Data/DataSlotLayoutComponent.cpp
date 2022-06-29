@@ -437,9 +437,24 @@ namespace GraphCanvas
 
         m_slotConnectionPin->RefreshStyle();
 
-        qreal padding = m_style.GetAttribute(Styling::Attribute::Padding, 2.);
-        setContentsMargins(padding, padding, padding, padding);
-        setSpacing(m_style.GetAttribute(Styling::Attribute::Spacing, 2.));
+        // Update styling options for small operators
+        AZ::EntityId nodeId;
+        SlotRequestBus::EventResult(nodeId, m_owner.GetEntityId(), &SlotRequests::GetNode);
+
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, nodeId, &StyledEntityRequests::GetClass);
+
+        if (nodeType != Styling::Elements::Small)
+        {
+            qreal padding = m_style.GetAttribute(Styling::Attribute::Padding, 2.);
+            setContentsMargins(padding, padding, padding, padding);
+            setSpacing(m_style.GetAttribute(Styling::Attribute::Spacing, 2.));
+        }
+        else
+        {
+            setContentsMargins(0, 0, 0, 0);
+            setSpacing(0);
+        }
 
         UpdateGeometry();
     }
@@ -609,6 +624,18 @@ namespace GraphCanvas
             graphCanvasLabel->SetStyle(m_owner.GetEntityId(), ".slotName");
             break;
         };
+
+        // Update styling options for small operators
+        AZ::EntityId nodeId;
+        SlotRequestBus::EventResult(nodeId, m_owner.GetEntityId(), &SlotRequests::GetNode);
+
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, nodeId, &StyledEntityRequests::GetClass);
+
+        if (nodeType == Styling::Elements::Small)
+        {
+            graphCanvasLabel->setMinimumHeight(0);
+        }
     }
 
     void DataSlotLayout::UpdateFilterState()

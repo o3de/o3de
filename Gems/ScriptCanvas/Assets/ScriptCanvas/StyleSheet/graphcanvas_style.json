@@ -155,9 +155,35 @@
     "spacing": 0,
     "margin": 0
   },
+
+  {
+    "selectors": [ "node > .maintitlecentered" ],
+
+    "background-color": "transparent",
+
+    "font-family": "Open Sans",
+    "font-size": "110%",
+    "font-style": "default",
+    "font-variant": "default",
+    "font-weight": "Bold",
+
+    "color": "#ffffff",
+
+    "text-alignment": "center",
+
+    "padding": 0,
+    "spacing": 0,
+    "margin": 0
+  },
+
   {
     "selectors": [ "node:disabled > .maintitle" ],
     "font-style": "italic"
+  },
+  {
+    "selectors": [ "node:disabled > .maintitlecentered" ],
+    "font-style": "italic",
+    "color": "#ffffff"
   },
   {
     "selectors": [ "node:hovered > title" ],
@@ -371,39 +397,39 @@
   },
   {
     "selectors": [ "nodeGroup > border" ],
-    
+
     "border-width": 3,
     "border-color": "#000000",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:selected > border" ],
-    
+
     "border-width": 3,
     "border-color": "#17A3CD",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:deletion > border" ],
-    
+
     "border-width": 3,
     "border-color": "#EF1713",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:hovered > border" ],
-    
+
     "border-width": 3,
     "border-color": "#4285f4",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:highlighted > border" ],
-    
+
     "border-width": 3,
     "border-color": "#4285f4",
     "border-style": "dashed"
-  },  
+  },
   {
     "selectors": [ "wrapperNode" ],
 
@@ -2339,26 +2365,26 @@
   },
   {
     "selectors": [ "UnknownLayer" ],
-    "layer": -3    
+    "layer": -3
   },
   {
-    "selectors": ["neutral"],
+    "selectors": [ "neutral" ],
     "layer": 0
   },
   {
-    "selectors": ["interactive"],
+    "selectors": [ "interactive" ],
     "layer": 1
   },
   {
-    "selectors": ["dropTarget"],
+    "selectors": [ "dropTarget" ],
     "layer": 1
   },
   {
-    "selectors": ["editing"],
+    "selectors": [ "editing" ],
     "layer": 1
   },
   {
-    "selectors": ["groupHighlight"],
+    "selectors": [ "groupHighlight" ],
     "layer": 2
   },
   {

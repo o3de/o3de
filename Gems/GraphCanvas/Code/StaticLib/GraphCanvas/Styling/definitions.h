@@ -54,6 +54,7 @@ namespace GraphCanvas
             // Pseudo-elements
             const char* const Title = "title";
             const char* const MainTitle = ".maintitle";
+            const char* const MainTitleCentered = ".maintitlecentered";
             const char* const SubTitle = ".subtitle";
             
             const char* const ConnectionPin = "connectionPin";

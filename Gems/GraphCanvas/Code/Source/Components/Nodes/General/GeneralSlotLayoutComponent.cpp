@@ -148,10 +148,10 @@ namespace GraphCanvas
             spacer->setContentsMargins(0, 0, 0, 0);
             spacer->setPreferredSize(0, 0);
             spacer->setMaximumHeight(0);
-
+            
             m_inputs->addItem(spacer);
         }
-
+        
         m_outputs = new QGraphicsLinearLayout(Qt::Vertical);
         m_outputs->setContentsMargins(0, 0, 0, 0);
         m_outputs->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -165,15 +165,21 @@ namespace GraphCanvas
 
             m_outputs->addItem(spacer);
         }
-
+        
         m_layout = new QGraphicsLinearLayout(Qt::Horizontal);
         setLayout(m_layout);
+
+        if (nodeType == Styling::Elements::Small)
+        {
+            m_layout->setContentsMargins(0, 0, 0, 0);
+        }
 
         m_layout->setInstantInvalidatePropagation(true);
 
         // Creating the actual display
         // <input><spacer><output>
         m_layout->addItem(m_inputs);
+        m_layout->setAlignment(m_inputs, Qt::AlignCenter);
 
         if (nodeType != Styling::Elements::Small)
         {
@@ -186,8 +192,7 @@ namespace GraphCanvas
         }
 
         m_layout->addItem(m_outputs);
-        
-        m_layout->setAlignment(m_outputs, Qt::AlignRight);
+        m_layout->setAlignment(m_outputs, Qt::AlignCenter);
     }
 
     void GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::DisplaySlot(const AZ::EntityId& slotId)
@@ -411,7 +416,7 @@ namespace GraphCanvas
         setAcceptHoverEvents(false);
         setFlag(ItemIsMovable, false);
         setContentsMargins(0, 0, 0, 0);
-
+        
         setData(GraphicsItemName, QStringLiteral("Slots/%1").arg(static_cast<AZ::u64>(GetEntityId()), 16, 16, QChar('0')));
 
         m_groupLayout = new QGraphicsLinearLayout(Qt::Vertical);

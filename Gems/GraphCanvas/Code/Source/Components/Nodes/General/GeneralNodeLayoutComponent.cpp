@@ -75,7 +75,7 @@ namespace GraphCanvas
         m_slots = new QGraphicsLinearLayout(Qt::Vertical);
         m_slots->setInstantInvalidatePropagation(true);
 
-        m_title = new QGraphicsLinearLayout(Qt::Vertical);
+        m_title = new QGraphicsLinearLayout(Qt::Horizontal);
         m_title->setInstantInvalidatePropagation(true);
     }
 
@@ -136,12 +136,15 @@ namespace GraphCanvas
             {
                 m_title->addItem(titleGraphicsItem);
                 m_title->setContentsMargins(0, 0, 0, 0);
+                m_title->setSpacing(0);
+                m_title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+                m_title->setPreferredSize(0, 0);
             }
 
-            // Here we insert the title into slot layout so it appears between the input and output slots
+            //Here we insert the title into slot layout so it appears between the input and output slots
             QGraphicsLinearLayout* slotLayout = nullptr;
             NodeSlotsRequestBus::EventResult(slotLayout, GetEntityId(), &NodeSlotsRequestBus::Events::GetLinearLayout);
-            
+
             slotLayout->insertItem(1, m_title);
 
             QGraphicsLayoutItem* slotsGraphicsItem = nullptr;
@@ -149,8 +152,7 @@ namespace GraphCanvas
             if (slotsGraphicsItem)
             {
                 m_slots->addItem(slotsGraphicsItem);
-                m_slots->setContentsMargins(0, 0, 0, 0);
-                m_slots->setMaximumHeight(32);
+                m_slots->setContentsMargins(3.0, 0, 3.0, 0);
             }
             GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_slots);
         }
@@ -162,10 +164,21 @@ namespace GraphCanvas
 
     void GeneralNodeLayoutComponent::UpdateLayoutParameters()
     {
+        AZStd::string nodeType;
+        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
+
         Styling::StyleHelper style(GetEntityId());
-        qreal border = style.GetAttribute(Styling::Attribute::BorderWidth, 0.0);
-        qreal spacing = style.GetAttribute(Styling::Attribute::Spacing, 4.0);
-        qreal margin = style.GetAttribute(Styling::Attribute::Margin, 4.0);
+
+        qreal border = 0.0;
+        qreal spacing = 0.0;
+        qreal margin = 0.0;
+
+        if (nodeType != Styling::Elements::Small)
+        {
+            border = style.GetAttribute(Styling::Attribute::BorderWidth, 0.0);
+            spacing = style.GetAttribute(Styling::Attribute::Spacing, 4.0);
+            margin = style.GetAttribute(Styling::Attribute::Margin, 4.0);
+        }
 
         GetLayoutAs<QGraphicsLinearLayout>()->setContentsMargins(margin + border, margin + border, margin + border, margin + border);
         GetLayoutAs<QGraphicsLinearLayout>()->setSpacing(spacing);
