@@ -21,17 +21,9 @@ namespace EMotionFX::Pipeline::Rule
         AZ_RTTI(EMotionFX::Pipeline::Rule::RootMotionExtractionData, "{7AA82E47-88CC-4430-9AEE-83BFB671D286}");
         AZ_CLASS_ALLOCATOR(RootMotionExtractionData, AZ::SystemAllocator, 0)
 
-        RootMotionExtractionData();
         virtual ~RootMotionExtractionData() = default;
-
-        const AZStd::string& GetSampleJoint() const { return m_sampleJoint; }
-        bool GetTransitionZeroXAxis() const { return m_transitionZeroXAxis; }
-        bool GetTransitionZeroYAxis() const { return m_transitionZeroYAxis; }
-        bool GetExtractRotation() const { return m_extractRotation; }
-
         static void Reflect(AZ::ReflectContext* context);
 
-    private:
         bool m_transitionZeroXAxis = false;
         bool m_transitionZeroYAxis = false;
         bool m_extractRotation = false;

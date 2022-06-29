@@ -289,7 +289,7 @@ namespace EMotionFX
 
                 // Keep track of the sample joint index.
                 if (rootMotionExtractionRule && sampleJointDataIndex == invalidJointDataIndex
-                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().GetSampleJoint().c_str()) != AZStd::string::npos)
+                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().m_sampleJoint.c_str()) != AZStd::string::npos)
                 {
                     sampleJointDataIndex = jointDataIndex;
                 }
@@ -413,7 +413,7 @@ namespace EMotionFX
             if (rootMotionExtractionRule && sampleJointDataIndex != invalidJointDataIndex && rootJointDataIndex != invalidJointDataIndex)
             {
                 const auto& data = rootMotionExtractionRule->GetData();
-                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.GetTransitionZeroXAxis(), data.GetTransitionZeroYAxis(), data.GetExtractRotation());
+                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.m_transitionZeroXAxis, data.m_transitionZeroYAxis, data.m_extractRotation);
             }
 
             AZStd::shared_ptr<Rule::IMotionScaleRule> scaleRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::IMotionScaleRule>();
