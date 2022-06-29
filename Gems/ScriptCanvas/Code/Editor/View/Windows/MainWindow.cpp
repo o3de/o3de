@@ -1608,7 +1608,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            return SaveAssetImpl(m_activeGraph, Save::InPlace, metaData->m_absolutePath);
+            return SaveAssetImpl(m_activeGraph, Save::InPlace);
         }
     }
 
@@ -1617,7 +1617,7 @@ namespace ScriptCanvasEditor
         return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save, AZ::IO::Path absolutePath)
+    bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save)
     {
         SourceHandle sourceHandle = sourceHandleIn;
 
@@ -1672,9 +1672,9 @@ namespace ScriptCanvasEditor
             isValidFileName = true;
             suggestedFileFilter = SourceDescription::GetFileExtension();
             
-            auto sourceHandlePath = absolutePath;
-            selectedFile = absolutePath.Native().c_str();
-            suggestedFilename = sourceHandle.Path().Filename().Native();
+            auto sourceHandlePath = sourceHandleIn.AbsolutePath();
+            selectedFile = sourceHandleIn.AbsolutePath().Native().c_str();
+            suggestedFilename = sourceHandleIn.AbsolutePath().Filename().Native();
             sourceHandlePath.RemoveFilename();
             suggestedDirectoryPath = sourceHandlePath.Native();
         }
@@ -1789,6 +1789,7 @@ namespace ScriptCanvasEditor
         if (saveSuccess)
         {
             SourceHandle& fileAssetId = memoryAsset;
+            fileAssetId = SourceHandle::MarkAbsolutePath(fileAssetId, result.absolutePath);
             int currentTabIndex = m_tabBar->currentIndex();
 
             AZ::Data::AssetInfo assetInfo;
@@ -1815,7 +1816,6 @@ namespace ScriptCanvasEditor
 
             auto tabData = m_tabBar->GetTabData(saveTabIndex);
             tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
-            tabData->m_absolutePath = result.absolutePath;
             tabData->m_assetId = fileAssetId;
             m_tabBar->SetTabData(*tabData, saveTabIndex);
             m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
@@ -2518,7 +2518,7 @@ namespace ScriptCanvasEditor
         if (tabdata.isValid())
         {
             auto assetId = tabdata.value<Widget::GraphTabMetadata>();
-            SaveAssetImpl(assetId.m_assetId, Save::InPlace, assetId.m_absolutePath);
+            SaveAssetImpl(assetId.m_assetId, Save::InPlace);
         }
     }
 

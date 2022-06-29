@@ -84,25 +84,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZStd::optional<AZ::IO::Path> GetFullPath(const SourceHandle& source)
-    {
-        using namespace AzToolsFramework;
-
-        if (!source.Path().empty())
-        {
-            if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
-            {
-                AZStd::string fullSourcePath;
-                if (assetSystem->GetFullSourcePathFromRelativeProductPath(source.Path().c_str(), fullSourcePath))
-                {
-                    return AZ::IO::Path(fullSourcePath);
-                }
-            }
-        }
-
-        return AZStd::nullopt;
-    }
-
     //////////////////////////
     // NodeIdentifierFactory
     //////////////////////////

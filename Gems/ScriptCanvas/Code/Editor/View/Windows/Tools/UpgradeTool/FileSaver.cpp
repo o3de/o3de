@@ -200,15 +200,6 @@ namespace ScriptCanvasEditor
 
             if (m_fullPath.empty())
             {
-                auto fullPathOptional = GetFullPath(source);
-                if (fullPathOptional)
-                {
-                    m_fullPath = *fullPathOptional;
-                }
-            }
-
-            if (m_fullPath.empty())
-            {
                 FileSaveResult result;
                 result.fileSaveError = "No save location specified";
                 m_onComplete(result);
