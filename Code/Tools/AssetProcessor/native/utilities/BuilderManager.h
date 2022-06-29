@@ -78,7 +78,7 @@ namespace AssetProcessor
             : m_uuid(uuid),
             m_quitListener(quitListener)
         {}
-        ~Builder() = default;
+        virtual ~Builder() = default;
 
         // Disable copy and move (can't move a semaphore)
         AZ_DISABLE_COPY_MOVE(Builder);
@@ -107,10 +107,10 @@ namespace AssetProcessor
         template<typename TNetRequest, typename TNetResponse, typename TRequest, typename TResponse>
         BuilderRunJobOutcome RunJob(const TRequest& request, TResponse& response, AZ::u32 processTimeoutLimitInSeconds, const AZStd::string& task, const AZStd::string& modulePath, AssetBuilderSDK::JobCancelListener* jobCancelListener = nullptr, AZStd::string tempFolderPath = AZStd::string()) const;
 
-    private:
+    protected:
 
         //! Starts the builder process and waits for it to connect
-        bool Start(BuilderPurpose purpose);
+        virtual bool Start(BuilderPurpose purpose);
 
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
@@ -195,10 +195,10 @@ namespace AssetProcessor
         BuilderRef GetBuilder(BuilderPurpose purpose) override;
         void AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset) override;
 
-    private:
+    protected:
 
         //! Makes a new builder, adds it to the pool, and returns a shared pointer to it
-        AZStd::shared_ptr<Builder> AddNewBuilder();
+        virtual AZStd::shared_ptr<Builder> AddNewBuilder();
 
         //! Handles incoming builder connections
         void IncomingBuilderPing(AZ::u32 connId, AZ::u32 type, AZ::u32 serial, QByteArray payload, QString platform);

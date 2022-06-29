@@ -518,6 +518,7 @@ namespace AssetProcessor
                         // Since there is only ever 1 CreateJobs process happening at once, this means CreateJobs will never have to wait to
                         // start up a new builder. This is important since CreateJobs is meant to be quick.
                         ++itr;
+                        continue;
                     }
 
                     auto& builder = itr->second;
