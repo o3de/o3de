@@ -285,8 +285,6 @@ namespace O3DE::ProjectManager
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
                 }
-
-                emit NotifyBuildProject(newProjectSettings);
             }
 
             if (auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings); !result.IsSuccess())
@@ -295,14 +293,17 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName ||
+            if (newProjectSettings.m_path != m_projectInfo.m_path ||
+                newProjectSettings.m_projectName != m_projectInfo.m_projectName ||
                 newProjectSettings.m_enginePath != m_projectInfo.m_enginePath)
             {
-                // Remove project build successfully paths for both old and new project names
+                // Remove project build successfully paths for both old and new projects
                 // because a full rebuild is required when moving projects
                 auto settings = SettingsInterface::Get();
                 settings->SetProjectBuiltSuccessfully(m_projectInfo, false);
                 settings->SetProjectBuiltSuccessfully(newProjectSettings, false);
+
+                emit NotifyBuildProject(newProjectSettings);
             }
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())
