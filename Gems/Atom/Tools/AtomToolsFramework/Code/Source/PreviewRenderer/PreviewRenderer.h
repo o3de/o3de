@@ -47,7 +47,7 @@ namespace AtomToolsFramework
 
         void PoseContent();
 
-        bool StartCapture();
+        uint32_t StartCapture();
         void EndCapture();
 
     private:
