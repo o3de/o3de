@@ -191,6 +191,7 @@ ClipmapLevel CalculateMacroClipmapLevel(float2 worldPosition)
         float contains = CircleContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
     }
+
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_macroClipmapStackSize - uint(closestLevel);
     clipmapLevel.m_nextLevel = clipmapLevel.m_closestLevel + 1;
 
@@ -224,6 +225,7 @@ ClipmapLevel CalculateDetailClipmapLevel(float2 worldPosition)
         float contains = CircleContainsPoint(clipmapCenterInWorldSpace, extent, worldPosition);
         closestLevel += contains;
     }
+
     clipmapLevel.m_closestLevel = TerrainSrg::m_clipmapData.m_detailClipmapStackSize - uint(closestLevel);
     clipmapLevel.m_nextLevel = clipmapLevel.m_closestLevel + 1;
 
@@ -318,10 +320,10 @@ float4 ColorBilinearSampling(Texture2DArray<float4> colorClipmap, BilinearUvs uv
 float3 NormalBilinearSampling(Texture2DArray<float2> normalClipmap, BilinearUvs uvs, uint clipmapLevel)
 {
     float3 normal00 = UnpackNormal(normalClipmap[uint3(uvs.m_u0v0, clipmapLevel)]);
-    float3 normal01 = UnpackNormal(normalClipmap[uint3(uvs.m_u1v0, clipmapLevel)]);
-    float3 normal10 = UnpackNormal(normalClipmap[uint3(uvs.m_u0v1, clipmapLevel)]);
+    float3 normal10 = UnpackNormal(normalClipmap[uint3(uvs.m_u1v0, clipmapLevel)]);
+    float3 normal01 = UnpackNormal(normalClipmap[uint3(uvs.m_u0v1, clipmapLevel)]);
     float3 normal11 = UnpackNormal(normalClipmap[uint3(uvs.m_u1v1, clipmapLevel)]);
-    
+
     float3 normal0 = normalize(lerp(normal00.rgb, normal01.rgb, uvs.m_weight.y));
     float3 normal1 = normalize(lerp(normal10.rgb, normal11.rgb, uvs.m_weight.y));
     return normalize(lerp(normal0, normal1, uvs.m_weight.x));
@@ -375,7 +377,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
 {
     ClipmapSample data;
 
-    float2 distance = worldPosition - GetDetailClipmapCenterInWorldSpace(TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1);
+    float2 distance = worldPosition - GetMacroClipmapCenterInWorldSpace(TerrainSrg::m_clipmapData.m_macroClipmapStackSize - 1);
     float2 absDistance = abs(distance);
     if (absDistance.x > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius || absDistance.y > TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius)
     {
