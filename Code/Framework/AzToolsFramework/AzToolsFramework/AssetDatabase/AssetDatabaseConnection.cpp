@@ -42,6 +42,7 @@ namespace AzToolsFramework
                 "ScanFolders",
                 "SourceDependency",
                 "Sources",
+                "Stats",
                 "dbinfo"
             };
 
@@ -122,6 +123,11 @@ namespace AzToolsFramework
                 "SELECT * from Files;";
 
             static const auto s_queryFilesTable = MakeSqlQuery(QUERY_FILES_TABLE, QUERY_FILES_TABLE_STATEMENT, LOG_NAME);
+
+            static const char* QUERY_STATS_TABLE = "AzToolsFramework::AssetDatabase::QueryStatsTable";
+            static const char* QUERY_STATS_TABLE_STATEMENT = "SELECT * from Stats;";
+
+            static const auto s_queryStatsTable = MakeSqlQuery(QUERY_STATS_TABLE, QUERY_STATS_TABLE_STATEMENT, LOG_NAME);
 
             //////////////////////////////////////////////////////////////////////////
             //projection and combination queries
@@ -950,6 +956,16 @@ namespace AzToolsFramework
                     SqlParam<AZ::s64>(":scanfolderid"),
                     SqlParam<const char*>(":filename"));
 
+            static const char* QUERY_STAT_BY_STATNAME = "AzToolsFramework::AssetDatabase::QueryStatByStatName";
+            static const char* QUERY_STAT_BY_STATNAME_STATEMENT = "SELECT * FROM Stats WHERE "
+                                                                  "StatName = :statname;";
+
+            static const auto s_queryStatByStatName = MakeSqlQuery(
+                QUERY_STAT_BY_STATNAME,
+                QUERY_STAT_BY_STATNAME_STATEMENT,
+                LOG_NAME,
+                SqlParam<const char*>(":statname"));
+
             void PopulateJobInfo(AzToolsFramework::AssetSystem::JobInfo& jobinfo, JobDatabaseEntry& jobDatabaseEntry)
             {
                 jobinfo.m_platform = AZStd::move(jobDatabaseEntry.m_platform);
@@ -995,6 +1011,7 @@ namespace AzToolsFramework
             bool GetMissingProductDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::missingProductDependencyHandler handler);
             bool GetCombinedDependencyResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::combinedProductDependencyHandler handler);
             bool GetFileResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::fileHandler handler);
+            bool GetStatResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::statHandler handler);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -1655,6 +1672,28 @@ namespace AzToolsFramework
         }
 
         //////////////////////////////////////////////////////////////////////////
+        // StatDatabaseEntry
+
+        AZStd::string StatDatabaseEntry::ToString() const
+        {
+            return AZStd::string::format(
+                "StatDatabaseEntry id: %" PRId64 " statname: %s statvalue: %" PRId64 " lastlogtime: %" PRId64,
+                aznumeric_cast<int64_t>(m_statID),
+                m_statName.c_str(),
+                aznumeric_cast<int64_t>(m_statValue),
+                aznumeric_cast<int64_t>(m_lastLogTime));
+        }
+
+        auto StatDatabaseEntry::GetColumns()
+        {
+            return MakeColumns(
+                MakeColumn("StatID", m_statID),
+                MakeColumn("StatName", m_statName),
+                MakeColumn("StatValue", m_statValue),
+                MakeColumn("LastLogTime", m_lastLogTime));
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         //AssetDatabaseConnection
         AssetDatabaseConnection::AssetDatabaseConnection()
             : m_databaseConnection(nullptr)
@@ -1878,6 +1917,8 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryFilesByScanfolderid);
             AddStatement(m_databaseConnection, s_queryFileByFileNameScanfolderid);
 
+            AddStatement(m_databaseConnection, s_queryStatByStatName);
+
             AddStatement(m_databaseConnection, s_queryBuilderInfoTable);
         }
 
@@ -1974,6 +2015,11 @@ namespace AzToolsFramework
         bool AssetDatabaseConnection::QueryFilesTable(fileHandler handler)
         {
             return s_queryFilesTable.BindAndQuery(*m_databaseConnection, handler, &GetFileResult);
+        }
+
+        bool AssetDatabaseConnection::QueryStatsTable(statHandler handler)
+        {
+            return s_queryStatsTable.BindAndQuery(*m_databaseConnection, handler, &GetStatResult);
         }
 
         bool AssetDatabaseConnection::QueryScanFolderByScanFolderID(AZ::s64 scanfolderid, scanFolderHandler handler)
@@ -2641,6 +2687,11 @@ namespace AzToolsFramework
             return s_queryFileByFileNameScanfolderid.BindAndQuery(*m_databaseConnection, handler, &GetFileResult, scanFolderID, fileName);
         }
 
+        bool AssetDatabaseConnection::QueryStatByStatName(const char* statName, statHandler handler)
+        {
+            return s_queryStatByStatName.BindAndQuery(*m_databaseConnection, handler, &GetStatResult, statName);
+        }
+
         void AssetDatabaseConnection::SetQueryLogging(bool enableLogging)
         {
             if (enableLogging)
@@ -2935,6 +2986,11 @@ namespace AzToolsFramework
             }
 
             bool GetFileResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::fileHandler handler)
+            {
+                return GetResult(callName, statement, handler);
+            }
+
+            bool GetStatResult(const char* callName, SQLite::Statement* statement, AssetDatabaseConnection::statHandler handler)
             {
                 return GetResult(callName, statement, handler);
             }

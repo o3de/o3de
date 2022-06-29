@@ -166,6 +166,15 @@ namespace AssetProcessor
             "    FOREIGN KEY (ScanFolderPK) REFERENCES "
             "       ScanFolders(ScanFolderID) ON DELETE CASCADE);";
 
+        static const char* CREATE_STATS_TABLE = "AssetProcessor::CreateStatsTable";
+        static const char* CREATE_STATS_TABLE_STATEMENT =
+            "CREATE TABLE IF NOT EXISTS Stats( "
+            "    StatID         INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "    StatName       TEXT NOT NULL collate nocase, "
+            "    StatValue      INTEGER NOT NULL, "
+            "    LastLogTime    INTEGER NOT NULL "
+            ");";
+
         //////////////////////////////////////////////////////////////////////////
         //indices
         static const char* CREATEINDEX_DEPENDSONSOURCE_SOURCEDEPENDENCY = "AssetProcesser::CreateIndexDependsOnSource_SourceDependency";
@@ -1094,6 +1103,15 @@ namespace AssetProcessor
             }
         }
 
+        if (foundVersion == DatabaseVersion::AddedFlagsColumnToProductTable)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(CREATE_STATS_TABLE))
+            {
+                foundVersion = DatabaseVersion::AddedStatsTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedStatsTable)\n", foundVersion)
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1315,6 +1333,12 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(INSERT_COLUMN_FILE_HASH, INSERT_COLUMN_FILE_HASH_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_LAST_SCAN, INSERT_COLUMN_LAST_SCAN_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH, INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH_STATEMENT);
+
+        // ---------------------------------------------------------------------------------------------
+        //                  Stats table
+        // ---------------------------------------------------------------------------------------------
+        m_databaseConnection->AddStatement(CREATE_STATS_TABLE, CREATE_STATS_TABLE_STATEMENT);
+
         // ---------------------------------------------------------------------------------------------
         //                   Indices
         // ---------------------------------------------------------------------------------------------
@@ -3277,6 +3301,21 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::RemoveFile(AZ::s64 fileID)
     {
         return s_DeleteFileQuery.BindAndStep(*m_databaseConnection, fileID);
+    }
+
+    bool AssetDatabaseConnection::GetStatByStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatByStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.push_back();
+                container.back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
     }
 
     bool AssetDatabaseConnection::SetBuilderInfoTable(AzToolsFramework::AssetDatabase::BuilderInfoEntryContainer& newEntries)
