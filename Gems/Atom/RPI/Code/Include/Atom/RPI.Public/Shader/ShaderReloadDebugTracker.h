@@ -75,15 +75,19 @@ namespace AZ
             class ScopedSection final
             {
             public:
-                template<typename ... Args>
-                ScopedSection(const char* sectionNameFormat, Args... args)
+                ScopedSection(const char* sectionNameFormat, ...)
                 {
 #ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
                     if (IsEnabled())
                     {
-                        m_sectionName = AZStd::string::format(sectionNameFormat, args...);
+                        va_list args;
+                        va_start(args, sectionNameFormat);
+
+                        m_sectionName = AZStd::string::format_arg(sectionNameFormat, args);
                         ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
                         m_shouldEndSection = true;
+
+                        va_end(args);
                     }
 #endif
                 }
