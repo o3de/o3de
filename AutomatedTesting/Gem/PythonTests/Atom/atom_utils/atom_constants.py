@@ -243,6 +243,16 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def cube_map_capture(property: str = 'name') -> str:
+        """
+        CubeMap capture component properties.
+        """
+        properties = {
+            'name': 'CubeMap Capture'
+        }
+        return properties[property]
+
+    @staticmethod
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.

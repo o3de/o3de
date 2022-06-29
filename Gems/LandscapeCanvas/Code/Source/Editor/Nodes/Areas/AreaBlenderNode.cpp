@@ -45,7 +45,6 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr invalidEntityDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
         GraphModel::DataTypePtr areaDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Area);
 
         GraphModel::ExtendableSlotConfiguration slotConfig;
@@ -54,8 +53,8 @@ namespace LandscapeCanvas
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_AREA_SLOT_ID,
             INBOUND_AREA_SLOT_LABEL.toUtf8().constData(),
-            { areaDataType, invalidEntityDataType },
-            areaDataType->GetDefaultValue(),
+            { areaDataType },
+            AZStd::any(AZ::EntityId()),
             INBOUND_AREA_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
             &slotConfig));
 

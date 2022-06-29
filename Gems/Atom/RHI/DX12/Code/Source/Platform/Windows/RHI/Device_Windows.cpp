@@ -614,7 +614,7 @@ namespace AZ
                         {
                             D3D12_AUTO_BREADCRUMB_OP op = currentNode->pCommandHistory[i];
 
-                            if (errorOccurred && i == actual + 1)
+                            if (errorOccurred && i == actual)
                             {
                                 // This is the first op that exceeds the number of ops that finished
                                 line = "===ERROR START===\n";
@@ -880,9 +880,10 @@ namespace AZ
             return formatsList;
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             m_commandQueueContext.Begin();
+            return RHI::ResultCode::Success;
         }
     }
 }

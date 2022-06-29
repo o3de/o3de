@@ -486,10 +486,15 @@ namespace AZ
             m_rhiSystem.RegisterXRSystem(dynamic_cast<RHI::XRRenderingInterface*>(xrSystemInterface));
         }
 
-        void RPISystem::UnRegisterXRSystem()
+        void RPISystem::UnregisterXRSystem()
         {
-            m_rhiSystem.UnRegisterXRSystem();
+            m_rhiSystem.UnregisterXRSystem();
             m_xrSystem = nullptr;
         }
+
+        XRRenderingInterface* RPISystem::GetXRSystem() const
+        {
+            return m_xrSystem;
+        } 
     } //namespace RPI
 } //namespace AZ

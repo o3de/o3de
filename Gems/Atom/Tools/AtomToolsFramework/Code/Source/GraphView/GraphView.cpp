@@ -106,11 +106,6 @@ namespace AtomToolsFramework
 
     void GraphView::SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId)
     {
-        if (m_activeGraphId != activeGraphId)
-        {
-            return;
-        }
-
         // Disconnect from any previously connecting buses.
         // We are enforcing that only one graph is active and connected at any given time.
         AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
@@ -137,9 +132,12 @@ namespace AtomToolsFramework
         // Notify any observers connected to the asset editor buses that the active graph has changed.
         // Even though we are only managing one graph at a time, and not using the asset editor buses, this will update any other system
         // that is.
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, m_activeGraphId);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
+        if (m_activeGraphId.IsValid())
+        {
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, m_activeGraphId);
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
+        }
 
         // Update all of the main window menus with commands from this view what are you doing.
         AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
