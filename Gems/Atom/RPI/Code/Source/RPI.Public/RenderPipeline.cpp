@@ -315,6 +315,7 @@ namespace AZ
 
         void RenderPipeline::UpdatePasses()
         {
+            // Rebuild Pipeline if needed, for example if passes where hot reloaded
             if (PipelineNeedsRebuild(m_pipelinePassChanges))
             {
                 // Process any queued changes before we attempt to reload the pipeline
@@ -354,12 +355,14 @@ namespace AZ
                 }
             }
 
+            // Build and initialize any queued passes
             m_passTree.ProcessQueuedChanges();
 
             if (m_pipelinePassChanges != PipelinePassChanges::NoPassChanges)
             {
                 m_passTree.m_rootPass->SetRenderPipeline(this);
 
+                // Pipeline views
                 if (PipelineViewsNeedRebuild(m_pipelinePassChanges))
                 {
                     BuildPipelineViews();
@@ -369,6 +372,7 @@ namespace AZ
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
 
+                    // Pipeline state lookup
                     if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
                     {
                         SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);

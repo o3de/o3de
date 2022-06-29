@@ -149,9 +149,7 @@ namespace AZ
             //! This function signals the render pipeline that modifications have been made to the pipeline passes
             void MarkPipelinePassChanges(u32 passChangeFlags);
             
-            //! Update passes and views when any pass was modified which may affect pipeline views.
-            //! This function is automatically called when frame starts. User may call it manually when they expect to get up to date view information
-            //! after any pass changes.
+            //! Update passes and views that are affected by any modifed passes. Called at the start of each frame.
             void UpdatePasses();
 
             //! Check if this pipeline should be removed after a single execution.
@@ -292,6 +290,7 @@ namespace AZ
             // Whether the pipeline should recreate it's pass tree, for example in the case of pass asset hot reloading.
             bool m_needsPassRecreate = false;
 
+            // Set of flags to track what changes have been made to the pipeline's passes
             u32 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
             PipelineViewTag m_mainViewTag;
