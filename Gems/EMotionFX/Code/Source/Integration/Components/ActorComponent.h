@@ -159,11 +159,6 @@ namespace EMotionFX
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 required.push_back(AZ_CRC("TransformService", 0x8ee22c50));

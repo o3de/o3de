@@ -248,6 +248,17 @@ namespace Profiler
                     return base->ModificationTime(lhs.c_str()) > base->ModificationTime(rhs.c_str());
                 });
         }
+        
+        ImGui::SameLine();
+        if (ImGui::Button("Reset All"))
+        {
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->ResetAllStatistics();
+            }
+
+            ResetTable();
+        }
     }
 
     void ImGuiCpuProfiler::DrawTable()
@@ -343,30 +354,47 @@ namespace Profiler
         sortSpecs->SpecsDirty = false;
     }
 
+    void ImGuiCpuProfiler::ResetTable()
+    {
+        m_tableData.clear();
+        m_groupRegionMap.clear();
+    }
+
     void ImGuiCpuProfiler::DrawStatisticsView()
     {
         DrawCommonHeader();
 
-        const auto ShowRow = [](const char* regionLabel, double duration)
+        const auto ShowRow = [](const char* regionLabel, double duration, double durationAverage)
         {
             ImGui::Text("%s", regionLabel);
-            ImGui::NextColumn();
+            ImGui::TableNextColumn();
 
-            ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
-            ImGui::NextColumn();
+            ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(duration));
+            ImGui::TableNextColumn();
+            
+            ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(durationAverage));
+            ImGui::TableNextColumn();
         };
+        
 
         if (ImGui::BeginChild("Statistics View", { 0, 0 }, true))
         {
-            // Set column settings.
-            ImGui::Columns(2, "view", false);
-            ImGui::SetColumnWidth(0, 660.0f);
-            ImGui::SetColumnWidth(1, 100.0f);
-
-            for (const auto& queueStatistics : m_cpuTimingStatisticsWhenPause)
+            const auto flags = ImGuiTableFlags_Resizable;
+            if (ImGui::BeginTable("General Timing Statistics", 3, flags))
             {
-                ShowRow(queueStatistics.m_name.c_str(), queueStatistics.m_executeDuration);
+                // Table header setup
+                ImGui::TableSetupColumn("");
+                ImGui::TableSetupColumn("Current (ms)");
+                ImGui::TableSetupColumn("Average (ms)");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextColumn();
+
+                for (const auto& queueStatistics : m_cpuTimingStatisticsWhenPause)
+                {
+                    ShowRow(queueStatistics.m_name.c_str(), queueStatistics.m_executeDuration, queueStatistics.m_executeDurationAverage);
+                }
             }
+            ImGui::EndTable();
 
             ImGui::Separator();
             ImGui::Columns(1, "view", false);
@@ -380,8 +408,7 @@ namespace Profiler
             ImGui::SameLine();
             if (ImGui::Button("Reset Table"))
             {
-                m_tableData.clear();
-                m_groupRegionMap.clear();
+                ResetTable();
             }
 
             DrawTable();
@@ -695,7 +722,7 @@ namespace Profiler
             statsProfiler->GetAllStatisticsOfUnits(statistics, "clocks");
             for (NamedRunningStatistic* stat : statistics)
             {
-                m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample() });
+                m_cpuTimingStatisticsWhenPause.push_back({ stat->GetName(), stat->GetMostRecentSample(), stat->GetAverage() });
             }
         }
     }
