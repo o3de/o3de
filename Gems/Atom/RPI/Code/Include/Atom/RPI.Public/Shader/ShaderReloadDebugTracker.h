@@ -78,7 +78,7 @@ namespace AZ
                 static constexpr uint32_t MaxSectionNameLength = 1024;
                 using SectionName = AZStd::fixed_string<MaxSectionNameLength>;
 
-                ScopedSection(const char* sectionNameFormat, ...)
+                ScopedSection([[maybe_unused]] const char* sectionNameFormat, ...)
                 {
 #ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
                     if (IsEnabled())
