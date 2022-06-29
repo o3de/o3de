@@ -59,7 +59,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     
     ly_add_pytest(
-        NAME AssetPipelineTests.Batch_Periodic
+        NAME AssetPipelineTests.Batch_Periodic_Serial
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_processor_batch_periodic_serial_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL
