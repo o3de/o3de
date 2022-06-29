@@ -116,8 +116,8 @@ namespace AssetProcessor
         // The default list behavior is to maintain size and let you scroll within.
         // The entire frame is scrollable here, so the list should adjust to fit the contents.
         //m_ui->productTable->setMinimumHeight(m_ui->productTable->rowHeight(0) * productCount + 2 * m_ui->productTable->frameWidth());
-        m_ui->productTable->resize(m_ui->SourceAssetDetailTabs->size());
-        m_ui->productTable->adjustSize();
+        //m_ui->productTable->resize(m_ui->SourceAssetDetailTabs->size());
+        //m_ui->productTable->adjustSize();
 
     }
 
