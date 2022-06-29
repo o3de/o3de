@@ -353,7 +353,7 @@ namespace AssetProcessor
 
         for (const auto& internalRecognizerList : internalRecognizerListByType)
         {
-            QString builderId = internalRecognizerList.first.c_str();                ;
+            QString builderId = internalRecognizerList.first.c_str();
             const BuilderIdAndName& builderInfo = m_builderById[builderId];
             QString builderName = builderInfo.GetName();
             AZStd::vector<AssetBuilderSDK::AssetBuilderPattern> builderPatterns;
@@ -365,7 +365,7 @@ namespace AssetProcessor
             for (auto* internalAssetRecognizer : internalRecognizerList.second)
             {
                 // so referring to the structure explanation above, internalAssetRecognizer is
-                // one of those objects that has the REGEX in it, (along with list of commands to apply per platform)
+                // one of those objects that has the RegEx in it, (along with list of commands to apply per platform)
                 if (internalAssetRecognizer->m_platformSpecsByPlatform.size() == 0)
                 {
                     delete internalAssetRecognizer;

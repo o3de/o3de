@@ -30,7 +30,7 @@ namespace AssetProcessor
         bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) override;
         //! HandleRemoteConfiguration will attempt to set or get the remote configuration for the cache server
         void HandleRemoteConfiguration();
-        //! Retrive the current mode for shared caching
+        //! Retrieve the current mode for shared caching
         AssetServerMode GetRemoteCachingMode() const override;
         //! Store the shared caching mode
         void SetRemoteCachingMode(AssetServerMode mode) override;

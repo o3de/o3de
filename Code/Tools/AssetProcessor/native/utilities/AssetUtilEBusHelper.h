@@ -249,7 +249,7 @@ namespace AssetProcessor
         //! and put them in the temporary directory provided by the builderParam.
         //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
-        //! Retrive the current mode for shared caching
+        //! Retrieve the current mode for shared caching
         virtual AssetServerMode GetRemoteCachingMode() const = 0;
         //! Store the shared caching mode
         virtual void SetRemoteCachingMode(AssetServerMode mode) = 0;
