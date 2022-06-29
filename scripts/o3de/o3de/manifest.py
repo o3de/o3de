@@ -318,10 +318,11 @@ def get_project_engine(project_path: str or pathlib.Path) -> pathlib.Path or Non
                 return engine_path.as_posix()
     
     engine_paths = get_manifest_engines()
+    resolved_project_path = pathlib.Path(project_path).resolve()
     for engine_path in engine_paths:
         projects = get_engine_projects(engine_path)
         for engine_project_path in projects:
-            if pathlib.Path(project_path).resolve().samefile(pathlib.Path(engine_project_path).resolve()):
+            if resolved_project_path.samefile(pathlib.Path(engine_project_path).resolve()):
                 return engine_path.as_posix()
 
     return None
