@@ -17,7 +17,7 @@ namespace EMotionFX::Pipeline::Rule
 {
     void RootMotionExtractionData::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
         {
             return;
@@ -61,7 +61,7 @@ namespace EMotionFX::Pipeline::Rule
     {
         RootMotionExtractionData::Reflect(context);
 
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
         {
             return;

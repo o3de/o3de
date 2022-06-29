@@ -237,9 +237,9 @@ namespace EMotionFX
             AZStd::vector<size_t> rootJoints; // The list of root nodes.
 
             // Data for root motion extraction
-            const size_t invalidJointDataIndex = AZStd::numeric_limits<size_t>::max();
-            size_t sampleJointDataIndex = invalidJointDataIndex;
-            size_t rootJointDataIndex = invalidJointDataIndex;
+            const size_t InvalidJointDataIndex = AZStd::numeric_limits<size_t>::max();
+            size_t sampleJointDataIndex = InvalidJointDataIndex;
+            size_t rootJointDataIndex = InvalidJointDataIndex;
 
             size_t maxNumFrames = 0;
             double lowestTimeStep = 999999999.0;
@@ -288,7 +288,7 @@ namespace EMotionFX
                 const size_t jointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
 
                 // Keep track of the sample joint index.
-                if (rootMotionExtractionRule && sampleJointDataIndex == invalidJointDataIndex
+                if (rootMotionExtractionRule && sampleJointDataIndex == InvalidJointDataIndex
                     && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().m_sampleJoint.c_str()) != AZStd::string::npos)
                 {
                     sampleJointDataIndex = jointDataIndex;
@@ -410,7 +410,7 @@ namespace EMotionFX
                 )
             } // End looping through bones and adding motion data.
 
-            if (rootMotionExtractionRule && sampleJointDataIndex != invalidJointDataIndex && rootJointDataIndex != invalidJointDataIndex)
+            if (rootMotionExtractionRule && sampleJointDataIndex != InvalidJointDataIndex && rootJointDataIndex != InvalidJointDataIndex)
             {
                 const auto& data = rootMotionExtractionRule->GetData();
                 motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.m_transitionZeroXAxis, data.m_transitionZeroYAxis, data.m_extractRotation);
