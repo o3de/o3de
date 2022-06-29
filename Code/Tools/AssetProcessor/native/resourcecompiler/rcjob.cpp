@@ -738,8 +738,7 @@ namespace AssetProcessor
         // and  the second is the product destination we intend to copy it to.
         QList< QPair<QString, QString> > outputsToCopy;
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
-        qint64 totalCacheFileSizeRequired = 0;
-        qint64 totalIntermediateFileSizeRequired = 0;
+        qint64 fileSizeRequired = 0;
 
         bool needCacheDirectory = false;
         bool needIntermediateDirectory = false;
@@ -815,7 +814,7 @@ namespace AssetProcessor
                 }
 
                 if (!VerifyOutputProduct(
-                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, totalCacheFileSizeRequired,
+                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired,
                     outputsToCopy))
                 {
                     return false;
@@ -833,7 +832,7 @@ namespace AssetProcessor
 
                 if (!VerifyOutputProduct(
                     QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
-                    totalIntermediateFileSizeRequired, outputsToCopy))
+                    fileSizeRequired, outputsToCopy))
                 {
                     return false;
                 }
@@ -845,42 +844,21 @@ namespace AssetProcessor
 
         // now we can check if there's enough space for ALL the files before we copy any.
 
-        QStorageInfo cacheStorage(cacheDirectory.c_str());
-        QStorageInfo intermediateStorage(intermediateDirectory.c_str());
-
-        bool bothDirectoriesOnSameDrive = cacheStorage.device() == intermediateStorage.device();
         bool hasSpace = false;
 
-        if(bothDirectoriesOnSameDrive)
-        {
-            totalCacheFileSizeRequired += totalIntermediateFileSizeRequired;
-        }
-        else
-        {
-            AssetProcessor::DiskSpaceInfoBus::BroadcastResult(
-                hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, intermediateDirectory.c_str(),
-                totalIntermediateFileSizeRequired, false);
+        auto* diskSpaceInfoInterface = AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Get();
 
-            if (!hasSpace)
-            {
-                AZ_Error(
-                    AssetProcessor::ConsoleChannel, false,
-                    "Cannot save file(s) to intermediate directory, not enough disk space to save all the products of %s.  Total needed: %lli bytes",
-                    params.m_processJobRequest.m_sourceFile.c_str(), totalIntermediateFileSizeRequired);
-                return false;
-            }
+        if (diskSpaceInfoInterface)
+        {
+            hasSpace = diskSpaceInfoInterface->CheckSufficientDiskSpace(fileSizeRequired, false);
         }
-
-        AssetProcessor::DiskSpaceInfoBus::BroadcastResult(
-            hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, cacheDirectory.c_str(),
-            totalCacheFileSizeRequired, false);
 
         if (!hasSpace)
         {
             AZ_Error(
                 AssetProcessor::ConsoleChannel, false,
                 "Cannot save file(s) to cache, not enough disk space to save all the products of %s.  Total needed: %lli bytes",
-                params.m_processJobRequest.m_sourceFile.c_str(), totalCacheFileSizeRequired);
+                params.m_processJobRequest.m_sourceFile.c_str(), fileSizeRequired);
             return false;
         }
 
