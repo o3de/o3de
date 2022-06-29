@@ -93,10 +93,6 @@ namespace AssetProcessor
 
             case Qt::TextAlignmentRole:
             {
-                if (section == ColumnProcessDuration)
-                {
-                    return Qt::AlignRight + Qt::AlignVCenter;
-                }
                 return Qt::AlignLeft + Qt::AlignVCenter;
             }
 
@@ -195,17 +191,15 @@ namespace AssetProcessor
                     }
                     if (processDuration.hour() > 0)
                     {
-                        return processDuration.toString("hh 'hr, 'mm' min, 'ss' sec, 'zzz' ms'");
-                        /*"hh 'hr, 'mm' min, 'ss' sec, 'zzz' ms'"*/
-                        /*"zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'"*/
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
                     }
                     if (processDuration.minute() > 0)
                     {
-                        return processDuration.toString("mm' min, 'ss' sec, 'zzz' ms'");
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
                     }
                     if (processDuration.second() > 0)
                     {
-                        return processDuration.toString("ss' sec, 'zzz' ms'");
+                        return processDuration.toString("zzz' ms, 'ss' sec'");
                     }
                     return processDuration.toString("zzz' ms'");
                 }
@@ -258,10 +252,6 @@ namespace AssetProcessor
         }
         case Qt::TextAlignmentRole:
         {
-            if (index.column() == ColumnProcessDuration)
-            {
-                return Qt::AlignRight + Qt::AlignVCenter;
-            }
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
         case statusRole:
