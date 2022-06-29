@@ -14,19 +14,29 @@ namespace AZ::Render
     static constexpr const char* const DefaultEntityMaskName = "editormodeinterestmask";
 
     EditorStateParentPassBase::EditorStateParentPassBase(
+        EditorState editorState,
         const AZStd::string& stateName,
         const PassDescriptorList& childPassDescriptorList,
         const AZStd::string& maskDrawList)
-        : m_stateName(stateName)
+        : m_state(editorState)
+        , m_stateName(stateName)
         , m_childPassDescriptorList(childPassDescriptorList)
         , m_entityMaskDrawList(maskDrawList)
     {
+        EditorStateRequestsBus::Handler::BusConnect(m_state);
     }
 
     EditorStateParentPassBase::EditorStateParentPassBase(
-        const AZStd::string& stateName, const PassDescriptorList& childPassDescriptorList)
-        : EditorStateParentPassBase(stateName, childPassDescriptorList, DefaultEntityMaskName)
+        EditorState editorState,
+        const AZStd::string& stateName,
+        const PassDescriptorList& childPassDescriptorList)
+        : EditorStateParentPassBase(editorState, stateName, childPassDescriptorList, DefaultEntityMaskName)
     {
+    }
+
+    EditorStateParentPassBase::~EditorStateParentPassBase()
+    {
+        EditorStateRequestsBus::Handler::BusDisconnect();
     }
 
     const AZStd::string& EditorStateParentPassBase::GetStateName() const

@@ -136,9 +136,11 @@ namespace AZ::Render
         }
 
         const DrawableMetaData drawabaleMetaData(m_entityId);
-        const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
-        const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
-        CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
+        if (const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle))
+        {
+            const auto modelLodIndex = GetModelLodIndex(drawabaleMetaData.GetView(), model);
+            CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
+        }
     }
         
     void DrawableMeshEntity::CreateOrUpdateMeshDrawPackets(

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <EditorModeFeedback/EditorStateRequestsBus.h>
+
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <AzCore/Name/Name.h>
@@ -29,6 +31,7 @@ namespace AZ::Render
     //! (first in, first rendered) but it is the responsibility of the child classes themselves to enable and disable
     //! themselves as per the editor state, as well as handling their own mutal exclusivity (if any).
     class EditorStateParentPassBase
+        : private EditorStateRequestsBus::Handler
     {
     public:
         //! Constructs the editor state parent pass with the specified pass chain and mask draw list and connects
@@ -37,14 +40,18 @@ namespace AZ::Render
         //! @param passDescriptorList List of child passes to create, in order of appearance.
         //! @param maskDrawList The entity mask to use for this state.
         EditorStateParentPassBase(
+            EditorState editorState,
             const AZStd::string& stateName,
             const PassDescriptorList& childPassDescriptorList,
             const AZStd::string& maskDrawList);
 
         //! Delegate constructor for editor state parents that use the default entity mask.
-        EditorStateParentPassBase(const AZStd::string& stateName, const PassDescriptorList& childPassDescriptorList);
+        EditorStateParentPassBase(
+            EditorState editorState,
+            const AZStd::string& stateName,
+            const PassDescriptorList& childPassDescriptorList);
 
-        virtual ~EditorStateParentPassBase() = default;
+        virtual ~EditorStateParentPassBase();
 
         //! Returns the name of this editor state.
         const AZStd::string& GetStateName() const;
@@ -57,7 +64,7 @@ namespace AZ::Render
         const PassDescriptorList& GetChildPassDescriptorList() const;
 
         //! Returns true of this editor mode state is to be enabled, otherwise false.
-        virtual bool IsEnabled() const { return true; }
+        virtual bool IsEnabled() const { return m_enabled; }
 
         //! Returns the entities that should be rendered to the entity mask for this editor state.
         [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
@@ -85,6 +92,12 @@ namespace AZ::Render
             }
         }
 
+        // EditorStateRequestsBus ...
+        void SetEnabled(bool enabled) override
+        {
+            m_enabled = enabled;
+        }
+
     protected:
         //!
         template<class ChildPass>
@@ -108,8 +121,9 @@ namespace AZ::Render
         //! Opportunity for the editor mode state to initialize any child pass object state.
         virtual void InitPassData(RPI::ParentPass*){}
     private:
-
+        EditorState m_state;
         AZStd::string m_stateName;
+        bool m_enabled = false;
         PassDescriptorList m_childPassDescriptorList;
         Name m_entityMaskDrawList;
         AZStd::unordered_map<Name, RPI::Ptr<RPI::Pass>> m_parentPasses;

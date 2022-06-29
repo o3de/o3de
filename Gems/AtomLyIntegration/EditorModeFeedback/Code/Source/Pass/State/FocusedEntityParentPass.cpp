@@ -30,7 +30,7 @@ namespace AZ::Render
     }
 
     FocusedEntityParentPass::FocusedEntityParentPass()
-        : EditorStateParentPassBase("FocusMode", CreateFocusedEntityChildPasses())
+        : EditorStateParentPassBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
     {
         AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
     }
@@ -46,7 +46,7 @@ namespace AZ::Render
     {
         if (mode == AzToolsFramework::ViewportEditorMode::Focus)
         {
-            m_enabled = true;
+            m_inFocusMode = true;
         }
     }
     void FocusedEntityParentPass::OnEditorModeDeactivated(
@@ -54,7 +54,7 @@ namespace AZ::Render
     {   
         if (mode == AzToolsFramework::ViewportEditorMode::Focus)
         {
-            m_enabled = false;
+            m_inFocusMode = false;
         }
     }
 
@@ -70,7 +70,7 @@ namespace AZ::Render
 
     bool FocusedEntityParentPass::IsEnabled() const
     {
-        return m_enabled;
+        return EditorStateParentPassBase::IsEnabled() && m_inFocusMode;
     }
 
     AzToolsFramework::EntityIdList FocusedEntityParentPass::GetMaskedEntities() const

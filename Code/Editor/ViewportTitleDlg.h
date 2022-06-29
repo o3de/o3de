@@ -191,7 +191,7 @@ protected:
         Monochromatic
     };
 
-    EditMode m_editMode = EditMode::Monochromatic;
+    EditMode m_editMode = EditMode::Normal;
 };
 
 namespace AzToolsFramework

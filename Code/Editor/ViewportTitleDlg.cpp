@@ -44,6 +44,7 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <EditorModeFeedback/EditorStateRequestsBus.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
@@ -494,11 +495,15 @@ void CViewportTitleDlg::UpdateEditMode()
     case EditMode::Normal:
         {
             m_normalEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
             break;
         }
     case EditMode::Monochromatic:
         {
             m_monochromaticEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, true);
             break;
         }
     }
@@ -771,12 +776,12 @@ void CViewportTitleDlg::CreateEditModeMenu()
     {
         m_editModeMenu = new QMenu("Edit Mode");
 
-        m_normalEditModeAction = new QAction(tr("None"), m_editModeMenu);
+        m_normalEditModeAction = new QAction(tr("Normal"), m_editModeMenu);
         m_normalEditModeAction->setCheckable(true);
         connect(m_normalEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalEditMode);
         m_editModeMenu->addAction(m_normalEditModeAction);
 
-        m_monochromaticEditModeAction = new QAction(tr("Normal"), m_editModeMenu);
+        m_monochromaticEditModeAction = new QAction(tr("Monochromatic"), m_editModeMenu);
         m_monochromaticEditModeAction->setCheckable(true);
         connect(m_monochromaticEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticEditMode);
         m_editModeMenu->addAction(m_monochromaticEditModeAction);

@@ -36,8 +36,9 @@ namespace AZ::Render
     
 
     SelectedEntityParentPass::SelectedEntityParentPass()
-        : EditorStateParentPassBase("EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
+        : EditorStateParentPassBase(EditorState::EntitySelection, "EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
     {
+        SetEnabled(true);
     }
 
     void SelectedEntityParentPass::InitPassData([[maybe_unused]] RPI::ParentPass* parentPass)

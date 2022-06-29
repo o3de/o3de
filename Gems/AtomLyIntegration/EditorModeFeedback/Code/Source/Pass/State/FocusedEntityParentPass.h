@@ -42,6 +42,6 @@ namespace AZ::Render
     private:
         void InitPassData(RPI::ParentPass* parentPass) override;
 
-        bool m_enabled = false;
+        bool m_inFocusMode = false;
     };
 } // namespace AZ::Render
