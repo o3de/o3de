@@ -117,7 +117,7 @@ namespace UnitTests
         // Set up a mock disk space responder, required for RCController to process a job
         m_diskSpaceResponder = AZStd::make_unique<::testing::NiceMock<MockDiskSpaceResponder>>();
 
-        ON_CALL(*m_diskSpaceResponder, CheckSufficientDiskSpace(::testing::_, ::testing::_, ::testing::_))
+        ON_CALL(*m_diskSpaceResponder, CheckSufficientDiskSpace(::testing::_, ::testing::_))
             .WillByDefault(::testing::Return(true));
 
         QObject::connect(

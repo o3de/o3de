@@ -1917,7 +1917,7 @@ namespace PhysX
         {
             // Allow to create runtime StaticRigidBodyComponent if there are no components
             // using 'PhysXColliderService' attached to entity.
-            const AZ::Crc32 physxColliderServiceId = AZ_CRC("PhysXColliderService", 0x4ff43f7c);
+            const AZ::Crc32 physxColliderServiceId = AZ_CRC_CE("PhysicsColliderService");
 
             return !EntityHasComponentsUsingService(editorEntity, physxColliderServiceId);
         }
