@@ -101,9 +101,7 @@ namespace AssetProcessor
             return true;
         });
 
-        m_ui->SourceAssetDetailTabs->setTabText(0, QString("Product%1 (%2)").arg(
-            productCount == 1 ? "" : "s").
-            arg(productCount));
+        m_ui->SourceAssetDetailTabs->setTabText(0, tr("Products (%1)").arg(productCount));
 
         if (productCount == 0)
         {
@@ -155,7 +153,8 @@ namespace AssetProcessor
             return true;
         });
 
-        m_ui->outgoingSourceDependenciesValueLabel->setText(QString::number(sourceDependencyCount));
+        m_ui->SourceAssetDetailTabs->setTabText(1, tr("Dependencies - Out (%1)").arg(sourceDependencyCount));
+
         if (sourceDependencyCount == 0)
         {
             m_ui->outgoingSourceDependenciesTable->insertRow(sourceDependencyCount);
@@ -199,7 +198,7 @@ namespace AssetProcessor
             return true;
         });
 
-        m_ui->incomingSourceDependenciesValueLabel->setText(QString::number(sourceDependencyCount));
+        m_ui->SourceAssetDetailTabs->setTabText(2, tr("Dependencies - In (%1)").arg(sourceDependencyCount));
         if (sourceDependencyCount == 0)
         {
             m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
@@ -234,12 +233,8 @@ namespace AssetProcessor
 
         m_ui->productTable->setVisible(visible);
 
-        m_ui->outgoingSourceDependenciesTitleLabel->setVisible(visible);
-        m_ui->outgoingSourceDependenciesValueLabel->setVisible(visible);
         m_ui->outgoingSourceDependenciesTable->setVisible(visible);
 
-        m_ui->incomingSourceDependenciesTitleLabel->setVisible(visible);
-        m_ui->incomingSourceDependenciesValueLabel->setVisible(visible);
         m_ui->incomingSourceDependenciesTable->setVisible(visible);
 
         m_ui->DependencySeparatorLine->setVisible(visible);
