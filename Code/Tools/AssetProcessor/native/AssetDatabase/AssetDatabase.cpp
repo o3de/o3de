@@ -169,8 +169,7 @@ namespace AssetProcessor
         static const char* CREATE_STATS_TABLE = "AssetProcessor::CreateStatsTable";
         static const char* CREATE_STATS_TABLE_STATEMENT =
             "CREATE TABLE IF NOT EXISTS Stats( "
-            "    StatID         INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "    StatName       TEXT NOT NULL collate nocase, "
+            "    StatName       TEXT PRIMARY KEY collate nocase, "
             "    StatValue      INTEGER NOT NULL, "
             "    LastLogTime    INTEGER NOT NULL "
             ");";

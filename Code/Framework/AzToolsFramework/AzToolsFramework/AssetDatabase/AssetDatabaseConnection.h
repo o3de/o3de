@@ -426,7 +426,6 @@ namespace AzToolsFramework
             AZStd::string ToString() const;
             auto GetColumns();
 
-            AZ::s64 m_statID = InvalidEntryId;
             AZStd::string m_statName;
             AZ::s64 m_statValue = 0;
             AZ::s64 m_lastLogTime = 0;

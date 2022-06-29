@@ -1677,8 +1677,7 @@ namespace AzToolsFramework
         AZStd::string StatDatabaseEntry::ToString() const
         {
             return AZStd::string::format(
-                "StatDatabaseEntry id: %" PRId64 " statname: %s statvalue: %" PRId64 " lastlogtime: %" PRId64,
-                aznumeric_cast<int64_t>(m_statID),
+                "StatDatabaseEntry statname: %s statvalue: %" PRId64 " lastlogtime: %" PRId64,
                 m_statName.c_str(),
                 aznumeric_cast<int64_t>(m_statValue),
                 aznumeric_cast<int64_t>(m_lastLogTime));
@@ -1687,7 +1686,6 @@ namespace AzToolsFramework
         auto StatDatabaseEntry::GetColumns()
         {
             return MakeColumns(
-                MakeColumn("StatID", m_statID),
                 MakeColumn("StatName", m_statName),
                 MakeColumn("StatValue", m_statValue),
                 MakeColumn("LastLogTime", m_lastLogTime));
