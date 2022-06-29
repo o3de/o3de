@@ -123,7 +123,7 @@ namespace AZ::Render
     private:
         EditorState m_state;
         AZStd::string m_stateName;
-        bool m_enabled = false;
+        bool m_enabled = true;
         PassDescriptorList m_childPassDescriptorList;
         Name m_entityMaskDrawList;
         AZStd::unordered_map<Name, RPI::Ptr<RPI::Pass>> m_parentPasses;
