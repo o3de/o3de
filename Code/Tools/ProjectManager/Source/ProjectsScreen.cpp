@@ -83,6 +83,8 @@ namespace O3DE::ProjectManager
             });
     }
 
+    ProjectsScreen::~ProjectsScreen() = default;
+
     QFrame* ProjectsScreen::CreateFirstTimeContent()
     {
         QFrame* frame = new QFrame(this);

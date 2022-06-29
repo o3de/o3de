@@ -319,10 +319,15 @@ def get_project_templates(project_path: pathlib.Path) -> list:
 
 # gem.json queries
 def get_gem_gems(gem_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path))
+    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, set()))
 
 
-def get_gem_external_subdirectories(gem_path: pathlib.Path) -> list:
+def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: set) -> list:
+    if gem_path in visited_gem_paths:
+        logger.error(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
+        return []
+    visited_gem_paths.add(gem_path)
+
     gem_object = get_gem_json_data(gem_path=gem_path)
     if gem_object:
         external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
@@ -332,7 +337,7 @@ def get_gem_external_subdirectories(gem_path: pathlib.Path) -> list:
         for external_subdirectory in external_subdirectories:
             gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
             if gem_json_path.is_file():
-                external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory))
+                external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory, visited_gem_paths))
 
         return external_subdirectories
     return []
@@ -366,7 +371,7 @@ def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
 
     gem_paths = get_gems_from_external_subdirectories(external_subdirectories_data)
     for gem_path in gem_paths:
-        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path))
+        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path, set()))
 
     # Remove duplicates from the list
     return list(dict.fromkeys(external_subdirectories_data))
