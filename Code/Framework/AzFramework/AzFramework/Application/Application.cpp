@@ -229,7 +229,7 @@ namespace AzFramework
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
 #if !defined(_RELEASE)
-            IRemoteTools* remoteTools = RemoteToolsInterface::Get());
+            IRemoteTools* remoteTools = RemoteToolsInterface::Get();
             if (remoteTools)
             {
                 remoteTools->RegisterToolingServiceClient(
