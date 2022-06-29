@@ -13,6 +13,9 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Substance//constants.py
 
+This convention <path>, is an shorten abbreviation of a long path,
+for the sake of docstrings and comments.
+
 This module contains default values for commony used constants & strings.
 We can make an update here easily that is propogated elsewhere.
 
@@ -40,7 +43,8 @@ _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
-# we need to set up basic access to the DCCsi
+# This sets up basic code access to the DCCsi
+# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
 _PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
 site.addsitedir(_PATH_DCCSIG.as_posix())
 _LOGGER.debug(f'site.addsitedir({_PATH_DCCSIG})')
@@ -49,10 +53,20 @@ _LOGGER.debug(f'site.addsitedir({_PATH_DCCSIG})')
 
 # -------------------------------------------------------------------------
 # Substance Designer default paths
+
+# These are considered constants as they are the default values,
+# and within the context of this module remain constant.
+# Also they generally don't need to be altered except with special consideration.
+# If altered, it would be outside of this modules (like a config.py)
+
 # our ENVARS that mimic the dccsi windows .bat file env and can be overriden
+# can be overwritten in a Env_Dev.bat file
+# or in a settings.local.json
 
 # ENVAR_ == env key
 # PATH_ == retreived path, as pathlib.Path object
+
+# If a ENVAR is already set (externally), that will persist as default
 
 # our dccsi location for substance designer <DCCsi>\Tools\DCC\Substance
 # to do: This ENVAR Key should be refacted across files to 'DCCSI_TOOLS_SUBSTANCE'
@@ -63,7 +77,10 @@ PATH_DCCSI_TOOLS_SUBSTANCE = Path(os.getenv(ENVAR_DCCSI_TOOLS_SUBSTANCE,
 
 # DCCsi tools dir
 # to do: This ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
-ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # <DCCsi>\Tools
+# ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # resolves to <DCCsi>\Tools
+# if it is already defined in a higher up file pull from there
+# to ensure a continual cascade
+from azpy.constants import ENVAR_PATH_DCCSI_TOOLS
 PATH_PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS_SUBSTANCE.parent.parent)
 PATH_PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
                                        PATH_PATH_DCCSI_TOOLS.as_posix()))
@@ -240,6 +257,9 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
 
+    # if args.exit:
+        # # return
+        # sys.exit()
 # --- END -----------------------------------------------------------------
 
 

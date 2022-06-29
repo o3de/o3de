@@ -19,38 +19,37 @@ So we can make an update here once that is used elsewhere.
 < To Do: Further document module here >
 """
 # -------------------------------------------------------------------------
-#  built-ins
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
+# standard imports
 import os
 import sys
 import site
-import timeit
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-_START = timeit.default_timer() # start tracking
-
 # global scope
 _MODULENAME = 'azpy.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
-
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# os.environ['PYTHONINSPECT'] = 'True'
-# for this module to perform standalone
-# we need to set up basic access to the DCCsi
+# This sets up basic code access to the DCCsi
+# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
 _PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
 site.addsitedir(_PATH_DCCSIG)
+
+# Ideally this module is standalone with minila dependancies
+# Most logic, such as a search to dervie a path, should happen outside of this module.
+# To Do: place best defaults here and logical derivations in a config.py
 
 # now we have azpy api access
 import azpy
@@ -62,6 +61,7 @@ from azpy.config_utils import get_stub_check_path
 
 # -------------------------------------------------------------------------
 # This is the first set of defined constants (and we use them here)
+# to do: remove str(), those were added to improve py2/3 unicode
 ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
 ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
 ENVAR_DCCSI_GDEBUGGER = str('DCCSI_GDEBUGGER')
@@ -108,7 +108,7 @@ _uh_parts = os.path.split(PATH_USER_HOME)
 if str(_uh_parts[1].lower()) == 'documents':
     PATH_USER_HOME = _uh_parts[0]
     _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
-    
+
 STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 # -------------------------------------------------------------------------
 
@@ -373,7 +373,7 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone script"""
-    
+
     # turn all of these off/on for testing
     _DCCSI_GDEBUG = False
     _DCCSI_DEV_MODE = False
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
                          datefmt='%m-%d %H:%M')
-    
+
     _LOGGER = _logging.getLogger(_MODULENAME)
 
     # happy print
@@ -420,7 +420,7 @@ if __name__ == '__main__':
     _stash_dict['PATH_USER_O3DE_BOOTSTRAP'] = Path(PATH_USER_O3DE_BOOTSTRAP)
 
     # ---------------------------------------------------------------------
-    # py 2 and 3 compatible iter    
+    # py 2 and 3 compatible iter
     def get_items(dict_object):
         for key in dict_object:
             yield key, dict_object[key]
@@ -431,10 +431,10 @@ if __name__ == '__main__':
             value.exists()
             _LOGGER.info(F'{key}: {value}')
         except Exception as e:
-            _LOGGER.warning(f'FAILED PATH: {e}') 
+            _LOGGER.warning(f'FAILED PATH: {e}')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
 
-_LOGGER.debug(f'{_MODULENAME} took: {(timeit.default_timer() - _START)} sec') 
+_LOGGER.debug(f'{_MODULENAME} took: {(timeit.default_timer() - _MODULE_START)} sec')
 # --- END -----------------------------------------------------------------

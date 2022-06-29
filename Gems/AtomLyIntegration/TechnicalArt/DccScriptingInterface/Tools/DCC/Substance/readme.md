@@ -27,6 +27,28 @@ This document contains instructions and other information related to using Adobe
 
 ## Setup
 
+### General Info
+
+The DCCsi utilizes a set of package dependancies defined in a requirements.txt file
+
+[< o3de> / Gems / AtomLyIntegration / TechnicalArt / DccScriptingInterface / requirements.txt](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/requirements.txt)
+
+When the O3DE engine is built (cmake), these packages are installed into the O3DE python interpretter/runtime, so python scripts utilizing them have access to these packages; i.e. when a python script is executed by the main Editor.exe python runtime.
+
+Many DCC applications such as Substance Designer also come with a managed python interpretter:
+
+- O3DE doesn't use a user or system installed python interpretter, nor do most DCC apps we are aware of.
+
+- The DCC apps python version may be different then O3DE e.g. python 3.7.12 vs 3.9.9.
+
+- O3DE and most DCC apps we are aware of don't make use of virtual enviornments, which is a common way to manage package dependancies for different versions of python.
+
+- The O3DE DCCsi attempts to not directly modify the DCC app installation (e.g. we don't install packages directly into Maya or Substance in the host platforms %ProgramFiles%)
+
+- To facilitate package dependancies the dccsi provides a script called foundation.py which utilizes the DCC apps python.exe and pip (setup tools) to install packages into a target directory which the DCCsi code can access 
+
+### <dccsi>/foundation.py
+
 < To do: document setting up using foundation.py >
 
 ## Getting Started
@@ -39,9 +61,9 @@ The DCCsi currently manages **<u>Substance Designer</u>** from this location:
 
 [< o3de > / Gems / AtomLyIntegration / TechnicalArt / DccScriptingInterface / Tools / DCC / Substance / windows_launch_substance_designer.bat](https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Substance/windows_launch_substance_designer.bat)
 
-**Mac**: < not yet implemented >
+**Mac**: < to do: not yet implemented or tested >
 
-**Linux**: < not yet implemented > 
+**Linux**: < to do: not yet implemented or tested > 
 
 ### Preferences
 

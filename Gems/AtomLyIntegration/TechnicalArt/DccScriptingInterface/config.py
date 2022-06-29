@@ -37,30 +37,20 @@ To Do: ensure that we can stack/layer the dynamic env to work with O3DE project 
 - <project>/registry/dccsi_config.setreg provides persistant distributable configuration
 - <user home>/.o3de/registry/dccsi_config.setreg, user only extended/override settings
 """
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
 
-# built in's
+# standard imports
 import os
 import sys
 import site
 import re
-import timeit
+from pathlib import Path
 import logging as _logging
-
-# import pathlib
-# py3 ships with pathlib, 2.7 does not
-# our framework for dcc tools need to run in apps like Maya that may still be
-# on py27 so we need to import and use after some boostrapping
-# maya 2022 has py3, but also still has a backwards compatible py27 mode
-# many customers are locked into DCC tool versions for long periods
-# and we want to help the transition...
-# in O3DE we will continue to work on adding support for the latest version (2022)
-# and continue to maintain support for at least the previous version (2020)
-# To Do : we can consider decprecation of any py27 support in future version
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-_MODULE_START = timeit.default_timer()  # start tracking
 # global scope, set up module logging, etc.
 _MODULENAME = 'config'
 _LOGGER = _logging.getLogger(_MODULENAME)
@@ -78,15 +68,15 @@ except:
 
 
 # -------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
-_MODULE_PATH = os.path.abspath(__file__)
+_MODULE_PATH = Path(__file__)  # what if frozen?
 
 # we don't have access yet to the DCCsi Lib\site-packages
 # (1) this will give us import access to dccsi.azpy (always?)
 # (2) this allows it to be set as ENVAR
-_PATH_DCCSIG = os.getenv('PATH_DCCSIG',
-                         os.path.abspath(os.path.dirname(_MODULE_PATH)))
-os.environ['PATH_DCCSIG'] = _PATH_DCCSIG
+_ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
+_PATH_DCCSIG = os.getenv(_ENVAR_PATH_DCCSIG,
+                         Path(_MODULE_PATH.parent.as_posix()))
+os.environ[_ENVAR_PATH_DCCSIG] = _PATH_DCCSIG
 # ^ we assume this config is in the root of the DCCsi
 # if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
 site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
@@ -109,6 +99,8 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
 
 # -------------------------------------------------------------------------
+# to do: refactor and move to a azpy.dev module with plugins for IDEs
+# there is another one of these in azpy.config_utils
 def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
     """!
     This will attemp to attch the WING debugger
@@ -967,8 +959,6 @@ if __name__ == '__main__':
     if _DCCSI_GDEBUG:
         args.enable_python = True
         args.enable_qt = True
-
-    import o3de
 
     # now standalone we can validate the config. env, settings.
     settings = get_config_settings(engine_path=args.engine_path,

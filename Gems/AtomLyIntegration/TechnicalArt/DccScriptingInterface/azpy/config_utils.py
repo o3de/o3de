@@ -150,6 +150,7 @@ except Exception as e:
 
 
 # -------------------------------------------------------------------------
+# to do: move to a azpy.dev module with plugins for multiple IDEs
 def attach_debugger():
     _DCCSI_GDEBUG = True
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
