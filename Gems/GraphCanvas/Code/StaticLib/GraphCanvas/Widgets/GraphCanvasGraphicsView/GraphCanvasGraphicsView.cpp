@@ -326,6 +326,7 @@ namespace GraphCanvas
     {
         if (!sceneId.IsValid())
         {
+            ClearScene();
             return;
         }
 
