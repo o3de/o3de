@@ -26,9 +26,10 @@
 
 namespace PhysX
 {
-    AZ_CVAR(float, physx_heightfieldColliderUpdateRegionSize, 128.0f, nullptr,
+    AZ_CVAR(size_t, physx_heightfieldColliderUpdateRegionSize, 512 * 512, nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "Size of a heightfield collider update region in meters, used for partitioning updates for faster cancellation.");
+        "Max size of a heightfield collider update region in heightfield points, used for partitioning updates for faster cancellation. "
+        "Each update will be the largest number of heightfield rows that stays below this total point count threshold.");
 
     // The HeightfieldUpdateJobContext is an extremely simplified way to manage the background update jobs.
     // On any heightfield change, the collider code will cancel any update job that's currently running, wait for it
@@ -76,6 +77,45 @@ namespace PhysX
             });
     }
 
+
+    HeightfieldCollider::DirtyHeightfieldRegion::DirtyHeightfieldRegion()
+    {
+        SetNull();
+    }
+
+    void HeightfieldCollider::DirtyHeightfieldRegion::SetNull()
+    {
+        m_minRowVertex = AZStd::numeric_limits<size_t>::max();
+        m_minColumnVertex = AZStd::numeric_limits<size_t>::max();
+        m_maxRowVertex = AZStd::numeric_limits<size_t>::lowest();
+        m_maxColumnVertex = AZStd::numeric_limits<size_t>::lowest();
+    }
+
+    void HeightfieldCollider::DirtyHeightfieldRegion::AddAabb(const AZ::Aabb& dirtyRegion, AZ::EntityId entityId)
+    {
+        size_t startRowVertex = 0;
+        size_t startColumnVertex = 0;
+        size_t numRowVertices = 0;
+        size_t numColumnVertices = 0;
+
+        Physics::HeightfieldProviderRequestsBus::Event(
+            entityId,
+            &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldIndicesFromRegion,
+            dirtyRegion,
+            startColumnVertex,
+            startRowVertex,
+            numColumnVertices,
+            numRowVertices);
+
+        m_minRowVertex = AZStd::min(m_minRowVertex, startRowVertex);
+        m_minColumnVertex = AZStd::min(m_minColumnVertex, startColumnVertex);
+        // Note that if the heightfield size has decreased, these numbers can end up larger than the total current heightfield size.
+        m_maxRowVertex = AZStd::max(m_maxRowVertex, startRowVertex + numRowVertices);
+        m_maxColumnVertex = AZStd::max(m_maxColumnVertex, startColumnVertex + numColumnVertices);
+    }
+
+
+
     HeightfieldCollider::HeightfieldCollider(
         AZ::EntityId entityId,
         const AZStd::string& entityName,
@@ -89,7 +129,6 @@ namespace PhysX
         , m_attachedSceneHandle(sceneHandle)
     {
         m_jobContext = AZStd::make_unique<HeightfieldUpdateJobContext>(AZ::JobContext::GetGlobalContext()->GetJobManager());
-        m_dirtyRegion = AZ::Aabb::CreateNull();
 
         PhysX::ColliderShapeRequestBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(entityId);
@@ -288,76 +327,66 @@ namespace PhysX
             InitStaticRigidBody(baseTransform);
         }
 
-        m_dirtyRegion.AddAabb(requestRegion);
+        // Add the new request region to our dirty heightfield region
+        m_dirtyRegion.AddAabb(requestRegion, m_entityId);
 
-        // Get the number of meters to subdivide our update region into. We process the region as subdivided regions
-        // so that cancellation requests can be detected and processed more quickly. If we just processed a single full dirty region,
-        // regardless of size, there would be a lot more work that needs to complete before we could cancel a job.
-        const float regionDivider = physx_heightfieldColliderUpdateRegionSize;
+        AZ_Assert(m_dirtyRegion.m_maxRowVertex >= m_dirtyRegion.m_minRowVertex,
+            "Invalid dirty region (min=%zu max=%zu)", m_dirtyRegion.m_minRowVertex, m_dirtyRegion.m_maxRowVertex);
 
-        auto jobLambda = [this, regionDivider]() -> void
+        AZ_Assert(m_dirtyRegion.m_maxColumnVertex >= m_dirtyRegion.m_minColumnVertex,
+            "Invalid dirty region (min=%zu max=%zu)", m_dirtyRegion.m_maxColumnVertex, m_dirtyRegion.m_minColumnVertex);
+
+        size_t startRow = m_dirtyRegion.m_minRowVertex;
+        size_t startColumn = m_dirtyRegion.m_minColumnVertex;
+
+        // If our heightfield size has just shrunk, and we had a pre-existing dirty region, the max vertex values could be higher than
+        // our current size, so clamp them to the current size.
+        size_t numRows = AZStd::min(m_dirtyRegion.m_maxRowVertex - m_dirtyRegion.m_minRowVertex, m_shapeConfig->GetNumRowVertices());
+        size_t numColumns = AZStd::min(m_dirtyRegion.m_maxColumnVertex - m_dirtyRegion.m_minColumnVertex, m_shapeConfig->GetNumColumnVertices());
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
+
+        auto shape = GetHeightfieldShape();
+
+        // Refresh a subregion of the total heightfield. Note that right now, this is implicitly assuming that it's handling full
+        // rows in each subregion due to the way the dirty region management works. If we ever want to handle subsets of rows, we'll
+        // need more complex dirty region management to better track what's already been refreshed.
+        auto refreshRows = [this, scene, shape](size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) -> void
         {
-            AZ::Aabb dirtyRegion = m_dirtyRegion;
-
-            auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-            auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
-
-            auto shape = GetHeightfieldShape();
-
-            // For each sub-region in our dirty region, get the updated height and material data for the heightfield.
-            for (float y = dirtyRegion.GetMin().GetY(); y < dirtyRegion.GetMax().GetY(); y += regionDivider)
+            // On each sub-region, if a cancellation has been requested, early-out.
+            if (m_jobContext->IsCanceled())
             {
-                // On each sub-region, if a cancellation has been requested, early-out.
-                if (m_jobContext->IsCanceled())
-                {
-                    break;
-                }
-
-                float x = dirtyRegion.GetMin().GetX();
-
-                // Create the sub-region to process.
-                const float xMax = dirtyRegion.GetMax().GetX();
-                const float yMax = AZStd::min(y + regionDivider, dirtyRegion.GetMax().GetY());
-
-                AZ::Aabb subRegion;
-                subRegion.Set(
-                    AZ::Vector3(x, y, dirtyRegion.GetMin().GetZ()),
-                    AZ::Vector3(xMax, yMax, dirtyRegion.GetMax().GetZ()));
-
-                size_t startRow = 0;
-                size_t startColumn = 0;
-                size_t numRows = 0;
-                size_t numColumns = 0;
-
-                Physics::HeightfieldProviderRequestsBus::Event(
-                    m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldIndicesFromRegion,
-                    subRegion, startColumn, startRow, numColumns, numRows);
-
-                if ((numRows > 0) && (numColumns > 0))
-                {
-                    // Update the shape configuration with the new height and material data for the heightfield.
-                    // This makes the assumption that the shape configuration already has been created with the correct number
-                    // of samples.
-                    Physics::HeightfieldProviderRequestsBus::Event(
-                        m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
-                        [this](size_t col, size_t row, const Physics::HeightMaterialPoint& point)
-                        {
-                            m_shapeConfig->ModifySample(col, row, point);
-                        },
-                        startColumn, startRow, numColumns, numRows);
-
-                    Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, startColumn, startRow, numColumns, numRows);
-                }
-
-                m_dirtyRegion.SetMin(AZ::Vector3(dirtyRegion.GetMin().GetX(), yMax, dirtyRegion.GetMin().GetZ()));
+                return;
             }
 
+            if ((numRows > 0) && (numColumns > 0))
+            {
+                // Update the shape configuration with the new height and material data for the heightfield.
+                // This makes the assumption that the shape configuration already has been created with the correct number
+                // of samples.
+                Physics::HeightfieldProviderRequestsBus::Event(
+                    m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
+                    [this](size_t col, size_t row, const Physics::HeightMaterialPoint& point)
+                    {
+                        m_shapeConfig->ModifySample(col, row, point);
+                    },
+                    startColumn, startRow, numColumns, numRows);
 
+                Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, startColumn, startRow, numColumns, numRows);
+            }
+
+            m_dirtyRegion.m_minRowVertex = startRow + numRows;
+        };
+
+        // Lambad to send out notifications on job completion.
+        auto jobComplete = [this]()
+        {
             // If the job hasn't been canceled, use the updated shape configuration to create a new heightfield in the world
             // and notify any listeners that the collider has changed.
             if (!m_jobContext->IsCanceled())
             {
-                m_dirtyRegion = AZ::Aabb::CreateNull();
+                m_dirtyRegion.SetNull();
                 Physics::ColliderComponentEventBus::Event(m_entityId, &Physics::ColliderComponentEvents::OnColliderChanged);
             }
 
@@ -365,11 +394,47 @@ namespace PhysX
             m_jobContext->OnJobComplete();
         };
 
-        // Kick off the job to update the heightfield configuration and create the heightfield.
+        // Get the number of rows to update in each job. We subdivide the region into multiple jobs when processing
+        // so that cancellation requests can be detected and processed more quickly. If we just processed a single full dirty region,
+        // regardless of size, there would be a lot more work that needs to complete before we could cancel a job.
+        const size_t rowsPerUpdate = AZStd::max(physx_heightfieldColliderUpdateRegionSize / numColumns, static_cast<size_t>(1));
+
         constexpr bool autoDelete = true;
-        auto* runningJob = AZ::CreateJobFunction(jobLambda, autoDelete, m_jobContext.get());
+
+        AZStd::vector<AZ::Job*> jobs;
+
+        // Create a list of jobs that each process a subregion. The full set of jobs ends up processing the entire dirty region.
+        for (size_t row = 0; row < numRows; row += rowsPerUpdate)
+        {
+            size_t subRegionRows = AZStd::min(numRows - row, rowsPerUpdate);
+
+            auto* runningJob = AZ::CreateJobFunction(
+                AZStd::bind(refreshRows, startColumn, startRow + row, numColumns, subRegionRows), autoDelete, m_jobContext.get());
+            jobs.push_back(runningJob);
+        }
+
+        // Add our completion job to the end of the list.
+        auto* completionJob = AZ::CreateJobFunction(jobComplete, autoDelete, m_jobContext.get());
+        jobs.push_back(completionJob);
+
+        // Make each job dependent on the previous one to complete before it can start.
+        // We can't process these in parallel because we can't update multiple subregions of the same PhysX heightfield at the same time
+        // in a threadsafe way. We *could* process a PhysX heightfield update simultaneous with a shape config update for the next
+        // subregion, but we aren't doing that yet.
+        // Setting up these dependencies also causes our completion job to run last, after the last update job has run.
+        for (size_t jobIndex = 0; jobIndex < (jobs.size() - 1); jobIndex++)
+        {
+            jobs[jobIndex]->SetDependent(jobs[jobIndex + 1]);
+        }
+
+        // Track that we're starting our jobs.
         m_jobContext->OnJobStart();
-        runningJob->Start();
+
+        // Actually start all of the jobs.
+        for (auto& job : jobs)
+        {
+            job->Start();
+        }
     }
 
     void HeightfieldCollider::UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots)

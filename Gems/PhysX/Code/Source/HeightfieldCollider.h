@@ -150,7 +150,19 @@ namespace PhysX
         AZStd::string m_entityName;
 
         //! Track the current dirty region for async heightfield refreshes.
-        AZ::Aabb m_dirtyRegion;
+        struct DirtyHeightfieldRegion
+        {
+            DirtyHeightfieldRegion();
+            void SetNull();
+            void AddAabb(const AZ::Aabb& dirtyRegion, AZ::EntityId entityId);
+
+            size_t m_minRowVertex;      //! the first dirty row vertex
+            size_t m_minColumnVertex;   //! the first dirty column vertex
+            size_t m_maxRowVertex;      //! one past the last dirty row vertex (i.e. max - min = num dirty)
+            size_t m_maxColumnVertex;   //! one past the last dirty column vertex
+        };
+
+        DirtyHeightfieldRegion m_dirtyRegion;
     };
 
 } // namespace PhysX
