@@ -75,6 +75,9 @@ namespace AZ
             class ScopedSection final
             {
             public:
+                static constexpr uint32_t MaxSectionNameLength = 1024;
+                using SectionName = AZStd::fixed_string<MaxSectionNameLength>;
+
                 ScopedSection(const char* sectionNameFormat, ...)
                 {
 #ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
@@ -83,7 +86,7 @@ namespace AZ
                         va_list args;
                         va_start(args, sectionNameFormat);
 
-                        m_sectionName = AZStd::string::format_arg(sectionNameFormat, args);
+                        m_sectionName = SectionName::format_arg(sectionNameFormat, args);
                         ShaderReloadDebugTracker::BeginSection("%s", m_sectionName.c_str());
                         m_shouldEndSection = true;
 
@@ -95,7 +98,7 @@ namespace AZ
                 ~ScopedSection();
 
             private:
-                AZStd::string m_sectionName;
+                SectionName m_sectionName;
                 bool m_shouldEndSection = false;
             };
 
