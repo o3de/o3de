@@ -27,6 +27,11 @@ QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QEvent)
 QT_FORWARD_DECLARE_CLASS(QMenu)
 
+namespace AzQtComponents
+{
+    QT_FORWARD_DECLARE_CLASS(ElidingLabel)
+}
+
 namespace O3DE::ProjectManager
 {
     class LabelButton
@@ -89,11 +94,13 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectButton(const ProjectInfo& m_projectInfo, const EngineInfo& m_engineInfo, QWidget* parent = nullptr);
-        ~ProjectButton() = default;
+        explicit ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent = nullptr);
+        ~ProjectButton();
 
         const ProjectInfo& GetProjectInfo() const;
 
+        void SetEngine(const EngineInfo& engine);
+        void SetProject(const ProjectInfo& project);
         void SetState(enum ProjectButtonState state);
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
@@ -140,6 +147,8 @@ namespace O3DE::ProjectManager
         LabelButton* m_projectImageLabel = nullptr;
         QPushButton* m_projectMenuButton = nullptr;
         QLayout* m_requiresBuildLayout = nullptr;
+        AzQtComponents::ElidingLabel* m_projectNameLabel = nullptr;
+        AzQtComponents::ElidingLabel* m_engineNameLabel = nullptr;
 
         QMetaObject::Connection m_actionButtonConnection;
 
