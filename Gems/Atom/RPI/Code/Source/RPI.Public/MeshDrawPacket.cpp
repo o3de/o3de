@@ -15,6 +15,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 namespace AZ
 {   
@@ -131,6 +132,8 @@ namespace AZ
                 AZ_Warning("MeshDrawPacket", false, "No material provided for mesh. Skipping.");
                 return false;
             }
+            
+            ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
             drawPacketBuilder.Begin(nullptr);
