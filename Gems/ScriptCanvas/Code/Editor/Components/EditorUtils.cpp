@@ -54,11 +54,11 @@ namespace ScriptCanvasEditor
                 }
             }
 
-            if (!source.Path().empty())
+            if (!source.RelativePath().empty())
             {
                 AZStd::string watchFolderPath;
                 AZ::Data::AssetInfo assetInfoPath;
-                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath)
+                if (assetSystem->GetSourceInfoBySourcePath(source.RelativePath().c_str(), assetInfoPath, watchFolderPath)
                     && assetInfoPath.m_assetId.IsValid())
                 {
                     return SourceHandle::MarkAbsolutePath
