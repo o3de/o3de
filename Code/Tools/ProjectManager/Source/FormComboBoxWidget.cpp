@@ -43,15 +43,10 @@ namespace O3DE::ProjectManager
                 m_comboBox = new QComboBox(this);
                 m_comboBox->addItems(items);
                 m_comboBox->setFrame(false);
-
                 m_comboBox->installEventFilter(this);
-
                 fieldLayout->addWidget(m_comboBox);
 
                 m_frameLayout->addLayout(fieldLayout);
-
-                QWidget* emptyWidget = new QWidget(this);
-                m_frameLayout->addWidget(emptyWidget);
             }
 
             m_frame->setLayout(m_frameLayout);
@@ -71,15 +66,6 @@ namespace O3DE::ProjectManager
     {
         return m_comboBox;
     }
-
-    //void FormComboBoxWidget::SetValues(const QStringList& values)
-    //{
-    //    m_comboBox->clear();
-    //    for (auto value : values)
-    //    {
-    //        m_comboBox->addItem(value);
-    //    }
-    //}
 
     bool FormComboBoxWidget::eventFilter(QObject* object, QEvent* event)
     {
@@ -107,7 +93,6 @@ namespace O3DE::ProjectManager
     {
         m_errorLabel->setVisible(visible);
         m_frame->setProperty("Valid", !visible);
-
         refreshStyle();
     }
 
@@ -133,11 +118,6 @@ namespace O3DE::ProjectManager
             child->style()->polish(child);
         }
     }
-
-    //void FormComboBoxWidget::SetSelectedText(const QString& text)
-    //{
-    //    m_comboBox->setCurrentText(text);
-    //}
 
     void FormComboBoxWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)
     {

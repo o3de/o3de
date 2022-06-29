@@ -48,7 +48,6 @@ namespace O3DE::ProjectManager
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
-
         void refreshStyle();
     };
 } // namespace O3DE::ProjectManager

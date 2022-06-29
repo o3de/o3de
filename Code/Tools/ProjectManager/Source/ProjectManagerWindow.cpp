@@ -15,8 +15,7 @@ namespace O3DE::ProjectManager
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
     {
-        auto engineInfoOutcome = PythonBindingsInterface::Get()->GetEngineInfo();
-        if (engineInfoOutcome)
+        if (auto engineInfoOutcome = PythonBindingsInterface::Get()->GetEngineInfo(); engineInfoOutcome)
         {
             auto engineInfo = engineInfoOutcome.GetValue<EngineInfo>();
             setWindowTitle(QString("%1 %2 Project Manager").arg(engineInfo.m_name.toUpper(), engineInfo.m_version));
