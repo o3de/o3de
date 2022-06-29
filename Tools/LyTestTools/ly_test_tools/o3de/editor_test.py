@@ -407,7 +407,6 @@ class EditorTestSuite:
         yield test_data  # yield to pytest while test-class executes
         # resumed by pytest after each test-class finishes
         if test_data.asset_processor:  # was assigned an AP to manage
-            test_data.asset_processor.stop(1)
             test_data.asset_processor.teardown()
             test_data.asset_processor = None
             editor_utils.kill_all_ly_processes(include_asset_processor=True)
