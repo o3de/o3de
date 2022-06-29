@@ -7,7 +7,16 @@
 #
 
 import os
+import re
 from pathlib import Path
+
+'''
+Updates AZ_CRC to AZ_CRC_CE.
+'''
+def crc_update(line: str):
+    return re.sub(r'(AZ_CRC\()(.*)(,[\s]*0x[0-9a-f]{8})',
+                  r'AZ_CRC_CE(\2',
+                  line)
 
 '''
 Renames services provided by PhysX components from PhysX...Service to Physics...Service.
@@ -44,8 +53,10 @@ def rename_physics_services():
                 lines_changed = False
                 for line_index in range(len(lines)):
                     for old_service, new_service in renamed_services.items():
-                        lines_changed = lines_changed or old_service in lines[line_index]
-                        lines[line_index] = lines[line_index].replace(old_service, new_service)
+                        if old_service in lines[line_index]:
+                            lines_changed = True
+                            lines[line_index] = lines[line_index].replace(old_service, new_service)
+                            lines[line_index] = crc_update(lines[line_index])
                 if lines_changed:
                     file = open(full_path, 'w')
                     file.writelines(lines)
