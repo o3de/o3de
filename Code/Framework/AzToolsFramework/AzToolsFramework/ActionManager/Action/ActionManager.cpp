@@ -8,15 +8,19 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+
 namespace AzToolsFramework
 {
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
+        AZ::Interface<ActionManagerInternalInterface>::Register(this);
     }
 
     ActionManager::~ActionManager()
     {
+        AZ::Interface<ActionManagerInternalInterface>::Unregister(this);
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
         ClearActionContextMap();
@@ -83,6 +87,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
+                    properties.m_hideFromMenusWhenDisabled,
+                    properties.m_hideFromToolBarsWhenDisabled,
                     handler
                 )
             }
@@ -125,6 +131,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
+                    properties.m_hideFromMenusWhenDisabled,
+                    properties.m_hideFromToolBarsWhenDisabled,
                     handler,
                     checkStateCallback
                 )
@@ -269,28 +277,6 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
-    {
-        auto actionIterator = m_actions.find(actionIdentifier);
-        if (actionIterator == m_actions.end())
-        {
-            return nullptr;
-        }
-
-        return actionIterator->second.GetAction();
-    }
-
-    const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier)
-    {
-        auto actionIterator = m_actions.find(actionIdentifier);
-        if (actionIterator == m_actions.end())
-        {
-            return nullptr;
-        }
-        
-        return actionIterator->second.GetAction();
-    }
-
     ActionManagerOperationResult ActionManager::InstallEnabledStateCallback(
         const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback)
     {
@@ -324,6 +310,7 @@ namespace AzToolsFramework
         }
         
         actionIterator->second.Update();
+
         return AZ::Success();
     }
     
@@ -400,6 +387,53 @@ namespace AzToolsFramework
         {
             delete elem.second;
         }
+    }
+
+    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return actionIterator->second.GetAction();
+    }
+
+    const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return actionIterator->second.GetAction();
+    }
+
+    bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            // Return the default value.
+            return true;
+        }
+
+        return actionIterator->second.GetHideFromMenusWhenDisabled();
+
+    }
+
+    bool ActionManager::GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            // Return the default value.
+            return false;
+        }
+
+        return actionIterator->second.GetHideFromToolBarsWhenDisabled();
     }
 
 } // namespace AzToolsFramework

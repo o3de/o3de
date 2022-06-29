@@ -82,17 +82,18 @@ void GatherSurfaceDataFromClipmaps(
     )
 {
     ClipmapSample clipmapSample = SampleClipmap(position);
-    hasDetailSurface = clipmapSample.m_hasDetail;
 
     if (clipmapSample.m_hasMacro)
     {
         macroColor = clipmapSample.m_macroColor;
         macroNormal = clipmapSample.m_macroNormal;
     }
-    if (hasDetailSurface)
+    if (detailFactor < 1.0)
     {
+        hasDetailSurface = clipmapSample.m_hasDetail;
         detailSurface = clipmapSample.m_detailSurface;
     }
+
 }
 
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
@@ -102,7 +103,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     surface.position = input.m_worldPosition.xyz;
     surface.vertexNormal = normalize(input.m_normal);
     float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
-    float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
 
     // Surface data to be gathered from clipmaps or materials.
     float3 macroNormal = surface.vertexNormal;
@@ -110,12 +110,17 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     bool hasDetailSurface = false;
     DetailSurface detailSurface = GetDefaultDetailSurface();
 
+    float detailFactor;
     if (o_useClipmap)
     {
+        // Clipmap has a max render distance. The true fade distance should be the min.
+        float detailFadeDistance = min(TerrainMaterialSrg::m_detailFadeDistance, TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius - TerrainMaterialSrg::m_detailFadeLength);
+        detailFactor = saturate((viewDistance - detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
         GatherSurfaceDataFromClipmaps(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
     else
     {
+        detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
 
