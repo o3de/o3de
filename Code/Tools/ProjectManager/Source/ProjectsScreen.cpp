@@ -287,45 +287,30 @@ namespace O3DE::ProjectManager
                 }
             });
 
-            QHash<QString, EngineInfo> engines;
-
             // Add any missing project buttons and restore buttons to default state
             for (const ProjectInfo& project : projectsVector)
             {
                 ProjectButton* currentButton = nullptr;
-                if (!m_projectButtons.contains(QDir::toNativeSeparators(project.m_path)))
-                {
-                    EngineInfo engine{};
-                    if (!project.m_engineName.isEmpty())
-                    {
-                        if (auto it = engines.constFind(project.m_engineName); it != engines.cend())
-                        {
-                            engine = it.value();
-                        }
-                        else if (auto engineResult = PythonBindingsInterface::Get()->GetEngineInfo(project.m_engineName); engineResult)
-                        {
-                            engine = engineResult.GetValue<EngineInfo>();
-                            engines.insert(project.m_engineName, engine);
-                        }
-                    }
-                    else if (auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(project.m_path); engineResult)
-                    {
-                        engine = engineResult.GetValue<EngineInfo>();
-                        engines.insert(project.m_engineName, engine);
-                    }
+                auto projectButtonIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
 
+                EngineInfo engine{};
+                if (auto result = PythonBindingsInterface::Get()->GetProjectEngine(project.m_path); result)
+                {
+                    engine = result.GetValue<EngineInfo>();
+                }
+
+                if (projectButtonIter == m_projectButtons.end())
+                {
                     currentButton = CreateProjectButton(project, engine);
                     m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), currentButton);
                     m_fileSystemWatcher->addPath(QDir::toNativeSeparators(project.m_path + "/project.json"));
                 }
                 else
                 {
-                    auto projectButtonIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
-                    if (projectButtonIter != m_projectButtons.end())
-                    {
-                        currentButton = projectButtonIter.value();
-                        currentButton->SetState(ProjectButtonState::ReadyToLaunch);
-                    }
+                    currentButton = projectButtonIter.value();
+                    currentButton->SetEngine(engine);
+                    currentButton->SetProject(project);
+                    currentButton->SetState(ProjectButtonState::ReadyToLaunch);
                 }
 
                 // Check whether project manager has successfully built the project

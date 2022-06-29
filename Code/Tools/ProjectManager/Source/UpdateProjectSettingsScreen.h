@@ -37,6 +37,7 @@ namespace O3DE::ProjectManager
         void UpdateProjectPreviewPath();
         void PreviewPathChanged();
         void OnProjectIdUpdated();
+        void OnProjectEngineUpdated(int index);
 
     protected:
         bool ValidateProjectPath() override;

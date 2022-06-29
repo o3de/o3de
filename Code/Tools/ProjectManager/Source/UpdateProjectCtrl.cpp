@@ -260,7 +260,7 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::StandardButton warningResult = QMessageBox::warning(
                     this,
-                    QObject::tr("Unsaved Changes!"),
+                    QObject::tr("Unsaved Changes"),
                     QObject::tr("Would you like to save your changes to project settings?"),
                     QMessageBox::No | QMessageBox::Yes
                 );
@@ -277,7 +277,6 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            // Check if project path has changed and move it
             // Move project first to avoid trying to update settings at the new location before it has been moved there
             if (newProjectSettings.m_path != m_projectInfo.m_path)
             {
@@ -290,17 +289,14 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(newProjectSettings);
             }
 
-            // Update project if settings changed
+            if (auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings); !result.IsSuccess())
             {
-                auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                if (!result.IsSuccess())
-                {
-                    QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
-                    return false;
-                }
+                QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
+                return false;
             }
 
-            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
+            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName ||
+                newProjectSettings.m_enginePath != m_projectInfo.m_enginePath)
             {
                 // Remove project build successfully paths for both old and new project names
                 // because a full rebuild is required when moving projects
