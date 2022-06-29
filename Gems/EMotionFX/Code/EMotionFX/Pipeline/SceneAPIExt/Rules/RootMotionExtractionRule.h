@@ -27,12 +27,14 @@ namespace EMotionFX::Pipeline::Rule
         const AZStd::string& GetSampleJoint() const { return m_sampleJoint; }
         bool GetTransitionZeroXAxis() const { return m_transitionZeroXAxis; }
         bool GetTransitionZeroYAxis() const { return m_transitionZeroYAxis; }
+        bool GetExtractRotation() const { return m_extractRotation; }
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
         bool m_transitionZeroXAxis = false;
         bool m_transitionZeroYAxis = false;
+        bool m_extractRotation = false;
         AZStd::string m_sampleJoint = "Hip";
     };
 

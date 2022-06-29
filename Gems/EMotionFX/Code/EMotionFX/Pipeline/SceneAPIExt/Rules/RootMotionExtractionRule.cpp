@@ -28,6 +28,7 @@ namespace EMotionFX::Pipeline::Rule
             ->Field("sampleJoint", &RootMotionExtractionData::m_sampleJoint)
             ->Field("transitionZeroX", &RootMotionExtractionData::m_transitionZeroXAxis)
             ->Field("transitionZeroY", &RootMotionExtractionData::m_transitionZeroYAxis)
+            ->Field("extractRotation", &RootMotionExtractionData::m_extractRotation)
             ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -38,7 +39,8 @@ namespace EMotionFX::Pipeline::Rule
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->DataElement("NodeListSelection", &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
                     ->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
-                ->ClassElement(AZ::Edit::ClassElements::Group, "Transition Extraction")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_extractRotation, "Rotation extraction", "Extract the rotation value from sample joint.")
+                ->ClassElement(AZ::Edit::ClassElements::Group, "Transition extraction")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroXAxis, "Ignore X-Axis transition", "Force X Axis movement to be zero.")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroYAxis, "Ignore Y-Axis transition", "Force Y Axis movement to be zero.");
         }
@@ -61,7 +63,6 @@ namespace EMotionFX::Pipeline::Rule
 
     void RootMotionExtractionRule::Reflect(AZ::ReflectContext* context)
     {
-        // ExternalToolRule<RootMotionExtractionData>::Reflect(context);
         RootMotionExtractionData::Reflect(context);
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

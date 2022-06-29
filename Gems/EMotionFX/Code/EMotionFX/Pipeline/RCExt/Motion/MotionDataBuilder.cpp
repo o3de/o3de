@@ -413,7 +413,7 @@ namespace EMotionFX
             if (rootMotionExtractionRule && sampleJointDataIndex != invalidJointDataIndex && rootJointDataIndex != invalidJointDataIndex)
             {
                 const auto& data = rootMotionExtractionRule->GetData();
-                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.GetTransitionZeroXAxis(), data.GetTransitionZeroYAxis());
+                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.GetTransitionZeroXAxis(), data.GetTransitionZeroYAxis(), data.GetExtractRotation());
             }
 
             AZStd::shared_ptr<Rule::IMotionScaleRule> scaleRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::IMotionScaleRule>();
