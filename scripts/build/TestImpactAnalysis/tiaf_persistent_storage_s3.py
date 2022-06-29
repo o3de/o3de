@@ -103,14 +103,14 @@ class PersistentStorageS3(PersistentStorage):
         except botocore.exceptions.ClientError as e:
             raise SystemError(f"There was a problem with the s3 client: {e}")
 
-    def _decode(self, object):
+    def _decode(self, s3_object):
         """
         Method to decompress and decode the json object and return it to the user
-        
-        @param object:  The s3 object to download, decompress and decode
+
+        @param s3_object:  The s3 object to download, decompress and decode
         """
         logger.info(f"Attempting to decode historic data object...")
-        response = object.get()
+        response = s3_object.get()
         file_stream = response['Body']
         decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
         logger.info(f"Decoding complete.")
