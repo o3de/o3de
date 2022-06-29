@@ -30,8 +30,6 @@ namespace ScriptCanvasEditor
     // accepts any sort of path and returns one with a relative path if possible
     AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path);
 
-    AZStd::optional<AZ::IO::Path> GetFullPath(const SourceHandle& source);
-
     class EditorGraph;
     class NodePaletteModel;
 
