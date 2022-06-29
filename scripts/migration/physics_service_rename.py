@@ -1,7 +1,23 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
 import os
 from pathlib import Path
 
-if __name__ == "__main__":
+'''
+Renames services provided by PhysX components from PhysX...Service to Physics...Service.
+The service names were originally chosen to make a distinction from the legacy physics
+components, but the legacy components have been removed, and the new naming better reflects
+the modular design and intent to support other potential physics Gems.
+This function searches all folders below the O3DE root folder for .cpp, .h or .inl files, and
+replaces any instances of the old naming convention.
+'''
+def rename_physics_services():
     renamed_services = {
         "\"PhysXCharacterControllerService\"": "\"PhysicsCharacterControllerService\"",
         "\"PhysXCharacterGameplayService\"": "\"PhysicsCharacterGameplayService\"",
@@ -34,3 +50,6 @@ if __name__ == "__main__":
                     file = open(full_path, 'w')
                     file.writelines(lines)
                     file.close()
+
+if __name__ == "__main__":
+    rename_physics_services()
