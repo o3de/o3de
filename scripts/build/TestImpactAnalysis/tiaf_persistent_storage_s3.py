@@ -62,7 +62,9 @@ class PersistentStorageS3(PersistentStorage):
 
     def _retrieve_historic_data(self, config: dict):
         """
-        Retrieves historic data from storage if it exists, and stores it locally on disk
+        Retrieves historic data from s3 storage if it exists, and stores it locally on disk
+
+        @param config: The runtime config file to obtain the data file paths from.
         """
         try:
             # We store the historic data as compressed JSON
@@ -102,6 +104,11 @@ class PersistentStorageS3(PersistentStorage):
             raise SystemError(f"There was a problem with the s3 client: {e}")
 
     def _decode(self, object):
+        """
+        Method to decompress and decode the json object and return it to the user
+        
+        @param object:  The s3 object to download, decompress and decode
+        """
         logger.info(f"Attempting to decode historic data object...")
         response = object.get()
         file_stream = response['Body']
