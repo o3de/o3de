@@ -191,7 +191,7 @@ namespace AzFramework
 
         //! Clears pending received messages for a given Remote Tools Service.
         //! Useful for situations in which messages must be processed out of band.
-        //! @param key Th e key of the service to clear messages for
+        //! @param key The key of the service to clear messages for
         virtual void ClearReceivedMessages(AZ::Crc32 key) = 0;
 
         virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
