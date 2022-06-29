@@ -15,9 +15,9 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -52,7 +52,11 @@ namespace AzToolsFramework
                 "Template Instance Mapper Interface could not be found. "
                 "Check that it is being correctly initialized.");
 
-            m_instanceDomGenerator.Initialize();
+            m_instanceDomGeneratorInterface = AZ::Interface<InstanceDomGeneratorInterface>::Get();
+            AZ_Assert(m_instanceDomGeneratorInterface != nullptr,
+                "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
+                "Instance Dom Generator Interface could not be found. "
+                "Check that it is being correctly initialized.");
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
             PropertyEditorGUIMessages::Bus::Handler::BusConnect();
@@ -136,7 +140,7 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    PrefabDom instanceDomAccordingToFocus;
+                    PrefabDom instanceDom;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -181,8 +185,8 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        bool instanceDomGenerated = m_instanceDomGenerator.GenerateInstanceDomAccordingToCurrentFocus(
-                            instanceToUpdate, instanceDomAccordingToFocus);
+                        bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
+                            instanceToUpdate, instanceDom);
                         if (!instanceDomGenerated)
                         {
                             AZ_Assert(
@@ -195,7 +199,7 @@ namespace AzToolsFramework
                         }
 
                         EntityList newEntities;
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomAccordingToFocus,
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
                             Template& currentTemplate = currentTemplateReference->get();

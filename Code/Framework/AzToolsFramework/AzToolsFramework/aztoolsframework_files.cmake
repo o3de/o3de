@@ -719,6 +719,7 @@ set(FILES
     Prefab/Instance/Instance.cpp
     Prefab/Instance/InstanceDomGenerator.h
     Prefab/Instance/InstanceDomGenerator.cpp
+    Prefab/Instance/InstanceDomGeneratorInterface.h
     Prefab/Instance/InstanceSerializer.h
     Prefab/Instance/InstanceSerializer.cpp
     Prefab/Instance/InstanceEntityScrubber.h

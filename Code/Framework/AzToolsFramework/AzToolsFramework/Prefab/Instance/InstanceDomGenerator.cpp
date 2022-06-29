@@ -22,7 +22,7 @@ namespace AzToolsFramework
     {
         AzFramework::EntityContextId InstanceDomGenerator::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
-        void InstanceDomGenerator::Initialize()
+        void InstanceDomGenerator::RegisterInstanceDomGeneratorInterface()
         {
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
@@ -38,9 +38,16 @@ namespace AzToolsFramework
                 "Prefab - InstanceDomGenerator::Initialize - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            AZ::Interface<InstanceDomGeneratorInterface>::Register(this);
         }
 
-        bool InstanceDomGenerator::GenerateInstanceDomAccordingToCurrentFocus(const Instance* instance, PrefabDom& instanceDom) const
+        void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()
+        {
+            AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
+        }
+
+        bool InstanceDomGenerator::GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom)
         {
             // Retrieve focused instance
             auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);

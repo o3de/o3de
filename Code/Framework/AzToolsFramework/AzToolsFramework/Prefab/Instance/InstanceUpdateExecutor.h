@@ -24,9 +24,9 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-        class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
         class TemplateInstanceMapperInterface;
+        class InstanceDomGeneratorInterface;
 
         class InstanceUpdateExecutor
             : public InstanceUpdateExecutorInterface
@@ -62,6 +62,7 @@ namespace AzToolsFramework
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
+            InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             AZ::IO::Path m_rootPrefabInstanceSourcePath;
             AZStd::deque<Instance*> m_instancesUpdateQueue;
             AZ::Event<GameModeState>::Handler m_GameModeEventHandler;
@@ -69,7 +70,6 @@ namespace AzToolsFramework
             bool m_isRootPrefabInstanceLoaded = false;
             bool m_shouldPausePropagation = false;
             bool m_updatingTemplateInstancesInQueue { false };
-            InstanceDomGenerator m_instanceDomGenerator;
         };
     }
 }

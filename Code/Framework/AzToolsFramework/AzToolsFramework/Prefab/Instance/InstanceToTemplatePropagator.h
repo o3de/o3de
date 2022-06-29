@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -42,7 +43,7 @@ namespace AzToolsFramework
             void AddPatchesToLink(const PrefabDom& patches, Link& link);
 
         private:
-
+            InstanceDomGenerator m_instanceDomGenerator;
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface;
         };

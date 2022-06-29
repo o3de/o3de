@@ -37,10 +37,14 @@ namespace AzToolsFramework
                 "Prefab - InstanceToTemplateInterface - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
         }
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
         {
+            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
+
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
