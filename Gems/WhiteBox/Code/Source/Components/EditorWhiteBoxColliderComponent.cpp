@@ -62,6 +62,7 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC("WhiteBoxColliderService", 0x480d5b06));
+        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
