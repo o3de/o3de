@@ -9,6 +9,7 @@
 set(FILES
     Include/NumericalMethods/Optimization.h
     Include/NumericalMethods/Eigenanalysis.h
+    Include/NumericalMethods/DoublePrecisionMath/Quaternion.h
     Source/Optimization/Constants.h
     Source/Optimization/LineSearch.cpp
     Source/Optimization/LineSearch.h
@@ -23,4 +24,5 @@ set(FILES
     Source/NumericalMethods.cpp
     Source/LinearAlgebra.cpp
     Source/LinearAlgebra.h
+    Source/DoublePrecisionMath/Quaternion.cpp
 )

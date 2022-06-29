@@ -12,6 +12,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 
 #include <OpenImageIO/imageio.h>
 
@@ -338,6 +339,16 @@ namespace GradientSignal
         }
     }
 
+    void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
+    void EditorGradientBakerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
     void EditorGradientBakerComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -506,6 +517,23 @@ namespace GradientSignal
             m_bakeImageJob = nullptr;
 
             AZ::TickBus::Handler::BusDisconnect();
+
+            // After a successful bake, if the Entity that contains this gradient baker component also
+            // has an image gradient component, then update the image gradient's image asset with the
+            // output path that we baked to
+            if (GradientSignal::ImageGradientRequestBus::HasHandlers(GetEntityId()))
+            {
+                AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
+
+                QString outputImagePath = QString::fromUtf8(
+                    m_configuration.m_outputImagePath.c_str(), static_cast<int>(m_configuration.m_outputImagePath.Native().size()));
+                outputImagePath += ".streamingimage";
+
+                GradientSignal::ImageGradientRequestBus::Event(
+                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetPath, outputImagePath.toUtf8().constData());
+
+                undo.MarkEntityDirty(GetEntityId());
+            }
 
             // Refresh once the job has completed so the Bake button can be re-enabled
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(

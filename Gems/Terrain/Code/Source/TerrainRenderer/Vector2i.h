@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace Terrain
 {
@@ -20,6 +21,8 @@ namespace Terrain
         Vector2i(int32_t x, int32_t y);
         Vector2i(uint32_t value);
         Vector2i(int32_t value);
+
+        AZ::Vector2 ToVector2();
 
         Vector2i operator+(const Vector2i& rhs) const;
         Vector2i& operator+=(const Vector2i& rhs);

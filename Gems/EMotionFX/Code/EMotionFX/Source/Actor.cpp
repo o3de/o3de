@@ -1443,6 +1443,13 @@ namespace EMotionFX
             {
                 m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
             }
+            else
+            {
+                AZ_Error(
+                    "Actor", false,
+                    "Actor finalization: Skin meta asset was expected to be ready but is not ready yet.  Cannot complete finalizing actor %s",
+                    this->m_name.c_str());
+            }
             ConstructMeshes();
 
             if (m_morphTargetMetaAsset.IsReady())
@@ -2452,13 +2459,13 @@ namespace EMotionFX
         // 1) Build a set of nodes that we want to keep in the actor skeleton heirarchy.
         // 2) Mark all the node in the above list and all their predecessors.
         // 3) In actor skeleton, remove every node that hasn't been marked.
-        // 4) Meanwhile, build a map that represent the child-parent relationship. 
+        // 4) Meanwhile, build a map that represent the child-parent relationship.
         // 5) After the node index changed, we use the map in 4) to restore the child-parent relationship.
         size_t numNodes = m_skeleton->GetNumNodes();
         AZStd::vector<bool> flags;
         AZStd::unordered_map<AZStd::string, AZStd::string> childParentMap;
         flags.resize(numNodes);
-        
+
         AZStd::unordered_set<Node*> nodesToKeep;
         // Search the hit detection config to find and keep all the hit detection nodes.
         for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : m_physicsSetup->GetHitDetectionConfig().m_nodes)

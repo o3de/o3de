@@ -84,11 +84,10 @@ namespace AtomToolsFramework
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+
     protected:
         void AddDocumentTabBar();
-
-        void AddRecentFilePath(const AZStd::string& absolutePath);
-        void ClearRecentFilePaths();
         void UpdateRecentFileMenu();
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
@@ -126,7 +125,5 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
-
-        static constexpr const char* RecentFilePathsKey = "/O3DE/AtomToolsFramework/Document/RecentFilePaths";
     };
 } // namespace AtomToolsFramework

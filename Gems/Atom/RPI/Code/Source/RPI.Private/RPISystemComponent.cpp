@@ -159,7 +159,7 @@ namespace AZ
 
         void RPISystemComponent::UnRegisterXRInterface()
         {
-            m_rpiSystem.UnRegisterXRSystem();
+            m_rpiSystem.UnregisterXRSystem();
         }
 
     } // namespace RPI

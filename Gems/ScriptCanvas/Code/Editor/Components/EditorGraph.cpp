@@ -1710,7 +1710,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::SignalDirty()
     {
-        SourceHandle handle(m_owner, {}, {});
+        SourceHandle handle(m_owner, AZ::Uuid::CreateNull());
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 
