@@ -27,9 +27,13 @@ namespace O3DE::ProjectManager
         : ProjectSettingsScreen(parent)
         , m_userChangedPreview(false)
     {
+        // Engine combo box
         m_projectEngine = new FormComboBoxWidget(tr("Engine"), {}, this);
+        connect(m_projectEngine->comboBox(), QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &UpdateProjectSettingsScreen::OnProjectEngineUpdated);
         m_verticalLayout->addWidget(m_projectEngine);
 
+        // Project preview browse edit 
         m_projectPreview = new FormImageBrowseEditWidget(tr("Project Preview"), "", this);
         m_projectPreview->lineEdit()->setReadOnly(true);
         connect(m_projectPreview->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
@@ -44,6 +48,7 @@ namespace O3DE::ProjectManager
         QLabel* projectPreviewLabel = new QLabel(tr("Project Preview"));
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
+        // Project preview image
         m_projectPreviewImage = new QLabel(this);
         m_projectPreviewImage->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectPreviewImage->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -127,7 +132,7 @@ namespace O3DE::ProjectManager
 
         UpdateProjectPreviewPath();
 
-        auto combobox = m_projectEngine->comboBox();
+        QComboBox* combobox = m_projectEngine->comboBox();
         combobox->clear();
 
         // we use engine path which is unique instead of engine name which may not be
@@ -195,6 +200,17 @@ namespace O3DE::ProjectManager
     {
         ValidateProjectId();
     }
+
+    void UpdateProjectSettingsScreen::OnProjectEngineUpdated(int index)
+    {
+        auto value = m_projectEngine->comboBox()->itemData(index).value<QStringList>();
+        if (value.count() == 2)
+        {
+            m_projectInfo.m_enginePath = value[0];
+            m_projectInfo.m_engineName = value[1];
+        }
+    } 
+
 
     bool UpdateProjectSettingsScreen::ValidateProjectPath()
     {

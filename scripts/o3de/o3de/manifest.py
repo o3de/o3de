@@ -311,17 +311,18 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
 def get_project_engine(project_path: str or pathlib.Path) -> pathlib.Path or None:
     project_object = get_project_json_data(project_path=project_path)
     if project_object:
-        engine_name = project_object.get('engine_name','')
+        engine_name = project_object.get('engine','')
         if engine_name:
-            return get_registered(engine_name=engine_name)
+            engine_path = get_registered(engine_name=engine_name)
+            if engine_path:
+                return engine_path.as_posix()
     
     engine_paths = get_manifest_engines()
     for engine_path in engine_paths:
-        logger.error(f'checking engine {engine_path}')
         projects = get_engine_projects(engine_path)
         for engine_project_path in projects:
             if pathlib.Path(project_path).resolve().samefile(pathlib.Path(engine_project_path).resolve()):
-                return engine_path
+                return engine_path.as_posix()
 
     return None
 
