@@ -121,11 +121,11 @@ namespace GraphModel
         SlotDirection GetSlotDirection() const;  
         SlotType GetSlotType() const;        
 
-        //! Returns whether slot value is relevent to this slot's configuration
-        bool SupportsValue() const;
+        //! Returns true if this slot supports assigning values 
+        bool SupportsValues() const;
 
-        //! Returns whether slot data type is relevent to this slot's configuration
-        bool SupportsDataType() const;
+        //! Returns true if this slot supports data types
+        bool SupportsDataTypes() const;
 
         //! Returns whether this slot's configuration allows connections to other slots
         bool SupportsConnections() const;
@@ -234,8 +234,8 @@ namespace GraphModel
         bool Is(SlotDirection slotDirection, SlotType slotType) const;
         SlotDirection GetSlotDirection() const;
         SlotType GetSlotType() const;
-        bool SupportsValue() const;
-        bool SupportsDataType() const;
+        bool SupportsValues() const;
+        bool SupportsDataTypes() const;
         bool SupportsConnections() const;
         bool SupportsExtendability() const;
         const SlotName& GetName() const;                    //!< Valid for all slot configurations
@@ -333,7 +333,7 @@ namespace GraphModel
 
         #if defined(AZ_ENABLE_TRACING)
             DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
-            AssertWithTypeInfo(SupportsValue(), dataTypeUsed, "This slot type does not support values");
+            AssertWithTypeInfo(SupportsValues(), dataTypeUsed, "This slot type does not support values");
             AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
             AssertWithTypeInfo(nullptr != pValue, dataTypeUsed, "m_value does not hold data of the appropriate type");
         #endif
