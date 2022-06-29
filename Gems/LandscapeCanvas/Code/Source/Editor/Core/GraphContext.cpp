@@ -40,22 +40,10 @@ namespace LandscapeCanvas
         : GraphModel::GraphContext(SYSTEM_NAME, MODULE_FILE_EXTENSION, {})
     {
         // Construct our custom data types
-        const AZ::EntityId invalidEntity;
-        const AZStd::any defaultValue(invalidEntity);
         const AZStd::string cppName = "AZ::EntityId";
-        auto validEntityIdValidator = [](const AZStd::any& value)
-        {
-            return value.is<AZ::EntityId>() && AZStd::any_cast<AZ::EntityId>(value).IsValid();
-        };
-        auto invalidEntityIdValidator = [](const AZStd::any& value)
-        {
-            return value.empty() || (value.is<AZ::EntityId>() && !AZStd::any_cast<AZ::EntityId>(value).IsValid());
-        };
-
-        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::InvalidEntity, InvalidEntityTypeId, defaultValue, "InvalidEntity", cppName, invalidEntityIdValidator));
-        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Bounds, BoundsTypeId, defaultValue, "Bounds", cppName, validEntityIdValidator));
-        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Gradient, GradientTypeId, defaultValue, "Gradient", cppName, validEntityIdValidator));
-        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Area, AreaTypeId, defaultValue, "Area", cppName, validEntityIdValidator));
+        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Bounds, BoundsTypeId, AZStd::any(AZ::EntityId()), "Bounds", cppName));
+        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Gradient, GradientTypeId, AZStd::any(AZ::EntityId()), "Gradient", cppName));
+        m_dataTypes.push_back(AZStd::make_shared<GraphModel::DataType>(LandscapeCanvasDataTypeEnum::Area, AreaTypeId, AZStd::any(AZ::EntityId()), "Area", cppName));
 
         // Construct basic data types
         const AZ::Uuid stringTypeUuid = azrtti_typeid<AZStd::string>();
