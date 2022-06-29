@@ -46,14 +46,14 @@ namespace PhysX
 
     void EditorFixedJointComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PhysXJointService"));
+        provided.push_back(AZ_CRC_CE("PhysicsJointService"));
     }
 
     void EditorFixedJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysXColliderService"));
-        required.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorFixedJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

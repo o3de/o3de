@@ -172,7 +172,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/force-region/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("PhysXTriggerService"))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("PhysicsTriggerService"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces",
                         "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
@@ -233,7 +233,7 @@ namespace PhysX
     void EditorForceRegionComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysXTriggerService"));
+        required.push_back(AZ_CRC_CE("PhysicsTriggerService"));
     }
 
     void EditorForceRegionComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

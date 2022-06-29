@@ -81,8 +81,8 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("PhysXColliderService"));
-            provided.push_back(AZ_CRC_CE("PhysXTriggerService"));
+            provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+            provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -116,9 +116,9 @@ namespace PhysX
     void EditorShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysXTriggerService"));
-        provided.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
+        provided.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
     }
 
     void EditorShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -129,7 +129,7 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
         incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
         incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
         incompatible.push_back(AZ_CRC_CE("DiskShapeService"));

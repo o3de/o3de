@@ -52,13 +52,13 @@ namespace PhysX
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-            provided.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
+            provided.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
@@ -71,7 +71,7 @@ namespace PhysX
         {
             // 'PhysXColliderService' is not actually used here, it is set as dependency to not have 
             // StaticRigidBodyComponent (PhysX gem) created when this component is attached to editor entity
-            dependent.push_back(AZ_CRC_CE("PhysXColliderService"));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         EditorCharacterControllerComponent();

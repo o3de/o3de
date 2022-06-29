@@ -38,12 +38,12 @@ namespace PhysX
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-            provided.push_back(AZ_CRC_CE("PhysXRagdollService"));
+            provided.push_back(AZ_CRC_CE("PhysicsRagdollService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("PhysXRagdollService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRagdollService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
@@ -54,7 +54,7 @@ namespace PhysX
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC_CE("PhysXColliderService"));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
             dependent.push_back(AZ_CRC_CE("CharacterPhysicsDataService"));
         }
 

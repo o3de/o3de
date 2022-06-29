@@ -46,7 +46,7 @@ namespace PhysX
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("TransformService"));
-            required.push_back(AZ_CRC_CE("PhysXTriggerService"));
+            required.push_back(AZ_CRC_CE("PhysicsTriggerService"));
         }
 
         // Component

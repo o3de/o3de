@@ -59,12 +59,12 @@ namespace PhysX
         // There can be only one StaticRigidBodyComponent per entity
         incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
         // Cannot have both StaticRigidBodyComponent and RigidBodyComponent
-        incompatible.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void StaticRigidBodyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("PhysXColliderService"));
+        dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
     }
 
     void StaticRigidBodyComponent::InitStaticRigidBody()
