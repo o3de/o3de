@@ -37,7 +37,7 @@ namespace PhysXDebug
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC_CE("PhysXService"));
+            required.push_back(AZ_CRC_CE("PhysicsService"));
         }
 
     protected:
