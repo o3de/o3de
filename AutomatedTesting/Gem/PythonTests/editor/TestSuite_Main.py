@@ -9,7 +9,7 @@ import os
 import pytest
 
 import ly_test_tools.environment.file_system as file_system
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSingleTest, EditorParallelTest, EditorTestSuite
 
 
 @pytest.mark.SUITE_main
@@ -26,10 +26,10 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                            True, True)
 
-    class test_AssetPicker_UI_UX(EditorSharedTest):
+    class test_AssetPicker_UI_UX(EditorSingleTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
-    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSingleTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
@@ -57,7 +57,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
-    class test_InputBindings_Add_Remove_Input_Events(EditorSharedTest):
+    class test_InputBindings_Add_Remove_Input_Events(EditorSingleTest):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
 
 
@@ -69,29 +69,26 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
     global_extra_cmdline_args = ["-autotest_mode"]
 
-    class test_AssetBrowser_SearchFiltering(EditorSharedTest):
+    class test_AssetBrowser_SearchFiltering(EditorSingleTest):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
 
-    class test_AssetBrowser_TreeNavigation(EditorSharedTest):
+    class test_AssetBrowser_TreeNavigation(EditorSingleTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
-    class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
-        from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
-
     @pytest.mark.REQUIRES_gpu
-    class test_Docking_BasicDockedTools(EditorSharedTest):
+    class test_Docking_BasicDockedTools(EditorSingleTest):
         from .EditorScripts import Docking_BasicDockedTools as test_module
 
-    class test_EntityOutliner_EntityOrdering(EditorSharedTest):
+    class test_EntityOutliner_EntityOrdering(EditorSingleTest):
         from .EditorScripts import EntityOutliner_EntityOrdering as test_module
 
-    class test_Menus_EditMenuOptions_Work(EditorSharedTest):
+    class test_Menus_EditMenuOptions_Work(EditorSingleTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
 
-    class test_Menus_FileMenuOptions_Work(EditorSharedTest):
+    class test_Menus_FileMenuOptions_Work(EditorSingleTest):
         from .EditorScripts import Menus_FileMenuOptions as test_module
 
-    class test_Menus_ViewMenuOptions_Work(EditorSharedTest):
+    class test_Menus_ViewMenuOptions_Work(EditorSingleTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module
 
 
@@ -102,8 +99,8 @@ class TestAutomation(EditorTestSuite):
 
     # These tests require no UI interaction or modal dialog interactions
 
-    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSharedTest):
+    class test_EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_ParentEntityTransform_Affects_ChildEntityTransform as test_module
 
-    class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSharedTest):
+    class test_EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform as test_module

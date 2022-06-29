@@ -243,7 +243,7 @@ namespace ScriptCanvasBuilder
         DataSystemAssetNotificationsBus::Event(sourceId, &DataSystemAssetNotifications::OnAssetNotReady);
         MonitorAsset(sourceId);
 
-        if (auto handle = ScriptCanvasEditor::CompleteDescription(SourceHandle(nullptr, sourceId, {})))
+        if (auto handle = ScriptCanvasEditor::CompleteDescription(SourceHandle(nullptr, sourceId)))
         {
             CompileBuilderDataInternal(*handle);
             auto& builderStorage = m_buildResultsByHandle[sourceId];

@@ -76,9 +76,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 option bool o_useClipmap = false;
 option bool o_useTerrainClod = true;
 
-static const uint GridSize = 64;
-static const float RcpGridSize = rcp(GridSize);
-
 struct VertexInput
 {
     float2 m_xyPosition : POSITION0;
@@ -113,10 +110,7 @@ void CalculateTerrainPosition(
 
     if (o_useTerrainClod)
     {
-        const float quadSize = patchData.m_xyScale * RcpGridSize;
-        const float quadDiagonal = quadSize * sqrt(2.0);
-        float clodPadding = quadDiagonal * 2; // pad enough to handle a diagonal on the quad from the next lod (which will be 2x the size).
-        float clodBlend = saturate((clodDistance - clodPadding) * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
+        float clodBlend = saturate(clodDistance * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
         float lodHeight = worldData.m_zMin + input.m_lodZPosition * worldData.m_zExtents;
         worldPosition.z = lerp(lodHeight, height, clodBlend);
 
