@@ -20,6 +20,7 @@ class QWidget;
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class ActionManagerInternalInterface;
     class MenuManagerInterface;
     
     //! Editor Menu class definitions.
@@ -82,6 +83,7 @@ namespace AzToolsFramework
         AZStd::map<AZStd::string, int> m_subMenuToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
+        inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 

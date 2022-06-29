@@ -22,12 +22,6 @@
 
 #include <QWidget>
 
-namespace AzToolsFramework
-{
-    class ActionManagerInterface;
-    class MenuManagerInterface;
-}
-
 namespace UnitTest
 {
     class ActionManagerFixture : public AllocatorsTestFixture
@@ -38,8 +32,11 @@ namespace UnitTest
 
     public:
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
         AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;
 
         QWidget* m_widget = nullptr;
 

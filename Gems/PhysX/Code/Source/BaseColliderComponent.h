@@ -81,19 +81,19 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-            provided.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b)); // PhysX trigger service (not cry, non-legacy)
+            provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+            provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+            dependent.push_back(AZ_CRC_CE("ShapeService"));
             dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
