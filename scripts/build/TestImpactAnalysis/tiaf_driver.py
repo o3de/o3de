@@ -135,7 +135,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--exclude_file',
+        '--exclude-file',
         type=valid_file_path,
         help="Path to file containing tests to exclude from this run",
         required=False
