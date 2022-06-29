@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <Atom/RPI.Public/PipelinePassChanges.h>
 
 namespace AZ::RPI
