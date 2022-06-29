@@ -161,7 +161,7 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int, exclude_file: str):
         """
         Determins the type of sequence to run based on the commit, source branch and test branch before running the
         sequence with the specified values.
@@ -309,6 +309,13 @@ class TestImpact:
         # Suite
         args.append(f"--suite={suite}")
         logger.info(f"Test suite is set to '{suite}'.")
+
+        #Exclude file
+        if exclude_file is not None:
+            args.append(f"--exclude_file={exclude_file}")
+            logger.info(f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
+        else:
+            logger.info(f'Exclude file not found, skipping.')
 
         # Timeouts
         if test_timeout is not None:
