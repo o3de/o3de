@@ -24,6 +24,7 @@ namespace AzToolsFramework
     class ActionManagerInterface;
     class ActionManagerInternalInterface;
     class MenuManagerInterface;
+    class MenuManagerInternalInterface;
     class ToolBarManagerInterface;
 } // namespace AzToolsFramework
 
@@ -60,6 +61,11 @@ private:
     void AfterEntitySelectionChanged(
         const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities);
 
+    // Recent Files
+    bool IsRecentFileActionActive(int index);
+    void UpdateRecentFileActions();
+
+    // Tools
     void RefreshToolActions();
 
     bool m_initialized = false;
@@ -68,6 +74,7 @@ private:
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
     AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+    AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
     CCryEditApp* m_cryEditApp;

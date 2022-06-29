@@ -45,6 +45,7 @@ namespace AzToolsFramework
         AZStd::map<AZStd::string, int> m_menuToSortKeyMap;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

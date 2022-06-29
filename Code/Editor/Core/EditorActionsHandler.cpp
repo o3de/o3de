@@ -35,10 +35,12 @@ static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
+static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
+static constexpr AZStd::string_view RecentFilesMenuIdentifier = "o3de.menu.editor.file.recent";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
 static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
@@ -52,6 +54,8 @@ static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.m
 
 static constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
 static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
+
+static const int maxRecentFiles = 10;
 
 bool IsLevelLoaded()
 {
@@ -83,6 +87,10 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
+    
+    m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+    AZ_Assert(
+        m_menuManagerInternalInterface, "EditorActionsHandler - could not get MenuManagerInternalInterface on EditorActionsHandler construction.");
     
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
@@ -130,6 +138,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
 {
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -177,6 +186,95 @@ void EditorActionsHandler::InitializeActions()
         );
     }
 
+    // Recent Levels
+    {
+        RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+        const int recentFilesSize = recentFiles->GetSize();
+
+        for (int index = 0; index < maxRecentFiles; ++index)
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            if (index < recentFilesSize)
+            {
+                actionProperties.m_name = AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data());
+            }
+            else
+            {
+                actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
+            }
+            actionProperties.m_category = "Level";
+
+            AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [cryEdit = m_cryEditApp, index]()
+                {
+                    RecentFileList* recentFiles = cryEdit->GetRecentFileList();
+                    const int recentFilesSize = recentFiles->GetSize();
+
+                    if (index < recentFilesSize)
+                    {
+                        cryEdit->OpenDocumentFile((*recentFiles)[index].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+                    }
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                [&, index]() -> bool
+                {
+                    bool isActive = IsRecentFileActionActive(index);
+
+                    if (isActive)
+                    {
+                        AZ_TracePrintf("DEBUG", "Action at index %d is now ACTIVE.", index);
+                    }
+                    else
+                    {
+                        AZ_TracePrintf("DEBUG", "Action at index %d is now NOT ACTIVE.", index);
+                    }
+
+                    return isActive;
+                }
+            );
+
+            m_actionManagerInterface->AddActionToUpdater(RecentFilesChangedUpdaterIdentifier, actionIdentifier);
+        }
+    }
+
+    // Clear Recent Levels
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Clear All";
+        actionProperties.m_description = "Clear the recent files list.";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.level.recent.clearAll",
+            actionProperties,
+            [&]()
+            {
+                RecentFileList* mruList = CCryEditApp::instance()->GetRecentFileList();
+
+                // remove everything from the mru list
+                for (int i = mruList->GetSize(); i > 0; i--)
+                {
+                    mruList->Remove(i - 1);
+                }
+
+                // save the settings immediately to the registry
+                mruList->WriteList();
+
+                // re-update the menus
+                UpdateRecentFileActions();
+            }
+        );
+    }
+
     // Save
     {
         AzToolsFramework::ActionProperties actionProperties;
@@ -186,6 +284,22 @@ void EditorActionsHandler::InitializeActions()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.level.save", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnFileSave();
+            }
+        );
+    }
+
+    // Save As...
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save";
+        actionProperties.m_description = "Save the current level";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.level.saveAs", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnFileSave();
@@ -523,6 +637,23 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&File";
         m_menuManagerInterface->RegisterMenu(FileMenuIdentifier, menuProperties);
     }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Open Recent";
+            m_menuManagerInterface->RegisterMenu(RecentFilesMenuIdentifier, menuProperties);
+
+            // Legacy - the menu should update when the files list is changed.
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu(FileMenuIdentifier);
+            QObject::connect(
+                menu,
+                &QMenu::aboutToShow,
+                m_mainWindow,
+                [&]()
+                {
+                    UpdateRecentFileActions();
+                }
+            );
+        }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Edit";
@@ -584,7 +715,7 @@ void EditorActionsHandler::InitializeMenus()
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
 
     // Set the menu bar for this window
-    m_mainWindow->setMenuBar(m_menuManagerInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
+    m_mainWindow->setMenuBar(m_menuManagerInternalInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
 
     // Add actions to each menu
 
@@ -592,7 +723,17 @@ void EditorActionsHandler::InitializeMenus()
     {
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 100);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 200);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 300);
+        m_menuManagerInterface->AddSubMenuToMenu(FileMenuIdentifier, RecentFilesMenuIdentifier, 300);
+        {
+            for (int index = 0; index < maxRecentFiles; ++index)
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+                m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, actionIdentifier, 100);
+            }
+            m_menuManagerInterface->AddSeparatorToMenu(RecentFilesMenuIdentifier, 200);
+            m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, "o3de.action.level.recent.clearAll", 300);
+        }
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 500);
     }
 
     // Game
@@ -723,7 +864,7 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     };
     QObject::connect(lineEdit, &QLineEdit::returnPressed, m_mainWindow, searchAction);
 
-    QMenu* helpMenu = m_menuManagerInterface->GetMenu(HelpMenuIdentifier);
+    QMenu* helpMenu = m_menuManagerInternalInterface->GetMenu(HelpMenuIdentifier);
 
     QObject::connect(helpMenu, &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
     QObject::connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
@@ -774,6 +915,36 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
     m_actionManagerInterface->TriggerActionUpdater(EntitySelectionChangedUpdaterIdentifier);
+}
+
+bool EditorActionsHandler::IsRecentFileActionActive(int index)
+{
+    RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+    return (index < recentFiles->GetSize());
+}
+
+void EditorActionsHandler::UpdateRecentFileActions()
+{
+    RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+    const int recentFilesSize = recentFiles->GetSize();
+
+    // Update all names
+    for (int index = 0; index < maxRecentFiles; ++index)
+    {
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+        if (index < recentFilesSize)
+        {
+            m_actionManagerInterface->SetActionName(
+                actionIdentifier, AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data()));
+        }
+        else
+        {
+            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", index + 1));
+        }
+    }
+
+    // Trigger the updater
+    m_actionManagerInterface->TriggerActionUpdater(RecentFilesChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::RefreshToolActions()
