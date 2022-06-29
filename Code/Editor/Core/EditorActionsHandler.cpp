@@ -75,10 +75,15 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
 
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     AZ_Assert(m_actionManagerInterface, "EditorActionsHandler - could not get ActionManagerInterface on EditorActionsHandler construction.");
-        
+
+    m_actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get();
+    AZ_Assert(
+        m_actionManagerInternalInterface,
+        "EditorActionsHandler - could not get ActionManagerInternalInterface on EditorActionsHandler construction.");
+    
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
-        
+    
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
@@ -126,7 +131,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
 
-    // If the Prefab system is not enable, have a backup to update actions based on level loading.
+    // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         m_isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
@@ -273,6 +278,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Export Selected Objects";
         actionProperties.m_description = "Export Selected Objects.";
         actionProperties.m_category = "Game";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.exportSelectedObjects", actionProperties,
@@ -283,7 +289,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.exportSelectedObjects", IsEntitySelected);
-
         m_actionManagerInterface->AddActionToUpdater(EntitySelectionChangedUpdaterIdentifier, "o3de.action.game.exportSelectedObjects");
     }
 
@@ -613,7 +618,6 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, GameDebuggingMenuIdentifier, 1100);
         {
         }
-
     }
 
     // Help - Search Documentation Widget
@@ -799,7 +803,7 @@ void EditorActionsHandler::RefreshToolActions()
         AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewpane.m_name.toUtf8().data());
 
         // Create the action if it does not already exist.
-        if (m_actionManagerInterface->GetAction(toolActionIdentifier) == nullptr)
+        if (m_actionManagerInternalInterface->GetAction(toolActionIdentifier) == nullptr)
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name =
