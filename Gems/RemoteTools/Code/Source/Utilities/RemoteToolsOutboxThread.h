@@ -37,8 +37,17 @@ namespace RemoteTools
         RemoteToolsOutboxThread(int updateRate);
         ~RemoteToolsOutboxThread() override;
 
+        //! Pushes a Remote Tools message onto the outbox thread for send
+        //! @param netInterface The network interface the message will send on
+        //! @param connectionId The Id of the connection to send on
+        //! @param datum The datum to send
         void PushOutboxMessage(AzNetworking::INetworkInterface* netInterface,
             AzNetworking::ConnectionId connectionId, OutboundToolingDatum&& datum);
+
+        //! Reads the number of pending messages on the outbox thread
+        //! @return The number of pending messages
+        uint32_t GetPendingMessageCount();
+
     private:
         AZ_DISABLE_COPY_MOVE(RemoteToolsOutboxThread);
 

@@ -45,6 +45,11 @@ namespace AzFramework
         return m_customBlobSize;
     }
 
+    inline bool RemoteToolsMessage::GetIsBlobOwner() const
+    {
+        return m_isBlobOwner;
+    }
+
     inline AZ::u64 RemoteToolsMessage::GetId() const
     {
         return m_msgId;
@@ -67,12 +72,12 @@ namespace AzFramework
 
     inline bool RemoteToolsEndpointInfo::IsOnline() const
     {
-        return m_isOnline;
+        return m_networkId != 0xFFFFFFFF;
     }
 
     inline bool RemoteToolsEndpointInfo::IsValid() const
     {
-        return !m_displayName.empty() && m_networkId != 0xFFFFFFFF && m_persistentId != 0;
+        return !m_displayName.empty() && m_persistentId != 0;
     }
 
     inline const char* RemoteToolsEndpointInfo::GetDisplayName() const

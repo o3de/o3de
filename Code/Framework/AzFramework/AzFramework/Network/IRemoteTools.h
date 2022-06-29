@@ -78,6 +78,10 @@ namespace AzFramework
         //! @return Size of the data blob or 0 if there is none
         size_t GetCustomBlobSize() const;
 
+        //! Gets if this message owns blob memory
+        //! @return True if the message owns the blob
+        bool GetIsBlobOwner() const;
+
         //! Gets the numeric ID of this message
         //! @return The ID of this message
         AZ::u64 GetId() const;
@@ -155,7 +159,6 @@ namespace AzFramework
         AZStd::string m_displayName;
         AZ::u32 m_persistentId; // this is a CRC key used to identify a RemoteTools target
         AZ::u32 m_networkId; // this is the connection id, used for AzNetworking communications.
-        bool m_isOnline;
     };
 
     using RemoteToolsEndpointContainer = AZStd::unordered_map<AZ::u32, RemoteToolsEndpointInfo>;

@@ -23,6 +23,8 @@
 namespace RemoteTools
 {
     static constexpr const char* RemoteServerAddress = "127.0.0.1";
+    // id for the local application
+    static constexpr AZ::u32 SelfNetworkId = 0xFFFFFFFF;
 
     AZ_CVAR(uint16_t, remote_outbox_interval, 50, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to process outbound messages.");
     AZ_CVAR(uint16_t, remote_join_interval, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The interval to attempt automatic connecitons.");
@@ -118,6 +120,10 @@ namespace RemoteTools
         m_entryRegistry[key].m_name = name;
         m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
 
+        AzFramework::RemoteToolsEndpointContainer::pair_iter_bool ret = m_entryRegistry[key].m_availableTargets.insert_key(key);
+        AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
+        ti.SetInfo("Self", key, SelfNetworkId);
+
         AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
             name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         netInterface->SetTimeoutMs(AZ::TimeMs(0));
@@ -136,6 +142,10 @@ namespace RemoteTools
         }
         m_entryRegistry[key].m_isHost = true;
         m_entryRegistry[key].m_name = name;
+
+        AzFramework::RemoteToolsEndpointContainer::pair_iter_bool ret = m_entryRegistry[key].m_availableTargets.insert_key(key);
+        AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
+        ti.SetInfo("Self", key, SelfNetworkId);
 
         AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
             name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
@@ -295,16 +305,22 @@ namespace RemoteTools
         // Messages targeted at our own application just transfer right over to the inbox.
         if (target.IsSelf())
         {
-            AzFramework::RemoteToolsMessage* inboxMessage = static_cast<AzFramework::RemoteToolsMessage*>(
-                serializeContext->CloneObject(static_cast<const void*>(&msg), msg.RTTI_GetType()));
-            AZ_Assert(inboxMessage, "Failed to clone local loopback message.");
+            AzFramework::RemoteToolsMessage* inboxMessage = aznew AzFramework::RemoteToolsMessage(msg.GetId());
+            inboxMessage->SetImmediateSelfDispatchEnabled(msg.IsImmediateSelfDispatchEnabled());
             inboxMessage->SetSenderTargetId(target.GetPersistentId());
 
             if (msg.GetCustomBlobSize() > 0)
             {
-                void* blob = azmalloc(msg.GetCustomBlobSize(), 16, AZ::OSAllocator);
-                memcpy(blob, msg.GetCustomBlob(), msg.GetCustomBlobSize());
-                inboxMessage->AddCustomBlob(blob, msg.GetCustomBlobSize(), true);
+                if (msg.GetIsBlobOwner())
+                {
+                    void* blob = azmalloc(msg.GetCustomBlobSize(), 16, AZ::OSAllocator);
+                    memcpy(blob, msg.GetCustomBlob(), msg.GetCustomBlobSize());
+                    inboxMessage->AddCustomBlob(blob, msg.GetCustomBlobSize(), true);
+                }
+                else
+                {
+                    inboxMessage->AddCustomBlob(msg.GetCustomBlob(), msg.GetCustomBlobSize(), false);
+                }
             }
 
             m_inboxMutex.lock();
