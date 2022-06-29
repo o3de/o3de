@@ -152,7 +152,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
 
 void EditorActionsHandler::InitializeActions()
 {
-    // --- Level Actions
+    // --- File Actions
 
     // New Level
     {
@@ -162,7 +162,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.new", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.new", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnCreateLevel();
@@ -178,7 +178,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.open", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.open", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnOpenLevel();
@@ -186,7 +186,7 @@ void EditorActionsHandler::InitializeActions()
         );
     }
 
-    // Recent Levels
+    // Recent Files
     {
         RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
         const int recentFilesSize = recentFiles->GetSize();
@@ -204,7 +204,7 @@ void EditorActionsHandler::InitializeActions()
             }
             actionProperties.m_category = "Level";
 
-            AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+            AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
             m_actionManagerInterface->RegisterAction(
                 EditorMainWindowActionContextIdentifier,
@@ -226,18 +226,7 @@ void EditorActionsHandler::InitializeActions()
                 actionIdentifier,
                 [&, index]() -> bool
                 {
-                    bool isActive = IsRecentFileActionActive(index);
-
-                    if (isActive)
-                    {
-                        AZ_TracePrintf("DEBUG", "Action at index %d is now ACTIVE.", index);
-                    }
-                    else
-                    {
-                        AZ_TracePrintf("DEBUG", "Action at index %d is now NOT ACTIVE.", index);
-                    }
-
-                    return isActive;
+                    return IsRecentFileActionActive(index);
                 }
             );
 
@@ -245,7 +234,7 @@ void EditorActionsHandler::InitializeActions()
         }
     }
 
-    // Clear Recent Levels
+    // Clear Recent Files
     {
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Clear All";
@@ -254,7 +243,7 @@ void EditorActionsHandler::InitializeActions()
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier,
-            "o3de.action.level.recent.clearAll",
+            "o3de.action.file.recent.clearAll",
             actionProperties,
             [&]()
             {
@@ -283,26 +272,159 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.save", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnFileSave();
             }
         );
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.save", IsLevelLoaded);
     }
 
     // Save As...
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save";
+        actionProperties.m_name = "Save As...";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.saveAs", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
+            []()
+            {
+                // TODO - Find how to call this...
+                
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.saveAs", IsLevelLoaded);
+    }
+
+    // Save Level Statistics
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save Level Statistics";
+        actionProperties.m_description = "Logs Editor memory usage.";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
-                cryEdit->OnFileSave();
+                cryEdit->OnToolsLogMemoryUsage();
+            }
+        );
+
+        // This action is required by python tests, but is always disabled.
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.file.saveLevelStatistics",
+            []() -> bool
+            {
+                return false;
+            }
+        );
+    }
+
+    // Edit Project Settings
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Edit Project Settings...";
+        actionProperties.m_description = "Open the Project Settings panel.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManagerSettings();
+            }
+        );
+    }
+
+    // Edit Platform Settings
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Edit Platform Settings...";
+        actionProperties.m_description = "Open the Platform Settings panel.";
+        actionProperties.m_category = "Platform";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.platform.editSettings", actionProperties,
+            [qtViewPaneManager = m_qtViewPaneManager]()
+            {
+                qtViewPaneManager->OpenPane(LyViewPane::ProjectSettingsTool);
+            }
+        );
+    }
+
+    // New Project
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "New Project...";
+        actionProperties.m_description = "Create a new project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.project.new",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManagerNew();
+            }
+        );
+    }
+
+    // Open Project
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Open Project...";
+        actionProperties.m_description = "Open a different project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.project.open",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManager();
+            }
+        );
+    }
+
+    // Show Log File
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Show Log File";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.file.showLog",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnFileEditLogFile();
+            }
+        );
+    }
+
+    // Editor Exit
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Exit";
+        actionProperties.m_description = "Open a different project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.editor.exit",
+            actionProperties,
+            [=]()
+            {
+                m_mainWindow->window()->close();
             }
         );
     }
@@ -721,19 +843,32 @@ void EditorActionsHandler::InitializeMenus()
 
     // File
     {
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 100);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 200);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.new", 100);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.open", 200);
         m_menuManagerInterface->AddSubMenuToMenu(FileMenuIdentifier, RecentFilesMenuIdentifier, 300);
         {
             for (int index = 0; index < maxRecentFiles; ++index)
             {
-                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
                 m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, actionIdentifier, 100);
             }
             m_menuManagerInterface->AddSeparatorToMenu(RecentFilesMenuIdentifier, 200);
-            m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, "o3de.action.level.recent.clearAll", 300);
+            m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, "o3de.action.file.recent.clearAll", 300);
         }
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 500);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 400);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.save", 500);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.saveAs", 600);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.saveLevelStatistics", 700);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 800);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.editSettings", 900);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.platform.editSettings", 1000);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1100);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.new", 1200);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.open", 1300);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1400);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.showLog", 1500);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1600);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.editor.exit", 1700);
     }
 
     // Game
@@ -931,7 +1066,7 @@ void EditorActionsHandler::UpdateRecentFileActions()
     // Update all names
     for (int index = 0; index < maxRecentFiles; ++index)
     {
-        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.level.recent.file%i", index + 1);
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
         if (index < recentFilesSize)
         {
             m_actionManagerInterface->SetActionName(
