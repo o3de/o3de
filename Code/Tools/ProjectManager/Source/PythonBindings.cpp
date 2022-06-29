@@ -388,9 +388,9 @@ namespace O3DE::ProjectManager
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
 
-                // check if this engine is the engine for this Project Manager
                 auto thisEnginePath = m_manifest.attr("get_this_engine_path")();
-                if (enginePath.equal(thisEnginePath))
+                if (pybind11::isinstance(thisEnginePath, m_pathlib.attr("Path")().get_type()) &&
+                    thisEnginePath.attr("samefile")(enginePath).cast<bool>())
                 {
                     engineInfo.m_thisEngine = true;
                 }
@@ -467,7 +467,6 @@ namespace O3DE::ProjectManager
         bool result = ExecuteWithLock([&] {
             auto enginePath = m_manifest.attr("get_this_engine_path")();
             engineInfo = EngineInfoFromPath(enginePath);
-            engineInfo.m_thisEngine = true;
         });
 
         if (!result || !engineInfo.IsValid())
@@ -936,6 +935,12 @@ namespace O3DE::ProjectManager
                         projectInfo.m_userTags.append(Py_To_String(tag));
                     }
                 }
+
+                auto enginePathResult = m_manifest.attr("get_project_engine")(path);
+                if (!pybind11::isinstance<pybind11::none>(enginePathResult))
+                {
+                    projectInfo.m_enginePath = Py_To_String(enginePathResult);
+                }
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -1020,6 +1025,8 @@ namespace O3DE::ProjectManager
         bool updateProjectSucceeded = false;
         auto result = ExecuteWithLockErrorHandling([&]
             {
+                using namespace pybind11::literals;
+
                 std::list<std::string> newTags;
                 for (const auto& i : projectInfo.m_userTags)
                 {
@@ -1027,17 +1034,16 @@ namespace O3DE::ProjectManager
                 }
 
                 auto editResult = m_editProjectProperties.attr("edit_project_props")(
-                    QString_To_Py_Path(projectInfo.m_path),
-                    pybind11::none(), // proj_name not used
-                    QString_To_Py_String(projectInfo.m_projectName),
-                    QString_To_Py_String(projectInfo.m_id),
-                    QString_To_Py_String(projectInfo.m_origin),
-                    QString_To_Py_String(projectInfo.m_displayName),
-                    QString_To_Py_String(projectInfo.m_summary),
-                    QString_To_Py_String(projectInfo.m_iconPath), // new_icon
-                    pybind11::none(), // add_tags not used
-                    pybind11::none(), // remove_tags not used
-                    pybind11::list(pybind11::cast(newTags)));
+                    "proj_path"_a = QString_To_Py_Path(projectInfo.m_path),
+                    "new_name"_a = QString_To_Py_String(projectInfo.m_projectName),
+                    "new_id"_a = QString_To_Py_String(projectInfo.m_id),
+                    "new_origin"_a = QString_To_Py_String(projectInfo.m_origin),
+                    "new_display"_a = QString_To_Py_String(projectInfo.m_displayName),
+                    "new_summary"_a = QString_To_Py_String(projectInfo.m_summary),
+                    "new_icon"_a = QString_To_Py_String(projectInfo.m_iconPath),
+                    "replace_tags"_a = pybind11::list(pybind11::cast(newTags)),
+                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName)
+                    );
                 updateProjectSucceeded = (editResult.cast<int>() == 0);
             });
 
