@@ -358,6 +358,8 @@ namespace ScriptCanvas
 
         static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
+        static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
+
         SourceHandle();
 
         SourceHandle(const SourceHandle& source);
@@ -365,6 +367,8 @@ namespace ScriptCanvas
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id);
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
+
+        const AZ::IO::Path& AbsolutePath() const;
 
         bool AnyEquals(const SourceHandle& other) const;
 
@@ -409,6 +413,7 @@ namespace ScriptCanvas
         DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
         AZ::IO::Path m_relativePath;
+        AZ::IO::Path m_absolutePath;
 
         void SanitizePath();
     };

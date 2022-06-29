@@ -210,21 +210,15 @@ namespace AssetProcessor
     using AssetRegistryNotificationBus = AZ::EBus<AssetRegistryNotifications>;
 
     // This EBUS is used to check if there is sufficient disk space
-    class DiskSpaceInfoBusTraits
-        : public AZ::EBusTraits
+    class IDiskSpaceInfo
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        typedef AZStd::recursive_mutex MutexType;
+        AZ_RTTI(IDiskSpaceInfo, "{0A324878-9871-49DA-8F34-AE3B1D43B7C0}");
 
-        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space at the specified path
-        // savePath must be a folder path, not a file path
+        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space in the project cache folder
         // If shutdownIfInsufficient is true, an error will be displayed and the application will be shutdown
-        virtual bool CheckSufficientDiskSpace(const QString& /*savePath*/, qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
+        virtual bool CheckSufficientDiskSpace(qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
     };
-
-    using DiskSpaceInfoBus = AZ::EBus<DiskSpaceInfoBusTraits>;
 
     // This EBUS is used to perform Asset Server related tasks.
     class AssetServerBusTraits
