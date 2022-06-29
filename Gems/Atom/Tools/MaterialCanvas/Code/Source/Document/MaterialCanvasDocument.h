@@ -74,7 +74,7 @@ namespace MaterialCanvas
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
-        AZStd::vector<AZ::u8> m_undoGraphState;
+        AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
         bool m_modified = {};
     };
 } // namespace MaterialCanvas
